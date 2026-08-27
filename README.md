@@ -1,0 +1,2 @@
+# cardscope
+tcg market 
