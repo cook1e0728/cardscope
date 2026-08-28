@@ -221,9 +221,13 @@ async function fetchRecentReports({ cardId, cardName, game, limit }){
 // ---------- 遊々亭買取行情爬蟲 ----------
 // 只接受 yuyu-tei.jp/buy/ 開頭的買取頁網址，例如 https://yuyu-tei.jp/buy/poc/s/m06
 // 頻率請自行控制在一天 1-2 次，不要短時間內大量呼叫。
-async function scrapeYuyutei(targetUrl){
+async function scrapeYuyutei(targetUrl, options = {}){
   const res = await fetch(targetUrl, {
-    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CardScopeBot/1.0; +https://cardscope.onrender.com)' }
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8'
+    }
   });
   if(!res.ok) throw new Error(`FETCH_${res.status}`);
   const html = await res.text();
@@ -277,7 +281,11 @@ async function scrapeYuyutei(targetUrl){
     });
   }
 
-  return { game, setTitle, cards };
+  return {
+    game, setTitle, cards,
+    rawLength: options.debug ? html.length : undefined,
+    rawSnippet: options.debug ? html.slice(0, 1200) : undefined
+  };
 }
 
 createServer(async (req,res) => {
@@ -378,9 +386,16 @@ createServer(async (req,res) => {
     }
 
     try{
-      const { game, setTitle, cards } = await scrapeYuyutei(targetUrl);
+      const debugMode = url.searchParams.get('debug') === '1';
+      const { game, setTitle, cards, rawLength, rawSnippet } = await scrapeYuyutei(targetUrl, { debug: debugMode });
+
       if(cards.length===0){
-        return json(res,200,{data:{message:'頁面解析成功但沒抓到任何卡片，可能是網站改版了，需要檢查解析規則', game, setTitle, count:0}});
+        const diag = { message:'頁面解析成功但沒抓到任何卡片，可能是網站改版了，需要檢查解析規則', game, setTitle, count:0 };
+        if(debugMode){
+          diag.rawLength = rawLength;
+          diag.rawSnippet = rawSnippet;
+        }
+        return json(res,200,{data:diag});
       }
 
       const rows = cards.map(c=>({
