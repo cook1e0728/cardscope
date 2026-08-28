@@ -1,12 +1,11 @@
 import { createServer } from 'node:http';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomUUID, createHash } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 4173);
-const reportsFile = join(root, 'reports-data.json');
 
 // Demo records have the same shape expected from approved provider adapters.
 // Never treat a listing price as a completed sale in production.
@@ -26,7 +25,8 @@ const providerStatus = () => ({
   tcgplayer: { enabled:Boolean(process.env.TCGPLAYER_PUBLIC_KEY && process.env.TCGPLAYER_PRIVATE_KEY), capability:'官方目錄與市場價格' },
   kapaipai: { enabled:false, capability:'等待官方合作／資料授權' },
   snkrdunk: { enabled:false, capability:'等待官方合作／資料授權' },
-  yuyutei: { enabled:false, capability:'等待官方合作／資料授權' }
+  yuyutei: { enabled:false, capability:'等待官方合作／資料授權' },
+  reportsDb: { enabled:Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY), capability:'使用者回報成交價（Supabase）' }
 });
 async function getEbayToken(){
   if (ebayToken.value && Date.now() < ebayToken.expiresAt) return ebayToken.value;
@@ -57,26 +57,40 @@ async function justTcg(path, params={}){
   const data=await response.json(); justTcgCache.set(cacheKey,{data,expiresAt:Date.now()+5*60*1000}); return data;
 }
 
-// ---------- 使用者回報成交價 ----------
+// ---------- 使用者回報成交價（存在 Supabase，避免重新部署就歸零）----------
 const ALLOWED_PLATFORMS = ['卡拍拍','露天拍賣','蝦皮購物','露天/蝦皮以外的台灣賣場','其他'];
 const ALLOWED_CURRENCIES = ['TWD','USD','JPY','EUR'];
 const MAX_PRICE = 5000000;
 const reportRateLimit = new Map(); // hashedIp -> timestamps[]
 
-let reports = [];
-async function loadReports(){
-  try{
-    const raw = await readFile(reportsFile, 'utf8');
-    reports = JSON.parse(raw);
-    if(!Array.isArray(reports)) reports = [];
-  }catch{
-    reports = [];
+// 回傳給前端的欄位固定用這個別名清單，維持跟舊版檔案儲存時一模一樣的 JSON 格式，
+// 這樣 index.html 完全不用改。
+const PUBLIC_SELECT = 'id,cardName:card_name,cardId:card_id,game,platform,currency,price,condition,note,tradedAt:traded_at,createdAt:created_at,status';
+
+function supabaseConfigured(){
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY);
+}
+
+async function supabaseFetch(pathAndQuery, options = {}){
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if(!url || !key) throw new Error('SUPABASE_NOT_CONFIGURED');
+  const response = await fetch(`${url}/rest/v1${pathAndQuery}`, {
+    ...options,
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      ...(options.headers || {})
+    }
+  });
+  if(!response.ok){
+    const text = await response.text().catch(()=> '');
+    throw new Error(`SUPABASE_${response.status}:${text.slice(0,200)}`);
   }
+  if(response.status === 204) return null;
+  return response.json();
 }
-async function saveReports(){
-  await writeFile(reportsFile, JSON.stringify(reports, null, 2), 'utf8');
-}
-await loadReports();
 
 function hashIp(ip){
   return createHash('sha256').update(String(ip)).digest('hex').slice(0,16);
@@ -158,22 +172,11 @@ function median(nums){
   return s.length % 2 ? s[mid] : (s[mid-1]+s[mid]) / 2;
 }
 
-function matchesQuery(report, { cardId, cardName, game }){
-  if(cardId) return report.cardId === cardId;
-  if(cardName){
-    const q = cardName.toLowerCase();
-    if(!report.cardName.toLowerCase().includes(q)) return false;
-    if(game && report.game && report.game !== game) return false;
-    return true;
-  }
-  return false;
-}
-
-function buildStats(matched){
+function buildStats(rows){
   const byCurrency = {};
-  for(const r of matched){
+  for(const r of rows){
     if(!byCurrency[r.currency]) byCurrency[r.currency] = [];
-    byCurrency[r.currency].push(r.price);
+    byCurrency[r.currency].push(Number(r.price));
   }
   const stats = {};
   for(const [currency, prices] of Object.entries(byCurrency)){
@@ -186,6 +189,32 @@ function buildStats(matched){
     };
   }
   return stats;
+}
+
+async function insertReport(record){
+  const rows = await supabaseFetch('/reports?select=' + encodeURIComponent(PUBLIC_SELECT), {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify([record])
+  });
+  return rows[0];
+}
+
+async function fetchReportsForStats({ cardId, cardName, game }){
+  // 這支只拿 currency/price，用來算統計，不需要別名，減少資料量
+  const params = new URLSearchParams({ select:'currency,price' });
+  if(cardId) params.set('card_id', `eq.${cardId}`);
+  else if(cardName) params.set('card_name', `ilike.*${cardName}*`);
+  if(game) params.set('game', `eq.${game}`);
+  return supabaseFetch(`/reports?${params.toString()}`);
+}
+
+async function fetchRecentReports({ cardId, cardName, game, limit }){
+  const params = new URLSearchParams({ select:PUBLIC_SELECT, order:'traded_at.desc', limit:String(limit) });
+  if(cardId) params.set('card_id', `eq.${cardId}`);
+  else if(cardName) params.set('card_name', `ilike.*${cardName}*`);
+  if(game) params.set('game', `eq.${game}`);
+  return supabaseFetch(`/reports?${params.toString()}`);
 }
 
 createServer(async (req,res) => {
@@ -207,6 +236,9 @@ createServer(async (req,res) => {
   }
 
   if (url.pathname === '/api/reports' && req.method === 'POST') {
+    if(!supabaseConfigured()){
+      return json(res,503,{error:'尚未設定資料庫（SUPABASE_URL / SUPABASE_SERVICE_KEY）'});
+    }
     if(isRateLimited(clientIp(req))){
       return json(res,429,{error:'回報太頻繁了，請稍後再試（每小時最多 5 次）'});
     }
@@ -218,21 +250,32 @@ createServer(async (req,res) => {
     if(!result.valid) return json(res,400,{error:'資料驗證失敗',details:result.errors});
 
     const record = {
-      id: randomUUID(),
-      ...result.value,
-      reporterHash: hashIp(clientIp(req)),
-      createdAt: new Date().toISOString(),
-      status: 'unverified' // 之後若要人工審核可以用這個欄位
+      card_name: result.value.cardName,
+      card_id: result.value.cardId,
+      game: result.value.game,
+      platform: result.value.platform,
+      currency: result.value.currency,
+      price: result.value.price,
+      condition: result.value.condition,
+      note: result.value.note,
+      traded_at: result.value.tradedAt,
+      reporter_hash: hashIp(clientIp(req)),
+      status: 'unverified'
     };
-    reports.push(record);
-    try{ await saveReports(); }
-    catch(error){ /* 寫檔失敗不擋使用者，但記到伺服器 log */ console.error('寫入 reports-data.json 失敗：', error); }
 
-    const { reporterHash, ...publicRecord } = record;
-    return json(res,201,{data:publicRecord});
+    try{
+      const saved = await insertReport(record);
+      return json(res,201,{data:saved});
+    }catch(error){
+      console.error('寫入 Supabase 失敗：', error.message);
+      return json(res,502,{error:'資料庫寫入失敗，請稍後再試'});
+    }
   }
 
   if (url.pathname === '/api/reports' && req.method === 'GET') {
+    if(!supabaseConfigured()){
+      return json(res,503,{error:'尚未設定資料庫（SUPABASE_URL / SUPABASE_SERVICE_KEY）'});
+    }
     const cardId = url.searchParams.get('cardId');
     const cardName = url.searchParams.get('cardName');
     const game = url.searchParams.get('game') || null;
@@ -242,11 +285,16 @@ createServer(async (req,res) => {
       return json(res,400,{error:'請提供 cardId 或 cardName 其中一個查詢參數'});
     }
 
-    const matched = reports.filter(r => matchesQuery(r, { cardId, cardName, game }));
-    const sorted = [...matched].sort((a,b)=> new Date(b.tradedAt) - new Date(a.tradedAt));
-    const recent = sorted.slice(0, limit).map(({ reporterHash, ...rest }) => rest);
-
-    return json(res,200,{ data:{ reports: recent, stats: buildStats(matched), total: matched.length } });
+    try{
+      const [statsRows, recentRows] = await Promise.all([
+        fetchReportsForStats({ cardId, cardName, game }),
+        fetchRecentReports({ cardId, cardName, game, limit })
+      ]);
+      return json(res,200,{ data:{ reports: recentRows, stats: buildStats(statsRows), total: statsRows.length } });
+    }catch(error){
+      console.error('查詢 Supabase 失敗：', error.message);
+      return json(res,502,{error:'資料庫查詢失敗，請稍後再試'});
+    }
   }
 
   let pathname = url.pathname === '/' ? '/index.html' : url.pathname;
