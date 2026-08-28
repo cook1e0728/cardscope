@@ -6,6 +6,8 @@ import { createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 4173);
+// 可依實際結匯匯率調整；只用於前台將已擷取的日圓價格換算成 TWD 顯示。
+const jpyToTwd = Number(process.env.JPY_TO_TWD || 0.22);
 
 // Demo records have the same shape expected from approved provider adapters.
 // Never treat a listing price as a completed sale in production.
@@ -429,17 +431,25 @@ createServer(async (req,res) => {
   // ---- 查詢已存的日版買取行情（公開，供前台之後使用）----
   if (url.pathname === '/api/jp-prices' && req.method === 'GET') {
     if(!supabaseConfigured()) return json(res,503,{error:'尚未設定資料庫'});
-    const cardName = url.searchParams.get('cardName');
+    const cardName = url.searchParams.get('cardName')?.trim();
     const game = url.searchParams.get('game');
     if(!cardName) return json(res,400,{error:'請提供 cardName'});
 
-    const select = 'cardName:card_name,cardCode:card_code,rarity,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,setName:set_name,scrapedAt:scraped_at';
-    const params = new URLSearchParams({ select, card_name:`ilike.*${cardName}*`, order:'scraped_at.desc', limit:'20' });
+    // PostgREST 的 ilike 使用 * 當萬用字元；將使用者輸入中的特殊字元逸出，避免意外擴大搜尋範圍。
+    const escapedCardName = cardName.replace(/[\\%_*(),.]/g, '\\$&');
+    const requestedLimit = Number(url.searchParams.get('limit') || 5);
+    const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 20) : 5;
+
+    const select = 'game,cardName:card_name,cardCode:card_code,cardNumber:card_number,rarity,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,setName:set_name,scrapedAt:scraped_at';
+    const params = new URLSearchParams({ select, card_name:`ilike.*${escapedCardName}*`, order:'scraped_at.desc', limit:String(limit) });
     if(game) params.set('game', `eq.${game}`);
 
     try{
       const rows = await supabaseFetch(`/jp_buyback_prices?${params.toString()}`);
-      return json(res,200,{data:rows});
+      return json(res,200,{data:(rows || []).map(row=>({
+        ...row,
+        priceTwd: row.currency === 'JPY' && Number.isFinite(jpyToTwd) ? Math.round(Number(row.price) * jpyToTwd) : null
+      })), meta:{jpyToTwd}});
     }catch(error){
       return json(res,502,{error:'查詢失敗，請稍後再試'});
     }
@@ -451,3 +461,4 @@ createServer(async (req,res) => {
   try { const content=await readFile(file); res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream'});res.end(content); }
   catch { json(res,404,{error:'Not found'}); }
 }).listen(port, () => console.log(`CardScope is running at http://localhost:${port}`));
+
