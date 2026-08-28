@@ -43,3 +43,12 @@ $env:EBAY_CLIENT_SECRET = '你的 Client Secret'
 啟用後可開啟 `http://localhost:4173/api/providers/ebay/search?q=Mew%20ex` 驗證。此 API 是在售掛牌，不是全市場成交紀錄。
 
 目前是示範資料。量產前請以來源授權、官方 API 或合作資料取代 `server.mjs` 中的範例紀錄。
+
+## 顯示已存日版買取行情
+
+前台的「跨市場比價」會自動帶入 Supabase `jp_buyback_prices` 裡，與目前卡名相符的遊々亭買取價。價格預設以 `JPY_TO_TWD=0.22` 換算成新台幣；若要用自己的結匯匯率，啟動前可設定：
+
+```powershell
+$env:JPY_TO_TWD = '0.21'
+```
+
