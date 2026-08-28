@@ -18,6 +18,36 @@
       <aside class="card side"><h3>市場快照</h3><div class="metric"><span>近 30 日成交筆數</span><strong>126</strong></div><div class="metric"><span>流動性</span><span class="positive">高</span></div><div class="metric"><span>估計合理買入區間</span><strong>3,250–3,550</strong></div><div class="metric"><span>資料更新</span><span>今天 14:32</span></div></aside></section>
     <section class="section"><article class="card"><div class="chart-head"><h3>成交行情 · 新台幣</h3><div class="range"><button>30 日</button><button>90 日</button><button>1 年</button></div></div><div class="chart"><svg viewBox="0 0 620 195" preserveAspectRatio="none"><path d="M0 160 C35 154 44 133 75 142 S113 122 140 132 S191 103 220 119 S264 100 289 111 S337 64 364 81 S407 54 437 71 S470 50 505 61 S561 21 620 30 L620 195 L0 195Z" fill="#dceaff"></path><path d="M0 160 C35 154 44 133 75 142 S113 122 140 132 S191 103 220 119 S264 100 289 111 S337 64 364 81 S407 54 437 71 S470 50 505 61 S561 21 620 30" fill="none" stroke="#215de4" stroke-width="3"></path><circle cx="620" cy="30" r="5" fill="#215de4"></circle></svg></div><div class="legend"><span><i class="dot" style="background:#215de4"></i>已成交（eBay、SNKRDUNK）</span><span><i class="dot" style="background:#9ec1ff"></i>估計中位價</span></div></article>
       <article class="card"><div class="table-head"><h3>跨市場比價</h3><span class="tag">依到手價排序</span></div><table class="sources"><thead><tr><th>市場</th><th>類型</th><th>價格（TWD）</th></tr></thead><tbody id="sourceRows"></tbody></table></article></section>
+    <section class="card" id="reportSection" style="margin-top:20px">
+      <div class="table-head"><h3>使用者回報成交價</h3><span class="tag">大家一起養行情</span></div>
+      <p class="sub" style="margin:4px 0 16px">回報你在卡拍拍、露天、蝦皮等平台的實際成交價，幫助其他玩家判斷合理價格。</p>
+      <form id="reportForm" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin-bottom:8px">
+        <label style="grid-column:1/-1;font-size:13px;color:var(--muted)">平台
+          <select id="reportPlatform" required style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:14px"></select>
+        </label>
+        <label style="font-size:13px;color:var(--muted)">成交價
+          <input id="reportPrice" type="number" min="0" step="0.01" required placeholder="例如 3500" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:14px" />
+        </label>
+        <label style="font-size:13px;color:var(--muted)">幣別
+          <select id="reportCurrency" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:14px"></select>
+        </label>
+        <label style="font-size:13px;color:var(--muted)">交易日期（選填）
+          <input id="reportDate" type="date" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:14px" />
+        </label>
+        <label style="font-size:13px;color:var(--muted)">備註（選填）
+          <input id="reportNote" type="text" maxlength="200" placeholder="例如：近全新、含吊卡" style="width:100%;margin-top:4px;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:14px" />
+        </label>
+        <div style="grid-column:1/-1;display:flex;align-items:center;gap:12px">
+          <button type="submit" style="background:var(--blue);border:0;border-radius:8px;color:#fff;padding:10px 20px;font-weight:700;cursor:pointer">送出回報</button>
+          <span id="reportMsg" style="font-size:13px"></span>
+        </div>
+      </form>
+      <div id="reportStats" style="display:flex;gap:24px;flex-wrap:wrap;margin:16px 0;padding-top:16px;border-top:1px solid var(--line)"></div>
+      <table class="sources">
+        <thead><tr><th>平台</th><th>幣別</th><th>價格</th><th>日期</th></tr></thead>
+        <tbody id="reportRows"><tr><td colspan="4" style="color:var(--muted)">尚無回報紀錄</td></tr></tbody>
+      </table>
+    </section>
     <section class="card portfolio"><h3>我的收藏庫</h3><p>以你的持有成本計算目前市值與未實現損益。</p><div class="holdings"><div class="holding"><span>持有市值</span><b>NT$ 124,580</b></div><div class="holding"><span>未實現損益</span><b style="color:#6ae0d1">+ NT$ 18,240</b></div><div class="holding"><span>追蹤卡牌</span><b>42 張</b></div></div></section>
     <p class="footnote">原型資料僅供介面展示。正式版會保存來源網址、擷取時間、幣別、品相、運費與價格類型，並以授權 API 或合作資料串接為優先。</p>
   </main>
@@ -28,11 +58,87 @@
       onepiece:{game:'航海王', tag:'航海王 · 日文 · SP', name:'蒙其·D·魯夫', code:'OP05-119 · 新時代主角 · SEC', median:'NT$ 12,450', listing:'NT$ 12,100', move:'▼ 2.6% · 30 日', sales:'72', range:'11,800–12,400', art:'ONE PIECE', rows:[['卡拍拍','台灣 · 掛牌','掛牌','12,100'],['SNKRDUNK','日本 · 最近成交','成交','12,280'],['eBay','全球 · 最近成交','成交','12,590'],['遊々亭','日本 · 店家售價','店售','12,800']]}
     };
     let liveCards=[];
-    function showLiveCard(card){const v=(card.variants||[]).find(x=>x.price!=null)||{};const usd=v.price==null?'—':`US$ ${Number(v.price).toFixed(2)}`;document.querySelector('#bread').textContent=`查價比價　/　${card.game}　/　${card.set_name||card.set||''}　/　${card.name}`;document.querySelector('#cardTag').textContent=`JustTCG · ${card.game}`;document.querySelector('#cardName').textContent=card.name;document.querySelector('#cardMeta').textContent=`${card.set_name||card.set||''} · ${card.rarity||'—'} · ${v.condition||'—'} · ${v.printing||'—'}`;document.querySelector('#medianPrice').textContent=usd;document.querySelector('#listingPrice').textContent='—';const m=document.querySelector('#movement');m.textContent=v.priceChange24hr==null?'—':`${v.priceChange24hr>=0?'▲':'▼'} ${Math.abs(v.priceChange24hr)}% · 24 小時`;m.style.color=v.priceChange24hr<0?'#c4492b':'#037d72';document.querySelectorAll('.metric strong')[0].textContent='JustTCG';document.querySelectorAll('.metric strong')[1].textContent='USD 市場價';document.querySelector('#sourceRows').innerHTML=`<tr><td><span class="market">JustTCG</span><span class="source">北美市場價 · ${v.condition||'未指定品相'}</span></td><td><span class="type sale">市場價</span></td><td>${usd}</td></tr>`;document.querySelector('#liveResults').style.display='none';}
+    let currentCard = { name:'Mew ex', game:'pokemon' };
+    let reportMeta = { platforms:[], currencies:[] };
+
+    async function loadReportMeta(){
+      try{
+        const r = await fetch('/api/reports/meta');
+        const body = await r.json();
+        reportMeta = body.data;
+        document.querySelector('#reportPlatform').innerHTML = reportMeta.platforms.map(p=>`<option value="${p}">${p}</option>`).join('');
+        document.querySelector('#reportCurrency').innerHTML = reportMeta.currencies.map(c=>`<option value="${c}">${c}</option>`).join('');
+      }catch(e){ /* 選項載入失敗就先留空，不擋頁面其他功能 */ }
+    }
+
+    function renderReportStats(stats){
+      const box = document.querySelector('#reportStats');
+      const entries = Object.entries(stats||{});
+      if(!entries.length){ box.innerHTML = '<span style="color:var(--muted);font-size:13px">目前還沒有人回報過這張卡的成交價，當第一個回報的人吧！</span>'; return; }
+      box.innerHTML = entries.map(([currency,s])=>`
+        <div>
+          <small style="color:var(--muted)">${currency} 中位數（${s.count} 筆）</small>
+          <b style="display:block;font-size:20px">${currency} ${Number(s.median).toLocaleString()}</b>
+          <small style="color:var(--muted)">範圍 ${Number(s.min).toLocaleString()}–${Number(s.max).toLocaleString()}</small>
+        </div>`).join('');
+    }
+
+    function renderReportRows(list){
+      const tbody = document.querySelector('#reportRows');
+      if(!list.length){ tbody.innerHTML = '<tr><td colspan="4" style="color:var(--muted)">尚無回報紀錄</td></tr>'; return; }
+      tbody.innerHTML = list.map(r=>`
+        <tr>
+          <td><span class="market">${r.platform}</span>${r.note?`<span class="source">${r.note}</span>`:''}</td>
+          <td>${r.currency}</td>
+          <td>${Number(r.price).toLocaleString()}</td>
+          <td>${new Date(r.tradedAt).toLocaleDateString('zh-TW')}</td>
+        </tr>`).join('');
+    }
+
+    async function loadReports(cardName, game){
+      currentCard = { name:cardName, game };
+      try{
+        const params = new URLSearchParams({ cardName });
+        if(game) params.set('game', game);
+        const r = await fetch('/api/reports?'+params);
+        const body = await r.json();
+        if(!r.ok) throw new Error(body.error || '查詢失敗');
+        renderReportStats(body.data.stats);
+        renderReportRows(body.data.reports);
+      }catch(e){
+        document.querySelector('#reportStats').innerHTML = `<span style="color:#c4492b;font-size:13px">回報資料載入失敗：${e.message}</span>`;
+      }
+    }
+
+    document.querySelector('#reportForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const msg = document.querySelector('#reportMsg');
+      msg.style.color = 'var(--muted)'; msg.textContent = '送出中…';
+      const payload = {
+        cardName: currentCard.name,
+        game: currentCard.game,
+        platform: document.querySelector('#reportPlatform').value,
+        price: Number(document.querySelector('#reportPrice').value),
+        currency: document.querySelector('#reportCurrency').value,
+        note: document.querySelector('#reportNote').value || undefined,
+        tradedAt: document.querySelector('#reportDate').value || undefined
+      };
+      try{
+        const r = await fetch('/api/reports', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+        const body = await r.json();
+        if(!r.ok){ msg.style.color = '#c4492b'; msg.textContent = body.details ? body.details.join('；') : (body.error || '送出失敗'); return; }
+        msg.style.color = '#037d72'; msg.textContent = '回報成功，感謝分享！';
+        document.querySelector('#reportPrice').value = '';
+        document.querySelector('#reportNote').value = '';
+        document.querySelector('#reportDate').value = '';
+        loadReports(currentCard.name, currentCard.game);
+      }catch(err){ msg.style.color = '#c4492b'; msg.textContent = '送出失敗：' + err.message; }
+    });
+    function showLiveCard(card){const v=(card.variants||[]).find(x=>x.price!=null)||{};const usd=v.price==null?'—':`US$ ${Number(v.price).toFixed(2)}`;document.querySelector('#bread').textContent=`查價比價　/　${card.game}　/　${card.set_name||card.set||''}　/　${card.name}`;document.querySelector('#cardTag').textContent=`JustTCG · ${card.game}`;document.querySelector('#cardName').textContent=card.name;document.querySelector('#cardMeta').textContent=`${card.set_name||card.set||''} · ${card.rarity||'—'} · ${v.condition||'—'} · ${v.printing||'—'}`;document.querySelector('#medianPrice').textContent=usd;document.querySelector('#listingPrice').textContent='—';const m=document.querySelector('#movement');m.textContent=v.priceChange24hr==null?'—':`${v.priceChange24hr>=0?'▲':'▼'} ${Math.abs(v.priceChange24hr)}% · 24 小時`;m.style.color=v.priceChange24hr<0?'#c4492b':'#037d72';document.querySelectorAll('.metric strong')[0].textContent='JustTCG';document.querySelectorAll('.metric strong')[1].textContent='USD 市場價';document.querySelector('#sourceRows').innerHTML=`<tr><td><span class="market">JustTCG</span><span class="source">北美市場價 · ${v.condition||'未指定品相'}</span></td><td><span class="type sale">市場價</span></td><td>${usd}</td></tr>`;document.querySelector('#liveResults').style.display='none';loadReports(card.name, card.game);}
     async function liveSearch(){const q=document.querySelector('#searchInput').value.trim();if(q.length<2)return;const active=document.querySelector('[data-game].active')?.dataset.game||'all';const map={pokemon:'pokemon',yugioh:'yugioh',onepiece:'one-piece-card-game'};const params=new URLSearchParams({q});if(map[active])params.set('game',map[active]);const box=document.querySelector('#liveResults');box.style.display='block';box.textContent='正在查詢 JustTCG…';try{const r=await fetch('/api/providers/justtcg/search?'+params);const body=await r.json();if(!r.ok)throw new Error(body.error);liveCards=body.data||[];box.replaceChildren();const title=document.createElement('h3');title.textContent=`JustTCG 真實結果（${liveCards.length} 筆）`;box.append(title);if(!liveCards.length){box.append('找不到相符卡牌');return}liveCards.forEach(card=>{const v=(card.variants||[]).find(x=>x.price!=null)||{};const b=document.createElement('button');b.className='pill';b.style.margin='0 8px 8px 0';b.textContent=`${card.name} · ${card.set_name||card.set||''} · ${v.price==null?'無價格':'US$ '+Number(v.price).toFixed(2)}`;b.addEventListener('click',()=>showLiveCard(card));box.append(b)});}catch(e){box.textContent='JustTCG 查詢失敗：'+e.message;}}
-    function render(key){const c=cards[key]; if(!c)return; document.querySelector('#bread').textContent=`查價比價　/　${c.game}　/　${c.code.split(' · ')[1]||''}　/　${c.name}`; document.querySelector('#cardTag').textContent=c.tag; document.querySelector('#cardName').textContent=c.name; document.querySelector('#cardMeta').textContent=c.code; document.querySelector('#medianPrice').textContent=c.median; document.querySelector('#listingPrice').textContent=c.listing; const m=document.querySelector('#movement');m.textContent=c.move;m.style.color=c.move.startsWith('▼')?'#c4492b':'#037d72';const art=document.querySelector('#cardArt');art.dataset.title=c.art;art.setAttribute('aria-label',c.name+' 卡牌示意圖');art.style.filter=key==='onepiece'?'hue-rotate(125deg)':key==='yugioh'?'hue-rotate(255deg) saturate(1.25)':'';document.querySelectorAll('.metric strong')[0].textContent=c.sales;document.querySelectorAll('.metric strong')[1].textContent=c.range;document.querySelector('#sourceRows').innerHTML=c.rows.map(r=>`<tr><td><span class="market">${r[0]}</span><span class="source">${r[1]}</span></td><td><span class="type ${r[2]==='成交'?'sale':''}">${r[2]}</span></td><td>${r[3]}</td></tr>`).join(''); document.querySelectorAll('[data-game]').forEach(p=>p.classList.toggle('active',p.dataset.game===key));}
+    function render(key){const c=cards[key]; if(!c)return; document.querySelector('#bread').textContent=`查價比價　/　${c.game}　/　${c.code.split(' · ')[1]||''}　/　${c.name}`; document.querySelector('#cardTag').textContent=c.tag; document.querySelector('#cardName').textContent=c.name; document.querySelector('#cardMeta').textContent=c.code; document.querySelector('#medianPrice').textContent=c.median; document.querySelector('#listingPrice').textContent=c.listing; const m=document.querySelector('#movement');m.textContent=c.move;m.style.color=c.move.startsWith('▼')?'#c4492b':'#037d72';const art=document.querySelector('#cardArt');art.dataset.title=c.art;art.setAttribute('aria-label',c.name+' 卡牌示意圖');art.style.filter=key==='onepiece'?'hue-rotate(125deg)':key==='yugioh'?'hue-rotate(255deg) saturate(1.25)':'';document.querySelectorAll('.metric strong')[0].textContent=c.sales;document.querySelectorAll('.metric strong')[1].textContent=c.range;document.querySelector('#sourceRows').innerHTML=c.rows.map(r=>`<tr><td><span class="market">${r[0]}</span><span class="source">${r[1]}</span></td><td><span class="type ${r[2]==='成交'?'sale':''}">${r[2]}</span></td><td>${r[3]}</td></tr>`).join(''); document.querySelectorAll('[data-game]').forEach(p=>p.classList.toggle('active',p.dataset.game===key));loadReports(c.name, key);}
     document.querySelectorAll('[data-game]').forEach(p=>p.addEventListener('click',()=>{if(p.dataset.game==='all')return render('pokemon');render(p.dataset.game)}));
-    function search(){const q=document.querySelector('#searchInput').value.toLowerCase();const found=Object.entries(cards).find(([,c])=>(c.name+c.code+c.game).toLowerCase().includes(q));if(found)render(found[0]);liveSearch()};document.querySelector('#searchButton').addEventListener('click',search);document.querySelector('#searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')search()});render('pokemon');
+    function search(){const q=document.querySelector('#searchInput').value.toLowerCase();const found=Object.entries(cards).find(([,c])=>(c.name+c.code+c.game).toLowerCase().includes(q));if(found)render(found[0]);liveSearch()};document.querySelector('#searchButton').addEventListener('click',search);document.querySelector('#searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')search()});loadReportMeta();render('pokemon');
   </script>
 </body>
 </html>

@@ -1,10 +1,12 @@
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomUUID, createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 4173);
+const reportsFile = join(root, 'reports-data.json');
 
 // Demo records have the same shape expected from approved provider adapters.
 // Never treat a listing price as a completed sale in production.
@@ -55,8 +57,140 @@ async function justTcg(path, params={}){
   const data=await response.json(); justTcgCache.set(cacheKey,{data,expiresAt:Date.now()+5*60*1000}); return data;
 }
 
+// ---------- 使用者回報成交價 ----------
+const ALLOWED_PLATFORMS = ['卡拍拍','露天拍賣','蝦皮購物','露天/蝦皮以外的台灣賣場','其他'];
+const ALLOWED_CURRENCIES = ['TWD','USD','JPY','EUR'];
+const MAX_PRICE = 5000000;
+const reportRateLimit = new Map(); // hashedIp -> timestamps[]
+
+let reports = [];
+async function loadReports(){
+  try{
+    const raw = await readFile(reportsFile, 'utf8');
+    reports = JSON.parse(raw);
+    if(!Array.isArray(reports)) reports = [];
+  }catch{
+    reports = [];
+  }
+}
+async function saveReports(){
+  await writeFile(reportsFile, JSON.stringify(reports, null, 2), 'utf8');
+}
+await loadReports();
+
+function hashIp(ip){
+  return createHash('sha256').update(String(ip)).digest('hex').slice(0,16);
+}
+function clientIp(req){
+  const fwd = req.headers['x-forwarded-for'];
+  if(fwd) return fwd.split(',')[0].trim();
+  return req.socket.remoteAddress || 'unknown';
+}
+function isRateLimited(ip){
+  const key = hashIp(ip);
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000; // 1 小時
+  const maxPerWindow = 5;
+  const timestamps = (reportRateLimit.get(key) || []).filter(t => now - t < windowMs);
+  if(timestamps.length >= maxPerWindow){
+    reportRateLimit.set(key, timestamps);
+    return true;
+  }
+  timestamps.push(now);
+  reportRateLimit.set(key, timestamps);
+  return false;
+}
+
+function readJsonBody(req, maxBytes = 10_000){
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on('data', chunk => {
+      size += chunk.length;
+      if(size > maxBytes){
+        reject(new Error('BODY_TOO_LARGE'));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => {
+      if(chunks.length === 0) return resolve({});
+      try{ resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
+      catch{ reject(new Error('INVALID_JSON')); }
+    });
+    req.on('error', reject);
+  });
+}
+
+function validateReport(body){
+  const errors = [];
+  const cardName = String(body.cardName || '').trim();
+  const cardId = body.cardId ? String(body.cardId).trim() : null;
+  const game = body.game ? String(body.game).trim() : null;
+  const platform = String(body.platform || '').trim();
+  const currency = String(body.currency || 'TWD').trim().toUpperCase();
+  const price = Number(body.price);
+  const condition = body.condition ? String(body.condition).trim().slice(0, 40) : null;
+  const note = body.note ? String(body.note).trim().slice(0, 200) : null;
+  const tradedAtRaw = body.tradedAt ? String(body.tradedAt).trim() : null;
+
+  if(!cardName || cardName.length > 100) errors.push('請提供卡片名稱（1-100 字元）');
+  if(!ALLOWED_PLATFORMS.includes(platform)) errors.push(`platform 必須是以下其中之一：${ALLOWED_PLATFORMS.join('、')}`);
+  if(!ALLOWED_CURRENCIES.includes(currency)) errors.push(`currency 必須是以下其中之一：${ALLOWED_CURRENCIES.join('、')}`);
+  if(!Number.isFinite(price) || price <= 0 || price > MAX_PRICE) errors.push(`price 必須是大於 0 且不超過 ${MAX_PRICE} 的數字`);
+
+  let tradedAt = new Date().toISOString();
+  if(tradedAtRaw){
+    const d = new Date(tradedAtRaw);
+    if(isNaN(d.getTime())) errors.push('tradedAt 日期格式不正確');
+    else if(d.getTime() > Date.now() + 24*60*60*1000) errors.push('tradedAt 不能是未來日期');
+    else tradedAt = d.toISOString();
+  }
+
+  if(errors.length) return { valid:false, errors };
+  return { valid:true, value:{ cardName, cardId, game, platform, currency, price, condition, note, tradedAt } };
+}
+
+function median(nums){
+  const s = [...nums].sort((a,b)=>a-b);
+  const mid = Math.floor(s.length/2);
+  return s.length % 2 ? s[mid] : (s[mid-1]+s[mid]) / 2;
+}
+
+function matchesQuery(report, { cardId, cardName, game }){
+  if(cardId) return report.cardId === cardId;
+  if(cardName){
+    const q = cardName.toLowerCase();
+    if(!report.cardName.toLowerCase().includes(q)) return false;
+    if(game && report.game && report.game !== game) return false;
+    return true;
+  }
+  return false;
+}
+
+function buildStats(matched){
+  const byCurrency = {};
+  for(const r of matched){
+    if(!byCurrency[r.currency]) byCurrency[r.currency] = [];
+    byCurrency[r.currency].push(r.price);
+  }
+  const stats = {};
+  for(const [currency, prices] of Object.entries(byCurrency)){
+    stats[currency] = {
+      count: prices.length,
+      min: Math.min(...prices),
+      max: Math.max(...prices),
+      median: median(prices),
+      avg: Math.round((prices.reduce((a,b)=>a+b,0) / prices.length) * 100) / 100
+    };
+  }
+  return stats;
+}
+
 createServer(async (req,res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+
   if (url.pathname === '/api/providers') return json(res,200,{data:providerStatus()});
   if (url.pathname === '/api/providers/justtcg/games') { try{return json(res,200,await justTcg('/games'))}catch(error){return json(res,error.message==='JUSTTCG_NOT_CONFIGURED'?503:502,{error:error.message==='JUSTTCG_NOT_CONFIGURED'?'尚未設定 JustTCG API Key':`JustTCG 連線失敗：${error.message}`})} }
   if (url.pathname === '/api/providers/justtcg/search') { const q=(url.searchParams.get('q')||'').trim(), game=url.searchParams.get('game')||''; if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'}); const games=new Set(['pokemon','pokemon-japan','yugioh','one-piece-card-game']); if(game&&!games.has(game))return json(res,400,{error:'不支援的遊戲分類'}); try{return json(res,200,await justTcg('/cards',{q,game,limit:'10',priceHistoryDuration:'30d'}))}catch(error){return json(res,502,{error:`JustTCG 連線失敗：${error.message}`})} }
@@ -66,6 +200,55 @@ createServer(async (req,res) => {
   if (url.pathname === '/api/search') { const q=(url.searchParams.get('q')||'').trim().toLowerCase(); return json(res,200,{data:cards.filter(c=>!q||Object.values(c).join(' ').toLowerCase().includes(q))}); }
   if (url.pathname.startsWith('/api/cards/')) { const card=cards.find(c=>c.id===decodeURIComponent(url.pathname.slice(11))); return card ? json(res,200,{data:card}) : json(res,404,{error:'找不到這張卡'}); }
   if (url.pathname === '/api/portfolio') return json(res,200,{data:portfolio});
+
+  // ---- 使用者回報成交價 ----
+  if (url.pathname === '/api/reports/meta') {
+    return json(res,200,{data:{ platforms:ALLOWED_PLATFORMS, currencies:ALLOWED_CURRENCIES, maxPrice:MAX_PRICE }});
+  }
+
+  if (url.pathname === '/api/reports' && req.method === 'POST') {
+    if(isRateLimited(clientIp(req))){
+      return json(res,429,{error:'回報太頻繁了，請稍後再試（每小時最多 5 次）'});
+    }
+    let body;
+    try{ body = await readJsonBody(req); }
+    catch(error){ return json(res, error.message==='BODY_TOO_LARGE'?413:400, {error: error.message==='BODY_TOO_LARGE'?'內容過長':'JSON 格式錯誤'}); }
+
+    const result = validateReport(body);
+    if(!result.valid) return json(res,400,{error:'資料驗證失敗',details:result.errors});
+
+    const record = {
+      id: randomUUID(),
+      ...result.value,
+      reporterHash: hashIp(clientIp(req)),
+      createdAt: new Date().toISOString(),
+      status: 'unverified' // 之後若要人工審核可以用這個欄位
+    };
+    reports.push(record);
+    try{ await saveReports(); }
+    catch(error){ /* 寫檔失敗不擋使用者，但記到伺服器 log */ console.error('寫入 reports-data.json 失敗：', error); }
+
+    const { reporterHash, ...publicRecord } = record;
+    return json(res,201,{data:publicRecord});
+  }
+
+  if (url.pathname === '/api/reports' && req.method === 'GET') {
+    const cardId = url.searchParams.get('cardId');
+    const cardName = url.searchParams.get('cardName');
+    const game = url.searchParams.get('game') || null;
+    const limit = Math.min(Number(url.searchParams.get('limit')) || 20, 100);
+
+    if(!cardId && !cardName){
+      return json(res,400,{error:'請提供 cardId 或 cardName 其中一個查詢參數'});
+    }
+
+    const matched = reports.filter(r => matchesQuery(r, { cardId, cardName, game }));
+    const sorted = [...matched].sort((a,b)=> new Date(b.tradedAt) - new Date(a.tradedAt));
+    const recent = sorted.slice(0, limit).map(({ reporterHash, ...rest }) => rest);
+
+    return json(res,200,{ data:{ reports: recent, stats: buildStats(matched), total: matched.length } });
+  }
+
   let pathname = url.pathname === '/' ? '/index.html' : url.pathname;
   const file = normalize(join(root, pathname));
   if (!file.startsWith(root)) return json(res,403,{error:'Forbidden'});
