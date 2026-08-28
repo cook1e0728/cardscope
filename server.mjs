@@ -89,8 +89,10 @@ async function supabaseFetch(pathAndQuery, options = {}){
     const text = await response.text().catch(()=> '');
     throw new Error(`SUPABASE_${response.status}:${text.slice(0,200)}`);
   }
-  if(response.status === 204) return null;
-  return response.json();
+  const text = await response.text();
+  if(!text) return null; // 成功但沒有回應內容（例如純寫入且沒要求回傳資料），視為正常
+  try{ return JSON.parse(text); }
+  catch{ return null; } // 內容不是 JSON 就當作沒有可用資料，不當成錯誤
 }
 
 function hashIp(ip){
