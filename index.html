@@ -60,6 +60,46 @@
     let liveCards=[];
     let currentCard = { name:'Mew ex', game:'pokemon' };
     let reportMeta = { platforms:[], currencies:[] };
+    let comparisonRows = [];
+    let jpPriceRequest = 0;
+
+    function escapeHtml(value){
+      return String(value ?? '').replace(/[&<>'"]/g, char=>({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[char]));
+    }
+
+    function renderComparisonRows(){
+      document.querySelector('#sourceRows').innerHTML = comparisonRows.map(r=>`<tr><td><span class="market">${escapeHtml(r.market)}</span><span class="source">${escapeHtml(r.source)}</span></td><td><span class="type ${r.type==='成交'?'sale':''}">${escapeHtml(r.type)}</span></td><td>${escapeHtml(r.price)}</td></tr>`).join('');
+    }
+
+    async function loadJpPrices(cardName){
+      const requestId = ++jpPriceRequest;
+      try{
+        const params = new URLSearchParams({ cardName, limit:'5' });
+        const response = await fetch('/api/jp-prices?'+params);
+        const body = await response.json();
+        if(!response.ok || requestId !== jpPriceRequest) return;
+        const rows = (body.data || []).map(row=>{
+          const price = row.priceTwd == null ? `¥${Number(row.price).toLocaleString()}` : `NT$ ${Number(row.priceTwd).toLocaleString()}`;
+          const details = [
+            '日本 · 遊々亭買取價',
+            row.rarity,
+            row.setName,
+            row.scrapedAt ? `更新 ${new Date(row.scrapedAt).toLocaleDateString('zh-TW')}` : null
+          ].filter(Boolean).join(' · ');
+          return { market:'遊々亭', source:details, type:'買取', price };
+        });
+        comparisonRows = [...comparisonRows, ...rows];
+        renderComparisonRows();
+      }catch(e){
+        // 日版資料庫尚未設定或暫時無法連線時，保留其他市場的比價，不中斷頁面操作。
+      }
+    }
+
+    function updateComparisonRows(rows, cardName){
+      comparisonRows = rows.map(r=>({market:r[0], source:r[1], type:r[2], price:r[3]}));
+      renderComparisonRows();
+      loadJpPrices(cardName);
+    }
 
     async function loadReportMeta(){
       try{
@@ -134,11 +174,12 @@
         loadReports(currentCard.name, currentCard.game);
       }catch(err){ msg.style.color = '#c4492b'; msg.textContent = '送出失敗：' + err.message; }
     });
-    function showLiveCard(card){const v=(card.variants||[]).find(x=>x.price!=null)||{};const usd=v.price==null?'—':`US$ ${Number(v.price).toFixed(2)}`;document.querySelector('#bread').textContent=`查價比價　/　${card.game}　/　${card.set_name||card.set||''}　/　${card.name}`;document.querySelector('#cardTag').textContent=`JustTCG · ${card.game}`;document.querySelector('#cardName').textContent=card.name;document.querySelector('#cardMeta').textContent=`${card.set_name||card.set||''} · ${card.rarity||'—'} · ${v.condition||'—'} · ${v.printing||'—'}`;document.querySelector('#medianPrice').textContent=usd;document.querySelector('#listingPrice').textContent='—';const m=document.querySelector('#movement');m.textContent=v.priceChange24hr==null?'—':`${v.priceChange24hr>=0?'▲':'▼'} ${Math.abs(v.priceChange24hr)}% · 24 小時`;m.style.color=v.priceChange24hr<0?'#c4492b':'#037d72';document.querySelectorAll('.metric strong')[0].textContent='JustTCG';document.querySelectorAll('.metric strong')[1].textContent='USD 市場價';document.querySelector('#sourceRows').innerHTML=`<tr><td><span class="market">JustTCG</span><span class="source">北美市場價 · ${v.condition||'未指定品相'}</span></td><td><span class="type sale">市場價</span></td><td>${usd}</td></tr>`;document.querySelector('#liveResults').style.display='none';loadReports(card.name, card.game);}
+    function showLiveCard(card){const v=(card.variants||[]).find(x=>x.price!=null)||{};const usd=v.price==null?'—':`US$ ${Number(v.price).toFixed(2)}`;document.querySelector('#bread').textContent=`查價比價　/　${card.game}　/　${card.set_name||card.set||''}　/　${card.name}`;document.querySelector('#cardTag').textContent=`JustTCG · ${card.game}`;document.querySelector('#cardName').textContent=card.name;document.querySelector('#cardMeta').textContent=`${card.set_name||card.set||''} · ${card.rarity||'—'} · ${v.condition||'—'} · ${v.printing||'—'}`;document.querySelector('#medianPrice').textContent=usd;document.querySelector('#listingPrice').textContent='—';const m=document.querySelector('#movement');m.textContent=v.priceChange24hr==null?'—':`${v.priceChange24hr>=0?'▲':'▼'} ${Math.abs(v.priceChange24hr)}% · 24 小時`;m.style.color=v.priceChange24hr<0?'#c4492b':'#037d72';document.querySelectorAll('.metric strong')[0].textContent='JustTCG';document.querySelectorAll('.metric strong')[1].textContent='USD 市場價';updateComparisonRows([['JustTCG',`北美市場價 · ${v.condition||'未指定品相'}`,'市場價',usd]], card.name);document.querySelector('#liveResults').style.display='none';loadReports(card.name, card.game);}
     async function liveSearch(){const q=document.querySelector('#searchInput').value.trim();if(q.length<2)return;const active=document.querySelector('[data-game].active')?.dataset.game||'all';const map={pokemon:'pokemon',yugioh:'yugioh',onepiece:'one-piece-card-game'};const params=new URLSearchParams({q});if(map[active])params.set('game',map[active]);const box=document.querySelector('#liveResults');box.style.display='block';box.textContent='正在查詢 JustTCG…';try{const r=await fetch('/api/providers/justtcg/search?'+params);const body=await r.json();if(!r.ok)throw new Error(body.error);liveCards=body.data||[];box.replaceChildren();const title=document.createElement('h3');title.textContent=`JustTCG 真實結果（${liveCards.length} 筆）`;box.append(title);if(!liveCards.length){box.append('找不到相符卡牌');return}liveCards.forEach(card=>{const v=(card.variants||[]).find(x=>x.price!=null)||{};const b=document.createElement('button');b.className='pill';b.style.margin='0 8px 8px 0';b.textContent=`${card.name} · ${card.set_name||card.set||''} · ${v.price==null?'無價格':'US$ '+Number(v.price).toFixed(2)}`;b.addEventListener('click',()=>showLiveCard(card));box.append(b)});}catch(e){box.textContent='JustTCG 查詢失敗：'+e.message;}}
-    function render(key){const c=cards[key]; if(!c)return; document.querySelector('#bread').textContent=`查價比價　/　${c.game}　/　${c.code.split(' · ')[1]||''}　/　${c.name}`; document.querySelector('#cardTag').textContent=c.tag; document.querySelector('#cardName').textContent=c.name; document.querySelector('#cardMeta').textContent=c.code; document.querySelector('#medianPrice').textContent=c.median; document.querySelector('#listingPrice').textContent=c.listing; const m=document.querySelector('#movement');m.textContent=c.move;m.style.color=c.move.startsWith('▼')?'#c4492b':'#037d72';const art=document.querySelector('#cardArt');art.dataset.title=c.art;art.setAttribute('aria-label',c.name+' 卡牌示意圖');art.style.filter=key==='onepiece'?'hue-rotate(125deg)':key==='yugioh'?'hue-rotate(255deg) saturate(1.25)':'';document.querySelectorAll('.metric strong')[0].textContent=c.sales;document.querySelectorAll('.metric strong')[1].textContent=c.range;document.querySelector('#sourceRows').innerHTML=c.rows.map(r=>`<tr><td><span class="market">${r[0]}</span><span class="source">${r[1]}</span></td><td><span class="type ${r[2]==='成交'?'sale':''}">${r[2]}</span></td><td>${r[3]}</td></tr>`).join(''); document.querySelectorAll('[data-game]').forEach(p=>p.classList.toggle('active',p.dataset.game===key));loadReports(c.name, key);}
+    function render(key){const c=cards[key]; if(!c)return; document.querySelector('#bread').textContent=`查價比價　/　${c.game}　/　${c.code.split(' · ')[1]||''}　/　${c.name}`; document.querySelector('#cardTag').textContent=c.tag; document.querySelector('#cardName').textContent=c.name; document.querySelector('#cardMeta').textContent=c.code; document.querySelector('#medianPrice').textContent=c.median; document.querySelector('#listingPrice').textContent=c.listing; const m=document.querySelector('#movement');m.textContent=c.move;m.style.color=c.move.startsWith('▼')?'#c4492b':'#037d72';const art=document.querySelector('#cardArt');art.dataset.title=c.art;art.setAttribute('aria-label',c.name+' 卡牌示意圖');art.style.filter=key==='onepiece'?'hue-rotate(125deg)':key==='yugioh'?'hue-rotate(255deg) saturate(1.25)':'';document.querySelectorAll('.metric strong')[0].textContent=c.sales;document.querySelectorAll('.metric strong')[1].textContent=c.range;updateComparisonRows(c.rows, c.name); document.querySelectorAll('[data-game]').forEach(p=>p.classList.toggle('active',p.dataset.game===key));loadReports(c.name, key);}
     document.querySelectorAll('[data-game]').forEach(p=>p.addEventListener('click',()=>{if(p.dataset.game==='all')return render('pokemon');render(p.dataset.game)}));
     function search(){const q=document.querySelector('#searchInput').value.toLowerCase();const found=Object.entries(cards).find(([,c])=>(c.name+c.code+c.game).toLowerCase().includes(q));if(found)render(found[0]);liveSearch()};document.querySelector('#searchButton').addEventListener('click',search);document.querySelector('#searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')search()});loadReportMeta();render('pokemon');
   </script>
 </body>
 </html>
+
