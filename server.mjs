@@ -26,7 +26,8 @@ const providerStatus = () => ({
   kapaipai: { enabled:false, capability:'等待官方合作／資料授權' },
   snkrdunk: { enabled:false, capability:'等待官方合作／資料授權' },
   yuyutei: { enabled:false, capability:'等待官方合作／資料授權' },
-  reportsDb: { enabled:Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY), capability:'使用者回報成交價（Supabase）' }
+  reportsDb: { enabled:Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY), capability:'使用者回報成交價（Supabase）' },
+  yuyuteiScraper: { enabled:Boolean(process.env.SCRAPE_SECRET), capability:'遊々亭買取行情爬蟲（需手動/排程觸發）' }
 });
 async function getEbayToken(){
   if (ebayToken.value && Date.now() < ebayToken.expiresAt) return ebayToken.value;
@@ -217,6 +218,68 @@ async function fetchRecentReports({ cardId, cardName, game, limit }){
   return supabaseFetch(`/reports?${params.toString()}`);
 }
 
+// ---------- 遊々亭買取行情爬蟲 ----------
+// 只接受 yuyu-tei.jp/buy/ 開頭的買取頁網址，例如 https://yuyu-tei.jp/buy/poc/s/m06
+// 頻率請自行控制在一天 1-2 次，不要短時間內大量呼叫。
+async function scrapeYuyutei(targetUrl){
+  const res = await fetch(targetUrl, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CardScopeBot/1.0; +https://cardscope.onrender.com)' }
+  });
+  if(!res.ok) throw new Error(`FETCH_${res.status}`);
+  const html = await res.text();
+
+  const setTitleMatch = html.match(/<h3 class="fw-bold py-3">\s*<span class="line1"><\/span>\s*([^<]+)<\/h3>/);
+  const setTitle = setTitleMatch ? setTitleMatch[1].trim() : null;
+
+  const gameMatch = targetUrl.match(/\/buy\/([a-z0-9]+)\//i);
+  const game = gameMatch ? gameMatch[1] : 'unknown';
+
+  // 依出現順序把「稀有度標題」跟「卡片區塊」混在一起排序，
+  // 這樣就能知道每張卡屬於哪個稀有度分組。
+  const tokens = [];
+  const rarityRe = /<span class="py-2 d-inline-block px-2 me-2 text-white fw-bold">([^<]+)<\/span>\s*Card List/g;
+  let m;
+  while((m = rarityRe.exec(html))) tokens.push({ type:'rarity', index:m.index, value:m[1].trim() });
+
+  const cardRe = /<div class="card-product position-relative mt-4[^"]*"/g;
+  while((m = cardRe.exec(html))) tokens.push({ type:'card', index:m.index });
+
+  tokens.sort((a,b)=>a.index-b.index);
+
+  const cards = [];
+  let currentRarity = null;
+  for(let i=0;i<tokens.length;i++){
+    const t = tokens[i];
+    if(t.type==='rarity'){ currentRarity = t.value; continue; }
+
+    const end = i+1<tokens.length ? tokens[i+1].index : Math.min(html.length, t.index+3000);
+    const chunk = html.slice(t.index, end);
+
+    const verMatch = chunk.match(/value="([^"]+)" class="cart_ver"/);
+    const cidMatch = chunk.match(/value="([^"]+)" class="cart_cid"/);
+    const numberMatch = chunk.match(/text-center my-2">([^<]+)<\/span>/);
+    const nameMatch = chunk.match(/text-primary fw-bold">([^<]+)<\/h4>/);
+    const priceMatch = chunk.match(/<strong class="d-block text-end[^"]*">\s*([\d,]+)\s*円/);
+    const oldPriceMatch = chunk.match(/<del>\s*([\d,]+)\s*円\s*<\/del>/);
+
+    if(!verMatch || !cidMatch || !priceMatch) continue; // 結構跟預期不符就跳過這張，不讓整批失敗
+
+    cards.push({
+      setCode: verMatch[1],
+      cardCode: cidMatch[1],
+      number: numberMatch ? numberMatch[1].trim() : null,
+      name: nameMatch ? nameMatch[1].trim() : null,
+      rarity: currentRarity,
+      price: Number(priceMatch[1].replace(/,/g,'')),
+      previousPrice: oldPriceMatch ? Number(oldPriceMatch[1].replace(/,/g,'')) : null,
+      cardUrl: `https://yuyu-tei.jp/buy/${game}/card/${verMatch[1]}/${cidMatch[1]}`,
+      imageUrl: `https://card.yuyu-tei.jp/${game}/100_140/${verMatch[1]}/${cidMatch[1]}.jpg`
+    });
+  }
+
+  return { game, setTitle, cards };
+}
+
 createServer(async (req,res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
@@ -294,6 +357,71 @@ createServer(async (req,res) => {
     }catch(error){
       console.error('查詢 Supabase 失敗：', error.message);
       return json(res,502,{error:'資料庫查詢失敗，請稍後再試'});
+    }
+  }
+
+  // ---- 遊々亭爬蟲觸發（受保護） ----
+  if (url.pathname === '/api/admin/scrape/yuyutei' && (req.method === 'POST' || req.method === 'GET')) {
+    const token = req.headers['x-scrape-token'] || url.searchParams.get('token');
+    if(!process.env.SCRAPE_SECRET || token !== process.env.SCRAPE_SECRET){
+      return json(res,401,{error:'未授權，請帶正確的 x-scrape-token'});
+    }
+    if(!supabaseConfigured()) return json(res,503,{error:'尚未設定資料庫'});
+
+    let targetUrl = url.searchParams.get('url');
+    if(req.method==='POST'){
+      try{ const body = await readJsonBody(req); targetUrl = body.url || targetUrl; }
+      catch{ return json(res,400,{error:'JSON 格式錯誤'}); }
+    }
+    if(!targetUrl || !targetUrl.startsWith('https://yuyu-tei.jp/buy/')){
+      return json(res,400,{error:'請提供合法的 yuyu-tei.jp 買取頁網址，例如 https://yuyu-tei.jp/buy/poc/s/m06'});
+    }
+
+    try{
+      const { game, setTitle, cards } = await scrapeYuyutei(targetUrl);
+      if(cards.length===0){
+        return json(res,200,{data:{message:'頁面解析成功但沒抓到任何卡片，可能是網站改版了，需要檢查解析規則', game, setTitle, count:0}});
+      }
+
+      const rows = cards.map(c=>({
+        source:'yuyutei', game, set_code:c.setCode, set_name:setTitle, card_code:c.cardCode,
+        card_number:c.number, rarity:c.rarity, card_name:c.name, price:c.price,
+        previous_price:c.previousPrice, currency:'JPY', card_url:c.cardUrl, image_url:c.imageUrl,
+        scraped_at:new Date().toISOString()
+      }));
+
+      const chunkSize = 200;
+      for(let i=0;i<rows.length;i+=chunkSize){
+        await supabaseFetch('/jp_buyback_prices?on_conflict=source,game,set_code,card_code', {
+          method:'POST',
+          headers:{ Prefer:'resolution=merge-duplicates' },
+          body: JSON.stringify(rows.slice(i,i+chunkSize))
+        });
+      }
+
+      return json(res,200,{data:{message:'抓取並存檔成功', game, setTitle, count:rows.length}});
+    }catch(error){
+      console.error('遊々亭抓取失敗：', error.message);
+      return json(res,502,{error:`抓取失敗：${error.message}`});
+    }
+  }
+
+  // ---- 查詢已存的日版買取行情（公開，供前台之後使用）----
+  if (url.pathname === '/api/jp-prices' && req.method === 'GET') {
+    if(!supabaseConfigured()) return json(res,503,{error:'尚未設定資料庫'});
+    const cardName = url.searchParams.get('cardName');
+    const game = url.searchParams.get('game');
+    if(!cardName) return json(res,400,{error:'請提供 cardName'});
+
+    const select = 'cardName:card_name,cardCode:card_code,rarity,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,setName:set_name,scrapedAt:scraped_at';
+    const params = new URLSearchParams({ select, card_name:`ilike.*${cardName}*`, order:'scraped_at.desc', limit:'20' });
+    if(game) params.set('game', `eq.${game}`);
+
+    try{
+      const rows = await supabaseFetch(`/jp_buyback_prices?${params.toString()}`);
+      return json(res,200,{data:rows});
+    }catch(error){
+      return json(res,502,{error:'查詢失敗，請稍後再試'});
     }
   }
 
