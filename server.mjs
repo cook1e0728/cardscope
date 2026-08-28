@@ -230,7 +230,10 @@ async function scrapeYuyutei(targetUrl, options = {}){
     }
   });
   if(!res.ok) throw new Error(`FETCH_${res.status}`);
-  const html = await res.text();
+  const rawHtml = await res.text();
+  // 遊々亭的原始碼很多標籤是「標籤名換行接屬性」的格式（例如 <span\nclass="...">），
+  // 這裡先把所有連續空白（含換行）壓成一個空格，讓後面的正規表示式不受斷行方式影響。
+  const html = rawHtml.replace(/\s+/g, ' ');
 
   const setTitleMatch = html.match(/<h3 class="fw-bold py-3">\s*<span class="line1"><\/span>\s*([^<]+)<\/h3>/);
   const setTitle = setTitleMatch ? setTitleMatch[1].trim() : null;
