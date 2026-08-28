@@ -6,8 +6,10 @@ import { createHash } from 'node:crypto';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 4173);
-// 可依實際結匯匯率調整；只用於前台將已擷取的日圓價格換算成 TWD 顯示。
-const jpyToTwd = Number(process.env.JPY_TO_TWD || 0.22);
+// 匯率 API 暫時不可用時的保底值；正式顯示優先使用即時匯率資料。
+const jpyToTwdFallback = Number(process.env.JPY_TO_TWD || 0.22);
+const usdToTwdFallback = Number(process.env.USD_TO_TWD || 32);
+const fxCache = { data:null, expiresAt:0 };
 
 // Demo records have the same shape expected from approved provider adapters.
 // Never treat a listing price as a completed sale in production.
@@ -58,6 +60,30 @@ async function justTcg(path, params={}){
   const response=await fetch(url,{headers:{'x-api-key':key}});
   if(!response.ok) throw new Error(`JUSTTCG_${response.status}`);
   const data=await response.json(); justTcgCache.set(cacheKey,{data,expiresAt:Date.now()+5*60*1000}); return data;
+}
+
+async function getTwdRates(){
+  if(fxCache.data && fxCache.expiresAt > Date.now()) return fxCache.data;
+  const fallback = { rates:{TWD:1,JPY:jpyToTwdFallback,USD:usdToTwdFallback,EUR:35}, updatedAt:null, source:'fallback' };
+  try{
+    // Frankfurter 彙整央行匯率，免 API key；回傳的是 1 TWD 可兌換的外幣數量。
+    const response = await fetch('https://api.frankfurter.dev/v1/latest?base=TWD&symbols=JPY,USD,EUR');
+    if(!response.ok) throw new Error(`FX_${response.status}`);
+    const body = await response.json();
+    const rates = { TWD:1 };
+    for(const [currency, perTwd] of Object.entries(body.rates || {})){
+      const value = Number(perTwd);
+      if(Number.isFinite(value) && value > 0) rates[currency] = 1 / value;
+    }
+    const data = { rates, updatedAt:body.date || null, source:'Frankfurter' };
+    fxCache.data = data;
+    fxCache.expiresAt = Date.now() + 60 * 60 * 1000;
+    return data;
+  }catch(error){
+    fxCache.data = fallback;
+    fxCache.expiresAt = Date.now() + 5 * 60 * 1000;
+    return fallback;
+  }
 }
 
 // ---------- 使用者回報成交價（存在 Supabase，避免重新部署就歸零）----------
@@ -299,6 +325,9 @@ createServer(async (req,res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
 
   if (url.pathname === '/api/providers') return json(res,200,{data:providerStatus()});
+  if (url.pathname === '/api/exchange-rates' && req.method === 'GET') {
+    return json(res,200,{data:await getTwdRates()});
+  }
   if (url.pathname === '/api/providers/justtcg/games') { try{return json(res,200,await justTcg('/games'))}catch(error){return json(res,error.message==='JUSTTCG_NOT_CONFIGURED'?503:502,{error:error.message==='JUSTTCG_NOT_CONFIGURED'?'尚未設定 JustTCG API Key':`JustTCG 連線失敗：${error.message}`})} }
   if (url.pathname === '/api/providers/justtcg/search') { const q=(url.searchParams.get('q')||'').trim(), game=url.searchParams.get('game')||''; if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'}); const games=new Set(['pokemon','pokemon-japan','yugioh','one-piece-card-game']); if(game&&!games.has(game))return json(res,400,{error:'不支援的遊戲分類'}); try{return json(res,200,await justTcg('/cards',{q,game,limit:'10',priceHistoryDuration:'30d'}))}catch(error){return json(res,502,{error:`JustTCG 連線失敗：${error.message}`})} }
   if (url.pathname === '/api/providers/justtcg/cards') { const cardId=url.searchParams.get('cardId'); if(!cardId)return json(res,400,{error:'請提供 cardId'}); try{return json(res,200,await justTcg('/cards',{cardId,priceHistoryDuration:'30d'}))}catch(error){return json(res,error.message==='JUSTTCG_NOT_CONFIGURED'?503:502,{error:error.message==='JUSTTCG_NOT_CONFIGURED'?'尚未設定 JustTCG API Key':`JustTCG 連線失敗：${error.message}`})} }
@@ -433,23 +462,29 @@ createServer(async (req,res) => {
     if(!supabaseConfigured()) return json(res,503,{error:'尚未設定資料庫'});
     const cardName = url.searchParams.get('cardName')?.trim();
     const game = url.searchParams.get('game');
+    const cardNumber = url.searchParams.get('cardNumber')?.trim();
+    const aliases = url.searchParams.getAll('alias').map(value=>value.trim()).filter(Boolean);
     if(!cardName) return json(res,400,{error:'請提供 cardName'});
 
     // PostgREST 的 ilike 使用 * 當萬用字元；將使用者輸入中的特殊字元逸出，避免意外擴大搜尋範圍。
-    const escapedCardName = cardName.replace(/[\\%_*(),.]/g, '\\$&');
+    const escapeLike = value => value.replace(/[\\%_*(),.]/g, '\\$&');
     const requestedLimit = Number(url.searchParams.get('limit') || 5);
     const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 20) : 5;
 
     const select = 'game,cardName:card_name,cardCode:card_code,cardNumber:card_number,rarity,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,setName:set_name,scrapedAt:scraped_at';
-    const params = new URLSearchParams({ select, card_name:`ilike.*${escapedCardName}*`, order:'scraped_at.desc', limit:String(limit) });
+    const names = [...new Set([cardName, ...aliases])].slice(0,10);
+    const matches = names.map(name=>`card_name.ilike.*${escapeLike(name)}*`);
+    if(cardNumber) matches.push(`card_number.ilike.*${escapeLike(cardNumber)}*`);
+    const params = new URLSearchParams({ select, or:`(${matches.join(',')})`, order:'scraped_at.desc', limit:String(limit) });
     if(game) params.set('game', `eq.${game}`);
 
     try{
       const rows = await supabaseFetch(`/jp_buyback_prices?${params.toString()}`);
+      const fx = await getTwdRates();
       return json(res,200,{data:(rows || []).map(row=>({
         ...row,
-        priceTwd: row.currency === 'JPY' && Number.isFinite(jpyToTwd) ? Math.round(Number(row.price) * jpyToTwd) : null
-      })), meta:{jpyToTwd}});
+        priceTwd: Number.isFinite(Number(row.price)) && Number.isFinite(fx.rates[row.currency]) ? Math.round(Number(row.price) * fx.rates[row.currency]) : null
+      })), meta:{exchangeRates:fx}});
     }catch(error){
       return json(res,502,{error:'查詢失敗，請稍後再試'});
     }
