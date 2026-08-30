@@ -1,5 +1,7 @@
 const CACHE_MS = 24 * 60 * 60 * 1000;
 const cache = new Map();
+const nativeFetch = globalThis.fetch;
+const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
 
 function numeric(value){
   const n = Number(value);
@@ -55,3 +57,4 @@ export async function searchYgoProDeck(query,{limit=10}={}){
   cache.set(key,{data,expiresAt:Date.now()+CACHE_MS});
   return data;
 }
+
