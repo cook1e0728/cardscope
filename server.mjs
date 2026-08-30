@@ -6,6 +6,9 @@ import { createHash } from 'node:crypto';
 import { searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { normalizeMarketRecord, withTwd } from './providers/normalize.mjs';
 
+const nativeFetch = globalThis.fetch;
+const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
+
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 4173);
 const jpyToTwdFallback = Number(process.env.JPY_TO_TWD || 0.22);
