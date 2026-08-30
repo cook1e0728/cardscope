@@ -85,6 +85,16 @@ async function searchEbay(query,marketplace='EBAY_US'){
 }
 async function justTcg(path,params={}){const key=process.env.JUSTTCG_API_KEY;if(!key)throw new Error('JUSTTCG_NOT_CONFIGURED');const url=new URL(`https://api.justtcg.com/v1${path}`);for(const [name,value]of Object.entries(params))if(value)url.searchParams.set(name,value);const cacheKey=url.toString(),cached=justTcgCache.get(cacheKey);if(cached&&cached.expiresAt>Date.now())return cached.data;const response=await fetch(url,{headers:{'x-api-key':key}});if(!response.ok)throw new Error(`JUSTTCG_${response.status}`);const data=await response.json();justTcgCache.set(cacheKey,{data,expiresAt:Date.now()+MARKET_CACHE_MS});return data}
 
+const EXTERNAL_QUERY_ALIASES={
+  '噴火龍':{query:'Charizard',game:'pokemon'},'喷火龙':{query:'Charizard',game:'pokemon'},'リザードン':{query:'Charizard',game:'pokemon'},
+  '魯夫':{query:'Luffy',game:'one-piece'},'路飛':{query:'Luffy',game:'one-piece'},'路飞':{query:'Luffy',game:'one-piece'}
+};
+async function searchExternalCatalog(query){
+  const mapped=EXTERNAL_QUERY_ALIASES[String(query).trim()]||{query:String(query).trim(),game:''},sources=[];
+  if(process.env.JUSTTCG_API_KEY)try{const body=await justTcg('/cards',{q:mapped.query,game:mapped.game,limit:'12'}),cards=(body?.data||[]).map(card=>({source:'justtcg',providerCardId:card.id,name:card.name,game:card.game,set:card.set_name||card.set,number:card.number,rarity:card.rarity,variants:(card.variants||[]).slice(0,4).map(v=>({condition:v.condition,printing:v.printing,language:v.language,amount:Number(v.price)||null,currency:'USD'})),priceType:'market',priceNote:'JustTCG 市場參考價；不是已成交價。'}));sources.push({source:'justtcg',status:'ok'});if(cards.length)return {cards,sources,query:mapped.query}}catch(error){sources.push({source:'justtcg',status:'unavailable',error:error.message})}
+  try{const cards=(await searchYgoProDeck(mapped.query,{limit:12})).map(card=>({...card,source:'ygoprodeck'}));sources.push({source:'ygoprodeck',status:'ok'});return {cards,sources,query:mapped.query}}catch(error){sources.push({source:'ygoprodeck',status:'unavailable',error:error.message});return {cards:[],sources,query:mapped.query}}
+}
+
 let fallbackCatalogCache=null;
 async function loadFallbackCatalog(){if(!fallbackCatalogCache)fallbackCatalogCache=JSON.parse(await readFile(join(root,'data','catalog.json'),'utf8'));return structuredClone(fallbackCatalogCache)}
 async function loadCatalog(){
@@ -130,6 +140,7 @@ createServer(async(req,res)=>{const url=new URL(req.url,`http://${req.headers.ho
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
   if(url.pathname==='/api/card-identities'&&req.method==='GET'){if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const query=url.searchParams.get('q')?.trim(),cardNumber=url.searchParams.get('cardNumber')?.trim();if(!query)return json(res,400,{error:'請提供 q'});try{return json(res,200,{data:await fetchCardIdentities({query,cardNumber})||[]})}catch{return json(res,404,{error:'卡片多語對照表尚未設定'})}}
   if(url.pathname==='/api/providers/ygoprodeck/search'&&req.method==='GET'){const q=(url.searchParams.get('q')||'').trim();if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});try{const data=await searchYgoProDeck(q,{limit:10}),fx=await getTwdRates();return json(res,200,{data:data.map(card=>({...card,referencePricesTwd:{cardmarket:amountToTwd(card.referencePrices.cardmarketEur,'EUR',fx),tcgplayer:amountToTwd(card.referencePrices.tcgplayerUsd,'USD',fx),ebay:amountToTwd(card.referencePrices.ebayUsd,'USD',fx),amazon:amountToTwd(card.referencePrices.amazonUsd,'USD',fx),coolstuffinc:amountToTwd(card.referencePrices.coolstuffincUsd,'USD',fx)}})),meta:{cacheHours:24,exchangeRates:fx,priceWarning:'跨平台最低參考價，不代表指定版本成交價'}})}catch(e){return json(res,502,{error:e.message})}}
+  if(url.pathname==='/api/search/external'&&req.method==='GET'){const q=(url.searchParams.get('q')||'').trim();if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});const data=await searchExternalCatalog(q);return json(res,200,{data:data.cards,meta:{resolvedQuery:data.query,sources:data.sources,warning:'外部結果尚未匯入 CardScope Catalog；價格只作市場參考，不代表成交。'}})}
   if(url.pathname==='/api/providers/justtcg/games'){try{return json(res,200,await justTcg('/games'))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/search'){const q=(url.searchParams.get('q')||'').trim(),game=url.searchParams.get('game')||'';if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});try{return json(res,200,await justTcg('/cards',{q,game,limit:'10',priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/cards'){const cardId=url.searchParams.get('cardId');if(!cardId)return json(res,400,{error:'請提供 cardId'});try{return json(res,200,await justTcg('/cards',{cardId,priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
