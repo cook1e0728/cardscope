@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { searchYgoProDeck } from './providers/ygoprodeck.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.PORT || 4173);
@@ -28,8 +29,9 @@ let ebayToken={value:null,expiresAt:0};
 const providerStatus=()=>({
   justtcg:{enabled:Boolean(process.env.JUSTTCG_API_KEY),capability:'目錄、品相與市場價格（24 小時快取）'},
   ebay:{enabled:Boolean(process.env.EBAY_CLIENT_ID&&process.env.EBAY_CLIENT_SECRET),capability:'官方 Browse API：多市場在售掛牌（24 小時快取）'},
-  kapaipai:{enabled:false,capability:'等待官方合作／資料授權'},
-  snkrdunk:{enabled:false,capability:'等待官方合作／資料授權'},
+  ygoprodeck:{enabled:true,capability:'免費遊戲王卡片資料與跨平台最低參考價（24 小時快取；圖片需自行保存）'},
+  kapaipai:{enabled:false,capability:'等待公開頁面結構與存取方式確認'},
+  snkrdunk:{enabled:false,capability:'等待公開頁面結構與存取方式確認'},
   yuyutei:{enabled:Boolean(process.env.SCRAPE_SECRET),capability:'遊々亭買取行情；建議每日排程一次'},
   reportsDb:{enabled:Boolean(process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY),capability:'Supabase：回報、多語名稱、日版行情、匯率'}
 });
@@ -99,6 +101,7 @@ createServer(async(req,res)=>{const url=new URL(req.url,`http://${req.headers.ho
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
   if(url.pathname==='/api/card-identities'&&req.method==='GET'){if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const query=url.searchParams.get('q')?.trim(),cardNumber=url.searchParams.get('cardNumber')?.trim();if(!query)return json(res,400,{error:'請提供 q'});try{return json(res,200,{data:await fetchCardIdentities({query,cardNumber})||[]})}catch{return json(res,404,{error:'卡片多語對照表尚未設定'})}}
+  if(url.pathname==='/api/providers/ygoprodeck/search'&&req.method==='GET'){const q=(url.searchParams.get('q')||'').trim();if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});try{const data=await searchYgoProDeck(q,{limit:10}),fx=await getTwdRates();return json(res,200,{data:data.map(card=>({...card,referencePricesTwd:{cardmarket:amountToTwd(card.referencePrices.cardmarketEur,'EUR',fx),tcgplayer:amountToTwd(card.referencePrices.tcgplayerUsd,'USD',fx),ebay:amountToTwd(card.referencePrices.ebayUsd,'USD',fx),amazon:amountToTwd(card.referencePrices.amazonUsd,'USD',fx),coolstuffinc:amountToTwd(card.referencePrices.coolstuffincUsd,'USD',fx)}})),meta:{cacheHours:24,exchangeRates:fx,priceWarning:'跨平台最低參考價，不代表指定版本成交價'}})}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/games'){try{return json(res,200,await justTcg('/games'))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/search'){const q=(url.searchParams.get('q')||'').trim(),game=url.searchParams.get('game')||'';if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});try{return json(res,200,await justTcg('/cards',{q,game,limit:'10',priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/cards'){const cardId=url.searchParams.get('cardId');if(!cardId)return json(res,400,{error:'請提供 cardId'});try{return json(res,200,await justTcg('/cards',{cardId,priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
