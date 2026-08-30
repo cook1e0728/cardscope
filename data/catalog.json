@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "updatedAt": "2026-08-30",
+  "games": [
+    {"id":"pokemon","nameZh":"寶可夢","nameJa":"ポケモンカードゲーム","nameEn":"Pokémon"},
+    {"id":"onepiece","nameZh":"航海王","nameJa":"ONE PIECEカードゲーム","nameEn":"ONE PIECE Card Game"},
+    {"id":"yugioh","nameZh":"遊戲王","nameJa":"遊戯王OCG","nameEn":"Yu-Gi-Oh! OCG"}
+  ],
+  "series": [
+    {"id":"pokemon-sv4a-jp","game":"pokemon","officialCode":"SV4a","nameZh":"閃色寶藏 ex","nameJa":"シャイニートレジャーex","nameEn":"Shiny Treasure ex","region":"JP","releaseDate":"2023-12-01","aliases":["閃色寶藏","閃色寶藏ex","shiny treasure","シャイニートレジャー"]},
+    {"id":"onepiece-op05-jp","game":"onepiece","officialCode":"OP-05","nameZh":"新時代的主角","nameJa":"新時代の主役","nameEn":"Awakening of the New Era","region":"JP","releaseDate":"2023-08-26","aliases":["OP05","OP 05","新時代主角","新時代の主役"]},
+    {"id":"yugioh-qccu-jp","game":"yugioh","officialCode":"QCCU","nameZh":"QUARTER CENTURY CHRONICLE side:UNITY","nameJa":"QUARTER CENTURY CHRONICLE side:UNITY","nameEn":"Quarter Century Chronicle side: Unity","region":"JP","releaseDate":"2024-02-23","aliases":["QCCU","UNITY","Quarter Century Unity"]}
+  ],
+  "cards": [
+    {"id":"pokemon-mew-ex-sv4a-347-jp","canonicalId":"pokemon-mew-ex","game":"pokemon","seriesId":"pokemon-sv4a-jp","officialCardNumber":"347/190","rarity":"SSR","region":"JP","language":"ja-JP","nameZh":"夢幻ex","nameJa":"ミュウex","nameEn":"Mew ex","aliases":["夢幻","mew","ミュウ","夢幻 ex","mewex","ミュウ ex"],"imageUrl":null},
+    {"id":"onepiece-luffy-op05-119-jp","canonicalId":"onepiece-monkey-d-luffy","game":"onepiece","seriesId":"onepiece-op05-jp","officialCardNumber":"OP05-119","rarity":"SEC","region":"JP","language":"ja-JP","nameZh":"蒙其・D・魯夫","nameJa":"モンキー・D・ルフィ","nameEn":"Monkey.D.Luffy","aliases":["魯夫","路飛","luffy","ルフィ","monkey d luffy","蒙其d魯夫"],"imageUrl":null},
+    {"id":"yugioh-dark-magician-girl-qccu-jp002-jp","canonicalId":"yugioh-dark-magician-girl","game":"yugioh","seriesId":"yugioh-qccu-jp","officialCardNumber":"QCCU-JP002","rarity":"QCSE","region":"JP","language":"ja-JP","nameZh":"黑魔導女孩","nameJa":"ブラック・マジシャン・ガール","nameEn":"Dark Magician Girl","aliases":["黑魔導少女","dark magician girl","ブラックマジシャンガール","DMG"],"imageUrl":null}
+  ]
+}
