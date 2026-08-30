@@ -8,7 +8,7 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 - **eBay Browse API**：官方 API；多市場在售掛牌。掛牌價不可當作已成交價。
 - **遊々亭**：買取頁資料擷取，存入 Supabase `jp_buyback_prices`。
 - **Supabase**：使用者成交回報、日版買取行情、卡片多語名稱與匯率快取。
-- **卡拍拍 / SNKRDUNK**：目前仍有示範資料，尚未接正式授權來源。
+- **卡拍拍 / SNKRDUNK**：尚未接入；網站不再顯示這兩個來源的示範價格。
 
 ## 更新頻率
 
@@ -28,13 +28,21 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 
 ## 多語卡名
 
+`GET /api/catalog`（Supabase 優先，`data/catalog.json` 自動備援）
+
 `GET /api/card-identities?q=關鍵字&cardNumber=卡號`
 
-Supabase `card_identities` 使用 `name_zh`、`name_ja`、`name_en`、`card_number`、`aliases`。跨市場對應應以自己的 `card_id` / 卡號為主，名稱只作搜尋與別名輔助。
+Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_cards`、`tcg_printings`。跨市場對應以自己的 `card_id` / 官方卡號為主，名稱只作搜尋與別名輔助。
 
 ## 圖片
 
-目前來源可包含 JustTCG 回傳卡圖、遊々亭 `image_url`、eBay listing 圖片。`supabase/migrations/20260830_market_data.sql` 新增 `card_images`，供之後把不同語言與來源圖片統一對到同一 `card_id`。
+詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`，最後才是文字佔位。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。YGOPRODeck 明確標記為需要自行保存，不在前端長期 hotlink；未保存前寧可不顯示圖片。
+
+## 統一市場輸出
+
+`GET /api/cards/:cardId/market`
+
+所有可確認版本的資料統一輸出 `provider`、`market`、`priceType`、原幣價格、TWD 換算、品相、來源 URL 與觀測時間。eBay 是 `listing`、遊々亭是 `buyback`、YGOPRODeck 是跨平台 `market` 參考價；只有能驗證為成交的資料才可標 `sale`。不同類型不混算中位價。
 
 ## eBay 多市場
 
@@ -51,4 +59,5 @@ Supabase `card_identities` 使用 `name_zh`、`name_ja`、`name_en`、`card_numb
 
 注意：把 SQL 檔推到 GitHub **不代表遠端 Supabase 一定會自動執行 migration**；是否自動套用取決於你的 Supabase CI / deployment 設定。
 
-目前 `server.mjs` / `index.html` 仍保留部分示範市場數字，正式版應逐步改成只顯示帶有來源、抓取時間、幣別、價格類型與品相的真實資料。
+目前 Catalog 仍只有 3 張起始卡。首頁與 API 已移除假交易量、假漲跌、假中位價、假市值，以及把掛牌／買取誤標成成交／店售的 demo。
+
