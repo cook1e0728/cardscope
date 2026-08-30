@@ -1,45 +1,54 @@
-# CardScope 本機服務
+# CardScope
 
-在 PowerShell 執行：
+CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，前端為單頁 `index.html`。
 
-```powershell
-& 'C:\Users\99wye\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' 'C:\Users\99wye\Documents\Codex\2026-08-25\https-yuyu-tei-jp-ebay-https\outputs\server.mjs'
-```
+## 目前資料來源
 
-接著開啟 `http://localhost:4173`。
+- **JustTCG**：官方 API；卡牌目錄、品相與北美市場價格。
+- **eBay Browse API**：官方 API；多市場在售掛牌。掛牌價不可當作已成交價。
+- **遊々亭**：買取頁資料擷取，存入 Supabase `jp_buyback_prices`。
+- **Supabase**：使用者成交回報、日版買取行情、卡片多語名稱與匯率快取。
+- **卡拍拍 / SNKRDUNK**：目前仍有示範資料，尚未接正式授權來源。
 
-## 已提供的 API
+## 更新頻率
 
-- `GET /api/cards`：三種卡牌的目錄與市場摘要
-- `GET /api/search?q=關鍵字`：以卡名、卡號或卡種搜尋
-- `GET /api/cards/:id`：單張卡牌資料
-- `GET /api/portfolio`：收藏市值與損益摘要
-- `GET /api/providers`：各資料來源的設定狀態
-- `GET /api/providers/justtcg/games`：JustTCG 支援的遊戲目錄
-- `GET /api/providers/justtcg/cards?cardId=...`：單張卡的品相、價格與 30 日歷史
-- `GET /api/providers/ebay/search?q=關鍵字`：eBay 官方 API 的即時在售掛牌
+目前先採 **24 小時**策略：
 
-## 啟用 JustTCG 正式資料
+- JustTCG 同一查詢：24 小時記憶體快取。
+- eBay 同一關鍵字 + marketplace：24 小時記憶體快取。
+- Frankfurter 匯率：成功後 24 小時更新一次。
+- 遊々亭：管理端抓取功能保留，正式排程建議每日一次。
+- 若 Supabase 已建立 `exchange_rates`，Render 重啟後會優先讀取 24 小時內的已存匯率。
 
-在啟動服務的同一個 PowerShell 視窗設定 API Key：
+## TWD 匯率
 
-```powershell
-$env:JUSTTCG_API_KEY = '你的 tcg_... API Key'
-& 'C:\Users\99wye\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' 'C:\Users\99wye\Documents\Codex\2026-08-25\https-yuyu-tei-jp-ebay-https\outputs\server.mjs'
-```
+`GET /api/exchange-rates`
 
-Key 只留在本機環境變數；前端網頁不會也不應該讀取它。啟動後開啟 `http://localhost:4173/api/providers/justtcg/games` 驗證。
+目前支援 TWD、JPY、USD、EUR。Frankfurter 暫時失效時使用 `JPY_TO_TWD`、`USD_TO_TWD` 保底值。正式市場資料應同時保存原始幣別、原始價格、換算匯率與 TWD 價格。
 
-## 啟用 eBay 正式資料
+## 多語卡名
 
-請在 [eBay Developers Program](https://developer.ebay.com/) 建立應用程式並取得 `Client ID` 和 `Client Secret`。**不要把私密金鑰貼到聊天中，也不要寫進程式碼。** 於啟動服務的同一個 PowerShell 視窗設定：
+`GET /api/card-identities?q=關鍵字&cardNumber=卡號`
 
-```powershell
-$env:EBAY_CLIENT_ID = '你的 Client ID'
-$env:EBAY_CLIENT_SECRET = '你的 Client Secret'
-& 'C:\Users\99wye\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' 'C:\Users\99wye\Documents\Codex\2026-08-25\https-yuyu-tei-jp-ebay-https\outputs\server.mjs'
-```
+Supabase `card_identities` 使用 `name_zh`、`name_ja`、`name_en`、`card_number`、`aliases`。跨市場對應應以自己的 `card_id` / 卡號為主，名稱只作搜尋與別名輔助。
 
-啟用後可開啟 `http://localhost:4173/api/providers/ebay/search?q=Mew%20ex` 驗證。此 API 是在售掛牌，不是全市場成交紀錄。
+## 圖片
 
-目前是示範資料。量產前請以來源授權、官方 API 或合作資料取代 `server.mjs` 中的範例紀錄。
+目前來源可包含 JustTCG 回傳卡圖、遊々亭 `image_url`、eBay listing 圖片。`supabase/migrations/20260830_market_data.sql` 新增 `card_images`，供之後把不同語言與來源圖片統一對到同一 `card_id`。
+
+## eBay 多市場
+
+`GET /api/providers/ebay/search?q=Mew%20ex&marketplace=EBAY_US`
+
+目前允許：`EBAY_US`、`EBAY_CA`、`EBAY_GB`、`EBAY_DE`、`EBAY_FR`、`EBAY_IT`、`EBAY_ES`、`EBAY_AU`。
+
+## Supabase migration
+
+`supabase/migrations/20260830_market_data.sql` 會建立：
+
+- `exchange_rates`：每日 TWD 匯率快取 / 歷史。
+- `card_images`：同卡不同語言與來源的圖片索引。
+
+注意：把 SQL 檔推到 GitHub **不代表遠端 Supabase 一定會自動執行 migration**；是否自動套用取決於你的 Supabase CI / deployment 設定。
+
+目前 `server.mjs` / `index.html` 仍保留部分示範市場數字，正式版應逐步改成只顯示帶有來源、抓取時間、幣別、價格類型與品相的真實資料。
