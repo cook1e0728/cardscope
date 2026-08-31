@@ -1,10 +1,10 @@
 const gameChoices=[
-  {id:'all',name:'全部遊戲',language:'多語',query:''},
+  {id:'all',name:'全部遊戲',language:'多語',query:'',navImage:'/assets/all-games.jpg'},
   {id:'pokemon',name:'寶可夢',language:'日／繁／英',query:''},
   {id:'onepiece',name:'航海王',language:'日／亞洲英',query:''},
   {id:'yugioh',name:'遊戲王',language:'英',query:''},
-  {id:'haikyuu',name:'排球少年 Vobaca!! BREAK',language:'日',query:'挑戰者',count:'132 個版本'},
-  {id:'weiss-schwarz',name:'WS 葬送的芙莉蓮',language:'日',query:'芙莉蓮',count:'773 個版本'}
+  {id:'haikyuu',name:'排球少年 Vobaca!! BREAK',language:'日',query:'挑戰者',count:'527 張卡片',navImage:'https://www.takaratomy.co.jp/products/haikyuvobacabreak/product/img/HV-P03_01.webp'},
+  {id:'weiss-schwarz',name:'WS 葬送的芙莉蓮',language:'日',query:'芙莉蓮',count:'751 張卡片',navImage:'https://ws-tcg.com/wordpress/wp-content/uploads/2026/01/10182306/sfn_new_bp_400_400.png'}
 ];
 window.CARD_GAMES=gameChoices;
 const style=document.createElement('style');style.textContent=`.game-switch{border:2px solid #111;background:#fff;border-radius:12px;padding:8px 12px;font-weight:850;cursor:pointer;white-space:nowrap}.game-switch:after{content:'⌄';margin-left:9px}.game-picker{position:fixed;inset:0;background:#1119;z-index:20;display:none;padding:20px}.game-picker.open{display:grid;place-items:center}.game-picker-box{background:#fff;border-radius:22px;width:min(760px,100%);max-height:88vh;overflow:auto;padding:24px}.game-picker-head{display:flex;justify-content:space-between;align-items:center}.game-picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}.game-pick{border:2px solid #e5e5e5;background:#fff;border-radius:14px;padding:15px;text-align:left;cursor:pointer}.game-pick:hover,.game-pick.active{border-color:#111;background:#fffbe0}.game-pick b{display:block;font-size:16px}.game-pick small{color:#777}.game-lang{display:inline-block;margin-top:7px;background:#111;color:#fff;border-radius:5px;padding:2px 6px;font-size:11px}@media(max-width:760px){.game-switch{order:2;margin-left:auto;max-width:55%;overflow:hidden;text-overflow:ellipsis}.game-picker-grid{grid-template-columns:1fr}}`;document.head.append(style);
