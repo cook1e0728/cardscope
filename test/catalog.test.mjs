@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { localizePokemonName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
+import { localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 
 const port=4197;
 let server;
@@ -53,6 +53,12 @@ test('Pokemon cards keep their edition image but display official Traditional Ch
   assert.equal(localizePokemonName('Goldeen',[118],names),'角金魚');
   assert.equal(localizePokemonName('Charizard ex',[6],names),'噴火龍 ex');
   assert.equal(localizePokemonName("Blaine's Charizard",[6],names),null);
+});
+
+test('all product feeds receive a Chinese display name',()=>{
+  assert.equal(localizeProductName('pokemon','Obsidian Flames','系列'),'黑曜火焰');
+  assert.equal(localizeProductName('onepiece','BOOSTER PACK -ROMANCE DAWN- [OP-01]','BOOSTER PACK'),'補充包 -浪漫黎明- [OP-01]');
+  assert.equal(localizeProductName('yugioh','Legend of Blue Eyes White Dragon','系列'),'遊戲王系列｜Legend of Blue Eyes White Dragon');
 });
 
 for(const [query,expected] of [
