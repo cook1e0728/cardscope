@@ -28,8 +28,8 @@ async function providerText(url,{timeout=60000}={}){
 }
 
 async function upsert(db,path,rows,onConflict='id'){
-  let written=0;
-  for(const batch of chunks(rows)){
+  const conflictColumns=onConflict.split(','),deduped=[...new Map(rows.map(row=>[conflictColumns.map(column=>String(row[column]??'')).join('\u001f'),row])).values()];let written=0;
+  for(const batch of chunks(deduped)){
     await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch)});
     written+=batch.length;
   }
@@ -68,7 +68,7 @@ async function syncPokemon(db,{maxPages=Infinity}={}){
   const provider='pokemontcg',runId=await startRun(db,provider,'catalog'),stats={seen:0,written:0,cursor:null,metadata:{}};
   try{
     const setBody=await providerJson('https://api.pokemontcg.io/v2/sets?pageSize=250&orderBy=-releaseDate');
-    const series=(setBody.data||[]).map(s=>({id:`pokemon-pokemontcg-${slug(s.id)}`,game_id:'pokemon',official_code:s.ptcgoCode||s.id,name_zh:null,name_ja:null,name_en:s.name,name_ko:null,region:'US',language:'en-US',release_date:ymd(s.releaseDate),aliases:[s.id,s.series,s.ptcgoCode].filter(Boolean),source_url:'https://www.pokemontcg.io/',image_url:s.images?.logo||null,image_kind:'series-logo',source:provider,provider_id:s.id,metadata:{printedTotal:s.printedTotal,total:s.total,symbolUrl:s.images?.symbol||null},updated_at:new Date().toISOString()}));
+    const series=(setBody.data||[]).map(s=>({id:`pokemon-pokemontcg-${slug(s.id)}`,game_id:'pokemon',official_code:s.id,name_zh:null,name_ja:null,name_en:s.name,name_ko:null,region:'US',language:'en-US',release_date:ymd(s.releaseDate),aliases:[s.id,s.series,s.ptcgoCode].filter(Boolean),source_url:'https://www.pokemontcg.io/',image_url:s.images?.logo||null,image_kind:'series-logo',source:provider,provider_id:s.id,metadata:{ptcgoCode:s.ptcgoCode||null,printedTotal:s.printedTotal,total:s.total,symbolUrl:s.images?.symbol||null},updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_series',series);
     const products=series.map(s=>({id:`pokemon-series-${slug(s.provider_id)}`,game_id:'pokemon',series_id:s.id,official_code:s.official_code,product_type:'系列',name_zh:null,name_ja:null,name_en:s.name_en,name_ko:null,aliases:s.aliases,region:'US',language:'en-US',release_date:s.release_date,image_url:s.image_url,image_kind:'series-logo',source:provider,source_url:s.source_url,provider_id:s.provider_id,metadata:s.metadata,updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_products',products);
@@ -117,8 +117,8 @@ async function syncOnePiece(db){
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
-export async function shouldSyncCatalog(db,maxAgeHours=72){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=id&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=1`);return !rows?.length;
+export async function shouldSyncCatalog(db,maxAgeHours=72,providers=['pokemontcg','onepiece-official','ygoprodeck']){
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider));return providers.some(provider=>!completed.has(provider));
 }
 
 export async function syncCatalog(db,{providers=['pokemon','onepiece','yugioh'],maxPokemonPages=Infinity}={}){
