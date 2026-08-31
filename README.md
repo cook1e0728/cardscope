@@ -4,8 +4,8 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 
 ## 目前資料來源
 
-- **JustTCG**：官方 API；卡牌目錄、品相與北美市場價格。
-- **eBay Browse API**：官方 API；多市場在售掛牌。掛牌價不可當作已成交價。
+- **JustTCG**：既有 API adapter 保留，目前不作為首頁搜尋或卡盒資料依賴。
+- **eBay Browse API**：既有多市場 adapter 保留，目前不自動查詢；掛牌價不可當作已成交價。
 - **遊々亭**：買取頁資料擷取，存入 Supabase `jp_buyback_prices`。
 - **Supabase**：使用者成交回報、日版買取行情、卡片多語名稱與匯率快取。
 - **卡拍拍 / SNKRDUNK**：尚未接入；網站不再顯示這兩個來源的示範價格。
@@ -28,15 +28,15 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 
 ## 多語卡名
 
-`GET /api/catalog`（Supabase 優先，`data/catalog.json` 自動備援）
+`GET /api/catalog`（Supabase 與 `data/catalog.json` 合併；資料庫暫缺資料時不會再把公開備援覆蓋掉）
 
 `GET /api/card-identities?q=關鍵字&cardNumber=卡號`
 
-Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_cards`、`tcg_printings`。跨市場對應以自己的 `card_id` / 官方卡號為主，名稱只作搜尋與別名輔助。
+Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tcg_cards`、`tcg_printings`。API 依 `canonical_id` 合併去重，實際美版／日版／台版／韓版仍保留為 printing；中文、英文、日文、韓文名稱與 `language` / `region` 不互相覆蓋。跨市場對應以 canonical identity、printing 與官方卡號為主，名稱只作搜尋與別名輔助。
 
 ## 圖片
 
-詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`，最後才是文字佔位。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。YGOPRODeck 明確標記為需要自行保存，不在前端長期 hotlink；未保存前寧可不顯示圖片。
+詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`、合法公開 Catalog 圖源，最後才是文字佔位；圖片載入失敗會降級為卡名與卡號。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。每筆保留 `source` 與 `source_url`，方便日後改為自行保存。
 
 ## 統一市場輸出
 
@@ -57,7 +57,9 @@ Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_cards`、`tcg_printing
 - `exchange_rates`：每日 TWD 匯率快取 / 歷史。
 - `card_images`：同卡不同語言與來源的圖片索引。
 
+`supabase/migrations/20260831_canonical_multilingual_catalog.sql` 以非破壞方式新增 canonical identity、韓文原名欄位、指定卡片與可用圖片索引。
+
 注意：把 SQL 檔推到 GitHub **不代表遠端 Supabase 一定會自動執行 migration**；是否自動套用取決於你的 Supabase CI / deployment 設定。
 
-目前 Catalog 仍只有 3 張起始卡。首頁與 API 已移除假交易量、假漲跌、假中位價、假市值，以及把掛牌／買取誤標成成交／店售的 demo。
+目前最低保證 Catalog 包含噴火龍、超夢、夢幻、魯夫與黑魔導女孩，並支援指定中／英／日搜尋名稱。首頁與 API 不顯示假交易量、假漲跌、假中位價、假市值，也不把掛牌／買取誤標成成交／店售。
 
