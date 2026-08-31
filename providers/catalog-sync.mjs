@@ -131,7 +131,7 @@ async function syncYugioh(db){
 }
 
 async function syncOnePiece(db){
-  const provider='onepiece-official',runId=await startRun(db,provider,'catalog'),stats={seen:0,written:0,cursor:null,metadata:{}};
+  const provider='onepiece-official',runId=await startRun(db,'onepiece-official-tw','catalog'),stats={seen:0,written:0,cursor:null,metadata:{}};
   try{
     const [productsHtml,indexHtml]=await Promise.all([providerText('https://asia-en.onepiece-cardgame.com/products/'),providerText('https://asia-en.onepiece-cardgame.com/cardlist/?search=true')]),productCovers=parseOnePieceProducts(productsHtml),setOptions=parseOnePieceSeries(indexHtml),series=setOptions.map(s=>({id:`onepiece-official-${slug(s.code)}`,game_id:'onepiece',official_code:s.code,name_zh:null,name_ja:null,name_en:s.name,name_ko:null,region:'ASIA',language:'en',release_date:null,aliases:[s.code],source_url:`https://asia-en.onepiece-cardgame.com/cardlist/?search=true&series=${s.providerId}`,image_url:null,image_kind:'series-logo',source:provider,provider_id:s.providerId,metadata:{productType:s.productType},updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_series',series);
@@ -156,7 +156,7 @@ async function syncOnePiece(db){
 }
 
 export async function catalogProvidersNeedingSync(db,maxAgeHours=72){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
 }
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}

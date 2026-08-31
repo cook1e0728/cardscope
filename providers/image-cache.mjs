@@ -13,7 +13,7 @@ async function storageRequest(path,options={}){
 
 async function ensureBucket(){
   try{await storageRequest(`/bucket/${BUCKET}`);return}
-  catch(error){if(!String(error.message).startsWith('STORAGE_404'))throw error}
+  catch(error){if(!/^STORAGE_(400|404):/.test(String(error.message)))throw error}
   await storageRequest('/bucket',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:BUCKET,name:BUCKET,public:true,file_size_limit:600000,allowed_mime_types:['image/jpeg','image/png','image/webp']})});
 }
 
