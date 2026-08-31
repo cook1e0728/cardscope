@@ -22,6 +22,13 @@ test('catalog exposes canonical cards with images and printing metadata',async()
   for(const card of data.cards){assert.ok(card.id===card.canonicalId);assert.ok(card.imageUrl);assert.ok(card.printings.length);assert.ok(card.printings[0].region);assert.ok(card.printings[0].language)}
 });
 
+test('coverage reports honest fallback totals without a database',async()=>{
+  const {data}=await api('/api/catalog/coverage');
+  assert.equal(data.source,'catalog.json');
+  assert.equal(data.totalCards,Object.values(data.games).reduce((sum,g)=>sum+g.cards,0));
+  assert.ok(data.games.pokemon.cards>0);
+});
+
 test('product feed never promotes a single card as a box or series image',{timeout:45000},async()=>{
   const {data}=await api('/api/products');
   assert.ok(data.length);
@@ -47,3 +54,4 @@ for(const [query,expected] of [
   ['夢幻','Mew ex'],['Mew','Mew ex'],['ミュウ','Mew ex'],
   ['魯夫','Monkey.D.Luffy'],['黑魔導女孩','Dark Magician Girl']
 ])test(`multilingual search: ${query}`,async()=>{const {data,meta}=await api(`/api/search?q=${encodeURIComponent(query)}`);assert.equal(meta.architecture,'canonical-card-with-printings');assert.equal(data.length,1,`${query} should prefer one exact multilingual name`);assert.equal(data[0].nameEn,expected)});
+
