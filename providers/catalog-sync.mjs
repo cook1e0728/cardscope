@@ -75,7 +75,7 @@ export function parseOnePieceCards(html,base='https://asia-en.onepiece-cardgame.
 
 export function parseOnePieceSeries(html){
   const rows=[],seen=new Set(),re=/<option value="(\d+)"[^>]*>([^<]+)/g;let m;
-  while((m=re.exec(html))){const providerId=m[1],name=decodeHtml(m[2]),code=name.match(/\[([^\]]+)\]/)?.[1]||null;if(!code||seen.has(providerId))continue;seen.add(providerId);const productType=name.split('-')[0].replace(/<br[^>]*>/gi,'').trim()||'系列';rows.push({providerId,code,name,productType})}
+  while((m=re.exec(html))){const providerId=m[1],name=decodeHtml(m[2]),code=name.match(/[\[【]([^\]】]+)[\]】]/)?.[1]||null;if(!code||seen.has(providerId))continue;seen.add(providerId);const productType=name.split('-')[0].replace(/<br[^>]*>/gi,'').trim()||'系列';rows.push({providerId,code,name,productType})}
   return rows;
 }
 
@@ -156,7 +156,7 @@ async function syncOnePiece(db){
 }
 
 export async function catalogProvidersNeedingSync(db,maxAgeHours=72){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,metadata&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).filter(row=>row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
 }
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}
