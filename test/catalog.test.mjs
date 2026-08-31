@@ -21,6 +21,17 @@ test('catalog exposes canonical cards with images and printing metadata',async()
   for(const card of data.cards){assert.ok(card.id===card.canonicalId);assert.ok(card.imageUrl);assert.ok(card.printings.length);assert.ok(card.printings[0].region);assert.ok(card.printings[0].language)}
 });
 
+test('product feed never promotes a single card as a box or series image',{timeout:45000},async()=>{
+  const {data}=await api('/api/products');
+  assert.ok(data.length);
+  assert.ok(data.every(item=>item.imageKind!=='card'));
+  for(const item of data.filter(item=>item.source==='curated-official-index')){
+    assert.equal(item.imageUrl,null);
+    assert.equal(item.cardsCount,null);
+    assert.equal(item.productType,'系列');
+  }
+});
+
 for(const [query,expected] of [
   ['噴火龍','Charizard'],['Charizard','Charizard'],['リザードン','Charizard'],
   ['超夢','Mewtwo'],['Mewtwo','Mewtwo'],['ミュウツー','Mewtwo'],
