@@ -26,4 +26,4 @@ for(const [query,expected] of [
   ['超夢','Mewtwo'],['Mewtwo','Mewtwo'],['ミュウツー','Mewtwo'],
   ['夢幻','Mew ex'],['Mew','Mew ex'],['ミュウ','Mew ex'],
   ['魯夫','Monkey.D.Luffy'],['黑魔導女孩','Dark Magician Girl']
-])test(`multilingual search: ${query}`,async()=>{const {data,meta}=await api(`/api/search?q=${encodeURIComponent(query)}`);assert.equal(meta.architecture,'canonical-card-with-printings');assert.ok(data.some(card=>card.nameEn===expected),`${query} should find ${expected}`)});
+])test(`multilingual search: ${query}`,async()=>{const {data,meta}=await api(`/api/search?q=${encodeURIComponent(query)}`);assert.equal(meta.architecture,'canonical-card-with-printings');assert.equal(data.length,1,`${query} should prefer one exact multilingual name`);assert.equal(data[0].nameEn,expected)});
