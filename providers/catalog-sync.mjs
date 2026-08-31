@@ -17,14 +17,10 @@ const absolute=(value,base)=>value?new URL(value,base).href:null;
 const decodeHtml=s=>clean(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/<[^>]+>/g,' ').replace(/&#039;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/\s+/g,' ');
 
 async function providerJson(url,{timeout=60000}={}){
-  const response=await fetch(url,{headers:{Accept:'application/json','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(timeout)});
-  if(!response.ok)throw new Error(`${new URL(url).hostname}_${response.status}`);
-  return response.json();
+  for(let attempt=1;attempt<=3;attempt++){const response=await fetch(url,{headers:{Accept:'application/json','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(timeout)});if(response.ok)return response.json();if(attempt===3||![429,500,502,503,504].includes(response.status))throw new Error(`${new URL(url).hostname}_${response.status}`);await new Promise(resolve=>setTimeout(resolve,attempt*750))}
 }
 async function providerText(url,{timeout=60000}={}){
-  const response=await fetch(url,{headers:{Accept:'text/html','Accept-Language':'en','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(timeout)});
-  if(!response.ok)throw new Error(`${new URL(url).hostname}_${response.status}`);
-  return response.text();
+  for(let attempt=1;attempt<=3;attempt++){const response=await fetch(url,{headers:{Accept:'text/html','Accept-Language':'en','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(timeout)});if(response.ok)return response.text();if(attempt===3||![429,500,502,503,504].includes(response.status))throw new Error(`${new URL(url).hostname}_${response.status}`);await new Promise(resolve=>setTimeout(resolve,attempt*750))}
 }
 
 async function upsert(db,path,rows,onConflict='id'){
@@ -79,7 +75,7 @@ async function syncPokemon(db,{maxPages=Infinity}={}){
       const cardRows=items.map(c=>({id:`pokemon-pokemontcg-${slug(c.id)}`,canonical_id:`pokemon-pokemontcg-${slug(c.id)}`,game_id:'pokemon',series_id:seriesByProvider.get(c.set?.id)||null,official_card_number:c.number||c.id,rarity:c.rarity||null,name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[],source:provider,provider_id:c.id,search_text:searchText(c.name,c.number,c.id,c.set?.name,c.set?.id),metadata:{supertype:c.supertype||null,subtypes:c.subtypes||[],providerUpdatedAt:c.updatedAt||null},updated_at:new Date().toISOString()}));
       stats.written+=await upsert(db,'/tcg_cards',cardRows);
       const printingRows=items.map(c=>({card_id:`pokemon-pokemontcg-${slug(c.id)}`,series_id:seriesByProvider.get(c.set?.id)||null,region:'US',language:'en-US',local_set_code:c.set?.id||null,local_card_number:c.number||c.id,rarity:c.rarity||null,image_url:c.images?.small||null,source_url:`https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/${encodeURIComponent(c.id)}/`,release_date:ymd(c.set?.releaseDate),source:provider,provider_id:c.id,image_rehost_required:false,metadata:{imageLarge:c.images?.large||null},updated_at:new Date().toISOString()}));
-      stats.written+=await upsert(db,'/tcg_printings',printingRows,'card_id,region,language,local_set_code,local_card_number');page++;
+      stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');page++;
     }
     stats.metadata={sets:series.length,totalCards:totalCount,pages:page-1};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
@@ -96,7 +92,7 @@ async function syncYugioh(db){
       const cardRows=batch.map(c=>({id:`yugioh-ygoprodeck-${c.id}`,canonical_id:`yugioh-ygoprodeck-${c.id}`,game_id:'yugioh',series_id:seriesByName.get(c.card_sets?.[0]?.set_name)||null,official_card_number:String(c.id),rarity:c.card_sets?.[0]?.set_rarity||null,name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[c.archetype].filter(Boolean),source:provider,provider_id:String(c.id),search_text:searchText(c.name,c.id,c.archetype,(c.card_sets||[]).flatMap(s=>[s.set_name,s.set_code])),metadata:{type:c.type||null,race:c.race||null,attribute:c.attribute||null},updated_at:new Date().toISOString()}));
       stats.written+=await upsert(db,'/tcg_cards',cardRows);
       const printings=batch.flatMap(c=>(c.card_sets||[{set_name:null,set_code:String(c.id),set_rarity:null}]).map((s,i)=>({card_id:`yugioh-ygoprodeck-${c.id}`,series_id:seriesByName.get(s.set_name)||null,region:'US',language:'en-US',local_set_code:s.set_name||'unspecified',local_card_number:s.set_code||String(c.id),rarity:s.set_rarity||null,image_url:null,source_url:`https://db.ygoprodeck.com/card/?search=${encodeURIComponent(c.name)}`,release_date:null,source:provider,provider_id:`${c.id}:${s.set_code||i}`,image_rehost_required:true,metadata:{providerImageUrl:c.card_images?.[0]?.image_url_small||null,setPriceUsd:s.set_price||null},updated_at:new Date().toISOString()})));
-      stats.written+=await upsert(db,'/tcg_printings',printings,'card_id,region,language,local_set_code,local_card_number');
+      stats.written+=await upsert(db,'/tcg_printings',printings,'source,provider_id');
     }
     stats.metadata={sets:series.length,cards:cards.length,imagePolicy:'rehost-required'};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
@@ -113,7 +109,7 @@ async function syncOnePiece(db){
     const cardRows=cards.map(c=>({id:`onepiece-official-${slug(c.providerId)}`,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:null,official_card_number:c.number,rarity:c.rarity||null,name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[],source:provider,provider_id:c.providerId,search_text:searchText(c.name,c.number,c.rarity,c.cardType),metadata:{cardType:c.cardType},updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_cards',cardRows);
     const seriesByCode=new Map(series.map(s=>[s.official_code.replace('-',''),s.id])),printingRows=cards.map(c=>({card_id:`onepiece-official-${slug(c.providerId)}`,series_id:seriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,region:'ASIA',language:'en',local_set_code:c.number.split('-')[0]||'unknown',local_card_number:c.number,rarity:c.rarity||null,image_url:c.imageUrl,source_url:c.sourceUrl,release_date:null,source:provider,provider_id:c.providerId,image_rehost_required:false,metadata:{cardType:c.cardType},updated_at:new Date().toISOString()}));
-    stats.written+=await upsert(db,'/tcg_printings',printingRows,'card_id,region,language,local_set_code,local_card_number');stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length};await finishRun(db,runId,'completed',stats);return stats;
+    stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
