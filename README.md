@@ -8,9 +8,9 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 - **eBay Browse API**：既有多市場 adapter 保留，目前不自動查詢；掛牌價不可當作已成交價。
 - **遊々亭**：買取頁資料擷取，存入 Supabase `jp_buyback_prices`。
 - **Supabase**：使用者成交回報、日版買取行情、卡片多語名稱與匯率快取。
-- **Pokémon TCG API**：Pokémon 美版系列、卡片與圖片；TCGdex 目前只用於已確認的多語／圖片補充，不推測跨語 printing 對應。
-- **ONE PIECE CARD GAME 官方網站**：逐系列同步官方卡表與產品封面。
-- **YGOPRODeck**：遊戲王卡片與卡組索引；其卡圖標示 `image_rehost_required`，未自行保存前不在大量結果中長期 hotlink。
+- **Pokémon TCG API + TCGdex**：Pokémon 美版與台版繁中系列、卡片及圖片；不同語言只在有可靠 ID 時合併，不猜測跨語 printing。
+- **ONE PIECE CARD GAME 官方網站**：逐系列同步亞洲英文版與台版繁中官方卡表、卡面及產品封面。
+- **YGOPRODeck**：遊戲王卡片與卡組索引；卡圖會先保存至 CardScope 的 Supabase Storage，再由本站顯示，不大量 hotlink。
 - **卡拍拍 / SNKRDUNK**：尚未接入；網站不再顯示這兩個來源的示範價格。
 
 ## 更新頻率
@@ -23,6 +23,7 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 - 遊々亭：管理端抓取功能保留，正式排程建議每日一次。
 - 若 Supabase 已建立 `exchange_rates`，Render 重啟後會優先讀取 24 小時內的已存匯率。
 - Catalog 成功同步後 72 小時內不重跑；Render 啟動會在背景檢查，`CATALOG_SYNC_ON_START=false` 可停用。
+- Render 啟動會續傳尚未保存的遊戲王卡圖；可用 `CARD_IMAGE_CACHE_ON_START=false` 停用，或以 `CARD_IMAGE_CACHE_CONCURRENCY` 調整同時下載數。
 
 ## TWD 匯率
 
@@ -40,7 +41,9 @@ Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tc
 
 ## 圖片
 
-詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`、合法公開 Catalog 圖源，最後才是文字佔位；圖片載入失敗會降級為卡名與卡號。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。每筆保留 `source` 與 `source_url`，方便日後改為自行保存。
+詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`、合法公開 Catalog 圖源，最後才是文字佔位；圖片載入失敗會降級為卡名與卡號。YGOPRODeck 卡圖依其 API 條款先下載至公開讀取、僅服務端可上傳的 `card-images` bucket。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。每筆保留 `source` 與 `source_url`。
+
+`GET /api/catalog/image-status` 可查看遊戲王唯一卡面已保存／待補數量；受 `SCRAPE_SECRET` 保護的 `POST /api/admin/catalog/cache-images` 可手動續跑。
 
 ## 統一市場輸出
 

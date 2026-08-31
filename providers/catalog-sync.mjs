@@ -1,7 +1,9 @@
 const SOURCE_URLS={
   pokemontcg:'https://docs.pokemontcg.io/',
+  tcgdex:'https://tcgdex.dev/',
   ygoprodeck:'https://ygoprodeck.com/api-guide/',
-  'onepiece-official':'https://asia-en.onepiece-cardgame.com/'
+  'onepiece-official':'https://asia-en.onepiece-cardgame.com/',
+  'onepiece-official-tw':'https://asia-tc.onepiece-cardgame.com/'
 };
 
 const clean=s=>String(s||'').trim();
@@ -57,17 +59,17 @@ async function finishRun(db,id,status,stats,error=null){
   await db(`/catalog_sync_runs?id=eq.${id}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status,rows_seen:stats.seen||0,rows_written:stats.written||0,cursor:stats.cursor||null,error:error?String(error).slice(0,1000):null,metadata:stats.metadata||{},finished_at:new Date().toISOString()})});
 }
 
-export function parseOnePieceProducts(html){
+export function parseOnePieceProducts(html,base=SOURCE_URLS['onepiece-official']){
   const items=[],re=/<li class="linkListColBox" data-cat="([^"]+)">[\s\S]*?<a href="([^"]+)" class="linkListColItem">[\s\S]*?<img[^>]+data-src="([^"]+)"[^>]*>[\s\S]*?<h4 class="linkListColTitle">([\s\S]*?)<\/h4>[\s\S]*?<time[^>]+datetime="([^"]+)"/g;
   let m;
-  while((m=re.exec(html))){const sourceUrl=absolute(m[2],SOURCE_URLS['onepiece-official']),providerId=new URL(sourceUrl).pathname.replace(/\/$/,'').split('/').pop()||String(items.length);items.push({id:`onepiece-product-${slug(providerId)}`,game_id:'onepiece',series_id:null,official_code:null,product_type:decodeHtml(m[1]),name_zh:null,name_ja:null,name_en:decodeHtml(m[4]),name_ko:null,aliases:[],region:'ASIA',language:'en',release_date:ymd(m[5]),image_url:absolute(m[3],SOURCE_URLS['onepiece-official']),image_kind:'sealed-product',source:'onepiece-official',source_url:sourceUrl,provider_id:providerId,metadata:{category:decodeHtml(m[1])},updated_at:new Date().toISOString()})}
+  while((m=re.exec(html))){const sourceUrl=absolute(m[2],base),providerId=new URL(sourceUrl).pathname.replace(/\/$/,'').split('/').pop()||String(items.length);items.push({id:`onepiece-product-${slug(providerId)}`,game_id:'onepiece',series_id:null,official_code:null,product_type:decodeHtml(m[1]),name_zh:null,name_ja:null,name_en:decodeHtml(m[4]),name_ko:null,aliases:[],region:'ASIA',language:'en',release_date:ymd(m[5]),image_url:absolute(m[3],base),image_kind:'sealed-product',source:'onepiece-official',source_url:sourceUrl,provider_id:providerId,metadata:{category:decodeHtml(m[1])},updated_at:new Date().toISOString()})}
   return items;
 }
 
-export function parseOnePieceCards(html){
+export function parseOnePieceCards(html,base='https://asia-en.onepiece-cardgame.com/cardlist/'){
   const cards=[],seen=new Set(),re=/<a class="modalOpen"[\s\S]*?data-src="([^"]*\/images\/cardlist\/card\/([^"?]+?\.png)[^"]*)"[^>]*alt="([^"]*)"[^>]*><\/a>\s*<dl[\s\S]*?<div class="infoCol">\s*<span>([^<]+)<\/span>\s*\|\s*<span>([^<]+)<\/span>\s*\|\s*<span>([^<]+)<\/span>[\s\S]*?<div class="cardName">([^<]+)<\/div>/g;
   let m;
-  while((m=re.exec(html))){const number=clean(m[4]),file=clean(m[2]),providerId=file.replace(/\.png$/i,''),key=`${number}:${providerId}`;if(seen.has(key))continue;seen.add(key);cards.push({providerId,number,rarity:clean(m[5]),cardType:clean(m[6]),name:decodeHtml(m[7]),imageUrl:absolute(m[1],'https://asia-en.onepiece-cardgame.com/cardlist/'),sourceUrl:'https://asia-en.onepiece-cardgame.com/cardlist/'})}
+  while((m=re.exec(html))){const number=clean(m[4]),file=clean(m[2]),providerId=file.replace(/\.png$/i,''),key=`${number}:${providerId}`;if(seen.has(key))continue;seen.add(key);cards.push({providerId,number,rarity:clean(m[5]),cardType:clean(m[6]),name:decodeHtml(m[7]),imageUrl:absolute(m[1],base),sourceUrl:base})}
   return cards;
 }
 
@@ -91,6 +93,23 @@ async function syncPokemon(db,{maxPages=Infinity}={}){
       for(const {set,items,error} of payloads){if(error){missedSets.push({id:set.provider_id,error:error.message});continue}stats.seen+=items.length;stats.cursor=set.provider_id;const cardRows=items.map(c=>{const nameZh=localizePokemonName(c.name,c.nationalPokedexNumbers,speciesNames);return {id:`pokemon-pokemontcg-${slug(c.id)}`,canonical_id:`pokemon-pokemontcg-${slug(c.id)}`,game_id:'pokemon',series_id:set.id,official_card_number:c.number||c.id,rarity:c.rarity||null,name_zh:nameZh,name_ja:null,name_en:c.name,name_ko:null,aliases:nameZh?[nameZh]:[],source:provider,provider_id:c.id,search_text:searchText(c.name,nameZh,c.number,c.id,set.name_en,set.provider_id,set.aliases),metadata:{supertype:c.supertype||null,subtypes:c.subtypes||[],nationalPokedexNumbers:c.nationalPokedexNumbers||[]},updated_at:new Date().toISOString()}});stats.written+=await upsert(db,'/tcg_cards',cardRows);const printingRows=items.map(c=>({card_id:`pokemon-pokemontcg-${slug(c.id)}`,series_id:set.id,region:'US',language:'en-US',local_set_code:set.provider_id,local_card_number:c.number||c.id,rarity:c.rarity||null,image_url:c.images?.small||null,source_url:`https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/${encodeURIComponent(c.id)}/`,release_date:set.release_date,source:provider,provider_id:c.id,image_rehost_required:false,metadata:{imageLarge:c.images?.large||null},updated_at:new Date().toISOString()}));stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');processedSets++}
     }
     stats.metadata={sets:series.length,processedSets,totalCards:stats.seen,missedSets,dataSource:'PokemonTCG/pokemon-tcg-data'};await finishRun(db,runId,'completed',stats);return stats;
+  }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
+}
+
+async function syncPokemonZhTw(db){
+  const provider='tcgdex-zh-tw',runId=await startRun(db,provider,'catalog'),stats={seen:0,written:0,cursor:null,metadata:{}};
+  try{
+    const [cards,sets]=await Promise.all([providerJson('https://api.tcgdex.net/v2/zh-tw/cards'),providerJson('https://api.tcgdex.net/v2/zh-tw/sets')]);
+    const series=(sets||[]).map(s=>({id:`pokemon-tcgdex-tw-${slug(s.id)}`,game_id:'pokemon',official_code:s.id,name_zh:s.name||null,name_ja:null,name_en:null,name_ko:null,region:'TW',language:'zh-Hant-TW',release_date:ymd(s.releaseDate),aliases:[s.id].filter(Boolean),source_url:`https://www.tcgdex.net/database/sets/${encodeURIComponent(s.id)}`,image_url:s.logo?`${s.logo}.webp`:null,image_kind:'series-logo',source:provider,provider_id:s.id,metadata:{symbolUrl:s.symbol?`${s.symbol}.webp`:null,total:s.cardCount?.total??s.cardCount?.official??null},updated_at:new Date().toISOString()}));
+    stats.written+=await upsert(db,'/tcg_series',series);
+    stats.written+=await upsert(db,'/tcg_products',series.map(s=>({id:`pokemon-tcgdex-tw-series-${slug(s.provider_id)}`,game_id:'pokemon',series_id:s.id,official_code:s.official_code,product_type:'系列',name_zh:s.name_zh,name_ja:null,name_en:null,name_ko:null,aliases:s.aliases,region:'TW',language:'zh-Hant-TW',release_date:s.release_date,image_url:s.image_url,image_kind:'series-logo',source:provider,source_url:s.source_url,provider_id:s.provider_id,metadata:s.metadata,updated_at:new Date().toISOString()})));
+    const setIds=series.map(s=>String(s.provider_id)).sort((a,b)=>b.length-a.length),seriesById=new Map(series.map(s=>[String(s.provider_id).toLocaleLowerCase(),s.id]));
+    for(const batch of chunks(cards||[],150)){
+      const normalized=batch.map(c=>{const id=String(c.id),setId=setIds.find(value=>id.toLocaleLowerCase().startsWith(`${value.toLocaleLowerCase()}-`))||id.split('-')[0],seriesId=seriesById.get(setId.toLocaleLowerCase())||null,imageUrl=c.image?`${c.image}/low.webp`:null;return {...c,setId,seriesId,imageUrl}});
+      stats.written+=await upsert(db,'/tcg_cards',normalized.map(c=>({id:`pokemon-tcgdex-tw-${slug(c.id)}`,canonical_id:`pokemon-tcgdex-tw-${slug(c.id)}`,game_id:'pokemon',series_id:c.seriesId,official_card_number:c.localId||c.id,rarity:null,name_zh:c.name||null,name_ja:null,name_en:null,name_ko:null,aliases:[c.id].filter(Boolean),source:provider,provider_id:c.id,search_text:searchText(c.name,c.localId,c.id,c.setId),metadata:{tcgdexId:c.id},updated_at:new Date().toISOString()})));
+      stats.written+=await upsert(db,'/tcg_printings',normalized.map(c=>({card_id:`pokemon-tcgdex-tw-${slug(c.id)}`,series_id:c.seriesId,region:'TW',language:'zh-Hant-TW',local_set_code:c.setId,local_card_number:c.localId||c.id,rarity:null,image_url:c.imageUrl,source_url:`https://www.tcgdex.net/database/cards/${encodeURIComponent(c.id)}`,release_date:null,source:provider,provider_id:c.id,image_rehost_required:false,metadata:{imageBase:c.image||null},updated_at:new Date().toISOString()})),'source,provider_id');stats.seen+=batch.length;stats.cursor=batch.at(-1)?.id||stats.cursor;
+    }
+    stats.metadata={sets:series.length,cards:stats.seen,language:'zh-Hant-TW',dataSource:'TCGdex'};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
@@ -122,19 +141,29 @@ async function syncOnePiece(db){
     const cardRows=cards.map(c=>({id:`onepiece-official-${slug(c.providerId)}`,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:null,official_card_number:c.number,rarity:c.rarity||null,name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[],source:provider,provider_id:c.providerId,search_text:searchText(c.name,c.number,c.rarity,c.cardType),metadata:{cardType:c.cardType},updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_cards',cardRows);
     const seriesByCode=new Map(series.map(s=>[s.official_code.replace('-',''),s.id])),printingRows=cards.map(c=>({card_id:`onepiece-official-${slug(c.providerId)}`,series_id:seriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,region:'ASIA',language:'en',local_set_code:c.number.split('-')[0]||'unknown',local_card_number:c.number,rarity:c.rarity||null,image_url:c.imageUrl,source_url:c.sourceUrl,release_date:null,source:provider,provider_id:c.providerId,image_rehost_required:false,metadata:{cardType:c.cardType},updated_at:new Date().toISOString()}));
-    stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');const counts=new Map();for(const printing of printingRows)if(printing.series_id)counts.set(printing.series_id,(counts.get(printing.series_id)||0)+1);stats.written+=await upsert(db,'/tcg_series',series.map(s=>({...s,metadata:{...s.metadata,cardsCount:counts.get(s.id)||0}})));stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length};await finishRun(db,runId,'completed',stats);return stats;
+    stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');const counts=new Map();for(const printing of printingRows)if(printing.series_id)counts.set(printing.series_id,(counts.get(printing.series_id)||0)+1);stats.written+=await upsert(db,'/tcg_series',series.map(s=>({...s,metadata:{...s.metadata,cardsCount:counts.get(s.id)||0}})));
+    const twBase='https://asia-tc.onepiece-cardgame.com/',twCardBase=`${twBase}cardlist/`,[twProductsHtml,twIndexHtml]=await Promise.all([providerText(`${twBase}products/`),providerText(`${twCardBase}?search=true`)]),twCovers=parseOnePieceProducts(twProductsHtml,twBase),twOptions=parseOnePieceSeries(twIndexHtml),twSeries=twOptions.map(s=>({id:`onepiece-official-tw-${slug(s.code)}`,game_id:'onepiece',official_code:s.code,name_zh:s.name,name_ja:null,name_en:null,name_ko:null,region:'TW',language:'zh-Hant-TW',release_date:null,aliases:[s.code],source_url:`${twCardBase}?search=true&series=${s.providerId}`,image_url:null,image_kind:'series-logo',source:'onepiece-official-tw',provider_id:s.providerId,metadata:{productType:s.productType},updated_at:new Date().toISOString()}));
+    stats.written+=await upsert(db,'/tcg_series',twSeries);
+    const twProducts=twOptions.map(s=>{const cover=twCovers.find(p=>String(p.name_en||'').includes(s.code));return {id:`onepiece-tw-product-${slug(s.code)}`,game_id:'onepiece',series_id:`onepiece-official-tw-${slug(s.code)}`,official_code:s.code,product_type:s.productType,name_zh:cover?.name_en||s.name,name_ja:null,name_en:null,name_ko:null,aliases:[s.code],region:'TW',language:'zh-Hant-TW',release_date:cover?.release_date||null,image_url:cover?.image_url||null,image_kind:cover?.image_url?'sealed-product':'series-logo',source:'onepiece-official-tw',source_url:cover?.source_url||`${twCardBase}?search=true&series=${s.providerId}`,provider_id:s.providerId,metadata:{cardListSeriesId:s.providerId},updated_at:new Date().toISOString()}});
+    stats.written+=await upsert(db,'/tcg_products',twProducts);
+    const twPages=[];for(let i=0;i<twOptions.length;i+=4){const batch=twOptions.slice(i,i+4),htmls=await Promise.all(batch.map(s=>providerText(`${twCardBase}?search=true&series=${s.providerId}`)));twPages.push(...htmls);if(i+4<twOptions.length)await new Promise(resolve=>setTimeout(resolve,150))}
+    const twCards=[],seenTw=new Set();for(const html of twPages)for(const card of parseOnePieceCards(html,twCardBase)){if(seenTw.has(card.providerId))continue;seenTw.add(card.providerId);twCards.push(card)}
+    const englishByProviderId=new Map(cards.map(c=>[c.providerId,c])),twSeriesByCode=new Map(twSeries.map(s=>[s.official_code.replace('-',''),s.id]));
+    stats.written+=await upsert(db,'/tcg_cards',twCards.map(c=>{const en=englishByProviderId.get(c.providerId);return {id:`onepiece-official-${slug(c.providerId)}`,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:seriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,official_card_number:c.number,rarity:c.rarity||en?.rarity||null,name_zh:c.name,name_ja:null,name_en:en?.name||null,name_ko:null,aliases:[c.name,en?.name].filter(Boolean),source:provider,provider_id:c.providerId,search_text:searchText(c.name,en?.name,c.number,c.rarity,c.cardType),metadata:{cardType:c.cardType},updated_at:new Date().toISOString()}}));
+    stats.written+=await upsert(db,'/tcg_printings',twCards.map(c=>({card_id:`onepiece-official-${slug(c.providerId)}`,series_id:twSeriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,region:'TW',language:'zh-Hant-TW',local_set_code:c.number.split('-')[0]||'unknown',local_card_number:c.number,rarity:c.rarity||null,image_url:c.imageUrl,source_url:c.sourceUrl,release_date:null,source:'onepiece-official-tw',provider_id:c.providerId,image_rehost_required:false,metadata:{cardType:c.cardType},updated_at:new Date().toISOString()})),'source,provider_id');
+    stats.seen+=twCovers.length+twOptions.length+twCards.length;stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length,twProducts:twProducts.length,twSets:twSeries.length,twCards:twCards.length};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
 export async function catalogProvidersNeedingSync(db,maxAgeHours=72){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',onepiece:'onepiece-official',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
 }
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}
 
 export async function syncCatalog(db,{providers=['pokemon','onepiece','yugioh'],maxPokemonPages=Infinity}={}){
   const results={};
-  for(const provider of providers){try{results[provider]=provider==='pokemon'?await syncPokemon(db,{maxPages:maxPokemonPages}):provider==='onepiece'?await syncOnePiece(db):await syncYugioh(db)}catch(error){results[provider]={error:error.message}}}
+  for(const provider of providers){try{results[provider]=provider==='pokemon'?await syncPokemon(db,{maxPages:maxPokemonPages}):provider==='pokemonZhTw'?await syncPokemonZhTw(db):provider==='onepiece'?await syncOnePiece(db):await syncYugioh(db)}catch(error){results[provider]={error:error.message}}}
   return results;
 }
 
