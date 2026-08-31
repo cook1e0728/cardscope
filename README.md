@@ -8,6 +8,9 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 - **eBay Browse API**：既有多市場 adapter 保留，目前不自動查詢；掛牌價不可當作已成交價。
 - **遊々亭**：買取頁資料擷取，存入 Supabase `jp_buyback_prices`。
 - **Supabase**：使用者成交回報、日版買取行情、卡片多語名稱與匯率快取。
+- **Pokémon TCG API**：Pokémon 美版系列、卡片與圖片；TCGdex 目前只用於已確認的多語／圖片補充，不推測跨語 printing 對應。
+- **ONE PIECE CARD GAME 官方網站**：逐系列同步官方卡表與產品封面。
+- **YGOPRODeck**：遊戲王卡片與卡組索引；其卡圖標示 `image_rehost_required`，未自行保存前不在大量結果中長期 hotlink。
 - **卡拍拍 / SNKRDUNK**：尚未接入；網站不再顯示這兩個來源的示範價格。
 
 ## 更新頻率
@@ -19,6 +22,7 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 - Frankfurter 匯率：成功後 24 小時更新一次。
 - 遊々亭：管理端抓取功能保留，正式排程建議每日一次。
 - 若 Supabase 已建立 `exchange_rates`，Render 重啟後會優先讀取 24 小時內的已存匯率。
+- Catalog 成功同步後 72 小時內不重跑；Render 啟動會在背景檢查，`CATALOG_SYNC_ON_START=false` 可停用。
 
 ## TWD 匯率
 
@@ -58,6 +62,10 @@ Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tc
 - `card_images`：同卡不同語言與來源的圖片索引。
 
 `supabase/migrations/20260831_canonical_multilingual_catalog.sql` 以非破壞方式新增 canonical identity、韓文原名欄位、指定卡片與可用圖片索引。
+
+`supabase/migrations/20260831_catalog_sync_pipeline.sql` 新增 `tcg_products`、`catalog_sync_runs` 與 provider/search 欄位。`tcg_products` 只接受 `sealed-product` 或 `series-logo`，一般單卡不會進入卡盒資料。
+
+管理端可用 `POST /api/admin/catalog/sync?provider=all`（`x-scrape-token`）手動重跑；`GET /api/catalog/sync-status` 提供不含密鑰的同步摘要。
 
 注意：把 SQL 檔推到 GitHub **不代表遠端 Supabase 一定會自動執行 migration**；是否自動套用取決於你的 Supabase CI / deployment 設定。
 
