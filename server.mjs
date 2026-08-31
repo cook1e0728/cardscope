@@ -155,11 +155,13 @@ async function loadCatalogCoverage(){
   try{
     const runs=await supabaseFetch('/catalog_sync_runs?select=provider,rowsSeen:rows_seen,metadata,finishedAt:finished_at&status=eq.completed&order=finished_at.desc&limit=12'),latest=new Map();
     for(const run of runs||[])if(!latest.has(run.provider))latest.set(run.provider,run);
-    const pokemon=latest.get('pokemontcg'),onepiece=latest.get('onepiece-official'),yugioh=latest.get('ygoprodeck'),games={
+    const pokemon=latest.get('pokemontcg'),onepiece=latest.get('onepiece-official'),yugioh=latest.get('ygoprodeck'),haikyuu=latest.get('haikyu-official'),weiss=latest.get('weiss-schwarz-official'),games={
       pokemon:{cards:Number(pokemon?.metadata?.totalCards||pokemon?.rowsSeen||0),displayableImages:Number(pokemon?.metadata?.totalCards||pokemon?.rowsSeen||0),provider:'Pokémon TCG Data'},
       onepiece:{cards:Number(onepiece?.metadata?.cards||0),displayableImages:Number(onepiece?.metadata?.cards||0),provider:'ONE PIECE 官方卡表'},
-      yugioh:{cards:Number(yugioh?.metadata?.cards||yugioh?.rowsSeen||0),displayableImages:0,provider:'YGOPRODeck',imageNotice:'圖片來源要求先自行保存，因此不直接長期引用'}
-    },finished=[pokemon,onepiece,yugioh].map(x=>x?.finishedAt).filter(Boolean).sort().at(-1)||null;
+      yugioh:{cards:Number(yugioh?.metadata?.cards||yugioh?.rowsSeen||0),displayableImages:0,provider:'YGOPRODeck',imageNotice:'圖片來源要求先自行保存，因此不直接長期引用'},
+      haikyuu:{cards:Number(haikyuu?.metadata?.cards||haikyuu?.rowsSeen||0),displayableImages:Number(haikyuu?.metadata?.images||0),provider:'Takara Tomy 官方卡表'},
+      'weiss-schwarz':{cards:Number(weiss?.metadata?.cards||weiss?.rowsSeen||0),displayableImages:Number(weiss?.metadata?.images||0),provider:'Weiß Schwarz 官方卡表'}
+    },finished=[pokemon,onepiece,yugioh,haikyuu,weiss].map(x=>x?.finishedAt).filter(Boolean).sort().at(-1)||null;
     return {totalCards:Object.values(games).reduce((sum,g)=>sum+g.cards,0),games,source:'supabase-sync-runs',updatedAt:finished};
   }catch(error){return {totalCards:fallback.cards.length,games:Object.fromEntries(fallback.games.map(g=>[g.id,{cards:fallback.cards.filter(c=>c.game===g.id).length,displayableImages:fallback.cards.filter(c=>c.game===g.id&&c.imageUrl).length}])),source:'catalog.json',updatedAt:fallback.updatedAt||null,fallbackReason:error.message}}
 }
