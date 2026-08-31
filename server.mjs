@@ -148,6 +148,20 @@ async function loadCatalog(){
     return canonicalizeCatalog(merged);
   }catch(error){return canonicalizeCatalog({...fallback,source:'catalog.json',fallbackReason:error.message})}
 }
+async function loadCatalogCoverage(){
+  const fallback=await loadFallbackCatalog();
+  if(!supabaseConfigured())return {totalCards:fallback.cards.length,games:Object.fromEntries(fallback.games.map(g=>[g.id,{cards:fallback.cards.filter(c=>c.game===g.id).length,displayableImages:fallback.cards.filter(c=>c.game===g.id&&c.imageUrl).length}])),source:'catalog.json',updatedAt:fallback.updatedAt||null};
+  try{
+    const runs=await supabaseFetch('/catalog_sync_runs?select=provider,rowsSeen:rows_seen,metadata,finishedAt:finished_at&status=eq.completed&order=finished_at.desc&limit=12'),latest=new Map();
+    for(const run of runs||[])if(!latest.has(run.provider))latest.set(run.provider,run);
+    const pokemon=latest.get('pokemontcg'),onepiece=latest.get('onepiece-official'),yugioh=latest.get('ygoprodeck'),games={
+      pokemon:{cards:Number(pokemon?.metadata?.totalCards||pokemon?.rowsSeen||0),displayableImages:Number(pokemon?.metadata?.totalCards||pokemon?.rowsSeen||0),provider:'Pokémon TCG Data'},
+      onepiece:{cards:Number(onepiece?.metadata?.cards||0),displayableImages:Number(onepiece?.metadata?.cards||0),provider:'ONE PIECE 官方卡表'},
+      yugioh:{cards:Number(yugioh?.metadata?.cards||yugioh?.rowsSeen||0),displayableImages:0,provider:'YGOPRODeck',imageNotice:'圖片來源要求先自行保存，因此不直接長期引用'}
+    },finished=[pokemon,onepiece,yugioh].map(x=>x?.finishedAt).filter(Boolean).sort().at(-1)||null;
+    return {totalCards:Object.values(games).reduce((sum,g)=>sum+g.cards,0),games,source:'supabase-sync-runs',updatedAt:finished};
+  }catch(error){return {totalCards:fallback.cards.length,games:Object.fromEntries(fallback.games.map(g=>[g.id,{cards:fallback.cards.filter(c=>c.game===g.id).length,displayableImages:fallback.cards.filter(c=>c.game===g.id&&c.imageUrl).length}])),source:'catalog.json',updatedAt:fallback.updatedAt||null,fallbackReason:error.message}}
+}
 async function fetchCardIdentities({query,cardNumber,limit=10}){const catalog=await loadCatalog(),needle=normalizeSearch(query),numberNeedle=normalizeSearch(cardNumber);return catalog.cards.filter(card=>{const names=[card.nameZh,card.nameJa,card.nameEn,card.nameKo,...(card.aliases||[]),...(card.printings||[]).flatMap(p=>[p.nameZh,p.nameJa,p.nameEn,p.nameKo])],numbers=[card.officialCardNumber,...(card.printings||[]).map(p=>p.localCardNumber)];return names.some(name=>normalizeSearch(name).includes(needle))&&(!numberNeedle||numbers.some(number=>normalizeSearch(number).includes(numberNeedle)))}).slice(0,limit).map(card=>({id:card.id,canonicalId:card.canonicalId,cardNumber:card.officialCardNumber,game:card.game,seriesId:card.seriesId,rarity:card.rarity,nameZh:card.nameZh,nameJa:card.nameJa,nameEn:card.nameEn,nameKo:card.nameKo,aliases:card.aliases,printings:card.printings}))}
 
 const postgrestLike=s=>String(s||'').replace(/[\\%_*(),.]/g,'').trim();
@@ -187,6 +201,7 @@ async function scrapeYuyutei(targetUrl){const response=await fetch(targetUrl,{he
 const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${req.headers.host}`);
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog'&&req.method==='GET'){const data=await loadCatalog();return json(res,200,{data,meta:{source:data.source,fallbackReason:data.fallbackReason||null}})}
+  if(url.pathname==='/api/catalog/coverage'&&req.method==='GET'){return json(res,200,{data:await loadCatalogCoverage()})}
   if(url.pathname==='/api/products'&&req.method==='GET'){try{const data=await loadProductSets();return json(res,200,{data,meta:{sources:['CardScope official index','Pokemon TCG API','YGOPRODeck','ONE PIECE official products'],warning:'繁體中文名稱只在有可靠對照時優先顯示；每筆保留實際地區與語言。產品與系列不是庫存或銷量。'}})}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
   if(url.pathname==='/api/card-identities'&&req.method==='GET'){if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const query=url.searchParams.get('q')?.trim(),cardNumber=url.searchParams.get('cardNumber')?.trim();if(!query)return json(res,400,{error:'請提供 q'});try{return json(res,200,{data:await fetchCardIdentities({query,cardNumber})||[]})}catch{return json(res,404,{error:'卡片多語對照表尚未設定'})}}
@@ -222,4 +237,5 @@ server.listen(port,()=>{
   console.log(`CardScope is running at http://localhost:${port}`);
   if(process.env.CATALOG_SYNC_ON_START!=='false'&&supabaseConfigured())setTimeout(async()=>{try{const providers=await catalogProvidersNeedingSync(supabaseFetch,72);if(providers.length){console.log('starting scheduled catalog sync',providers.join(','));const result=await syncCatalog(supabaseFetch,{providers});console.log('scheduled catalog sync complete',JSON.stringify(result))}}catch(error){console.error('scheduled catalog sync failed',error.message)}},3000);
 });
+
 
