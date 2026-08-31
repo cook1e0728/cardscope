@@ -15,6 +15,9 @@ const searchText=(...values)=>{
 const chunks=(rows,size=150)=>Array.from({length:Math.ceil(rows.length/size)},(_,i)=>rows.slice(i*size,(i+1)*size));
 const absolute=(value,base)=>value?new URL(value,base).href:null;
 const decodeHtml=s=>clean(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/<[^>]+>/g,' ').replace(/&#039;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/\s+/g,' ');
+const PRODUCT_ZH=new Map(Object.entries({'Scarlet & Violet':'朱／紫','Paldea Evolved':'帕底亞進化','Obsidian Flames':'黑曜火焰','Paradox Rift':'悖謬裂谷','Paldean Fates':'帕底亞命運','Temporal Forces':'時空力量','Twilight Masquerade':'暮夜假面','Shrouded Fable':'迷霧傳說','Stellar Crown':'星晶王冠','Surging Sparks':'奔湧火花','Prismatic Evolutions':'稜彩進化','Journey Together':'並肩同行','Destined Rivals':'宿命勁敵','White Flare':'白色火焰','Black Bolt':'黑色雷霆','Mega Evolution':'超級進化','Phantasmal Flames':'幻影火焰','Perfect Order':'完美秩序','Chaos Rising':'混沌崛起','Pitch Black':'漆黑','Sword & Shield':'劍／盾','ROMANCE DAWN':'浪漫黎明','Paramount War':'頂上戰爭','Pillars of Strength':'強大之敵','Kingdoms of Intrigue':'謀略王國','Awakening of the New Era':'新時代的主角','Wings of Captain':'船長之翼','500 Years in the Future':'500 年後的未來','Two Legends':'雙璧霸王','Emperors in the New World':'新世界的四皇','Royal Blood':'王族血統','A Fist of Divine Speed':'神速的一拳','The Three Captains':'三船長','The Three Brothers Bond':'三兄弟的羈絆','Straw Hat Crew':'草帽一夥','Worst Generation':'極惡世代','The Navy':'海軍','Animal Kingdom Pirates':'百獸海賊團','The Seven Warlords of the Sea':'王下七武海','Big Mom Pirates':'BIG MOM 海賊團'}));
+const TYPE_ZH={pokemon:'寶可夢系列',yugioh:'遊戲王系列',onepiece:'航海王系列','BOOSTER PACK':'補充包','EXTRA BOOSTER':'額外補充包','PREMIUM BOOSTER':'高級補充包','STARTER DECK':'起始牌組','STARTER DECK EX':'起始牌組 EX','ULTIMATE DECK':'終極牌組',boosters:'補充包',others:'周邊產品'};
+export function localizeProductName(game,name,productType){const original=clean(name),exact=PRODUCT_ZH.get(original);if(exact)return exact;let translated=original;for(const [english,zh] of PRODUCT_ZH)translated=translated.replaceAll(english,zh);translated=translated.replace(/BOOSTER PACK/gi,'補充包').replace(/EXTRA BOOSTER/gi,'額外補充包').replace(/PREMIUM BOOSTER/gi,'高級補充包').replace(/STARTER DECK EX/gi,'起始牌組 EX').replace(/STARTER DECK/gi,'起始牌組').replace(/ULTIMATE DECK/gi,'終極牌組').replace(/Official Playmat/gi,'官方遊戲墊').replace(/Official Storage Box/gi,'官方收納盒').replace(/Premium Card Collection/gi,'高級卡片收藏組').replace(/Limited Card Sleeve/gi,'限定卡套');if(translated!==original)return translated;return `${TYPE_ZH[productType]||TYPE_ZH[game]||'系列'}｜${original}`}
 
 export function parsePokemonSpeciesNames(csv){
   const rows=new Map();
@@ -37,6 +40,7 @@ async function providerText(url,{timeout=60000}={}){
 }
 
 async function upsert(db,path,rows,onConflict='id'){
+  if(path==='/tcg_products'||path==='/tcg_series')rows=rows.map(row=>{if(row.name_zh)return row;const nameZh=localizeProductName(row.game_id,row.name_en,row.product_type);return {...row,name_zh:nameZh,metadata:{...(row.metadata||{}),translationStatus:'unofficial',translationOriginal:row.name_en}}});
   const conflictColumns=onConflict.split(','),deduped=[...new Map(rows.map(row=>[conflictColumns.map(column=>String(row[column]??'')).join('\u001f'),row])).values()];let written=0;
   for(const batch of chunks(deduped)){
     await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch)});
