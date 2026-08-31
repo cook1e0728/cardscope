@@ -16,6 +16,19 @@ const chunks=(rows,size=150)=>Array.from({length:Math.ceil(rows.length/size)},(_
 const absolute=(value,base)=>value?new URL(value,base).href:null;
 const decodeHtml=s=>clean(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/<[^>]+>/g,' ').replace(/&#039;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/\s+/g,' ');
 
+export function parsePokemonSpeciesNames(csv){
+  const rows=new Map();
+  for(const line of String(csv).split(/\r?\n/)){const m=line.match(/^(\d+),(4|9),("(?:[^"]|"")*"|[^,]*),/);if(!m)continue;const id=Number(m[1]),name=m[3].replace(/^"|"$/g,'').replaceAll('""','"'),row=rows.get(id)||{};row[m[2]==='4'?'zh':'en']=name;rows.set(id,row)}
+  return rows;
+}
+export function localizePokemonName(name,pokedexNumbers,speciesNames){
+  const row=(pokedexNumbers||[]).map(id=>speciesNames.get(Number(id))).find(x=>x?.zh&&x?.en);if(!row)return null;
+  const value=clean(name),lower=value.toLocaleLowerCase(),english=row.en.toLocaleLowerCase();
+  if(lower===english)return row.zh;
+  if(lower.startsWith(`${english} `))return `${row.zh}${value.slice(row.en.length)}`;
+  return null;
+}
+
 async function providerJson(url,{timeout=60000}={}){
   for(let attempt=1;attempt<=3;attempt++){const response=await fetch(url,{headers:{Accept:'application/json','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(timeout)});if(response.ok)return response.json();if(attempt===3||![429,500,502,503,504].includes(response.status))throw new Error(`${new URL(url).hostname}_${response.status}`);await new Promise(resolve=>setTimeout(resolve,attempt*750))}
 }
@@ -63,7 +76,7 @@ export function parseOnePieceSeries(html){
 async function syncPokemon(db,{maxPages=Infinity}={}){
   const provider='pokemontcg',runId=await startRun(db,provider,'catalog'),stats={seen:0,written:0,cursor:null,metadata:{}};
   try{
-    const setBody=await providerJson('https://api.pokemontcg.io/v2/sets?pageSize=250&orderBy=-releaseDate');
+    const [setBody,speciesCsv]=await Promise.all([providerJson('https://api.pokemontcg.io/v2/sets?pageSize=250&orderBy=-releaseDate'),providerText('https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon_species_names.csv')]),speciesNames=parsePokemonSpeciesNames(speciesCsv);
     const series=(setBody.data||[]).map(s=>({id:`pokemon-pokemontcg-${slug(s.id)}`,game_id:'pokemon',official_code:s.id,name_zh:null,name_ja:null,name_en:s.name,name_ko:null,region:'US',language:'en-US',release_date:ymd(s.releaseDate),aliases:[s.id,s.series,s.ptcgoCode].filter(Boolean),source_url:'https://www.pokemontcg.io/',image_url:s.images?.logo||null,image_kind:'series-logo',source:provider,provider_id:s.id,metadata:{ptcgoCode:s.ptcgoCode||null,printedTotal:s.printedTotal,total:s.total,symbolUrl:s.images?.symbol||null},updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_series',series);
     const products=series.map(s=>({id:`pokemon-series-${slug(s.provider_id)}`,game_id:'pokemon',series_id:s.id,official_code:s.official_code,product_type:'系列',name_zh:null,name_ja:null,name_en:s.name_en,name_ko:null,aliases:s.aliases,region:'US',language:'en-US',release_date:s.release_date,image_url:s.image_url,image_kind:'series-logo',source:provider,source_url:s.source_url,provider_id:s.provider_id,metadata:s.metadata,updated_at:new Date().toISOString()}));
@@ -71,7 +84,7 @@ async function syncPokemon(db,{maxPages=Infinity}={}){
     const selectedSeries=series.slice(0,Number.isFinite(maxPages)?Math.max(0,maxPages):series.length);let processedSets=0;const missedSets=[];
     for(const setBatch of chunks(selectedSeries,6)){
       const payloads=await Promise.all(setBatch.map(async set=>{try{return {set,items:await providerJson(`https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/${encodeURIComponent(set.provider_id)}.json`)}}catch(error){return {set,error}}}));
-      for(const {set,items,error} of payloads){if(error){missedSets.push({id:set.provider_id,error:error.message});continue}stats.seen+=items.length;stats.cursor=set.provider_id;const cardRows=items.map(c=>({id:`pokemon-pokemontcg-${slug(c.id)}`,canonical_id:`pokemon-pokemontcg-${slug(c.id)}`,game_id:'pokemon',series_id:set.id,official_card_number:c.number||c.id,rarity:c.rarity||null,name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[],source:provider,provider_id:c.id,search_text:searchText(c.name,c.number,c.id,set.name_en,set.provider_id,set.aliases),metadata:{supertype:c.supertype||null,subtypes:c.subtypes||[],nationalPokedexNumbers:c.nationalPokedexNumbers||[]},updated_at:new Date().toISOString()}));stats.written+=await upsert(db,'/tcg_cards',cardRows);const printingRows=items.map(c=>({card_id:`pokemon-pokemontcg-${slug(c.id)}`,series_id:set.id,region:'US',language:'en-US',local_set_code:set.provider_id,local_card_number:c.number||c.id,rarity:c.rarity||null,image_url:c.images?.small||null,source_url:`https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/${encodeURIComponent(c.id)}/`,release_date:set.release_date,source:provider,provider_id:c.id,image_rehost_required:false,metadata:{imageLarge:c.images?.large||null},updated_at:new Date().toISOString()}));stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');processedSets++}
+      for(const {set,items,error} of payloads){if(error){missedSets.push({id:set.provider_id,error:error.message});continue}stats.seen+=items.length;stats.cursor=set.provider_id;const cardRows=items.map(c=>{const nameZh=localizePokemonName(c.name,c.nationalPokedexNumbers,speciesNames);return {id:`pokemon-pokemontcg-${slug(c.id)}`,canonical_id:`pokemon-pokemontcg-${slug(c.id)}`,game_id:'pokemon',series_id:set.id,official_card_number:c.number||c.id,rarity:c.rarity||null,name_zh:nameZh,name_ja:null,name_en:c.name,name_ko:null,aliases:nameZh?[nameZh]:[],source:provider,provider_id:c.id,search_text:searchText(c.name,nameZh,c.number,c.id,set.name_en,set.provider_id,set.aliases),metadata:{supertype:c.supertype||null,subtypes:c.subtypes||[],nationalPokedexNumbers:c.nationalPokedexNumbers||[]},updated_at:new Date().toISOString()}});stats.written+=await upsert(db,'/tcg_cards',cardRows);const printingRows=items.map(c=>({card_id:`pokemon-pokemontcg-${slug(c.id)}`,series_id:set.id,region:'US',language:'en-US',local_set_code:set.provider_id,local_card_number:c.number||c.id,rarity:c.rarity||null,image_url:c.images?.small||null,source_url:`https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/${encodeURIComponent(c.id)}/`,release_date:set.release_date,source:provider,provider_id:c.id,image_rehost_required:false,metadata:{imageLarge:c.images?.large||null},updated_at:new Date().toISOString()}));stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');processedSets++}
     }
     stats.metadata={sets:series.length,processedSets,totalCards:stats.seen,missedSets,dataSource:'PokemonTCG/pokemon-tcg-data'};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
@@ -120,3 +133,4 @@ export async function syncCatalog(db,{providers=['pokemon','onepiece','yugioh'],
   for(const provider of providers){try{results[provider]=provider==='pokemon'?await syncPokemon(db,{maxPages:maxPokemonPages}):provider==='onepiece'?await syncOnePiece(db):await syncYugioh(db)}catch(error){results[provider]={error:error.message}}}
   return results;
 }
+
