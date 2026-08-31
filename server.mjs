@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { normalizeMarketRecord, withTwd } from './providers/normalize.mjs';
-import { shouldSyncCatalog, syncCatalog } from './providers/catalog-sync.mjs';
+import { catalogProvidersNeedingSync, syncCatalog } from './providers/catalog-sync.mjs';
 
 const nativeFetch = globalThis.fetch;
 const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
@@ -220,6 +220,6 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
 
 server.listen(port,()=>{
   console.log(`CardScope is running at http://localhost:${port}`);
-  if(process.env.CATALOG_SYNC_ON_START!=='false'&&supabaseConfigured())setTimeout(async()=>{try{if(await shouldSyncCatalog(supabaseFetch,72)){console.log('starting scheduled catalog sync');const result=await syncCatalog(supabaseFetch);console.log('scheduled catalog sync complete',JSON.stringify(result))}}catch(error){console.error('scheduled catalog sync failed',error.message)}},3000);
+  if(process.env.CATALOG_SYNC_ON_START!=='false'&&supabaseConfigured())setTimeout(async()=>{try{const providers=await catalogProvidersNeedingSync(supabaseFetch,72);if(providers.length){console.log('starting scheduled catalog sync',providers.join(','));const result=await syncCatalog(supabaseFetch,{providers});console.log('scheduled catalog sync complete',JSON.stringify(result))}}catch(error){console.error('scheduled catalog sync failed',error.message)}},3000);
 });
 

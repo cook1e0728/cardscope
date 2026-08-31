@@ -109,9 +109,11 @@ async function syncOnePiece(db){
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
-export async function shouldSyncCatalog(db,maxAgeHours=72,providers=['pokemontcg','onepiece-official','ygoprodeck']){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider));return providers.some(provider=>!completed.has(provider));
+export async function catalogProvidersNeedingSync(db,maxAgeHours=72){
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',onepiece:'onepiece-official',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
 }
+
+export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}
 
 export async function syncCatalog(db,{providers=['pokemon','onepiece','yugioh'],maxPokemonPages=Infinity}={}){
   const results={};
