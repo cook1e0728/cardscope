@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
+import { classifyProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 
 const port=4197;
 let server;
@@ -33,6 +34,7 @@ test('product feed never promotes a single card as a box or series image',{timeo
   const {data}=await api('/api/products');
   assert.ok(data.length);
   assert.ok(data.every(item=>item.imageKind!=='card'));
+  assert.ok(data.every(item=>PRODUCT_CATEGORIES.includes(item.catalogCategory)));
   for(const item of data.filter(item=>item.source==='curated-official-index')){
     assert.equal(item.imageUrl,null);
     assert.equal(item.cardsCount,null);
@@ -47,6 +49,13 @@ test('official product parser keeps sealed products separate from cards',()=>{
   assert.equal(cards.length,1);assert.equal(cards[0].number,'OP01-001');assert.ok(!('image_kind' in cards[0]));
   const series=parseOnePieceSeries('<option value="556101">BOOSTER PACK &lt;br class=&quot;spInline&quot;&gt;-ROMANCE DAWN- [OP-01]</option>');assert.equal(series[0].code,'OP-01');assert.equal(series[0].name,'BOOSTER PACK -ROMANCE DAWN- [OP-01]');
   const twSeries=parseOnePieceSeries('<option value="554117">補充包 世界最強的戰士【OP-17】</option>');assert.equal(twSeries[0].code,'OP-17');assert.equal(twSeries[0].name,'補充包 世界最強的戰士【OP-17】');assert.equal(twSeries[0].productType,'補充包');
+});
+
+test('all IP and regions share the three product catalog categories',()=>{
+  assert.equal(classifyProduct({game:'pokemon',productType:'特殊禮盒',nameZh:'烈焰狂火特殊禮盒'}),'原盒');
+  assert.equal(classifyProduct({game:'haikyuu',region:'JP',productType:'特典卡'}),'特典卡');
+  assert.equal(classifyProduct({game:'onepiece',region:'ASIA',name:'Official Playmat'}),'周邊道具');
+  assert.equal(classifyProduct({game:'yugioh',region:'KR',nameKo:'카드 슬리브'}),'周邊道具');
 });
 
 test('Pokemon cards keep their edition image but display official Traditional Chinese species names',()=>{
