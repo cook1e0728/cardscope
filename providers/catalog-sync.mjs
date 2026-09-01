@@ -75,7 +75,7 @@ export function parseOnePieceCards(html,base='https://asia-en.onepiece-cardgame.
 
 export function parseOnePieceSeries(html){
   const rows=[],seen=new Set(),re=/<option value="(\d+)"[^>]*>([^<]+)/g;let m;
-  while((m=re.exec(html))){const providerId=m[1],name=decodeHtml(m[2]),code=name.match(/[\[【]([^\]】]+)[\]】]/)?.[1]||null;if(!code||seen.has(providerId))continue;seen.add(providerId);const productType=name.split('-')[0].replace(/<br[^>]*>/gi,'').trim()||'系列';rows.push({providerId,code,name,productType})}
+  while((m=re.exec(html))){const providerId=m[1],name=decodeHtml(m[2]),code=name.match(/[\[【]([^\]】]+)[\]】]/)?.[1]||null;if(!code||seen.has(providerId))continue;seen.add(providerId);const productType=['高級補充包','特殊補充包','補充包','起始牌組','終極牌組','PREMIUM BOOSTER','EXTRA BOOSTER','BOOSTER PACK','STARTER DECK EX','STARTER DECK','ULTIMATE DECK'].find(type=>name.startsWith(type))||'系列';rows.push({providerId,code,name,productType})}
   return rows;
 }
 
