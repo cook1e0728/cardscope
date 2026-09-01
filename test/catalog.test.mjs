@@ -56,6 +56,7 @@ test('all IP and regions share the three product catalog categories',()=>{
   assert.equal(classifyProduct({game:'haikyuu',region:'JP',productType:'特典卡'}),'特典卡');
   assert.equal(classifyProduct({game:'onepiece',region:'ASIA',name:'Official Playmat'}),'周邊道具');
   assert.equal(classifyProduct({game:'yugioh',region:'KR',nameKo:'카드 슬리브'}),'周邊道具');
+  assert.equal(classifyProduct({game:'pokemon',region:'US',name:'Great Encounters'}),'原盒');
 });
 
 test('Pokemon cards keep their edition image but display official Traditional Chinese species names',()=>{

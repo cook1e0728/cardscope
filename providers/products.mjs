@@ -1,5 +1,5 @@
-const PROMO_RE=/特典|贈品卡|宣傳卡|促銷卡|promo(?:tional)?|campaign|bonus card|prize card|プロモ|特典|キャンペーン|프로모|프로모션|특전/i;
-const ACCESSORY_RE=/周邊|周辺|周邊道具|配件|accessor|supplies|playmat|play mat|sleeve|storage|binder|portfolio|deck case|card case|dice|coin|marker|counter|遊戲墊|游戏垫|卡套|牌套|收納盒|收纳盒|卡冊|卡册|卡盒|牌盒|骰子|硬幣|プレイマット|スリーブ|デッキケース|カードケース|バインダー|サプライ|플레이매트|슬리브|덱 케이스|카드 케이스|바인더/i;
+const PROMO_RE=/特典|贈品卡|宣傳卡|促銷卡|\b(?:promo(?:tional)?|campaign|bonus card|prize card)\b|プロモ|キャンペーン|프로모|프로모션|특전/i;
+const ACCESSORY_RE=/周邊|周辺|周邊道具|配件|\b(?:accessor(?:y|ies)?|supplies|play ?mats?|sleeves?|storage|binders?|portfolio|deck cases?|card cases?|dice|coins?|markers?|counters?)\b|遊戲墊|游戏垫|卡套|牌套|收納盒|收纳盒|卡冊|卡册|卡盒|牌盒|骰子|硬幣|プレイマット|スリーブ|デッキケース|カードケース|バインダー|サプライ|플레이매트|슬리브|덱 케이스|카드 케이스|바인더/i;
 
 export const PRODUCT_CATEGORIES=['原盒','特典卡','周邊道具'];
 
