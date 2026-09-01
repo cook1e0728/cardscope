@@ -23,7 +23,7 @@ const ebaySearchCache = new Map();
 const justTcgCache = new Map();
 const EBAY_MARKETPLACES = new Set(['EBAY_US','EBAY_CA','EBAY_GB','EBAY_DE','EBAY_FR','EBAY_IT','EBAY_ES','EBAY_AU']);
 
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8'};
+const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
 const json = (res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(body));};
 let ebayToken={value:null,expiresAt:0};
 
@@ -270,6 +270,16 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   if(url.pathname==='/api/catalog'&&req.method==='GET'){const data=await loadCatalog();return json(res,200,{data,meta:{source:data.source,fallbackReason:data.fallbackReason||null}})}
   if(url.pathname==='/api/catalog/coverage'&&req.method==='GET'){return json(res,200,{data:await loadCatalogCoverage()})}
   if(url.pathname==='/api/trends'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'沒有資料庫時不建立示範排名'}});try{const limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||12,1),50),rows=await supabaseFetch('/jp_buyback_prices?select=game,setCode:set_code,setName:set_name,cardCode:card_code,cardNumber:card_number,rarity,cardName:card_name,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,updatedAt:scraped_at&source=eq.yuyutei&previous_price=not.is.null&limit=500'),data=(rows||[]).filter(r=>Number(r.previousPrice)>0&&Number(r.price)>Number(r.previousPrice)).map(r=>({...r,price:Number(r.price),previousPrice:Number(r.previousPrice),changePercent:Math.round((Number(r.price)-Number(r.previousPrice))/Number(r.previousPrice)*10000)/100,priceType:'buyback'})).sort((a,b)=>b.changePercent-a.changePercent||String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).slice(0,limit);return json(res,200,{data,meta:{source:'yuyutei-buyback',label:'遊々亭買取價漲勢',formula:'(price - previous_price) / previous_price',warning:'只反映遊々亭日版買取調價，不代表全市場熱度或成交量。'}})}catch(e){return json(res,502,{error:e.message})}}
+  if(url.pathname==='/api/buyback-prices'&&req.method==='GET'){
+    if(!supabaseConfigured())return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'沒有資料庫時不建立示範價格'}});
+    const requestedGame=(url.searchParams.get('game')||'').trim().toLowerCase(),providerGame={pokemon:'poc'}[requestedGame];
+    if(!providerGame)return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'此 IP 目前沒有可驗證的買取價格來源，因此不顯示價格。'}});
+    try{
+      const rows=await supabaseFetch(`/jp_buyback_prices?select=game,cardNumber:card_number,rarity,cardName:card_name,price,currency,cardUrl:card_url,updatedAt:scraped_at&source=eq.yuyutei&game=eq.${providerGame}&order=scraped_at.desc&limit=500`),seen=new Set(),data=[];
+      for(const row of rows||[]){const key=String(row.cardNumber||'').trim().toUpperCase();if(!key||seen.has(key)||!Number.isFinite(Number(row.price)))continue;seen.add(key);data.push({...row,price:Number(row.price),priceType:'buyback'})}
+      return json(res,200,{data,meta:{source:'yuyutei-buyback',label:'遊々亭日版買取價',warning:'只用於篩選與排序有可靠對應的卡片；不是成交價、掛牌價或市場均價。'}});
+    }catch(e){return json(res,502,{error:e.message})}
+  }
   if(url.pathname==='/api/products'&&req.method==='GET'){try{const catalog=await loadProductSets();return json(res,200,{data:catalog.products,series:catalog.series,meta:{productCount:catalog.products.length,seriesCount:catalog.series.length,sources:['各 IP 官方商品索引','Pokémon Card Game 日本官方','Yu-Gi-Oh! TCG 美國官方','ONE PIECE CARD GAME 亞洲官方'],warning:'原盒、特典卡、周邊道具只計算有實體商品圖的可瀏覽商品；系列 Logo 另列，不再冒充原盒。'}})}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
   if(url.pathname==='/api/card-identities'&&req.method==='GET'){if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const query=url.searchParams.get('q')?.trim(),cardNumber=url.searchParams.get('cardNumber')?.trim();if(!query)return json(res,400,{error:'請提供 q'});try{return json(res,200,{data:await fetchCardIdentities({query,cardNumber})||[]})}catch{return json(res,404,{error:'卡片多語對照表尚未設定'})}}

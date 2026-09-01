@@ -30,6 +30,21 @@ test('coverage reports honest fallback totals without a database',async()=>{
   assert.ok(data.games.pokemon.cards>0);
 });
 
+test('price filters stay honest when no verified database source is configured',async()=>{
+  const {data,meta}=await api('/api/buyback-prices?game=pokemon');
+  assert.deepEqual(data,[]);
+  assert.equal(meta.source,'yuyutei-buyback');
+});
+
+test('all five IP navigation images are local and served as SVG',async()=>{
+  for(const name of ['pokemon','onepiece','yugioh','haikyuu','frieren']){
+    const response=await fetch(`http://127.0.0.1:${port}/assets/ip-${name}.svg`);
+    assert.equal(response.status,200);
+    assert.match(response.headers.get('content-type')||'',/^image\/svg\+xml/);
+    assert.match(await response.text(),/<svg/);
+  }
+});
+
 test('product feed never promotes a single card as a box or series image',{timeout:45000},async()=>{
   const {data,series,meta}=await api('/api/products');
   assert.ok(Array.isArray(data));
