@@ -37,6 +37,7 @@ async function cacheOne(db,card){
 async function restoreCachedPrinting(db,cardId,imageUrl){
   await db(`/tcg_printings?card_id=eq.${encodeURIComponent(cardId)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({image_url:imageUrl,image_rehost_required:false,updated_at:new Date().toISOString()})});
 }
+async function cacheWithRetry(db,card){let lastError;for(let attempt=1;attempt<=3;attempt++){try{return await cacheOne(db,card)}catch(error){lastError=error;if(attempt<3)await new Promise(resolve=>setTimeout(resolve,attempt*500))}}throw lastError}
 
 export async function cacheYugiohImages(db,{limit=15000,concurrency=4}={}){
   await ensureBucket();
@@ -47,7 +48,7 @@ export async function cacheYugiohImages(db,{limit=15000,concurrency=4}={}){
   ]),cachedByCard=new Map((cached||[]).map(row=>[row.card_id,row.image_url])),missingCards=new Set((missingPrintings||[]).map(row=>row.card_id)),pending=(cards||[]).filter(card=>missingCards.has(card.id));
   const stats={seen:pending.length,written:0,failed:0,bytes:0,errors:[]};
   for(const batch of chunks(pending,Math.max(1,Number(concurrency)||4))){
-    const results=await Promise.allSettled(batch.map(card=>cachedByCard.has(card.id)?restoreCachedPrinting(db,card.id,cachedByCard.get(card.id)).then(()=>0):cacheOne(db,card)));
+    const results=await Promise.allSettled(batch.map(card=>cachedByCard.has(card.id)?restoreCachedPrinting(db,card.id,cachedByCard.get(card.id)).then(()=>0):cacheWithRetry(db,card)));
     results.forEach((result,index)=>{if(result.status==='fulfilled'){stats.written++;stats.bytes+=result.value}else{stats.failed++;if(stats.errors.length<20)stats.errors.push({cardId:batch[index].id,error:result.reason?.message||String(result.reason)})}});
   }
   return stats;
