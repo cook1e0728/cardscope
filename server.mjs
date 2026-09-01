@@ -112,8 +112,27 @@ function japaneseDate(value){const m=String(value||'').match(/(\d{4})年\s*(\d{1
 function pokemonProductNameZh(title,type){const replacements=[['強化拡張パック','強化補充包'],['ハイクラスパック','高級補充包'],['拡張パック','補充包'],['スターターセット','起始組合'],['スタートデッキ','起始牌組'],['構築デッキ','構築牌組'],['デッキ','牌組'],['カードファイル','卡冊'],['デッキシールド','卡套'],['デッキケース','牌盒'],['プレイマット','遊戲墊']];let result=String(title||'');for(const [ja,zh] of replacements)result=result.replace(ja,zh);return result===title?`寶可夢${/周辺|サプライ/.test(type)?'周邊':'商品'}｜${title}`:result}
 async function loadPokemonOfficialProducts(){
   if(officialProductCache.data&&officialProductCache.expiresAt>Date.now())return officialProductCache.data;
-  const types=['expansion','construction','others','peripheral'],pages=await Promise.all(types.map(async productType=>{const response=await fetch(`https://www.pokemon-card.com/products/resultAPI.php?productType=${productType}&page=1`,{headers:{Accept:'application/json','User-Agent':'CardScope/1.0'}});if(!response.ok)throw new Error(`POKEMON_PRODUCTS_${response.status}`);return {productType,body:await response.json()}})),rows=[];
-  for(const {productType,body} of pages)for(const item of body.products||[]){const identity=createHash('sha1').update(`${productType}:${item.productTitle}:${item.releaseDate}`).digest('hex').slice(0,16),sourceUrl=item.link_detailPage?new URL(item.link_detailPage,'https://www.pokemon-card.com/').href:'https://www.pokemon-card.com/products/index.html';rows.push({id:`pokemon-jp-product-${identity}`,game:'pokemon',seriesId:null,officialCode:null,productType:item.productType||productType,name:item.productTitle,nameZh:pokemonProductNameZh(item.productTitle,item.productType),nameJa:item.productTitle,nameKo:null,region:'JP',language:'ja-JP',versionLabel:'日版',releaseDate:japaneseDate(item.releaseDate),imageUrl:item.tumbsImg?new URL(item.tumbsImg,'https://www.pokemon-card.com/').href:null,imageKind:'sealed-product',source:'pokemon-card-official-jp',sourceUrl,metadata:{catalogSection:productType,officialCardList:item.link_cardList?new URL(item.link_cardList,'https://www.pokemon-card.com/').href:null}})}
+  const types=['expansion','construction','others','peripheral'];
+  const fetchPage=async(productType,page)=>{
+    const response=await fetch(`https://www.pokemon-card.com/products/resultAPI.php?productType=${encodeURIComponent(productType)}&page=${page}`,{headers:{Accept:'application/json','User-Agent':'CardScope/1.0'}});
+    if(!response.ok)throw new Error(`POKEMON_PRODUCTS_${response.status}`);
+    return response.json();
+  };
+  const pages=await Promise.all(types.map(async productType=>{
+    const bodies=[await fetchPage(productType,1)];
+    const maxPage=Math.min(Math.max(Number(bodies[0]?.maxPage)||1,1),100);
+    // One request per category at a time: official index only, no high-concurrency crawling.
+    for(let page=2;page<=maxPage;page++)bodies.push(await fetchPage(productType,page));
+    return {productType,bodies};
+  })),rows=[],seen=new Set();
+  for(const {productType,bodies} of pages)for(const body of bodies)for(const item of body.products||[]){
+    const title=String(item.productTitle||'').trim(),releaseDate=japaneseDate(item.releaseDate);
+    if(!title)continue;
+    const identity=createHash('sha1').update(`${productType}:${title}:${releaseDate||''}`).digest('hex').slice(0,16);
+    if(seen.has(identity))continue;seen.add(identity);
+    const sourceUrl=item.link_detailPage?new URL(item.link_detailPage,'https://www.pokemon-card.com/').href:'https://www.pokemon-card.com/products/index.html';
+    rows.push({id:`pokemon-jp-product-${identity}`,game:'pokemon',seriesId:null,officialCode:null,productType:item.productType||productType,name:title,nameZh:pokemonProductNameZh(title,item.productType),nameJa:title,nameKo:null,region:'JP',language:'ja-JP',versionLabel:'日版',releaseDate,imageUrl:item.tumbsImg?new URL(item.tumbsImg,'https://www.pokemon-card.com/').href:null,imageKind:'sealed-product',source:'pokemon-card-official-jp',sourceUrl,metadata:{catalogSection:productType,officialCardList:item.link_cardList?new URL(item.link_cardList,'https://www.pokemon-card.com/').href:null}});
+  }
   officialProductCache.data=rows;officialProductCache.expiresAt=Date.now()+6*60*60*1000;return rows;
 }
 async function loadYugiohSets(){const response=await fetch('https://db.ygoprodeck.com/api/v7/cardsets.php',{headers:{Accept:'application/json'}});if(!response.ok)throw new Error(`YGO_SETS_${response.status}`);const body=await response.json();return (body||[]).map((s,i)=>({id:`yugioh-${s.set_code}-${i}`,game:'yugioh',name:s.set_name,nameZh:null,region:'US',language:'en-US',versionLabel:'美版',releaseDate:s.tcg_date||null,sealedCount:null,cardsCount:Number(s.num_of_cards)||0,imageUrl:s.set_image||null,imageKind:'series-logo',productType:'系列',source:'ygoprodeck',sourceUrl:'https://ygoprodeck.com/'}))}
