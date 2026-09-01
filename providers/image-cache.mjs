@@ -45,7 +45,7 @@ export async function cacheYugiohImages(db,{limit=15000,concurrency=4}={}){
     dbAll(db,'/tcg_cards?select=id,provider_id&source=eq.ygoprodeck&order=id',Math.max(1,Number(limit)||15000)),
     dbAll(db,`/card_images?select=card_id,image_url&source=eq.${SOURCE}`,20000),
     dbAll(db,'/tcg_printings?select=card_id&source=eq.ygoprodeck&image_url=is.null',50000)
-  ]),cachedByCard=new Map((cached||[]).map(row=>[row.card_id,row.image_url])),missingCards=new Set((missingPrintings||[]).map(row=>row.card_id)),pending=(cards||[]).filter(card=>missingCards.has(card.id));
+  ]),cachedByCard=new Map((cached||[]).map(row=>[row.card_id,row.image_url])),missingCards=new Set((missingPrintings||[]).map(row=>row.card_id)),pending=(cards||[]).filter(card=>missingCards.has(card.id)||!cachedByCard.has(card.id));
   const stats={seen:pending.length,written:0,failed:0,bytes:0,errors:[]};
   for(const batch of chunks(pending,Math.max(1,Number(concurrency)||4))){
     const results=await Promise.allSettled(batch.map(card=>cachedByCard.has(card.id)?restoreCachedPrinting(db,card.id,cachedByCard.get(card.id)).then(()=>0):cacheWithRetry(db,card)));
