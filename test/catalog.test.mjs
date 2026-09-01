@@ -31,11 +31,15 @@ test('coverage reports honest fallback totals without a database',async()=>{
 });
 
 test('product feed never promotes a single card as a box or series image',{timeout:45000},async()=>{
-  const {data}=await api('/api/products');
-  assert.ok(data.length);
+  const {data,series,meta}=await api('/api/products');
+  assert.ok(Array.isArray(data));
+  assert.ok(series.length);
   assert.ok(data.every(item=>item.imageKind!=='card'));
+  assert.ok(data.every(item=>item.imageKind==='sealed-product'));
   assert.ok(data.every(item=>PRODUCT_CATEGORIES.includes(item.catalogCategory)));
-  for(const item of data.filter(item=>item.source==='curated-official-index')){
+  assert.equal(meta.productCount,data.length);
+  assert.equal(meta.seriesCount,series.length);
+  for(const item of series.filter(item=>item.source==='curated-official-index')){
     assert.equal(item.imageUrl,null);
     assert.equal(item.cardsCount,null);
     assert.equal(item.productType,'系列');
