@@ -103,6 +103,8 @@ test('round three browsing controls and honest fallbacks stay wired',async()=>{
   assert.match(ui,/清單模式/);
   assert.match(ui,/圖片待補/);
   for(const tab of ['資訊','跨市場比價','成交趨勢','使用者回報'])assert.match(ui,new RegExp(tab));
+  for(const interaction of ['tilt-card','perspective:1000px','上一張卡','下一張卡','ArrowLeft','ArrowRight'])assert.match(ui,new RegExp(interaction));
+  for(const tour of ['cardscopeFeatureTour','暫停輪播','setInterval','prefers-reduced-motion'])assert.match(ui,new RegExp(tour));
   assert.match(navigator,/series-accordion/);
   assert.match(navigator,/item\.catalogCategory===productCategory/);
   assert.ok(mappings.entries.some(row=>row.game==='haikyuu'&&row.code==='HV-P04'));
