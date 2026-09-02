@@ -111,6 +111,16 @@ test('round three browsing controls and honest fallbacks stay wired',async()=>{
   assert.ok(mappings.entries.some(row=>row.game==='weiss-schwarz'&&row.code==='S136'));
 });
 
+test('canonical migration links physical cards and images durably',async()=>{
+  const sql=await readFile(new URL('../supabase/migrations/20260902_canonical_card_links.sql',import.meta.url),'utf8');
+  assert.match(sql,/tcg_cards_canonical_id_fkey/);
+  assert.match(sql,/card_images_canonical_id_fkey/);
+  assert.match(sql,/sync_tcg_canonical_from_card_trigger/);
+  assert.match(sql,/sync_card_image_canonical_id_trigger/);
+  assert.match(sql,/security_invoker = true/);
+  assert.match(sql,/tcg_canonical_card_catalog/);
+});
+
 for(const [query,expected] of [
   ['噴火龍','Charizard'],['Charizard','Charizard'],['リザードン','Charizard'],
   ['超夢','Mewtwo'],['Mewtwo','Mewtwo'],['ミュウツー','Mewtwo'],
