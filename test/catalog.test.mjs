@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import { localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 import { classifyProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 
@@ -89,6 +90,23 @@ test('all product feeds receive a Chinese display name',()=>{
   assert.equal(localizeProductName('pokemon','Obsidian Flames','系列'),'黑曜火焰');
   assert.equal(localizeProductName('onepiece','BOOSTER PACK -ROMANCE DAWN- [OP-01]','BOOSTER PACK'),'補充包 -浪漫黎明- [OP-01]');
   assert.equal(localizeProductName('yugioh','Legend of Blue Eyes White Dragon','系列'),'遊戲王系列｜Legend of Blue Eyes White Dragon');
+});
+
+test('round three browsing controls and honest fallbacks stay wired',async()=>{
+  const [ui,navigator,mappings]=await Promise.all([
+    readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8'),
+    readFile(new URL('../series-navigator.js',import.meta.url),'utf8'),
+    readFile(new URL('../data/series-zh.json',import.meta.url),'utf8').then(JSON.parse)
+  ]);
+  assert.match(ui,/cardscope-card-view/);
+  assert.match(ui,/圖鑑模式/);
+  assert.match(ui,/清單模式/);
+  assert.match(ui,/圖片待補/);
+  for(const tab of ['資訊','跨市場比價','成交趨勢','使用者回報'])assert.match(ui,new RegExp(tab));
+  assert.match(navigator,/series-accordion/);
+  assert.match(navigator,/item\.catalogCategory===productCategory/);
+  assert.ok(mappings.entries.some(row=>row.game==='haikyuu'&&row.code==='HV-P04'));
+  assert.ok(mappings.entries.some(row=>row.game==='weiss-schwarz'&&row.code==='S136'));
 });
 
 for(const [query,expected] of [
