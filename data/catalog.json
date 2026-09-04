@@ -3,14 +3,16 @@
   "updatedAt": "2026-09-04",
   "productCategories": [
     {"id":"singles","nameZh":"單卡","nameEn":"Singles","descriptionZh":"可獨立查詢、收藏與比價的單張卡片。"},
-    {"id":"sealed","nameZh":"密封產品","nameEn":"Sealed","descriptionZh":"未拆封的補充包、原盒與其他密封產品。"},
-    {"id":"promo","nameZh":"特典卡","nameEn":"Promo","descriptionZh":"隨活動、商品或合作企劃發行的特典卡。"},
+    {"id":"sealed","nameZh":"密封商品","nameEn":"Sealed","descriptionZh":"未拆封的補充包、原盒、禮盒與組合包；不包含預組牌組。"},
+    {"id":"decks","nameZh":"牌組／構築商品","nameEn":"Decks","descriptionZh":"起始牌組、預組套牌、補充牌組與其他可直接遊玩的構築商品。"},
+    {"id":"promo","nameZh":"特典／贈品","nameEn":"Promos","descriptionZh":"隨活動、商品或合作企劃發行的特典卡與配布品。"},
+    {"id":"event-store","nameZh":"賽事／商店限定","nameEn":"Event & Store Exclusives","descriptionZh":"賽事獎品、參加獎、商店限定與店鋪活動配布。"},
     {"id":"accessories","nameZh":"周邊道具","nameEn":"Accessories","descriptionZh":"卡套、牌盒、收納用品與其他遊戲周邊。"},
     {"id":"other","nameZh":"其他","nameEn":"Other","descriptionZh":"尚未能歸入上述類別的產品或資料。"}
   ],
   "catalogView": {
     "defaultCategory":"all",
-    "categoryOrder":["singles","sealed","promo","accessories","other"],
+    "categoryOrder":["singles","sealed","decks","promo","event-store","accessories","other"],
     "groupBy":["productCategory","series"]
   },
   "games": [
