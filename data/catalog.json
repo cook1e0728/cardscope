@@ -1,6 +1,18 @@
 {
   "version": 1,
   "updatedAt": "2026-09-04",
+  "productCategories": [
+    {"id":"singles","nameZh":"單卡","nameEn":"Singles","descriptionZh":"可獨立查詢、收藏與比價的單張卡片。"},
+    {"id":"sealed","nameZh":"密封產品","nameEn":"Sealed","descriptionZh":"未拆封的補充包、原盒與其他密封產品。"},
+    {"id":"promo","nameZh":"特典卡","nameEn":"Promo","descriptionZh":"隨活動、商品或合作企劃發行的特典卡。"},
+    {"id":"accessories","nameZh":"周邊道具","nameEn":"Accessories","descriptionZh":"卡套、牌盒、收納用品與其他遊戲周邊。"},
+    {"id":"other","nameZh":"其他","nameEn":"Other","descriptionZh":"尚未能歸入上述類別的產品或資料。"}
+  ],
+  "catalogView": {
+    "defaultCategory":"all",
+    "categoryOrder":["singles","sealed","promo","accessories","other"],
+    "groupBy":["productCategory","series"]
+  },
   "games": [
     {"id":"pokemon","nameZh":"寶可夢","nameJa":"ポケモンカードゲーム","nameEn":"Pokémon"},
     {"id":"onepiece","nameZh":"航海王","nameJa":"ONE PIECEカードゲーム","nameEn":"ONE PIECE Card Game"},
@@ -13,9 +25,9 @@
     {"id":"union-arena","nameZh":"Union Arena","productLine":"Union Arena","status":"planned","planned":true}
   ],
   "series": [
-    {"id":"pokemon-sv4a-jp","game":"pokemon","officialCode":"SV4a","nameZh":"閃色寶藏 ex","nameJa":"シャイニートレジャーex","nameEn":"Shiny Treasure ex","region":"JP","releaseDate":"2023-12-01","aliases":["閃色寶藏","閃色寶藏ex","shiny treasure","シャイニートレジャー"]},
-    {"id":"onepiece-op05-jp","game":"onepiece","officialCode":"OP-05","nameZh":"新時代的主角","nameJa":"新時代の主役","nameEn":"Awakening of the New Era","region":"JP","releaseDate":"2023-08-26","aliases":["OP05","OP 05","新時代主角","新時代の主役"]},
-    {"id":"yugioh-qccu-jp","game":"yugioh","officialCode":"QCCU","nameZh":"QUARTER CENTURY CHRONICLE side:UNITY","nameJa":"QUARTER CENTURY CHRONICLE side:UNITY","nameEn":"Quarter Century Chronicle side: Unity","region":"JP","releaseDate":"2024-02-23","aliases":["QCCU","UNITY","Quarter Century Unity"]}
+    {"id":"pokemon-sv4a-jp","game":"pokemon","productCategoryId":"singles","officialCode":"SV4a","nameZh":"閃色寶藏 ex","nameJa":"シャイニートレジャーex","nameEn":"Shiny Treasure ex","region":"JP","releaseDate":"2023-12-01","aliases":["閃色寶藏","閃色寶藏ex","shiny treasure","シャイニートレジャー"]},
+    {"id":"onepiece-op05-jp","game":"onepiece","productCategoryId":"singles","officialCode":"OP-05","nameZh":"新時代的主角","nameJa":"新時代の主役","nameEn":"Awakening of the New Era","region":"JP","releaseDate":"2023-08-26","aliases":["OP05","OP 05","新時代主角","新時代の主役"]},
+    {"id":"yugioh-qccu-jp","game":"yugioh","productCategoryId":"singles","officialCode":"QCCU","nameZh":"QUARTER CENTURY CHRONICLE side:UNITY","nameJa":"QUARTER CENTURY CHRONICLE side:UNITY","nameEn":"Quarter Century Chronicle side: Unity","region":"JP","releaseDate":"2024-02-23","aliases":["QCCU","UNITY","Quarter Century Unity"]}
   ],
   "cards": [
     {"id":"pokemon-mew-ex-sv4a-347-jp","canonicalId":"pokemon-mew-ex","game":"pokemon","seriesId":"pokemon-sv4a-jp","officialCardNumber":"347/190","rarity":"SSR","region":"JP","language":"ja-JP","nameZh":"夢幻ex","nameJa":"ミュウex","nameEn":"Mew ex","aliases":["夢幻","mew","ミュウ","夢幻 ex","mewex","ミュウ ex"],"imageUrl":null},
