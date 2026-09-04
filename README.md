@@ -36,6 +36,18 @@ Supabase `card_identities` 使用 `name_zh`、`name_ja`、`name_en`、`card_numb
 
 目前來源可包含 JustTCG 回傳卡圖、遊々亭 `image_url`、eBay listing 圖片。`supabase/migrations/20260830_market_data.sql` 新增 `card_images`，供之後把不同語言與來源圖片統一對到同一 `card_id`。
 
+## IP 目錄與資料蒐集
+
+目前目錄包含寶可夢、航海王、遊戲王、芙莉蓮（Weiß Schwarz）與排球少年（バボカ!! BREAK），並預留 Re:從零開始的異世界生活（Weiß Schwarz）及 Union Arena。
+
+`data/source-registry.json` 只登錄使用者可點擊前往的官方卡表。所有來源初始為 `link-only`，不會抓取、快取或轉存卡圖與官方 Logo。
+
+```powershell
+npm run crawl:metadata -- pokemon-jp
+```
+
+此命令是保護閘門：只有在取得來源權利人的書面許可、且把該來源標示為 `metadataCollection: "approved"` 後，才可為該來源新增只處理中繼資料的 parser。它刻意不支援卡圖蒐集。
+
 ## eBay 多市場
 
 `GET /api/providers/ebay/search?q=Mew%20ex&marketplace=EBAY_US`
