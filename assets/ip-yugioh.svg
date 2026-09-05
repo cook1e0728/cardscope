@@ -1,7 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
-  <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#2b0d19"/><stop offset="1" stop-color="#9d2338"/></linearGradient></defs>
-  <rect width="640" height="360" rx="44" fill="url(#g)"/>
-  <rect x="45" y="82" width="126" height="196" rx="12" fill="#f4c76b" stroke="#fff2c7" stroke-width="8" transform="rotate(-8 108 180)"/><path d="M70 130h80M70 165h80M70 200h80" stroke="#7c2435" stroke-width="12"/>
-  <text x="210" y="165" font-family="system-ui,sans-serif" font-size="76" font-weight="900" fill="#fff3cf">遊戲王</text>
-  <text x="214" y="225" font-family="system-ui,sans-serif" font-size="32" font-weight="800" fill="#f4c76b">OFFICIAL CARD GAME</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="t d">
+  <title id="t">遊戲王分類</title><desc id="d">CardScope 自製的紫色符文卡片分類圖，並非官方標誌。</desc>
+  <rect width="640" height="360" rx="44" fill="#f3efff"/><rect x="20" y="20" width="600" height="320" rx="32" fill="none" stroke="#20242b" stroke-width="8"/>
+  <g transform="translate(68 60) rotate(-5 88 120)"><rect width="176" height="240" rx="20" fill="#7556b7" stroke="#20242b" stroke-width="10"/><path d="m88 42 20 48 50 20-50 20-20 68-20-68-50-20 50-20z" fill="#ffd86a" stroke="#20242b" stroke-width="7"/></g>
+  <text x="270" y="168" font-family="system-ui,sans-serif" font-size="66" font-weight="800" fill="#20242b">遊戲王</text><text x="274" y="221" font-family="system-ui,sans-serif" font-size="25" font-weight="700" fill="#737780">CardScope 分類</text>
 </svg>

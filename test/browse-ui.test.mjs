@@ -43,3 +43,12 @@ test('removed gameFilters is not referenced by homepage scripts',()=>{
   assert.doesNotMatch(source,/\bgameFilters\b/);
   assert.match(html,/cardscope-rabbit-mark\.png/);
 });
+test('IP navigation uses explicitly non-official CardScope artwork',async()=>{
+  const switcher=await readFile(new URL('../game-switcher.js',import.meta.url),'utf8');
+  assert.match(switcher,/CardScope 非官方分類圖/);
+  for(const id of ['pokemon','onepiece','yugioh','haikyuu','frieren']){
+    const svg=await readFile(new URL(`../assets/ip-${id}.svg`,import.meta.url),'utf8');
+    assert.match(svg,/CardScope 自製/);
+    assert.doesNotMatch(svg,/OFFICIAL CARD GAME|TRADING CARD GAME/);
+  }
+});
