@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "crawl:metadata": "node scripts/crawl-approved-metadata.mjs"
+    "check": "node --check server.mjs && node --check providers/ygoprodeck.mjs && node --check providers/normalize.mjs && node --check providers/catalog-sync.mjs && node --check providers/image-cache.mjs && node --check providers/products.mjs",
+    "test": "node --test"
   }
 }

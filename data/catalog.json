@@ -1,20 +1,6 @@
 {
-  "version": 1,
-  "updatedAt": "2026-09-04",
-  "productCategories": [
-    {"id":"singles","nameZh":"單卡","nameEn":"Singles","descriptionZh":"可獨立查詢、收藏與比價的單張卡片。"},
-    {"id":"sealed","nameZh":"密封商品","nameEn":"Sealed","descriptionZh":"未拆封的補充包、原盒、禮盒與組合包；不包含預組牌組。"},
-    {"id":"decks","nameZh":"牌組／構築商品","nameEn":"Decks","descriptionZh":"起始牌組、預組套牌、補充牌組與其他可直接遊玩的構築商品。"},
-    {"id":"promo","nameZh":"特典／贈品","nameEn":"Promos","descriptionZh":"隨活動、商品或合作企劃發行的特典卡與配布品。"},
-    {"id":"event-store","nameZh":"賽事／商店限定","nameEn":"Event & Store Exclusives","descriptionZh":"賽事獎品、參加獎、商店限定與店鋪活動配布。"},
-    {"id":"accessories","nameZh":"周邊道具","nameEn":"Accessories","descriptionZh":"卡套、牌盒、收納用品與其他遊戲周邊。"},
-    {"id":"other","nameZh":"其他","nameEn":"Other","descriptionZh":"尚未能歸入上述類別的產品或資料。"}
-  ],
-  "catalogView": {
-    "defaultCategory":"all",
-    "categoryOrder":["singles","sealed","decks","promo","event-store","accessories","other"],
-    "groupBy":["productCategory","series"]
-  },
+  "version": 2,
+  "updatedAt": "2026-08-31",
   "games": [
     {"id":"pokemon","nameZh":"寶可夢","nameJa":"ポケモンカードゲーム","nameEn":"Pokémon"},
     {"id":"onepiece","nameZh":"航海王","nameJa":"ONE PIECEカードゲーム","nameEn":"ONE PIECE Card Game"},
@@ -27,13 +13,16 @@
     {"id":"union-arena","nameZh":"Union Arena","productLine":"Union Arena","status":"planned","planned":true}
   ],
   "series": [
-    {"id":"pokemon-sv4a-jp","game":"pokemon","productCategoryId":"singles","officialCode":"SV4a","nameZh":"閃色寶藏 ex","nameJa":"シャイニートレジャーex","nameEn":"Shiny Treasure ex","region":"JP","releaseDate":"2023-12-01","aliases":["閃色寶藏","閃色寶藏ex","shiny treasure","シャイニートレジャー"]},
-    {"id":"onepiece-op05-jp","game":"onepiece","productCategoryId":"singles","officialCode":"OP-05","nameZh":"新時代的主角","nameJa":"新時代の主役","nameEn":"Awakening of the New Era","region":"JP","releaseDate":"2023-08-26","aliases":["OP05","OP 05","新時代主角","新時代の主役"]},
-    {"id":"yugioh-qccu-jp","game":"yugioh","productCategoryId":"singles","officialCode":"QCCU","nameZh":"QUARTER CENTURY CHRONICLE side:UNITY","nameJa":"QUARTER CENTURY CHRONICLE side:UNITY","nameEn":"Quarter Century Chronicle side: Unity","region":"JP","releaseDate":"2024-02-23","aliases":["QCCU","UNITY","Quarter Century Unity"]}
+    {"id":"pokemon-base1-us","game":"pokemon","officialCode":"BS","nameZh":"基礎系列","nameJa":"拡張パック 第1弾","nameEn":"Base Set","region":"US","releaseDate":"1999-01-09","aliases":["基礎系列","基本系列","base set","第一彈"],"sourceUrl":"https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/series/base1/"},
+    {"id":"pokemon-sv4a-jp","game":"pokemon","officialCode":"SV4a","nameZh":"閃色寶藏 ex","nameJa":"シャイニートレジャーex","nameEn":"Shiny Treasure ex","region":"JP","releaseDate":"2023-12-01","aliases":["閃色寶藏","閃色寶藏ex","shiny treasure","シャイニートレジャー"],"sourceUrl":"https://www.pokemon-card.com/ex/sv4a/"},
+    {"id":"onepiece-op05-jp","game":"onepiece","officialCode":"OP-05","nameZh":"新時代的主角","nameJa":"新時代の主役","nameEn":"Awakening of the New Era","region":"JP","releaseDate":"2023-08-26","aliases":["OP05","OP 05","新時代主角","新時代の主役"],"sourceUrl":"https://www.onepiece-cardgame.com/products/boosters/op05.php"},
+    {"id":"yugioh-qccu-jp","game":"yugioh","officialCode":"QCCU","nameZh":"QUARTER CENTURY CHRONICLE side:UNITY","nameJa":"QUARTER CENTURY CHRONICLE side:UNITY","nameEn":"Quarter Century Chronicle side: Unity","region":"JP","releaseDate":"2024-02-23","aliases":["QCCU","UNITY","Quarter Century Unity"],"sourceUrl":"https://www.yugioh-card.com/japan/products/qccu/"}
   ],
   "cards": [
-    {"id":"pokemon-mew-ex-sv4a-347-jp","canonicalId":"pokemon-mew-ex","game":"pokemon","seriesId":"pokemon-sv4a-jp","officialCardNumber":"347/190","rarity":"SSR","region":"JP","language":"ja-JP","nameZh":"夢幻ex","nameJa":"ミュウex","nameEn":"Mew ex","aliases":["夢幻","mew","ミュウ","夢幻 ex","mewex","ミュウ ex"],"imageUrl":null},
-    {"id":"onepiece-luffy-op05-119-jp","canonicalId":"onepiece-monkey-d-luffy","game":"onepiece","seriesId":"onepiece-op05-jp","officialCardNumber":"OP05-119","rarity":"SEC","region":"JP","language":"ja-JP","nameZh":"蒙其・D・魯夫","nameJa":"モンキー・D・ルフィ","nameEn":"Monkey.D.Luffy","aliases":["魯夫","路飛","luffy","ルフィ","monkey d luffy","蒙其d魯夫"],"imageUrl":null},
-    {"id":"yugioh-dark-magician-girl-qccu-jp002-jp","canonicalId":"yugioh-dark-magician-girl","game":"yugioh","seriesId":"yugioh-qccu-jp","officialCardNumber":"QCCU-JP002","rarity":"QCSE","region":"JP","language":"ja-JP","nameZh":"黑魔導女孩","nameJa":"ブラック・マジシャン・ガール","nameEn":"Dark Magician Girl","aliases":["黑魔導少女","dark magician girl","ブラックマジシャンガール","DMG"],"imageUrl":null}
+    {"id":"pokemon-charizard-base1-4-us","canonicalId":"pokemon-charizard-base-set-4","game":"pokemon","seriesId":"pokemon-base1-us","officialCardNumber":"4/102","rarity":"Rare Holo","region":"US","language":"en-US","nameZh":"噴火龍","nameJa":"リザードン","nameEn":"Charizard","nameKo":"리자몽","aliases":["喷火龙","charizard","リザードン","리자몽"],"imageUrl":"https://images.pokemontcg.io/base1/4_hires.png","imageSource":"pokemontcg","sourceUrl":"https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/series/base1/4/"},
+    {"id":"pokemon-mewtwo-base1-10-us","canonicalId":"pokemon-mewtwo-base-set-10","game":"pokemon","seriesId":"pokemon-base1-us","officialCardNumber":"10/102","rarity":"Rare Holo","region":"US","language":"en-US","nameZh":"超夢","nameJa":"ミュウツー","nameEn":"Mewtwo","nameKo":"뮤츠","aliases":["超梦","mewtwo","ミュウツー","뮤츠"],"imageUrl":"https://images.pokemontcg.io/base1/10_hires.png","imageSource":"pokemontcg","sourceUrl":"https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/series/base1/10/"},
+    {"id":"pokemon-mew-ex-sv4a-347-jp","canonicalId":"pokemon-mew-ex","game":"pokemon","seriesId":"pokemon-sv4a-jp","officialCardNumber":"347/190","rarity":"SSR","region":"JP","language":"ja-JP","nameZh":"夢幻ex","nameJa":"ミュウex","nameEn":"Mew ex","nameKo":"뮤 ex","aliases":["夢幻","梦幻","mew","ミュウ","뮤","夢幻 ex","mewex","ミュウ ex"],"imageUrl":"https://assets.tcgdex.net/ja/SV/SV4a/347/high.webp","imageSource":"tcgdex","sourceUrl":"https://www.pokemon-card.com/card-search/details.php/card/44513/"},
+    {"id":"onepiece-luffy-op05-119-jp","canonicalId":"onepiece-monkey-d-luffy-op05-119","game":"onepiece","seriesId":"onepiece-op05-jp","officialCardNumber":"OP05-119","rarity":"SEC","region":"JP","language":"ja-JP","nameZh":"蒙其・D・魯夫","nameJa":"モンキー・D・ルフィ","nameEn":"Monkey.D.Luffy","nameKo":"몽키 D. 루피","aliases":["魯夫","路飛","路飞","luffy","ルフィ","루피","monkey d luffy","蒙其d魯夫"],"imageUrl":"https://optcg-api.arjunbansal-ai.workers.dev/images/OP05-119","imageSource":"optcg-api","sourceUrl":"https://asia-en.onepiece-cardgame.com/cardlist/"},
+    {"id":"yugioh-dark-magician-girl-qccu-jp002-jp","canonicalId":"yugioh-dark-magician-girl-qccu-jp002","game":"yugioh","seriesId":"yugioh-qccu-jp","officialCardNumber":"QCCU-JP002","rarity":"QCSE","region":"JP","language":"ja-JP","nameZh":"黑魔導女孩","nameJa":"ブラック・マジシャン・ガール","nameEn":"Dark Magician Girl","nameKo":"블랙 매지션 걸","aliases":["黑魔導少女","黑魔法少女","dark magician girl","ブラックマジシャンガール","블랙 매지션 걸","DMG"],"imageUrl":"https://images.ygoprodeck.com/images/cards/38033121.jpg","imageSource":"ygoprodeck","sourceUrl":"https://db.ygoprodeck.com/card/?search=Dark%20Magician%20Girl"}
   ]
 }

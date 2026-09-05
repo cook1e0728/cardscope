@@ -4,11 +4,14 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 
 ## 目前資料來源
 
-- **JustTCG**：官方 API；卡牌目錄、品相與北美市場價格。
-- **eBay Browse API**：官方 API；多市場在售掛牌。掛牌價不可當作已成交價。
+- **JustTCG**：既有 API adapter 保留，目前不作為首頁搜尋或卡盒資料依賴。
+- **eBay Browse API**：既有多市場 adapter 保留，目前不自動查詢；掛牌價不可當作已成交價。
 - **遊々亭**：買取頁資料擷取，存入 Supabase `jp_buyback_prices`。
 - **Supabase**：使用者成交回報、日版買取行情、卡片多語名稱與匯率快取。
-- **卡拍拍 / SNKRDUNK**：目前仍有示範資料，尚未接正式授權來源。
+- **Pokémon TCG API + TCGdex**：Pokémon 美版與台版繁中系列、卡片及圖片；不同語言只在有可靠 ID 時合併，不猜測跨語 printing。
+- **ONE PIECE CARD GAME 官方網站**：逐系列同步亞洲英文版與台版繁中官方卡表、卡面及產品封面。
+- **YGOPRODeck**：遊戲王卡片與卡組索引；卡圖會先保存至 CardScope 的 Supabase Storage，再由本站顯示，不大量 hotlink。
+- **卡拍拍 / SNKRDUNK**：尚未接入；網站不再顯示這兩個來源的示範價格。
 
 ## 更新頻率
 
@@ -19,6 +22,8 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 - Frankfurter 匯率：成功後 24 小時更新一次。
 - 遊々亭：管理端抓取功能保留，正式排程建議每日一次。
 - 若 Supabase 已建立 `exchange_rates`，Render 重啟後會優先讀取 24 小時內的已存匯率。
+- Catalog 成功同步後 72 小時內不重跑；Render 啟動會在背景檢查，`CATALOG_SYNC_ON_START=false` 可停用。
+- Render 啟動會續傳尚未保存的遊戲王卡圖；可用 `CARD_IMAGE_CACHE_ON_START=false` 停用，或以 `CARD_IMAGE_CACHE_CONCURRENCY` 調整同時下載數。
 
 ## TWD 匯率
 
@@ -28,25 +33,23 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 
 ## 多語卡名
 
+`GET /api/catalog`（Supabase 與 `data/catalog.json` 合併；資料庫暫缺資料時不會再把公開備援覆蓋掉）
+
 `GET /api/card-identities?q=關鍵字&cardNumber=卡號`
 
-Supabase `card_identities` 使用 `name_zh`、`name_ja`、`name_en`、`card_number`、`aliases`。跨市場對應應以自己的 `card_id` / 卡號為主，名稱只作搜尋與別名輔助。
+Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tcg_cards`、`tcg_printings`。API 依 `canonical_id` 合併去重，實際美版／日版／台版／韓版仍保留為 printing；中文、英文、日文、韓文名稱與 `language` / `region` 不互相覆蓋。跨市場對應以 canonical identity、printing 與官方卡號為主，名稱只作搜尋與別名輔助。
 
 ## 圖片
 
-目前來源可包含 JustTCG 回傳卡圖、遊々亭 `image_url`、eBay listing 圖片。`supabase/migrations/20260830_market_data.sql` 新增 `card_images`，供之後把不同語言與來源圖片統一對到同一 `card_id`。
+詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`、合法公開 Catalog 圖源，最後才是文字佔位；圖片載入失敗會降級為卡名與卡號。YGOPRODeck 卡圖依其 API 條款先下載至公開讀取、僅服務端可上傳的 `card-images` bucket。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。每筆保留 `source` 與 `source_url`。
 
-## IP 目錄與資料蒐集
+`GET /api/catalog/image-status` 可查看遊戲王唯一卡面已保存／待補數量；受 `SCRAPE_SECRET` 保護的 `POST /api/admin/catalog/cache-images` 可手動續跑。
 
-目前目錄包含寶可夢、航海王、遊戲王、芙莉蓮（Weiß Schwarz）與排球少年（バボカ!! BREAK），並預留 Re:從零開始的異世界生活（Weiß Schwarz）及 Union Arena。
+## 統一市場輸出
 
-`data/source-registry.json` 只登錄使用者可點擊前往的官方卡表。所有來源初始為 `link-only`，不會抓取、快取或轉存卡圖與官方 Logo。
+`GET /api/cards/:cardId/market`
 
-```powershell
-npm run crawl:metadata -- pokemon-jp
-```
-
-此命令是保護閘門：只有在取得來源權利人的書面許可、且把該來源標示為 `metadataCollection: "approved"` 後，才可為該來源新增只處理中繼資料的 parser。它刻意不支援卡圖蒐集。
+所有可確認版本的資料統一輸出 `provider`、`market`、`priceType`、原幣價格、TWD 換算、品相、來源 URL 與觀測時間。eBay 是 `listing`、遊々亭是 `buyback`、YGOPRODeck 是跨平台 `market` 參考價；只有能驗證為成交的資料才可標 `sale`。不同類型不混算中位價。
 
 ## eBay 多市場
 
@@ -61,6 +64,13 @@ npm run crawl:metadata -- pokemon-jp
 - `exchange_rates`：每日 TWD 匯率快取 / 歷史。
 - `card_images`：同卡不同語言與來源的圖片索引。
 
+`supabase/migrations/20260831_canonical_multilingual_catalog.sql` 以非破壞方式新增 canonical identity、韓文原名欄位、指定卡片與可用圖片索引。
+
+`supabase/migrations/20260831_catalog_sync_pipeline.sql` 新增 `tcg_products`、`catalog_sync_runs` 與 provider/search 欄位。`tcg_products` 只接受 `sealed-product` 或 `series-logo`，一般單卡不會進入卡盒資料。
+
+管理端可用 `POST /api/admin/catalog/sync?provider=all`（`x-scrape-token`）手動重跑；`GET /api/catalog/sync-status` 提供不含密鑰的同步摘要。
+
 注意：把 SQL 檔推到 GitHub **不代表遠端 Supabase 一定會自動執行 migration**；是否自動套用取決於你的 Supabase CI / deployment 設定。
 
-目前 `server.mjs` / `index.html` 仍保留部分示範市場數字，正式版應逐步改成只顯示帶有來源、抓取時間、幣別、價格類型與品相的真實資料。
+目前最低保證 Catalog 包含噴火龍、超夢、夢幻、魯夫與黑魔導女孩，並支援指定中／英／日搜尋名稱。首頁與 API 不顯示假交易量、假漲跌、假中位價、假市值，也不把掛牌／買取誤標成成交／店售。
+
