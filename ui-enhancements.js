@@ -60,7 +60,7 @@ function activateCardActions(root=$('cards')){
   root.querySelectorAll('[data-watch-decrement]').forEach(button=>{button.onclick=event=>{event.stopPropagation();setWatchQuantity(button.dataset.watchDecrement,watchQuantity(button.dataset.watchDecrement)-1)}});
 }
 
-function renderCardEmpty(){return `<div class="cards-empty"><img src="/assets/brand/cardscope-rabbit-mark.png" alt="" loading="lazy"><div><b>目前沒有符合條件的卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
+function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img src="/assets/brand/rabbit-offline.png" alt="奔跑中的 CardScope 兔子" loading="lazy"><div><b>兔子還在尋找卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
 
 function renderCardRows(rows){
   if(cardViewMode!=='rarity')return rows.length?rows.map(cardMarkup).join(''):renderCardEmpty();
@@ -85,14 +85,21 @@ function toggleFavorite(id){
   saveUiArray('cardscope-favorites',favoriteIds);cards(currentCardRows,true);
 }
 
+function showCollectionToast(){
+  let toast=$('brandCollectionToast');
+  if(!toast){toast=document.createElement('div');toast.id='brandCollectionToast';toast.className='brand-collection-toast';toast.setAttribute('role','status');document.body.append(toast)}
+  toast.innerHTML='<img src="/assets/brand/rabbit-success.jpg" alt=""><div><b>已加入追蹤清單</b><span>彩虹寶箱兔幫你收好了</span></div>';
+  toast.classList.add('show');clearTimeout(showCollectionToast.timer);showCollectionToast.timer=setTimeout(()=>toast.classList.remove('show'),2600);
+}
+
 function setWatchQuantity(id,quantity){
-  const key=String(id),next=Math.max(0,Math.min(999,Number(quantity)||0));
+  const key=String(id),previous=watchQuantity(key),next=Math.max(0,Math.min(999,Number(quantity)||0));
   if(next){
     watchlist[key]=next;
     const card=allKnownCards().find(item=>String(item.id)===key);
     if(card)watchlistMeta[key]={id:key,game:card.game,nameZh:card.nameZh,nameEn:card.nameEn,nameJa:card.nameJa,nameKo:card.nameKo,officialCardNumber:card.officialCardNumber,rarity:card.rarity,region:card.region};
   }else{delete watchlist[key];delete watchlistMeta[key]}
-  saveUiObject('cardscope-watchlist',watchlist);saveUiObject('cardscope-watchlist-meta',watchlistMeta);cards(currentCardRows,true);
+  saveUiObject('cardscope-watchlist',watchlist);saveUiObject('cardscope-watchlist-meta',watchlistMeta);cards(currentCardRows,true);if(previous===0&&next>0)showCollectionToast();
 }
 
 function watchlistEntries(){

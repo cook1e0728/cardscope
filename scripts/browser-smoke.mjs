@@ -18,9 +18,12 @@ try{
  assert.ok(layout.series>=0&&layout.series<80,JSON.stringify(layout));
  assert.ok(layout.cards<900,JSON.stringify(layout));
  assert.ok(layout.scroll<=layout.width,JSON.stringify(layout));
+ assert.ok(await page.locator('.brand-showcase img').evaluate(image=>image.complete&&image.naturalWidth>0),'Desktop mascot failed to load');
  await page.locator('[data-favorite-id]').first().click();
  await page.locator('[data-watch-increment]').first().click();
  assert.match(await page.locator('#watchlistSummary').innerText(),/1 張、1 件/);
+ assert.match(await page.locator('#brandCollectionToast img').getAttribute('src'),/rabbit-success\.jpg/);
+ assert.equal(await page.locator('#brandCollectionToast').evaluate(node=>node.classList.contains('show')),true);
  await page.locator('#favoritesOnly').click();
  assert.equal(await page.locator('#cards .card').count(),1);
  await page.locator('#favoritesOnly').click();
@@ -29,6 +32,9 @@ try{
  await page.locator('[data-view="grid"]').click();
  await page.setViewportSize({width:390,height:844});
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile overflow');
+ assert.match(await page.locator('.brand-showcase img').evaluate(image=>image.currentSrc),/rabbit-hero-mobile\.jpg/);
+ await page.locator('.mascot-gallery').evaluate(node=>node.open=true);
+ assert.equal(await page.locator('.mascot-gallery figure').count(),7);
  assert.deepEqual(errors,[]);
  console.log('Browser smoke passed: desktop/recent rail, favorites, quantities, rarity groups, mobile overflow, zero JavaScript exceptions.');
 }finally{await browser.close()}

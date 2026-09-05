@@ -52,3 +52,9 @@ test('IP navigation uses explicitly non-official CardScope artwork',async()=>{
     assert.doesNotMatch(svg,/OFFICIAL CARD GAME|TRADING CARD GAME/);
   }
 });
+test('all seven rabbit roles are wired to local brand assets',async()=>{
+  for(const name of ['hero','hero-mobile','profile','success','explore','silhouette','offline']){
+    assert.match(html+source+await readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8'),new RegExp(`rabbit-${name}\\.(?:jpg|png)`));
+  }
+  assert.match(html,/mascot-gallery/);
+});
