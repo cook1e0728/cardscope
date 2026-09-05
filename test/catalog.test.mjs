@@ -71,12 +71,26 @@ test('official product parser keeps sealed products separate from cards',()=>{
   const twSeries=parseOnePieceSeries('<option value="554117">補充包 世界最強的戰士【OP-17】</option>');assert.equal(twSeries[0].code,'OP-17');assert.equal(twSeries[0].name,'補充包 世界最強的戰士【OP-17】');assert.equal(twSeries[0].productType,'補充包');
 });
 
-test('all IP and regions share the three product catalog categories',()=>{
+test('all IP and regions keep legacy product classifications',()=>{
   assert.equal(classifyProduct({game:'pokemon',productType:'特殊禮盒',nameZh:'烈焰狂火特殊禮盒'}),'原盒');
   assert.equal(classifyProduct({game:'haikyuu',region:'JP',productType:'特典卡'}),'特典卡');
   assert.equal(classifyProduct({game:'onepiece',region:'ASIA',name:'Official Playmat'}),'周邊道具');
   assert.equal(classifyProduct({game:'yugioh',region:'KR',nameKo:'카드 슬리브'}),'周邊道具');
   assert.equal(classifyProduct({game:'pokemon',region:'US',name:'Great Encounters'}),'原盒');
+});
+
+test('frontend exposes seven shared product categories and maps legacy labels',async()=>{
+  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+  const sourceStart=html.indexOf('const PRODUCT_CATEGORY_DEFINITIONS='),sourceEnd=html.indexOf('let C=',sourceStart);
+  assert.ok(sourceStart>=0&&sourceEnd>sourceStart,'frontend category definitions are missing');
+  const {PRODUCT_CATEGORY_DEFINITIONS,productMatchesCategory}=new Function(`${html.slice(sourceStart,sourceEnd)};return {PRODUCT_CATEGORY_DEFINITIONS,productMatchesCategory}`)();
+  assert.deepEqual(PRODUCT_CATEGORY_DEFINITIONS.map(({id,label})=>[id,label]),[
+    ['singles','單卡'],['sealed','密封商品'],['decks','牌組／構築商品'],['promo','特典／贈品'],
+    ['event-store','賽事／商店限定'],['accessories','周邊道具'],['other','其他']
+  ]);
+  for(const [legacy,id] of [['原盒','sealed'],['特典卡','promo'],['周邊道具','accessories']])assert.equal(productMatchesCategory({catalogCategory:legacy},id),true,`${legacy} should map to ${id}`);
+  assert.match(html,/PRODUCT_CATEGORY_DEFINITIONS\.map\(category=>/);
+  assert.match(html,/onclick="chooseProductCategory\('\$\{category\.id\}'\)"/);
 });
 
 test('Pokemon cards keep their edition image but display official Traditional Chinese species names',()=>{
