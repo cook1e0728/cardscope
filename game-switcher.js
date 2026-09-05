@@ -1,17 +1,17 @@
 const gameChoices=[
-  {id:'all',name:'全部遊戲',language:'多語',query:'',navImage:'/assets/all-games.jpg'},
-  {id:'pokemon',name:'寶可夢',language:'日／繁／英',query:'',navImage:'/assets/ip-pokemon.svg'},
-  {id:'onepiece',name:'航海王',language:'日／亞洲英',query:'',navImage:'/assets/ip-onepiece.svg'},
-  {id:'yugioh',name:'遊戲王',language:'英',query:'',navImage:'/assets/ip-yugioh.svg'},
-  {id:'haikyuu',name:'排球少年 Vobaca!! BREAK',language:'日',query:'挑戰者',count:'527 張卡片',navImage:'/assets/ip-haikyuu.svg'},
-  {id:'weiss-schwarz',name:'WS 葬送的芙莉蓮',language:'日',query:'芙莉蓮',count:'751 張卡片',navImage:'/assets/ip-frieren.svg'}
+  {id:'all',name:'全部遊戲',language:'多語',query:'',approvedLogoUrl:null},
+  {id:'pokemon',name:'寶可夢',shortName:'Pokémon',language:'日／繁／英',query:'',approvedLogoUrl:null},
+  {id:'onepiece',name:'航海王',shortName:'ONE PIECE',language:'日／亞洲英',query:'',approvedLogoUrl:null},
+  {id:'yugioh',name:'遊戲王',shortName:'Yu-Gi-Oh!',language:'日／繁／英',query:'',approvedLogoUrl:null},
+  {id:'haikyuu',name:'排球少年',shortName:'Vobaca!! BREAK',language:'日',query:'挑戰者',approvedLogoUrl:null},
+  {id:'weiss-schwarz',name:'葬送的芙莉蓮',shortName:'Weiß Schwarz',language:'日',query:'芙莉蓮',approvedLogoUrl:null}
 ];
 window.CARD_GAMES=gameChoices;
 const style=document.createElement('style');style.textContent=`.game-switch{border:2px solid #111;background:#fff;border-radius:12px;padding:8px 12px;font-weight:850;cursor:pointer;white-space:nowrap}.game-switch:after{content:'⌄';margin-left:9px}.game-picker{position:fixed;inset:0;background:#1119;z-index:20;display:none;padding:20px}.game-picker.open{display:grid;place-items:center}.game-picker-box{background:#fff;border-radius:22px;width:min(820px,100%);max-height:88vh;overflow:auto;padding:24px}.game-picker-head{display:flex;justify-content:space-between;align-items:center}.game-picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}.game-pick{border:2px solid #e5e5e5;background:#fff;border-radius:14px;padding:10px;text-align:left;cursor:pointer;display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center}.game-pick:hover,.game-pick.active{border-color:#111;background:#fffbe0}.game-pick-art{height:72px;border-radius:10px;background:linear-gradient(135deg,#ffe76b,#71d9d0);overflow:hidden;display:grid;place-items:center}.game-pick-art img{width:100%;height:100%;object-fit:contain}.game-pick b{display:block;font-size:16px}.game-pick small{color:#777}.game-lang{display:inline-block;margin-top:7px;background:#111;color:#fff;border-radius:5px;padding:2px 6px;font-size:11px}@media(max-width:760px){.game-switch{order:2;margin-left:auto;max-width:55%;overflow:hidden;text-overflow:ellipsis}.game-picker-grid{grid-template-columns:1fr}.game-pick{grid-template-columns:76px 1fr}.game-pick-art{height:58px}}`;document.head.append(style);
 const switchButton=document.createElement('button');switchButton.className='game-switch';switchButton.textContent='全部遊戲';document.querySelector('.brand').after(switchButton);
 const picker=document.createElement('div');picker.className='game-picker';picker.innerHTML=`<div class="game-picker-box"><div class="game-picker-head"><div><h2 style="margin:0">切換卡牌遊戲</h2><div class="meta">選擇 IP／遊戲；語言是版本屬性，不會被拆成不同 IP</div></div><button class="close" type="button">×</button></div><div class="game-picker-grid"></div></div>`;document.body.append(picker);
 const grid=picker.querySelector('.game-picker-grid'),close=()=>picker.classList.remove('open'),originalChoose=window.choose;
-function draw(active='all'){grid.innerHTML=gameChoices.map(g=>{const visual=window.gameNavImage?.(g.id)||g.navImage;return`<button class="game-pick ${g.id===active?'active':''}" data-id="${g.id}"><span class="game-pick-art">${visual?`<img src="${visual}" alt="${g.name}系列識別圖" loading="lazy">`:'TCG'}</span><span><b>${g.name}</b><small>${g.count||'完整官方圖鑑'}</small><br><span class="game-lang">${g.language}</span></span></button>`}).join('')}
+function draw(active='all'){grid.innerHTML=gameChoices.map(g=>{const visual=window.gameNavImage?.(g.id)||g.navImage;return`<button class="game-pick ${g.id===active?'active':''}" data-id="${g.id}"><span class="game-pick-art">${visual?`<img src="${visual}" alt="${g.name}系列識別圖" loading="lazy">` :`<span class="ip-wordmark">${g.shortName||g.name}</span>`}</span><span><b>${g.name}</b><small>${'依版本與系列瀏覽'}</small><br><span class="game-lang">${g.language}</span></span></button>`}).join('')}
 function selectGame(id){const choice=gameChoices.find(g=>g.id===id)||gameChoices[0];switchButton.textContent=choice.name;close();originalChoose?.(id)}
 switchButton.onclick=()=>{draw(game);picker.classList.add('open')};picker.querySelector('.close').onclick=close;picker.onclick=e=>{if(e.target===picker)close()};grid.onclick=e=>{const button=e.target.closest('[data-id]');if(button)selectGame(button.dataset.id)};
 window.choose=selectGame;

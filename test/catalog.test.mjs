@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
-import { classifyProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
+import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 
 const port=4197;
 let server;
@@ -71,12 +71,38 @@ test('official product parser keeps sealed products separate from cards',()=>{
   const twSeries=parseOnePieceSeries('<option value="554117">補充包 世界最強的戰士【OP-17】</option>');assert.equal(twSeries[0].code,'OP-17');assert.equal(twSeries[0].name,'補充包 世界最強的戰士【OP-17】');assert.equal(twSeries[0].productType,'補充包');
 });
 
+test('product taxonomy exposes seven accepted feed values',()=>{
+  assert.deepEqual(PRODUCT_CATEGORIES,['原盒','特典卡','周邊道具','decks','event-store','other','singles']);
+});
+
 test('all IP and regions keep legacy product classifications',()=>{
   assert.equal(classifyProduct({game:'pokemon',productType:'特殊禮盒',nameZh:'烈焰狂火特殊禮盒'}),'原盒');
   assert.equal(classifyProduct({game:'haikyuu',region:'JP',productType:'特典卡'}),'特典卡');
   assert.equal(classifyProduct({game:'onepiece',region:'ASIA',name:'Official Playmat'}),'周邊道具');
   assert.equal(classifyProduct({game:'yugioh',region:'KR',nameKo:'카드 슬리브'}),'周邊道具');
   assert.equal(classifyProduct({game:'pokemon',region:'US',name:'Great Encounters'}),'原盒');
+});
+
+test('product taxonomy separates decks, event rewards, accessories and unknowns',()=>{
+  const cases=[
+    [{game:'pokemon',productType:'起始牌組',nameZh:'冠軍特典套組'},'decks'],
+    [{game:'onepiece',productType:'STARTER DECK',name:'Tournament Prize'},'decks'],
+    [{game:'haikyuu',productType:'賽事獎品',name:'Champion Card'},'event-store'],
+    [{game:'yugioh',productType:'店鋪限定',name:'Store Exclusive Card'},'event-store'],
+    [{game:'onepiece',productType:'周邊道具',name:'Champion Playmat'},'周邊道具'],
+    [{game:'onepiece',name:'Champion Playmat'},'周邊道具'],
+    [{game:'pokemon',name:'Mystery Collector Item'},'other']
+  ];
+  for(const [product,expected] of cases)assert.equal(classifyProduct(product),expected,JSON.stringify(product));
+  assert.equal(normalizeProduct({catalogCategory:'sealed',name:'Known box'}).catalogCategory,'原盒');
+  assert.equal(normalizeProduct({catalogCategory:'accessories',name:'Deck box'}).catalogCategory,'周邊道具');
+});
+
+test('structured product type wins over incidental name keywords',()=>{
+  assert.equal(classifyProduct({productType:'周邊道具',name:'Champion Tournament Prize Playmat'}),'周邊道具');
+  assert.equal(classifyProduct({productType:'BOOSTER PACK',name:'Official Tournament Prize'}),'原盒');
+  assert.equal(classifyProduct({productType:'STARTER DECK',name:'Promo Prize'}),'decks');
+  assert.equal(classifyProduct({metadata:{productType:'賽事限定'},name:'Playmat'}),'event-store');
 });
 
 test('frontend exposes seven shared product categories and maps legacy labels',async()=>{
@@ -118,9 +144,12 @@ test('round three browsing controls and honest fallbacks stay wired',async()=>{
   assert.match(ui,/圖片待補/);
   for(const tab of ['資訊','跨市場比價','成交趨勢','使用者回報'])assert.match(ui,new RegExp(tab));
   for(const interaction of ['tilt-card','perspective:1000px','上一張卡','下一張卡','ArrowLeft','ArrowRight'])assert.match(ui,new RegExp(interaction));
-  for(const tour of ['cardscopeFeatureTour','暫停輪播','setInterval','prefers-reduced-motion'])assert.match(ui,new RegExp(tour));
-  assert.match(navigator,/series-accordion/);
-  assert.match(navigator,/item\.catalogCategory===productCategory/);
+  for(const marker of ['cardscopeFeatureTour','feature-tour','快速使用說明','help-grid'])assert.match(ui,new RegExp(marker));
+  assert.doesNotMatch(ui,/暫停輪播|setInterval/);
+  assert.match(navigator,/series-block/);
+  assert.match(navigator,/series-groups/);
+  assert.doesNotMatch(navigator,/host\.innerHTML[\s\S]{0,1000}series-accordion/);
+  assert.match(navigator,/productMatchesCategory\(item,category\)/);
   assert.ok(mappings.entries.some(row=>row.game==='haikyuu'&&row.code==='HV-P04'));
   assert.ok(mappings.entries.some(row=>row.game==='weiss-schwarz'&&row.code==='S136'));
 });
