@@ -22,8 +22,8 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 - Frankfurter 匯率：成功後 24 小時更新一次。
 - 遊々亭：管理端抓取功能保留，正式排程建議每日一次。
 - 若 Supabase 已建立 `exchange_rates`，Render 重啟後會優先讀取 24 小時內的已存匯率。
-- Catalog 成功同步後 72 小時內不重跑；Render 啟動會在背景檢查，`CATALOG_SYNC_ON_START=false` 可停用。
-- Render 啟動會續傳尚未保存的遊戲王卡圖；可用 `CARD_IMAGE_CACHE_ON_START=false` 停用，或以 `CARD_IMAGE_CACHE_CONCURRENCY` 調整同時下載數。
+- Catalog 成功同步後預設 72 小時內不重跑，進行中的來源也不會重複啟動；可用 `CATALOG_SYNC_MAX_AGE_HOURS` 調整冷卻時間，或以 `CATALOG_SYNC_ON_START=false` 停用啟動檢查。
+- 遊戲王卡圖只會在遊戲王 Catalog 確實需要同步後自動續傳，不再每次 Render 啟動都掃描整庫；`CARD_IMAGE_CACHE_ON_START=true` 可強制續傳、`false` 可完全停用，並可用 `CARD_IMAGE_CACHE_CONCURRENCY` 控制同時下載數。
 
 ## TWD 匯率
 

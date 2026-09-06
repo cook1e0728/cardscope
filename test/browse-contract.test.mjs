@@ -7,7 +7,7 @@ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const uiSource=await readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8');
 const appSource=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match=>match[1]).join('\n').split('async function init()')[0];
 
-function createHarness(fetchImpl=async()=>({ok:true,json:async()=>({data:[],meta:{hasMore:false}})}),withUi=false){
+function createHarness(fetchImpl=async()=>({ok:true,json:async()=>({data:[],meta:{hasMore:false}})}),withUi=false,initialStore={}){
   const nodes=new Map(),created=[];
   const classList={toggle(){},add(){},remove(){},contains(){return false}};
   const node=(id='')=>{
@@ -18,7 +18,7 @@ function createHarness(fetchImpl=async()=>({ok:true,json:async()=>({data:[],meta
   };
   for(const id of ['browseRegion','channels','productCategories','series','selectedProduct','cardsTitle','cardsMeta','cardTools','cards','loadMore','filterSummary','rarityFilter','priceFilter','cardSort','notice','modal','detail','status'])node(id);
   const body=node('body'),head=node('head');
-  const store=new Map();
+  const store=new Map(Object.entries(initialStore));
   const document={body,head,getElementById:id=>nodes.get(id)||created.find(item=>item.id===id)||null,createElement:()=>node(),querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){}};
   const context=vm.createContext({document,window:{},console,fetch:fetchImpl,localStorage:{getItem:key=>store.get(key)||null,setItem:(key,value)=>store.set(key,String(value))},matchMedia:()=>({matches:false}),setTimeout,Blob,URL});
   context.window=context;
@@ -26,6 +26,11 @@ function createHarness(fetchImpl=async()=>({ok:true,json:async()=>({data:[],meta
   if(withUi)vm.runInContext(uiSource,context);
   return {run:code=>vm.runInContext(code,context),context,nodes};
 }
+
+test('card catalog always starts in grid mode even after a previous rarity view',()=>{
+  const h=createHarness(undefined,true,{'cardscope-card-view':'rarity'});
+  assert.equal(h.run('cardViewMode'),'grid');
+});
 
 test('all-game default renders the IP chooser and no individual cards',()=>{
   const h=createHarness();

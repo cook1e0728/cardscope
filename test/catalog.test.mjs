@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
+import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 
 const port=4197;
@@ -29,6 +29,18 @@ test('coverage reports honest fallback totals without a database',async()=>{
   assert.equal(data.source,'catalog.json');
   assert.equal(data.totalCards,Object.values(data.games).reduce((sum,g)=>sum+g.cards,0));
   assert.ok(data.games.pokemon.cards>0);
+});
+
+test('catalog cooldown treats an active provider run as covered',async()=>{
+  let requestedPath='';
+  const providers=await catalogProvidersNeedingSync(async path=>{requestedPath=path;return[
+    {provider:'pokemontcg',status:'running',metadata:{}},
+    {provider:'tcgdex-zh-tw',status:'completed',metadata:{}},
+    {provider:'onepiece-official-tw',status:'completed',metadata:{twCards:0}},
+    {provider:'ygoprodeck',status:'completed',metadata:{}}
+  ]},72);
+  assert.match(requestedPath,/status=in\.\(completed,running\)/);
+  assert.deepEqual(providers,['onepiece']);
 });
 
 test('price filters stay honest when no verified database source is configured',async()=>{
@@ -138,12 +150,12 @@ test('round three browsing controls and honest fallbacks stay wired',async()=>{
     readFile(new URL('../series-navigator.js',import.meta.url),'utf8'),
     readFile(new URL('../data/series-zh.json',import.meta.url),'utf8').then(JSON.parse)
   ]);
-  assert.match(ui,/cardscope-card-view/);
+  assert.match(ui,/let cardViewMode='grid'/);
   assert.match(ui,/圖鑑模式/);
   assert.match(ui,/清單模式/);
   assert.match(ui,/圖片待補/);
   for(const tab of ['資訊','跨市場比價','成交趨勢','使用者回報'])assert.match(ui,new RegExp(tab));
-  for(const interaction of ['tilt-card','perspective:1000px','上一張卡','下一張卡','ArrowLeft','ArrowRight'])assert.match(ui,new RegExp(interaction));
+  for(const interaction of ['tilt-card','perspective:1000px','上一張卡','下一張卡','ArrowLeft','ArrowRight','card-zoom','點擊卡圖可放大'])assert.match(ui,new RegExp(interaction));
   for(const marker of ['cardscopeFeatureTour','feature-tour','快速使用說明','help-grid'])assert.match(ui,new RegExp(marker));
   assert.doesNotMatch(ui,/暫停輪播|setInterval/);
   assert.match(navigator,/series-block/);

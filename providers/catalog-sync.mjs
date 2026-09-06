@@ -156,7 +156,7 @@ async function syncOnePiece(db){
 }
 
 export async function catalogProvidersNeedingSync(db,maxAgeHours=72){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,metadata&status=eq.completed&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),completed=new Set((rows||[]).filter(row=>row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!completed.has(stored)).map(([runtime])=>runtime);
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,status,metadata&status=in.(completed,running)&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),covered=new Set((rows||[]).filter(row=>row.status==='running'||row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!covered.has(stored)).map(([runtime])=>runtime);
 }
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}

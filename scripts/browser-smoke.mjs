@@ -16,6 +16,12 @@ try{
  await page.locator('#channels .channel').nth(1).click();
  await page.locator('#cards .card').first().waitFor();
  await page.locator('.active-series-block').waitFor();
+ await page.locator('#cards .card').first().click();
+ await page.locator('#modal.open .tilt-card').waitFor();
+ await page.locator('#modal.open .tilt-card').click();
+ await page.locator('#cardZoom.open img').waitFor();
+ await page.locator('#cardZoom .card-zoom-close').click();
+ await page.locator('#close').click();
  assert.equal(await page.locator('.recent-series-details').getAttribute('open'),null);
  const layout=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,series:document.querySelector('.active-series-block').getBoundingClientRect().x,cards:document.querySelector('#cards').getBoundingClientRect().y}));
  assert.ok(layout.series>=0&&layout.series<80,JSON.stringify(layout));
@@ -39,5 +45,5 @@ try{
  await page.locator('.mascot-gallery').evaluate(node=>node.open=true);
  assert.equal(await page.locator('.mascot-gallery figure').count(),7);
  assert.deepEqual(errors,[]);
- console.log('Browser smoke passed: desktop/recent rail, favorites, quantities, rarity groups, mobile overflow, zero JavaScript exceptions.');
+ console.log('Browser smoke passed: default grid, card zoom/detail, desktop/recent rail, favorites, quantities, rarity groups, mobile overflow, zero JavaScript exceptions.');
 }finally{await browser.close()}
