@@ -11,6 +11,9 @@ try{
  await page.route('**/api/products',route=>route.fulfill({json:{data:products,series:[]}}));
  await page.addInitScript(()=>{localStorage.clear();localStorage.setItem('cardscope-recent-series','["smoke-0"]')});
  await page.goto(process.env.CARDSCOPE_URL||'http://localhost:4173');
+ assert.equal(await page.locator('#cards .game-entry').count(),5);
+ assert.equal(await page.locator('#cards .card').count(),0);
+ await page.locator('#channels .channel').nth(1).click();
  await page.locator('#cards .card').first().waitFor();
  await page.locator('.active-series-block').waitFor();
  assert.equal(await page.locator('.recent-series-details').getAttribute('open'),null);

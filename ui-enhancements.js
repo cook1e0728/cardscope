@@ -7,6 +7,14 @@ const favoriteIds=new Set(readUiArray('cardscope-favorites'));
 const watchlist=readUiObject('cardscope-watchlist');
 const watchlistMeta=readUiObject('cardscope-watchlist-meta');
 
+const renderSeriesForSelectedGame=series;
+series=function(){
+  if(game!=='all')return renderSeriesForSelectedGame();
+  const host=$('series'),controls=document.getElementById('seriesControls');
+  if(controls)controls.remove();
+  if(host){host.classList.add('series-nav-host');host.innerHTML='<div class="browse-gate"><b>商品與系列會依 IP 分開</b><span>先選擇單一遊戲，這裡才會顯示該 IP 的系列、版本與最近瀏覽。</span></div>'}
+};
+
 function readUiArray(key){try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value.map(String):[]}catch{return[]}}
 function readUiObject(key){try{const value=JSON.parse(localStorage.getItem(key)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch{return{}}}
 function saveUiArray(key,value){uiLocal.set(key,JSON.stringify([...value]))}
@@ -14,6 +22,7 @@ function saveUiObject(key,value){uiLocal.set(key,JSON.stringify(value))}
 function cardRarityLabel(card){return String(card.rarity||card.printings?.find(printing=>printing.rarity)?.rarity||'稀有度待補')}
 function cardNumberLabel(card){return card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||'卡號待補'}
 function cardPriceLabel(price){return price&&Number.isFinite(Number(price.price))&&price.currency?`${e(price.currency)} ${Number(price.price).toLocaleString()} 買取`:''}
+function cardGameLabel(card){const catalogName=G(card.game).nameZh;if(catalogName)return catalogName;return (window.CARD_GAMES||[]).find(item=>item.id===card.game)?.name||card.game||'IP 待補'}
 function isFavorite(id){return favoriteIds.has(String(id))}
 function watchQuantity(id){const value=Number(watchlist[String(id)]);return Number.isInteger(value)&&value>0?value:0}
 function allKnownCards(){const rows=[...(currentCardRows||[]),...(C?.cards||[])];return [...new Map(rows.map(card=>[String(card.id),card])).values()]}
@@ -47,9 +56,9 @@ function cardActionsMarkup(card){
 }
 
 function cardMarkup(card){
-  const price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),region=rn(card.region||card.printings?.[0]?.region),picture=resilientImage(image(card),name(card),'這張卡尚未收錄可公開顯示的圖片'),id=e(card.id),priceMarkup=cardPriceLabel(price);
-  if(cardViewMode==='list')return `<article class="card card-list" data-card-open="${id}"><div class="art">${picture}</div><div class="card-list-main"><h3>${e(name(card))}</h3><div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${e(rarity)}</span><span class="badge">${e(region)}</span>${priceMarkup?`<strong>${priceMarkup}</strong>`:'<span class="meta">可靠價格待補</span>'}</div>${cardActionsMarkup(card)}</article>`;
-  return `<article class="card" data-card-open="${id}"><div class="art">${picture}</div><h3>${e(name(card))}</h3><div class="meta">${e(number)} · ${e(rarity)}</div>${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}<span class="badge">${e(region)}</span>${cardActionsMarkup(card)}</article>`;
+  const price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),region=rn(card.region||card.printings?.[0]?.region),gameLabel=cardGameLabel(card),picture=resilientImage(image(card),name(card),'這張卡尚未收錄可公開顯示的圖片'),id=e(card.id),priceMarkup=cardPriceLabel(price);
+  if(cardViewMode==='list')return `<article class="card card-list" data-card-open="${id}"><div class="art">${picture}</div><div class="card-list-main"><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${e(rarity)}</span><span class="badge">${e(region)}</span>${priceMarkup?`<strong>${priceMarkup}</strong>`:'<span class="meta">可靠價格待補</span>'}</div>${cardActionsMarkup(card)}</article>`;
+  return `<article class="card" data-card-open="${id}"><div class="art">${picture}</div><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(number)} · ${e(rarity)}</div>${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}<span class="badge">${e(region)}</span>${cardActionsMarkup(card)}</article>`;
 }
 
 function activateCardActions(root=$('cards')){
@@ -64,8 +73,8 @@ function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img sr
 
 function renderCardRows(rows){
   if(cardViewMode!=='rarity')return rows.length?rows.map(cardMarkup).join(''):renderCardEmpty();
-  const groups=new Map();rows.forEach(card=>{const rarity=cardRarityLabel(card);if(!groups.has(rarity))groups.set(rarity,[]);groups.get(rarity).push(card)});
-  return groups.size?[...groups].map(([rarity,cardsForRarity],groupIndex)=>`<section class="rarity-group" aria-labelledby="rarity-${groupIndex}"><header><h3 id="rarity-${groupIndex}">${e(rarity)}</h3><span>${cardsForRarity.length.toLocaleString()} 張</span></header><div class="cards rarity-group-cards">${cardsForRarity.map(cardMarkup).join('')}</div></section>`).join(''):renderCardEmpty();
+  const groups=new Map();rows.forEach(card=>{const rarity=cardRarityLabel(card),gameLabel=cardGameLabel(card),key=`${card.game||'unknown'}\u0000${rarity}`;if(!groups.has(key))groups.set(key,{gameLabel,rarity,cards:[]});groups.get(key).cards.push(card)});
+  return groups.size?[...groups.values()].map(({gameLabel,rarity,cards:cardsForRarity},groupIndex)=>`<section class="rarity-group" aria-labelledby="rarity-${groupIndex}"><header><h3 id="rarity-${groupIndex}"><span>${e(gameLabel)}</span>｜<span>${e(rarity)}</span></h3><span>${cardsForRarity.length.toLocaleString()} 張</span></header><div class="cards rarity-group-cards">${cardsForRarity.map(cardMarkup).join('')}</div></section>`).join(''):renderCardEmpty();
 }
 
 cards=function(rows,keepSource=false){
