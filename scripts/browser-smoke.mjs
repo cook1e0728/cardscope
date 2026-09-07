@@ -46,6 +46,7 @@ try{
  assert.equal(await page.locator('#cards .card').count(),1);
  await page.locator('#favoritesOnly').click();
  await page.locator('[data-view="rarity"]').click();
+ await page.locator('.rarity-group').first().waitFor();
  assert.ok(await page.locator('.rarity-group').count()>0);
  await page.locator('[data-view="grid"]').click();
  await page.setViewportSize({width:390,height:844});

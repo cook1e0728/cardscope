@@ -13,6 +13,7 @@ const nativeFetch = globalThis.fetch;
 const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
 
 const root = fileURLToPath(new URL('.', import.meta.url));
+const rarityRankings = JSON.parse(await readFile(join(root,'data','rarity-rankings.json'),'utf8'));
 const port = Number(process.env.PORT || 4173);
 const jpyToTwdFallback = Number(process.env.JPY_TO_TWD || 0.22);
 const usdToTwdFallback = Number(process.env.USD_TO_TWD || 32);
@@ -131,6 +132,15 @@ function normalizeBrowseRegion(value){const region=String(value||'').trim().toUp
 function normalizeBrowseRarity(value){const rarity=String(value||'').trim();return !rarity||rarity.toLowerCase()==='all'?null:rarity}
 function normalizeBrowseSort(value){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc','price-asc','price-desc']).has(sort)?sort:'number-asc'}
 function browseToken(value){return normalizeSearch(value).replace(/[^\p{L}\p{N}]/gu,'')}
+function rarityRankingToken(value){return String(value||'').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g,'').replace(/[^\p{L}\p{N}+]/gu,'')}
+const rarityRankIndex=new Map(Object.entries(rarityRankings.systems||{}).map(([game,definition])=>[game,new Map((definition.highToLow||[]).flatMap((labels,index)=>(labels||[]).map(label=>[rarityRankingToken(label),index])))]));
+function browseRarityRank(game,value){const rank=rarityRankIndex.get(game)?.get(rarityRankingToken(value));return Number.isInteger(rank)?rank:Number.MAX_SAFE_INTEGER}
+function compareBrowseRarity(a,b,direction='desc'){
+  const ar=browseRarityRank(a.game,browseValues(a,a.printings,'rarity')[0]),br=browseRarityRank(b.game,browseValues(b,b.printings,'rarity')[0]);
+  if(ar===Number.MAX_SAFE_INTEGER||br===Number.MAX_SAFE_INTEGER){if(ar!==br)return ar===Number.MAX_SAFE_INTEGER?1:-1}
+  else if(ar!==br)return direction==='desc'?ar-br:br-ar;
+  return String(browseValues(a,a.printings,'rarity')[0]||'').localeCompare(String(browseValues(b,b.printings,'rarity')[0]||''),undefined,{numeric:true,sensitivity:'base'});
+}
 function browseValues(card,printings,key){
   const values=[];
   if(key==='rarity')values.push(card?.rarity,...(printings||[]).flatMap(p=>[p.rarity,p.rarityCode,p.rarityLabel]));
@@ -150,7 +160,7 @@ function browseCompare(a,b,sort){
   const number=()=>browseNumber(a).localeCompare(browseNumber(b),undefined,{numeric:true,sensitivity:'base'})||String(a.id).localeCompare(String(b.id));
   if(sort==='number-desc')return -number();
   if(sort==='release-asc'||sort==='release-desc'){const value=String(browseRelease(a)).localeCompare(String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
-  if(sort==='rarity-asc'||sort==='rarity-desc'){const value=String(browseValues(a,a.printings,'rarity')[0]||'').localeCompare(String(browseValues(b,b.printings,'rarity')[0]||''),undefined,{numeric:true,sensitivity:'base'})||number();return sort==='rarity-desc'?-value:value}
+  if(sort==='rarity-asc'||sort==='rarity-desc')return compareBrowseRarity(a,b,sort.endsWith('desc')?'desc':'asc')||number();
   if(sort==='name-asc'||sort==='name-desc'){const value=String(a.nameZh||a.nameEn||a.nameJa||a.id).localeCompare(String(b.nameZh||b.nameEn||b.nameJa||b.id),undefined,{sensitivity:'base'})||number();return sort==='name-desc'?-value:value}
   if(sort==='price-asc'||sort==='price-desc'){
     const av=Number(a.priceTwd??a.price),bv=Number(b.priceTwd??b.price),aKnown=Number.isFinite(av),bKnown=Number.isFinite(bv);

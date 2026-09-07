@@ -45,7 +45,7 @@ function installViewToggle(){
   const tools=$('cardTools');if(!tools||$('cardViewSwitch'))return;
   const host=document.createElement('div');host.id='cardViewSwitch';host.className='view-switch';host.setAttribute('aria-label','卡片瀏覽模式');
   host.innerHTML=`<button type="button" data-view="grid">圖鑑模式</button><button type="button" data-view="list">清單模式</button><button type="button" data-view="rarity">稀有度分組</button>`;
-  tools.prepend(host);host.onclick=event=>{const button=event.target.closest('[data-view]');if(!button)return;cardViewMode=button.dataset.view;drawViewButtons();cards(currentCardRows,true)};drawViewButtons();
+  tools.prepend(host);host.onclick=event=>{const button=event.target.closest('[data-view]');if(!button)return;cardViewMode=button.dataset.view;if(cardViewMode==='rarity'&&!String(cardFilters.sort).startsWith('rarity-')){cardFilters.sort='rarity-desc';const sortControl=$('cardSort');if(sortControl)sortControl.value='rarity-desc'}drawViewButtons();if(game!=='all'&&cardViewMode==='rarity')loadCardsPage(true);else cards(currentCardRows,true)};drawViewButtons();
 }
 function drawViewButtons(){document.querySelectorAll('#cardViewSwitch [data-view]').forEach(button=>button.classList.toggle('on',button.dataset.view===cardViewMode))}
 
@@ -72,8 +72,9 @@ function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img sr
 
 function renderCardRows(rows){
   if(cardViewMode!=='rarity')return rows.length?rows.map(cardMarkup).join(''):renderCardEmpty();
-  const groups=new Map();rows.forEach(card=>{const rarity=cardRarityLabel(card),gameLabel=cardGameLabel(card),key=`${card.game||'unknown'}\u0000${rarity}`;if(!groups.has(key))groups.set(key,{gameLabel,rarity,cards:[]});groups.get(key).cards.push(card)});
-  return groups.size?[...groups.values()].map(({gameLabel,rarity,cards:cardsForRarity},groupIndex)=>`<section class="rarity-group" aria-labelledby="rarity-${groupIndex}"><header><h3 id="rarity-${groupIndex}"><span>${e(gameLabel)}</span>｜<span>${e(rarity)}</span></h3><span>${cardsForRarity.length.toLocaleString()} 張</span></header><div class="cards rarity-group-cards">${cardsForRarity.map(cardMarkup).join('')}</div></section>`).join(''):renderCardEmpty();
+  const groups=new Map();rows.forEach(card=>{const rarity=cardRarityLabel(card),gameLabel=cardGameLabel(card),key=`${card.game||'unknown'}\u0000${rarity}`;if(!groups.has(key))groups.set(key,{gameId:card.game||'unknown',gameLabel,rarity,cards:[]});groups.get(key).cards.push(card)});
+  const direction=cardFilters.sort==='rarity-asc'?'asc':'desc',gameOrder=new Map((window.CARD_GAMES||[]).map((item,index)=>[item.id,index])),ordered=[...groups.values()].sort((a,b)=>(gameOrder.get(a.gameId)??999)-(gameOrder.get(b.gameId)??999)||compareRarityLabels(a.gameId,a.rarity,b.rarity,direction));
+  return ordered.length?ordered.map(({gameLabel,rarity,cards:cardsForRarity},groupIndex)=>`<section class="rarity-group" aria-labelledby="rarity-${groupIndex}"><header><h3 id="rarity-${groupIndex}"><span>${e(gameLabel)}</span>｜<span>${e(rarity)}</span></h3><span>${cardsForRarity.length.toLocaleString()} 張</span></header><div class="cards rarity-group-cards">${cardsForRarity.map(cardMarkup).join('')}</div></section>`).join(''):renderCardEmpty();
 }
 
 cards=function(rows,keepSource=false){

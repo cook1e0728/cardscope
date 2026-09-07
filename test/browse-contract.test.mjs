@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 const uiSource=await readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8');
+const rarityRankings=JSON.parse(await readFile(new URL('../data/rarity-rankings.json',import.meta.url),'utf8'));
 const appSource=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match=>match[1]).join('\n').split('async function init()')[0];
 
 function createHarness(fetchImpl=async()=>({ok:true,json:async()=>({data:[],meta:{hasMore:false}})}),withUi=false,initialStore={}){
@@ -48,6 +49,32 @@ test('taxonomy keeps card systems separate from current and planned franchises',
   assert.equal(weiss.franchises.find(item=>item.id==='rezero').status,'planned');
   assert.equal(taxonomy.systems.find(system=>system.id==='union-arena').enabled,false);
   assert.equal(taxonomy.assetPolicy.officialPermissionRequired,true);
+});
+
+test('rarity order is game-specific in both directions and keeps unknown values last',()=>{
+  const h=createHarness();
+  h.run(`rarityRankings=${JSON.stringify(rarityRankings)}`);
+  assert.ok(h.run("compareRarityLabels('pokemon','SAR','C','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('pokemon','SAR','C','asc')")>0);
+  assert.ok(h.run("compareRarityLabels('onepiece','SEC','UC','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('yugioh','Ghost Rare','Common','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('weiss-schwarz','SEC+','SEC','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('haikyuu','SP','C','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('pokemon','尚待對照','C','desc')")>0);
+  assert.ok(h.run("compareRarityLabels('pokemon','尚待對照','C','asc')")>0);
+});
+
+test('rarity grouping follows the selected high-to-low or low-to-high order',()=>{
+  const h=createHarness(undefined,true);
+  const rows="[{id:'c',game:'pokemon',nameZh:'普通卡',rarity:'C',officialCardNumber:'003'},{id:'sar',game:'pokemon',nameZh:'特別卡',rarity:'SAR',officialCardNumber:'001'},{id:'u',game:'pokemon',nameZh:'未知卡',rarity:'尚待對照',officialCardNumber:'002'}]";
+  h.run(`rarityRankings=${JSON.stringify(rarityRankings)};C={games:[{id:'pokemon',nameZh:'寶可夢'}],cards:[]};cardViewMode='rarity';cardFilters.sort='rarity-desc'`);
+  const high=h.run(`renderCardRows(${rows})`);
+  assert.ok(high.indexOf('>SAR<')<high.indexOf('>C<'));
+  assert.ok(high.indexOf('>C<')<high.indexOf('>尚待對照<'));
+  h.run("cardFilters.sort='rarity-asc'");
+  const low=h.run(`renderCardRows(${rows})`);
+  assert.ok(low.indexOf('>C<')<low.indexOf('>SAR<'));
+  assert.ok(low.indexOf('>SAR<')<low.indexOf('>尚待對照<'));
 });
 
 test('all-game default renders the IP chooser and no individual cards',()=>{

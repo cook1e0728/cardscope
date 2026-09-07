@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "unknownPlacement": "last",
+  "descriptionZh": "CardScope 各卡牌遊戲的圖鑑瀏覽順序。這是稀有度／特殊加工的導覽排序，不代表價格或跨遊戲價值比較。",
+  "systems": {
+    "pokemon": {
+      "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
+      "highToLow": [
+        ["MUR"],
+        ["BWR"],
+        ["UR", "Ultra Rare"],
+        ["HR", "Hyper Rare", "Rainbow Rare"],
+        ["SAR", "Special Art Rare", "Special Illustration Rare"],
+        ["SSR", "Shiny Super Rare", "Shiny Ultra Rare"],
+        ["SR", "Super Rare", "Secret Rare"],
+        ["S", "Shiny Rare"],
+        ["AR", "Art Rare", "Illustration Rare"],
+        ["CHR", "Character Rare", "Amazing Rare"],
+        ["RRR", "Triple Rare"],
+        ["RR", "Double Rare", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX"],
+        ["Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime"],
+        ["R", "Rare"],
+        ["U", "Uncommon"],
+        ["C", "Common"]
+      ]
+    },
+    "onepiece": {
+      "sourceUrl": "https://asia-en.onepiece-cardgame.com/cardlist/",
+      "highToLow": [
+        ["TR", "Treasure Rare"],
+        ["SP", "SP CARD", "Special Card"],
+        ["SEC", "Secret Rare"],
+        ["SR", "Super Rare"],
+        ["R", "Rare"],
+        ["L", "Leader"],
+        ["UC", "Uncommon"],
+        ["C", "Common"],
+        ["P", "Promo"],
+        ["DON!!", "DON"]
+      ]
+    },
+    "yugioh": {
+      "sourceUrl": "https://www.yugioh-card.com/en/about/new-to-ygo/",
+      "highToLow": [
+        ["Quarter Century Secret Rare", "Quarter Century Rare", "QCSR"],
+        ["Starlight Rare"],
+        ["Ghost Rare"],
+        ["Collector's Rare", "Collectors Rare"],
+        ["Prismatic Secret Rare", "Platinum Secret Rare"],
+        ["Ultimate Rare"],
+        ["Secret Rare"],
+        ["Premium Gold Rare", "Gold Secret Rare", "Gold Rare"],
+        ["Ultra Rare"],
+        ["Super Rare"],
+        ["Rare"],
+        ["Short Print", "Common"]
+      ]
+    },
+    "weiss-schwarz": {
+      "sourceUrl": "https://ws-tcg.com/cardlist/",
+      "highToLow": [
+        ["SEC+"],
+        ["SEC"],
+        ["SSP"],
+        ["SP"],
+        ["OFR"],
+        ["RRR"],
+        ["SR"],
+        ["RR"],
+        ["R"],
+        ["U"],
+        ["C"],
+        ["CR"],
+        ["CC"],
+        ["PR"]
+      ]
+    },
+    "haikyuu": {
+      "sourceUrl": "https://www.takaratomy.co.jp/products/haikyuvobacabreak/card/",
+      "highToLow": [
+        ["SEC"],
+        ["SP"],
+        ["UR"],
+        ["SSR"],
+        ["SR"],
+        ["R"],
+        ["U"],
+        ["C"],
+        ["PR", "Promo"]
+      ]
+    }
+  }
+}

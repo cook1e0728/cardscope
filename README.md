@@ -39,6 +39,10 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 
 Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tcg_cards`、`tcg_printings`。API 依 `canonical_id` 合併去重，實際美版／日版／台版／韓版仍保留為 printing；中文、英文、日文、韓文名稱與 `language` / `region` 不互相覆蓋。跨市場對應以 canonical identity、printing 與官方卡號為主，名稱只作搜尋與別名輔助。
 
+## 稀有度排序
+
+圖鑑的「稀有度高到低／低到高」與稀有度分組依 `data/rarity-rankings.json` 的各遊戲獨立順序排列；不同 IP 不共用同一套排名。未收錄或無法辨識的稀有度一律排在最後。這份順序只用於圖鑑導覽，不代表市場價格或跨遊戲價值。
+
 ## 圖片
 
 詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`、合法公開 Catalog 圖源，最後才是文字佔位；圖片載入失敗會降級為卡名與卡號。YGOPRODeck 卡圖依其 API 條款先下載至公開讀取、僅服務端可上傳的 `card-images` bucket。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。每筆保留 `source` 與 `source_url`。
