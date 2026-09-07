@@ -84,8 +84,24 @@ async function upsert(db,path,rows,onConflict='id'){
 }
 async function upsertCardEnrichment(db,{names=[],rarities=[]}={}){
   let written=0;
-  if(names.length)written+=await upsert(db,'/tcg_card_names',names,'card_id,locale,name,name_type');
-  if(rarities.length)written+=await upsert(db,'/tcg_rarities',rarities,'game_id,rarity_code');
+  if(names.length){
+    try{written+=await upsert(db,'/tcg_card_names',names,'card_id,locale,name,name_type')}
+    catch(error){
+      // Keep scheduled imports working while the additive provenance migration
+      // is waiting to be applied on an existing deployment.
+      const legacy=names.map(({source,metadata,...row})=>row);
+      try{written+=await upsert(db,'/tcg_card_names',legacy,'card_id,locale,name,name_type')}
+      catch{throw error}
+    }
+  }
+  if(rarities.length){
+    try{written+=await upsert(db,'/tcg_rarities',rarities,'game_id,rarity_code')}
+    catch(error){
+      const legacy=rarities.map(({source,source_url,data_status,metadata,...row})=>row);
+      try{written+=await upsert(db,'/tcg_rarities',legacy,'game_id,rarity_code')}
+      catch{throw error}
+    }
+  }
   return written;
 }
 async function startRun(db,provider,scope){
