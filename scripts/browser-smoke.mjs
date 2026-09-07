@@ -28,6 +28,15 @@ try{
  assert.ok(layout.cards<900,JSON.stringify(layout));
  assert.ok(layout.scroll<=layout.width,JSON.stringify(layout));
  assert.ok(await page.locator('.brand-showcase img').evaluate(image=>image.complete&&image.naturalWidth>0),'Desktop mascot failed to load');
+ const showcaseLayout=async()=>page.evaluate(()=>{
+  const box=document.querySelector('.brand-showcase').getBoundingClientRect(),picture=document.querySelector('.brand-showcase picture').getBoundingClientRect(),copy=document.querySelector('.brand-showcase-copy').getBoundingClientRect(),button=document.querySelector('.brand-showcase button').getBoundingClientRect();
+  return {box:{left:box.left,right:box.right,top:box.top,bottom:box.bottom},picture:{left:picture.left,right:picture.right,top:picture.top,bottom:picture.bottom},copy:{left:copy.left,right:copy.right,top:copy.top,bottom:copy.bottom},button:{left:button.left,right:button.right,top:button.top,bottom:button.bottom}};
+ });
+ const assertShowcaseFits=value=>{assert.ok(value.picture.right<=value.copy.left+1,JSON.stringify(value));assert.ok(value.copy.right<=value.box.right+1&&value.copy.bottom<=value.box.bottom+1,JSON.stringify(value));assert.ok(value.button.right<=value.box.right+1&&value.button.bottom<=value.box.bottom+1,JSON.stringify(value))};
+ assertShowcaseFits(await showcaseLayout());
+ await page.setViewportSize({width:900,height:900});
+ assertShowcaseFits(await showcaseLayout());
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Tablet overflow');
  await page.locator('[data-favorite-id]').first().click();
  await page.locator('[data-watch-increment]').first().click();
  assert.match(await page.locator('#watchlistSummary').innerText(),/1 張、1 件/);
