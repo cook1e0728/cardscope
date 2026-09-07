@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "defaultSystemId": "all",
+  "description": "CardScope 的卡牌遊戲系統與作品 IP 分類。系統是後端 game_id；作品是系統底下的可瀏覽範圍。",
+  "assetPolicy": {
+    "defaultVisualKind": "cardscope-category-visual",
+    "officialAssets": [],
+    "officialPermissionRequired": true,
+    "noteZh": "本分類只使用 CardScope 自製或已明確獲准的導覽視覺；未取得授權時不下載或冒充官方 Logo。"
+  },
+  "systems": [
+    {
+      "id": "all",
+      "kind": "card-game-system-picker",
+      "status": "active",
+      "nameZh": "全部遊戲",
+      "nameOriginal": "All games",
+      "languages": ["多語"],
+      "categoryVisual": {
+        "path": "/assets/brand/cardscope-rabbit-mark.png",
+        "kind": "cardscope-brand-mark",
+        "official": false,
+        "usage": "global-game-picker"
+      },
+      "franchises": []
+    },
+    {
+      "id": "pokemon",
+      "kind": "card-game-system",
+      "status": "active",
+      "nameZh": "寶可夢",
+      "nameOriginal": "Pokémon Trading Card Game",
+      "nameEn": "Pokémon Trading Card Game",
+      "languages": ["日文", "繁體中文", "英文"],
+      "regions": ["JP", "TW", "US", "CN", "KR", "ASIA"],
+      "categoryVisual": {
+        "path": "/assets/ip-pokemon.svg",
+        "kind": "cardscope-category-visual",
+        "official": false,
+        "usage": "game-navigation"
+      },
+      "franchises": [
+        {
+          "id": "pokemon",
+          "nameZh": "寶可夢",
+          "nameOriginal": "Pokémon",
+          "aliases": ["ポケモン", "Pokemon", "Pokémon"],
+          "status": "active",
+          "scope": {"mode": "system", "gameId": "pokemon"}
+        }
+      ]
+    },
+    {
+      "id": "onepiece",
+      "kind": "card-game-system",
+      "status": "active",
+      "nameZh": "航海王",
+      "nameOriginal": "ONE PIECE Card Game",
+      "nameEn": "ONE PIECE Card Game",
+      "languages": ["日文", "亞洲英文"],
+      "regions": ["JP", "TW", "ASIA"],
+      "categoryVisual": {
+        "path": "/assets/ip-onepiece.svg",
+        "kind": "cardscope-category-visual",
+        "official": false,
+        "usage": "game-navigation"
+      },
+      "franchises": [
+        {
+          "id": "onepiece",
+          "nameZh": "航海王",
+          "nameOriginal": "ONE PIECE",
+          "aliases": ["ONE PIECE", "ワンピース", "海賊王"],
+          "status": "active",
+          "scope": {"mode": "system", "gameId": "onepiece"}
+        }
+      ]
+    },
+    {
+      "id": "yugioh",
+      "kind": "card-game-system",
+      "status": "active",
+      "nameZh": "遊戲王",
+      "nameOriginal": "Yu-Gi-Oh! OCG",
+      "nameEn": "Yu-Gi-Oh! OCG",
+      "languages": ["日文", "繁體中文", "英文"],
+      "regions": ["JP", "TW", "US", "CN", "KR"],
+      "categoryVisual": {
+        "path": "/assets/ip-yugioh.svg",
+        "kind": "cardscope-category-visual",
+        "official": false,
+        "usage": "game-navigation"
+      },
+      "franchises": [
+        {
+          "id": "yugioh",
+          "nameZh": "遊戲王",
+          "nameOriginal": "Yu-Gi-Oh!",
+          "aliases": ["遊戯王", "Yu-Gi-Oh", "YGO"],
+          "status": "active",
+          "scope": {"mode": "system", "gameId": "yugioh"}
+        }
+      ]
+    },
+    {
+      "id": "weiss-schwarz",
+      "kind": "card-game-system",
+      "status": "active",
+      "nameZh": "Weiß Schwarz",
+      "nameOriginal": "Weiß Schwarz",
+      "nameEn": "Weiß Schwarz",
+      "languages": ["日文"],
+      "regions": ["JP"],
+      "categoryVisual": null,
+      "franchises": [
+        {
+          "id": "frieren",
+          "nameZh": "葬送的芙莉蓮",
+          "nameOriginal": "葬送のフリーレン",
+          "nameEn": "Frieren: Beyond Journey's End",
+          "aliases": ["芙莉蓮", "Frieren", "葬送のフリーレン"],
+          "status": "active",
+          "seriesCodes": ["S108", "S108-TD", "S128", "S136"],
+          "categoryVisual": {
+            "path": "/assets/ip-frieren.svg",
+            "kind": "cardscope-category-visual",
+            "official": false,
+            "usage": "franchise-navigation"
+          },
+          "scope": {
+            "mode": "series",
+            "gameId": "weiss-schwarz",
+            "seriesCodes": ["S108", "S108-TD", "S128", "S136"]
+          }
+        },
+        {
+          "id": "rezero",
+          "nameZh": "Re:從零開始的異世界生活",
+          "nameOriginal": "Re:ゼロから始める異世界生活",
+          "nameEn": "Re:ZERO -Starting Life in Another World-",
+          "aliases": ["Re:Zero", "Re：從零開始的異世界生活", "Re:ゼロ"],
+          "status": "planned",
+          "seriesCodes": [],
+          "categoryVisual": null,
+          "scope": {
+            "mode": "series",
+            "gameId": "weiss-schwarz",
+            "seriesCodes": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "haikyuu",
+      "kind": "card-game-system",
+      "status": "active",
+      "nameZh": "排球少年",
+      "nameOriginal": "バボカ!! BREAK",
+      "nameEn": "Haikyuu!! Volleyball Card Game BREAK",
+      "productLine": "バボカ!! BREAK",
+      "languages": ["日文"],
+      "regions": ["JP"],
+      "categoryVisual": {
+        "path": "/assets/ip-haikyuu.svg",
+        "kind": "cardscope-category-visual",
+        "official": false,
+        "usage": "game-navigation"
+      },
+      "franchises": [
+        {
+          "id": "haikyuu",
+          "nameZh": "排球少年",
+          "nameOriginal": "ハイキュー!!",
+          "nameEn": "Haikyu!!",
+          "aliases": ["ハイキュー", "Haikyuu", "Vobaca", "バボカ"],
+          "status": "active",
+          "scope": {"mode": "system", "gameId": "haikyuu"}
+        }
+      ]
+    },
+    {
+      "id": "union-arena",
+      "kind": "card-game-system",
+      "status": "planned",
+      "enabled": false,
+      "nameZh": "Union Arena",
+      "nameOriginal": "UNION ARENA",
+      "nameEn": "UNION ARENA",
+      "languages": ["日文"],
+      "regions": ["JP"],
+      "categoryVisual": null,
+      "franchises": [],
+      "noteZh": "保留擴充位置；有可核對的系列與授權素材後再啟用。"
+    }
+  ]
+}

@@ -1,11 +1,61 @@
 export const PRICE_TYPES = new Set(['listing','sale','buyback','retail','market','user_report']);
 
+// Catalog enrichment is deliberately normalized separately from market data.
+// The database keeps source evidence and review state beside every name and
+// rarity mapping so a later import cannot silently turn a reviewed value into
+// an unverified one.
+export const CATALOG_DATA_STATUSES = new Set(['verified','pending','incomplete']);
+export const CARD_NAME_TYPES = new Set(['official','alias','romanized','search-alias']);
+
 const clean = value => value == null ? null : String(value).trim() || null;
 const numberOrNull = value => {
   if(value == null || value === '') return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 };
+
+const objectOrEmpty = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+
+export function normalizeCardNameRecord(input = {}){
+  const cardId = clean(input.cardId ?? input.card_id);
+  const locale = clean(input.locale);
+  const name = clean(input.name);
+  if(!cardId || !locale || !name)return null;
+  const nameType = clean(input.nameType ?? input.name_type) || 'official';
+  if(!CARD_NAME_TYPES.has(nameType))throw new Error(`UNSUPPORTED_CARD_NAME_TYPE:${nameType}`);
+  const dataStatus = clean(input.dataStatus ?? input.data_status) || 'incomplete';
+  if(!CATALOG_DATA_STATUSES.has(dataStatus))throw new Error(`UNSUPPORTED_CATALOG_DATA_STATUS:${dataStatus}`);
+  return {
+    card_id: cardId,
+    locale,
+    name,
+    name_type: nameType,
+    source: clean(input.source),
+    source_url: clean(input.sourceUrl ?? input.source_url),
+    data_status: dataStatus,
+    metadata: objectOrEmpty(input.metadata)
+  };
+}
+
+export function normalizeRarityRecord(input = {}){
+  const gameId = clean(input.gameId ?? input.game_id);
+  const rarityCode = clean(input.rarityCode ?? input.rarity_code);
+  if(!gameId || !rarityCode)return null;
+  const dataStatus = clean(input.dataStatus ?? input.data_status) || 'incomplete';
+  if(!CATALOG_DATA_STATUSES.has(dataStatus))throw new Error(`UNSUPPORTED_CATALOG_DATA_STATUS:${dataStatus}`);
+  const tier = input.rarityTier ?? input.rarity_tier;
+  const rarityTier = tier == null || tier === '' ? null : numberOrNull(tier);
+  return {
+    game_id: gameId,
+    rarity_code: rarityCode,
+    rarity_label: clean(input.rarityLabel ?? input.rarity_label),
+    rarity_tier: rarityTier,
+    source: clean(input.source),
+    source_url: clean(input.sourceUrl ?? input.source_url),
+    data_status: dataStatus,
+    metadata: objectOrEmpty(input.metadata)
+  };
+}
 
 export function normalizeMarketRecord(input = {}){
   const priceType = clean(input.priceType) || 'listing';

@@ -8,7 +8,7 @@ const source=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match=>matc
 function harness(fetch=async()=>({ok:true,json:async()=>({data:[],meta:{hasMore:false}})})){
   const nodes=new Map();
   const node=id=>{if(!nodes.has(id))nodes.set(id,{value:'all',style:{},classList:{add(){},remove(){}},scrollIntoView(){}});return nodes.get(id)};
-  const context=vm.createContext({document:{getElementById:node},window:{},fetch,console});
+  const context=vm.createContext({document:{getElementById:node},window:{},fetch,console,URLSearchParams});
   vm.runInContext(source,context);
   return {run:code=>vm.runInContext(code,context),node,context};
 }

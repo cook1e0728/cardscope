@@ -23,6 +23,16 @@ const ebaySearchCache = new Map();
 const justTcgCache = new Map();
 const EBAY_MARKETPLACES = new Set(['EBAY_US','EBAY_CA','EBAY_GB','EBAY_DE','EBAY_FR','EBAY_IT','EBAY_ES','EBAY_AU']);
 const CATALOG_GAME_IDS = new Set(['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz']);
+const CATALOG_REGION_IDS = new Set(['JP','TW','US','CN','KR','ASIA']);
+// Faceted browsing reads the complete selected game before pagination so the
+// counts stay truthful. Reuse that snapshot across normal browsing sessions
+// instead of repeating the same database scan on every filter interaction.
+const BROWSE_CACHE_MS = 5 * 60 * 1000;
+const BROWSE_PAGE_MAX = 100;
+const BROWSE_CARD_SELECT = 'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,source,providerId:provider_id';
+const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,metadata';
+const BROWSE_IMAGE_SELECT = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
+const browseCache=new Map();
 
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
 const json = (res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(body));};
@@ -108,6 +118,96 @@ async function searchExternalCatalog(query){
   return {cards:[],sources,query:mapped.query}
 }
 async function supabaseFetchAll(pathAndQuery,pageSize=1000){const rows=[];for(let offset=0;;offset+=pageSize){const separator=pathAndQuery.includes('?')?'&':'?',batch=await supabaseFetch(`${pathAndQuery}${separator}limit=${pageSize}&offset=${offset}`);rows.push(...(batch||[]));if(!batch||batch.length<pageSize)return rows}}
+async function cachedBrowseRows(key,loader){
+  const now=Date.now(),cached=browseCache.get(key);
+  if(cached?.data&&cached.expiresAt>now)return cached.data;
+  if(cached?.promise)return cached.promise;
+  const promise=Promise.resolve().then(loader).then(data=>{browseCache.set(key,{data,expiresAt:Date.now()+BROWSE_CACHE_MS});return data}).catch(error=>{browseCache.delete(key);throw error});
+  browseCache.set(key,{promise,expiresAt:now+BROWSE_CACHE_MS});
+  return promise;
+}
+function clearBrowseCache(){browseCache.clear()}
+function normalizeBrowseRegion(value){const region=String(value||'').trim().toUpperCase();return !region||region==='ALL'?null:region}
+function normalizeBrowseRarity(value){const rarity=String(value||'').trim();return !rarity||rarity.toLowerCase()==='all'?null:rarity}
+function normalizeBrowseSort(value){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc','price-asc','price-desc']).has(sort)?sort:'number-asc'}
+function browseToken(value){return normalizeSearch(value).replace(/[^\p{L}\p{N}]/gu,'')}
+function browseValues(card,printings,key){
+  const values=[];
+  if(key==='rarity')values.push(card?.rarity,...(printings||[]).flatMap(p=>[p.rarity,p.rarityCode,p.rarityLabel]));
+  if(key==='region')values.push(card?.region,...(printings||[]).map(p=>p.region));
+  if(key==='language')values.push(card?.language,...(printings||[]).map(p=>p.language));
+  return uniqueValues(values);
+}
+function browseHasUsableImage(row){return Boolean(row?.imageUrl&&row.imageRehostRequired!==true&&row.imageRightsStatus!=='not-displayable')}
+function buildPrintingIndex(rows=[]){const byCard=new Map();for(const printing of rows){const list=byCard.get(printing.cardId)||[];list.push(printing);byCard.set(printing.cardId,list)}for(const list of byCard.values())list.sort(comparePrintings);return byCard}
+function hydrateBrowseCard(card,printingByCard,imageByCard){
+  const printings=printingByCard.get(card.id)||[],images=imageByCard?.get(card.id)||[],image=images.find(browseHasUsableImage)||printings.find(browseHasUsableImage);
+  return {...card,printings,region:printings[0]?.region||card.region||null,language:printings[0]?.language||card.language||null,imageUrl:image?.imageUrl||card.imageUrl||null,imageSource:image?.source||card.imageSource||null};
+}
+function browseNumber(card){return String(card?.officialCardNumber||card?.printings?.find(p=>p.localCardNumber)?.localCardNumber||'')}
+function browseRelease(card){return card?.printings?.map(p=>p.releaseDate).filter(Boolean).sort().at(-1)||card?.releaseDate||''}
+function browseCompare(a,b,sort){
+  const number=()=>browseNumber(a).localeCompare(browseNumber(b),undefined,{numeric:true,sensitivity:'base'})||String(a.id).localeCompare(String(b.id));
+  if(sort==='number-desc')return -number();
+  if(sort==='release-asc'||sort==='release-desc'){const value=String(browseRelease(a)).localeCompare(String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
+  if(sort==='rarity-asc'||sort==='rarity-desc'){const value=String(browseValues(a,a.printings,'rarity')[0]||'').localeCompare(String(browseValues(b,b.printings,'rarity')[0]||''),undefined,{numeric:true,sensitivity:'base'})||number();return sort==='rarity-desc'?-value:value}
+  if(sort==='name-asc'||sort==='name-desc'){const value=String(a.nameZh||a.nameEn||a.nameJa||a.id).localeCompare(String(b.nameZh||b.nameEn||b.nameJa||b.id),undefined,{sensitivity:'base'})||number();return sort==='name-desc'?-value:value}
+  if(sort==='price-asc'||sort==='price-desc'){
+    const av=Number(a.priceTwd??a.price),bv=Number(b.priceTwd??b.price),aKnown=Number.isFinite(av),bKnown=Number.isFinite(bv);
+    if(aKnown||bKnown){const value=(aKnown?av:sort==='price-asc'?Infinity:-Infinity)-(bKnown?bv:sort==='price-asc'?Infinity:-Infinity);if(value)return sort==='price-desc'?-value:value}
+  }
+  return number();
+}
+function buildBrowseFacets(rows,printingByCard){
+  const facets={rarity:{},region:{},language:{}};
+  for(const card of rows){const printings=printingByCard.get(card.id)||[];for(const key of Object.keys(facets)){const values=browseValues(card,printings,key);if(!values.length)values.push('unknown');for(const value of values)facets[key][value]=(facets[key][value]||0)+1}}
+  return facets;
+}
+function buildBrowsePage(rows,{region=null,rarity=null,seriesId=null,sort='number-asc',limit=60,offset=0,printingByCard=new Map(),imageByCard=new Map(),facetStatus='complete'}={}){
+  const rarityToken=rarity?browseToken(rarity):null,regionToken=region?String(region).toUpperCase():null;
+  const matching=rows.filter(card=>{const printings=printingByCard.get(card.id)||[];if(seriesId&&card.seriesId!==seriesId&&!printings.some(printing=>printing.seriesId===seriesId))return false;if(regionToken&&!browseValues(card,printings,'region').some(value=>String(value).toUpperCase()===regionToken))return false;if(rarityToken&&!browseValues(card,printings,'rarity').some(value=>browseToken(value)===rarityToken))return false;return true}).map(card=>hydrateBrowseCard(card,printingByCard,imageByCard));
+  matching.sort((a,b)=>browseCompare(a,b,sort));
+  const take=Math.min(Math.max(Number(limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(offset)||0,0),page=matching.slice(skip,skip+take);
+  return {data:page,total:matching.length,hasMore:skip+page.length<matching.length,facets:buildBrowseFacets(matching,printingByCard),facetStatus,limit:take,offset:skip};
+}
+async function loadDatabaseBrowseRows(game){
+  const safeGame=String(game).replace(/[^a-z0-9-]/gi,'');
+  return cachedBrowseRows(`cards:${safeGame}`,async()=>supabaseFetchAll(`/tcg_cards?${new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:'id.asc'})}`));
+}
+async function loadDatabasePrintings(){
+  return cachedBrowseRows('printings:all',async()=>{
+    const base=`/tcg_printings?${new URLSearchParams({select:BROWSE_PRINTING_SELECT,order:'id.asc'})}`;
+    try{return await supabaseFetchAll(base)}catch(error){
+      const fallbackSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required';
+      try{return await supabaseFetchAll(`/tcg_printings?${new URLSearchParams({select:fallbackSelect,order:'id.asc'})}`)}catch{throw error}
+    }
+  });
+}
+async function loadDatabaseImages(){
+  return cachedBrowseRows('images:all',async()=>supabaseFetchAll(`/card_images?${new URLSearchParams({select:BROWSE_IMAGE_SELECT,order:'id.asc'})}`));
+}
+async function browseDatabaseCards(game,options){
+  const cards=await loadDatabaseBrowseRows(game),printingResult=await loadDatabasePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),imageResult=await loadDatabaseImages().then(rows=>({rows,status:'complete'})).catch(()=>({rows:[],status:'unknown'}));
+  const selectedCardIds=new Set(cards.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedCardIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedCardIds.has(image.cardId));
+  const printingByCard=buildPrintingIndex(printings),imageByCard=new Map();for(const image of images){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
+  const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:printingResult.status==='complete'?'complete':'partial'});return {...result,errors:{printings:printingResult.error?.message||null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
+}
+
+async function loadCatalogCoverage(){
+  const fallback=await loadFallbackCatalog();
+  if(!supabaseConfigured())return {totalCards:fallback.cards.length,games:Object.fromEntries(fallback.games.map(g=>{const rows=fallback.cards.filter(c=>c.game===g.id);return [g.id,{cards:rows.length,displayableImages:rows.filter(c=>c.imageUrl).length,chineseNames:rows.filter(c=>c.nameZh).length,rarities:rows.filter(c=>c.rarity).length,expectedCards:null,completeness:'未核定'}]})),source:'catalog.json',updatedAt:fallback.updatedAt||null};
+  try{
+    const [printingResult,imageResult,...cardGroups]=await Promise.all([
+      loadDatabasePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
+      loadDatabaseImages().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
+      ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows})))
+    ]),printingByCard=buildPrintingIndex(printingResult.rows),imageByCard=new Map();
+    for(const image of imageResult.rows){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
+    const games={};let totalCards=0;
+    for(const {gameId,rows} of cardGroups){totalCards+=rows.length;let displayableImages=0,chineseNames=0,rarities=0;for(const card of rows){const printings=printingByCard.get(card.id)||[],images=imageByCard.get(card.id)||[];if(images.some(browseHasUsableImage)||printings.some(browseHasUsableImage))displayableImages++;if(card.nameZh)chineseNames++;if(browseValues(card,printings,'rarity').length)rarities++}games[gameId]={cards:rows.length,displayableImages,chineseNames,rarities,expectedCards:null,completeness:'未核定'}}
+    return {totalCards,games,source:'supabase-current-rows',updatedAt:new Date().toISOString(),metricStatus:{cards:'complete',printings:printingResult.status,images:imageResult.status,expectedTotals:'unknown'},errors:{printings:printingResult.error||null,images:imageResult.error||null}};
+  }catch(error){const legacy=await loadCatalogCoverageLegacy();return {...legacy,source:`${legacy.source}-fallback`,metricStatus:{cards:'unknown',printings:'unknown',images:'unknown',expectedTotals:'unknown'},fallbackReason:error.message}}
+}
 async function loadPokemonSets(){const url='https://api.pokemontcg.io/v2/sets?pageSize=250&orderBy=-releaseDate',response=await nativeFetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(30000)});if(!response.ok)throw new Error(`POKEMON_SETS_${response.status}`);const body=await response.json();return (body.data||[]).map(s=>({id:`pokemon-${s.id}`,game:'pokemon',name:s.name,nameZh:null,region:'US',language:'en-US',versionLabel:'美版',releaseDate:s.releaseDate?.replaceAll('/','-')||null,sealedCount:null,cardsCount:Number(s.total)||0,imageUrl:s.images?.logo||null,imageKind:'series-logo',symbolUrl:s.images?.symbol||null,productType:'系列',source:'pokemontcg',sourceUrl:'https://www.pokemontcg.io/'}))}
 const officialProductCache={data:null,expiresAt:0};
 function japaneseDate(value){const m=String(value||'').match(/(\d{4})年\s*(\d{1,2})月(\d{1,2})日/);return m?`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`:null}
@@ -179,7 +279,7 @@ function canonicalizeCatalog(catalog){
     if(!existing){grouped.set(canonicalId,{...physical,id:canonicalId,canonicalId,physicalCardIds:[physical.id],aliases:uniqueValues(physical.aliases||[],physical.nameZh,physical.nameJa,physical.nameEn,physical.nameKo),printings,region:printings[0]?.region||physical.region||null,language:printings[0]?.language||physical.language||null,imageUrl:physical.imageUrl||printings.find(p=>p.imageUrl)?.imageUrl||null});continue}
     existing.physicalCardIds=uniqueValues(existing.physicalCardIds,physical.id);existing.aliases=uniqueValues(existing.aliases,physical.aliases||[],physical.nameZh,physical.nameJa,physical.nameEn,physical.nameKo);existing.printings.push(...printings);for(const key of ['nameZh','nameJa','nameEn','nameKo','imageUrl','imageSource'])if(!existing[key]&&physical[key])existing[key]=physical[key];
   }
-  for(const card of grouped.values()){const seen=new Set();card.printings=card.printings.filter(p=>{const key=[p.cardId,p.region,p.language,p.localSetCode,p.localCardNumber].join('|');if(seen.has(key))return false;seen.add(key);return true}).sort(comparePrintings);const preferred=card.printings[0];card.region=preferred?.region||card.region||null;card.language=preferred?.language||card.language||null;card.referenceRegion=preferred?.region||null;card.referencePrintingId=preferred?.id||preferred?.cardId||null;card.imageUrl=card.printings.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||card.imageUrl||null}
+  for(const card of grouped.values()){const seen=new Set();card.printings=card.printings.filter(p=>{const key=[p.id||p.providerId||'',p.cardId,p.region,p.language,p.localSetCode,p.localCardNumber,p.rarity||p.rarityCode||'',p.metadata?.variantKey||p.metadata?.imageId||''].join('|');if(seen.has(key))return false;seen.add(key);return true}).sort(comparePrintings);const preferred=card.printings[0];card.region=preferred?.region||card.region||null;card.language=preferred?.language||card.language||null;card.referenceRegion=preferred?.region||null;card.referencePrintingId=preferred?.id||preferred?.cardId||null;card.imageUrl=card.printings.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||card.imageUrl||null}
   return {...catalog,cards:[...grouped.values()]};
 }
 async function loadCatalog(){
@@ -192,7 +292,7 @@ async function loadCatalog(){
       supabaseFetch('/tcg_cards?select=id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases&order=created_at.asc&limit=250')
     ]);
     const cardIds=(cards||[]).map(c=>`"${String(c.id).replaceAll('"','')}"`).join(','),[printings,images]=cardIds?await Promise.all([
-      supabaseFetchAll(`/tcg_printings?${new URLSearchParams({select:'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required',card_id:`in.(${cardIds})`})}`),
+      supabaseFetchAll(`/tcg_printings?${new URLSearchParams({select:'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required,metadata',card_id:`in.(${cardIds})`})}`),
       supabaseFetch(`/card_images?${new URLSearchParams({select:'cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at',card_id:`in.(${cardIds})`,order:'is_primary.desc,fetched_at.desc',limit:'1000'})}`).catch(()=>[])
     ]):[[],[]];
     const printingByCard=new Map(),imageByCard=new Map();
@@ -202,7 +302,7 @@ async function loadCatalog(){
     return canonicalizeCatalog(merged);
   }catch(error){return canonicalizeCatalog({...fallback,source:'catalog.json',fallbackReason:error.message})}
 }
-async function loadCatalogCoverage(){
+async function loadCatalogCoverageLegacy(){
   const fallback=await loadFallbackCatalog();
   if(!supabaseConfigured())return {totalCards:fallback.cards.length,games:Object.fromEntries(fallback.games.map(g=>[g.id,{cards:fallback.cards.filter(c=>c.game===g.id).length,displayableImages:fallback.cards.filter(c=>c.game===g.id&&c.imageUrl).length}])),source:'catalog.json',updatedAt:fallback.updatedAt||null};
   try{
@@ -251,7 +351,7 @@ async function browseCardsByGame(game,limit=60,offset=0,seriesId=''){
 }
 async function loadCardFromDatabase(cardId){
   if(!supabaseConfigured())return null;const safe=String(cardId).replace(/[(),]/g,''),params=new URLSearchParams({select:'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata',or:`(id.eq.${safe},canonical_id.eq.${safe})`,limit:'100'}),cards=await supabaseFetch(`/tcg_cards?${params}`);if(!cards?.length)return null;
-  const ids=cards.map(c=>`"${String(c.id).replaceAll('"','')}"`).join(','),printingParams=new URLSearchParams({select:'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required',card_id:`in.(${ids})`,limit:'1000'}),printings=await supabaseFetch(`/tcg_printings?${printingParams}`),byCard=new Map();for(const p of printings||[]){const list=byCard.get(p.cardId)||[];list.push(p);byCard.set(p.cardId,list)}
+  const ids=cards.map(c=>`"${String(c.id).replaceAll('"','')}"`).join(','),printingParams=new URLSearchParams({select:'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required,metadata',card_id:`in.(${ids})`,limit:'1000'}),printings=await supabaseFetch(`/tcg_printings?${printingParams}`),byCard=new Map();for(const p of printings||[]){const list=byCard.get(p.cardId)||[];list.push(p);byCard.set(p.cardId,list)}
   const hydrated=cards.map(c=>({...c,printings:byCard.get(c.id)||[],region:byCard.get(c.id)?.[0]?.region||null,language:byCard.get(c.id)?.[0]?.language||null,imageUrl:byCard.get(c.id)?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||null})),canonical=canonicalizeCatalog({cards:hydrated}).cards.find(c=>c.id===cardId)||canonicalizeCatalog({cards:hydrated}).cards[0],seriesIds=[...new Set((canonical?.printings||[]).map(p=>p.seriesId).concat(canonical?.seriesId).filter(Boolean))],series=seriesIds.length?await supabaseFetch(`/tcg_series?select=id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,releaseDate:release_date&${new URLSearchParams({id:`in.(${seriesIds.map(x=>`"${x}"`).join(',')})`})}`):[],games=await supabaseFetch(`/tcg_games?select=id,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko&id=eq.${encodeURIComponent(canonical.game)}`);return {catalog:{source:'supabase-full-catalog',cards:[canonical],series:series||[],games:games||[]},card:canonical};
 }
 async function getCard(cardId){const catalog=await loadCatalog(),card=catalog.cards.find(c=>c.id===cardId);if(card)return {catalog,card};try{return await loadCardFromDatabase(cardId)||{catalog,card:null}}catch{return {catalog,card:null}}}
@@ -299,7 +399,7 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   if(url.pathname==='/api/providers/justtcg/search'){const q=(url.searchParams.get('q')||'').trim(),game=url.searchParams.get('game')||'';if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});try{return json(res,200,await justTcg('/cards',{q,game,limit:'10',priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/cards'){const cardId=url.searchParams.get('cardId');if(!cardId)return json(res,400,{error:'請提供 cardId'});try{return json(res,200,await justTcg('/cards',{cardId,priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/ebay/search'){const q=(url.searchParams.get('q')||'').trim(),marketplace=(url.searchParams.get('marketplace')||'EBAY_US').toUpperCase();if(!q)return json(res,400,{error:'請提供 q'});if(!EBAY_MARKETPLACES.has(marketplace))return json(res,400,{error:'不支援的 eBay marketplace'});try{return json(res,200,{data:await searchEbay(q,marketplace),meta:{marketplace,cacheHours:24}})}catch(e){return json(res,e.message==='EBAY_NOT_CONFIGURED'?503:502,{error:e.message})}}
-  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});if(requestedGame&&supabaseConfigured()){try{const seriesId=(url.searchParams.get('series')||'').trim(),page=await browseCardsByGame(requestedGame,url.searchParams.get('limit'),url.searchParams.get('offset'),seriesId);return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId:seriesId||null,limit:Math.min(Number(url.searchParams.get('limit'))||60,100),offset:Number(url.searchParams.get('offset'))||0,hasMore:page.hasMore}})}catch(e){return json(res,502,{error:e.message})}}const catalog=await loadCatalog();return json(res,200,{data:catalog.cards,meta:{source:catalog.source,hasMore:false}})}
+  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort')),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.max(Number(url.searchParams.get('offset'))||0,0);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(requestedGame&&supabaseConfigured()){try{const page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors}})}catch(e){return json(res,502,{error:e.message})}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}})}
   if(url.pathname==='/api/search'&&req.method==='GET'){
     const rawQ=(url.searchParams.get('q')||'').trim(),q=normalizeSearch(rawQ),region=(url.searchParams.get('region')||'all').toUpperCase(),catalog=await loadCatalog(),seriesById=new Map(catalog.series.map(s=>[s.id,s])),nameValues=c=>[c.nameZh,c.nameJa,c.nameEn,c.nameKo,...(c.aliases||[]),...(c.printings||[]).flatMap(p=>[p.nameZh,p.nameJa,p.nameEn,p.nameKo])];
     const found=catalog.cards.filter(c=>{if(region!=='ALL'&&c.region!==region&&!c.printings?.some(p=>p.region===region))return false;const series=[seriesById.get(c.seriesId)||{},...(c.printings||[]).map(p=>seriesById.get(p.seriesId)||{})],values=[...nameValues(c),c.officialCardNumber,...(c.printings||[]).flatMap(p=>[p.localSetCode,p.localCardNumber]),...series.flatMap(s=>[s.officialCode,s.nameZh,s.nameJa,s.nameEn,s.nameKo,...(s.aliases||[])])];return !q||values.some(v=>normalizeSearch(v).includes(q))}),exact=q?found.filter(c=>nameValues(c).some(v=>normalizeSearch(v)===q)):[];

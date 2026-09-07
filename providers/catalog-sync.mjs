@@ -1,3 +1,5 @@
+import { normalizeCardNameRecord, normalizeRarityRecord } from './normalize.mjs';
+
 const SOURCE_URLS={
   pokemontcg:'https://docs.pokemontcg.io/',
   tcgdex:'https://tcgdex.dev/',
@@ -19,6 +21,34 @@ const absolute=(value,base)=>value?new URL(value,base).href:null;
 const decodeHtml=s=>clean(s).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/<[^>]+>/g,' ').replace(/&#039;|&apos;/g,"'").replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(/\s+/g,' ');
 const PRODUCT_ZH=new Map(Object.entries({'Scarlet & Violet':'朱／紫','Paldea Evolved':'帕底亞進化','Obsidian Flames':'黑曜火焰','Paradox Rift':'悖謬裂谷','Paldean Fates':'帕底亞命運','Temporal Forces':'時空力量','Twilight Masquerade':'暮夜假面','Shrouded Fable':'迷霧傳說','Stellar Crown':'星晶王冠','Surging Sparks':'奔湧火花','Prismatic Evolutions':'稜彩進化','Journey Together':'並肩同行','Destined Rivals':'宿命勁敵','White Flare':'白色火焰','Black Bolt':'黑色雷霆','Mega Evolution':'超級進化','Phantasmal Flames':'幻影火焰','Perfect Order':'完美秩序','Chaos Rising':'混沌崛起','Pitch Black':'漆黑','Sword & Shield':'劍／盾','ROMANCE DAWN':'浪漫黎明','Paramount War':'頂上戰爭','Pillars of Strength':'強大之敵','Kingdoms of Intrigue':'謀略王國','Awakening of the New Era':'新時代的主角','Wings of Captain':'船長之翼','500 Years in the Future':'500 年後的未來','Two Legends':'雙璧霸王','Emperors in the New World':'新世界的四皇','Royal Blood':'王族血統','A Fist of Divine Speed':'神速的一拳','The Three Captains':'三船長','The Three Brothers Bond':'三兄弟的羈絆','Straw Hat Crew':'草帽一夥','Worst Generation':'極惡世代','The Navy':'海軍','Animal Kingdom Pirates':'百獸海賊團','The Seven Warlords of the Sea':'王下七武海','Big Mom Pirates':'BIG MOM 海賊團'}));
 const TYPE_ZH={pokemon:'寶可夢系列',yugioh:'遊戲王系列',onepiece:'航海王系列','BOOSTER PACK':'補充包','EXTRA BOOSTER':'額外補充包','PREMIUM BOOSTER':'高級補充包','STARTER DECK':'起始牌組','STARTER DECK EX':'起始牌組 EX','ULTIMATE DECK':'終極牌組',boosters:'補充包',others:'周邊產品'};
+
+const CARD_NAME_LOCALES={name_zh:'zh-Hant-TW',name_ja:'ja-JP',name_en:'en',name_ko:'ko'};
+const PROTECTED_CARD_FIELDS=new Set(['name_zh','name_ja','name_en','name_ko','rarity','rarity_tier','aliases']);
+const CARD_NAME_SOURCE_URLS={
+  pokemontcg:'https://github.com/PokemonTCG/pokemon-tcg-data',
+  'tcgdex-zh-tw':'https://www.tcgdex.net/',
+  ygoprodeck:SOURCE_URLS.ygoprodeck,
+  'onepiece-official':'https://asia-en.onepiece-cardgame.com/cardlist/',
+  'onepiece-official-tw':'https://asia-tc.onepiece-cardgame.com/cardlist/'
+};
+
+const sourceValue=value=>clean(value);
+const rarityEvidence=value=>{
+  if(value&&typeof value==='object'){
+    const code=sourceValue(value.code??value.id??value.name??value.label),label=sourceValue(value.label??value.name??value.code);
+    return {code,label,raw:value};
+  }
+  const code=sourceValue(value);
+  return {code,label:code,raw:value};
+};
+const rarityRow=(gameId,value,{source,sourceUrl,metadata={}}={})=>{
+  const evidence=rarityEvidence(value);if(!evidence.code)return null;
+  return normalizeRarityRecord({gameId,rarityCode:evidence.code,rarityLabel:evidence.label,source,sourceUrl,dataStatus:evidence.label===evidence.code?'incomplete':'verified',metadata:{...metadata,rawRarity:evidence.raw,labelStatus:evidence.label===evidence.code?'source-value':'source-labeled'}});
+};
+const cardNameRows=(card,{source,sourceUrl,dataStatus='verified'}={})=>Object.entries(CARD_NAME_LOCALES)
+  .map(([field,locale])=>normalizeCardNameRecord({cardId:card.id,locale,name:card[field],nameType:'official',source,sourceUrl:sourceUrl||CARD_NAME_SOURCE_URLS[source],dataStatus}))
+  .filter(Boolean);
+const protectNullEnrichment=row=>Object.fromEntries(Object.entries(row).filter(([key,value])=>!PROTECTED_CARD_FIELDS.has(key)||value!=null&&(key!=='aliases'||Array.isArray(value)&&value.length>0)));
 export function localizeProductName(game,name,productType){const original=clean(name),exact=PRODUCT_ZH.get(original);if(exact)return exact;let translated=original;for(const [english,zh] of PRODUCT_ZH)translated=translated.replaceAll(english,zh);translated=translated.replace(/BOOSTER PACK/gi,'補充包').replace(/EXTRA BOOSTER/gi,'額外補充包').replace(/PREMIUM BOOSTER/gi,'高級補充包').replace(/STARTER DECK EX/gi,'起始牌組 EX').replace(/STARTER DECK/gi,'起始牌組').replace(/ULTIMATE DECK/gi,'終極牌組').replace(/Official Playmat/gi,'官方遊戲墊').replace(/Official Storage Box/gi,'官方收納盒').replace(/Premium Card Collection/gi,'高級卡片收藏組').replace(/Limited Card Sleeve/gi,'限定卡套');if(translated!==original)return translated;return `${TYPE_ZH[productType]||TYPE_ZH[game]||'系列'}｜${original}`}
 
 export function parsePokemonSpeciesNames(csv){
@@ -42,12 +72,20 @@ async function providerText(url,{timeout=60000}={}){
 }
 
 async function upsert(db,path,rows,onConflict='id'){
+  rows=(rows||[]).filter(Boolean);
+  if(path==='/tcg_cards')rows=rows.map(protectNullEnrichment);
   if(path==='/tcg_products'||path==='/tcg_series')rows=rows.map(row=>{if(row.name_zh)return row;const nameZh=localizeProductName(row.game_id,row.name_en,row.product_type);return {...row,name_zh:nameZh,metadata:{...(row.metadata||{}),translationStatus:'unofficial',translationOriginal:row.name_en}}});
   const conflictColumns=onConflict.split(','),deduped=[...new Map(rows.map(row=>[conflictColumns.map(column=>String(row[column]??'')).join('\u001f'),row])).values()];let written=0;
   for(const batch of chunks(deduped)){
     await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch)});
     written+=batch.length;
   }
+  return written;
+}
+async function upsertCardEnrichment(db,{names=[],rarities=[]}={}){
+  let written=0;
+  if(names.length)written+=await upsert(db,'/tcg_card_names',names,'card_id,locale,name,name_type');
+  if(rarities.length)written+=await upsert(db,'/tcg_rarities',rarities,'game_id,rarity_code');
   return written;
 }
 async function startRun(db,provider,scope){
@@ -87,12 +125,12 @@ async function syncPokemon(db,{maxPages=Infinity}={}){
     stats.written+=await upsert(db,'/tcg_series',series);
     const products=series.map(s=>({id:`pokemon-series-${slug(s.provider_id)}`,game_id:'pokemon',series_id:s.id,official_code:s.official_code,product_type:'系列',name_zh:null,name_ja:null,name_en:s.name_en,name_ko:null,aliases:s.aliases,region:'US',language:'en-US',release_date:s.release_date,image_url:s.image_url,image_kind:'series-logo',source:provider,source_url:s.source_url,provider_id:s.provider_id,metadata:s.metadata,updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_products',products);
-    const selectedSeries=series.slice(0,Number.isFinite(maxPages)?Math.max(0,maxPages):series.length);let processedSets=0;const missedSets=[];
+    const selectedSeries=series.slice(0,Number.isFinite(maxPages)?Math.max(0,maxPages):series.length);let processedSets=0;const missedSets=[],nameRows=[],rarityRows=[];
     for(const setBatch of chunks(selectedSeries,6)){
       const payloads=await Promise.all(setBatch.map(async set=>{try{return {set,items:await providerJson(`https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/${encodeURIComponent(set.provider_id)}.json`)}}catch(error){return {set,error}}}));
-      for(const {set,items,error} of payloads){if(error){missedSets.push({id:set.provider_id,error:error.message});continue}stats.seen+=items.length;stats.cursor=set.provider_id;const cardRows=items.map(c=>{const nameZh=localizePokemonName(c.name,c.nationalPokedexNumbers,speciesNames);return {id:`pokemon-pokemontcg-${slug(c.id)}`,canonical_id:`pokemon-pokemontcg-${slug(c.id)}`,game_id:'pokemon',series_id:set.id,official_card_number:c.number||c.id,rarity:c.rarity||null,name_zh:nameZh,name_ja:null,name_en:c.name,name_ko:null,aliases:nameZh?[nameZh]:[],source:provider,provider_id:c.id,search_text:searchText(c.name,nameZh,c.number,c.id,set.name_en,set.provider_id,set.aliases),metadata:{supertype:c.supertype||null,subtypes:c.subtypes||[],nationalPokedexNumbers:c.nationalPokedexNumbers||[]},updated_at:new Date().toISOString()}});stats.written+=await upsert(db,'/tcg_cards',cardRows);const printingRows=items.map(c=>({card_id:`pokemon-pokemontcg-${slug(c.id)}`,series_id:set.id,region:'US',language:'en-US',local_set_code:set.provider_id,local_card_number:c.number||c.id,rarity:c.rarity||null,image_url:c.images?.small||null,source_url:`https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/${encodeURIComponent(c.id)}/`,release_date:set.release_date,source:provider,provider_id:c.id,image_rehost_required:false,metadata:{imageLarge:c.images?.large||null},updated_at:new Date().toISOString()}));stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');processedSets++}
+      for(const {set,items,error} of payloads){if(error){missedSets.push({id:set.provider_id,error:error.message});continue}stats.seen+=items.length;stats.cursor=set.provider_id;const cardRows=items.map(c=>{const nameZh=localizePokemonName(c.name,c.nationalPokedexNumbers,speciesNames),card={id:`pokemon-pokemontcg-${slug(c.id)}`,canonical_id:`pokemon-pokemontcg-${slug(c.id)}`,game_id:'pokemon',series_id:set.id,official_card_number:c.number||c.id,rarity:c.rarity||null,name_zh:nameZh,name_ja:null,name_en:c.name,name_ko:null,aliases:nameZh?[nameZh]:[],source:provider,provider_id:c.id,search_text:searchText(c.name,nameZh,c.number,c.id,set.name_en,set.provider_id,set.aliases),metadata:{supertype:c.supertype||null,subtypes:c.subtypes||[],nationalPokedexNumbers:c.nationalPokedexNumbers||[]},updated_at:new Date().toISOString()};nameRows.push(...cardNameRows(card,{source:provider,sourceUrl:`https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master/cards/en/${encodeURIComponent(set.provider_id)}.json`}));rarityRows.push(rarityRow('pokemon',c.rarity,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider],metadata:{setCode:set.provider_id,cardId:c.id}}));return card});stats.written+=await upsert(db,'/tcg_cards',cardRows);const printingRows=items.map(c=>({card_id:`pokemon-pokemontcg-${slug(c.id)}`,series_id:set.id,region:'US',language:'en-US',local_set_code:set.provider_id,local_card_number:c.number||c.id,rarity:c.rarity||null,rarity_code:sourceValue(c.rarity),rarity_label:sourceValue(c.rarity),image_url:c.images?.small||null,source_url:`https://www.pokemon.com/us/pokemon-tcg/pokemon-cards/${encodeURIComponent(c.id)}/`,release_date:set.release_date,source:provider,provider_id:c.id,image_rehost_required:false,data_status:c.rarity?'verified':'incomplete',source_locale:'en-US',metadata:{imageLarge:c.images?.large||null,rawRarity:c.rarity||null},updated_at:new Date().toISOString()}));stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');processedSets++}
     }
-    stats.metadata={sets:series.length,processedSets,totalCards:stats.seen,missedSets,dataSource:'PokemonTCG/pokemon-tcg-data'};await finishRun(db,runId,'completed',stats);return stats;
+    stats.written+=await upsertCardEnrichment(db,{names:nameRows,rarities:rarityRows});stats.metadata={sets:series.length,processedSets,totalCards:stats.seen,missedSets,dataSource:'PokemonTCG/pokemon-tcg-data',enrichment:{names:nameRows.length,rarities:rarityRows.length}};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
@@ -103,15 +141,32 @@ async function syncPokemonZhTw(db){
     const series=(sets||[]).map(s=>({id:`pokemon-tcgdex-tw-${slug(s.id)}`,game_id:'pokemon',official_code:s.id,name_zh:s.name||null,name_ja:null,name_en:null,name_ko:null,region:'TW',language:'zh-Hant-TW',release_date:ymd(s.releaseDate),aliases:[s.id].filter(Boolean),source_url:`https://www.tcgdex.net/database/sets/${encodeURIComponent(s.id)}`,image_url:s.logo?`${s.logo}.webp`:null,image_kind:'series-logo',source:provider,provider_id:s.id,metadata:{symbolUrl:s.symbol?`${s.symbol}.webp`:null,total:s.cardCount?.total??s.cardCount?.official??null},updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_series',series);
     stats.written+=await upsert(db,'/tcg_products',series.map(s=>({id:`pokemon-tcgdex-tw-series-${slug(s.provider_id)}`,game_id:'pokemon',series_id:s.id,official_code:s.official_code,product_type:'系列',name_zh:s.name_zh,name_ja:null,name_en:null,name_ko:null,aliases:s.aliases,region:'TW',language:'zh-Hant-TW',release_date:s.release_date,image_url:s.image_url,image_kind:'series-logo',source:provider,source_url:s.source_url,provider_id:s.provider_id,metadata:s.metadata,updated_at:new Date().toISOString()})));
-    const setIds=series.map(s=>String(s.provider_id)).sort((a,b)=>b.length-a.length),seriesById=new Map(series.map(s=>[String(s.provider_id).toLocaleLowerCase(),s.id]));
+    const setIds=series.map(s=>String(s.provider_id)).sort((a,b)=>b.length-a.length),seriesById=new Map(series.map(s=>[String(s.provider_id).toLocaleLowerCase(),s.id])),nameRows=[],rarityRows=[];
     for(const batch of chunks(cards||[],150)){
-      const normalized=batch.map(c=>{const id=String(c.id),setId=setIds.find(value=>id.toLocaleLowerCase().startsWith(`${value.toLocaleLowerCase()}-`))||id.split('-')[0],seriesId=seriesById.get(setId.toLocaleLowerCase())||null,imageUrl=c.image?`${c.image}/low.webp`:null;return {...c,setId,seriesId,imageUrl}});
-      stats.written+=await upsert(db,'/tcg_cards',normalized.map(c=>({id:`pokemon-tcgdex-tw-${slug(c.id)}`,canonical_id:`pokemon-tcgdex-tw-${slug(c.id)}`,game_id:'pokemon',series_id:c.seriesId,official_card_number:c.localId||c.id,rarity:null,name_zh:c.name||null,name_ja:null,name_en:null,name_ko:null,aliases:[c.id].filter(Boolean),source:provider,provider_id:c.id,search_text:searchText(c.name,c.localId,c.id,c.setId),metadata:{tcgdexId:c.id},updated_at:new Date().toISOString()})));
-      stats.written+=await upsert(db,'/tcg_printings',normalized.map(c=>({card_id:`pokemon-tcgdex-tw-${slug(c.id)}`,series_id:c.seriesId,region:'TW',language:'zh-Hant-TW',local_set_code:c.setId,local_card_number:c.localId||c.id,rarity:null,image_url:c.imageUrl,source_url:`https://www.tcgdex.net/database/cards/${encodeURIComponent(c.id)}`,release_date:null,source:provider,provider_id:c.id,image_rehost_required:false,metadata:{imageBase:c.image||null},updated_at:new Date().toISOString()})),'source,provider_id');stats.seen+=batch.length;stats.cursor=batch.at(-1)?.id||stats.cursor;
+      const normalized=batch.map(c=>{const id=String(c.id),setId=setIds.find(value=>id.toLocaleLowerCase().startsWith(`${value.toLocaleLowerCase()}-`))||id.split('-')[0],seriesId=seriesById.get(setId.toLocaleLowerCase())||null,imageUrl=c.image?`${c.image}/low.webp`:null,rawRarity=c.rarity??c.rarityLabel??null,card={id:`pokemon-tcgdex-tw-${slug(c.id)}`,canonical_id:`pokemon-tcgdex-tw-${slug(c.id)}`,game_id:'pokemon',series_id:seriesId,official_card_number:c.localId||c.id,rarity:rawRarity,name_zh:c.name||null,name_ja:null,name_en:null,name_ko:null,aliases:[c.id].filter(Boolean),source:provider,provider_id:c.id,search_text:searchText(c.name,c.localId,c.id,c.setId,rawRarity),metadata:{tcgdexId:c.id,rawRarity},updated_at:new Date().toISOString()};nameRows.push(...cardNameRows(card,{source:provider,sourceUrl:`https://www.tcgdex.net/database/cards/${encodeURIComponent(c.id)}`}));rarityRows.push(rarityRow('pokemon',rawRarity,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider],metadata:{setCode:setId,cardId:c.id}}));return {...c,setId,seriesId,imageUrl,rawRarity,card}});
+      stats.written+=await upsert(db,'/tcg_cards',normalized.map(c=>c.card));
+      stats.written+=await upsert(db,'/tcg_printings',normalized.map(c=>({card_id:c.card.id,series_id:c.seriesId,region:'TW',language:'zh-Hant-TW',local_set_code:c.setId,local_card_number:c.localId||c.id,rarity:c.rawRarity,rarity_code:sourceValue(c.rawRarity),rarity_label:sourceValue(c.rawRarity),image_url:c.imageUrl,source_url:`https://www.tcgdex.net/database/cards/${encodeURIComponent(c.id)}`,release_date:null,source:provider,provider_id:c.id,image_rehost_required:false,data_status:c.rawRarity?'verified':'incomplete',source_locale:'zh-Hant-TW',metadata:{imageBase:c.image||null,rawRarity:c.rawRarity},updated_at:new Date().toISOString()})),'source,provider_id');stats.seen+=batch.length;stats.cursor=batch.at(-1)?.id||stats.cursor;
     }
-    stats.metadata={sets:series.length,cards:stats.seen,language:'zh-Hant-TW',dataSource:'TCGdex'};await finishRun(db,runId,'completed',stats);return stats;
+    stats.written+=await upsertCardEnrichment(db,{names:nameRows,rarities:rarityRows});stats.metadata={sets:series.length,cards:stats.seen,language:'zh-Hant-TW',dataSource:'TCGdex',enrichment:{names:nameRows.length,rarities:rarityRows.length}};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
+
+function yugiohPrintingDescriptors(card){
+  const sets=Array.isArray(card.card_sets)&&card.card_sets.length?card.card_sets:[{set_name:null,set_code:String(card.id),set_rarity:null}],images=Array.isArray(card.card_images)&&card.card_images.length?card.card_images:[null];
+  return sets.flatMap((set,setIndex)=>images.map((image,imageIndex)=>({
+    set,
+    setIndex,
+    image,
+    imageIndex,
+    setName:set.set_name||'unspecified',
+    setCode:set.set_code||String(card.id),
+    rarity:sourceValue(set.set_rarity),
+    imageId:sourceValue(image?.id),
+    imageUrl:sourceValue(image?.image_url_small||image?.image_url_cropped||image?.image_url)
+  })));
+}
+
+const yugiohVariantToken=descriptor=>slug([descriptor.setCode,descriptor.rarity||'unknown',descriptor.imageId||descriptor.imageUrl||descriptor.imageIndex].join('-'));
 
 async function syncYugioh(db){
   const provider='ygoprodeck',runId=await startRun(db,provider,'catalog'),stats={seen:0,written:0,cursor:null,metadata:{}};
@@ -119,14 +174,22 @@ async function syncYugioh(db){
     const [sets,cardsBody]=await Promise.all([providerJson('https://db.ygoprodeck.com/api/v7/cardsets.php'),providerJson('https://db.ygoprodeck.com/api/v7/cardinfo.php',{timeout:120000})]);
     const series=(sets||[]).map(s=>({id:`yugioh-ygoprodeck-${slug(s.set_code||s.set_name)}`,game_id:'yugioh',official_code:s.set_code||slug(s.set_name),name_zh:null,name_ja:null,name_en:s.set_name,name_ko:null,region:'US',language:'en-US',release_date:ymd(s.tcg_date),aliases:[s.set_code].filter(Boolean),source_url:SOURCE_URLS.ygoprodeck,image_url:s.set_image||null,image_kind:'series-logo',source:provider,provider_id:s.set_code||s.set_name,metadata:{cardsCount:Number(s.num_of_cards)||null},updated_at:new Date().toISOString()}));
     stats.written+=await upsert(db,'/tcg_series',series);stats.written+=await upsert(db,'/tcg_products',series.map(s=>({id:`yugioh-series-${slug(s.provider_id)}`,game_id:'yugioh',series_id:s.id,official_code:s.official_code,product_type:'系列',name_zh:null,name_ja:null,name_en:s.name_en,name_ko:null,aliases:s.aliases,region:'US',language:'en-US',release_date:s.release_date,image_url:s.image_url,image_kind:'series-logo',source:provider,source_url:s.source_url,provider_id:s.provider_id,metadata:s.metadata,updated_at:new Date().toISOString()})));
-    const seriesByName=new Map(series.map(s=>[s.name_en,s.id])),cards=cardsBody.data||[];stats.seen=cards.length;
+    const seriesByName=new Map(series.map(s=>[s.name_en,s.id])),cards=cardsBody.data||[],nameRows=[],rarityRows=[];stats.seen=cards.length;
     for(const batch of chunks(cards,100)){
-      const cardRows=batch.map(c=>({id:`yugioh-ygoprodeck-${c.id}`,canonical_id:`yugioh-ygoprodeck-${c.id}`,game_id:'yugioh',series_id:seriesByName.get(c.card_sets?.[0]?.set_name)||null,official_card_number:String(c.id),rarity:c.card_sets?.[0]?.set_rarity||null,name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[c.archetype].filter(Boolean),source:provider,provider_id:String(c.id),search_text:searchText(c.name,c.id,c.archetype,(c.card_sets||[]).flatMap(s=>[s.set_name,s.set_code])),metadata:{type:c.type||null,race:c.race||null,attribute:c.attribute||null},updated_at:new Date().toISOString()}));
-      stats.written+=await upsert(db,'/tcg_cards',cardRows);
-      const printings=batch.flatMap(c=>(c.card_sets||[{set_name:null,set_code:String(c.id),set_rarity:null}]).map((s,i)=>({card_id:`yugioh-ygoprodeck-${c.id}`,series_id:seriesByName.get(s.set_name)||null,region:'US',language:'en-US',local_set_code:s.set_name||'unspecified',local_card_number:s.set_code||String(c.id),rarity:s.set_rarity||null,image_url:null,source_url:`https://db.ygoprodeck.com/card/?search=${encodeURIComponent(c.name)}`,release_date:null,source:provider,provider_id:`${c.id}:${s.set_code||i}`,image_rehost_required:true,metadata:{providerImageUrl:c.card_images?.[0]?.image_url_small||null,setPriceUsd:s.set_price||null},updated_at:new Date().toISOString()})));
-      stats.written+=await upsert(db,'/tcg_printings',printings,'source,provider_id');
+      const descriptorsByCard=batch.map(c=>({c,descriptors:yugiohPrintingDescriptors(c)}));
+      const cardRows=[],printings=[];
+      for(const {c,descriptors} of descriptorsByCard){
+        const baseId=`yugioh-ygoprodeck-${c.id}`,baseCard={id:baseId,canonical_id:`yugioh-ygoprodeck-${c.id}`,game_id:'yugioh',series_id:seriesByName.get(c.card_sets?.[0]?.set_name)||null,official_card_number:String(c.id),rarity:sourceValue(c.card_sets?.[0]?.set_rarity),name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[c.archetype].filter(Boolean),source:provider,provider_id:String(c.id),search_text:searchText(c.name,c.id,c.archetype,(c.card_sets||[]).flatMap(s=>[s.set_name,s.set_code,s.set_rarity])),metadata:{type:c.type||null,race:c.race||null,attribute:c.attribute||null},updated_at:new Date().toISOString()};
+        cardRows.push(baseCard);nameRows.push(...cardNameRows(baseCard,{source:provider,sourceUrl:`https://db.ygoprodeck.com/card/?search=${encodeURIComponent(c.name)}`}));
+        for(const descriptor of descriptors){
+          const variantToken=yugiohVariantToken(descriptor),providerId=`${c.id}:${descriptor.setCode}:${descriptor.rarity||'unknown'}:${descriptor.imageId||descriptor.imageUrl||descriptor.imageIndex}`;
+          rarityRows.push(rarityRow('yugioh',descriptor.rarity,{source:provider,sourceUrl:SOURCE_URLS.ygoprodeck,metadata:{setCode:descriptor.setCode,cardId:String(c.id),imageId:descriptor.imageId||null}}));
+          printings.push({card_id:baseId,series_id:seriesByName.get(descriptor.setName)||null,region:'US',language:'en-US',local_set_code:descriptor.setName,local_card_number:descriptor.setCode,rarity:descriptor.rarity,rarity_code:descriptor.rarity,rarity_label:descriptor.rarity,image_url:null,source_url:`https://db.ygoprodeck.com/card/?search=${encodeURIComponent(c.name)}`,release_date:null,source:provider,provider_id:providerId,image_rehost_required:true,data_status:descriptor.rarity?'verified':'incomplete',source_locale:'en-US',metadata:{providerImageUrl:descriptor.imageUrl||null,imageId:descriptor.imageId||null,setPriceUsd:descriptor.set.set_price||null,rawRarity:descriptor.rarity,variantKey:variantToken},updated_at:new Date().toISOString()});
+        }
+      }
+      stats.written+=await upsert(db,'/tcg_cards',cardRows);stats.written+=await upsert(db,'/tcg_printings',printings,'source,provider_id');
     }
-    stats.metadata={sets:series.length,cards:cards.length,imagePolicy:'rehost-required'};await finishRun(db,runId,'completed',stats);return stats;
+    stats.written+=await upsertCardEnrichment(db,{names:nameRows,rarities:rarityRows});stats.metadata={sets:series.length,cards:cards.length,imagePolicy:'rehost-required',enrichment:{names:nameRows.length,rarities:rarityRows.length}};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
@@ -149,9 +212,11 @@ async function syncOnePiece(db){
     const twPages=[];for(let i=0;i<twOptions.length;i+=4){const batch=twOptions.slice(i,i+4),htmls=await Promise.all(batch.map(s=>providerText(`${twCardBase}?search=true&series=${s.providerId}`)));twPages.push(...htmls);if(i+4<twOptions.length)await new Promise(resolve=>setTimeout(resolve,150))}
     const twCards=[],seenTw=new Set();for(const html of twPages)for(const card of parseOnePieceCards(html,twCardBase)){if(seenTw.has(card.providerId))continue;seenTw.add(card.providerId);twCards.push(card)}
     const englishByProviderId=new Map(cards.map(c=>[c.providerId,c])),twSeriesByCode=new Map(twSeries.map(s=>[s.official_code.replace('-',''),s.id]));
-    stats.written+=await upsert(db,'/tcg_cards',twCards.map(c=>{const en=englishByProviderId.get(c.providerId);return {id:`onepiece-official-${slug(c.providerId)}`,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:seriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,official_card_number:c.number,rarity:c.rarity||en?.rarity||null,name_zh:c.name,name_ja:null,name_en:en?.name||null,name_ko:null,aliases:[c.name,en?.name].filter(Boolean),source:provider,provider_id:c.providerId,search_text:searchText(c.name,en?.name,c.number,c.rarity,c.cardType),metadata:{cardType:c.cardType},updated_at:new Date().toISOString()}}));
+    const twCardRows=twCards.map(c=>{const en=englishByProviderId.get(c.providerId);return {id:`onepiece-official-${slug(c.providerId)}`,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:seriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,official_card_number:c.number,rarity:c.rarity||en?.rarity||null,name_zh:c.name,name_ja:null,name_en:en?.name||null,name_ko:null,aliases:[c.name,en?.name].filter(Boolean),source:provider,provider_id:c.providerId,search_text:searchText(c.name,en?.name,c.number,c.rarity,c.cardType),metadata:{cardType:c.cardType},updated_at:new Date().toISOString()}});
+    stats.written+=await upsert(db,'/tcg_cards',twCardRows);
     stats.written+=await upsert(db,'/tcg_printings',twCards.map(c=>({card_id:`onepiece-official-${slug(c.providerId)}`,series_id:twSeriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,region:'TW',language:'zh-Hant-TW',local_set_code:c.number.split('-')[0]||'unknown',local_card_number:c.number,rarity:c.rarity||null,image_url:c.imageUrl,source_url:c.sourceUrl,release_date:null,source:'onepiece-official-tw',provider_id:c.providerId,image_rehost_required:false,metadata:{cardType:c.cardType},updated_at:new Date().toISOString()})),'source,provider_id');
-    stats.seen+=twCovers.length+twOptions.length+twCards.length;stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length,twProducts:twProducts.length,twSets:twSeries.length,twCards:twCards.length};await finishRun(db,runId,'completed',stats);return stats;
+    const nameRows=[...cardRows.flatMap(card=>cardNameRows(card,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider]})),...twCardRows.flatMap(card=>cardNameRows(card,{source:'onepiece-official-tw',sourceUrl:CARD_NAME_SOURCE_URLS['onepiece-official-tw']}))],rarityRows=[...cardRows.map(card=>rarityRow('onepiece',card.rarity,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider]})),...twCardRows.map(card=>rarityRow('onepiece',card.rarity,{source:'onepiece-official-tw',sourceUrl:CARD_NAME_SOURCE_URLS['onepiece-official-tw']}))];
+    stats.written+=await upsertCardEnrichment(db,{names:nameRows,rarities:rarityRows});stats.seen+=twCovers.length+twOptions.length+twCards.length;stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length,twProducts:twProducts.length,twSets:twSeries.length,twCards:twCards.length,enrichment:{names:nameRows.length,rarities:rarityRows.filter(Boolean).length}};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 

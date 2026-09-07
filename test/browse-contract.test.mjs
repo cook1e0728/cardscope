@@ -20,7 +20,7 @@ function createHarness(fetchImpl=async()=>({ok:true,json:async()=>({data:[],meta
   const body=node('body'),head=node('head');
   const store=new Map(Object.entries(initialStore));
   const document={body,head,getElementById:id=>nodes.get(id)||created.find(item=>item.id===id)||null,createElement:()=>node(),querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){}};
-  const context=vm.createContext({document,window:{},console,fetch:fetchImpl,localStorage:{getItem:key=>store.get(key)||null,setItem:(key,value)=>store.set(key,String(value))},matchMedia:()=>({matches:false}),setTimeout,Blob,URL});
+  const context=vm.createContext({document,window:{},console,fetch:fetchImpl,localStorage:{getItem:key=>store.get(key)||null,setItem:(key,value)=>store.set(key,String(value))},matchMedia:()=>({matches:false}),setTimeout,Blob,URL,URLSearchParams});
   context.window=context;
   vm.runInContext(appSource,context);
   if(withUi)vm.runInContext(uiSource,context);
@@ -30,6 +30,24 @@ function createHarness(fetchImpl=async()=>({ok:true,json:async()=>({data:[],meta
 test('card catalog always starts in grid mode even after a previous rarity view',()=>{
   const h=createHarness(undefined,true,{'cardscope-card-view':'rarity'});
   assert.equal(h.run('cardViewMode'),'grid');
+});
+
+test('card detail viewer exposes real magnification controls and pan gestures',()=>{
+  assert.match(uiSource,/data-zoom-preset="4"/);
+  assert.match(uiSource,/touch-action:none/);
+  assert.match(uiSource,/pointerdown/);
+  assert.match(uiSource,/wheel/);
+  assert.match(uiSource,/returnFocus\.focus\(\)/);
+});
+
+test('taxonomy keeps card systems separate from current and planned franchises',async()=>{
+  const taxonomy=JSON.parse(await readFile(new URL('../data/game-taxonomy.json',import.meta.url),'utf8'));
+  const weiss=taxonomy.systems.find(system=>system.id==='weiss-schwarz');
+  assert.equal(weiss.nameZh,'Weiß Schwarz');
+  assert.equal(weiss.franchises.find(item=>item.id==='frieren').status,'active');
+  assert.equal(weiss.franchises.find(item=>item.id==='rezero').status,'planned');
+  assert.equal(taxonomy.systems.find(system=>system.id==='union-arena').enabled,false);
+  assert.equal(taxonomy.assetPolicy.officialPermissionRequired,true);
 });
 
 test('all-game default renders the IP chooser and no individual cards',()=>{
