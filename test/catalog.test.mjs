@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
+import { catalogCollectionAllowed, imageCollectionAllowed, imageRightsAllowDisplay, sourcePolicySummary } from '../providers/source-policy.mjs';
 
 const port=4197;
 let server;
@@ -17,11 +18,30 @@ test.after(()=>server?.kill());
 
 async function api(path){const response=await fetch(`http://127.0.0.1:${port}${path}`);assert.equal(response.status,200);return response.json()}
 
-test('catalog exposes canonical cards with images and printing metadata',async()=>{
+test('catalog exposes canonical cards and does not treat an unclassified image URL as display permission',async()=>{
   const {data}=await api('/api/catalog');
   assert.equal(data.source,'catalog.json');
   assert.ok(data.cards.length>=5);
-  for(const card of data.cards){assert.ok(card.id===card.canonicalId);assert.ok(card.imageUrl);assert.ok(card.printings.length);assert.ok(card.printings[0].region);assert.ok(card.printings[0].language)}
+  for(const card of data.cards){assert.ok(card.id===card.canonicalId);assert.equal(card.imageUrl,null);assert.ok(card.printings.length);assert.ok(card.printings[0].region);assert.ok(card.printings[0].language)}
+});
+
+test('source policy gates collectors and image display independently',()=>{
+  assert.equal(catalogCollectionAllowed('pokemon'),true);
+  assert.equal(catalogCollectionAllowed('onepiece'),false);
+  assert.equal(catalogCollectionAllowed('yuyutei'),false);
+  assert.equal(imageCollectionAllowed('yugioh'),false);
+  assert.equal(imageRightsAllowDisplay('not-provided'),false);
+  assert.equal(imageRightsAllowDisplay('licensed'),true);
+  assert.equal(imageRightsAllowDisplay('partner-provided','2020-01-01T00:00:00Z'),false);
+  assert.equal(sourcePolicySummary().version,2);
+});
+
+test('public health and source policy endpoints are available without database secrets',async()=>{
+  const health=await api('/api/catalog/health'),sources=await api('/api/catalog/sources');
+  assert.equal(health.data.policy.version,2);
+  assert.ok(sources.data.some(source=>source.runtimeProvider==='onepiece'&&source.status==='blocked'));
+  const response=await fetch(`http://127.0.0.1:${port}/api/admin/catalog/health?token=leaked`);
+  assert.equal(response.status,401);
 });
 
 test('coverage reports honest fallback totals without a database',async()=>{

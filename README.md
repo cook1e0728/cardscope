@@ -6,11 +6,11 @@ CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，�
 
 - **JustTCG**：既有 API adapter 保留，目前不作為首頁搜尋或卡盒資料依賴。
 - **eBay Browse API**：既有多市場 adapter 保留，目前不自動查詢；掛牌價不可當作已成交價。
-- **遊々亭**：買取頁資料擷取，存入 Supabase `jp_buyback_prices`。
+- **遊々亭**：既有買取資料可查詢；新的自動擷取在來源條款／許可確認前由來源政策暫停。
 - **Supabase**：使用者成交回報、日版買取行情、卡片多語名稱與匯率快取。
-- **Pokémon TCG API + TCGdex**：Pokémon 美版與台版繁中系列、卡片及圖片；不同語言只在有可靠 ID 時合併，不猜測跨語 printing。
-- **ONE PIECE CARD GAME 官方網站**：逐系列同步亞洲英文版與台版繁中官方卡表、卡面及產品封面。
-- **YGOPRODeck**：遊戲王卡片與卡組索引；卡圖會先保存至 CardScope 的 Supabase Storage，再由本站顯示，不大量 hotlink。
+- **Pokémon TCG API + TCGdex**：Pokémon 美版與台版繁中 metadata；不同語言只在有可靠 ID 時合併，不猜測跨語 printing。卡圖另行接受權利審核。
+- **ONE PIECE CARD GAME 官方網站**：保留官方導覽連結；自動抓取在適用條款或書面許可確認前暫停。
+- **YGOPRODeck**：遊戲王卡片與卡組 metadata。依 API 指引不持續 hotlink；在卡圖權利依據確認前不自動保存或公開顯示。
 - **卡拍拍 / SNKRDUNK**：尚未接入；網站不再顯示這兩個來源的示範價格。
 
 ## 更新頻率
@@ -45,7 +45,9 @@ Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tc
 
 ## 圖片
 
-詳細頁圖片優先順序是 `card_images` 的 primary 圖、`tcg_printings.image_url`、合法公開 Catalog 圖源，最後才是文字佔位；圖片載入失敗會降級為卡名與卡號。YGOPRODeck 卡圖依其 API 條款先下載至公開讀取、僅服務端可上傳的 `card-images` bucket。遊々亭與 eBay 圖只跟著對應市場列顯示，不冒充官方卡圖。每筆保留 `source` 與 `source_url`。
+詳細頁只顯示 `licensed`、`partner-provided` 或 `user-provided` 且未過期的圖片；`image_url` 存在不代表可展示。其他情況會降級成清楚的圖片待補狀態。每筆保留來源、來源網址、權利狀態與到期時間，方便後續審核。
+
+`GET /api/catalog/health` 提供五個 IP 的卡片、中文名、稀有度、圖片網址與可顯示圖片數；`GET /api/catalog/sources` 公開來源政策摘要。管理端可用 `GET /api/admin/catalog/health` 搭配 `Authorization: Bearer ...` 或 `x-scrape-token` 查看缺失樣本。管理密鑰不接受 query string，避免被瀏覽器歷史與伺服器紀錄保存。
 
 `GET /api/catalog/image-status` 可查看遊戲王唯一卡面已保存／待補數量；受 `SCRAPE_SECRET` 保護的 `POST /api/admin/catalog/cache-images` 可手動續跑。
 
@@ -72,7 +74,7 @@ Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tc
 
 `supabase/migrations/20260831_catalog_sync_pipeline.sql` 新增 `tcg_products`、`catalog_sync_runs` 與 provider/search 欄位。`tcg_products` 只接受 `sealed-product` 或 `series-logo`，一般單卡不會進入卡盒資料。
 
-管理端可用 `POST /api/admin/catalog/sync?provider=all`（`x-scrape-token`）手動重跑；`GET /api/catalog/sync-status` 提供不含密鑰的同步摘要。
+管理端可用 `POST /api/admin/catalog/sync?provider=all`（`Authorization: Bearer ...` 或 `x-scrape-token`）手動重跑；只有 `data/source-registry.json` 明確啟用的來源會執行。`GET /api/catalog/sync-status` 提供不含密鑰的同步摘要。
 
 注意：把 SQL 檔推到 GitHub **不代表遠端 Supabase 一定會自動執行 migration**；是否自動套用取決於你的 Supabase CI / deployment 設定。
 
