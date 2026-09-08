@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
+import { catalogProvidersNeedingSync, localizeCatalogRecord, localizePokemonName, localizeProductName, normalizePokemonJpCatalog, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 import { catalogCollectionAllowed, imageCollectionAllowed, imageRightsAllowDisplay, sourcePolicySummary } from '../providers/source-policy.mjs';
 
@@ -26,6 +26,8 @@ test('catalog exposes canonical cards and risk-accepted source images without ma
 });
 
 test('source policy gates collectors and image display independently',()=>{
+  assert.equal(catalogCollectionAllowed('pokemonJp'),true);
+  assert.equal(imageCollectionAllowed('pokemonJp'),false);
   assert.equal(catalogCollectionAllowed('pokemon'),true);
   assert.equal(catalogCollectionAllowed('onepiece'),false);
   assert.equal(catalogCollectionAllowed('yuyutei'),false);
@@ -58,12 +60,63 @@ test('catalog cooldown treats an active provider run as covered',async()=>{
   let requestedPath='';
   const providers=await catalogProvidersNeedingSync(async path=>{requestedPath=path;return[
     {provider:'pokemontcg',status:'running',metadata:{}},
+    {provider:'tcgdex-ja',status:'completed',metadata:{}},
     {provider:'tcgdex-zh-tw',status:'completed',metadata:{}},
     {provider:'onepiece-official-tw',status:'completed',metadata:{twCards:0}},
     {provider:'ygoprodeck',status:'completed',metadata:{}}
   ]},72);
   assert.match(requestedPath,/status=in\.\(completed,running\)/);
   assert.deepEqual(providers,['onepiece']);
+});
+
+test('catalog cooldown schedules Japanese Pokémon before other missing providers',async()=>{
+  const providers=await catalogProvidersNeedingSync(async()=>[
+    {provider:'tcgdex-zh-tw',status:'completed',metadata:{}},
+    {provider:'pokemontcg',status:'running',metadata:{}},
+    {provider:'ygoprodeck',status:'completed',metadata:{}},
+    {provider:'onepiece-official-tw',status:'completed',metadata:{twCards:10}}
+  ]);
+  assert.deepEqual(providers,['pokemonJp']);
+});
+
+test('Japanese TCGdex normalization keeps JP data, exact zh-TW crosswalk and image rights status',()=>{
+  const normalized=normalizePokemonJpCatalog({
+    sets:[{id:'SV4a',name:'レイジングサーフ',releaseDate:'2023-12-01',cardCount:{official:190},logo:'https://assets.tcgdex.net/ja/SV/SV4a/logo',symbol:'https://assets.tcgdex.net/ja/SV/SV4a/symbol'}],
+    zhTwSets:[{id:'SV4a',name:'閃色寶藏ex'}],
+    cards:[{id:'SV4a-001',localId:'001',name:'ユキノオー',rarity:'C',image:'https://assets.tcgdex.net/ja/SV/SV4a/001'}],
+    zhTwCards:[{id:'SV4a-001',name:'暴雪王'}]
+  });
+  assert.equal(normalized.series[0].official_code,'SV4a');
+  assert.equal(normalized.series[0].name_ja,'レイジングサーフ');
+  assert.equal(normalized.series[0].name_zh,'閃色寶藏ex');
+  assert.equal(normalized.series[0].release_date,'2023-12-01');
+  assert.equal(normalized.series[0].metadata.total,190);
+  assert.equal(normalized.cards[0].name_ja,'ユキノオー');
+  assert.equal(normalized.cards[0].name_zh,'暴雪王');
+  assert.equal(normalized.cards[0].official_card_number,'001');
+  assert.equal(normalized.cards[0].rarity,'C');
+  assert.equal(normalized.printings[0].image_rights_status,'not-provided');
+  assert.equal(normalized.printings[0].image_rehost_required,false);
+  const fallback=normalizePokemonJpCatalog({sets:[{id:'SV8a',name:'超電ブレイカー'}],cards:[{id:'SV8a-001',localId:'001',name:'ピカチュウ'}]});
+  assert.equal(fallback.cards[0].name_ja,'ピカチュウ');
+  assert.equal(fallback.cards[0].name_zh,null);
+  assert.equal(fallback.cards[0].metadata.translationStatus,'unofficial-fallback');
+  assert.equal(fallback.cards[0].metadata.unofficialNameZh,'非官方｜ピカチュウ');
+});
+
+test('Japanese product fallback uses name_ja and preserves explicit translation provenance',()=>{
+  const row=localizeCatalogRecord({game_id:'pokemon',product_type:'系列',name_en:null,name_ja:'レイジングサーフ',metadata:{translationStatus:'unofficial-fallback',translationOriginal:'レイジングサーフ',unofficialNameZh:'非官方｜レイジングサーフ'}});
+  assert.equal(row.name_zh,'非官方｜レイジングサーフ');
+  assert.equal(row.metadata.translationStatus,'unofficial-fallback');
+  assert.equal(row.metadata.translationOriginal,'レイジングサーフ');
+});
+
+test('admin sync aliases and default candidates keep JP to TW to US order',async()=>{
+  const source=await readFile(new URL('../server.mjs',import.meta.url),'utf8');
+  assert.match(source,/pokemonjp:'pokemonJp'/);
+  assert.match(source,/pokemonja:'pokemonJp'/);
+  assert.match(source,/tcgdexja:'pokemonJp'/);
+  assert.match(source,/\['pokemonJp','pokemonZhTw','pokemon','onepiece','yugioh'\]/);
 });
 
 test('price filters stay honest when no verified database source is configured',async()=>{

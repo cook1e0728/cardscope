@@ -1,3 +1,5 @@
+alter table public.tcg_cards add column if not exists search_text text;
+
 create extension if not exists pg_trgm with schema extensions;
 
 create index if not exists tcg_cards_search_trgm_idx

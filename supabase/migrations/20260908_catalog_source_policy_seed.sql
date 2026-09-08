@@ -1,8 +1,37 @@
+-- This file sorts before catalog_source_rights_health on a fresh database.
+-- Create the service-only policy table before seeding it.
+create table if not exists public.catalog_source_policies (
+  id text primary key,
+  runtime_provider text unique,
+  kind text not null,
+  game_id text references public.tcg_games(id) on update cascade on delete restrict,
+  region text,
+  source_name text not null,
+  source_url text not null,
+  access_method text not null,
+  metadata_policy text not null,
+  image_policy text not null,
+  collection_enabled boolean not null default false,
+  attribution_required boolean not null default true,
+  refresh_hours integer check (refresh_hours is null or refresh_hours > 0),
+  evidence_url text,
+  reviewed_at date,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists catalog_source_policies_game_id_idx on public.catalog_source_policies(game_id);
+alter table public.catalog_source_policies enable row level security;
+revoke all on table public.catalog_source_policies from anon, authenticated;
+grant select, insert, update, delete on table public.catalog_source_policies to service_role;
+
 insert into public.catalog_source_policies
   (id,runtime_provider,kind,game_id,region,source_name,source_url,access_method,metadata_policy,image_policy,collection_enabled,attribution_required,refresh_hours,evidence_url,reviewed_at,notes)
 values
   ('pokemontcg','pokemon','catalog-api','pokemon','US','Pokémon TCG API','https://docs.pokemontcg.io/','public-api','approved-api','rights-review-required',true,false,72,'https://dev.pokemontcg.io/terms','2026-09-08','Card-art display rights remain unclassified.'),
   ('tcgdex-zh-tw','pokemonZhTw','catalog-api','pokemon','TW','TCGdex API','https://tcgdex.dev/','public-api','approved-api','rights-review-required',true,false,72,'https://github.com/tcgdex/documentation','2026-09-08','Used for metadata and Traditional Chinese matching.'),
+  ('tcgdex-ja','pokemonJp','catalog-api','pokemon','JP','TCGdex API Japanese','https://tcgdex.dev/','public-api','approved-api','rights-review-required',true,true,72,'https://github.com/tcgdex/cards-database','2026-09-09','Japanese-first metadata source. Card-art rights remain unclassified and are never marked licensed.'),
   ('ygoprodeck','yugioh','catalog-api','yugioh','GLOBAL','YGOPRODeck API','https://api.ygoprodeck.com/api-guide/','public-api','approved-api','rights-review-required',true,true,72,'https://api.ygoprodeck.com/api-guide/','2026-09-08','Rehosting guidance is not treated as a copyright licence.'),
   ('onepiece-official-runtime','onepiece','official-page','onepiece','JP/TW','ONE PIECE CARD GAME card lists','https://www.onepiece-cardgame.com/cardlist/','official-page','permission-pending','not-collected',false,true,null,'https://www.onepiece-cardgame.com/','2026-09-08','Automatic collection disabled pending terms or permission.'),
   ('yuyutei','yuyutei','market-page',null,'JP','遊々亭買取','https://yuyu-tei.jp/buy/','manual-admin-only','permission-pending','not-collected',false,true,24,'https://yuyu-tei.jp/','2026-09-08','Automatic collection disabled pending terms or permission.'),
