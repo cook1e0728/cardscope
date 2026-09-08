@@ -8,6 +8,8 @@ try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
  const products=Array.from({length:10},(_,i)=>({id:`smoke-${i}`,game:'pokemon',region:'JP',catalogCategory:'原盒',officialCode:`M${6-i%3}`,nameZh:`測試商品 ${i}`,releaseDate:'2026-08-01',imageUrl:'/assets/brand/cardscope-rabbit-mark.png'}));
+ const testCardSvg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700"><rect width="500" height="700" rx="24" fill="#fff"/><rect x="12" y="12" width="476" height="676" rx="18" fill="#f7d63d" stroke="#222" stroke-width="12"/><rect x="42" y="54" width="416" height="510" fill="#52b7dd"/><rect x="42" y="584" width="416" height="70" fill="#cf3348"/><text x="250" y="630" text-anchor="middle" font-size="28">CARD BOTTOM</text></svg>';
+ await page.route('https://images.pokemontcg.io/**',route=>route.fulfill({contentType:'image/svg+xml',body:testCardSvg}));
  await page.route('**/api/products',route=>route.fulfill({json:{data:products,series:[]}}));
  await page.addInitScript(()=>{localStorage.clear();localStorage.setItem('cardscope-recent-series','["smoke-0"]')});
  await page.goto(process.env.CARDSCOPE_URL||'http://localhost:4173');
@@ -20,6 +22,15 @@ try{
  await page.locator('#modal.open .tilt-card').waitFor();
  await page.locator('#modal.open .tilt-card').click();
  await page.locator('#cardZoom.open img').waitFor();
+ const zoomLayout=await page.evaluate(()=>{
+  const viewport=document.querySelector('#cardZoom .card-zoom-viewport').getBoundingClientRect(),canvas=document.querySelector('#cardZoom .card-zoom-canvas').getBoundingClientRect(),toolbar=document.querySelector('#cardZoom .card-zoom-toolbar').getBoundingClientRect(),image=document.querySelector('#cardZoom .card-zoom-image');
+  return {viewport:{top:viewport.top,bottom:viewport.bottom},canvas:{top:canvas.top,bottom:canvas.bottom},toolbar:{top:toolbar.top,bottom:toolbar.bottom},objectFit:getComputedStyle(image).objectFit};
+ });
+ assert.ok(zoomLayout.canvas.top>=zoomLayout.viewport.top&&zoomLayout.canvas.bottom<=zoomLayout.viewport.bottom,JSON.stringify(zoomLayout));
+ assert.ok(zoomLayout.viewport.bottom<=zoomLayout.toolbar.top,JSON.stringify(zoomLayout));
+ assert.equal(zoomLayout.objectFit,'contain');
+ await page.locator('#cardZoom [data-zoom-preset="4"]').click();
+ assert.equal(await page.locator('#cardZoom [data-zoom-label]').textContent(),'400%');
  await page.locator('#cardZoom .card-zoom-close').click();
  await page.locator('#close').click();
  assert.equal(await page.locator('.recent-series-details').getAttribute('open'),null);
