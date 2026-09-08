@@ -18,11 +18,11 @@ test.after(()=>server?.kill());
 
 async function api(path){const response=await fetch(`http://127.0.0.1:${port}${path}`);assert.equal(response.status,200);return response.json()}
 
-test('catalog exposes canonical cards and does not treat an unclassified image URL as display permission',async()=>{
+test('catalog exposes canonical cards and risk-accepted source images without marking them licensed',async()=>{
   const {data}=await api('/api/catalog');
   assert.equal(data.source,'catalog.json');
   assert.ok(data.cards.length>=5);
-  for(const card of data.cards){assert.ok(card.id===card.canonicalId);assert.equal(card.imageUrl,null);assert.ok(card.printings.length);assert.ok(card.printings[0].region);assert.ok(card.printings[0].language)}
+  for(const card of data.cards){assert.ok(card.id===card.canonicalId);assert.ok(card.imageUrl);assert.ok(card.printings.length);assert.ok(card.printings[0].region);assert.ok(card.printings[0].language)}
 });
 
 test('source policy gates collectors and image display independently',()=>{
@@ -30,10 +30,13 @@ test('source policy gates collectors and image display independently',()=>{
   assert.equal(catalogCollectionAllowed('onepiece'),false);
   assert.equal(catalogCollectionAllowed('yuyutei'),false);
   assert.equal(imageCollectionAllowed('yugioh'),false);
-  assert.equal(imageRightsAllowDisplay('not-provided'),false);
+  assert.equal(imageRightsAllowDisplay('not-provided'),true);
+  assert.equal(imageRightsAllowDisplay(null),true);
+  assert.equal(imageRightsAllowDisplay('not-displayable'),false);
   assert.equal(imageRightsAllowDisplay('licensed'),true);
   assert.equal(imageRightsAllowDisplay('partner-provided','2020-01-01T00:00:00Z'),false);
   assert.equal(sourcePolicySummary().version,2);
+  assert.equal(sourcePolicySummary().unverifiedImageDisplayEnabled,true);
 });
 
 test('public health and source policy endpoints are available without database secrets',async()=>{

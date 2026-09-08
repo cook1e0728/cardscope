@@ -1,6 +1,9 @@
 {
   "version": 2,
   "reviewedAt": "2026-09-08",
+  "unverifiedImageDisplayEnabled": true,
+  "riskAcceptedAt": "2026-09-08",
+  "riskAcceptance": "The site owner explicitly accepts the copyright and takedown risk of displaying source-provided card images that do not have a recorded display licence. This does not change their rights status or represent them as licensed.",
   "policy": "Metadata collection and image display are separate permissions. Runtime collection is allowed only for an explicitly enabled source. A discovered image URL is never treated as permission to display it.",
   "sources": [
     {"id":"pokemontcg","kind":"catalog-api","game":"pokemon","region":"US","name":"Pokémon TCG API","url":"https://docs.pokemontcg.io/","runtimeProvider":"pokemon","access":"public-api","metadataCollection":"approved-api","collectionEnabled":true,"imagePolicy":"rights-review-required","attributionRequired":false,"refreshHours":72,"evidenceUrl":"https://dev.pokemontcg.io/terms","notes":"API use is allowed subject to its terms; the API terms do not independently establish card-art display rights."},

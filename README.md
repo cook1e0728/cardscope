@@ -45,7 +45,7 @@ Supabase Catalog 使用 `tcg_games`、`tcg_series`、`tcg_canonical_cards`、`tc
 
 ## 圖片
 
-詳細頁只顯示 `licensed`、`partner-provided` 或 `user-provided` 且未過期的圖片；`image_url` 存在不代表可展示。其他情況會降級成清楚的圖片待補狀態。每筆保留來源、來源網址、權利狀態與到期時間，方便後續審核。
+圖片仍分別記錄 `licensed`、`partner-provided`、`user-provided`、`not-provided` 或 `not-displayable`；`image_url` 存在不代表已取得授權。站方已於 2026-09-08 明確接受顯示 `not-provided` 來源圖片的著作權與下架風險，因此目前會顯示這類卡圖，但不會把資料狀態改寫成已授權；`not-displayable` 與已過期圖片仍不顯示。每筆保留來源、來源網址、權利狀態與到期時間，方便後續通知下架或補授權。
 
 `GET /api/catalog/health` 提供五個 IP 的卡片、中文名、稀有度、圖片網址與可顯示圖片數；`GET /api/catalog/sources` 公開來源政策摘要。管理端可用 `GET /api/admin/catalog/health` 搭配 `Authorization: Bearer ...` 或 `x-scrape-token` 查看缺失樣本。管理密鑰不接受 query string，避免被瀏覽器歷史與伺服器紀錄保存。
 
