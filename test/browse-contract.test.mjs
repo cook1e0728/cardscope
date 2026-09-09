@@ -41,6 +41,25 @@ test('card detail viewer exposes real magnification controls and pan gestures',(
   assert.match(uiSource,/returnFocus\.focus\(\)/);
 });
 
+test('every rendered card image and zoom view carries a SAMPLE watermark',()=>{
+  const h=createHarness(undefined,true);
+  const markup=h.run("resilientImage('/card.png','測試卡','圖片待補')");
+  assert.match(markup,/card-sample-watermark/);
+  assert.match(markup,/>SAMPLE</);
+  assert.match(uiSource,/card-sample-watermark-zoom/);
+  assert.match(uiSource,/if\(sample\)sample\.hidden=true/);
+});
+
+test('mobile layout constrains header, dialogs, filters, and long text to the viewport',async()=>{
+  const [layout,switcher]=await Promise.all([
+    readFile(new URL('../catalog-layout.css',import.meta.url),'utf8'),
+    readFile(new URL('../game-switcher.js',import.meta.url),'utf8')
+  ]);
+  for(const rule of ['overflow-x:clip','grid-template-columns:minmax(0,1fr) auto','grid-column:1/-1','min-height:100dvh','overflow-wrap:anywhere'])assert.match(layout,new RegExp(rule.replace(/[()]/g,'\\$&')));
+  assert.match(switcher,/max-height:calc\(100dvh - 16px\)/);
+  assert.match(switcher,/grid-template-columns:64px minmax\(0,1fr\)/);
+});
+
 test('taxonomy keeps card systems separate from current and planned franchises',async()=>{
   const taxonomy=JSON.parse(await readFile(new URL('../data/game-taxonomy.json',import.meta.url),'utf8'));
   const weiss=taxonomy.systems.find(system=>system.id==='weiss-schwarz');

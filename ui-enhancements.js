@@ -39,7 +39,7 @@ function missingImageMarkup(message='圖片來源尚未收錄'){
 function resilientImage(src,alt,message){
   src=typeof displayImageUrl==='function'?displayImageUrl(src):src;
   if(!src)return missingImageMarkup(message);
-  return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span>`;
+  return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false;this.nextElementSibling.nextElementSibling.hidden=true"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span><span class="card-sample-watermark" aria-hidden="true">SAMPLE</span>`;
 }
 
 function installViewToggle(){
@@ -214,12 +214,12 @@ function openCardZoom(source,alt,options={}){
   }
   const activeElement=document.activeElement;
   if(!zoom.classList.contains('open')&&activeElement&&activeElement!==zoom)cardZoomReturnFocus=activeElement;
-  zoom.innerHTML=`<button type="button" class="card-zoom-close" aria-label="關閉放大卡圖" title="關閉">×</button><div class="card-zoom-viewport" tabindex="0" aria-label="卡片檢視區；可拖曳平移，觸控可雙指縮放"><div class="card-zoom-canvas"><img class="card-zoom-image" alt="${e(alt||'卡片')}放大卡圖" draggable="false"><span class="card-zoom-fallback" hidden role="status">圖片待補<br><small>目前來源無法顯示</small></span></div></div><div class="card-zoom-toolbar" role="toolbar" aria-label="卡片縮放工具"><button type="button" data-zoom-preset="fit" aria-label="適合視窗">適合視窗</button><button type="button" data-zoom-preset="1" aria-label="顯示 100%">100%</button><button type="button" data-zoom-preset="2" aria-label="顯示 200%">200%</button><button type="button" data-zoom-preset="4" aria-label="顯示 400%">400%</button><span class="card-zoom-divider" aria-hidden="true"></span><button type="button" data-zoom-action="out" aria-label="縮小卡圖" title="縮小">−</button><output data-zoom-label aria-live="polite">適合視窗</output><button type="button" data-zoom-action="in" aria-label="放大卡圖" title="放大">＋</button><button type="button" data-zoom-action="reset" aria-label="重設卡圖位置與縮放" title="重設">重設</button></div>`;
+  zoom.innerHTML=`<button type="button" class="card-zoom-close" aria-label="關閉放大卡圖" title="關閉">×</button><div class="card-zoom-viewport" tabindex="0" aria-label="卡片檢視區；可拖曳平移，觸控可雙指縮放"><div class="card-zoom-canvas"><img class="card-zoom-image" alt="${e(alt||'卡片')}放大卡圖" draggable="false"><span class="card-zoom-fallback" hidden role="status">圖片待補<br><small>目前來源無法顯示</small></span><span class="card-sample-watermark card-sample-watermark-zoom" aria-hidden="true">SAMPLE</span></div></div><div class="card-zoom-toolbar" role="toolbar" aria-label="卡片縮放工具"><button type="button" data-zoom-preset="fit" aria-label="適合視窗">適合視窗</button><button type="button" data-zoom-preset="1" aria-label="顯示 100%">100%</button><button type="button" data-zoom-preset="2" aria-label="顯示 200%">200%</button><button type="button" data-zoom-preset="4" aria-label="顯示 400%">400%</button><span class="card-zoom-divider" aria-hidden="true"></span><button type="button" data-zoom-action="out" aria-label="縮小卡圖" title="縮小">−</button><output data-zoom-label aria-live="polite">適合視窗</output><button type="button" data-zoom-action="in" aria-label="放大卡圖" title="放大">＋</button><button type="button" data-zoom-action="reset" aria-label="重設卡圖位置與縮放" title="重設">重設</button></div>`;
   zoom.classList.add('open');
   zoom.setAttribute('aria-hidden','false');
   document.body?.classList.add('card-zoom-open');
 
-  const viewport=zoom.querySelector('.card-zoom-viewport'),canvas=zoom.querySelector('.card-zoom-canvas'),img=zoom.querySelector('.card-zoom-image'),fallback=zoom.querySelector('.card-zoom-fallback'),label=zoom.querySelector('[data-zoom-label]'),close=zoom.querySelector('.card-zoom-close');
+  const viewport=zoom.querySelector('.card-zoom-viewport'),canvas=zoom.querySelector('.card-zoom-canvas'),img=zoom.querySelector('.card-zoom-image'),fallback=zoom.querySelector('.card-zoom-fallback'),sample=zoom.querySelector('.card-sample-watermark'),label=zoom.querySelector('[data-zoom-label]'),close=zoom.querySelector('.card-zoom-close');
   const state={scale:1,mode:'fit',x:0,y:0,pointers:new Map(),gesture:null,sourceIndex:0};
   const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
   const viewportGeometry=()=>{const rect=viewport?.getBoundingClientRect?.();return{left:rect?.left||0,top:rect?.top||0,width:rect?.width||viewport?.clientWidth||window.innerWidth||900,height:rect?.height||viewport?.clientHeight||window.innerHeight||700}};
@@ -255,8 +255,8 @@ function openCardZoom(source,alt,options={}){
   };
   const endPointer=event=>{state.pointers.delete(event.pointerId);if(state.pointers.size)beginGesture();else state.gesture=null};
 
-  img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;applyZoom()};
-  img.onerror=()=>{if(state.sourceIndex<sources.length-1){state.sourceIndex+=1;img.src=sources[state.sourceIndex];return}img.hidden=true;if(fallback)fallback.hidden=false};
+  img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;if(sample)sample.hidden=false;applyZoom()};
+  img.onerror=()=>{if(state.sourceIndex<sources.length-1){state.sourceIndex+=1;img.src=sources[state.sourceIndex];return}img.hidden=true;if(fallback)fallback.hidden=false;if(sample)sample.hidden=true};
   img.src=sources[0];
   if(img.complete&&img.naturalWidth)img.onload();
   close?.addEventListener('click',closeCardZoom);
