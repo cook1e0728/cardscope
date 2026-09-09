@@ -43,11 +43,15 @@ test('card detail viewer exposes real magnification controls and pan gestures',(
   assert.match(uiSource,/returnFocus\.focus\(\)/);
 });
 
-test('every rendered card image and zoom view carries a SAMPLE watermark',()=>{
+test('only images without an embedded SAMPLE receive one horizontal overlay',()=>{
   const h=createHarness(undefined,true);
   const markup=h.run("resilientImage('/card.png','測試卡','圖片待補')");
   assert.match(markup,/card-sample-watermark/);
   assert.match(markup,/>SAMPLE</);
+  const onePiece=h.run("resilientImage('https://cardscope.onrender.com/api/images/onepiece?url=https%3A%2F%2Fasia-tc.onepiece-cardgame.com%2Fimages%2Fcardlist%2Fcard%2FEB01-001.png','光月御田','圖片待補',cardWatermarkOptions({game:'onepiece'},'https://cardscope.onrender.com/api/images/onepiece?url=https%3A%2F%2Fasia-tc.onepiece-cardgame.com%2Fimages%2Fcardlist%2Fcard%2FEB01-001.png'))");
+  assert.doesNotMatch(onePiece,/>SAMPLE</);
+  const unsignedPlacement=h.run("cardWatermarkOptions({game:'weiss-schwarz',rarity:'SSP'},'/unsigned-source.png')");
+  assert.equal(unsignedPlacement.suppressOverlay,true);
   assert.match(uiSource,/card-sample-watermark-zoom/);
   assert.match(uiSource,/if\(sample\)sample\.hidden=true/);
 });
