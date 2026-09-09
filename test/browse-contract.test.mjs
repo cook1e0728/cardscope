@@ -4,7 +4,9 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+const indexSource=html;
 const uiSource=await readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8');
+const serverSource=await readFile(new URL('../server.mjs',import.meta.url),'utf8');
 const rarityRankings=JSON.parse(await readFile(new URL('../data/rarity-rankings.json',import.meta.url),'utf8'));
 const appSource=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match=>match[1]).join('\n').split('async function init()')[0];
 
@@ -56,8 +58,20 @@ test('mobile layout constrains header, dialogs, filters, and long text to the vi
     readFile(new URL('../game-switcher.js',import.meta.url),'utf8')
   ]);
   for(const rule of ['overflow-x:clip','grid-template-columns:minmax(0,1fr) auto','grid-column:1/-1','min-height:100dvh','overflow-wrap:anywhere'])assert.match(layout,new RegExp(rule.replace(/[()]/g,'\\$&')));
+  assert.match(layout,/\.channel-art img\{width:auto;height:auto;max-width:92px;max-height:44px;padding:0\}/);
+  assert.match(layout,/\.brand-showcase picture\{position:absolute;inset:0 0 0 42%;width:auto\}/);
   assert.match(switcher,/max-height:calc\(100dvh - 16px\)/);
   assert.match(switcher,/grid-template-columns:64px minmax\(0,1fr\)/);
+});
+
+test('default catalog browsing fetches only the requested page and its image relations',()=>{
+  assert.match(serverSource,/function databaseFastBrowseEligible/);
+  assert.match(serverSource,/supabaseFetchPage\(`\/tcg_cards\?\$\{params\}`\)/);
+  assert.match(serverSource,/loadDatabasePageRelations\('tcg_printings'/);
+  assert.match(serverSource,/loadDatabasePageRelations\('card_images'/);
+  assert.match(serverSource,/Prefer:'count=exact'/);
+  assert.match(indexSource,/正在載入\$\{G\(selectedGame\)\.nameZh\|\|selectedGame\}卡片與圖片/);
+  assert.match(indexSource,/countedRarities\.length\?countedRarities:rankedRarities/);
 });
 
 test('taxonomy keeps card systems separate from current and planned franchises',async()=>{

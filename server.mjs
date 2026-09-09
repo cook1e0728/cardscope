@@ -83,6 +83,15 @@ async function supabaseFetch(pathAndQuery,options={}){
   const text=await response.text(); if(!text)return null; try{return JSON.parse(text)}catch{return null}
 }
 
+async function supabaseFetchPage(pathAndQuery){
+  const base=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_KEY;
+  if(!base||!key)throw new Error('SUPABASE_NOT_CONFIGURED');
+  const response=await fetch(`${base}/rest/v1${pathAndQuery}`,{headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json',Prefer:'count=exact'}});
+  if(!response.ok){const text=await response.text().catch(()=>'');throw new Error(`SUPABASE_${response.status}:${text.slice(0,200)}`)}
+  const contentRange=String(response.headers.get('content-range')||''),totalToken=contentRange.split('/').at(-1),total=/^\d+$/.test(totalToken)?Number(totalToken):null;
+  return {data:await response.json(),total};
+}
+
 async function loadStoredTwdRates(){
   try{
     const rows=await supabaseFetch('/exchange_rates?select=currency,rate_to_twd,rate_date,source,fetched_at&order=fetched_at.desc&limit=30');
@@ -228,7 +237,34 @@ async function loadDatabaseImages(){
     }
   });
 }
+function databaseFastBrowseEligible({region=null,rarity=null,seriesId=null,sort='number-asc'}={}){
+  return !region&&!rarity&&!seriesId&&(sort==='number-asc'||sort==='number-desc');
+}
+async function loadDatabasePageRelations(table,select,cardIds,{legacySelect=null}={}){
+  if(!cardIds.length)return [];
+  const ids=cardIds.map(id=>`"${String(id).replaceAll('"','')}"`).join(','),query=new URLSearchParams({select,card_id:`in.(${ids})`,order:'id.asc',limit:'2000'});
+  try{return await supabaseFetch(`/${table}?${query}`)||[]}
+  catch(error){
+    if(!legacySelect)throw error;
+    query.set('select',legacySelect);
+    const rows=await supabaseFetch(`/${table}?${query}`)||[];
+    return table==='card_images'?rows.map(row=>({...row,imageRightsStatus:'not-provided'})):rows;
+  }
+}
+async function browseDatabasePageFast(game,options={}){
+  const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc';
+  const params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:`official_card_number.${direction},id.${direction}`,limit:String(take+1),offset:String(skip)}),page=await supabaseFetchPage(`/tcg_cards?${params}`),cards=(page.data||[]).slice(0,take),cardIds=cards.map(card=>card.id);
+  const fallbackPrintingSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required',legacyImageSelect='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
+  const [printingResult,imageResult]=await Promise.all([
+    loadDatabasePageRelations('tcg_printings',BROWSE_PRINTING_SELECT,cardIds,{legacySelect:fallbackPrintingSelect}).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),
+    loadDatabasePageRelations('card_images',BROWSE_IMAGE_SELECT,cardIds,{legacySelect:legacyImageSelect}).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error}))
+  ]),printingByCard=buildPrintingIndex(printingResult.rows),imageByCard=new Map();
+  for(const image of imageResult.rows){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
+  const data=cards.map(card=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=page.total??skip+data.length+(page.data?.length>take?1:0);
+  return {data,total,hasMore:skip+data.length<total,facets:null,facetStatus:'deferred',limit:take,offset:skip,errors:{printings:printingResult.error?.message||null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
+}
 async function browseDatabaseCards(game,options){
+  if(databaseFastBrowseEligible(options))return browseDatabasePageFast(game,options);
   const cards=await loadDatabaseBrowseRows(game),printingResult=await loadDatabasePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),imageResult=await loadDatabaseImages().then(rows=>({rows,status:'complete'})).catch(()=>({rows:[],status:'unknown'}));
   const selectedCardIds=new Set(cards.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedCardIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedCardIds.has(image.cardId));
   const printingByCard=buildPrintingIndex(printings),imageByCard=new Map();for(const image of images){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
