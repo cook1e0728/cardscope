@@ -26,6 +26,7 @@ const justTcgCache = new Map();
 const EBAY_MARKETPLACES = new Set(['EBAY_US','EBAY_CA','EBAY_GB','EBAY_DE','EBAY_FR','EBAY_IT','EBAY_ES','EBAY_AU']);
 const CATALOG_GAME_IDS = new Set(['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz']);
 const CATALOG_REGION_IDS = new Set(['JP','TW','US','CN','KR','ASIA']);
+const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com','asia-en.onepiece-cardgame.com']);
 // Faceted browsing reads the complete selected game before pagination so the
 // counts stay truthful. Reuse that snapshot across normal browsing sessions
 // instead of repeating the same database scan on every filter interaction.
@@ -40,6 +41,28 @@ let catalogHealthCache={data:null,expiresAt:0};
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
 const json = (res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(body));};
 let ebayToken={value:null,expiresAt:0};
+
+function onePieceImageTarget(value){
+  try{
+    const target=new URL(String(value||''));
+    if(target.protocol!=='https:'||!ONEPIECE_IMAGE_HOSTS.has(target.hostname))return null;
+    if(!target.pathname.startsWith('/images/cardlist/card/')||!/\.(?:png|jpe?g|webp)$/i.test(target.pathname))return null;
+    return target;
+  }catch{return null}
+}
+async function proxyOnePieceImage(res,value){
+  const target=onePieceImageTarget(value);
+  if(!target)return json(res,400,{error:'不支援的圖片來源'});
+  let response;
+  try{response=await nativeFetch(target,{redirect:'error',headers:{Accept:'image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(20000)})}
+  catch{return json(res,502,{error:'航海王官方圖片暫時無法讀取'})}
+  const contentType=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase(),length=Number(response.headers.get('content-length')||0);
+  if(!response.ok||!contentType.startsWith('image/')||(length&&length>5*1024*1024))return json(res,502,{error:'航海王官方圖片回應無效'});
+  const body=Buffer.from(await response.arrayBuffer());
+  if(body.length>5*1024*1024)return json(res,502,{error:'航海王官方圖片超過大小限制'});
+  res.writeHead(200,{'Content-Type':contentType,'Content-Length':String(body.length),'Cache-Control':'public, max-age=86400, stale-while-revalidate=604800','X-Content-Type-Options':'nosniff'});
+  res.end(body);
+}
 
 const providerStatus=()=>({
   justtcg:{enabled:false,capability:'已停用，不再作為搜尋或卡盒資料依賴'},
@@ -414,6 +437,7 @@ function median(nums){const s=[...nums].sort((a,b)=>a-b),m=Math.floor(s.length/2
 async function scrapeYuyutei(targetUrl){const response=await fetch(targetUrl,{headers:{'User-Agent':'Mozilla/5.0','Accept-Language':'ja,en-US;q=0.9'}});if(!response.ok)throw new Error(`FETCH_${response.status}`);const html=(await response.text()).replace(/\s+/g,' '),setTitle=html.match(/<h3 class="fw-bold py-3">\s*<span class="line1"><\/span>\s*([^<]+)<\/h3>/)?.[1]?.trim()||null,game=targetUrl.match(/\/buy\/([a-z0-9]+)\//i)?.[1]||'unknown',tokens=[];let m;const rarityRe=/<span class="py-2 d-inline-block px-2 me-2 text-white fw-bold">([^<]+)<\/span>\s*Card List/g;while((m=rarityRe.exec(html)))tokens.push({type:'rarity',index:m.index,value:m[1].trim()});const cardRe=/<div class="card-product position-relative mt-4[^"]*"/g;while((m=cardRe.exec(html)))tokens.push({type:'card',index:m.index});tokens.sort((a,b)=>a.index-b.index);const found=[];let rarity=null;for(let i=0;i<tokens.length;i++){const t=tokens[i];if(t.type==='rarity'){rarity=t.value;continue}const end=i+1<tokens.length?tokens[i+1].index:Math.min(html.length,t.index+3000),chunk=html.slice(t.index,end),ver=chunk.match(/value="([^"]+)" class="cart_ver"/)?.[1],cid=chunk.match(/value="([^"]+)" class="cart_cid"/)?.[1],number=chunk.match(/text-center my-2">([^<]+)<\/span>/)?.[1]?.trim()||null,name=chunk.match(/text-primary fw-bold">([^<]+)<\/h4>/)?.[1]?.trim()||null,price=chunk.match(/<strong class="d-block text-end[^"]*">\s*([\d,]+)\s*円/)?.[1];if(!ver||!cid||!price)continue;found.push({setCode:ver,cardCode:cid,number,name,rarity,price:Number(price.replace(/,/g,'')),cardUrl:`https://yuyu-tei.jp/buy/${game}/card/${ver}/${cid}`,imageUrl:`https://card.yuyu-tei.jp/${game}/100_140/${ver}/${cid}.jpg`})}return {game,setTitle,cards:found}}
 
 const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${req.headers.host}`);
+  if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog/image-status'&&req.method==='GET'){try{return json(res,200,{data:await yugiohImageStatus(supabaseFetch)})}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/admin/catalog/cache-images'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!imageCollectionAllowed('yugioh'))return json(res,409,{error:'來源尚未明確允許保存卡圖，圖片快取已暫停'});try{return json(res,200,{data:await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)})})}catch(e){return json(res,502,{error:e.message})}}

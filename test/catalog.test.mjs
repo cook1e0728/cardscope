@@ -47,6 +47,14 @@ test('public health and source policy endpoints are available without database s
   assert.equal(response.status,401);
 });
 
+test('One Piece image proxy rejects non-official hosts and frontend routes official card art through it',async()=>{
+  const rejected=await fetch(`http://127.0.0.1:${port}/api/images/onepiece?url=${encodeURIComponent('https://example.com/card.png')}`);
+  assert.equal(rejected.status,400);
+  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+  assert.match(html,/asia-tc\.onepiece-cardgame\.com/);
+  assert.match(html,/\/api\/images\/onepiece\?url=/);
+});
+
 test('coverage reports honest fallback totals without a database',async()=>{
   const {data}=await api('/api/catalog/coverage');
   assert.equal(data.source,'catalog.json');

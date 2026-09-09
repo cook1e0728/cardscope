@@ -37,6 +37,7 @@ function missingImageMarkup(message='圖片來源尚未收錄'){
 }
 
 function resilientImage(src,alt,message){
+  src=typeof displayImageUrl==='function'?displayImageUrl(src):src;
   if(!src)return missingImageMarkup(message);
   return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span>`;
 }
@@ -166,7 +167,7 @@ function collectImageSources(value){
 
 function cardImageSourceCandidates(card,selectedPrinting){
   const candidates=[];
-  const add=value=>collectImageSources(value).forEach(source=>{if(!candidates.includes(source))candidates.push(source)});
+  const add=value=>collectImageSources(value).forEach(source=>{const displaySource=typeof displayImageUrl==='function'?displayImageUrl(source):source;if(!candidates.includes(displaySource))candidates.push(displaySource)});
   // Keep the selected region/language first. The API may provide explicit high-resolution
   // fields on either the printing or its card_images record; use those when available.
   add(selectedPrinting?.metadata);
