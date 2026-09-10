@@ -32,11 +32,14 @@ const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com','asia-en.o
 // instead of repeating the same database scan on every filter interaction.
 const BROWSE_CACHE_MS = 5 * 60 * 1000;
 const BROWSE_PAGE_MAX = 100;
-const BROWSE_CARD_SELECT = 'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,source,providerId:provider_id';
-const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at,metadata';
+const BROWSE_CARD_SELECT = 'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,source,providerId:provider_id,createdAt:created_at,updatedAt:updated_at';
+const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at,metadata,createdAt:created_at,updatedAt:updated_at';
 const BROWSE_IMAGE_SELECT = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at';
 const browseCache=new Map();
 let catalogHealthCache={data:null,expiresAt:0};
+const catalogCoverageCache={data:null,expiresAt:0,promise:null};
+const TREND_CACHE_MS = 5 * 60 * 1000;
+const trendCache = {data:null,expiresAt:0,promise:null};
 
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
 const json = (res,status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(body));};
@@ -271,20 +274,91 @@ async function browseDatabaseCards(game,options){
   const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:printingResult.status==='complete'?'complete':'partial'});return {...result,errors:{printings:printingResult.error?.message||null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
 }
 
-async function loadCatalogCoverage(){
+function coverageMetric(covered,denominator,status='complete',details={}){
+  const safeCovered=Number.isFinite(Number(covered))?Number(covered):null,safeDenominator=Number.isFinite(Number(denominator))&&Number(denominator)>=0?Number(denominator):null;
+  const percent=safeCovered!==null&&safeDenominator!==null?(safeDenominator===0?100:Math.round(safeCovered/safeDenominator*10000)/100):null;
+  return {covered:safeCovered,denominator:safeDenominator,percent,status,...details};
+}
+function coverageIso(value){const time=Date.parse(String(value||''));return Number.isFinite(time)?new Date(time).toISOString():null}
+function coverageTimestamp(...groups){
+  const fallbackTimestamp=typeof groups.at(-1)==='string'?groups.pop():null,values=groups.flatMap(group=>Array.isArray(group)?group:[]).flatMap(row=>[row?.updatedAt,row?.fetchedAt]).map(coverageIso).filter(Boolean);
+  if(!values.length&&fallbackTimestamp){const fallback=coverageIso(fallbackTimestamp);if(fallback)values.push(fallback)}
+  values.sort();
+  return {latest:values.at(-1)||null,oldest:values[0]||null,status:values.length?'observed':'unknown',field:values.length?(fallbackTimestamp&&!groups.some(group=>Array.isArray(group)&&group.some(row=>row?.updatedAt||row?.fetchedAt))?'catalog.updatedAt':'updated_at/fetched_at'):'not-available'};
+}
+function coverageFreshness(timestamp){const time=Date.parse(String(timestamp||''));if(!Number.isFinite(time))return {status:'unknown',observedAt:null,ageHours:null};const ageHours=Math.max(0,Math.round((Date.now()-time)/3600000*10)/10);return {status:ageHours<=72?'fresh':'stale',observedAt:new Date(time).toISOString(),ageHours};}
+function coverageSources(...groups){return uniqueValues(groups.flatMap(group=>Array.isArray(group)?group:[]).flatMap(row=>[row?.source,row?.imageSource,row?.providerId,row?.provider]))}
+function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
+  const rows=Array.isArray(cards)?cards:[],cardIds=new Set(rows.map(card=>card?.id).filter(Boolean)),selectedPrintings=(printings||[]).filter(printing=>cardIds.has(printing?.cardId)),selectedImages=(images||[]).filter(image=>cardIds.has(image?.cardId)),printingByCard=buildPrintingIndex(selectedPrintings),imageByCard=new Map();
+  for(const image of selectedImages){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
+  const cardHasPrinting=card=>Boolean((printingByCard.get(card.id)||[]).length),cardHasImageUrl=card=>Boolean((imageByCard.get(card.id)||[]).some(image=>image?.imageUrl)||(printingByCard.get(card.id)||[]).some(printing=>printing?.imageUrl)||card?.imageUrl),cardHasUsableImage=card=>Boolean((imageByCard.get(card.id)||[]).some(browseHasUsableImage)||(printingByCard.get(card.id)||[]).some(browseHasUsableImage)||(card?.imageUrl&&imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt))),cardHasChineseName=card=>Boolean(String(card?.nameZh||'').trim()),cardHasRarity=card=>browseValues(card,printingByCard.get(card.id)||[],'rarity').length;
+  const cardsWithPrintings=rows.filter(cardHasPrinting).length,cardsWithImageUrls=rows.filter(cardHasImageUrl).length,displayableImages=rows.filter(cardHasUsableImage).length,chineseNames=rows.filter(cardHasChineseName).length,rarities=rows.filter(cardHasRarity).length,seriesIds=new Set(rows.flatMap(card=>[card?.seriesId,...(printingByCard.get(card.id)||[]).map(printing=>printing?.seriesId)]).filter(Boolean)),coveredSets=uniqueValues(rows.map(card=>card?.seriesId),selectedPrintings.map(printing=>printing?.seriesId||printing?.localSetCode)),timestamp=coverageTimestamp(rows,selectedPrintings,selectedImages,options.fallbackUpdatedAt),freshness=coverageFreshness(timestamp.latest),cardStatus=options.cardStatus||'complete',printingStatus=options.printingStatus||'complete',imageStatus=options.imageStatus||'complete',cardDenominator=cardStatus==='unknown'?null:rows.length,imageMetricStatus=imageStatus==='unknown'&&printingStatus==='unknown'?'unknown':imageStatus==='complete'?'complete':imageStatus,fields={
+    cards:coverageMetric(rows.length,null,cardStatus==='complete'?'observed-total':'unknown',{denominatorStatus:'unknown',note:'目前僅能確認資料庫觀測到的卡片列數；各 IP 官方完整總數尚未提供。'}),
+    images:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{urlRecords:selectedImages.length+selectedPrintings.filter(printing=>printing?.imageUrl).length,cardsWithImageUrls}),
+    chineseNames:coverageMetric(chineseNames,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.name_zh'}),
+    rarity:coverageMetric(rarities,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.rarity or tcg_printings.rarity'}),
+    printings:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:selectedPrintings.length}),
+    versions:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:selectedPrintings.length,note:'版本以 tcg_printings 的 region/language 列表示。'}),
+    sourceTimestamp:{value:timestamp.latest,oldest:timestamp.oldest,status:timestamp.status,field:timestamp.field}
+  },sources=coverageSources(rows,selectedPrintings,selectedImages),expectedCards=options.expectedCards??null;
+  return {cards:rows.length,displayableImages,chineseNames,rarities,cardsWithImageUrls,cardsWithSeries:rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length,totalPrintings:selectedPrintings.length,totalImages:selectedImages.length,totalSeries:seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 官方完整卡表總數，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
+}
+function buildFallbackCatalogCoverage(fallback,extra={}){
+  const games={};
+  for(const game of fallback.games||[]){
+    const rows=(fallback.cards||[]).filter(card=>card.game===game.id),printings=rows.flatMap(card=>{const list=Array.isArray(card.printings)&&card.printings.length?card.printings:[{cardId:card.id,region:card.region,language:card.language,localCardNumber:card.officialCardNumber,rarity:card.rarity,imageUrl:card.imageUrl,source:card.imageSource,sourceUrl:card.sourceUrl}];return list.map(printing=>({...printing,cardId:printing.cardId||card.id}))}),images=rows.flatMap(card=>{const list=Array.isArray(card.images)&&card.images.length?card.images:card.imageUrl?[{cardId:card.id,imageUrl:card.imageUrl,source:card.imageSource,sourceUrl:card.sourceUrl}]:[];return list.map(image=>({...image,cardId:image.cardId||card.id}))});
+    games[game.id]=buildCoverageGame(game.id,rows,printings,images,{cardStatus:'catalog-file',printingStatus:'catalog-file',imageStatus:'catalog-file',scopeKind:'fallback-catalog-file',sample:true,fallbackUpdatedAt:fallback.updatedAt,limitations:['這是隨版本控管的公開備援資料檔，不是各 IP 官方完整總數。']});
+  }
+  const coveredGames=Object.keys(games).filter(gameId=>games[gameId].cards>0),coveredSets=uniqueValues(Object.values(games).flatMap(game=>game.coveredSets||[])),freshness=coverageFreshness(fallback.updatedAt);
+  return {totalCards:(fallback.cards||[]).length,totalMatchingRecords:(fallback.cards||[]).length,games,coveredGames,coveredSets,totalSets:coveredSets.length,source:'catalog.json',updatedAt:fallback.updatedAt||null,expectedTotals:{value:null,status:'unknown',reason:'未提供各 IP 官方完整分母'},freshness,sample:true,complete:false,scope:{sample:true,complete:false,kind:'fallback-catalog-file',expectedTotal:null,expectedTotalStatus:'unknown',totalMatchingRecords:(fallback.cards||[]).length,coveredGames,coveredSets,totalSets:coveredSets.length,freshness,limitations:['資料庫未設定時使用公開備援資料檔；僅代表檔案內可觀測範圍。']},metricStatus:{cards:'catalog-file',printings:'catalog-file',images:'catalog-file',chineseNames:'catalog-file',rarities:'catalog-file',versions:'catalog-file',sourceTimestamp:fallback.updatedAt?'catalog-file':'unknown',expectedTotals:'unknown'},...extra};
+}
+async function loadCatalogCoverageUncached(){
   const fallback=await loadFallbackCatalog();
-  if(!supabaseConfigured())return {totalCards:fallback.cards.length,games:Object.fromEntries(fallback.games.map(g=>{const rows=fallback.cards.filter(c=>c.game===g.id);return [g.id,{cards:rows.length,displayableImages:rows.filter(c=>c.imageUrl).length,chineseNames:rows.filter(c=>c.nameZh).length,rarities:rows.filter(c=>c.rarity).length,expectedCards:null,completeness:'未核定'}]})),source:'catalog.json',updatedAt:fallback.updatedAt||null};
+  if(!supabaseConfigured())return buildFallbackCatalogCoverage(fallback);
   try{
     const [printingResult,imageResult,...cardGroups]=await Promise.all([
       loadDatabasePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
       loadDatabaseImages().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
-      ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows})))
-    ]),printingByCard=buildPrintingIndex(printingResult.rows),imageByCard=new Map();
-    for(const image of imageResult.rows){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
-    const games={};let totalCards=0;
-    for(const {gameId,rows} of cardGroups){totalCards+=rows.length;let displayableImages=0,chineseNames=0,rarities=0;for(const card of rows){const printings=printingByCard.get(card.id)||[],images=imageByCard.get(card.id)||[];if(images.some(browseHasUsableImage)||printings.some(browseHasUsableImage))displayableImages++;if(card.nameZh)chineseNames++;if(browseValues(card,printings,'rarity').length)rarities++}games[gameId]={cards:rows.length,displayableImages,chineseNames,rarities,expectedCards:null,completeness:'未核定'}}
-    return {totalCards,games,source:'supabase-current-rows',updatedAt:new Date().toISOString(),metricStatus:{cards:'complete',printings:printingResult.status,images:imageResult.status,expectedTotals:'unknown'},errors:{printings:printingResult.error||null,images:imageResult.error||null}};
-  }catch(error){const legacy=await loadCatalogCoverageLegacy();return {...legacy,source:`${legacy.source}-fallback`,metricStatus:{cards:'unknown',printings:'unknown',images:'unknown',expectedTotals:'unknown'},fallbackReason:error.message}}
+      ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows,status:'complete'})).catch(error=>({gameId,rows:[],status:'unknown',error:error.message})))
+    ]),games={},allTimestamps=[];
+    for(const group of cardGroups){
+      const selectedIds=new Set(group.rows.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedIds.has(image.cardId)),entry=buildCoverageGame(group.gameId,group.rows,printings,images,{cardStatus:group.status,printingStatus:printingResult.status,imageStatus:imageResult.status});
+      games[group.gameId]=entry;allTimestamps.push(entry.sourceTimestamp);
+    }
+    const totalCards=Object.values(games).reduce((sum,game)=>sum+game.cards,0),knownTimestamps=allTimestamps.map(coverageIso).filter(Boolean).sort(),coveredGames=Object.keys(games).filter(gameId=>games[gameId].cards>0),coveredSets=uniqueValues(Object.values(games).flatMap(game=>game.coveredSets||[])),freshness=coverageFreshness(knownTimestamps.at(-1)),cardErrors=Object.fromEntries(cardGroups.filter(group=>group.error).map(group=>[group.gameId,group.error]));
+    const complete=cardGroups.every(group=>group.status==='complete')&&printingResult.status==='complete'&&imageResult.status==='complete',expectedTotals={value:null,status:'unknown',reason:'資料來源沒有提供可驗證的各 IP 官方完整卡數'};
+    return {totalCards,totalMatchingRecords:totalCards,games,coveredGames,coveredSets,totalSets:coveredSets.length,source:'supabase-current-rows',updatedAt:knownTimestamps.at(-1)||new Date().toISOString(),expectedTotals, freshness,sample:false,complete,scope:{sample:false,complete,kind:'supabase-current-rows',expectedTotal:null,expectedTotalStatus:'unknown',totalMatchingRecords:totalCards,coveredGames,coveredSets,totalSets:coveredSets.length,freshness,limitations:['此報告完整涵蓋目前 Supabase 查詢結果，但不把目前列數當成各 IP 官方完整卡表分母。','中文名、稀有度、版本與圖片比例的分母是目前觀測到的卡片列數。']},metricStatus:{cards:cardGroups.every(group=>group.status==='complete')?'complete':'partial',printings:printingResult.status,images:imageResult.status,chineseNames:cardGroups.every(group=>group.status==='complete')?'complete':'unknown',rarities:cardGroups.every(group=>group.status==='complete')?'complete':'unknown',versions:printingResult.status,sourceTimestamp:knownTimestamps.length?'observed':'unknown',expectedTotals:'unknown'},errors:{cards:cardErrors,printings:printingResult.error||null,images:imageResult.error||null}};
+  }catch(error){return buildFallbackCatalogCoverage(fallback,{source:'catalog.json-fallback',fallbackReason:error.message,scope:{sample:false,complete:false,kind:'fallback-after-database-error',expectedTotal:null,expectedTotalStatus:'unknown',limitations:['Supabase 查詢失敗，暫以公開備援資料檔回應；不能視為資料庫完整報告。']},metricStatus:{cards:'unknown',printings:'unknown',images:'unknown',chineseNames:'unknown',rarities:'unknown',versions:'unknown',sourceTimestamp:'unknown',expectedTotals:'unknown'}})}
+}
+async function loadCatalogCoverage(){
+  if(catalogCoverageCache.data&&catalogCoverageCache.expiresAt>Date.now())return catalogCoverageCache.data;
+  if(catalogCoverageCache.promise)return catalogCoverageCache.promise;
+  catalogCoverageCache.promise=loadCatalogCoverageUncached().then(data=>{catalogCoverageCache.data=data;catalogCoverageCache.expiresAt=Date.now()+BROWSE_CACHE_MS;return data}).finally(()=>{catalogCoverageCache.promise=null});
+  return catalogCoverageCache.promise;
+}
+function trendObservationWindow(rows=[]){
+  const values=rows.map(row=>coverageIso(row?.updatedAt)).filter(Boolean).sort();
+  return {latest:values.at(-1)||null,oldest:values[0]||null,status:values.length?'observed':'unknown',field:values.length?'scraped_at':'not-available'};
+}
+function trendRecordKey(row){
+  const values=[row?.game,row?.setCode,row?.cardCode||row?.cardNumber,row?.cardName].map(value=>String(value||'').trim().toLocaleLowerCase());
+  return values.some(Boolean)?values.join('|'):null;
+}
+function trendMeta(snapshot){
+  const rowsScanned=Number(snapshot?.rowsScanned)||0,validRows=Number(snapshot?.validRows)||0,uniqueCards=Number(snapshot?.uniqueCards)||0,window=snapshot?.observationWindow||trendObservationWindow([]),complete=snapshot?.status==='complete',coveredGames=snapshot?.coveredGames||[],coveredSets=snapshot?.coveredSets||[],freshness=coverageFreshness(window.latest),limitations=['資料只涵蓋遊々亭日版買取價，不是全市場掛牌、成交或玩家熱度資料。','漲幅以同筆觀測中的 previous_price 與 price 計算；缺少其中一項的列不列入排名。'];
+  return {source:'yuyutei-buyback',label:'遊々亭買取價漲勢',formula:'(price - previous_price) / previous_price',priceType:'buyback',market:'JP',totalMatchingRecords:rowsScanned,coveredGames,coveredSets,observationWindow:window,freshness,sample:false,complete,scope:{source:'yuyutei',market:'JP',priceType:'buyback',filter:'source=yuyutei AND previous_price IS NOT NULL AND price > previous_price',rowsScanned,totalMatchingRecords:rowsScanned,rowsWithValidChange:validRows,uniqueCards,coveredGames,coveredSets,observationWindow:window,freshness,sample:false,complete,coverage:'source-only',limitations},completeness:{status:complete?'complete':'unavailable',sample:false,rowsScanned,totalMatchingRecords:rowsScanned,denominatorStatus:'source-filtered-observations-only',coveredGames,coveredSets,freshness},limitations,warning:'只反映遊々亭日版買取調價，不代表全市場熱度、成交量、掛牌價或成交價。'};
+}
+async function loadTrendSnapshot(){
+  if(trendCache.data&&trendCache.expiresAt>Date.now())return trendCache.data;
+  if(trendCache.promise)return trendCache.promise;
+  const promise=Promise.resolve().then(async()=>{
+    const params=new URLSearchParams({select:'game,setCode:set_code,setName:set_name,cardCode:card_code,cardNumber:card_number,rarity,cardName:card_name,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,updatedAt:scraped_at,source',source:'eq.yuyutei',previous_price:'not.is.null',order:'scraped_at.desc'}),rows=await supabaseFetchAll(`/jp_buyback_prices?${params}`,1000),valid=(rows||[]).filter(row=>Number(row.previousPrice)>0&&Number.isFinite(Number(row.price))&&Number(row.price)>Number(row.previousPrice)),byCard=new Map();
+    for(const row of valid){const key=trendRecordKey(row);if(!key)continue;const existing=byCard.get(key),rowTime=Date.parse(String(row.updatedAt||'')),existingTime=Date.parse(String(existing?.updatedAt||''));if(!existing||(!Number.isFinite(existingTime)&&Number.isFinite(rowTime))||rowTime>existingTime)byCard.set(key,row)}
+    const data=[...byCard.values()].map(row=>({...row,price:Number(row.price),previousPrice:Number(row.previousPrice),changePercent:Math.round((Number(row.price)-Number(row.previousPrice))/Number(row.previousPrice)*10000)/100,priceType:'buyback'})).sort((a,b)=>b.changePercent-a.changePercent||String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+    return {status:'complete',data,rowsScanned:(rows||[]).length,validRows:valid.length,uniqueCards:data.length,coveredGames:uniqueValues((rows||[]).map(row=>row.game)),coveredSets:uniqueValues((rows||[]).map(row=>row.setCode||row.setName)),observationWindow:trendObservationWindow(rows||[])};
+  }).then(data=>{trendCache.data=data;trendCache.expiresAt=Date.now()+TREND_CACHE_MS;return data}).finally(()=>{trendCache.promise=null});
+  trendCache.promise=promise;
+  return promise;
 }
 async function loadCatalogHealth(){
   if(catalogHealthCache.data&&catalogHealthCache.expiresAt>Date.now())return catalogHealthCache.data;
@@ -482,7 +556,11 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   if(url.pathname==='/api/catalog/health'&&req.method==='GET'){return json(res,200,{data:await loadCatalogHealth()})}
   if(url.pathname==='/api/catalog/sources'&&req.method==='GET'){return json(res,200,{data:publicSourcePolicies(),meta:sourcePolicySummary()})}
   if(url.pathname==='/api/admin/catalog/health'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；請使用 Authorization Bearer 或 x-scrape-token 標頭'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{return json(res,200,{data:await loadAdminCatalogHealth()})}catch(e){return json(res,502,{error:e.message})}}
-  if(url.pathname==='/api/trends'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'沒有資料庫時不建立示範排名'}});try{const limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||12,1),50),rows=await supabaseFetch('/jp_buyback_prices?select=game,setCode:set_code,setName:set_name,cardCode:card_code,cardNumber:card_number,rarity,cardName:card_name,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,updatedAt:scraped_at&source=eq.yuyutei&previous_price=not.is.null&limit=500'),data=(rows||[]).filter(r=>Number(r.previousPrice)>0&&Number(r.price)>Number(r.previousPrice)).map(r=>({...r,price:Number(r.price),previousPrice:Number(r.previousPrice),changePercent:Math.round((Number(r.price)-Number(r.previousPrice))/Number(r.previousPrice)*10000)/100,priceType:'buyback'})).sort((a,b)=>b.changePercent-a.changePercent||String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).slice(0,limit);return json(res,200,{data,meta:{source:'yuyutei-buyback',label:'遊々亭買取價漲勢',formula:'(price - previous_price) / previous_price',warning:'只反映遊々亭日版買取調價，不代表全市場熱度或成交量。'}})}catch(e){return json(res,502,{error:e.message})}}
+  if(url.pathname==='/api/trends'&&req.method==='GET'){
+    const requestedLimit=Number(url.searchParams.get('limit')),limit=Math.min(Math.max(Number.isFinite(requestedLimit)&&requestedLimit>0?requestedLimit:12,1),50);
+    if(!supabaseConfigured())return json(res,200,{data:[],meta:trendMeta({status:'unavailable',rowsScanned:0,validRows:0,uniqueCards:0,observationWindow:trendObservationWindow([])})});
+    try{const snapshot=await loadTrendSnapshot();return json(res,200,{data:snapshot.data.slice(0,limit),meta:trendMeta(snapshot)})}catch(e){return json(res,502,{error:e.message,meta:trendMeta({status:'unavailable',rowsScanned:0,validRows:0,uniqueCards:0,observationWindow:trendObservationWindow([])})})}
+  }
   if(url.pathname==='/api/buyback-prices'&&req.method==='GET'){
     if(!supabaseConfigured())return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'沒有資料庫時不建立示範價格'}});
     const requestedGame=(url.searchParams.get('game')||'').trim().toLowerCase(),providerGame={pokemon:'poc'}[requestedGame];
