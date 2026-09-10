@@ -52,3 +52,15 @@ TWD 換算由中央 FX 層處理，provider 不自行寫死匯率。
 ## Card identity
 
 Provider 資料應依序用 provider stable ID、遊戲 + 系列 + 卡號 + 語言／版本對到 `card_identities`。名稱／aliases 只作 fallback，避免同名卡與復刻版本誤配。
+
+## 增量補全流程
+
+下一階段的補全模組先產生 dry-run 計畫，不直接改正式卡片資料：
+
+- `pokemon-gap-sync.mjs`：只以 provider ID 或精確系列代碼＋卡號補名稱、稀有度與印刷版本圖片；歧義資料留待審核。
+- `yugioh-zh-enrichment.mjs`：只接受已核准、帶穩定識別碼的繁中來源；不以翻譯或相似卡名自動配對。
+- `price-history.mjs`：建立可重複執行的價格觀測計畫；不同來源、價格類型、幣別與卡片身份不混算。
+
+候選資料寫入私有 `catalog_enrichment_candidates`，確認來源政策與精確配對後才晉升正式表。價格則以 append-only `price_observations` 保存；內容未變時以 checksum 跳過，至少兩個相同比較維度的觀測點才計算漲跌。
+
+目前遊々亭仍是 `permission-pending`，因此不會排程重新抓取；既有驗證資料也不代表完整市場。圖片 URL 與公開可存取不等同授權，顯示狀態仍依來源政策判定。

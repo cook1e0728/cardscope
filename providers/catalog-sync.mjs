@@ -71,12 +71,25 @@ async function providerText(url,{timeout=60000}={}){
   for(let attempt=1;attempt<=3;attempt++){const response=await fetch(url,{headers:{Accept:'text/html','Accept-Language':'en','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(timeout)});if(response.ok)return response.text();if(attempt===3||![429,500,502,503,504].includes(response.status))throw new Error(`${new URL(url).hostname}_${response.status}`);await new Promise(resolve=>setTimeout(resolve,attempt*750))}
 }
 
+export function groupRowsByShape(rows=[]){
+  const groups=new Map();
+  for(const row of rows){
+    if(!row||typeof row!=='object'||Array.isArray(row))continue;
+    const signature=Object.keys(row).sort().join('\u001f'),group=groups.get(signature)||[];
+    group.push(row);groups.set(signature,group);
+  }
+  return [...groups.values()];
+}
+
 async function upsert(db,path,rows,onConflict='id'){
   rows=(rows||[]).filter(Boolean);
   if(path==='/tcg_cards')rows=rows.map(protectNullEnrichment);
   if(path==='/tcg_products'||path==='/tcg_series')rows=rows.map(row=>{if(row.name_zh)return row;const nameZh=localizeProductName(row.game_id,row.name_en,row.product_type);return {...row,name_zh:nameZh,metadata:{...(row.metadata||{}),translationStatus:'unofficial',translationOriginal:row.name_en}}});
   const conflictColumns=onConflict.split(','),deduped=[...new Map(rows.map(row=>[conflictColumns.map(column=>String(row[column]??'')).join('\u001f'),row])).values()];let written=0;
-  for(const batch of chunks(deduped)){
+  // PostgREST rejects a bulk JSON payload when objects do not expose the same
+  // keys (PGRST102). Grouping by shape also lets protected null enrichments
+  // remain omitted instead of turning them into destructive null updates.
+  for(const sameShapeRows of groupRowsByShape(deduped))for(const batch of chunks(sameShapeRows)){
     await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch)});
     written+=batch.length;
   }
