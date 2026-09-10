@@ -96,6 +96,8 @@ async function upsert(db,path,rows,onConflict='id'){
   return written;
 }
 async function upsertCardEnrichment(db,{names=[],rarities=[]}={}){
+  names=(names||[]).filter(Boolean);
+  rarities=(rarities||[]).filter(Boolean);
   let written=0;
   if(names.length){
     try{written+=await upsert(db,'/tcg_card_names',names,'card_id,locale,name,name_type')}
@@ -216,7 +218,7 @@ async function syncYugioh(db){
           printings.push({card_id:baseId,series_id:seriesByName.get(descriptor.setName)||null,region:'US',language:'en-US',local_set_code:descriptor.setName,local_card_number:descriptor.setCode,rarity:descriptor.rarity,rarity_code:descriptor.rarity,rarity_label:descriptor.rarity,image_url:null,source_url:`https://db.ygoprodeck.com/card/?search=${encodeURIComponent(c.name)}`,release_date:null,source:provider,provider_id:providerId,image_rehost_required:true,data_status:descriptor.rarity?'verified':'incomplete',source_locale:'en-US',metadata:{providerImageUrl:descriptor.imageUrl||null,imageId:descriptor.imageId||null,setPriceUsd:descriptor.set.set_price||null,rawRarity:descriptor.rarity,variantKey:variantToken},updated_at:new Date().toISOString()});
         }
       }
-      stats.written+=await upsert(db,'/tcg_cards',cardRows);stats.written+=await upsert(db,'/tcg_printings',printings,'source,provider_id');
+      stats.written+=await upsert(db,'/tcg_cards',cardRows);stats.written+=await upsert(db,'/tcg_printings',printings,'card_id,region,language,local_set_code,local_card_number');
     }
     stats.written+=await upsertCardEnrichment(db,{names:nameRows,rarities:rarityRows});stats.metadata={sets:series.length,cards:cards.length,imagePolicy:'rehost-required',enrichment:{names:nameRows.length,rarities:rarityRows.length}};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
