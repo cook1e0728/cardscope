@@ -5,6 +5,16 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
+      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "RRR", "RR", "Rare Holo", "R", "U", "C"],
+      "canonicalLabels": {"Rare Holo": "Rare Holo"},
+      "aliases": {
+        "UR": ["Ultra Rare"], "HR": ["Hyper Rare"],
+        "SAR": ["Special Art Rare", "Special Illustration Rare"],
+        "SSR": ["Shiny Super Rare", "Shiny Ultra Rare"], "SR": ["Super Rare"],
+        "S": ["Shiny Rare"], "AR": ["Art Rare", "Illustration Rare"],
+        "CHR": ["Character Rare"], "RRR": ["Triple Rare"], "RR": ["Double Rare"],
+        "R": ["Rare"], "U": ["Uncommon"], "C": ["Common"]
+      },
       "highToLow": [
         ["MUR"],
         ["BWR"],
@@ -26,9 +36,17 @@
     },
     "onepiece": {
       "sourceUrl": "https://asia-en.onepiece-cardgame.com/cardlist/",
+      "canonicalCodes": ["TR", "SP", "SEC", "SR", "R", "L", "UC", "C", "P", "DON!!"],
+      "canonicalLabels": {"SP": "SP 卡"},
+      "aliases": {
+        "TR": ["Treasure Rare"], "SP": ["SP CARD", "SP卡", "Special Card"],
+        "SEC": ["Secret Rare"], "SR": ["Super Rare"], "R": ["Rare"],
+        "L": ["Leader"], "UC": ["Uncommon"], "C": ["Common"],
+        "P": ["Promo"], "DON!!": ["DON"]
+      },
       "highToLow": [
         ["TR", "Treasure Rare"],
-        ["SP", "SP CARD", "Special Card"],
+        ["SP", "SP CARD", "SP卡", "Special Card"],
         ["SEC", "Secret Rare"],
         ["SR", "Super Rare"],
         ["R", "Rare"],
@@ -41,6 +59,13 @@
     },
     "yugioh": {
       "sourceUrl": "https://www.yugioh-card.com/en/about/new-to-ygo/",
+      "canonicalCodes": ["QCSR", "Starlight Rare", "Ghost Rare", "CR", "PSR", "Ultimate Rare", "Secret Rare", "Gold Rare", "Ultra Rare", "Super Rare", "Rare", "Common"],
+      "canonicalLabels": {"QCSR": "Quarter Century Secret Rare", "CR": "Collector's Rare", "PSR": "Prismatic Secret Rare", "Gold Rare": "Gold Rare"},
+      "aliases": {
+        "QCSR": ["Quarter Century Secret Rare", "Quarter Century Rare"],
+        "CR": ["Collector's Rare", "Collectors Rare"],
+        "PSR": ["Prismatic Secret Rare"]
+      },
       "highToLow": [
         ["Quarter Century Secret Rare", "Quarter Century Rare", "QCSR"],
         ["Starlight Rare"],
@@ -58,6 +83,7 @@
     },
     "weiss-schwarz": {
       "sourceUrl": "https://ws-tcg.com/cardlist/",
+      "canonicalCodes": ["SEC+", "SEC", "SSP", "SP", "OFR", "RRR", "SR", "RR", "R", "U", "C", "CR", "CC", "PR"],
       "highToLow": [
         ["SEC+"],
         ["SEC"],
@@ -77,6 +103,8 @@
     },
     "haikyuu": {
       "sourceUrl": "https://www.takaratomy.co.jp/products/haikyuvobacabreak/card/",
+      "canonicalCodes": ["SEC", "SP", "UR", "SSR", "SR", "R", "U", "C", "PR"],
+      "aliases": {"PR": ["Promo"]},
       "highToLow": [
         ["SEC"],
         ["SP"],

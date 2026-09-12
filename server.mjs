@@ -170,8 +170,28 @@ function normalizeBrowseRarity(value){const rarity=String(value||'').trim();retu
 function normalizeBrowseSort(value){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc','price-asc','price-desc']).has(sort)?sort:'number-asc'}
 function browseToken(value){return normalizeSearch(value).replace(/[^\p{L}\p{N}]/gu,'')}
 function rarityRankingToken(value){return String(value||'').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g,'').replace(/[^\p{L}\p{N}+]/gu,'')}
-const rarityRankIndex=new Map(Object.entries(rarityRankings.systems||{}).map(([game,definition])=>[game,new Map((definition.highToLow||[]).flatMap((labels,index)=>(labels||[]).map(label=>[rarityRankingToken(label),index])))]));
-function browseRarityRank(game,value){const rank=rarityRankIndex.get(game)?.get(rarityRankingToken(value));return Number.isInteger(rank)?rank:Number.MAX_SAFE_INTEGER}
+function rarityDefinition(game){return rarityRankings.systems?.[game]||null}
+function rarityCanonicalCode(game,value){
+  const raw=String(value??'').trim();
+  if(!raw)return null;
+  const definition=rarityDefinition(game),rawToken=rarityRankingToken(raw);
+  if(!definition)return raw;
+  for(const [code,aliases] of Object.entries(definition.aliases||{})){
+    if([code,...(Array.isArray(aliases)?aliases:[])].some(label=>rarityRankingToken(label)===rawToken))return code;
+  }
+  const canonical=(definition.canonicalCodes||[]).find(code=>rarityRankingToken(code)===rawToken);
+  return canonical||raw;
+}
+function rarityCanonicalToken(game,value){return rarityRankingToken(rarityCanonicalCode(game,value))}
+function rarityDisplayLabel(game,value){
+  const code=rarityCanonicalCode(game,value),definition=rarityDefinition(game);
+  return definition?.canonicalLabels?.[code]||code||String(value??'').trim();
+}
+const rarityRankIndex=new Map(Object.entries(rarityRankings.systems||{}).map(([game,definition])=>[game,new Map((definition.highToLow||[]).flatMap((labels,index)=>{
+  const code=definition.canonicalCodes?.[index]||labels?.[0];
+  return [...(labels||[]),code].filter(Boolean).map(label=>[rarityRankingToken(label),index]);
+}))]));
+function browseRarityRank(game,value){const canonical=rarityCanonicalCode(game,value),rank=rarityRankIndex.get(game)?.get(rarityRankingToken(canonical));return Number.isInteger(rank)?rank:Number.MAX_SAFE_INTEGER}
 function compareBrowseRarity(a,b,direction='desc'){
   const ar=browseRarityRank(a.game,browseValues(a,a.printings,'rarity')[0]),br=browseRarityRank(b.game,browseValues(b,b.printings,'rarity')[0]);
   if(ar===Number.MAX_SAFE_INTEGER||br===Number.MAX_SAFE_INTEGER){if(ar!==br)return ar===Number.MAX_SAFE_INTEGER?1:-1}
@@ -180,7 +200,7 @@ function compareBrowseRarity(a,b,direction='desc'){
 }
 function browseValues(card,printings,key){
   const values=[];
-  if(key==='rarity')values.push(card?.rarity,...(printings||[]).flatMap(p=>[p.rarity,p.rarityCode,p.rarityLabel]));
+  if(key==='rarity')values.push(rarityCanonicalCode(card?.game,card?.rarity),...(printings||[]).flatMap(p=>[p.rarity,p.rarityCode,p.rarityLabel]).map(value=>rarityCanonicalCode(card?.game,value)));
   if(key==='region')values.push(card?.region,...(printings||[]).map(p=>p.region));
   if(key==='language')values.push(card?.language,...(printings||[]).map(p=>p.language));
   return uniqueValues(values);
@@ -207,16 +227,35 @@ function browseCompare(a,b,sort){
   return number();
 }
 function buildBrowseFacets(rows,printingByCard){
-  const facets={rarity:{},region:{},language:{}};
-  for(const card of rows){const printings=printingByCard.get(card.id)||[];for(const key of Object.keys(facets)){const values=browseValues(card,printings,key);if(!values.length)values.push('unknown');for(const value of values)facets[key][value]=(facets[key][value]||0)+1}}
-  return facets;
+  const facets={rarity:{},region:{},language:{}},rarityLabels={};
+  // A canonical card may have several physical rows/printings. Count each
+  // facet at most once per canonical identity while retaining every rarity
+  // represented by that identity.
+  const grouped=new Map();
+  for(const card of rows){
+    const identity=String(card?.canonicalId||card?.id||'');
+    if(!identity)continue;
+    const current=grouped.get(identity)||{cards:[]};
+    current.cards.push(card);
+    grouped.set(identity,current);
+  }
+  for(const {cards} of grouped.values())for(const key of Object.keys(facets)){
+    const values=new Set(cards.flatMap(card=>browseValues(card,printingByCard.get(card.id)||[],key)));
+    if(!values.size)values.add('unknown');
+    for(const value of new Set(values)){
+      facets[key][value]=(facets[key][value]||0)+1;
+      if(key==='rarity'&&value!=='unknown')rarityLabels[value]=rarityDisplayLabel(cards[0]?.game,value);
+    }
+  }
+  return {...facets,rarityLabels};
 }
 function buildBrowsePage(rows,{region=null,rarity=null,seriesId=null,sort='number-asc',limit=60,offset=0,printingByCard=new Map(),imageByCard=new Map(),facetStatus='complete'}={}){
-  const rarityToken=rarity?browseToken(rarity):null,regionToken=region?String(region).toUpperCase():null;
-  const matching=rows.filter(card=>{const printings=printingByCard.get(card.id)||[];if(seriesId&&card.seriesId!==seriesId&&!printings.some(printing=>printing.seriesId===seriesId))return false;if(regionToken&&!browseValues(card,printings,'region').some(value=>String(value).toUpperCase()===regionToken))return false;if(rarityToken&&!browseValues(card,printings,'rarity').some(value=>browseToken(value)===rarityToken))return false;return true}).map(card=>hydrateBrowseCard(card,printingByCard,imageByCard));
+  const regionToken=region?String(region).toUpperCase():null;
+  const baseMatching=rows.filter(card=>{const printings=printingByCard.get(card.id)||[];if(seriesId&&card.seriesId!==seriesId&&!printings.some(printing=>printing.seriesId===seriesId))return false;if(regionToken&&!browseValues(card,printings,'region').some(value=>String(value).toUpperCase()===regionToken))return false;return true});
+  const matching=baseMatching.filter(card=>{const printings=printingByCard.get(card.id)||[];const cardRarityToken=rarity?rarityCanonicalToken(card?.game,rarity):null;return !cardRarityToken||browseValues(card,printings,'rarity').some(value=>rarityCanonicalToken(card?.game,value)===cardRarityToken)}).map(card=>hydrateBrowseCard(card,printingByCard,imageByCard));
   matching.sort((a,b)=>browseCompare(a,b,sort));
   const take=Math.min(Math.max(Number(limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(offset)||0,0),page=matching.slice(skip,skip+take);
-  return {data:page,total:matching.length,hasMore:skip+page.length<matching.length,facets:buildBrowseFacets(matching,printingByCard),facetStatus,limit:take,offset:skip};
+  return {data:page,total:matching.length,hasMore:skip+page.length<matching.length,facets:buildBrowseFacets(baseMatching,printingByCard),facetStatus,limit:take,offset:skip};
 }
 async function loadDatabaseBrowseRows(game){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,'');
@@ -606,5 +645,9 @@ server.listen(port,()=>{
   console.log(`CardScope is running at http://localhost:${port}`);
   if(process.env.CATALOG_SYNC_ON_START!=='false'&&supabaseConfigured())setTimeout(async()=>{try{const maxAgeHours=Math.max(1,Number(process.env.CATALOG_SYNC_MAX_AGE_HOURS)||72),needed=await catalogProvidersNeedingSync(supabaseFetch,maxAgeHours),providers=filterAllowedCatalogProviders(needed),blocked=needed.filter(provider=>!providers.includes(provider));if(blocked.length)console.warn('source policy blocked scheduled catalog sync',blocked.join(','));if(providers.length){console.log('starting scheduled catalog sync',providers.join(','));const result=await syncCatalog(supabaseFetch,{providers});console.log('scheduled catalog sync complete',JSON.stringify(result))}const cacheSetting=process.env.CARD_IMAGE_CACHE_ON_START,shouldCacheImages=(cacheSetting==='true'||(cacheSetting!=='false'&&providers.includes('yugioh')))&&imageCollectionAllowed('yugioh');if(shouldCacheImages){console.log('starting card image cache');const images=await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)});console.log('card image cache complete',JSON.stringify(images))}}catch(error){console.error('scheduled catalog/image sync failed',error.message)}},3000);
 });
+
+// Keep the pure browse helpers available to contract tests and maintenance
+// tooling without changing the public HTTP surface.
+export { buildBrowseFacets, buildBrowsePage, browseValues, rarityCanonicalCode, rarityDisplayLabel, server };
 
 
