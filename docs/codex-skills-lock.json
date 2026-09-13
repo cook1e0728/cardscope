@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-09-13",
+  "source": {
+    "repository": "https://github.com/openai/skills",
+    "revision": "49f948faa9258a0c61caceaf225e179651397431"
+  },
+  "skills": [
+    {
+      "name": "playwright",
+      "purpose": "Desktop and mobile browser acceptance tests"
+    },
+    {
+      "name": "render-deploy",
+      "purpose": "Render deployment and health verification"
+    },
+    {
+      "name": "security-best-practices",
+      "purpose": "Public API, secret handling, and admin endpoint review"
+    }
+  ],
+  "policy": {
+    "installOnlyWhenNeeded": true,
+    "requireInstructionReview": true,
+    "allowUnreviewedThirdPartySkills": false,
+    "restartCodexAfterInstall": true
+  }
+}

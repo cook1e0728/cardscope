@@ -2,6 +2,12 @@
 
 CardScope 是卡牌市場比價原型，目前後端為 Node.js `server.mjs`，前端為單頁 `index.html`。
 
+## 專案執行文件
+
+- [產品、資料與 UX 主方案](docs/PRODUCT_PLAN.md)
+- [桌電／筆電同步與接續作業](docs/CROSS_DEVICE_SETUP.md)
+- [官方 Codex skills 鎖定清單](docs/codex-skills-lock.json)
+
 ## 目前資料來源
 
 - **JustTCG**：既有 API adapter 保留，目前不作為首頁搜尋或卡盒資料依賴。

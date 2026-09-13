@@ -1,5 +1,13 @@
 # Luna-first Engineering Rules
 
+## CardScope source of truth
+
+Before substantial CardScope work, read `docs/PRODUCT_PLAN.md` and follow its
+phase order, source policy, data priority, UX rules, and release gates. Use
+`docs/CROSS_DEVICE_SETUP.md` when preparing a new desktop or laptop. Do not
+silently replace those decisions with data copied from a marketplace, social
+site, or image search result.
+
 Use GPT-5.6 Luna Max as the primary model for normal coding, analysis, testing, review, and task orchestration. Sol is an on-demand advisor, not the default supervisor.
 
 ## Automatic routing
