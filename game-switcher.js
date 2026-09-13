@@ -77,20 +77,37 @@
   const style=document.createElement('style');
   style.textContent=`.game-switch{border:2px solid #111;background:#fff;border-radius:12px;padding:8px 12px;font-weight:850;cursor:pointer;white-space:nowrap}.game-switch:after{content:'⌄';margin-left:9px}.game-picker{position:fixed;inset:0;background:#1119;z-index:20;display:none;padding:20px}.game-picker.open{display:grid;place-items:center}.game-picker-box{background:#fff;border-radius:22px;width:min(860px,100%);max-height:88vh;overflow:auto;padding:24px}.game-picker-head{display:flex;justify-content:space-between;align-items:center}.game-picker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}.game-pick{border:2px solid #e5e5e5;background:#fff;border-radius:14px;padding:10px;text-align:left;cursor:pointer;display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center}.game-pick:hover,.game-pick.active{border-color:#111;background:#fffbe0}.game-pick-art{height:72px;border-radius:10px;background:linear-gradient(135deg,#ffe76b,#71d9d0);overflow:hidden;display:grid;place-items:center}.game-pick-art img{width:100%;height:100%;object-fit:contain}.game-pick b{display:block;font-size:16px}.game-pick small{color:#777}.game-pick .game-work{display:block;margin-top:4px;color:#555;font-size:12px}.game-lang{display:inline-block;margin-top:7px;background:#111;color:#fff;border-radius:5px;padding:2px 6px;font-size:11px}.game-picker-note{margin:0;color:#777;font-size:13px}@media(max-width:760px){.game-switch{order:initial;margin-left:0;max-width:min(45vw,170px);min-width:0;overflow:hidden;text-overflow:ellipsis}.game-picker{padding:8px;align-items:end}.game-picker-box{width:100%;max-height:calc(100dvh - 16px);border-radius:18px;padding:18px 14px calc(18px + env(safe-area-inset-bottom))}.game-picker-head{align-items:flex-start;gap:8px}.game-picker-head>div{min-width:0}.game-picker-note{overflow-wrap:anywhere}.game-picker-grid{grid-template-columns:1fr}.game-pick{grid-template-columns:64px minmax(0,1fr);gap:9px;padding:8px}.game-pick-art{height:54px}.game-pick b,.game-pick small,.game-work{overflow-wrap:anywhere}}`;
   document.head.append(style);
+  const accessibilityStyle=document.createElement('style');
+  accessibilityStyle.textContent='.game-picker .close{min-width:44px;min-height:44px}.game-pick:focus-visible,.game-switch:focus-visible{outline:3px solid var(--y);outline-offset:3px}.game-pick{min-height:64px}';
+  document.head.append(accessibilityStyle);
 
   const brand=document.querySelector('.brand');
   if(!brand)return;
   const switchButton=document.createElement('button');
   switchButton.className='game-switch';
   switchButton.type='button';
+  switchButton.setAttribute('aria-haspopup','dialog');
+  switchButton.setAttribute('aria-expanded','false');
+  switchButton.setAttribute('aria-label','選擇卡牌遊戲');
   switchButton.textContent='全部遊戲';
   brand.after(switchButton);
   const picker=document.createElement('div');
   picker.className='game-picker';
-  picker.innerHTML='<div class="game-picker-box"><div class="game-picker-head"><div><h2 style="margin:0">選擇卡牌遊戲</h2><p class="game-picker-note">先選卡牌遊戲系統，再依作品、版本與系列瀏覽；不同作品不會合併。</p></div><button class="close" type="button" aria-label="關閉">×</button></div><div class="game-picker-grid"></div></div>';
+  picker.setAttribute('role','dialog');
+  picker.setAttribute('aria-modal','true');
+  picker.setAttribute('aria-hidden','true');
+  picker.setAttribute('aria-label','選擇卡牌遊戲');
+  picker.innerHTML='<div class="game-picker-box"><div class="game-picker-head"><div><h2 style="margin:0">選擇卡牌遊戲</h2><p class="game-picker-note">先選卡牌遊戲系統，再依作品、版本與系列瀏覽；不同作品不會合併。</p></div><button class="close" type="button" aria-label="關閉遊戲選擇器">×</button></div><div class="game-picker-grid"></div></div>';
   document.body.append(picker);
   const grid=picker.querySelector('.game-picker-grid');
-  const close=()=>picker.classList.remove('open');
+  let pickerReturnFocus=null;
+  const close=()=>{
+    picker.classList.remove('open');
+    picker.setAttribute('aria-hidden','true');
+    switchButton.setAttribute('aria-expanded','false');
+    if(pickerReturnFocus&&pickerReturnFocus.isConnected!==false)pickerReturnFocus.focus();
+    pickerReturnFocus=null;
+  };
   const originalChoose=scope.choose;
   const currentGame=()=>{try{return game}catch{return 'all'}};
   const workSummary=system=>{
@@ -103,7 +120,7 @@
       const system=findSystem(choice.id)||{};
       const visual=visualPath(choice.categoryVisual);
       const alt=`${choice.name}的 CardScope 非官方分類圖`;
-      return `<button type="button" class="game-pick ${choice.id===active?'active':''}" data-id="${choice.id}"><span class="game-pick-art">${visual?`<img src="${visual}" alt="${alt}" loading="lazy">`:`<span class="ip-wordmark">${choice.shortName||choice.name}</span>`}</span><span><b>${choice.name}</b><small>卡牌遊戲系統 · ${choice.language}</small><span class="game-work">${workSummary(system)}</span>${choice.id==='all'?'':'<span class="game-lang">依版本與系列分開</span>'}</span></button>`;
+      return `<button type="button" class="game-pick ${choice.id===active?'active':''}" data-id="${choice.id}" aria-pressed="${choice.id===active}"><span class="game-pick-art">${visual?`<img src="${visual}" alt="${alt}" loading="lazy">`:`<span class="ip-wordmark">${choice.shortName||choice.name}</span>`}</span><span><b>${choice.name}</b><small>卡牌遊戲系統 · ${choice.language}</small><span class="game-work">${workSummary(system)}</span>${choice.id==='all'?'':'<span class="game-lang">依版本與系列分開</span>'}</span></button>`;
     }).join('');
   }
   function selectGame(id){
@@ -112,10 +129,25 @@
     close();
     originalChoose?.(choice.id);
   }
-  switchButton.onclick=()=>{draw(currentGame());picker.classList.add('open')};
+  switchButton.onclick=()=>{
+    pickerReturnFocus=document.activeElement;
+    draw(currentGame());
+    picker.classList.add('open');
+    picker.setAttribute('aria-hidden','false');
+    switchButton.setAttribute('aria-expanded','true');
+    picker.querySelector('.game-pick.active')?.focus();
+  };
   picker.querySelector('.close').onclick=close;
   picker.onclick=event=>{if(event.target===picker)close()};
   grid.onclick=event=>{const button=event.target.closest('[data-id]');if(button)selectGame(button.dataset.id)};
+  picker.onkeydown=event=>{
+    if(event.key==='Escape'){event.preventDefault();close();return}
+    if(event.key!=='Tab')return;
+    const focusable=[...picker.querySelectorAll('button,[href],input,select,[tabindex]:not([tabindex="-1"])')].filter(item=>!item.disabled&&!item.hidden),first=focusable[0],last=focusable.at(-1);
+    if(!first)return;
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+  };
   scope.choose=selectGame;
   // Keep legacy visual adapters pointed at the explicitly classified local
   // category asset. No property claims that a local SVG is an official logo.

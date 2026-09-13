@@ -139,3 +139,23 @@ body{background:linear-gradient(180deg,#fbfbff 0,#fff 44%,#fff 100%)}
 .game-context{display:flex;align-items:center;gap:9px;min-width:0;margin:2px 0 3px;padding:8px 11px;border-left:3px solid #7966c1;border-radius:0 10px 10px 0;background:#f7f5fc;color:#4e485b}.game-context b{font-size:14px;color:#302b3a}.game-context small{color:#777181;overflow-wrap:anywhere}.game-context-kicker{font-size:10px;font-weight:900;letter-spacing:.08em;color:#7966c1;text-transform:uppercase}.card-tools{position:sticky;top:67px;z-index:3;background:#f7f8fbee;backdrop-filter:blur(10px)}.card-tools .filter-field select,.card-tools .view-switch button,.card-tools .favorites-filter{min-height:44px}.card-tools .filter-field select{height:44px!important}
 @media(max-width:760px){.game-context{align-items:flex-start;flex-wrap:wrap;gap:3px 8px;padding:8px 10px}.game-context small{flex-basis:100%;font-size:11px}.card-tools{top:108px}.card-tools .filter-field select{height:44px!important}}
 .card-tools .filter-field{min-width:0;flex:1 1 145px}.card-tools .filter-field select{width:100%;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:760px){.card-tools .filter-field{flex:1 1 calc(50% - 8px);min-width:0}.card-tools .filter-field:first-child{flex-basis:100%}.card-tools .filter-field select{font-size:13px;padding-inline:9px 28px}}
+
+/* Keep the rabbit artwork in its own track so it never compresses the copy. */
+@media(min-width:761px){
+  .brand-showcase{grid-template-columns:minmax(250px,clamp(280px,30vw,430px)) minmax(0,1fr);min-height:280px}
+  .brand-showcase picture{min-width:0;overflow:hidden}
+  .brand-showcase-copy{min-width:0}
+}
+@media(max-width:760px){
+  .brand-showcase{display:grid;grid-template-columns:minmax(128px,42%) minmax(0,1fr);min-height:220px;height:auto}
+  .brand-showcase picture{position:relative;inset:auto;width:100%;height:100%;min-width:0}
+  .brand-showcase picture:after{display:none}
+  .brand-showcase img{object-fit:cover;object-position:center 38%}
+  .brand-showcase-copy{width:auto;min-width:0;padding:20px 13px 20px 12px}
+  .brand-showcase h1,.brand-showcase p{overflow-wrap:anywhere}
+}
+@media(max-width:420px){
+  .brand-showcase{grid-template-columns:1fr;min-height:0}
+  .brand-showcase picture{height:150px}
+  .brand-showcase-copy{padding:18px 15px 20px}
+}

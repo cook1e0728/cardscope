@@ -5,6 +5,61 @@ let favoritesOnly=uiLocal.get('cardscope-favorites-only','0')==='1';
 const favoriteIds=new Set(readUiArray('cardscope-favorites'));
 const watchlist=readUiObject('cardscope-watchlist');
 const watchlistMeta=readUiObject('cardscope-watchlist-meta');
+const rarityOptionMemory=new Map();
+
+function rarityOptionScopeKey(){
+  const region=document.getElementById('browseRegion')?.value||'all';
+  const seriesId=typeof browse!=='undefined'&&browse?.seriesId||'';
+  return `${typeof game!=='undefined'?game:'all'}|${region}|${seriesId}`;
+}
+
+function rememberRarityOptions(){
+  const select=document.getElementById('rarityFilter');
+  if(!select||typeof game==='undefined'||game==='all')return;
+  const key=rarityOptionScopeKey(),known=rarityOptionMemory.get(key)||new Map();
+  [...select.options].forEach(option=>{
+    if(option.value==='all')return;
+    known.set(option.value,{value:option.value,label:option.textContent});
+  });
+  rarityOptionMemory.set(key,known);
+}
+
+function restoreRarityOptions(){
+  const select=document.getElementById('rarityFilter');
+  if(!select||typeof game==='undefined'||game==='all')return;
+  rememberRarityOptions();
+  const known=rarityOptionMemory.get(rarityOptionScopeKey());
+  if(!known||known.size<=Math.max(0,select.options.length-1))return;
+  const selected=select.value,fragment=document.createDocumentFragment(),makeOption=(label,value)=>{const option=document.createElement('option');option.value=value;option.textContent=label;return option};
+  fragment.append(makeOption('全部稀有度','all'));
+  known.forEach(option=>fragment.append(makeOption(option.label,option.value)));
+  select.replaceChildren(fragment);
+  select.value=known.has(selected)?selected:'all';
+}
+
+function installRarityOptionMemory(){
+  const select=document.getElementById('rarityFilter');
+  if(!select||select.dataset.rarityMemoryReady)return;
+  select.dataset.rarityMemoryReady='1';
+  if(typeof MutationObserver==='undefined'){rememberRarityOptions();return}
+  const observer=new MutationObserver(restoreRarityOptions);
+  observer.observe(select,{childList:true});
+  select.addEventListener('change',rememberRarityOptions);
+  rememberRarityOptions();
+}
+
+function installDetailModalAccessibility(){
+  const modal=document.getElementById('modal');
+  if(!modal||modal.dataset.a11yReady)return;
+  modal.dataset.a11yReady='1';
+  modal.setAttribute('role','dialog');
+  modal.setAttribute('aria-modal','true');
+  modal.setAttribute('aria-label','卡片詳細資料');
+  const sync=()=>modal.setAttribute('aria-hidden',String(!modal.classList.contains('open')));
+  if(typeof MutationObserver==='undefined'){sync();return}
+  new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['class']});
+  sync();
+}
 
 const renderSeriesForSelectedGame=series;
 series=function(){
@@ -70,13 +125,15 @@ function cardActionsMarkup(card){
 
 function cardMarkup(card){
   const source=image(card),price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),region=rn(card.region||card.printings?.[0]?.region),gameLabel=cardGameLabel(card),picture=resilientImage(source,name(card),'這張卡尚未收錄可公開顯示的圖片',cardWatermarkOptions(card,source)),id=e(card.id),priceMarkup=cardPriceLabel(price);
-  if(cardViewMode==='list')return `<article class="card card-list" data-card-open="${id}"><div class="art">${picture}</div><div class="card-list-main"><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${e(rarity)}</span><span class="badge">${e(region)}</span>${priceMarkup?`<strong>${priceMarkup}</strong>`:'<span class="meta">可靠價格待補</span>'}</div>${cardActionsMarkup(card)}</article>`;
-  return `<article class="card" data-card-open="${id}"><div class="art">${picture}</div><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(number)} · ${e(rarity)}</div>${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}<span class="badge">${e(region)}</span>${cardActionsMarkup(card)}</article>`;
+  const openLabel=`開啟${name(card)}的卡片詳細資料`;
+  const openControl=`<button type="button" class="card-open-hit" data-card-open="${id}" aria-label="${e(openLabel)}"></button>`;
+  if(cardViewMode==='list')return `<article class="card card-list">${openControl}<div class="art">${picture}</div><div class="card-list-main"><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${e(rarity)}</span><span class="badge">${e(region)}</span>${priceMarkup?`<strong>${priceMarkup}</strong>`:'<span class="meta">可靠價格待補</span>'}</div>${cardActionsMarkup(card)}</article>`;
+  return `<article class="card">${openControl}<div class="art">${picture}</div><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(number)} · ${e(rarity)}</div>${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}<span class="badge">${e(region)}</span>${cardActionsMarkup(card)}</article>`;
 }
 
 function activateCardActions(root=$('cards')){
   if(!root)return;
-  root.querySelectorAll('[data-card-open]').forEach(card=>{card.onclick=event=>{if(event.target.closest('[data-action]'))return;openCard(card.dataset.cardOpen)}});
+  root.querySelectorAll('[data-card-open]').forEach(card=>{card.onclick=event=>{if(event.target.closest('[data-action]'))return;openCard(card.dataset.cardOpen)};card.onkeydown=event=>{if(event.target.closest('[data-action]'))return;if(event.key==='Enter'||event.key===' '){event.preventDefault();openCard(card.dataset.cardOpen)}}});
   root.querySelectorAll('[data-favorite-id]').forEach(button=>{button.onclick=event=>{event.stopPropagation();toggleFavorite(button.dataset.favoriteId)}});
   root.querySelectorAll('[data-watch-increment]').forEach(button=>{button.onclick=event=>{event.stopPropagation();setWatchQuantity(button.dataset.watchIncrement,watchQuantity(button.dataset.watchIncrement)+1)}});
   root.querySelectorAll('[data-watch-decrement]').forEach(button=>{button.onclick=event=>{event.stopPropagation();setWatchQuantity(button.dataset.watchDecrement,watchQuantity(button.dataset.watchDecrement)-1)}});
@@ -350,6 +407,28 @@ const enhancementStyle=document.createElement('style');enhancementStyle.textCont
 const utilityStyle=document.createElement('style');utilityStyle.textContent=`.view-switch{flex-wrap:wrap;gap:0}.view-switch button{font-weight:800}.cards.rarity-view{display:block}.rarity-group{margin:0 0 24px}.rarity-group>header{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;padding:10px 13px;border-left:4px solid var(--y);background:var(--soft);border-radius:8px}.rarity-group>header h3{margin:0;font-size:17px}.rarity-group>header span{color:var(--muted);font-size:13px}.rarity-group-cards{grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 14px}.card-actions{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:8px}.favorite-toggle{width:32px;height:30px;padding:0;border:1px solid #d4d4d4;border-radius:8px;background:#fff;color:#777;font-size:20px;line-height:1;cursor:pointer}.favorite-toggle[aria-pressed=true]{color:#b18b00;border-color:#e0c534;background:#fff8bf}.watchlist-inline{display:inline-flex;align-items:center;gap:3px;border:1px solid #d4d4d4;border-radius:8px;overflow:hidden;background:#fff}.watchlist-inline button{width:24px;height:28px;padding:0;border:0;background:#f5f5f5;font-size:18px;line-height:1;cursor:pointer}.watchlist-inline button:disabled{color:#aaa;cursor:not-allowed}.watchlist-inline span{min-width:22px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}.card-list{grid-template-columns:76px minmax(0,1fr) minmax(180px,auto) auto}.card-list .card-actions{margin:0;display:grid;gap:5px}.card-list .favorite-toggle{justify-self:center}.card-list .watchlist-inline{justify-self:end}.favorites-filter{align-self:end;border:1px solid #d4d4d4;border-radius:9px;background:#fff;padding:8px 12px;font-weight:800;cursor:pointer}.favorites-filter.on{background:#111;color:#fff;border-color:#111}.watchlist-summary{display:flex;align-items:center;justify-content:space-between;gap:13px;flex:1 1 360px;min-width:260px;color:#444}.watchlist-summary>div{display:grid;gap:2px}.watchlist-summary span{color:var(--muted);font-size:13px}.watchlist-summary small{color:var(--muted);font-size:12px}.watchlist-summary em{font-style:normal;color:#7b6100;font-size:12px}.watchlist-summary button{border:1px solid #d4d4d4;border-radius:9px;background:#fff;padding:8px 11px;font-weight:800;cursor:pointer;white-space:nowrap}.watchlist-summary button:disabled{color:#aaa;cursor:not-allowed}.cards-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:16px;min-height:155px;padding:24px;border:1px dashed #d4d4d4;border-radius:14px;color:var(--muted)}.cards-empty img{width:68px;height:68px;object-fit:contain;opacity:.72}.cards-empty b{display:block;color:#444}.cards-empty p{margin:5px 0 0}.feature-tour{margin:8px 0 18px;padding:0;border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden}.feature-tour summary{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;list-style:none}.feature-tour summary::-webkit-details-marker{display:none}.help-summary-copy{display:grid;gap:2px;flex:1}.help-summary-copy small{color:var(--muted);font-size:13px}.feature-tour summary img{width:34px;height:34px;object-fit:contain;opacity:.78}.help-summary-chevron{font-size:20px;transition:transform .2s}.feature-tour[open] .help-summary-chevron{transform:rotate(180deg)}.help-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 14px 14px}.help-item{padding:13px;border-radius:10px;background:var(--soft)}.help-item b{font-size:14px}.help-item p{margin:6px 0 0;color:#555;font-size:13px;line-height:1.55}@media(max-width:1100px){.rarity-group-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:760px){.view-switch{width:100%}.view-switch button{flex:1}.card-list{grid-template-columns:58px 1fr}.card-list .art{width:58px}.card-list-facts{grid-column:2;grid-template-columns:repeat(2,1fr)}.card-list .card-actions{grid-column:2;display:flex;justify-self:start}.watchlist-summary{flex-basis:100%;min-width:0}.watchlist-summary button{margin-left:auto}.help-grid{grid-template-columns:1fr}.cards-empty{align-items:flex-start}.cards-empty img{width:54px;height:54px}}`;document.head.append(utilityStyle);
 const zoomStyle=document.createElement('style');zoomStyle.textContent=`.tilt-card.can-zoom{cursor:zoom-in}.card-identity{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}.card-identity>div{padding:8px 10px;border-radius:9px;background:var(--soft)}.card-identity dt{font-size:11px;color:var(--muted);font-weight:800}.card-identity dd{margin:2px 0 0;font-weight:800}.card-zoom{position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:22px;background:#090909e8;cursor:zoom-out}.card-zoom.open{display:grid}.card-zoom img{display:block;max-width:min(94vw,900px);max-height:94vh;object-fit:contain;filter:drop-shadow(0 24px 45px #000)}.card-zoom-close{position:fixed;right:18px;top:16px;z-index:1;width:44px;height:44px;border:1px solid #fff5;border-radius:50%;background:#111;color:#fff;font-size:27px;cursor:pointer}@media(max-width:520px){.card-identity{grid-template-columns:1fr}.card-zoom{padding:10px}}`;document.head.append(zoomStyle);
 const interactiveZoomStyle=document.createElement('style');interactiveZoomStyle.textContent=`body.card-zoom-open{overflow:hidden}.card-zoom{display:none;grid-template-rows:minmax(0,1fr) auto;gap:12px;padding:58px 16px 16px;background:#090909ed;color:#fff;cursor:default;overscroll-behavior:contain}.card-zoom.open{display:grid}.card-zoom-viewport{position:relative;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;touch-action:none;cursor:grab;outline:none}.card-zoom-viewport:active{cursor:grabbing}.card-zoom-viewport:focus-visible{box-shadow:inset 0 0 0 3px var(--y)}.card-zoom-canvas{position:relative;width:min(900px,100%);height:100%;display:grid;place-items:center;overflow:visible}.card-zoom-image{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;transform-origin:center center;user-select:none;-webkit-user-drag:none;will-change:transform;filter:drop-shadow(0 18px 34px #000)}.card-zoom-fallback{display:grid;place-items:center;text-align:center;color:#ddd;font-size:18px;line-height:1.6}.card-zoom-fallback small{font-size:12px;color:#aaa}.card-zoom-toolbar{position:relative;z-index:2;display:flex;align-items:center;justify-self:center;gap:4px;max-width:100%;padding:7px;border:1px solid #fff3;border-radius:13px;background:#151515ee;box-shadow:0 10px 30px #0008;color:#fff;overflow-x:auto}.card-zoom-toolbar button{border:1px solid #fff3;border-radius:8px;background:#292929;color:#fff;padding:7px 10px;cursor:pointer;white-space:nowrap}.card-zoom-toolbar button:hover,.card-zoom-toolbar button:focus-visible{background:#444;border-color:#fff8}.card-zoom-toolbar output{min-width:72px;padding:0 4px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}.card-zoom-divider{flex:0 0 1px;width:1px;height:25px;margin:0 3px;background:#fff4}.card-zoom-close{position:fixed;right:18px;top:14px;z-index:3;width:44px;height:44px;border:1px solid #fff5;border-radius:50%;background:#111;color:#fff;font-size:27px;line-height:1;cursor:pointer}.card-zoom-close:hover,.card-zoom-close:focus-visible{background:#333;outline:2px solid var(--y);outline-offset:2px}@media(max-width:520px){.card-identity{grid-template-columns:1fr}.card-zoom{gap:8px;padding:54px 8px 8px}.card-zoom-canvas{width:100%;height:100%}.card-zoom-toolbar{justify-self:stretch;justify-content:flex-start;gap:2px;padding:5px}.card-zoom-toolbar button{padding:7px 6px;font-size:12px}.card-zoom-toolbar output{min-width:57px;font-size:12px}.card-zoom-divider{height:21px;margin:0 1px}}@media(prefers-reduced-motion:reduce){.card-zoom-image{transition:none}}`;document.head.append(interactiveZoomStyle);
+const nextStageStyle=document.createElement('style');
+nextStageStyle.textContent=`
+  .card{position:relative}
+  .card-open-hit{position:absolute;inset:0;z-index:1;width:100%;height:100%;border:0;border-radius:inherit;background:transparent;cursor:pointer}
+  .card-open-hit:focus-visible{outline:3px solid var(--y);outline-offset:3px}
+  .card-actions{position:relative;z-index:2}
+  .favorite-toggle{min-width:44px;min-height:44px}
+  .watchlist-inline button{width:44px;height:44px;min-width:44px}
+  .watchlist-inline span{min-width:34px}
+  .modal.open{place-items:start center}
+  .modal .dialog{max-height:calc(100dvh - 32px);overflow:auto}
+  .card-zoom-viewport{min-height:clamp(260px,calc(100dvh - 142px),900px)}
+  .card-zoom-canvas{width:min(900px,100%);height:100%;max-height:100%;aspect-ratio:5 / 7}
+  .card-zoom-image{width:auto;height:auto;max-width:100%;max-height:100%}
+  @media(max-width:760px){
+    .modal.open{place-items:stretch}
+    .modal .dialog{max-height:none;overflow:auto}
+    .card-zoom-viewport{min-height:clamp(220px,calc(100dvh - 132px),760px)}
+  }
+`;
+document.head.append(nextStageStyle);
+
 function betaValue(row,keys,fallback=''){
   for(const key of keys){const parts=String(key).split('.');let value=row;for(const part of parts)value=value&&typeof value==='object'?value[part]:undefined;if(value!==undefined&&value!==null&&String(value).trim()!=='')return value}
   return fallback;
@@ -388,6 +467,8 @@ installTrendTransparency();
 installReportTemplate();
 installFeatureTour();
 installCatalogHealth();
+installRarityOptionMemory();
+installDetailModalAccessibility();
 installViewToggle();
 installCardUtilities();
 if(currentCardRows.length)cards(currentCardRows,true);
