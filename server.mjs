@@ -4,8 +4,8 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { searchYgoProDeck } from './providers/ygoprodeck.mjs';
-import { normalizeMarketRecord, withTwd } from './providers/normalize.mjs';
-import { catalogProvidersNeedingSync, localizeProductName, syncCatalog } from './providers/catalog-sync.mjs';
+import { normalizeMarketRecord, withTwd, RARITY_RANKINGS, rarityCanonicalCode as normalizeRarityCanonicalCode, rarityDisplayLabel as normalizeRarityDisplayLabel, rarityRank as normalizeRarityRank, rarityToken as normalizeRarityToken, rarityDefinition as normalizeRarityDefinition } from './providers/normalize.mjs';
+import { auditCatalogLinks, catalogProvidersNeedingSync, localizeProductName, syncCatalog } from './providers/catalog-sync.mjs';
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
 import { normalizeProduct } from './providers/products.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageRightsAllowDisplay, publicSourcePolicies, sourcePolicySummary } from './providers/source-policy.mjs';
@@ -14,7 +14,7 @@ const nativeFetch = globalThis.fetch;
 const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
 
 const root = fileURLToPath(new URL('.', import.meta.url));
-const rarityRankings = JSON.parse(await readFile(join(root,'data','rarity-rankings.json'),'utf8'));
+const rarityRankings = RARITY_RANKINGS;
 const port = Number(process.env.PORT || 4173);
 const jpyToTwdFallback = Number(process.env.JPY_TO_TWD || 0.22);
 const usdToTwdFallback = Number(process.env.USD_TO_TWD || 32);
@@ -169,29 +169,12 @@ function normalizeBrowseRegion(value){const region=String(value||'').trim().toUp
 function normalizeBrowseRarity(value){const rarity=String(value||'').trim();return !rarity||rarity.toLowerCase()==='all'?null:rarity}
 function normalizeBrowseSort(value){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc','price-asc','price-desc']).has(sort)?sort:'number-asc'}
 function browseToken(value){return normalizeSearch(value).replace(/[^\p{L}\p{N}]/gu,'')}
-function rarityRankingToken(value){return String(value||'').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g,'').replace(/[^\p{L}\p{N}+]/gu,'')}
-function rarityDefinition(game){return rarityRankings.systems?.[game]||null}
-function rarityCanonicalCode(game,value){
-  const raw=String(value??'').trim();
-  if(!raw)return null;
-  const definition=rarityDefinition(game),rawToken=rarityRankingToken(raw);
-  if(!definition)return raw;
-  for(const [code,aliases] of Object.entries(definition.aliases||{})){
-    if([code,...(Array.isArray(aliases)?aliases:[])].some(label=>rarityRankingToken(label)===rawToken))return code;
-  }
-  const canonical=(definition.canonicalCodes||[]).find(code=>rarityRankingToken(code)===rawToken);
-  return canonical||raw;
-}
+function rarityRankingToken(value){return normalizeRarityToken(value)}
+function rarityDefinition(game){return normalizeRarityDefinition(game)}
+function rarityCanonicalCode(game,value){return normalizeRarityCanonicalCode(game,value)}
 function rarityCanonicalToken(game,value){return rarityRankingToken(rarityCanonicalCode(game,value))}
-function rarityDisplayLabel(game,value){
-  const code=rarityCanonicalCode(game,value),definition=rarityDefinition(game);
-  return definition?.canonicalLabels?.[code]||code||String(value??'').trim();
-}
-const rarityRankIndex=new Map(Object.entries(rarityRankings.systems||{}).map(([game,definition])=>[game,new Map((definition.highToLow||[]).flatMap((labels,index)=>{
-  const code=definition.canonicalCodes?.[index]||labels?.[0];
-  return [...(labels||[]),code].filter(Boolean).map(label=>[rarityRankingToken(label),index]);
-}))]));
-function browseRarityRank(game,value){const canonical=rarityCanonicalCode(game,value),rank=rarityRankIndex.get(game)?.get(rarityRankingToken(canonical));return Number.isInteger(rank)?rank:Number.MAX_SAFE_INTEGER}
+function rarityDisplayLabel(game,value){return normalizeRarityDisplayLabel(game,value)}
+function browseRarityRank(game,value){return normalizeRarityRank(game,value)}
 function compareBrowseRarity(a,b,direction='desc'){
   const ar=browseRarityRank(a.game,browseValues(a,a.printings,'rarity')[0]),br=browseRarityRank(b.game,browseValues(b,b.printings,'rarity')[0]);
   if(ar===Number.MAX_SAFE_INTEGER||br===Number.MAX_SAFE_INTEGER){if(ar!==br)return ar===Number.MAX_SAFE_INTEGER?1:-1}
@@ -315,7 +298,10 @@ async function browseDatabaseCards(game,options){
 
 function coverageMetric(covered,denominator,status='complete',details={}){
   const safeCovered=Number.isFinite(Number(covered))?Number(covered):null,safeDenominator=Number.isFinite(Number(denominator))&&Number(denominator)>=0?Number(denominator):null;
-  const percent=safeCovered!==null&&safeDenominator!==null?(safeDenominator===0?100:Math.round(safeCovered/safeDenominator*10000)/100):null;
+  // A zero/unknown denominator is not a meaningful completeness percentage.
+  // Keep the numeric fields for compatibility, but expose percent as null so
+  // the UI cannot present an empty or unverified scope as 100% complete.
+  const percent=safeCovered!==null&&safeDenominator!==null&&safeDenominator>0?Math.round(safeCovered/safeDenominator*10000)/100:null;
   return {covered:safeCovered,denominator:safeDenominator,percent,status,...details};
 }
 function coverageIso(value){const time=Date.parse(String(value||''));return Number.isFinite(time)?new Date(time).toISOString():null}
@@ -331,16 +317,19 @@ function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
   const rows=Array.isArray(cards)?cards:[],cardIds=new Set(rows.map(card=>card?.id).filter(Boolean)),selectedPrintings=(printings||[]).filter(printing=>cardIds.has(printing?.cardId)),selectedImages=(images||[]).filter(image=>cardIds.has(image?.cardId)),printingByCard=buildPrintingIndex(selectedPrintings),imageByCard=new Map();
   for(const image of selectedImages){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
   const cardHasPrinting=card=>Boolean((printingByCard.get(card.id)||[]).length),cardHasImageUrl=card=>Boolean((imageByCard.get(card.id)||[]).some(image=>image?.imageUrl)||(printingByCard.get(card.id)||[]).some(printing=>printing?.imageUrl)||card?.imageUrl),cardHasUsableImage=card=>Boolean((imageByCard.get(card.id)||[]).some(browseHasUsableImage)||(printingByCard.get(card.id)||[]).some(browseHasUsableImage)||(card?.imageUrl&&imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt))),cardHasChineseName=card=>Boolean(String(card?.nameZh||'').trim()),cardHasRarity=card=>browseValues(card,printingByCard.get(card.id)||[],'rarity').length;
-  const cardsWithPrintings=rows.filter(cardHasPrinting).length,cardsWithImageUrls=rows.filter(cardHasImageUrl).length,displayableImages=rows.filter(cardHasUsableImage).length,chineseNames=rows.filter(cardHasChineseName).length,rarities=rows.filter(cardHasRarity).length,seriesIds=new Set(rows.flatMap(card=>[card?.seriesId,...(printingByCard.get(card.id)||[]).map(printing=>printing?.seriesId)]).filter(Boolean)),coveredSets=uniqueValues(rows.map(card=>card?.seriesId),selectedPrintings.map(printing=>printing?.seriesId||printing?.localSetCode)),timestamp=coverageTimestamp(rows,selectedPrintings,selectedImages,options.fallbackUpdatedAt),freshness=coverageFreshness(timestamp.latest),cardStatus=options.cardStatus||'complete',printingStatus=options.printingStatus||'complete',imageStatus=options.imageStatus||'complete',cardDenominator=cardStatus==='unknown'?null:rows.length,imageMetricStatus=imageStatus==='unknown'&&printingStatus==='unknown'?'unknown':imageStatus==='complete'?'complete':imageStatus,fields={
+  const cardsWithPrintings=rows.filter(cardHasPrinting).length,cardsWithImageUrls=rows.filter(cardHasImageUrl).length,displayableImages=rows.filter(cardHasUsableImage).length,chineseNames=rows.filter(cardHasChineseName).length,rarities=rows.filter(cardHasRarity).length,seriesIds=new Set(rows.flatMap(card=>[card?.seriesId,...(printingByCard.get(card.id)||[]).map(printing=>printing?.seriesId)]).filter(Boolean)),coveredSets=uniqueValues(rows.map(card=>card?.seriesId),selectedPrintings.map(printing=>printing?.seriesId||printing?.localSetCode)),timestamp=coverageTimestamp(rows,selectedPrintings,selectedImages,options.fallbackUpdatedAt),freshness=coverageFreshness(timestamp.latest),cardStatus=options.cardStatus||'complete',printingStatus=options.printingStatus||'complete',imageStatus=options.imageStatus||'complete',cardDenominator=cardStatus==='unknown'?null:rows.length,imageMetricStatus=imageStatus==='unknown'&&printingStatus==='unknown'?'unknown':imageStatus==='complete'?'complete':imageStatus,linkAudit=auditCatalogLinks({cards:rows,printings:selectedPrintings,images:selectedImages}),fields={
     cards:coverageMetric(rows.length,null,cardStatus==='complete'?'observed-total':'unknown',{denominatorStatus:'unknown',note:'目前僅能確認資料庫觀測到的卡片列數；各 IP 官方完整總數尚未提供。'}),
     images:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{urlRecords:selectedImages.length+selectedPrintings.filter(printing=>printing?.imageUrl).length,cardsWithImageUrls}),
     chineseNames:coverageMetric(chineseNames,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.name_zh'}),
     rarity:coverageMetric(rarities,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.rarity or tcg_printings.rarity'}),
     printings:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:selectedPrintings.length}),
     versions:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:selectedPrintings.length,note:'版本以 tcg_printings 的 region/language 列表示。'}),
+    identity:coverageMetric(linkAudit.stableIdentityCards,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{unkeyedCards:linkAudit.unkeyedCards}),
+    missingImages:coverageMetric(cardDenominator===null?null:Math.max(0,rows.length-linkAudit.missingImages.count),cardDenominator,imageMetricStatus,{missing:linkAudit.missingImages.count,sampleIds:linkAudit.missingImages.sampleIds}),
+    missingChineseNames:coverageMetric(cardDenominator===null?null:Math.max(0,rows.length-linkAudit.missingChineseNames.count),cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{missing:linkAudit.missingChineseNames.count,sampleIds:linkAudit.missingChineseNames.sampleIds}),
     sourceTimestamp:{value:timestamp.latest,oldest:timestamp.oldest,status:timestamp.status,field:timestamp.field}
   },sources=coverageSources(rows,selectedPrintings,selectedImages),expectedCards=options.expectedCards??null;
-  return {cards:rows.length,displayableImages,chineseNames,rarities,cardsWithImageUrls,cardsWithSeries:rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length,totalPrintings:selectedPrintings.length,totalImages:selectedImages.length,totalSeries:seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 官方完整卡表總數，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
+  return {cards:rows.length,displayableImages,chineseNames,rarities,cardsWithImageUrls,cardsWithSeries:rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length,totalPrintings:selectedPrintings.length,totalImages:selectedImages.length,totalSeries:seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,linkAudit,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 官方完整卡表總數，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
 }
 function buildFallbackCatalogCoverage(fallback,extra={}){
   const games={};
@@ -633,7 +622,7 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   if(url.pathname==='/api/portfolio')return json(res,200,{data:null,meta:{status:'not_implemented',message:'尚未有真實收藏資料，因此不顯示示範市值或損益。'}});
   if(url.pathname==='/api/reports/meta')return json(res,200,{data:{platforms:ALLOWED_PLATFORMS,currencies:ALLOWED_CURRENCIES,maxPrice:MAX_PRICE}});
   if(url.pathname==='/api/reports'&&req.method==='POST'){if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});if(isRateLimited(clientIp(req)))return json(res,429,{error:'回報太頻繁'});let body;try{body=await readJsonBody(req)}catch{return json(res,400,{error:'JSON 格式錯誤'})}const v=validateReport(body);if(!v.valid)return json(res,400,{error:'資料驗證失敗',details:v.errors});const r=v.value,record={card_name:r.cardName,card_id:r.cardId,game:r.game,platform:r.platform,currency:r.currency,price:r.price,condition:r.condition,note:r.note,traded_at:r.tradedAt,reporter_hash:hashIp(clientIp(req)),status:'unverified'};try{const rows=await supabaseFetch('/reports?select='+encodeURIComponent(PUBLIC_SELECT),{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify([record])});return json(res,201,{data:rows?.[0]})}catch{return json(res,502,{error:'資料庫寫入失敗'})}}
-  if(url.pathname==='/api/reports'&&req.method==='GET'){if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const cardId=url.searchParams.get('cardId'),cardName=url.searchParams.get('cardName'),game=url.searchParams.get('game'),limit=Math.min(Number(url.searchParams.get('limit'))||20,100);if(!cardId&&!cardName)return json(res,400,{error:'請提供 cardId 或 cardName'});const base=new URLSearchParams();if(cardId)base.set('card_id',`eq.${cardId}`);else base.set('card_name',`ilike.*${cardName}*`);if(game)base.set('game',`eq.${game}`);try{const statsParams=new URLSearchParams(base);statsParams.set('select','currency,price');const recentParams=new URLSearchParams(base);recentParams.set('select',PUBLIC_SELECT);recentParams.set('order','traded_at.desc');recentParams.set('limit',String(limit));const [all,recent]=await Promise.all([supabaseFetch(`/reports?${statsParams}`),supabaseFetch(`/reports?${recentParams}`)]);return json(res,200,{data:{reports:recent,stats:buildStats(all),total:all.length}})}catch{return json(res,502,{error:'資料庫查詢失敗'})}}
+  if(url.pathname==='/api/reports'&&req.method==='GET'){const cardId=url.searchParams.get('cardId'),cardName=url.searchParams.get('cardName'),game=url.searchParams.get('game'),limit=Math.min(Number(url.searchParams.get('limit'))||20,100);if(!cardId&&!cardName)return json(res,400,{error:'請提供 cardId 或 cardName'});if(!supabaseConfigured())return json(res,200,{data:{reports:[],stats:[],total:0},meta:{status:'unavailable',reason:'尚未設定使用者回報資料庫'}});const base=new URLSearchParams();if(cardId)base.set('card_id',`eq.${cardId}`);else base.set('card_name',`ilike.*${cardName}*`);if(game)base.set('game',`eq.${game}`);try{const statsParams=new URLSearchParams(base);statsParams.set('select','currency,price');const recentParams=new URLSearchParams(base);recentParams.set('select',PUBLIC_SELECT);recentParams.set('order','traded_at.desc');recentParams.set('limit',String(limit));const [all,recent]=await Promise.all([supabaseFetch(`/reports?${statsParams}`),supabaseFetch(`/reports?${recentParams}`)]);return json(res,200,{data:{reports:recent,stats:buildStats(all),total:all.length}})}catch{return json(res,502,{error:'資料庫查詢失敗'})}}
   if(url.pathname==='/api/admin/scrape/yuyutei'&&(req.method==='POST'||req.method==='GET')){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!catalogCollectionAllowed('yuyutei'))return json(res,409,{error:'來源權利尚未確認，已由來源政策暫停自動抓取'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});let targetUrl=url.searchParams.get('url');if(req.method==='POST'){try{targetUrl=(await readJsonBody(req)).url||targetUrl}catch{return json(res,400,{error:'JSON 格式錯誤'})}}if(!targetUrl?.startsWith('https://yuyu-tei.jp/buy/'))return json(res,400,{error:'請提供合法的遊々亭買取頁'});try{const {game,setTitle,cards:found}=await scrapeYuyutei(targetUrl),rows=found.map(c=>({source:'yuyutei',game,set_code:c.setCode,set_name:setTitle,card_code:c.cardCode,card_number:c.number,rarity:c.rarity,card_name:c.name,price:c.price,currency:'JPY',card_url:c.cardUrl,image_url:null,scraped_at:new Date().toISOString()}));for(let i=0;i<rows.length;i+=200)await supabaseFetch('/jp_buyback_prices?on_conflict=source,game,set_code,card_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify(rows.slice(i,i+200))});return json(res,200,{data:{message:'抓取並存檔成功',game,setTitle,count:rows.length}})}catch(e){return json(res,502,{error:`抓取失敗：${e.message}`})}}
   if(url.pathname==='/api/catalog/sync-status'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[]});try{const data=await supabaseFetch('/catalog_sync_runs?select=provider,scope,status,rowsSeen:rows_seen,rowsWritten:rows_written,error,metadata,startedAt:started_at,finishedAt:finished_at&order=started_at.desc&limit=12');return json(res,200,{data})}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/admin/catalog/sync'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const requested=(url.searchParams.get('provider')||'all').toLowerCase(),aliases={pokemontw:'pokemonZhTw',pokemonzh:'pokemonZhTw'},selected=aliases[requested]||requested,candidates=requested==='all'?['pokemon','pokemonZhTw','onepiece','yugioh']:[selected];if(candidates.some(p=>!['pokemon','pokemonZhTw','onepiece','yugioh'].includes(p)))return json(res,400,{error:'不支援的 provider'});const providers=filterAllowedCatalogProviders(candidates),blocked=candidates.filter(provider=>!providers.includes(provider));if(!providers.length)return json(res,409,{error:'所選來源尚未通過來源政策',blocked});syncCatalog(supabaseFetch,{providers}).then(result=>console.log('catalog sync complete',JSON.stringify(result))).catch(error=>console.error('catalog sync failed',error));return json(res,202,{data:{message:'Catalog 同步已在背景開始',providers,blocked}})}
@@ -648,6 +637,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { buildBrowseFacets, buildBrowsePage, browseValues, rarityCanonicalCode, rarityDisplayLabel, server };
+export { buildBrowseFacets, buildBrowsePage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 

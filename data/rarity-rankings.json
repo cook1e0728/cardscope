@@ -1,19 +1,26 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "unknownPlacement": "last",
-  "descriptionZh": "CardScope 各卡牌遊戲的圖鑑瀏覽順序。這是稀有度／特殊加工的導覽排序，不代表價格或跨遊戲價值比較。",
+  "descriptionZh": "CardScope 各卡牌遊戲的圖鑑瀏覽順序。這是稀有度／特殊加工的導覽排序，不代表價格或跨遊戲價值比較。每個 systems 定義只在該 IP 內套用，不跨遊戲合併。",
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "RRR", "RR", "Rare Holo", "R", "U", "C"],
+      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "Amazing Rare", "RRR", "RR", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C"],
       "canonicalLabels": {"Rare Holo": "Rare Holo"},
       "aliases": {
-        "UR": ["Ultra Rare"], "HR": ["Hyper Rare"],
+        "UR": ["Ultra Rare"],
+        "HR": ["Hyper Rare", "Rainbow Rare"],
         "SAR": ["Special Art Rare", "Special Illustration Rare"],
-        "SSR": ["Shiny Super Rare", "Shiny Ultra Rare"], "SR": ["Super Rare"],
-        "S": ["Shiny Rare"], "AR": ["Art Rare", "Illustration Rare"],
-        "CHR": ["Character Rare"], "RRR": ["Triple Rare"], "RR": ["Double Rare"],
-        "R": ["Rare"], "U": ["Uncommon"], "C": ["Common"]
+        "SSR": ["Shiny Super Rare", "Shiny Ultra Rare"],
+        "SR": ["Super Rare", "Secret Rare"],
+        "S": ["Shiny Rare"],
+        "AR": ["Art Rare", "Illustration Rare"],
+        "CHR": ["Character Rare"],
+        "RRR": ["Triple Rare"],
+        "RR": ["Double Rare"],
+        "R": ["Rare"],
+        "U": ["Uncommon"],
+        "C": ["Common"]
       },
       "highToLow": [
         ["MUR"],
@@ -25,13 +32,49 @@
         ["SR", "Super Rare", "Secret Rare"],
         ["S", "Shiny Rare"],
         ["AR", "Art Rare", "Illustration Rare"],
-        ["CHR", "Character Rare", "Amazing Rare"],
+        ["CHR", "Character Rare"],
+        ["Amazing Rare"],
         ["RRR", "Triple Rare"],
-        ["RR", "Double Rare", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX"],
-        ["Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime"],
+        ["RR", "Double Rare"],
+        ["Rare Holo"],
+        ["Rare ACE"],
+        ["Rare BREAK"],
+        ["Rare Prime"],
+        ["Rare Holo VMAX"],
+        ["Rare Holo VSTAR"],
+        ["Rare Holo V"],
+        ["Rare Holo GX"],
+        ["Rare Holo EX"],
         ["R", "Rare"],
         ["U", "Uncommon"],
         ["C", "Common"]
+      ],
+      "lowToHigh": [
+        ["C", "Common"],
+        ["U", "Uncommon"],
+        ["R", "Rare"],
+        ["Rare Holo EX"],
+        ["Rare Holo GX"],
+        ["Rare Holo V"],
+        ["Rare Holo VSTAR"],
+        ["Rare Holo VMAX"],
+        ["Rare Prime"],
+        ["Rare BREAK"],
+        ["Rare ACE"],
+        ["Rare Holo"],
+        ["RR", "Double Rare"],
+        ["RRR", "Triple Rare"],
+        ["Amazing Rare"],
+        ["CHR", "Character Rare"],
+        ["AR", "Art Rare", "Illustration Rare"],
+        ["S", "Shiny Rare"],
+        ["SR", "Super Rare", "Secret Rare"],
+        ["SSR", "Shiny Super Rare", "Shiny Ultra Rare"],
+        ["SAR", "Special Art Rare", "Special Illustration Rare"],
+        ["HR", "Hyper Rare", "Rainbow Rare"],
+        ["UR", "Ultra Rare"],
+        ["BWR"],
+        ["MUR"]
       ]
     },
     "onepiece": {
@@ -39,10 +82,16 @@
       "canonicalCodes": ["TR", "SP", "SEC", "SR", "R", "L", "UC", "C", "P", "DON!!"],
       "canonicalLabels": {"SP": "SP 卡"},
       "aliases": {
-        "TR": ["Treasure Rare"], "SP": ["SP CARD", "SP卡", "Special Card"],
-        "SEC": ["Secret Rare"], "SR": ["Super Rare"], "R": ["Rare"],
-        "L": ["Leader"], "UC": ["Uncommon"], "C": ["Common"],
-        "P": ["Promo"], "DON!!": ["DON"]
+        "TR": ["Treasure Rare"],
+        "SP": ["SP CARD", "SP卡", "Special Card"],
+        "SEC": ["Secret Rare"],
+        "SR": ["Super Rare"],
+        "R": ["Rare"],
+        "L": ["Leader"],
+        "UC": ["Uncommon"],
+        "C": ["Common"],
+        "P": ["Promo"],
+        "DON!!": ["DON"]
       },
       "highToLow": [
         ["TR", "Treasure Rare"],
@@ -55,35 +104,71 @@
         ["C", "Common"],
         ["P", "Promo"],
         ["DON!!", "DON"]
+      ],
+      "lowToHigh": [
+        ["DON!!", "DON"],
+        ["P", "Promo"],
+        ["C", "Common"],
+        ["UC", "Uncommon"],
+        ["L", "Leader"],
+        ["R", "Rare"],
+        ["SR", "Super Rare"],
+        ["SEC", "Secret Rare"],
+        ["SP", "SP CARD", "SP卡", "Special Card"],
+        ["TR", "Treasure Rare"]
       ]
     },
     "yugioh": {
       "sourceUrl": "https://www.yugioh-card.com/en/about/new-to-ygo/",
-      "canonicalCodes": ["QCSR", "Starlight Rare", "Ghost Rare", "CR", "PSR", "Ultimate Rare", "Secret Rare", "Gold Rare", "Ultra Rare", "Super Rare", "Rare", "Common"],
-      "canonicalLabels": {"QCSR": "Quarter Century Secret Rare", "CR": "Collector's Rare", "PSR": "Prismatic Secret Rare", "Gold Rare": "Gold Rare"},
+      "canonicalCodes": ["QCSR", "Starlight Rare", "Ghost Rare", "CR", "PSR", "Platinum Secret Rare", "Ultimate Rare", "Secret Rare", "Premium Gold Rare", "Gold Secret Rare", "Gold Rare", "Ultra Rare", "Super Rare", "Rare", "Short Print", "Common"],
+      "canonicalLabels": {"QCSR": "Quarter Century Secret Rare", "CR": "Collector's Rare", "PSR": "Prismatic Secret Rare"},
       "aliases": {
         "QCSR": ["Quarter Century Secret Rare", "Quarter Century Rare"],
         "CR": ["Collector's Rare", "Collectors Rare"],
         "PSR": ["Prismatic Secret Rare"]
       },
       "highToLow": [
-        ["Quarter Century Secret Rare", "Quarter Century Rare", "QCSR"],
+        ["QCSR", "Quarter Century Secret Rare", "Quarter Century Rare"],
         ["Starlight Rare"],
         ["Ghost Rare"],
-        ["Collector's Rare", "Collectors Rare"],
-        ["Prismatic Secret Rare", "Platinum Secret Rare"],
+        ["CR", "Collector's Rare", "Collectors Rare"],
+        ["PSR", "Prismatic Secret Rare"],
+        ["Platinum Secret Rare"],
         ["Ultimate Rare"],
         ["Secret Rare"],
-        ["Premium Gold Rare", "Gold Secret Rare", "Gold Rare"],
+        ["Premium Gold Rare"],
+        ["Gold Secret Rare"],
+        ["Gold Rare"],
         ["Ultra Rare"],
         ["Super Rare"],
         ["Rare"],
-        ["Short Print", "Common"]
+        ["Short Print"],
+        ["Common"]
+      ],
+      "lowToHigh": [
+        ["Common"],
+        ["Short Print"],
+        ["Rare"],
+        ["Super Rare"],
+        ["Ultra Rare"],
+        ["Gold Rare"],
+        ["Gold Secret Rare"],
+        ["Premium Gold Rare"],
+        ["Secret Rare"],
+        ["Ultimate Rare"],
+        ["Platinum Secret Rare"],
+        ["PSR", "Prismatic Secret Rare"],
+        ["CR", "Collector's Rare", "Collectors Rare"],
+        ["Ghost Rare"],
+        ["Starlight Rare"],
+        ["QCSR", "Quarter Century Secret Rare", "Quarter Century Rare"]
       ]
     },
     "weiss-schwarz": {
       "sourceUrl": "https://ws-tcg.com/cardlist/",
       "canonicalCodes": ["SEC+", "SEC", "SSP", "SP", "OFR", "RRR", "SR", "RR", "R", "U", "C", "CR", "CC", "PR"],
+      "canonicalLabels": {},
+      "aliases": {"PR": ["Promo"]},
       "highToLow": [
         ["SEC+"],
         ["SEC"],
@@ -98,12 +183,29 @@
         ["C"],
         ["CR"],
         ["CC"],
-        ["PR"]
+        ["PR", "Promo"]
+      ],
+      "lowToHigh": [
+        ["PR", "Promo"],
+        ["CC"],
+        ["CR"],
+        ["C"],
+        ["U"],
+        ["R"],
+        ["RR"],
+        ["SR"],
+        ["RRR"],
+        ["OFR"],
+        ["SP"],
+        ["SSP"],
+        ["SEC"],
+        ["SEC+"]
       ]
     },
     "haikyuu": {
       "sourceUrl": "https://www.takaratomy.co.jp/products/haikyuvobacabreak/card/",
       "canonicalCodes": ["SEC", "SP", "UR", "SSR", "SR", "R", "U", "C", "PR"],
+      "canonicalLabels": {},
       "aliases": {"PR": ["Promo"]},
       "highToLow": [
         ["SEC"],
@@ -115,6 +217,17 @@
         ["U"],
         ["C"],
         ["PR", "Promo"]
+      ],
+      "lowToHigh": [
+        ["PR", "Promo"],
+        ["C"],
+        ["U"],
+        ["R"],
+        ["SR"],
+        ["SSR"],
+        ["UR"],
+        ["SP"],
+        ["SEC"]
       ]
     }
   }
