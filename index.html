@@ -55,7 +55,7 @@ async function loadCardsPage(reset=false){
   if(browse.loading||game==='all')return;
   const state=browse,selectedGame=game,notice=$('notice'),button=$('loadMore');
   state.loading=true;
-  if(reset){state.rows=[];state.offset=0;cards([])}
+  if(reset){state.rows=[];state.offset=0;cards([]);$('cardsTitle').textContent=state.product?name(state.product):`${G(selectedGame).nameZh||selectedGame}卡片圖鑑`;$('cardsMeta').textContent='正在套用目前選擇的 IP、版本與稀有度…'}
   notice.style.display='flex';notice.classList.add('brand-loading');notice.textContent=`正在載入${G(selectedGame).nameZh||selectedGame}卡片與圖片…`;
   button.disabled=true;button.textContent='載入中…';
   try{
