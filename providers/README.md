@@ -61,6 +61,26 @@ Provider 資料應依序用 provider stable ID、遊戲 + 系列 + 卡號 + 語�
 - `yugioh-zh-enrichment.mjs`：只接受已核准、帶穩定識別碼的繁中來源；不以翻譯或相似卡名自動配對。
 - `price-history.mjs`：建立可重複執行的價格觀測計畫；不同來源、價格類型、幣別與卡片身份不混算。
 
+### Pokémon phase-2A gap planner
+
+`createPokemonGapPlan` 永遠只產生 dry-run patch，不會自行爬蟲、呼叫網路或寫入資料庫。可用 `gapKinds` 將一批來源限制在指定缺口：
+
+```js
+gapKinds: [
+  'traditional-chinese-name',
+  'rarity',
+  'same-printing-image'
+],
+batchSize: 100,
+cursor: previous.cursor.next
+```
+
+這三個 wire value 是穩定的機器可讀值；`name_zh`、`printing_image` 等舊欄位別名也會正規化。指定 `gapKinds`（或 `onlyMissing: true`）時，完整資料列會被跳過，`batchSize` 只限制實際選入的缺口來源；`sourceRecords.scanned` 與 `sourceRecords.skippedRecords` 仍保留掃描稽核。未指定時維持來源列分頁相容性，但只會產生三種 phase-2A 欄位的補全 patch（既有英文名補全僅在相容模式保留）。
+
+回傳的 `summary` 與 `gapCounts` 可直接供排程器或報表使用，區分來源列層級的 `scanned`、`matched`、`changed`、`heldForReview`、`skipped`；欄位層級另提供 `fieldsChanged`、`fieldsHeldForReview`、`fieldsSkipped`、`summary.fieldCounts`，`summary.fields` 保留每個缺口的 target 與原因。已有值、`verified`／`reviewed` 標記或 metadata reviewed 標記的資料不會被覆寫；provider ID 或精確系列代碼＋卡號無法唯一匹配時會進入 `heldForReview`。
+
+`cursor.next` 內含排序後來源快照的 SHA-256 checksum。來源內容改變（即使只是來源欄位值改變）會讓舊 cursor 拒絕；同一快照重新執行則 checksum 與排序穩定，沒有新的 patch 時可安全視為 idempotent。
+
 候選資料寫入私有 `catalog_enrichment_candidates`，確認來源政策與精確配對後才晉升正式表。價格則以 append-only `price_observations` 保存；內容未變時以 checksum 跳過，至少兩個相同比較維度的觀測點才計算漲跌。
 
 目前遊々亭仍是 `permission-pending`，因此不會排程重新抓取；既有驗證資料也不代表完整市場。圖片 URL 與公開可存取不等同授權，顯示狀態仍依來源政策判定。

@@ -12,7 +12,7 @@ test('public Beta surfaces explain coverage, freshness, and correction path',()=
   for(const marker of ['公開 BETA','betaDataStatus','betaUpdatedAt','betaCoverageSummary','betaGuidanceTitle','copyReportTemplate','gameContext'])assert.match(html,new RegExp(marker));
   assert.match(html,/勘誤／權利通知/);
   assert.match(ui,/資料完整度與圖片權利狀態/);
-  assert.match(ui,/官方總數尚未核定/);
+  assert.match(ui,/完整分母未核定/);
 });
 
 test('trend UI labels the market scope and keeps empty data honest',()=>{

@@ -28,6 +28,8 @@ test('public coverage reports explicit field denominators for all five IPs witho
   for(const gameId of ['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz']){
     const game=body.data.games[gameId];
     assert.ok(game,`${gameId} coverage is missing`);
+    assert.ok(game.baseline,`${gameId} baseline status is missing`);
+    assert.equal(game.baseline.value,null);
     assert.equal(typeof game.cards,'number');
     for(const field of ['cards','images','chineseNames','rarity','printings','versions']){
       assert.ok(game.coverage[field],`${gameId}.${field} coverage is missing`);
@@ -37,6 +39,8 @@ test('public coverage reports explicit field denominators for all five IPs witho
     assert.ok(Object.hasOwn(game.coverage.sourceTimestamp,'status'));
     assert.ok(Object.hasOwn(game,'totalPrintings'));
   }
+  assert.equal(body.data.baselineRegistry.status,'unknown');
+  assert.equal(body.data.baselineRegistry.error,null);
 });
 
 test('trends fallback discloses unavailable source scope and does not create a ranking',async()=>{

@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "registryVersion": "2026-09-14",
+  "reviewedAt": "2026-09-14",
+  "policy": {
+    "allowedDenominatorKinds": [
+      "official-total",
+      "provider-total",
+      "unknown"
+    ],
+    "approvedSeriesMetadataKeys": [
+      "printedTotal",
+      "total",
+      "cardCount"
+    ],
+    "evidenceStatuses": [
+      "provider-reported",
+      "source-verified",
+      "quarantined",
+      "unknown"
+    ],
+    "quarantineSeriesIds": [
+      "svp",
+      "sve",
+      "CS1.5",
+      "SV5K"
+    ],
+    "unknownDenominator": {
+      "kind": "unknown",
+      "value": null
+    },
+    "limitations": [
+      "目前沒有已核對的五個 IP 官方完整卡表分母，因此預設值維持 unknown/null。",
+      "provider 的 printedTotal、total 或 cardCount 只有在保留來源 ID、URL、as-of、status 與 confidence 時才可作為 provider-total 候選。",
+      "不同地區的 printing 不可與系列總數直接相加；同一範圍只採用一個明確分母，以避免重複計算。"
+    ]
+  },
+  "games": [
+    {
+      "gameId": "pokemon",
+      "nameZh": "寶可夢",
+      "baseline": {
+        "kind": "unknown",
+        "value": null,
+        "status": "unknown",
+        "confidence": "unverified",
+        "source": {
+          "id": null,
+          "url": null,
+          "asOf": null,
+          "status": "unknown",
+          "confidence": "unverified"
+        }
+      },
+      "regions": [
+        {"region": "JP", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "pokemon-jp", "url": "https://www.pokemon-card.com/card-search/", "asOf": null, "status": "link-only", "confidence": "unverified"}}, "series": []},
+        {"region": "TW", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "pokemon-tw", "url": "https://asia.pokemon-card.com/tw/card-search/", "asOf": null, "status": "link-only", "confidence": "unverified"}}, "series": []},
+        {"region": "US", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "pokemontcg", "url": "https://docs.pokemontcg.io/", "asOf": null, "status": "approved-api", "confidence": "unverified"}}, "series": []},
+        {"region": "CN", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": null, "url": null, "asOf": null, "status": "unknown", "confidence": "unverified"}}, "series": []},
+        {"region": "KR", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": null, "url": null, "asOf": null, "status": "unknown", "confidence": "unverified"}}, "series": []},
+        {"region": "ASIA", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": null, "url": null, "asOf": null, "status": "unknown", "confidence": "unverified"}}, "series": []}
+      ]
+    },
+    {
+      "gameId": "onepiece",
+      "nameZh": "航海王",
+      "baseline": {
+        "kind": "unknown",
+        "value": null,
+        "status": "unknown",
+        "confidence": "unverified",
+        "source": {
+          "id": null,
+          "url": null,
+          "asOf": null,
+          "status": "unknown",
+          "confidence": "unverified"
+        }
+      },
+      "regions": [
+        {"region": "JP", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "onepiece-official-runtime", "url": "https://www.onepiece-cardgame.com/cardlist/", "asOf": null, "status": "permission-pending", "confidence": "unverified"}}, "series": []},
+        {"region": "TW", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "onepiece-tw", "url": "https://asia-tw.onepiece-cardgame.com/cardlist/", "asOf": null, "status": "link-only", "confidence": "unverified"}}, "series": []},
+        {"region": "ASIA", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": null, "url": null, "asOf": null, "status": "unknown", "confidence": "unverified"}}, "series": []}
+      ]
+    },
+    {
+      "gameId": "yugioh",
+      "nameZh": "遊戲王",
+      "baseline": {
+        "kind": "unknown",
+        "value": null,
+        "status": "unknown",
+        "confidence": "unverified",
+        "source": {
+          "id": null,
+          "url": null,
+          "asOf": null,
+          "status": "unknown",
+          "confidence": "unverified"
+        }
+      },
+      "regions": [
+        {"region": "JP", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "yugioh-neuron", "url": "https://www.db.yugioh-card.com/yugiohdb/card_search", "asOf": null, "status": "link-only", "confidence": "unverified"}}, "series": []},
+        {"region": "TW", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": null, "url": null, "asOf": null, "status": "unknown", "confidence": "unverified"}}, "series": []},
+        {"region": "US", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "ygoprodeck", "url": "https://api.ygoprodeck.com/api-guide/", "asOf": null, "status": "approved-api", "confidence": "unverified"}}, "series": []},
+        {"region": "CN", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": null, "url": null, "asOf": null, "status": "unknown", "confidence": "unverified"}}, "series": []},
+        {"region": "KR", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": null, "url": null, "asOf": null, "status": "unknown", "confidence": "unverified"}}, "series": []}
+      ]
+    },
+    {
+      "gameId": "weiss-schwarz",
+      "nameZh": "Weiß Schwarz",
+      "baseline": {
+        "kind": "unknown",
+        "value": null,
+        "status": "unknown",
+        "confidence": "unverified",
+        "source": {
+          "id": null,
+          "url": null,
+          "asOf": null,
+          "status": "unknown",
+          "confidence": "unverified"
+        }
+      },
+      "regions": [
+        {"region": "JP", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "weiss-schwarz-official", "url": "https://ws-tcg.com/cardlist/", "asOf": null, "status": "link-only", "confidence": "unverified"}}, "series": []}
+      ]
+    },
+    {
+      "gameId": "haikyuu",
+      "nameZh": "排球少年",
+      "baseline": {
+        "kind": "unknown",
+        "value": null,
+        "status": "unknown",
+        "confidence": "unverified",
+        "source": {
+          "id": null,
+          "url": null,
+          "asOf": null,
+          "status": "unknown",
+          "confidence": "unverified"
+        }
+      },
+      "regions": [
+        {"region": "JP", "baseline": {"kind": "unknown", "value": null, "status": "unknown", "confidence": "unverified", "source": {"id": "haikyu-official", "url": "https://www.takaratomy.co.jp/products/haikyuvobacabreak/cardlist/", "asOf": null, "status": "link-only", "confidence": "unverified"}}, "series": []}
+      ]
+    }
+  ]
+}
