@@ -84,3 +84,17 @@ cursor: previous.cursor.next
 候選資料寫入私有 `catalog_enrichment_candidates`，確認來源政策與精確配對後才晉升正式表。價格則以 append-only `price_observations` 保存；內容未變時以 checksum 跳過，至少兩個相同比較維度的觀測點才計算漲跌。
 
 目前遊々亭仍是 `permission-pending`，因此不會排程重新抓取；既有驗證資料也不代表完整市場。圖片 URL 與公開可存取不等同授權，顯示狀態仍依來源政策判定。
+
+### Pokémon phase-2B TCGdex candidate loader
+
+`enrichment-candidates.mjs` 只接受現有快照（`cards`、`printings`、`cardNames`），先找出來源明確標為 TCGdex、且有穩定 `provider_id` 和指定缺口的列，再以精確 provider ID 取得 TCGdex `zh-tw` 詳細資料。若 provider ID 無法直接對上，只接受精確系列代碼＋卡號的交叉比對；不使用名稱、別名或模糊相似度。
+
+它最多輸出 100 個候選列、使用低併發 GET、排序後產生可直接對應 `catalog_enrichment_candidates` 的 JSON 與稽核摘要。預設 `rarity` 只建立一個正規化 `rarity_code` 候選（例如 `Common → C`），原始名稱保留在 `evidence`，避免公開篩選再出現同義重複分類；繁中名稱需明確指定 `--fields name_zh,rarity`。圖片預設不會成為候選，只有同時傳入 `--fields image_url --include-images` 才會產生 `image_url` 候選，而且候選值會保留 `imageRightsStatus: not-provided` 和 `imageRights: not-inferred`，不能視為已獲授權。
+
+```bash
+node scripts/plan-pokemon-enrichment.mjs snapshot.json --fields name_zh,rarity --batch-size 100 --observed-at 2026-09-15T00:00:00.000Z
+```
+
+這個命令只讀取快照並輸出 dry-run JSON，不連線 Supabase、不寫入正式表，也不會自動晉升候選資料。`npm run plan:pokemon-enrichment -- snapshot.json` 是相同入口；送入正式候選表前仍需完成來源條款、robots、欄位衝突和圖片權利審查。
+
+正式升級只透過 `private.promote_pokemon_rarity_candidates`：呼叫端必須傳入已審核的明確候選 ID、批次 ID 與 checksum。資料庫會鎖定候選和目標、確認 provider／IP／地區／語言、只補空值並原子記錄升級；相同批次重跑是 0 變更。此函式不接受圖片欄位。
