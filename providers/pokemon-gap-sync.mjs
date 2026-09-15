@@ -12,8 +12,40 @@ export const DEFAULT_APPROVED_PROVIDERS = Object.freeze([
 ]);
 
 export const DEFAULT_BATCH_SIZE = 100;
-export const MAX_BATCH_SIZE = 250;
+export const MAX_BATCH_SIZE = 100;
 export const ZH_TW_LOCALE = 'zh-Hant-TW';
+
+// These are the only gap fields the phase-2A planner is allowed to select.
+// The wire values are intentionally stable and lowercase so a scheduler can
+// persist them without depending on JavaScript property naming conventions.
+export const GAP_KINDS = Object.freeze({
+  TRADITIONAL_CHINESE_NAME: 'traditional-chinese-name',
+  RARITY: 'rarity',
+  SAME_PRINTING_IMAGE: 'same-printing-image'
+});
+
+export const DEFAULT_GAP_KINDS = Object.freeze(Object.values(GAP_KINDS));
+
+const GAP_KIND_ALIASES = new Map([
+  [GAP_KINDS.TRADITIONAL_CHINESE_NAME, GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  ['traditional_chinese_name', GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  ['traditionalchinesename', GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  ['chinese-name', GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  ['chinese_name', GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  ['name-zh', GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  ['name_zh', GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  ['namezh', GAP_KINDS.TRADITIONAL_CHINESE_NAME],
+  [GAP_KINDS.RARITY, GAP_KINDS.RARITY],
+  ['card-rarity', GAP_KINDS.RARITY],
+  ['card_rarity', GAP_KINDS.RARITY],
+  [GAP_KINDS.SAME_PRINTING_IMAGE, GAP_KINDS.SAME_PRINTING_IMAGE],
+  ['same_printing_image', GAP_KINDS.SAME_PRINTING_IMAGE],
+  ['printing-image', GAP_KINDS.SAME_PRINTING_IMAGE],
+  ['printing_image', GAP_KINDS.SAME_PRINTING_IMAGE],
+  ['image', GAP_KINDS.SAME_PRINTING_IMAGE],
+  ['image-url', GAP_KINDS.SAME_PRINTING_IMAGE],
+  ['image_url', GAP_KINDS.SAME_PRINTING_IMAGE]
+]);
 
 const PROVIDER_ALIASES = new Map([
   ['pokemon-tcg', 'pokemontcg'],
@@ -33,7 +65,32 @@ const hasValue = value => {
   return true;
 };
 const firstValue = (...values) => values.find(hasValue) ?? null;
-const asArray = value => Array.isArray(value) ? value : value instanceof Set ? [...value] : value && typeof value[Symbol.iterator] === 'function' ? [...value] : [];
+const asArray = value => Array.isArray(value) ? value : typeof value === 'string' ? [value] : value instanceof Set ? [...value] : value && typeof value[Symbol.iterator] === 'function' ? [...value] : [];
+
+function normalizeGapKinds(value) {
+  const values = value == null ? [...DEFAULT_GAP_KINDS] : typeof value === 'string' ? [value] : asArray(value);
+  const normalized = [];
+  for (const item of values) {
+    const key = clean(item)?.toLocaleLowerCase().replace(/\s+/g, '-');
+    const kind = key ? GAP_KIND_ALIASES.get(key) : null;
+    if (!kind) throw new Error('INVALID_POKEMON_GAP_KIND');
+    if (!normalized.includes(kind)) normalized.push(kind);
+  }
+  return normalized;
+}
+
+function isReviewed(row) {
+  if (!row || typeof row !== 'object') return false;
+  const status = clean(row.data_status ?? row.dataStatus)?.toLocaleLowerCase();
+  const metadata = rowMetadata(row);
+  return ['approved', 'reviewed', 'verified'].includes(status)
+    || row.reviewed === true
+    || row.is_reviewed === true
+    || row.isReviewed === true
+    || metadata.reviewed === true
+    || metadata.isReviewed === true
+    || hasValue(row.reviewed_at ?? row.reviewedAt);
+}
 
 function canonicalProvider(value) {
   const normalized = clean(value)?.toLocaleLowerCase().replace(/\s+/g, '-');
@@ -143,10 +200,10 @@ function normalizeSourceRecord(input, index, approvedProviders) {
     return {
       invalid: true,
       index,
-      sortKey: `invalid:${index}`,
       reason: 'source-not-approved',
       provider,
-      sourceUrl
+      sourceUrl,
+      sortKey: `invalid:source-not-approved|${provider || ''}|${sourceUrl || ''}|${stableStringify(source)}`
     };
   }
 
@@ -176,10 +233,10 @@ function normalizeSourceRecord(input, index, approvedProviders) {
     return {
       invalid: true,
       index,
-      sortKey: `invalid:${index}`,
       reason: 'missing-stable-key',
       provider,
-      sourceUrl
+      sourceUrl,
+      sortKey: `invalid:missing-stable-key|${provider || ''}|${sourceUrl || ''}|${stableStringify(source)}`
     };
   }
 
@@ -222,7 +279,7 @@ function normalizeSourceRecord(input, index, approvedProviders) {
     invalid: false,
     index,
     stableKey,
-    sortKey: `${provider}|${stableKey}|${stableStringify(record)}`
+    sortKey: `${provider}|${stableKey}|${stableStringify(sourceRecordFingerprint(record))}`
   };
 }
 
@@ -369,14 +426,48 @@ function stableStringify(value) {
   return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`;
 }
 
+// Indexes are intentionally excluded.  The same source snapshot must produce
+// the same checksum even when the provider returns rows in a different order.
+function sourceRecordFingerprint(record) {
+  if (!record || typeof record !== 'object') return record;
+  if (record.invalid) {
+    return {
+      invalid: true,
+      reason: record.reason || null,
+      provider: record.provider || null,
+      sourceUrl: record.sourceUrl || null,
+      sortKey: record.sortKey || null
+    };
+  }
+  return {
+    provider: record.provider || null,
+    providerId: record.providerId || null,
+    setCode: record.setCode || null,
+    cardNumber: record.cardNumber || null,
+    localKey: record.localKey || null,
+    nameZh: record.nameZh || null,
+    nameEn: record.nameEn || null,
+    rarityCode: record.rarityCode || null,
+    rarityLabel: record.rarityLabel || null,
+    imageUrl: record.imageUrl || null,
+    sourceUrl: record.sourceUrl || null,
+    locale: record.locale || null,
+    dataStatus: record.dataStatus || null
+  };
+}
+
+function checksumNormalizedRecords(records) {
+  return createHash('sha256')
+    .update(stableStringify(records.map(sourceRecordFingerprint).sort((left, right) => stableStringify(left).localeCompare(stableStringify(right)))))
+    .digest('hex');
+}
+
 export function sourceChecksum(records) {
   const normalized = records.map((record, index) => {
     const result = normalizeSourceRecord(record, index, new Set(DEFAULT_APPROVED_PROVIDERS));
-    return result.invalid
-      ? { invalid: true, reason: result.reason, source: result.provider, sourceUrl: result.sourceUrl, raw: record }
-      : result;
-  }).sort((left, right) => `${left.sortKey || ''}`.localeCompare(`${right.sortKey || ''}`));
-  return createHash('sha256').update(stableStringify(normalized)).digest('hex');
+    return result;
+  });
+  return checksumNormalizedRecords(normalized);
 }
 
 function encodeCursor(offset, checksum) {
@@ -464,6 +555,74 @@ function rejectFromSource(source, reason, extra = {}) {
   };
 }
 
+function auditTargetKey(table, id, field) {
+  return `${table}|${id}|${field}`;
+}
+
+function gapInventory(cards, printings, cardNames) {
+  const names = cardNameIndex(cardNames);
+  return {
+    [GAP_KINDS.TRADITIONAL_CHINESE_NAME]: {
+      total: cards.length,
+      missing: cards.filter(card => !hasValue(rowZhName(card)) || !cardNameCovered(names, cardId(card))).length
+    },
+    [GAP_KINDS.RARITY]: {
+      total: cards.length + printings.length,
+      missing: cards.filter(card => !hasValue(rowRarity(card))).length
+        + printings.filter(printing => !hasValue(rowRarity(printing))).length
+    },
+    [GAP_KINDS.SAME_PRINTING_IMAGE]: {
+      total: printings.length,
+      missing: printings.filter(printing => !hasValue(rowImage(printing))).length
+    }
+  };
+}
+
+function resolveSourcePreview(source, cards, printings, cardIndexes, cardNameRows) {
+  if (source.invalid) return { source, matched: false, reason: source.reason, gaps: [] };
+  const cardResolution = resolveExact(cardIndexes, source);
+  if (!cardResolution.matched) return { source, matched: false, reason: cardResolution.reason, candidates: cardResolution.candidates, gaps: [] };
+  const targetCard = cards.find(row => cardId(row) === cardResolution.id);
+  if (!targetCard) return { source, matched: false, reason: 'matched-card-not-present', cardId: cardResolution.id, gaps: [] };
+  const printingResolution = printingForSource(printings, source, cardResolution.id);
+  const printing = printingResolution.matched ? printingResolution.row : null;
+  const gaps = [];
+  if (!hasValue(rowZhName(targetCard)) || !cardNameCovered(cardNameRows, cardResolution.id)) gaps.push(GAP_KINDS.TRADITIONAL_CHINESE_NAME);
+  // A missing same-printing row is itself a reviewable rarity gap.  The card
+  // rarity can still be filled safely, but the printing portion cannot be
+  // guessed from another version.
+  if (!hasValue(rowRarity(targetCard)) || !printing || !hasValue(rowRarity(printing))) gaps.push(GAP_KINDS.RARITY);
+  if (!printing || !hasValue(rowImage(printing))) gaps.push(GAP_KINDS.SAME_PRINTING_IMAGE);
+  return {
+    source,
+    matched: true,
+    cardResolution,
+    targetCard,
+    printingResolution,
+    printing,
+    gaps: unique(gaps)
+  };
+}
+
+function selectBatch(records, offset, limit, filterToGaps, requestedGapKinds, cards, printings, cardIndexes, cardNameRows) {
+  if (!filterToGaps) {
+    const selected = records.slice(offset, offset + limit);
+    return { selected, scanned: selected.length, skipped: [], nextOffset: offset + selected.length };
+  }
+  const selected = [];
+  const skipped = [];
+  let index = offset;
+  while (index < records.length && selected.length < limit) {
+    const record = records[index];
+    const preview = resolveSourcePreview(record, cards, printings, cardIndexes, cardNameRows);
+    const eligible = record.invalid || !preview.matched || preview.gaps.some(kind => requestedGapKinds.includes(kind));
+    if (eligible) selected.push(record);
+    else skipped.push({ source: record.stableKey, reason: 'no-requested-gap', gapKinds: preview.gaps });
+    index += 1;
+  }
+  return { selected, scanned: index - offset, skipped, nextOffset: index };
+}
+
 /**
  * Build a deterministic, dry-run enrichment plan for existing Pokémon rows.
  *
@@ -479,7 +638,10 @@ export function createPokemonGapPlan({
   sourceRecords = [],
   approvedProviders = DEFAULT_APPROVED_PROVIDERS,
   batchSize = DEFAULT_BATCH_SIZE,
-  cursor = null
+  cursor = null,
+  gapKinds,
+  onlyMissing = false,
+  onlyGaps = false
 } = {}) {
   if (!Array.isArray(cards) || !Array.isArray(printings) || !Array.isArray(cardNames) || !Array.isArray(sourceRecords)) {
     throw new Error('INVALID_POKEMON_GAP_INPUT');
@@ -488,85 +650,163 @@ export function createPokemonGapPlan({
   const normalizedRecords = sourceRecords.map((record, index) => normalizeSourceRecord(record, index, approved));
   const uniqueRecords = new Map();
   for (const record of normalizedRecords) {
-    const key = stableStringify(record);
+    const key = stableStringify(sourceRecordFingerprint(record));
     if (!uniqueRecords.has(key)) uniqueRecords.set(key, record);
   }
   const records = [...uniqueRecords.values()].sort((left, right) => `${left.sortKey || ''}`.localeCompare(`${right.sortKey || ''}`));
-  const checksum = createHash('sha256').update(stableStringify(records)).digest('hex');
+  const checksum = checksumNormalizedRecords(records);
   const offset = decodeCursor(cursor, checksum, records.length);
   const limit = normalizeBatchSize(batchSize);
-  const selected = records.slice(offset, offset + limit);
   const { cardIndexes } = buildIndexes(cards, printings);
   const cardNameRows = cardNameIndex(cardNames);
+  const requestedGapKinds = normalizeGapKinds(gapKinds);
+  const filterToGaps = gapKinds !== undefined || onlyMissing === true || onlyGaps === true;
+  const selection = selectBatch(records, offset, limit, filterToGaps, requestedGapKinds, cards, printings, cardIndexes, cardNameRows);
+  const selected = selection.selected;
   const cardProposals = new Map();
   const printingProposals = new Map();
   const nameProposals = new Map();
   const rejected = [];
   const matches = [];
+  const fieldAudits = [];
+  const conflictTargetKeys = new Set();
+
+  const addAudit = (source, kind, status, extra = {}) => {
+    fieldAudits.push({
+      source: source?.stableKey || null,
+      kind,
+      status,
+      ...extra
+    });
+  };
+  const addCandidateAudit = (source, kind, target) => addAudit(source, kind, 'candidate', { target });
+  const allows = kind => requestedGapKinds.includes(kind);
 
   for (const source of selected) {
     if (source.invalid) {
       rejected.push(rejectFromSource(source, source.reason));
+      for (const kind of requestedGapKinds) addAudit(source, kind, 'held-for-review', { reason: source.reason });
       continue;
     }
-    const cardResolution = resolveExact(cardIndexes, source);
-    if (!cardResolution.matched) {
-      rejected.push(rejectFromSource(source, cardResolution.reason, { candidates: cardResolution.candidates }));
+    const preview = resolveSourcePreview(source, cards, printings, cardIndexes, cardNameRows);
+    if (!preview.matched) {
+      rejected.push(rejectFromSource(source, preview.reason, { candidates: preview.candidates }));
+      for (const kind of requestedGapKinds) addAudit(source, kind, 'held-for-review', { reason: preview.reason });
       continue;
     }
-    const targetCard = cards.find(row => cardId(row) === cardResolution.id);
-    if (!targetCard) {
-      rejected.push(rejectFromSource(source, 'matched-card-not-present', { cardId: cardResolution.id }));
-      continue;
-    }
+    const { cardResolution, targetCard, printingResolution, printing } = preview;
     matches.push({ source: source.stableKey, cardId: cardResolution.id, matchType: cardResolution.matchType });
 
-    if (!hasValue(targetCard.name_zh) && source.nameZh) addProposal(cardProposals, cardResolution.id, 'name_zh', source.nameZh, source);
-    if (!hasValue(targetCard.rarity) && source.rarityCode) addProposal(cardProposals, cardResolution.id, 'rarity', source.rarityCode, source);
-    if (!hasValue(targetCard.name_en) && source.nameEn) addProposal(cardProposals, cardResolution.id, 'name_en', source.nameEn, source);
-
-    const printingResolution = printingForSource(printings, source, cardResolution.id);
-    if (printingResolution.matched && printingResolution.row) {
-      const printing = printingResolution.row;
-      if (!hasValue(printing.image_url) && source.imageUrl) addProposal(printingProposals, printingResolution.id, 'image_url', source.imageUrl, source);
-      if (!hasValue(printing.rarity) && source.rarityCode) addProposal(printingProposals, printingResolution.id, 'rarity', source.rarityCode, source);
-      if (!hasValue(printing.rarity_code) && source.rarityCode) addProposal(printingProposals, printingResolution.id, 'rarity_code', source.rarityCode, source);
-      if (!hasValue(printing.rarity_label) && source.rarityLabel) addProposal(printingProposals, printingResolution.id, 'rarity_label', source.rarityLabel, source);
-    } else if (source.imageUrl || source.rarityCode) {
-      rejected.push(rejectFromSource(source, printingResolution.reason || 'printing-not-found', { cardId: cardResolution.id, candidates: printingResolution.candidates }));
-    }
-
-    if (source.nameZh && !cardNameCovered(cardNameRows, cardResolution.id)) {
-      const key = `${cardResolution.id}|${ZH_TW_LOCALE}|official`;
-      const namePatch = {
-        card_id: cardResolution.id,
-        locale: ZH_TW_LOCALE,
-        name: source.nameZh,
-        name_type: 'official',
-        source: source.provider,
-        source_url: source.sourceUrl,
-        data_status: source.dataStatus,
-        metadata: {
-          enrichment: 'pokemon-gap-sync',
-          providerId: source.providerId,
-          setCode: source.setCode,
-          cardNumber: source.cardNumber,
-          imageRights: 'not-inferred'
-        }
-      };
-      const existing = nameProposals.get(key);
-      if (existing && existing.name !== namePatch.name) {
-        rejected.push(rejectFromSource(source, 'conflicting-source-values', { cardId: cardResolution.id, field: 'tcg_card_names.name', values: [existing.name, namePatch.name] }));
+    if (allows(GAP_KINDS.TRADITIONAL_CHINESE_NAME)) {
+      const nameKey = `${cardResolution.id}|${ZH_TW_LOCALE}|official`;
+      const existingName = cardNameRows.get(nameKey);
+      const needsCardName = !hasValue(rowZhName(targetCard));
+      const needsNameRow = !cardNameCovered(cardNameRows, cardResolution.id);
+      if (!needsCardName && !needsNameRow) {
+        addAudit(source, GAP_KINDS.TRADITIONAL_CHINESE_NAME, isReviewed(targetCard) ? 'held-for-review' : 'skipped', { reason: isReviewed(targetCard) ? 'reviewed-value' : 'already-complete' });
+      } else if ((needsCardName && isReviewed(targetCard)) || (needsNameRow && isReviewed(existingName))) {
+        addAudit(source, GAP_KINDS.TRADITIONAL_CHINESE_NAME, 'held-for-review', { reason: 'reviewed-value' });
+      } else if (!source.nameZh) {
+        addAudit(source, GAP_KINDS.TRADITIONAL_CHINESE_NAME, 'skipped', { reason: 'source-field-missing' });
       } else {
-        nameProposals.set(key, namePatch);
+        if (needsCardName) {
+          addProposal(cardProposals, cardResolution.id, 'name_zh', source.nameZh, source);
+          addCandidateAudit(source, GAP_KINDS.TRADITIONAL_CHINESE_NAME, auditTargetKey('tcg_cards', cardResolution.id, 'name_zh'));
+        }
+        if (needsNameRow) {
+          const namePatch = {
+            card_id: cardResolution.id,
+            locale: ZH_TW_LOCALE,
+            name: source.nameZh,
+            name_type: 'official',
+            source: source.provider,
+            source_url: source.sourceUrl,
+            data_status: source.dataStatus,
+            metadata: {
+              enrichment: 'pokemon-gap-sync',
+              providerId: source.providerId,
+              setCode: source.setCode,
+              cardNumber: source.cardNumber,
+              imageRights: 'not-inferred'
+            }
+          };
+          const existing = nameProposals.get(nameKey);
+          const nameTarget = auditTargetKey('tcg_card_names', nameKey, 'name');
+          if (existing && existing.name !== namePatch.name) {
+            conflictTargetKeys.add(nameTarget);
+            rejected.push(rejectFromSource(source, 'conflicting-source-values', { cardId: cardResolution.id, field: 'tcg_card_names.name', values: [existing.name, namePatch.name] }));
+            addAudit(source, GAP_KINDS.TRADITIONAL_CHINESE_NAME, 'held-for-review', { target: nameTarget, reason: 'conflicting-source-values' });
+          } else {
+            nameProposals.set(nameKey, namePatch);
+            addCandidateAudit(source, GAP_KINDS.TRADITIONAL_CHINESE_NAME, nameTarget);
+          }
+        }
       }
     }
+
+    if (allows(GAP_KINDS.RARITY)) {
+      const cardNeedsRarity = !hasValue(rowRarity(targetCard));
+      if (cardNeedsRarity) {
+        const target = auditTargetKey('tcg_cards', cardResolution.id, 'rarity');
+        if (isReviewed(targetCard)) addAudit(source, GAP_KINDS.RARITY, 'held-for-review', { target, reason: 'reviewed-value' });
+        else if (!source.rarityCode) addAudit(source, GAP_KINDS.RARITY, 'skipped', { target, reason: 'source-field-missing' });
+        else {
+          addProposal(cardProposals, cardResolution.id, 'rarity', source.rarityCode, source);
+          addCandidateAudit(source, GAP_KINDS.RARITY, target);
+        }
+      }
+      if (printingResolution.matched && printing) {
+        const printingFields = [
+          ['rarity', source.rarityCode],
+          ['rarity_code', source.rarityCode],
+          ['rarity_label', source.rarityLabel]
+        ];
+        for (const [field, value] of printingFields) {
+          if (hasValue(printing[field])) continue;
+          const target = auditTargetKey('tcg_printings', printingResolution.id, field);
+          if (isReviewed(printing)) addAudit(source, GAP_KINDS.RARITY, 'held-for-review', { target, reason: 'reviewed-value' });
+          else if (!value) addAudit(source, GAP_KINDS.RARITY, 'skipped', { target, reason: 'source-field-missing' });
+          else {
+            addProposal(printingProposals, printingResolution.id, field, value, source);
+            addCandidateAudit(source, GAP_KINDS.RARITY, target);
+          }
+        }
+      } else {
+        const target = auditTargetKey('tcg_printings', printingResolution.id || `${cardResolution.id}|unknown`, 'rarity');
+        rejected.push(rejectFromSource(source, printingResolution.reason || 'printing-not-found', { cardId: cardResolution.id, candidates: printingResolution.candidates }));
+        addAudit(source, GAP_KINDS.RARITY, 'held-for-review', { target, reason: printingResolution.reason || 'printing-not-found' });
+      }
+    }
+
+    if (allows(GAP_KINDS.SAME_PRINTING_IMAGE)) {
+      if (!printingResolution.matched || !printing) {
+        const target = auditTargetKey('tcg_printings', printingResolution.id || `${cardResolution.id}|unknown`, 'image_url');
+        addAudit(source, GAP_KINDS.SAME_PRINTING_IMAGE, 'held-for-review', { target, reason: printingResolution.reason || 'printing-not-found' });
+      } else {
+        const target = auditTargetKey('tcg_printings', printingResolution.id, 'image_url');
+        if (hasValue(printing.image_url)) addAudit(source, GAP_KINDS.SAME_PRINTING_IMAGE, isReviewed(printing) ? 'held-for-review' : 'skipped', { target, reason: isReviewed(printing) ? 'reviewed-value' : 'already-complete' });
+        else if (isReviewed(printing)) addAudit(source, GAP_KINDS.SAME_PRINTING_IMAGE, 'held-for-review', { target, reason: 'reviewed-value' });
+        else if (!source.imageUrl) addAudit(source, GAP_KINDS.SAME_PRINTING_IMAGE, 'skipped', { target, reason: 'source-field-missing' });
+        else {
+          addProposal(printingProposals, printingResolution.id, 'image_url', source.imageUrl, source);
+          addCandidateAudit(source, GAP_KINDS.SAME_PRINTING_IMAGE, target);
+        }
+      }
+    }
+
+    // Keep the legacy English-name fill available for callers that do not use
+    // phase-2A field selection, but never let it escape a bounded field run.
+    if (!filterToGaps && !hasValue(targetCard.name_en) && source.nameEn) addProposal(cardProposals, cardResolution.id, 'name_en', source.nameEn, source);
   }
 
   const cardsPatches = [];
   for (const [id] of cardProposals) {
     const { result, conflicts } = proposalFields(cardProposals, id);
-    for (const conflict of conflicts) rejected.push(rejectFromSource(conflict.sources[0], 'conflicting-source-values', { cardId: id, field: `tcg_cards.${conflict.field}`, values: conflict.values }));
+    for (const conflict of conflicts) {
+      const target = auditTargetKey('tcg_cards', id, conflict.field);
+      conflictTargetKeys.add(target);
+      rejected.push(rejectFromSource(conflict.sources[0], 'conflicting-source-values', { cardId: id, field: `tcg_cards.${conflict.field}`, values: conflict.values }));
+    }
     const firstSource = [...cardProposals.get(id).values()][0]?.[0]?.source || {};
     if (Object.keys(result).length) cardsPatches.push(patchEnvelope('tcg_cards', id, result, firstSource, matches.find(item => item.cardId === id)?.matchType || 'exact', 'fill-missing-only'));
   }
@@ -574,7 +814,11 @@ export function createPokemonGapPlan({
   const printingsPatches = [];
   for (const [id] of printingProposals) {
     const { result, conflicts } = proposalFields(printingProposals, id);
-    for (const conflict of conflicts) rejected.push(rejectFromSource(conflict.sources[0], 'conflicting-source-values', { printingId: id, field: `tcg_printings.${conflict.field}`, values: conflict.values }));
+    for (const conflict of conflicts) {
+      const target = auditTargetKey('tcg_printings', id, conflict.field);
+      conflictTargetKeys.add(target);
+      rejected.push(rejectFromSource(conflict.sources[0], 'conflicting-source-values', { printingId: id, field: `tcg_printings.${conflict.field}`, values: conflict.values }));
+    }
     const firstSource = [...printingProposals.get(id).values()][0]?.[0]?.source || {};
     if (Object.keys(result).length) printingsPatches.push(patchEnvelope('tcg_printings', id, result, firstSource, 'exact', 'fill-missing-only'));
   }
@@ -598,7 +842,80 @@ export function createPokemonGapPlan({
   const projectedNames = projectNameRows(cardNames, namesPatches);
   const before = coverageSnapshot(cards, printings, cardNames);
   const after = coverageSnapshot(projectedCards, projectedPrintings, projectedNames);
-  const nextOffset = offset + selected.length;
+  const inventoryBefore = gapInventory(cards, printings, cardNames);
+  const inventoryAfter = gapInventory(projectedCards, projectedPrintings, projectedNames);
+  const changedTargetKeys = new Set();
+  for (const item of cardsPatches) for (const field of Object.keys(item.patch)) {
+    if (field !== 'id') changedTargetKeys.add(auditTargetKey('tcg_cards', item.id, field));
+  }
+  for (const item of printingsPatches) for (const field of Object.keys(item.patch)) {
+    if (field !== 'id') changedTargetKeys.add(auditTargetKey('tcg_printings', item.id, field));
+  }
+  for (const item of namesPatches) changedTargetKeys.add(auditTargetKey('tcg_card_names', item.id, 'name'));
+  for (const audit of fieldAudits) {
+    if (audit.status !== 'candidate') continue;
+    if (changedTargetKeys.has(audit.target)) audit.status = 'changed';
+    else if (conflictTargetKeys.has(audit.target)) {
+      audit.status = 'held-for-review';
+      audit.reason = 'conflicting-source-values';
+    } else {
+      audit.status = 'skipped';
+      audit.reason = 'no-change';
+    }
+  }
+  const fieldCounts = Object.fromEntries(requestedGapKinds.map(kind => [kind, {
+    scanned: selection.scanned,
+    matched: 0,
+    changed: 0,
+    heldForReview: 0,
+    skipped: selection.skipped.length
+  }]));
+  for (const audit of fieldAudits) {
+    const counts = fieldCounts[audit.kind];
+    if (!counts) continue;
+    if (audit.status === 'changed') counts.changed += 1;
+    else if (audit.status === 'held-for-review') counts.heldForReview += 1;
+    else if (audit.status === 'skipped') counts.skipped += 1;
+    if (audit.status !== 'held-for-review' || audit.reason !== 'printing-not-found') counts.matched += 1;
+  }
+  const changedSources = new Set(fieldAudits.filter(audit => audit.status === 'changed').map(audit => audit.source));
+  const heldSources = new Set(fieldAudits.filter(audit => audit.status === 'held-for-review').map(audit => audit.source));
+  const skippedSources = new Set(fieldAudits.filter(audit => audit.status === 'skipped').map(audit => audit.source));
+  const byGapKind = Object.fromEntries(requestedGapKinds.map(kind => {
+    const kindAudits = fieldAudits.filter(audit => audit.kind === kind);
+    const sources = status => new Set(kindAudits.filter(audit => audit.status === status).map(audit => audit.source));
+    return [kind, {
+      scanned: selection.scanned,
+      matched: new Set(matches.map(match => match.source)).size,
+      changed: sources('changed').size,
+      heldForReview: sources('held-for-review').size,
+      skipped: new Set([...selection.skipped.map(item => item.source), ...sources('skipped')]).size,
+      fields: fieldCounts[kind]
+    }];
+  }));
+  const summary = {
+    scanned: selection.scanned,
+    matched: matches.length,
+    changed: changedSources.size,
+    heldForReview: heldSources.size,
+    skipped: selection.skipped.length + skippedSources.size,
+    fieldsChanged: fieldAudits.filter(audit => audit.status === 'changed').length,
+    fieldsHeldForReview: fieldAudits.filter(audit => audit.status === 'held-for-review').length,
+    fieldsSkipped: fieldAudits.filter(audit => audit.status === 'skipped').length,
+    gapKinds: requestedGapKinds,
+    byGapKind,
+    fieldCounts,
+    records: {
+      scanned: selection.scanned,
+      selected: selected.length,
+      matched: matches.length,
+      changed: changedSources.size,
+      heldForReview: heldSources.size,
+      skipped: selection.skipped.length + skippedSources.size
+    },
+    fields: fieldAudits
+  };
+  const nextOffset = selection.nextOffset;
   const hasMore = nextOffset < records.length;
   const nextCursor = hasMore ? encodeCursor(nextOffset, checksum) : null;
   const patchCounts = {
@@ -612,7 +929,16 @@ export function createPokemonGapPlan({
     dryRun: true,
     provider: 'pokemon-gap-sync',
     sourceProviders: [...approved].sort(),
-    sourceRecords: { inputTotal: sourceRecords.length, total: records.length, selected: selected.length, checksum },
+    gapKinds: requestedGapKinds,
+    sourceRecords: {
+      inputTotal: sourceRecords.length,
+      total: records.length,
+      selected: selected.length,
+      scanned: selection.scanned,
+      skipped: selection.skipped.length,
+      skippedRecords: selection.skipped,
+      checksum
+    },
     cursor: {
       input: cursor,
       offset,
@@ -624,6 +950,12 @@ export function createPokemonGapPlan({
     },
     matches,
     rejected,
+    summary,
+    gapCounts: Object.fromEntries(requestedGapKinds.map(kind => [kind, {
+      ...byGapKind[kind],
+      ...inventoryBefore[kind],
+      inventory: inventoryBefore[kind]
+    }])),
     patches: {
       tcg_cards: cardsPatches,
       tcg_printings: printingsPatches,
@@ -645,7 +977,11 @@ export function createPokemonGapPlan({
           officialChineseNameRows: after.cardNames.zhOfficialRows - before.cardNames.zhOfficialRows
         }
       },
-      gapCounts: { before: gapCounts(before), after: gapCounts(after) }
+      gapCounts: { before: gapCounts(before), after: gapCounts(after) },
+      byGapKind: {
+        before: inventoryBefore,
+        after: inventoryAfter
+      }
     }
   };
 }

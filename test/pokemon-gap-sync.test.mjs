@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPokemonGapPlan, makeLocalKey, normalizeExactPart } from '../providers/pokemon-gap-sync.mjs';
+import { createPokemonGapPlan, GAP_KINDS, makeLocalKey, normalizeExactPart, sourceChecksum } from '../providers/pokemon-gap-sync.mjs';
 
 const card = (overrides = {}) => ({
   id: 'card-1',
@@ -188,4 +188,71 @@ test('rejects a stale cursor when the source checksum changes', () => {
   const first = createPokemonGapPlan({ cards: [card()], printings: [printing()], sourceRecords: [zhSource(), zhSource({ providerId: 'sv4a-348', localId: '348/190' })], batchSize: 1 });
   assert.ok(first.cursor.next);
   assert.throws(() => createPokemonGapPlan({ cards: [card()], printings: [printing()], sourceRecords: [zhSource(), zhSource({ providerId: 'sv4a-348', localId: '348/190', rarity: 'UR' })], batchSize: 1, cursor: first.cursor.next }), /INVALID_POKEMON_GAP_CURSOR/);
+});
+
+test('selects only requested missing fields while keeping the batch bounded', () => {
+  const complete = card({ id: 'card-complete', provider_id: 'sv4a-1', official_card_number: '1/190', name_zh: '妙蛙種子', rarity: 'C' });
+  const missingA = card({ id: 'card-missing-a', provider_id: 'sv4a-2', official_card_number: '2/190' });
+  const missingB = card({ id: 'card-missing-b', provider_id: 'sv4a-3', official_card_number: '3/190' });
+  const completePrinting = printing({ id: 'printing-complete', card_id: 'card-complete', provider_id: 'sv4a-1', local_card_number: '1/190', image_url: 'https://existing.example.test/1.webp', rarity: 'C', rarity_code: 'C', rarity_label: 'C' });
+  const missingPrintingA = printing({ id: 'printing-missing-a', card_id: 'card-missing-a', provider_id: 'sv4a-2', local_card_number: '2/190' });
+  const missingPrintingB = printing({ id: 'printing-missing-b', card_id: 'card-missing-b', provider_id: 'sv4a-3', local_card_number: '3/190' });
+  const sources = [
+    zhSource({ providerId: 'sv4a-1', localId: '1/190', name: '不應再處理' }),
+    zhSource({ providerId: 'sv4a-2', localId: '2/190', name: '妙蛙花' }),
+    zhSource({ providerId: 'sv4a-3', localId: '3/190', name: '妙蛙草' })
+  ];
+  const first = createPokemonGapPlan({
+    cards: [complete, missingA, missingB],
+    printings: [completePrinting, missingPrintingA, missingPrintingB],
+    cardNames: [{ card_id: 'card-complete', locale: 'zh-Hant-TW', name: '妙蛙種子', name_type: 'official' }],
+    sourceRecords: sources,
+    gapKinds: ['name_zh'],
+    batchSize: 1
+  });
+  assert.deepEqual(first.gapKinds, [GAP_KINDS.TRADITIONAL_CHINESE_NAME]);
+  assert.equal(first.sourceRecords.selected, 1);
+  assert.equal(first.sourceRecords.scanned, 2);
+  assert.equal(first.sourceRecords.skipped, 1);
+  assert.equal(first.patches.tcg_cards.length, 1);
+  assert.equal(first.patches.tcg_printings.length, 0);
+  assert.equal(first.patches.tcg_card_names.length, 1);
+  assert.equal(first.summary.byGapKind[GAP_KINDS.TRADITIONAL_CHINESE_NAME].changed, 1);
+  assert.equal(first.summary.byGapKind[GAP_KINDS.TRADITIONAL_CHINESE_NAME].fields.changed, 2);
+  assert.equal(first.cursor.hasMore, true);
+});
+
+test('caps each incremental gap batch at 100 records', () => {
+  const sources=Array.from({length:120},(_,index)=>zhSource({providerId:`sv4a-${index+1}`,localId:`${index+1}/190`}));
+  const plan=createPokemonGapPlan({cards:[],printings:[],sourceRecords:sources,batchSize:250,onlyMissing:true});
+  assert.equal(plan.sourceRecords.selected,100);
+  assert.equal(plan.cursor.limit,100);
+});
+
+test('produces stable checksums and an idempotent no-change dry run', () => {
+  const sourceA = zhSource({ providerId: 'sv4a-347', localId: '347/190' });
+  const sourceB = zhSource({ providerId: 'sv4a-348', localId: '348/190', name: '超夢 ex' });
+  assert.equal(sourceChecksum([sourceA, sourceB]), sourceChecksum([sourceB, sourceA]));
+  const existingCard = card({ name_zh: '夢幻 ex', rarity: 'SSR' });
+  const existingPrinting = printing({ image_url: 'https://existing.example.test/card.webp', rarity: 'SSR', rarity_code: 'SSR', rarity_label: 'SSR' });
+  const existingName = { card_id: 'card-1', locale: 'zh-Hant-TW', name: '夢幻 ex', name_type: 'official', source: 'reviewed', data_status: 'verified' };
+  const plan = createPokemonGapPlan({ cards: [existingCard], printings: [existingPrinting], cardNames: [existingName], sourceRecords: [sourceA] });
+  assert.equal(plan.patchCounts.total, 0);
+  assert.equal(plan.summary.changed, 0);
+  assert.equal(plan.summary.skipped > 0, true);
+  assert.equal(plan.gapCounts[GAP_KINDS.TRADITIONAL_CHINESE_NAME].inventory.missing, 0);
+});
+
+test('holds reviewed empty values for manual review instead of filling them', () => {
+  const reviewedCard = card({ name_zh: null, rarity: null, data_status: 'verified' });
+  const reviewedPrinting = printing({ image_url: null, rarity: null, rarity_code: null, rarity_label: null, data_status: 'verified' });
+  const plan = createPokemonGapPlan({
+    cards: [reviewedCard],
+    printings: [reviewedPrinting],
+    sourceRecords: [zhSource()],
+    gapKinds: [GAP_KINDS.TRADITIONAL_CHINESE_NAME, GAP_KINDS.RARITY, GAP_KINDS.SAME_PRINTING_IMAGE]
+  });
+  assert.equal(plan.patchCounts.total, 0);
+  assert.equal(plan.summary.heldForReview > 0, true);
+  assert.equal(plan.summary.fields.every(field => field.status === 'held-for-review'), true);
 });
