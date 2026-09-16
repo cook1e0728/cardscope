@@ -203,31 +203,50 @@
       ]
     },
     "haikyuu": {
-      "sourceUrl": "https://www.takaratomy.co.jp/products/haikyuvobacabreak/card/",
-      "canonicalCodes": ["SEC", "SP", "UR", "SSR", "SR", "R", "U", "C", "PR"],
+      "sourceUrl": "https://www.takaratomy.co.jp/products/haikyuvobacabreak/cardlist/",
+      "evidenceUrls": [
+        "https://www.takaratomy.co.jp/products/haikyuvobacabreak/cardlist/",
+        "https://www.takaratomy.co.jp/products/haikyuvobacabreak/rules/pdf/rules_general_v1.03.pdf",
+        "https://www.takaratomy.co.jp/products/haikyuvobacabreak/product/HV-P01.html",
+        "https://www.takaratomy.co.jp/products/haikyuvobacabreak/product/HV-P02.html"
+      ],
+      "orderingNoteZh": "官方卡片搜尋的バボリティ選項依序為 極、秘、頂、S、R、N、D、P；同一卡號的 P 後綴平行版本獨立保留，並排在其基礎稀有度之前。CardScope 將極P固定為最高導覽順位；此排序僅用於圖鑑導覽，不代表價格。",
+      "canonicalCodes": ["極P", "極", "秘", "頂P", "頂", "SP", "S", "RP", "R", "NP", "N", "DP", "D", "P"],
       "canonicalLabels": {},
-      "aliases": {"PR": ["Promo"]},
+      "aliases": {},
+      "baseCodes": ["極", "秘", "頂", "S", "R", "N", "D", "P"],
+      "parallelOf": {"極P": "極", "頂P": "頂", "SP": "S", "RP": "R", "NP": "N", "DP": "D"},
       "highToLow": [
-        ["SEC"],
+        ["極P"],
+        ["極"],
+        ["秘"],
+        ["頂P"],
+        ["頂"],
         ["SP"],
-        ["UR"],
-        ["SSR"],
-        ["SR"],
+        ["S"],
+        ["RP"],
         ["R"],
-        ["U"],
-        ["C"],
-        ["PR", "Promo"]
+        ["NP"],
+        ["N"],
+        ["DP"],
+        ["D"],
+        ["P"]
       ],
       "lowToHigh": [
-        ["PR", "Promo"],
-        ["C"],
-        ["U"],
+        ["P"],
+        ["D"],
+        ["DP"],
+        ["N"],
+        ["NP"],
         ["R"],
-        ["SR"],
-        ["SSR"],
-        ["UR"],
+        ["RP"],
+        ["S"],
         ["SP"],
-        ["SEC"]
+        ["頂"],
+        ["頂P"],
+        ["秘"],
+        ["極"],
+        ["極P"]
       ]
     }
   }

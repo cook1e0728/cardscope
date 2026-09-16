@@ -152,7 +152,9 @@ cards=function(rows,keepSource=false){
   if(!keepSource){currentCardRows=rows;refreshRarityOptions(rows)}
   const shown=filteredCards(currentCardRows),host=$('cards');host.classList.toggle('list-view',cardViewMode==='list');host.classList.toggle('rarity-view',cardViewMode==='rarity');drawViewButtons();
   $('filterSummary').textContent=`目前載入 ${currentCardRows.length.toLocaleString()} 張，篩選後 ${shown.length.toLocaleString()} 張${favoritesOnly?'；目前只看收藏':''}；價格僅採可驗證買取資料`;
-  host.innerHTML=renderCardRows(shown);activateCardActions(host);renderFavoritesControl();renderWatchlistSummary();
+  host.innerHTML=renderCardRows(shown);
+  if(typeof primeCardImages==='function')primeCardImages(host.dataset.cardscopeGame||game,browse);
+  activateCardActions(host);renderFavoritesControl();renderWatchlistSummary();
 };
 
 function renderFavoritesControl(){
