@@ -30,18 +30,19 @@ test('source policy gates collectors and image display independently',()=>{
   assert.equal(catalogCollectionAllowed('onepiece'),false);
   assert.equal(catalogCollectionAllowed('yuyutei'),false);
   assert.equal(imageCollectionAllowed('yugioh'),false);
-  assert.equal(imageRightsAllowDisplay('not-provided'),true);
-  assert.equal(imageRightsAllowDisplay(null),true);
-  assert.equal(imageRightsAllowDisplay('not-displayable'),false);
-  assert.equal(imageRightsAllowDisplay('licensed'),true);
-  assert.equal(imageRightsAllowDisplay('partner-provided','2020-01-01T00:00:00Z'),false);
-  assert.equal(sourcePolicySummary().version,2);
+  assert.equal(imageRightsAllowDisplay('not-provided',null,'pokemontcg'),true);
+  assert.equal(imageRightsAllowDisplay(null,null,'ygoprodeck'),true);
+  assert.equal(imageRightsAllowDisplay('not-displayable',null,'pokemontcg'),false);
+  assert.equal(imageRightsAllowDisplay('licensed',null,'pokemontcg'),true);
+  assert.equal(imageRightsAllowDisplay('licensed',null,'unknown-source'),false);
+  assert.equal(imageRightsAllowDisplay('partner-provided','2020-01-01T00:00:00Z','pokemontcg'),false);
+  assert.equal(sourcePolicySummary().version,3);
   assert.equal(sourcePolicySummary().unverifiedImageDisplayEnabled,true);
 });
 
 test('public health and source policy endpoints are available without database secrets',async()=>{
   const health=await api('/api/catalog/health'),sources=await api('/api/catalog/sources');
-  assert.equal(health.data.policy.version,2);
+  assert.equal(health.data.policy.version,3);
   assert.ok(sources.data.some(source=>source.runtimeProvider==='onepiece'&&source.status==='blocked'));
   const response=await fetch(`http://127.0.0.1:${port}/api/admin/catalog/health?token=leaked`);
   assert.equal(response.status,401);

@@ -14,7 +14,7 @@ test('IP switching prioritizes only the first visible card images',()=>{
 });
 
 test('stale IP and search responses cannot repaint the selected catalog',()=>{
-  assert.match(html,/if\(state!==browse\|\|game!==selectedGame\)return/);
+  assert.match(html,/browseRequestIsCurrent\(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort\)/);
   assert.match(html,/if\(game!==id\)return/);
   assert.match(html,/browse!==searchState\|\|game!==searchGame\|\|\$\('browseRegion'\)\.value!==searchRegion/);
   assert.match(html,/body\.data\|\|\[\]\)\.filter\(c=>c\.game===selectedGame\)/);
