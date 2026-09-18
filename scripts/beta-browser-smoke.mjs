@@ -208,6 +208,8 @@ async function runViewport(browser,viewport){
   try{
     await page.goto(baseUrl,{waitUntil:'domcontentloaded'});
     await waitForVisible(page.locator('#channels .channel').first(),'IP navigation did not render');
+    try{await waitForVisible(page.locator('#cards .game-entry').first(),'IP landing entries did not render')}
+    catch(error){throw new Error(`${error.message}; pageErrors=${pageErrors.join(' | ')}; cards=${await page.locator('#cards').innerText().catch(()=>'<unavailable>')}`,{cause:error})}
     assert.equal(await page.locator('#cards .game-entry').count(),5,`${viewport.name} should show five IP landing entries`);
     const channelIds=[];
     const channels=page.locator('#channels .channel');
@@ -235,6 +237,8 @@ async function runViewport(browser,viewport){
       throw new Error(`${viewport.name} rarity filter did not settle: ${snapshot}; requests=${JSON.stringify(state.cardRequests)}`,{cause:error});
     }
     assert.equal(await page.locator('#cards .card').count(),1,`${viewport.name} rarity filter should leave one card`);
+    await page.waitForFunction(()=>new URL(location.href).searchParams.get('rarity')==='SR');
+    assert.equal(new URL(page.url()).searchParams.get('game'),'pokemon');
     await rarityFilter.selectOption('all');
     await waitForGame(page,'pokemon');
 
@@ -245,6 +249,7 @@ async function runViewport(browser,viewport){
     await waitForVisible(brokenCard,`${viewport.name} broken-image fixture card missing`);
     await brokenCard.click();
     await waitForVisible(page.locator('#modal.open .detail'),'card detail did not open after a real card click');
+    await page.waitForFunction(()=>Boolean(new URL(location.href).searchParams.get('card')));
     await waitForVisible(page.locator('#modal.open .detail-art .unified-image-fallback'),'broken card image did not expose its fallback');
     const detailText=await page.locator('#modal.open').innerText();
     assert.match(detailText,/故障圖測試卡/);
@@ -256,6 +261,7 @@ async function runViewport(browser,viewport){
       assert.match(await page.locator('#modal.open [data-detail-panel="market"]').innerText(),/沒有可靠|市場|不可用|待補/);
     }
     await page.locator('#close').click();
+    await page.waitForFunction(()=>!new URL(location.href).searchParams.has('card'));
 
     // Nineteen more real clicks make twenty IP switches in this viewport.
     // Every fourth fixture response is held back so an older selection returns
@@ -279,6 +285,16 @@ async function runViewport(browser,viewport){
     await page.waitForFunction(()=>/找不到結果/.test(document.querySelector('#notice')?.textContent||''),undefined,{timeout:8000});
     assert.match(await page.locator('#notice').innerText(),/找不到結果/);
     assert.equal(await page.locator('#cards .card').count(),0,`${viewport.name} zero-result search rendered cards`);
+    assert.equal(new URL(page.url()).searchParams.get('q'),'no-such-card');
+    if(viewport.name==='desktop'){
+      await page.reload({waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>/找不到結果/.test(document.querySelector('#notice')?.textContent||''),undefined,{timeout:8000});
+      assert.equal(new URL(page.url()).searchParams.get('q'),'no-such-card','reload should preserve the search URL');
+      await page.goBack({waitUntil:'domcontentloaded'});
+      await waitForVisible(page.locator('#cards .game-entry').first(),'browser Back did not restore the all-game landing');
+      await page.goForward({waitUntil:'domcontentloaded'});
+      await page.waitForFunction(()=>/找不到結果/.test(document.querySelector('#notice')?.textContent||''),undefined,{timeout:8000});
+    }
     assert.equal(pageErrors.length,0,`${viewport.name} page errors: ${pageErrors.join('; ')}`);
     assert.ok(state.optionalServiceFailures>=2,`${viewport.name} detail did not exercise both optional service failures`);
     return {viewport:viewport.name,switches:20,cardRequests:state.cardRequests.length,detailRequests:state.detailRequests.length,optionalServiceFailures:state.optionalServiceFailures};
