@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.mjs",
     "plan:pokemon-enrichment": "node scripts/plan-pokemon-enrichment.mjs",
-    "check": "node --check server.mjs && node --check providers/ygoprodeck.mjs && node --check providers/normalize.mjs && node --check providers/catalog-sync.mjs && node --check providers/catalog-baseline.mjs && node --check providers/backend-reliability.mjs && node --check providers/image-cache.mjs && node --check providers/products.mjs && node --check providers/source-policy.mjs && node --check providers/pokemon-gap-sync.mjs && node --check providers/enrichment-candidates.mjs && node --check providers/yugioh-zh-enrichment.mjs && node --check providers/price-history.mjs && node --check scripts/plan-pokemon-enrichment.mjs && node --check scripts/beta-browser-smoke.mjs",
+    "check": "node --check server.mjs && node --check navigation-state.js && node --check providers/ygoprodeck.mjs && node --check providers/normalize.mjs && node --check providers/catalog-sync.mjs && node --check providers/catalog-baseline.mjs && node --check providers/backend-reliability.mjs && node --check providers/image-cache.mjs && node --check providers/products.mjs && node --check providers/source-policy.mjs && node --check providers/pokemon-gap-sync.mjs && node --check providers/enrichment-candidates.mjs && node --check providers/yugioh-zh-enrichment.mjs && node --check providers/price-history.mjs && node --check scripts/plan-pokemon-enrichment.mjs && node --check scripts/beta-browser-smoke.mjs",
     "test": "node --test"
   }
 }
