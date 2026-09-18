@@ -25,7 +25,25 @@ const productCategoryLabel=value=>categoryDefinition(value)?.label||String(value
 const regionMatches=row=>{const region=typeof document==='undefined'?'all':document.getElementById('browseRegion')?.value||'all';return region==='all'||row.region===region||(row.printings||[]).some(p=>p.region===region)};
 const productMatchesCategory=(product,categoryId)=>{const category=categoryDefinition(categoryId);return Boolean(category&&category.values.includes(String(product.catalogCategory||''))&&regionMatches(product))};
 const productCategoryFilterValue=categoryId=>{const legacy={sealed:'原盒',promo:'特典卡',accessories:'周邊道具'}[categoryId];return legacy&&P.some(product=>product.catalogCategory===legacy)?legacy:categoryId};
+let browseRequestVersion=0,searchRequestVersion=0,priceRequestVersion=0,detailRequestVersion=0,cardDisplayState='ready';
 let C={games:[],series:[],cards:[]},P=[],S=[],game='all',productCategory='原盒',productCategoryId='sealed',currentCardRows=[],verifiedPrices=new Map(),rarityRankings={systems:{}},rarityFacetCache=new Map(),cardFilters={rarity:'all',price:'all',sort:'number-asc'},browse={rows:[],offset:0,seriesId:'',product:null,hasMore:false,loading:false,total:0,facets:null};const $=id=>document.getElementById(id),e=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])),G=id=>C.games.find(x=>x.id===id)||{},rn=r=>({TW:'台版',CN:'陸版',JP:'日版',US:'美版',KR:'韓版',ASIA:'亞洲英文版'}[r]||r||'版本待補'),ln=l=>String(l||'').startsWith('zh')?'繁體中文':String(l||'').startsWith('ja')?'日文':String(l||'').startsWith('ko')?'韓文':String(l||'').startsWith('en')?'英文':l||'語言待補',original=c=>c.nameJa||c.nameEn||c.nameKo||c.name||'',displayImageUrl=value=>{if(!value)return value;try{const url=new URL(value,location.origin);if(['asia-tc.onepiece-cardgame.com','asia-en.onepiece-cardgame.com'].includes(url.hostname)&&url.pathname.startsWith('/images/cardlist/card/'))return'/api/images/onepiece?url='+encodeURIComponent(url.href)}catch{}return value},image=c=>displayImageUrl(c.imageUrl||c.printings?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl),name=c=>c.nameZh||`中文名稱待補｜${original(c)||'原名待補'}`,art=c=>image(c)?`<img src="${e(image(c))}" alt="${e(name(c))}" loading="lazy" onerror="this.remove()">`:e(name(c)),productArt=p=>p.imageUrl?`<img src="${e(p.imageUrl)}" alt="${e(name(p))}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="image-fallback unified-image-fallback" style="display:none"><b>圖片待補</b><small>圖片來源尚未收錄</small></span>`:'<span class="image-fallback unified-image-fallback"><b>圖片待補</b><small>圖片來源尚未收錄</small></span>';
+function setNoticeState(kind,message,retry){
+  const notice=$('notice');if(!notice)return;
+  if(!notice.dataset)notice.dataset={};notice.dataset.state=kind;notice.setAttribute?.('role','status');notice.setAttribute?.('aria-live','polite');
+  notice.innerHTML=`<div class="notice-state"><span>${e(message)}</span>${retry?'<button type="button" class="notice-retry" data-action="retry">重試</button>':''}</div>`;
+  notice.style.display=kind==='ready'?'none':'block';notice.classList.toggle?.('brand-loading',kind==='loading');
+  notice.retry=typeof retry==='function'?retry:null;
+  notice.onclick=event=>{if(event.target?.closest?.('[data-action="retry"]')&&typeof notice.retry==='function')notice.retry()};
+}
+function invalidateBrowseRequest(){browseRequestVersion+=1;if(browse)browse.loading=false;return browseRequestVersion}
+function browseRequestIsCurrent(state,version,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort){
+  return state===browse&&version===browseRequestVersion&&game===selectedGame&&$('browseRegion')?.value===selectedRegion&&cardFilters.rarity===selectedRarity&&cardFilters.price===selectedPrice&&cardFilters.sort===selectedSort;
+}
+function setCardDisplayState(kind,message){
+  cardDisplayState=kind;const host=$('cards');if(!host)return;
+  if(kind==='ready')return;
+  host.innerHTML=`<div class="cards-state ${e(kind)}" role="${kind==='error'?'alert':'status'}">${e(message)}</div>`;
+}
 function gameVisual(d){return d.id==='all'?'/assets/brand/cardscope-rabbit-mark.png':d.categoryVisual?.path||d.approvedLogoUrl||null}window.gameNavImage=id=>gameVisual((window.CARD_GAMES||[]).find(x=>x.id===id)||{id});
 function channels(){let ds=window.CARD_GAMES||[{id:'all',name:'全部遊戲'},{id:'pokemon',name:'寶可夢'},{id:'onepiece',name:'航海王'},{id:'yugioh',name:'遊戲王'}];$('channels').innerHTML=ds.map(d=>{let visual=gameVisual(d);return`<button class="channel ${game===d.id?'on':''}" onclick="choose('${d.id}')"><div class="channel-art">${visual?`<img src="${e(visual)}" alt="${e(d.name)}的 CardScope 非官方分類圖" loading="lazy" onerror="this.remove()">`:`<span class="ip-wordmark">${e(d.shortName||d.name)}</span>`}<span class="channel-tag">${e(d.language||'多語')}</span></div><b>${e(d.name)}</b></button>`}).join('');let context=$('gameContext');if(!context&&typeof document.createElement==='function'){context=document.createElement('div');context.id='gameContext';context.className='game-context';const region=document.querySelector?.('.browse-regions');if(region)region.before(context)}const selected=ds.find(item=>item.id===game);if(context)context.innerHTML=game==='all'?'<span class="game-context-kicker">目前瀏覽</span><b>跨 IP 搜尋</b><small>先選一個 IP，系列與卡片會分開呈現。</small>':`<span class="game-context-kicker">目前瀏覽</span><b>${e(selected?.name||game)}</b><small>此 IP 的系列、版本與卡片獨立整理；搜尋不會要求先指定 IP。</small>`}
 function productCategories(){if(game==='all'){$('productCategories').innerHTML='<p class="browse-gate-copy">先選擇一個卡牌遊戲，再顯示該 IP 專屬的商品分類；不同 IP 不會合併計數。</p>';return}$('productCategories').innerHTML=PRODUCT_CATEGORY_DEFINITIONS.map(category=>{let count=P.filter(x=>x.game===game&&productMatchesCategory(x,category.id)).length;return`<button class="product-category ${productCategoryId===category.id?'on':''}" title="${e(category.description)}" aria-label="${e(category.label)}：${e(category.description)}" aria-pressed="${productCategoryId===category.id}" onclick="chooseProductCategory('${category.id}')">${e(category.label)}${category.id==='singles'?'':`（${count}）`}</button>`}).join('')}
@@ -50,23 +68,39 @@ function cards(rows,keepSource=false){if(!keepSource){currentCardRows=rows;refre
 const CARD_IMAGE_PREFETCH_COUNT=24,CARD_IMAGE_PRIORITY_COUNT=12;
 function primeCardImages(scope,state){const host=$('cards');if(!host||state&&state!==browse||scope&&scope!=='search'&&scope!==game)return;if(!host.dataset)host.dataset={};if(scope&&host.dataset.cardscopeGame!==scope)return;if(typeof host.querySelectorAll!=='function')return;[...host.querySelectorAll('.card .art img')].slice(0,CARD_IMAGE_PREFETCH_COUNT).forEach((img,index)=>{if(!img.src)return;img.dataset.cardscopeGame=scope||game;img.loading='eager';if(index<CARD_IMAGE_PRIORITY_COUNT)img.fetchPriority='high'})}
 function markCardImageScope(scope,state){const host=$('cards');if(!host)return;if(!host.dataset)host.dataset={};host.dataset.cardscopeGame=scope||game;primeCardImages(scope,state)}
-async function loadVerifiedPrices(id){verifiedPrices.clear();if(id==='all'){cards(currentCardRows,true);markCardImageScope('all',browse);return}try{let response=await fetch('/api/buyback-prices?game='+encodeURIComponent(id)),body=await response.json();if(game!==id)return;for(const row of body.data||[])verifiedPrices.set(String(row.cardNumber||'').trim().toUpperCase(),row)}catch{if(game!==id)return}cards(currentCardRows,true);markCardImageScope(id,browse)}
-function clearProduct(){browse={rows:[],offset:0,seriesId:'',product:null,hasMore:false,loading:false,total:0,facets:null};$('selectedProduct').classList.remove('open')}
+async function loadVerifiedPrices(id){
+  const requestVersion=++priceRequestVersion,selectedBrowse=browse;
+  verifiedPrices.clear();
+  if(id==='all'){
+    if(requestVersion!==priceRequestVersion||selectedBrowse!==browse||game!==id)return;
+    cards(currentCardRows,true);markCardImageScope('all',browse);return;
+  }
+  try{
+    const response=await fetch('/api/buyback-prices?game='+encodeURIComponent(id)),body=await response.json();
+    if(requestVersion!==priceRequestVersion||selectedBrowse!==browse||game!==id)return;
+    for(const row of body.data||[])verifiedPrices.set(String(row.cardNumber||'').trim().toUpperCase(),row);
+  }catch{
+    if(requestVersion!==priceRequestVersion||selectedBrowse!==browse||game!==id)return;
+  }
+  if(requestVersion!==priceRequestVersion||selectedBrowse!==browse||game!==id)return;
+  cards(currentCardRows,true);markCardImageScope(id,browse);
+}
+function clearProduct(){invalidateBrowseRequest();browse={rows:[],offset:0,seriesId:'',product:null,hasMore:false,loading:false,total:0,facets:null};$('selectedProduct').classList.remove('open')}
 function resetRarityFilter(){cardFilters.rarity='all';const select=$('rarityFilter');if(select)select.value='all'}
 function renderGameLanding(){const choices=(window.CARD_GAMES||[{id:'pokemon',name:'寶可夢',language:'日／繁／英'},{id:'onepiece',name:'航海王',language:'日／亞洲英'},{id:'yugioh',name:'遊戲王',language:'日／繁／英'},{id:'haikyuu',name:'排球少年',language:'日'},{id:'weiss-schwarz',name:'葬送的芙莉蓮',language:'日'}]).filter(choice=>choice.id!=='all'),host=$('cards');currentCardRows=[];refreshRarityOptions([]);$('cardTools').hidden=true;$('filterSummary').textContent='';$('loadMore').style.display='none';host.classList.remove('list-view','rarity-view');host.classList.add('game-entry-grid');host.innerHTML=choices.map(choice=>{const visual=gameVisual(choice);return`<button type="button" class="game-entry" onclick="choose('${e(choice.id)}')"><span class="game-entry-art">${visual?`<img src="${e(visual)}" alt="${e(choice.name)}的 CardScope 非官方分類圖" loading="lazy">`:`<span class="ip-wordmark">${e(choice.shortName||choice.name)}</span>`}</span><span><b>${e(choice.name)}</b><small>${e(choice.language||'多語')} · 查看專屬分類與完整卡表</small></span></button>`}).join('')}
 function render(){productCategory=productCategoryFilterValue(productCategoryId);channels();productCategories();series();if(game==='all'){clearProduct();renderGameLanding();$('cardsTitle').textContent='選擇卡牌遊戲';$('cardsMeta').textContent='瀏覽時每個 IP 獨立呈現；搜尋仍會自動辨識並可跨 IP'}else{$('cardTools').hidden=false;$('cards').classList.remove('game-entry-grid');loadGameCards(game)}}window.choose=async id=>{game=id;resetRarityFilter();verifiedPrices.clear();clearProduct();render();await loadVerifiedPrices(id)};window.chooseProductCategory=category=>{const definition=categoryDefinition(category);if(!definition||game==='all')return;productCategoryId=definition.id;productCategory=productCategoryFilterValue(definition.id);productCategories();series();if(definition.id==='singles')$('cardsTitle').scrollIntoView({behavior:'smooth',block:'start'})};window.seriesSearch=q=>{$('q').value=q;search()};window.marketInfo=()=>{let b=$('notice');b.style.display='block';b.textContent='市場資料在卡片詳細頁中顯示，買取、掛牌與參考價會分開標示。'};
 async function loadCardsPage(reset=false){
   if(browse.loading||game==='all')return;
-  const state=browse,selectedGame=game,notice=$('notice'),button=$('loadMore');
+  const state=browse,selectedGame=game,selectedRegion=$('browseRegion').value,selectedRarity=cardFilters.rarity,selectedPrice=cardFilters.price,selectedSort=cardFilters.sort,notice=$('notice'),button=$('loadMore'),requestVersion=++browseRequestVersion;
   state.loading=true;
-  if(reset){state.rows=[];state.offset=0;cards([]);$('cardsTitle').textContent=state.product?name(state.product):`${G(selectedGame).nameZh||selectedGame}卡片圖鑑`;$('cardsMeta').textContent='正在套用目前選擇的 IP、版本與稀有度…'}
-  notice.style.display='flex';notice.classList.add('brand-loading');notice.textContent=`正在載入${G(selectedGame).nameZh||selectedGame}卡片與圖片…`;
+  if(reset){state.rows=[];state.offset=0;cards([]);setCardDisplayState('loading',`正在載入${G(selectedGame).nameZh||selectedGame}卡片與圖片…`);$('cardsTitle').textContent=state.product?name(state.product):`${G(selectedGame).nameZh||selectedGame}卡片圖鑑`;$('cardsMeta').textContent='正在套用目前選擇的 IP、版本與稀有度…'}
+  setNoticeState('loading',`正在載入${G(selectedGame).nameZh||selectedGame}卡片與圖片…`);
   button.disabled=true;button.textContent='載入中…';
   try{
-    const params=new URLSearchParams({game:selectedGame,limit:'100',offset:String(state.offset),region:$('browseRegion').value,rarity:cardFilters.rarity,sort:cardFilters.sort});
+    const params=new URLSearchParams({game:selectedGame,limit:'100',offset:String(state.offset),region:selectedRegion,rarity:selectedRarity,sort:selectedSort});
     if(state.seriesId)params.set('series',state.seriesId);
     const response=await fetch('/api/cards?'+params),body=await response.json();
-    if(state!==browse||game!==selectedGame)return;
+    if(!browseRequestIsCurrent(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort))return;
     if(!response.ok)throw Error(body.error||'載入失敗');
     state.rows.push(...(body.data||[]).filter(c=>c.game===selectedGame));
     state.offset+=Number(body.meta?.limit)||100;state.hasMore=Boolean(body.meta?.hasMore);state.total=Number(body.meta?.total)||state.rows.length;state.facets=body.meta?.facets||null;
@@ -78,12 +112,15 @@ async function loadCardsPage(reset=false){
     $('filterSummary').textContent=`完整圖鑑符合 ${state.total.toLocaleString()} 張，目前顯示 ${state.rows.length.toLocaleString()} 張；價格僅採可驗證買取資料`;
     $('cardsTitle').textContent=state.product?name(state.product):`${G(game).nameZh||game}卡片圖鑑`;
     $('cardsMeta').textContent=`條件已套用完整資料庫；共 ${state.total.toLocaleString()} 張，分頁載入中`;
-    button.style.display=state.hasMore?'block':'none';notice.style.display='none';notice.classList.remove('brand-loading');
+    button.style.display=state.hasMore?'block':'none';setNoticeState(state.rows.length?'ready':'empty',state.rows.length?'':'目前沒有符合條件的卡片；若是尚未發售商品，代表官方尚未公開卡表。');
   }catch(error){
-    if(state===browse){notice.classList.remove('brand-loading');notice.style.display='block';notice.textContent='載入失敗：'+error.message}
+    if(browseRequestIsCurrent(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort)){
+      const message='載入失敗：'+error.message;setCardDisplayState('error',message);setNoticeState('error',message,()=>loadCardsPage(true));
+    }
   }finally{
-    state.loading=false;
-    if(state===browse){button.disabled=false;button.textContent='載入更多卡片'}
+    if(browseRequestIsCurrent(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort)){
+      state.loading=false;button.disabled=false;button.textContent='載入更多卡片';
+    }
   }
 }
 async function loadGameCards(id){if(game!==id)return;clearProduct();await loadCardsPage(true)}
@@ -92,7 +129,7 @@ async function openProduct(id){let p=P.find(x=>x.id===id);if(!p)return;if(game!=
 async function openCard(id){$('modal').classList.add('open');$('detail').textContent='正在載入…';try{let[cr,mr]=await Promise.all([fetch('/api/cards/'+encodeURIComponent(id)),fetch('/api/cards/'+encodeURIComponent(id)+'/market')]),cb=await cr.json(),mb=await mr.json(),c=cb.data,m=mb.data||{records:[],meta:{}};if(!cr.ok)throw Error(cb.error);let ps=c.printings||[],ref=ps.find(p=>p.region==='JP')||ps.find(p=>p.region==='TW')||ps.find(p=>p.region==='US')||ps.find(p=>p.region==='KR')||ps[0],versions=ps.map(p=>{let diff=[];if(ref&&p!==ref&&p.localCardNumber&&p.localCardNumber!==ref.localCardNumber)diff.push('卡號不同');if(ref&&p!==ref&&p.rarity&&ref.rarity&&p.rarity!==ref.rarity)diff.push('稀有度不同');return`<div class="state"><b>${e(rn(p.region))}</b>${p===ref?' · <span class="badge">比對基準</span>':''} · ${e(ln(p.language))} · ${e(p.localSetCode)} · ${e(p.localCardNumber)}${diff.length?`<br><span class="meta">版本差異：${e(diff.join('、'))}</span>`:''}</div>`}).join('');$('detail').innerHTML=`<div class="detail"><div class="detail-art">${art(c)}</div><div><h2>${e(name(c))}</h2><p class="meta">${original(c)?'原名：'+e(original(c)):''}</p><p>${e(c.game?.nameZh)}｜${e(c.officialCardNumber)}｜${e(c.rarity||'稀有度待補')}</p><h3>收錄版本</h3><p class="meta">優先以日版作跨地區比對基準；缺少日版時依序採台版、美版、韓版或其他版本。</p>${versions||'<div class="state">版本待補</div>'}<h3>市場資料</h3><p class="meta">${e(m.meta?.warning||'不同價格性質不混算。')}</p>${m.records?.length?m.records.map(r=>`<div class="market"><b>${e(r.provider)}</b> · ${e(r.priceType)} · ${e(r.currency)} ${Number(r.amount).toLocaleString()}</div>`).join(''):'<div class="state">目前沒有可靠對應價格，不以假價格補空白。</div>'}</div></div>`}catch(x){$('detail').textContent='載入失敗：'+x.message}}window.openCard=openCard;
 async function init(){const get=async url=>{const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw Error('資料來源暫時無法回應');return response.json()};let coverage=null;const updateStatus=()=>{const total=Number(coverage?.totalCards||C.cards.length),source=coverage?.source==='catalog.json'||C.source==='catalog.json'?'本機備援資料':'資料庫收錄',updated=coverage?.updatedAt||coverage?.updated_at||C.updatedAt||null,updatedLabel=updated?String(updated).slice(0,10):'時間待補';$('status').textContent=`${source}：${total.toLocaleString()} 張卡片；${P.length.toLocaleString()} 筆實體商品。各系列完整分母未核定時不顯示完成率。`;const betaStatus=$('betaDataStatus'),betaUpdated=$('betaUpdatedAt'),betaCoverage=$('betaCoverageSummary');if(betaStatus)betaStatus.textContent=`${source} · ${total.toLocaleString()} 張收錄`;if(betaUpdated)betaUpdated.textContent=`${updatedLabel} · ${source}`;if(betaCoverage)betaCoverage.textContent=coverage?`目前收錄 ${total.toLocaleString()} 張；五個 IP 分開統計`:'五個 IP 分開計算；報告待載入' };channels();productCategories();const rarityTask=get('/data/rarity-rankings.json').then(body=>{rarityRankings=body;window.CARD_SCOPE_RARITY_RANKINGS=body;refreshRarityOptions(currentCardRows)}).catch(()=>{}),catalogTask=get('/api/catalog').then(body=>{C=body.data;render();updateStatus()}).catch(error=>{$('status').textContent='卡片資料載入失敗：'+error.message;const betaStatus=$('betaDataStatus');if(betaStatus)betaStatus.textContent='資料狀態暫時無法取得'}),productTask=get('/api/products').then(body=>{P=body.data||[];S=body.series||[];productCategory=productCategoryFilterValue(productCategoryId);productCategories();series();updateStatus()}).catch(()=>{$('series').innerHTML='<p class="meta">商品來源暫時無法回應，仍可使用卡片搜尋。</p>'});get('/api/catalog/coverage').then(body=>{coverage=body.data;updateStatus()}).catch(()=>{});await Promise.allSettled([rarityTask,catalogTask,productTask])}$('browseRegion').onchange=()=>{resetRarityFilter();productCategories();series();if(game==='all')renderGameLanding();else loadCardsPage(true)};$('go').onclick=search;$('q').onkeydown=x=>{if(x.key==='Enter')search()};$('loadMore').onclick=()=>loadCardsPage(false);$('rarityFilter').onchange=x=>{cardFilters.rarity=x.target.value;if(game==='all')cards(currentCardRows,true);else loadCardsPage(true)};$('priceFilter').onchange=x=>{cardFilters.price=x.target.value;if(game==='all')cards(currentCardRows,true);else loadCardsPage(true)};$('cardSort').onchange=x=>{cardFilters.sort=x.target.value;if(game==='all')cards(currentCardRows,true);else loadCardsPage(true)};$('close').onclick=()=>$('modal').classList.remove('open');$('modal').onclick=x=>{if(x.target.id==='modal')$('modal').classList.remove('open')};init();
 </script><script>
-(()=>{
+(()=> {
   const labels={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'葬送的芙莉蓮',haikyuu:'排球少年'};
   const escapeValue=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const read=(value,path)=>String(path).split('.').reduce((current,key)=>current&&typeof current==='object'?current[key]:undefined,value);
@@ -108,3 +145,4 @@ async function init(){const get=async url=>{const response=await fetch(url,{cach
 })();
 </script><script src="/game-switcher.js"></script><script src="/series-navigator.js"></script><script src="/ui-enhancements.js"></script></body></html>
 
+<style>.notice[data-state="loading"]{border-color:#9bc8c4;background:#effaf8}.notice[data-state="empty"]{border-color:#d8d8d8;background:#f7f7f7}.notice[data-state="error"]{border-color:#d88b8b;background:#fff3f3}.notice[data-state="ready"]{display:none}.notice-state{display:flex;align-items:center;justify-content:space-between;gap:12px}.notice-retry{border:1px solid #111;border-radius:999px;background:#111;color:#fff;padding:7px 13px;font-weight:800;cursor:pointer;white-space:nowrap}.notice-retry:focus-visible{outline:3px solid var(--y);outline-offset:2px}.cards-state{grid-column:1/-1;display:grid;place-items:center;min-height:155px;padding:24px;border:1px dashed #d4d4d4;border-radius:14px;color:var(--muted);text-align:center}.cards-state.loading{background:#effaf8}.cards-state.error{background:#fff3f3;border-color:#d88b8b}</style>

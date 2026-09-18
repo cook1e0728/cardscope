@@ -1,0 +1,38 @@
+name: Beta reliability
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit and contract tests
+        run: node --test
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start CardScope fixture host
+        run: |
+          PORT=4202 CATALOG_SYNC_ON_START=false CARD_IMAGE_CACHE_ON_START=false node server.mjs > /tmp/cardscope.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:4202/api/catalog/health && exit 0
+            sleep 1
+          done
+          cat /tmp/cardscope.log
+          exit 1
+      - name: Browser reliability smoke
+        env:
+          CI: 'true'
+          CARDSCOPE_URL: http://127.0.0.1:4202
+        run: node scripts/beta-browser-smoke.mjs
+      - name: Diff hygiene
+        run: git diff --check

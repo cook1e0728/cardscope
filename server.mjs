@@ -8,8 +8,9 @@ import { normalizeMarketRecord, withTwd, RARITY_RANKINGS, rarityCanonicalCode as
 import { auditCatalogLinks, catalogProvidersNeedingSync, localizeProductName, syncCatalog } from './providers/catalog-sync.mjs';
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
 import { normalizeProduct } from './providers/products.mjs';
-import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageRightsAllowDisplay, publicSourcePolicies, sourcePolicySummary } from './providers/source-policy.mjs';
+import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
+import { chunkCardIds, createBoundedSnapshotCache, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
 
 const nativeFetch = globalThis.fetch;
 const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
@@ -34,11 +35,14 @@ const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com','asia-en.o
 const BROWSE_CACHE_MS = 5 * 60 * 1000;
 const BROWSE_PAGE_MAX = 100;
 const BROWSE_CARD_SELECT = 'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,source,providerId:provider_id,createdAt:created_at,updatedAt:updated_at';
-const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at,metadata,createdAt:created_at,updatedAt:updated_at';
+const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at,metadata,createdAt:created_at,updatedAt:updated_at';
 const BROWSE_IMAGE_SELECT = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at';
 const browseCache=new Map();
-let catalogHealthCache={data:null,expiresAt:0};
-const catalogCoverageCache={data:null,expiresAt:0,promise:null};
+const RELATION_BATCH_SIZE = Math.max(100, Number(process.env.CATALOG_RELATION_BATCH_SIZE) || 500);
+const SNAPSHOT_TTL_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_CACHE_MS) || BROWSE_CACHE_MS);
+const SNAPSHOT_MAX_STALE_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_MAX_STALE_MS) || 30 * 60 * 1000);
+const catalogHealthCache = createBoundedSnapshotCache({ttlMs:SNAPSHOT_TTL_MS,maxStaleMs:SNAPSHOT_MAX_STALE_MS});
+const catalogCoverageCache = createBoundedSnapshotCache({ttlMs:SNAPSHOT_TTL_MS,maxStaleMs:SNAPSHOT_MAX_STALE_MS});
 const TREND_CACHE_MS = 5 * 60 * 1000;
 const trendCache = {data:null,expiresAt:0,promise:null};
 
@@ -189,7 +193,7 @@ function browseValues(card,printings,key){
   if(key==='language')values.push(card?.language,...(printings||[]).map(p=>p.language));
   return uniqueValues(values);
 }
-function browseHasUsableImage(row){return Boolean(row?.imageUrl&&row.imageRehostRequired!==true&&imageRightsAllowDisplay(row.imageRightsStatus,row.imageLicenseExpiresAt))}
+function browseHasUsableImage(row){return Boolean(row?.imageUrl&&row.imageRehostRequired!==true&&imageRightsAllowDisplay(row.imageRightsStatus,row.imageLicenseExpiresAt,imageSourceOf(row)))}
 function buildPrintingIndex(rows=[]){const byCard=new Map();for(const printing of rows){const list=byCard.get(printing.cardId)||[];list.push(printing);byCard.set(printing.cardId,list)}for(const list of byCard.values())list.sort(comparePrintings);return byCard}
 function hydrateBrowseCard(card,printingByCard,imageByCard){
   const printings=printingByCard.get(card.id)||[],images=imageByCard?.get(card.id)||[],image=images.find(browseHasUsableImage)||printings.find(browseHasUsableImage);
@@ -245,22 +249,20 @@ async function loadDatabaseBrowseRows(game){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,'');
   return cachedBrowseRows(`cards:${safeGame}`,async()=>supabaseFetchAll(`/tcg_cards?${new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:'id.asc'})}`));
 }
-async function loadDatabasePrintings(){
-  return cachedBrowseRows('printings:all',async()=>{
-    const base=`/tcg_printings?${new URLSearchParams({select:BROWSE_PRINTING_SELECT,order:'id.asc'})}`;
-    try{return await supabaseFetchAll(base)}catch(error){
-      const fallbackSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required';
-      try{return await supabaseFetchAll(`/tcg_printings?${new URLSearchParams({select:fallbackSelect,order:'id.asc'})}`)}catch{throw error}
-    }
+async function loadDatabasePrintings(cardIds=[]){
+  if (!Array.isArray(cardIds) || !cardIds.length) return [];
+  const key=`printings:${createHash('sha1').update(cardIds.join('|')).digest('hex')}`;
+  return cachedBrowseRows(key,async()=>{
+    const fallbackSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required';
+    return loadDatabaseRelationsForCards('tcg_printings',BROWSE_PRINTING_SELECT,cardIds,{legacySelect:fallbackSelect});
   });
 }
-async function loadDatabaseImages(){
-  return cachedBrowseRows('images:all',async()=>{
-    try{return await supabaseFetchAll(`/card_images?${new URLSearchParams({select:BROWSE_IMAGE_SELECT,order:'id.asc'})}`)}
-    catch(error){
-      const legacy='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
-      try{return (await supabaseFetchAll(`/card_images?${new URLSearchParams({select:legacy,order:'id.asc'})}`)).map(row=>({...row,imageRightsStatus:'not-provided'}))}catch{throw error}
-    }
+async function loadDatabaseImages(cardIds=[]){
+  if (!Array.isArray(cardIds) || !cardIds.length) return [];
+  const key=`images:${createHash('sha1').update(cardIds.join('|')).digest('hex')}`;
+  return cachedBrowseRows(key,async()=>{
+    const legacy='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
+    return loadDatabaseRelationsForCards('card_images',BROWSE_IMAGE_SELECT,cardIds,{legacySelect:legacy});
   });
 }
 function databaseFastBrowseEligible({region=null,rarity=null,seriesId=null,sort='number-asc'}={}){
@@ -277,6 +279,13 @@ async function loadDatabasePageRelations(table,select,cardIds,{legacySelect=null
     return table==='card_images'?rows.map(row=>({...row,imageRightsStatus:'not-provided'})):rows;
   }
 }
+async function loadDatabaseRelationsForCards(table,select,cardIds,{legacySelect=null}={}){
+  const batches=chunkCardIds(cardIds,RELATION_BATCH_SIZE);
+  if(!batches.length)return [];
+  const rows=[];
+  for(const batch of batches)rows.push(...await loadDatabasePageRelations(table,select,batch,{legacySelect}));
+  return rows;
+}
 async function browseDatabasePageFast(game,options={}){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc';
   const params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:`official_card_number.${direction},id.${direction}`,limit:String(take+1),offset:String(skip)}),page=await supabaseFetchPage(`/tcg_cards?${params}`),cards=(page.data||[]).slice(0,take),cardIds=cards.map(card=>card.id);
@@ -291,7 +300,7 @@ async function browseDatabasePageFast(game,options={}){
 }
 async function browseDatabaseCards(game,options){
   if(databaseFastBrowseEligible(options))return browseDatabasePageFast(game,options);
-  const cards=await loadDatabaseBrowseRows(game),printingResult=await loadDatabasePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),imageResult=await loadDatabaseImages().then(rows=>({rows,status:'complete'})).catch(()=>({rows:[],status:'unknown'}));
+  const cards=await loadDatabaseBrowseRows(game),cardIds=cards.map(card=>card.id),printingResult=await loadDatabasePrintings(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),imageResult=await loadDatabaseImages(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error}));
   const selectedCardIds=new Set(cards.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedCardIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedCardIds.has(image.cardId));
   const printingByCard=buildPrintingIndex(printings),imageByCard=new Map();for(const image of images){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
   const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:printingResult.status==='complete'?'complete':'partial'});return {...result,errors:{printings:printingResult.error?.message||null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
@@ -337,10 +346,10 @@ function attachCatalogBaselines(games,report){
 function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
   const rows=Array.isArray(cards)?cards:[],cardIds=new Set(rows.map(card=>card?.id).filter(Boolean)),selectedPrintings=(printings||[]).filter(printing=>cardIds.has(printing?.cardId)),selectedImages=(images||[]).filter(image=>cardIds.has(image?.cardId)),printingByCard=buildPrintingIndex(selectedPrintings),imageByCard=new Map();
   for(const image of selectedImages){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
-  const cardHasPrinting=card=>Boolean((printingByCard.get(card.id)||[]).length),cardHasImageUrl=card=>Boolean((imageByCard.get(card.id)||[]).some(image=>image?.imageUrl)||(printingByCard.get(card.id)||[]).some(printing=>printing?.imageUrl)||card?.imageUrl),cardHasUsableImage=card=>Boolean((imageByCard.get(card.id)||[]).some(browseHasUsableImage)||(printingByCard.get(card.id)||[]).some(browseHasUsableImage)||(card?.imageUrl&&imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt))),cardHasChineseName=card=>Boolean(String(card?.nameZh||'').trim()),cardHasRarity=card=>browseValues(card,printingByCard.get(card.id)||[],'rarity').length;
-  const cardsWithPrintings=rows.filter(cardHasPrinting).length,cardsWithImageUrls=rows.filter(cardHasImageUrl).length,displayableImages=rows.filter(cardHasUsableImage).length,chineseNames=rows.filter(cardHasChineseName).length,rarities=rows.filter(cardHasRarity).length,seriesIds=new Set(rows.flatMap(card=>[card?.seriesId,...(printingByCard.get(card.id)||[]).map(printing=>printing?.seriesId)]).filter(Boolean)),coveredSets=uniqueValues(rows.map(card=>card?.seriesId),selectedPrintings.map(printing=>printing?.seriesId||printing?.localSetCode)),timestamp=coverageTimestamp(rows,selectedPrintings,selectedImages,options.fallbackUpdatedAt),freshness=coverageFreshness(timestamp.latest),cardStatus=options.cardStatus||'complete',printingStatus=options.printingStatus||'complete',imageStatus=options.imageStatus||'complete',cardDenominator=cardStatus==='unknown'?null:rows.length,imageMetricStatus=imageStatus==='unknown'&&printingStatus==='unknown'?'unknown':imageStatus==='complete'?'complete':imageStatus,linkAudit=auditCatalogLinks({cards:rows,printings:selectedPrintings,images:selectedImages}),fields={
+  const cardHasPrinting=card=>Boolean((printingByCard.get(card.id)||[]).length),cardHasImageUrl=card=>Boolean((imageByCard.get(card.id)||[]).some(image=>image?.imageUrl)||(printingByCard.get(card.id)||[]).some(printing=>printing?.imageUrl)||card?.imageUrl),cardHasUsableImage=card=>Boolean((imageByCard.get(card.id)||[]).some(browseHasUsableImage)||(printingByCard.get(card.id)||[]).some(browseHasUsableImage)||(card?.imageUrl&&imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt,imageSourceOf(card)))),cardHasChineseName=card=>Boolean(String(card?.nameZh||'').trim()),cardHasRarity=card=>browseValues(card,printingByCard.get(card.id)||[],'rarity').length;
+  const imageHealth=summarizeImageHealth({cards:rows,printings:selectedPrintings,images:selectedImages,isDisplayable:browseHasUsableImage,isPolicyEligible:row=>imageRightsAllowDisplay(row?.imageRightsStatus,row?.imageLicenseExpiresAt,imageSourceOf(row))}),cardsWithPrintings=rows.filter(cardHasPrinting).length,cardsWithImageUrls=rows.filter(cardHasImageUrl).length,displayableImages=rows.filter(cardHasUsableImage).length,chineseNames=rows.filter(cardHasChineseName).length,rarities=rows.filter(cardHasRarity).length,seriesIds=new Set(rows.flatMap(card=>[card?.seriesId,...(printingByCard.get(card.id)||[]).map(printing=>printing?.seriesId)]).filter(Boolean)),coveredSets=uniqueValues(rows.map(card=>card?.seriesId),selectedPrintings.map(printing=>printing?.seriesId||printing?.localSetCode)),timestamp=coverageTimestamp(rows,selectedPrintings,selectedImages,options.fallbackUpdatedAt),freshness=coverageFreshness(timestamp.latest),cardStatus=options.cardStatus||'complete',printingStatus=options.printingStatus||'complete',imageStatus=options.imageStatus||'complete',cardDenominator=cardStatus==='unknown'?null:rows.length,imageMetricStatus=imageStatus==='unknown'&&printingStatus==='unknown'?'unknown':imageStatus==='complete'?'complete':imageStatus,linkAudit=auditCatalogLinks({cards:rows,printings:selectedPrintings,images:selectedImages}),fields={
     cards:coverageMetric(rows.length,null,cardStatus==='complete'?'observed-total':'unknown',{denominatorStatus:'unknown',note:'目前僅能確認資料庫觀測到的卡片列數；各 IP 可驗證的完整分母尚未提供。'}),
-    images:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{urlRecords:selectedImages.length+selectedPrintings.filter(printing=>printing?.imageUrl).length,cardsWithImageUrls}),
+    images:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{urlRecords:imageHealth.urlRecords,policyEligibleUrlRecords:imageHealth.policyEligibleUrlRecords,policyUnknownUrlRecords:imageHealth.policyUnknownUrlRecords,policyExcludedUrlRecords:imageHealth.policyExcludedUrlRecords,cardsWithImageUrls,sampledLoadCount:imageHealth.sampledLoadCount,sampledLoadStatus:imageHealth.sampledLoadStatus}),
     chineseNames:coverageMetric(chineseNames,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.name_zh'}),
     rarity:coverageMetric(rarities,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.rarity or tcg_printings.rarity'}),
     printings:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:selectedPrintings.length}),
@@ -350,7 +359,7 @@ function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
     missingChineseNames:coverageMetric(cardDenominator===null?null:Math.max(0,rows.length-linkAudit.missingChineseNames.count),cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{missing:linkAudit.missingChineseNames.count,sampleIds:linkAudit.missingChineseNames.sampleIds}),
     sourceTimestamp:{value:timestamp.latest,oldest:timestamp.oldest,status:timestamp.status,field:timestamp.field}
   },sources=coverageSources(rows,selectedPrintings,selectedImages),expectedCards=options.expectedCards??null;
-  return {cards:rows.length,displayableImages,chineseNames,rarities,cardsWithImageUrls,cardsWithSeries:rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length,totalPrintings:selectedPrintings.length,totalImages:selectedImages.length,totalSeries:seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,linkAudit,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 可驗證的完整卡表分母，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
+  return {cards:rows.length,displayableImages,chineseNames,rarities,cardsWithImageUrls,cardsWithSeries:rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length,totalPrintings:selectedPrintings.length,totalImages:selectedImages.length,totalSeries:seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,linkAudit,imageHealth, imageUrlRecords:imageHealth.urlRecords,policyEligibleImageUrlRecords:imageHealth.policyEligibleUrlRecords,sampledImageLoadCount:imageHealth.sampledLoadCount,sampledImageLoadStatus:imageHealth.sampledLoadStatus,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 可驗證的完整卡表分母，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
 }
 function buildFallbackCatalogCoverage(fallback,extra={}){
   const games={};
@@ -366,11 +375,12 @@ async function loadCatalogCoverageUncached(){
   const fallback=await loadFallbackCatalog();
   if(!supabaseConfigured())return buildFallbackCatalogCoverage(fallback);
   try{
-    const [printingResult,imageResult,seriesResult,...cardGroups]=await Promise.all([
-      loadDatabasePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
-      loadDatabaseImages().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
+    const [seriesResult,...cardGroups]=await Promise.all([
       supabaseFetchAll('/tcg_series?select=id,gameId:game_id,region,language,providerId:provider_id,sourceUrl:source_url,updatedAt:updated_at,metadata&order=game_id,region,id').then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
       ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows,status:'complete'})).catch(error=>({gameId,rows:[],status:'unknown',error:error.message})))
+    ]),allCardIds=cardGroups.flatMap(group=>group.rows.map(card=>card.id)),[printingResult,imageResult]=await Promise.all([
+      loadDatabasePrintings(allCardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
+      loadDatabaseImages(allCardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message}))
     ]),games={},allTimestamps=[],baseline=catalogBaselineReport(seriesResult.rows);
     for(const group of cardGroups){
       const selectedIds=new Set(group.rows.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedIds.has(image.cardId)),entry=buildCoverageGame(group.gameId,group.rows,printings,images,{cardStatus:group.status,printingStatus:printingResult.status,imageStatus:imageResult.status});
@@ -383,10 +393,8 @@ async function loadCatalogCoverageUncached(){
   }catch(error){return buildFallbackCatalogCoverage(fallback,{source:'catalog.json-fallback',fallbackReason:error.message,scope:{sample:false,complete:false,kind:'fallback-after-database-error',expectedTotal:null,expectedTotalStatus:'unknown',limitations:['Supabase 查詢失敗，暫以公開備援資料檔回應；不能視為資料庫完整報告。']},metricStatus:{cards:'unknown',printings:'unknown',images:'unknown',chineseNames:'unknown',rarities:'unknown',versions:'unknown',sourceTimestamp:'unknown',expectedTotals:'unknown'}})}
 }
 async function loadCatalogCoverage(){
-  if(catalogCoverageCache.data&&catalogCoverageCache.expiresAt>Date.now())return catalogCoverageCache.data;
-  if(catalogCoverageCache.promise)return catalogCoverageCache.promise;
-  catalogCoverageCache.promise=loadCatalogCoverageUncached().then(data=>{catalogCoverageCache.data=data;catalogCoverageCache.expiresAt=Date.now()+BROWSE_CACHE_MS;return data}).finally(()=>{catalogCoverageCache.promise=null});
-  return catalogCoverageCache.promise;
+  const snapshot=await catalogCoverageCache.get(loadCatalogCoverageUncached);
+  return {...snapshot.data,cache:snapshot.cache};
 }
 function trendObservationWindow(rows=[]){
   const values=rows.map(row=>coverageIso(row?.updatedAt)).filter(Boolean).sort();
@@ -413,11 +421,17 @@ async function loadTrendSnapshot(){
   return promise;
 }
 async function loadCatalogHealth(){
-  if(catalogHealthCache.data&&catalogHealthCache.expiresAt>Date.now())return catalogHealthCache.data;
   if(!supabaseConfigured())return {...await loadCatalogCoverage(),policy:sourcePolicySummary()};
   try{
-    const snapshot=await supabaseFetch('/rpc/catalog_health_snapshot',{method:'POST',body:'{}'});
-    const data={...snapshot,policy:sourcePolicySummary()};catalogHealthCache={data,expiresAt:Date.now()+BROWSE_CACHE_MS};return data;
+    const cached=await catalogHealthCache.get(async()=>{
+      const policies=imageDisplayPolicies();
+      try{return await supabaseFetch('/rpc/catalog_health_snapshot_v2',{method:'POST',body:JSON.stringify({p_display_policies:policies})})}
+      catch(v2Error){
+        const legacy=await supabaseFetch('/rpc/catalog_health_snapshot',{method:'POST',body:'{}'});
+        return {...legacy,metricStatus:{...(legacy.metricStatus||{}),images:'legacy-strict'},healthCompatibilityWarning:`v2 snapshot unavailable: ${v2Error.message}`};
+      }
+    });
+    return {...cached.data,policy:sourcePolicySummary(),cache:cached.cache};
   }catch(error){return {...await loadCatalogCoverage(),policy:sourcePolicySummary(),healthFallbackReason:error.message}}
 }
 function adminAuthorized(req){
@@ -482,7 +496,7 @@ async function loadStoredProducts(){if(!supabaseConfigured())return [];const row
 let seriesTranslationCache=null;
 async function loadSeriesTranslations(){if(!seriesTranslationCache){const body=JSON.parse(await readFile(join(root,'data','series-zh.json'),'utf8'));seriesTranslationCache=Array.isArray(body.entries)?body.entries:[]}return seriesTranslationCache}
 async function loadProductSets(){
-  const stored=await loadStoredProducts().catch(()=>[]),settled=await Promise.allSettled([Promise.resolve(stored),loadCuratedProducts()]),seen=new Set(),all=settled.flatMap(x=>x.status==='fulfilled'?x.value:[]).filter(x=>{if(x.imageKind==='card')return false;if(!['sealed-product','series-logo'].includes(x.imageKind)&&x.imageUrl)return false;const identity=x.officialCode||x.nameZh||x.nameJa||x.name||x.nameKo||x.id,key=`${x.game}:${x.region}:${identity}`;if(seen.has(key))return false;seen.add(key);return true}).map(row=>({...normalizeProduct(row),imageUrl:imageRightsAllowDisplay(row.metadata?.imageRightsStatus,row.metadata?.imageLicenseExpiresAt)?row.imageUrl:null})).sort((a,b)=>String(b.releaseDate||'').localeCompare(String(a.releaseDate||''))),series=all.filter(x=>x.imageKind==='series-logo'),seriesByCode=new Map(),seriesRowByCode=new Map();
+  const stored=await loadStoredProducts().catch(()=>[]),settled=await Promise.allSettled([Promise.resolve(stored),loadCuratedProducts()]),seen=new Set(),all=settled.flatMap(x=>x.status==='fulfilled'?x.value:[]).filter(x=>{if(x.imageKind==='card')return false;if(!['sealed-product','series-logo'].includes(x.imageKind)&&x.imageUrl)return false;const identity=x.officialCode||x.nameZh||x.nameJa||x.name||x.nameKo||x.id,key=`${x.game}:${x.region}:${identity}`;if(seen.has(key))return false;seen.add(key);return true}).map(row=>({...normalizeProduct(row),imageUrl:imageRightsAllowDisplay(row.metadata?.imageRightsStatus,row.metadata?.imageLicenseExpiresAt,imageSourceOf(row))?row.imageUrl:null})).sort((a,b)=>String(b.releaseDate||'').localeCompare(String(a.releaseDate||''))),series=all.filter(x=>x.imageKind==='series-logo'),seriesByCode=new Map(),seriesRowByCode=new Map();
   for(const row of series.filter(x=>x.officialCode)){const key=`${row.game}:${String(row.officialCode).toUpperCase()}`,current=seriesRowByCode.get(key);if(!current||row.region==='TW'){seriesRowByCode.set(key,row);if(row.seriesId)seriesByCode.set(key,row.seriesId)}}
   const configured=new Map((await loadSeriesTranslations()).map(row=>[`${row.game}:${String(row.code||'').toUpperCase()}`,row])),products=all.filter(x=>x.imageKind==='sealed-product').map(x=>{const key=x.officialCode?`${x.game}:${String(x.officialCode).toUpperCase()}`:null,entry=key?configured.get(key):null,crossRegion=x.game==='pokemon'&&key?seriesRowByCode.get(key):null,metadata={...(x.metadata||{})},original=x.nameJa||x.name||x.nameEn||x.nameKo||'原名待補';let nameZh=x.nameZh;if(entry){nameZh=entry.nameZh;metadata.translationStatus='maintained-map';metadata.translationSource=entry.source}else if(crossRegion?.nameZh){nameZh=`${pokemonProductNameZh(String(x.productType||'商品'),x.productType).replace(String(x.productType||''),'')}｜${crossRegion.nameZh}`;metadata.translationStatus='official-cross-region'}else if(['unofficial','category-only'].includes(metadata.translationStatus)){nameZh=`官方尚未有中文名稱｜${original}`}return {...x,seriesId:x.seriesId||(key?seriesByCode.get(key):null)||null,nameZh,metadata}});
   return {products,series};
@@ -502,11 +516,11 @@ function mergeCatalogRows(fallbackRows=[],databaseRows=[]){
 function canonicalizeCatalog(catalog){
   const grouped=new Map();
   for(const physical of catalog.cards||[]){
-    const canonicalId=physical.canonicalId||physical.id,existing=grouped.get(canonicalId),derivedPrinting={cardId:physical.id,region:physical.region||null,language:physical.language||null,localSetCode:physical.localSetCode||null,localCardNumber:physical.officialCardNumber||null,imageUrl:physical.imageUrl||null,sourceUrl:physical.sourceUrl||null,releaseDate:physical.releaseDate||null,seriesId:physical.seriesId||null,rarity:physical.rarity||null,nameZh:physical.nameZh||null,nameJa:physical.nameJa||null,nameEn:physical.nameEn||null,nameKo:physical.nameKo||null},printings=(physical.printings?.length?physical.printings:[derivedPrinting]).map(p=>({...derivedPrinting,...p,cardId:p.cardId||physical.id,seriesId:p.seriesId||physical.seriesId||null,localCardNumber:p.localCardNumber||physical.officialCardNumber||null,imageUrl:p.imageUrl||physical.imageUrl||null}));
-    if(!existing){const usablePrinting=printings.find(browseHasUsableImage);grouped.set(canonicalId,{...physical,id:canonicalId,canonicalId,physicalCardIds:[physical.id],aliases:uniqueValues(physical.aliases||[],physical.nameZh,physical.nameJa,physical.nameEn,physical.nameKo),printings,region:printings[0]?.region||physical.region||null,language:printings[0]?.language||physical.language||null,imageUrl:usablePrinting?.imageUrl||(physical.imageRightsStatus&&imageRightsAllowDisplay(physical.imageRightsStatus,physical.imageLicenseExpiresAt)?physical.imageUrl:null)});continue}
+    const canonicalId=physical.canonicalId||physical.id,existing=grouped.get(canonicalId),derivedPrinting={cardId:physical.id,region:physical.region||null,language:physical.language||null,localSetCode:physical.localSetCode||null,localCardNumber:physical.officialCardNumber||null,imageUrl:physical.imageUrl||null,imageSource:physical.imageSource||null,source:physical.source||null,sourceUrl:physical.sourceUrl||null,imageRightsStatus:physical.imageRightsStatus||'not-provided',imageLicenseExpiresAt:physical.imageLicenseExpiresAt||null,imageRehostRequired:physical.imageRehostRequired===true,releaseDate:physical.releaseDate||null,seriesId:physical.seriesId||null,rarity:physical.rarity||null,nameZh:physical.nameZh||null,nameJa:physical.nameJa||null,nameEn:physical.nameEn||null,nameKo:physical.nameKo||null},printings=(physical.printings?.length?physical.printings:[derivedPrinting]).map(p=>({...derivedPrinting,...p,cardId:p.cardId||physical.id,seriesId:p.seriesId||physical.seriesId||null,localCardNumber:p.localCardNumber||physical.officialCardNumber||null,imageUrl:p.imageUrl||physical.imageUrl||null,imageSource:p.imageSource||physical.imageSource||null,source:p.source||physical.source||null}));
+    if(!existing){const usablePrinting=printings.find(browseHasUsableImage);grouped.set(canonicalId,{...physical,id:canonicalId,canonicalId,physicalCardIds:[physical.id],aliases:uniqueValues(physical.aliases||[],physical.nameZh,physical.nameJa,physical.nameEn,physical.nameKo),printings,region:printings[0]?.region||physical.region||null,language:printings[0]?.language||physical.language||null,imageUrl:usablePrinting?.imageUrl||(imageRightsAllowDisplay(physical.imageRightsStatus,physical.imageLicenseExpiresAt,imageSourceOf(physical))?physical.imageUrl:null)});continue}
     existing.physicalCardIds=uniqueValues(existing.physicalCardIds,physical.id);existing.aliases=uniqueValues(existing.aliases,physical.aliases||[],physical.nameZh,physical.nameJa,physical.nameEn,physical.nameKo);existing.printings.push(...printings);for(const key of ['nameZh','nameJa','nameEn','nameKo','imageUrl','imageSource'])if(!existing[key]&&physical[key])existing[key]=physical[key];
   }
-  for(const card of grouped.values()){const seen=new Set();card.printings=card.printings.filter(p=>{const key=[p.id||p.providerId||'',p.cardId,p.region,p.language,p.localSetCode,p.localCardNumber,p.rarity||p.rarityCode||'',p.metadata?.variantKey||p.metadata?.imageId||''].join('|');if(seen.has(key))return false;seen.add(key);return true}).sort(comparePrintings);const preferred=card.printings[0],usable=card.printings.find(browseHasUsableImage);card.region=preferred?.region||card.region||null;card.language=preferred?.language||card.language||null;card.referenceRegion=preferred?.region||null;card.referencePrintingId=preferred?.id||preferred?.cardId||null;card.imageUrl=usable?.imageUrl||(imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt)?card.imageUrl:null);card.printings=card.printings.map(printing=>browseHasUsableImage(printing)?printing:{...printing,imageUrl:null});card.images=(card.images||[]).map(item=>browseHasUsableImage(item)?item:{...item,imageUrl:null})}
+  for(const card of grouped.values()){const seen=new Set();card.printings=card.printings.filter(p=>{const key=[p.id||p.providerId||'',p.cardId,p.region,p.language,p.localSetCode,p.localCardNumber,p.rarity||p.rarityCode||'',p.metadata?.variantKey||p.metadata?.imageId||''].join('|');if(seen.has(key))return false;seen.add(key);return true}).sort(comparePrintings);const preferred=card.printings[0],usable=card.printings.find(browseHasUsableImage);card.region=preferred?.region||card.region||null;card.language=preferred?.language||card.language||null;card.referenceRegion=preferred?.region||null;card.referencePrintingId=preferred?.id||preferred?.cardId||null;card.imageUrl=usable?.imageUrl||(imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt,imageSourceOf(card))?card.imageUrl:null);card.printings=card.printings.map(printing=>browseHasUsableImage(printing)?printing:{...printing,imageUrl:null});card.images=(card.images||[]).map(item=>browseHasUsableImage(item)?item:{...item,imageUrl:null})}
   return {...catalog,cards:[...grouped.values()]};
 }
 async function loadCatalog(){
