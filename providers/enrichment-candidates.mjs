@@ -471,6 +471,37 @@ export async function fetchTcgdexCard(providerId, {
   return { requestedProviderId: normalizedProviderId, ...normalizeTcgdexPayload(body, normalizedProviderId) };
 }
 
+export async function probeTcgdexImage(imageUrl, {
+  imageProbeImpl,
+  timeoutMs = 30000
+} = {}) {
+  const fetchImpl = imageProbeImpl || globalThis.fetch;
+  if (typeof fetchImpl !== 'function') throw new Error('IMAGE_PROBE_FETCH_UNAVAILABLE');
+  const url = clean(imageUrl);
+  if (!url || !/^https:\/\/assets[.]tcgdex[.]net\//i.test(url)) throw new Error('INVALID_TCGDEX_IMAGE_URL');
+  const options = {
+    method: 'GET',
+    headers: {
+      accept: 'image/*',
+      range: 'bytes=0-0',
+      'user-agent': 'CardScope/1.0'
+    }
+  };
+  const signal = signalFor(timeoutMs);
+  if (signal) options.signal = signal;
+  const response = await fetchImpl(url, options);
+  const status = Number(response?.status);
+  const contentType = clean(response?.headers?.get?.('content-type'))?.toLocaleLowerCase() || null;
+  if (![200, 206].includes(status) || !contentType?.startsWith('image/')) {
+    throw new Error(`TCGDEX_IMAGE_PROBE_${Number.isFinite(status) ? status : 'unknown'}`);
+  }
+  return {
+    imageProbeStatus: String(status),
+    imageContentType: contentType,
+    imageProbedAt: new Date().toISOString()
+  };
+}
+
 async function fetchInBatches(groups, options = {}) {
   const concurrency = normalizeConcurrency(options.concurrency);
   const results = [];
@@ -540,6 +571,8 @@ function candidateRow(target, field, value, record, matchingMethod, observedAt) 
     : field;
   const targetKeyValue = String(target.id);
   const evidence = {
+    sourceNameZh: record.nameZh,
+    ...(field === 'name_zh' ? { nameType: 'official' } : {}),
     rawRarity: record.rawRarity,
     normalizedRarityCode: record.rarityCode,
     normalizedRarityLabel: record.rarityLabel,
@@ -547,6 +580,7 @@ function candidateRow(target, field, value, record, matchingMethod, observedAt) 
     setCode: record.setCode,
     cardNumber: record.cardNumber,
     sourceUpdatedAt: record.updatedAt,
+    ...(record.imageProbe || {}),
     match: matchingMethod
   };
   const payloadHash = sha256Payload({
@@ -644,8 +678,25 @@ export async function planPokemonEnrichment(snapshot = {}, options = {}) {
           audit.push({ providerId: group.providerId, target: targetKey(target), field, status: 'source-field-missing' });
           continue;
         }
+        let imageProbe = null;
+        if (field === 'image_url') {
+          try {
+            imageProbe = await probeTcgdexImage(value, options);
+          } catch (error) {
+            fields[field].skipped += 1;
+            audit.push({
+              providerId: group.providerId,
+              target: targetKey(target),
+              field,
+              status: 'image-probe-failed',
+              reason: error instanceof Error ? error.message : String(error)
+            });
+            continue;
+          }
+        }
         const row = candidateRow(target, field, value, {
           ...record,
+          imageProbe,
           rawRarity: record.rarityLabel || record.rarityCode,
           rarityCode: normalizedRarity.code,
           rarityLabel: normalizedRarity.label

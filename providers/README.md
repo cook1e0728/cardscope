@@ -89,7 +89,7 @@ cursor: previous.cursor.next
 
 `enrichment-candidates.mjs` 只接受現有快照（`cards`、`printings`、`cardNames`），先找出來源明確標為 TCGdex、且有穩定 `provider_id` 和指定缺口的列，再以精確 provider ID 取得 TCGdex `zh-tw` 詳細資料。若 provider ID 無法直接對上，只接受精確系列代碼＋卡號的交叉比對；不使用名稱、別名或模糊相似度。
 
-它最多輸出 100 個候選列、使用低併發 GET、排序後產生可直接對應 `catalog_enrichment_candidates` 的 JSON 與稽核摘要。預設 `rarity` 只建立一個正規化 `rarity_code` 候選（例如 `Common → C`），原始名稱保留在 `evidence`，避免公開篩選再出現同義重複分類；繁中名稱需明確指定 `--fields name_zh,rarity`。圖片預設不會成為候選，只有同時傳入 `--fields image_url --include-images` 才會產生 `image_url` 候選，而且候選值會保留 `imageRightsStatus: not-provided` 和 `imageRights: not-inferred`，不能視為已獲授權。
+它最多輸出 100 個候選列、使用低併發 GET、排序後產生可直接對應 `catalog_enrichment_candidates` 的 JSON 與稽核摘要。預設 `rarity` 只建立一個正規化 `rarity_code` 候選（例如 `Common → C`），原始名稱保留在 `evidence`，避免公開篩選再出現同義重複分類；繁中名稱需明確指定 `--fields name_zh,rarity`。圖片預設不會成為候選，只有同時傳入 `--fields image_url --include-images` 才會產生 `image_url` 候選，而且會用 `Range: bytes=0-0` 驗證同一 TCGdex 資產確實回傳圖片；候選值仍保留 `imageRightsStatus: not-provided` 和 `imageRights: not-inferred`，不能視為已獲授權。來源未提供圖片、圖片探測失敗或版本不精確時只記錄缺口，不會借用其他地區或 printing 的圖。
 
 ```bash
 node scripts/plan-pokemon-enrichment.mjs snapshot.json --fields name_zh,rarity --batch-size 100 --observed-at 2026-09-15T00:00:00.000Z
@@ -97,4 +97,12 @@ node scripts/plan-pokemon-enrichment.mjs snapshot.json --fields name_zh,rarity -
 
 這個命令只讀取快照並輸出 dry-run JSON，不連線 Supabase、不寫入正式表，也不會自動晉升候選資料。`npm run plan:pokemon-enrichment -- snapshot.json` 是相同入口；送入正式候選表前仍需完成來源條款、robots、欄位衝突和圖片權利審查。
 
-正式升級只透過 `private.promote_pokemon_rarity_candidates`：呼叫端必須傳入已審核的明確候選 ID、批次 ID 與 checksum。資料庫會鎖定候選和目標、確認 provider／IP／地區／語言、只補空值並原子記錄升級；相同批次重跑是 0 變更。此函式不接受圖片欄位。
+正式三欄位升級只透過 `private.promote_pokemon_tcgdex_candidates`：呼叫端必須傳入已審核的明確候選 ID、批次 ID，以及包含候選 ID、payload hash、目標欄位和建議值的 checksum。資料庫會鎖定候選、卡片、printing、官方名稱與 canonical identity，確認 provider／IP／地區／語言／系列代碼／卡號，只補空值並原子保存 before snapshot 與結果；相同批次重跑是驗證後的 0 變更。
+
+三個欄位採不同但同批次的處理方式：
+
+- 稀有度：只有已列入該 IP 排序字典的 canonical code 才能寫入卡片與 printing。
+- 繁中名：已有的 `tcg_cards.name_zh` 和 `tcg_card_names` 會逐筆核對並計入 `verifiedExistingNames`，相同值不重寫；只有兩處皆為空且來源標明 official 才新增。
+- 圖片：只接受 `assets.tcgdex.net` 的同一 printing URL、24 小時內成功的圖片探測證據，並維持 `not-provided/not-inferred` 權利狀態。來源沒有圖時，`changedImages` 合理地為 0。
+
+舊的 `private.promote_pokemon_rarity_candidates` 僅保留既有批次相容性；新的批次不得混用兩個 promotion 函式。
