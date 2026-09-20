@@ -312,6 +312,7 @@ export async function planPokemonEnrichmentWorkflow({
   timeoutMs,
   observedAt,
   fetchImpl,
+  imageProbeImpl,
   fetch: fetchAlias,
   dryRun = true
 } = {}) {
@@ -352,6 +353,7 @@ export async function planPokemonEnrichmentWorkflow({
       timeoutMs,
       observedAt,
       fetchImpl,
+      imageProbeImpl,
       fetch: fetchAlias
     })
     : emptyCandidatePlan();

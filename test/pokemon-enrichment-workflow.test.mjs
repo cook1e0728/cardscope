@@ -41,7 +41,7 @@ function fakeFetch(calls) {
         set: { id: 'sv4a' },
         name: `官方名稱 ${number}`,
         rarity: 'SSR',
-        image: `https://assets.example/${providerId}`
+        image: `https://assets.tcgdex.net/zh-tw/sv4a/${providerId}`
       })
     };
   };
@@ -99,6 +99,10 @@ test('resumes deterministically and image candidates require explicit opt-in', a
     fields: ['image_url'],
     includeImages: true,
     fetchImpl: fakeFetch([]),
+    imageProbeImpl: async () => ({
+      status: 206,
+      headers: { get: name => name === 'content-type' ? 'image/webp' : null }
+    }),
     observedAt: '2026-09-18T00:00:00Z'
   });
   assert.equal(images.candidatePlan.candidates[0].review_reason, 'image-rights-review-required');

@@ -180,6 +180,15 @@ test('image candidates require explicit opt-in and retain unverified rights stat
     fields: ['image_url'],
     includeImages: true,
     fetchImpl: fakeFetch({ 'sv4a-347': payload() }),
+    imageProbeImpl: async (url, options) => {
+      assert.equal(url, 'https://assets.tcgdex.net/zh-tw/SV4a/347/low.webp');
+      assert.equal(options.method, 'GET');
+      assert.equal(options.headers.range, 'bytes=0-0');
+      return {
+        status: 206,
+        headers: { get: name => name === 'content-type' ? 'image/webp' : null }
+      };
+    },
     observedAt: '2026-09-15T00:00:00Z'
   });
   const image = plan.candidates.find(row => row.field_name === 'image_url');
@@ -190,8 +199,26 @@ test('image candidates require explicit opt-in and retain unverified rights stat
     imageRights: 'not-inferred'
   });
   assert.equal(image.review_reason, 'image-rights-review-required');
+  assert.equal(image.evidence.imageProbeStatus, '206');
+  assert.equal(image.evidence.imageContentType, 'image/webp');
+  assert.ok(Number.isFinite(Date.parse(image.evidence.imageProbedAt)));
   assert.equal(plan.provenance.imageRightsStatus, 'not-provided');
   assert.equal(plan.provenance.imageRights, 'not-inferred');
+});
+
+test('image candidates are held when the exact TCGdex asset probe fails', async () => {
+  const plan = await planPokemonEnrichment(snapshot(), {
+    fields: ['image_url'],
+    includeImages: true,
+    fetchImpl: fakeFetch({ 'sv4a-347': payload() }),
+    imageProbeImpl: async () => ({
+      status: 404,
+      headers: { get: () => 'text/html' }
+    }),
+    observedAt: '2026-09-15T00:00:00Z'
+  });
+  assert.equal(plan.candidates.some(row => row.field_name === 'image_url'), false);
+  assert.ok(plan.audit.some(item => item.status === 'image-probe-failed'));
 });
 
 test('caps source records at 100 and keeps output deterministic across input order', async () => {

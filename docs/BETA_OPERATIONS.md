@@ -19,13 +19,13 @@ npm run catalog:gaps -- path\to\snapshot.json --output output\series-gaps.json
 
 ## 寶可夢增量補全
 
-目前已驗證的 TCGdex 工作只建立候選資料：每批最多 100 個 provider ID、只接受 provider ID 精確配對、只補空欄位、支援游標續傳。預設不抓圖片；圖片必須加 `--include-images`，而且仍標記為 `not-provided`，需另行審核展示權利。
+目前已驗證的 TCGdex 工作先建立候選資料：每批最多 100 個 provider ID、只接受 provider ID 精確配對、只補空欄位、支援游標續傳。預設不抓圖片；圖片必須加 `--include-images`，通過實際圖片回應探測後仍標記為 `not-provided`，需另行審核展示權利。
 
 ```powershell
 npm run catalog:enrich:pokemon -- path\to\snapshot.json --fields rarity,name_zh --output output\pokemon-plan.json
 ```
 
-下一批將前一份輸出的 `cursor.next` 傳回 `--cursor`。此命令拒絕 `--apply` 與 `--write`；正式提升仍只能走既有私有、限量、精確配對且可重播的候選提升流程。這能避免每次全庫重抓，也保留原始 printing、來源 URL、觀測時間與稽核記錄。
+下一批將前一份輸出的 `cursor.next` 傳回 `--cursor`。此命令拒絕 `--apply` 與 `--write`；正式提升只能走私有、限量、精確配對且可重播的 `private.promote_pokemon_tcgdex_candidates`。一個批次可同時處理稀有度、官方繁中名與同 printing 圖片，但每個欄位都獨立計數：既有正確中文名只核對、不重寫；來源端沒有的圖片標記為 `not-published`，不得用其他版本圖片補洞。這能避免每次全庫重抓，也保留原始 printing、來源 URL、觀測時間與稽核記錄。
 
 優先處理順序：
 
@@ -60,6 +60,8 @@ npm run catalog:enrich:pokemon -- path\to\snapshot.json --fields rarity,name_zh 
 正式資料異動前需記錄 Supabase 備份點或可還原快照，並先在交易中 dry-run。每次演練記錄：日期、備份識別、還原目標、執行者、資料列／約束檢查及結果。
 
 目前這個版本只完成流程與記錄格式，**尚未執行正式環境的破壞式還原演練**。在第一次批次提升候選資料前，必須完成一次非正式環境還原並保存證據。
+
+若不建立付費開發分支，第一次三欄位 canary 必須先在正式資料庫用單一 `BEGIN … ROLLBACK` 交易演練 migration、候選提升、錯誤 checksum 拒絕、精確重播與 before snapshot。因 DDL 即使回滾仍可能取得短暫資料表鎖，執行前需另行取得正式庫 schema 演練核准；未核准時只能完成本機測試與 PR，不得直接套用 migration。
 
 ## 每次發布驗收
 
