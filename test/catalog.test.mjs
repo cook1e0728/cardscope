@@ -40,6 +40,17 @@ test('source policy gates collectors and image display independently',()=>{
   assert.equal(sourcePolicySummary().unverifiedImageDisplayEnabled,true);
 });
 
+test('database detail, search, and series paths retain image policy fields',async()=>{
+  const source=await readFile(new URL('../server.mjs',import.meta.url),'utf8');
+  const functions=['searchCatalogDatabase','browseCardsByGame','loadCardFromDatabase'];
+  for(const [index,name] of functions.entries()){
+    const start=source.indexOf(`async function ${name}`);
+    const end=index===functions.length-1?source.indexOf('async function getCard',start):source.indexOf(`async function ${functions[index+1]}`,start);
+    assert.ok(start>=0&&end>start,`${name} source is missing`);
+    assert.match(source.slice(start,end),/select:BROWSE_PRINTING_SELECT/,`${name} must fetch source and image rights fields`);
+  }
+});
+
 test('public health and source policy endpoints are available without database secrets',async()=>{
   const health=await api('/api/catalog/health'),sources=await api('/api/catalog/sources');
   assert.equal(health.data.policy.version,3);
