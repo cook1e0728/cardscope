@@ -78,6 +78,13 @@ test('default catalog browsing fetches only the requested page and its image rel
   assert.match(indexSource,/countedRarities\.length\?countedRarities:rankedRarities/);
 });
 
+test('series browsing scopes printing and card queries before loading images',()=>{
+  assert.match(serverSource,/async function browseDatabaseSeriesCards/);
+  assert.match(serverSource,/series_id:`eq\.\$\{safeSeries\}`/);
+  assert.match(serverSource,/chunkCardIds\(cardIds,RELATION_BATCH_SIZE\)/);
+  assert.match(serverSource,/if\(options\.seriesId\)return browseDatabaseSeriesCards\(game,options\)/);
+});
+
 test('taxonomy keeps card systems separate from current and planned franchises',async()=>{
   const taxonomy=JSON.parse(await readFile(new URL('../data/game-taxonomy.json',import.meta.url),'utf8'));
   const weiss=taxonomy.systems.find(system=>system.id==='weiss-schwarz');
