@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const migrationUrl = new URL('../supabase/migrations/20260920062403_pokemon_tcgdex_trifield_promotion.sql', import.meta.url);
+const indexMigrationUrl = new URL('../supabase/migrations/20260920071646_index_enrichment_promotion_game_id.sql', import.meta.url);
+const raritySeedMigrationUrl = new URL('../supabase/migrations/20260921063506_seed_missing_pokemon_canonical_rarities.sql', import.meta.url);
 
 test('tri-field promotion stays private, bounded, exact, atomic and rights-aware', async () => {
   const sql = await readFile(migrationUrl, 'utf8');
@@ -42,4 +44,19 @@ test('candidate evidence carries the source name for zero-write name reconciliat
   const source = await readFile(new URL('../providers/enrichment-candidates.mjs', import.meta.url), 'utf8');
   assert.match(source, /sourceNameZh:\s*record\.nameZh/);
   assert.match(source, /field === 'name_zh' \? \{ nameType: 'official' \}/);
+});
+
+test('promotion batch game foreign key has a covering index', async () => {
+  const sql = await readFile(indexMigrationUrl, 'utf8');
+  assert.match(sql, /create index if not exists catalog_enrichment_promotion_batches_game_id_idx/i);
+  assert.match(sql, /on public\.catalog_enrichment_promotion_batches\(game_id\)/i);
+});
+
+test('missing Pokemon canonical rarities are seeded with reviewed ranks', async () => {
+  const sql = await readFile(raritySeedMigrationUrl, 'utf8');
+  for (const [code, tier] of [['MUR', 0], ['BWR', 1], ['SR', 6], ['CHR', 9], ['RRR', 11]]) {
+    assert.match(sql, new RegExp(`'pokemon', '${code}', '${code}', ${tier}`));
+  }
+  assert.match(sql, /on conflict \(game_id, rarity_code\) do nothing/i);
+  assert.match(sql, /pokemon-card-official-jp/);
 });
