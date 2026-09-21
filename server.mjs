@@ -298,7 +298,23 @@ async function browseDatabasePageFast(game,options={}){
   const data=cards.map(card=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=page.total??skip+data.length+(page.data?.length>take?1:0);
   return {data,total,hasMore:skip+data.length<total,facets:null,facetStatus:'deferred',limit:take,offset:skip,errors:{printings:printingResult.error?.message||null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
 }
+async function browseDatabaseSeriesCards(game,options={}){
+  const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),safeSeries=String(options.seriesId||'').replace(/[^a-z0-9:_-]/gi,'');
+  if(!safeSeries)return browseDatabasePageFast(game,options);
+  const printingParams=new URLSearchParams({select:BROWSE_PRINTING_SELECT,series_id:`eq.${safeSeries}`,order:'local_card_number.asc,id.asc'}),printings=await supabaseFetchAll(`/tcg_printings?${printingParams}`),cardIds=[...new Set((printings||[]).map(printing=>printing.cardId).filter(Boolean))];
+  if(!cardIds.length)return {data:[],total:0,hasMore:false,facets:{rarity:{},region:{},language:{},rarityLabels:{}},facetStatus:'complete',limit:options.limit,offset:options.offset,errors:{printings:null,images:null}};
+  const cards=[];
+  for(const batch of chunkCardIds(cardIds,RELATION_BATCH_SIZE)){
+    const ids=batch.map(id=>`"${String(id).replaceAll('"','')}"`).join(','),params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,id:`in.(${ids})`,order:'official_card_number.asc,id.asc'});
+    cards.push(...await supabaseFetchAll(`/tcg_cards?${params}`));
+  }
+  const imageResult=await loadDatabaseImages(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error})),printingByCard=buildPrintingIndex(printings),imageByCard=new Map();
+  for(const image of imageResult.rows){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
+  const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:'complete'});
+  return {...result,errors:{printings:null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
+}
 async function browseDatabaseCards(game,options){
+  if(options.seriesId)return browseDatabaseSeriesCards(game,options);
   if(databaseFastBrowseEligible(options))return browseDatabasePageFast(game,options);
   const cards=await loadDatabaseBrowseRows(game),cardIds=cards.map(card=>card.id),printingResult=await loadDatabasePrintings(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),imageResult=await loadDatabaseImages(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error}));
   const selectedCardIds=new Set(cards.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedCardIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedCardIds.has(image.cardId));
