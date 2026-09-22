@@ -37,6 +37,9 @@ test('card catalog always starts in grid mode even after a previous rarity view'
 
 test('card detail viewer exposes real magnification controls and pan gestures',()=>{
   assert.match(uiSource,/data-zoom-preset="4"/);
+  assert.match(uiSource,/class="card-zoom-media"/);
+  assert.match(uiSource,/media\.style\.transform=/);
+  assert.match(uiSource,/data-image-quality/);
   assert.match(uiSource,/touch-action:none/);
   assert.match(uiSource,/pointerdown/);
   assert.match(uiSource,/wheel/);
@@ -54,6 +57,18 @@ test('only images without an embedded SAMPLE receive one horizontal overlay',()=
   assert.equal(unsignedPlacement.suppressOverlay,true);
   assert.match(uiSource,/card-sample-watermark-zoom/);
   assert.match(uiSource,/if\(sample\)sample\.hidden=true/);
+});
+
+test('card detail prefers provider high-resolution images before thumbnails',()=>{
+  const h=createHarness(undefined,true);
+  const tcgdex=h.run("cardImageSourceCandidates({images:[],printings:[]},{metadata:{imageBase:'https://assets.tcgdex.net/zh-tw/S/S10P/001'},imageUrl:'https://assets.tcgdex.net/zh-tw/S/S10P/001/low.webp'})");
+  assert.equal(tcgdex[0],'https://assets.tcgdex.net/zh-tw/S/S10P/001/high.webp');
+  assert.ok(tcgdex.indexOf('https://assets.tcgdex.net/zh-tw/S/S10P/001/low.webp')>0);
+  const sources=h.run("cardImageSourceCandidates({images:[],printings:[]},{metadata:{imageLarge:'https://images.pokemontcg.io/swsh10/001_hires.png'},imageUrl:'https://images.pokemontcg.io/swsh10/001.png'})");
+  assert.equal(sources[0],'https://images.pokemontcg.io/swsh10/001_hires.png');
+  assert.ok(sources.indexOf('https://images.pokemontcg.io/swsh10/001.png')>0);
+  const derived=h.run("cardImageSourceCandidates({images:[],printings:[]},{imageUrl:'https://images.ygoprodeck.com/images/cards_small/46986414.jpg'})");
+  assert.equal(derived[0],'https://images.ygoprodeck.com/images/cards/46986414.jpg');
 });
 
 test('mobile layout constrains header, dialogs, filters, and long text to the viewport',async()=>{
