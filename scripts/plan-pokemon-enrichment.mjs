@@ -10,6 +10,9 @@ function usage() {
     '  --batch-size <n>                     Maximum source records (hard cap: 100)',
     '  --concurrency <n>                    Concurrent GET requests (default: 4)',
     '  --include-images                     Explicitly opt in to image candidates',
+    '  --series <code>                       Exact normalized TCGdex series code',
+    '  --card-number-from <n>                Inclusive numeric card-number lower bound',
+    '  --card-number-to <n>                  Inclusive numeric card-number upper bound',
     '  --observed-at <ISO timestamp>        Fallback timestamp for records without updatedAt',
     '  --api-base <URL>                     TCGdex detail API base URL',
     '  --help                               Show this message'
@@ -38,6 +41,9 @@ function parseArgs(argv) {
     if (key === 'fields') options.fields = value;
     else if (key === 'batch-size') options.batchSize = Number(value);
     else if (key === 'concurrency') options.concurrency = Number(value);
+    else if (key === 'series') options.series = value;
+    else if (key === 'card-number-from') options.cardNumberFrom = value;
+    else if (key === 'card-number-to') options.cardNumberTo = value;
     else if (key === 'observed-at') options.observedAt = value;
     else if (key === 'api-base') options.apiBase = value;
     else throw new Error(`UNKNOWN_OPTION:${arg}`);

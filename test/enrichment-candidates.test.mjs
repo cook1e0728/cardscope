@@ -251,3 +251,113 @@ test('caps source records at 100 and keeps output deterministic across input ord
   });
   assert.deepEqual(plan.candidates, reversed.candidates);
 });
+
+test('filters one exact normalized series and an inclusive numeric card range', async () => {
+  const cards = [2, 10, 11].map(number => ({
+    id: `card-a-${number}`,
+    canonical_id: `canonical-a-${number}`,
+    game_id: 'pokemon',
+    source: TCGDEX_PROVIDER,
+    provider_id: `sv4a-${number}`,
+    official_card_number: `${number}/190`,
+    name_zh: null,
+    rarity: null
+  })).concat({
+    id: 'card-b-2',
+    canonical_id: 'canonical-b-2',
+    game_id: 'pokemon',
+    source: TCGDEX_PROVIDER,
+    provider_id: 'sv4b-2',
+    official_card_number: '2/190',
+    name_zh: null,
+    rarity: null
+  });
+  const printings = cards.map(card => ({
+    id: `printing-${card.id}`,
+    card_id: card.id,
+    source: TCGDEX_PROVIDER,
+    provider_id: card.provider_id,
+    local_set_code: card.provider_id.split('-')[0],
+    local_card_number: card.official_card_number,
+    rarity: null,
+    rarity_code: null,
+    rarity_label: null,
+    image_url: null
+  }));
+  const calls = [];
+  const payloads = Object.fromEntries(cards.map(card => [
+    card.provider_id,
+    payload(card.provider_id, {
+      set: { id: card.provider_id.split('-')[0] },
+      localId: card.official_card_number,
+      rarity: 'Common'
+    })
+  ]));
+  const plan = await planPokemonEnrichment({ cards, printings, cardNames: [] }, {
+    series: ' SV4A ',
+    cardNumberFrom: '2',
+    cardNumberTo: '10',
+    fields: ['rarity'],
+    fetchImpl: fakeFetch(payloads, calls),
+    observedAt: '2026-09-15T00:00:00Z'
+  });
+
+  assert.deepEqual(calls.map(call => decodeURIComponent(call.url.split('/').at(-1))), ['sv4a-2', 'sv4a-10']);
+  assert.deepEqual([...new Set(plan.candidates.map(row => row.source_record_id))], ['sv4a-2', 'sv4a-10']);
+  assert.equal(plan.summary.requestedRecords, 2);
+  assert.equal(plan.summary.deferredRecords, 0);
+  assert.equal(plan.candidates.every(row => row.evidence.cardNumber === '2/190' || row.evidence.cardNumber === '10/190'), true);
+});
+
+test('rejects malformed or reversed numeric card ranges before fetching', async () => {
+  await assert.rejects(
+    () => planPokemonEnrichment(snapshot(), {
+      cardNumberFrom: '10',
+      cardNumberTo: '2',
+      fetchImpl: fakeFetch({})
+    }),
+    /INVALID_POKEMON_CARD_NUMBER_RANGE/
+  );
+  await assert.rejects(
+    () => planPokemonEnrichment(snapshot(), {
+      cardNumberFrom: '2.5',
+      fetchImpl: fakeFetch({})
+    }),
+    /INVALID_POKEMON_CARD_NUMBER_FROM/
+  );
+});
+
+test('excludes rows whose exact card identity conflicts with the provider ID', async () => {
+  const cards = [{
+    id: 'card-mismatch',
+    canonical_id: 'canonical-mismatch',
+    game_id: 'pokemon',
+    source: TCGDEX_PROVIDER,
+    provider_id: 's11-999',
+    official_card_number: '001/100',
+    name_zh: null,
+    rarity: null
+  }];
+  const printings = [{
+    id: 'printing-mismatch',
+    card_id: 'card-mismatch',
+    source: TCGDEX_PROVIDER,
+    provider_id: 's11-999',
+    local_set_code: 'S11',
+    local_card_number: '001/100',
+    rarity_code: null,
+    rarity_label: null,
+    image_url: null
+  }];
+  const calls = [];
+  const plan = await planPokemonEnrichment({ cards, printings, cardNames: [] }, {
+    series: 'S11',
+    cardNumberFrom: 1,
+    cardNumberTo: 50,
+    fields: ['rarity'],
+    fetchImpl: fakeFetch({}, calls)
+  });
+  assert.equal(calls.length, 0);
+  assert.equal(plan.candidates.length, 0);
+  assert.equal(plan.skipped.filter(row => row.reason === 'scope-filtered').length, 2);
+});

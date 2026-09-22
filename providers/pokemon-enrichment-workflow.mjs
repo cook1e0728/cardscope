@@ -6,6 +6,8 @@ import {
 import {
   planPokemonEnrichment,
   selectPokemonEnrichmentTargets,
+  filterPokemonEnrichmentRows,
+  normalizePokemonEnrichmentScope,
   sha256Payload,
   stableStringify,
   DEFAULT_BATCH_SIZE as DEFAULT_CANDIDATE_BATCH_SIZE,
@@ -307,6 +309,9 @@ export async function planPokemonEnrichmentWorkflow({
   approvedProviders,
   fields,
   includeImages = false,
+  series,
+  cardNumberFrom,
+  cardNumberTo,
   concurrency,
   apiBase,
   timeoutMs,
@@ -319,8 +324,10 @@ export async function planPokemonEnrichmentWorkflow({
   if (dryRun !== true) throw new Error('POKEMON_ENRICHMENT_DRY_RUN_ONLY');
   if (!isObject(snapshot)) throw new Error('INVALID_POKEMON_ENRICHMENT_SNAPSHOT');
   const limit = normalizeBatchSize(batchSize);
+  const scope = normalizePokemonEnrichmentScope({ series, cardNumberFrom, cardNumberTo });
   const rawSources = sourceRecordsFrom(snapshot, sourceRecords);
-  const sourceSelection = providerIdOnlySources(rawSources);
+  const scopedSources = filterPokemonEnrichmentRows(rawSources, scope);
+  const sourceSelection = providerIdOnlySources(scopedSources);
   const gapPlan = strictGapPlan(createPokemonGapPlan({
     cards: snapshotRows(snapshot, 'cards'),
     printings: snapshotRows(snapshot, 'printings'),
@@ -336,6 +343,9 @@ export async function planPokemonEnrichmentWorkflow({
   const candidateSelection = selectPokemonEnrichmentTargets(snapshot, {
     fields,
     includeImages,
+    series: scope.series,
+    cardNumberFrom: scope.from,
+    cardNumberTo: scope.to,
     batchSize: limit
   });
   const candidateChecksum = candidateGroupsChecksum(candidateSelection.groups);
@@ -397,6 +407,7 @@ export async function planPokemonEnrichmentWorkflow({
     },
     summary: {
       sourceRecords: rawSources.length,
+      sourceRecordsScoped: scopedSources.length,
       sourceRecordsRejected: sourceSelection.rejected.length,
       gapPatches: gapPlan.patchCounts.total,
       candidateRows: candidatePlan.candidates.length,
@@ -406,6 +417,7 @@ export async function planPokemonEnrichmentWorkflow({
     },
     gapPlan,
     candidatePlan,
+    scope,
     audit,
     provenance: {
       generatedAt: observedAt || new Date().toISOString(),

@@ -14,6 +14,9 @@ function usage() {
     '  --gap-kinds <a,b>                     Gap fields (default: traditional-chinese-name,rarity)',
     '  --concurrency <n>                     TCGdex GET concurrency',
     '  --include-images                      Explicitly request image candidates',
+    '  --series <code>                       Exact normalized TCGdex series code',
+    '  --card-number-from <n>                Inclusive numeric card-number lower bound',
+    '  --card-number-to <n>                  Inclusive numeric card-number upper bound',
     '  --observed-at <ISO timestamp>         Fallback observation timestamp',
     '  --api-base <URL>                      TCGdex detail API base URL',
     '  --gap-cursor <token>                  Resume the gap planner cursor',
@@ -49,6 +52,9 @@ function parseArgs(argv) {
     else if (key === 'fields') options.fields = value;
     else if (key === 'gap-kinds') options.gapKinds = value.split(',').map(item => item.trim()).filter(Boolean);
     else if (key === 'concurrency') options.concurrency = Number(value);
+    else if (key === 'series') options.series = value;
+    else if (key === 'card-number-from') options.cardNumberFrom = value;
+    else if (key === 'card-number-to') options.cardNumberTo = value;
     else if (key === 'observed-at') options.observedAt = value;
     else if (key === 'api-base') options.apiBase = value;
     else if (key === 'gap-cursor') options.cursor = { ...(options.cursor || {}), gap: value };

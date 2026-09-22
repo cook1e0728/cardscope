@@ -139,3 +139,39 @@ test('keeps the parent card context when a printing has its own provider ID', as
   assert.ok(plan.candidatePlan.candidates.some(row => row.target_printing_id === 'printing-0'));
   assert.ok(plan.candidatePlan.candidates.every(row => row.matching_method === 'provider-id'));
 });
+
+test('scopes workflow batches by exact series and inclusive numeric range while preserving cursor bounds', async () => {
+  const calls = [];
+  const first = await planPokemonEnrichmentWorkflow({
+    snapshot: snapshot(12),
+    series: ' SV4A ',
+    cardNumberFrom: '2',
+    cardNumberTo: '10',
+    batchSize: 2,
+    fields: ['rarity'],
+    fetchImpl: fakeFetch(calls),
+    observedAt: '2026-09-18T00:00:00Z'
+  });
+  assert.deepEqual(first.batch.candidateProviderIds, ['sv4a-2', 'sv4a-3']);
+  assert.equal(first.batch.limit, 2);
+  assert.equal(first.scope.series, 'sv4a');
+  assert.equal(first.scope.from, 2);
+  assert.equal(first.scope.to, 10);
+  assert.equal(first.cursor.hasMore, true);
+
+  const second = await planPokemonEnrichmentWorkflow({
+    snapshot: snapshot(12),
+    series: 'sv4a',
+    cardNumberFrom: 2,
+    cardNumberTo: 10,
+    batchSize: 2,
+    fields: ['rarity'],
+    cursor: first.cursor.next,
+    fetchImpl: fakeFetch(calls),
+    observedAt: '2026-09-18T00:00:00Z'
+  });
+  assert.deepEqual(second.batch.candidateProviderIds, ['sv4a-4', 'sv4a-5']);
+  assert.equal(second.cursor.candidate.offset, 2);
+  assert.ok(second.cursor.candidate.next);
+  assert.equal(second.cursor.hasMore, true);
+});

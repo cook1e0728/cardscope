@@ -134,6 +134,118 @@ function cardNumberFor(row) {
   ));
 }
 
+function providerSeriesFor(providerId) {
+  const value = clean(providerId);
+  if (!value) return null;
+  const separator = value.lastIndexOf('-');
+  return separator > 0 ? value.slice(0, separator) : null;
+}
+
+function providerCardNumberFor(providerId) {
+  const value = clean(providerId);
+  if (!value) return null;
+  const separator = value.lastIndexOf('-');
+  return separator >= 0 ? value.slice(separator + 1) : null;
+}
+
+function rowSeriesFor(row) {
+  return clean(setCodeFor(row)) || providerSeriesFor(providerIdFor(row));
+}
+
+function numericCardNumber(value) {
+  const normalized = clean(value)?.normalize('NFKC').replace(/\s+/g, '') || null;
+  if (!normalized || !/^\d+(?:\/\d+)?$/.test(normalized)) return null;
+  const number = Number(normalized.split('/', 1)[0]);
+  return Number.isSafeInteger(number) ? number : null;
+}
+
+/**
+ * Normalize the optional CLI scope without interpreting names or fuzzy
+ * identifiers.  Series codes are compared case-insensitively after NFKC and
+ * insignificant-whitespace normalization; card bounds are non-negative safe
+ * integers and are inclusive.
+ */
+export function normalizePokemonEnrichmentScope(options = {}) {
+  const rawSeries = options.series ?? options.seriesId ?? null;
+  const series = rawSeries == null
+    ? null
+    : normalizeExactPart(rawSeries);
+  if (rawSeries != null && !series) throw new Error('INVALID_POKEMON_ENRICHMENT_SERIES');
+
+  const normalizeBound = (value, optionName) => {
+    if (value == null) return null;
+    const normalized = String(value).normalize('NFKC').trim();
+    if (!/^\d+$/.test(normalized)) throw new Error(`INVALID_POKEMON_CARD_NUMBER_${optionName}`);
+    const number = Number(normalized);
+    if (!Number.isSafeInteger(number) || number < 0) throw new Error(`INVALID_POKEMON_CARD_NUMBER_${optionName}`);
+    return number;
+  };
+
+  const from = normalizeBound(options.cardNumberFrom ?? options.cardFrom, 'FROM');
+  const to = normalizeBound(options.cardNumberTo ?? options.cardTo, 'TO');
+  if (from == null && to == null) return { series, from: null, to: null, active: Boolean(series) };
+  if (from != null && to != null && from > to) throw new Error('INVALID_POKEMON_CARD_NUMBER_RANGE');
+  return { series, from, to, active: true };
+}
+
+export function pokemonEnrichmentScopeForRow(row) {
+  const providerId = providerIdFor(row);
+  const explicitSeries = normalizeExactPart(setCodeFor(row));
+  const providerSeries = normalizeExactPart(providerSeriesFor(providerId));
+  const rawCardNumber = cardNumberFor(row);
+  const explicitCardNumber = numericCardNumber(rawCardNumber);
+  const providerCardNumber = numericCardNumber(providerCardNumberFor(providerId));
+  const hasInvalidExplicitCardNumber = rawCardNumber != null && explicitCardNumber == null;
+  const identityMismatch = Boolean(
+    (explicitSeries && providerSeries && explicitSeries !== providerSeries)
+    || (explicitCardNumber != null && providerCardNumber != null && explicitCardNumber !== providerCardNumber)
+  );
+  return {
+    series: explicitSeries || providerSeries,
+    cardNumber: explicitCardNumber ?? providerCardNumber,
+    valid: !hasInvalidExplicitCardNumber && !identityMismatch,
+    identityMismatch
+  };
+}
+
+export function matchesPokemonEnrichmentScope(row, scope = {}) {
+  const normalized = scope?.active === undefined ? normalizePokemonEnrichmentScope(scope) : scope;
+  const rowScope = pokemonEnrichmentScopeForRow(row);
+  if (normalized.active && !rowScope.valid) return false;
+  if (normalized.series && rowScope.series !== normalized.series) return false;
+  if (!normalized.active || (normalized.from == null && normalized.to == null)) return true;
+  if (rowScope.cardNumber == null) return false;
+  if (normalized.from != null && rowScope.cardNumber < normalized.from) return false;
+  if (normalized.to != null && rowScope.cardNumber > normalized.to) return false;
+  return true;
+}
+
+export function filterPokemonEnrichmentRows(rows, options = {}) {
+  const scope = options?.active === undefined ? normalizePokemonEnrichmentScope(options) : options;
+  return (Array.isArray(rows) ? rows : []).filter(row => matchesPokemonEnrichmentScope(row, scope));
+}
+
+function compareNullableNumbers(left, right) {
+  if (left == null && right == null) return 0;
+  if (left == null) return 1;
+  if (right == null) return -1;
+  return left - right;
+}
+
+function compareProviderGroups(left, right) {
+  const leftTarget = left.targets.find(target => target.setCode || target.cardNumber) || left.targets[0] || {};
+  const rightTarget = right.targets.find(target => target.setCode || target.cardNumber) || right.targets[0] || {};
+  const seriesComparison = (normalizeExactPart(leftTarget.setCode) || providerSeriesFor(left.providerId) || '')
+    .localeCompare(normalizeExactPart(rightTarget.setCode) || providerSeriesFor(right.providerId) || '');
+  if (seriesComparison) return seriesComparison;
+  const numberComparison = compareNullableNumbers(
+    numericCardNumber(leftTarget.cardNumber || providerCardNumberFor(left.providerId)),
+    numericCardNumber(rightTarget.cardNumber || providerCardNumberFor(right.providerId))
+  );
+  if (numberComparison) return numberComparison;
+  return sourceIdKey(left.providerId).localeCompare(sourceIdKey(right.providerId));
+}
+
 export function normalizeExactPart(value) {
   return clean(value)?.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, '') || null;
 }
@@ -339,6 +451,7 @@ export function selectPokemonEnrichmentTargets(snapshot = {}, options = {}) {
   const printings = Array.isArray(snapshot.printings) ? snapshot.printings : [];
   const cardNames = Array.isArray(snapshot.cardNames) ? snapshot.cardNames : [];
   const { logical, candidateFields } = normalizeRequestedFields(options.fields ?? options.requestedFields, options);
+  const scope = normalizePokemonEnrichmentScope(options);
   const nameCoverage = buildCardNameCoverage(cardNames);
   const canonicalByCardId = new Map(cards.map(row => [cardIdFor(row), canonicalIdFor(row)]).filter(([id]) => id));
   const gameByCardId = new Map(cards.map(row => [cardIdFor(row), clean(rowValue(row, 'gameId', 'game_id'))]).filter(([id]) => id));
@@ -378,6 +491,10 @@ export function selectPokemonEnrichmentTargets(snapshot = {}, options = {}) {
       skipped.push({ kind: 'card', id: null, reason: 'missing-target-id' });
       continue;
     }
+    if (!matchesPokemonEnrichmentScope(row, scope)) {
+      skipped.push({ kind: 'card', id, reason: 'scope-filtered' });
+      continue;
+    }
     if (clean(rowValue(row, 'gameId', 'game_id')) !== POKEMON_GAME_ID) {
       skipped.push({ kind: 'card', id, reason: 'game-not-pokemon' });
       continue;
@@ -396,6 +513,10 @@ export function selectPokemonEnrichmentTargets(snapshot = {}, options = {}) {
       skipped.push({ kind: 'printing', id: null, reason: 'missing-target-id' });
       continue;
     }
+    if (!matchesPokemonEnrichmentScope(row, scope)) {
+      skipped.push({ kind: 'printing', id, reason: 'scope-filtered' });
+      continue;
+    }
     const cardId = clean(rowValue(row, 'cardId', 'card_id'));
     if (gameByCardId.get(cardId) !== POKEMON_GAME_ID) {
       skipped.push({ kind: 'printing', id, reason: 'game-not-pokemon' });
@@ -408,7 +529,7 @@ export function selectPokemonEnrichmentTargets(snapshot = {}, options = {}) {
     addRowTarget(row, 'printing', id, [...new Set(needs)]);
   }
 
-  const groups = [...byProviderId.values()].sort((left, right) => sourceIdKey(left.providerId).localeCompare(sourceIdKey(right.providerId)));
+  const groups = [...byProviderId.values()].sort(compareProviderGroups);
   const batchSize = normalizeBatchSize(options.batchSize);
   const selected = groups.slice(0, batchSize);
   const deferred = groups.slice(batchSize).map(group => ({ providerId: group.providerId, reason: 'batch-limit', targetCount: group.targets.length }));
@@ -422,7 +543,8 @@ export function selectPokemonEnrichmentTargets(snapshot = {}, options = {}) {
     selected,
     deferred,
     skipped,
-    batchSize
+    batchSize,
+    scope
   };
 }
 
@@ -722,6 +844,15 @@ export async function planPokemonEnrichment(snapshot = {}, options = {}) {
   }
 
   const allRows = [...candidates.values()].sort((left, right) => {
+    const leftSeries = normalizeExactPart(left.evidence?.setCode) || providerSeriesFor(left.source_record_id) || '';
+    const rightSeries = normalizeExactPart(right.evidence?.setCode) || providerSeriesFor(right.source_record_id) || '';
+    const seriesComparison = leftSeries.localeCompare(rightSeries);
+    if (seriesComparison) return seriesComparison;
+    const numberComparison = compareNullableNumbers(
+      numericCardNumber(left.evidence?.cardNumber || providerCardNumberFor(left.source_record_id)),
+      numericCardNumber(right.evidence?.cardNumber || providerCardNumberFor(right.source_record_id))
+    );
+    if (numberComparison) return numberComparison;
     const leftKey = `${left.source_record_id}|${left.target_card_id || ''}|${left.target_printing_id || ''}|${left.field_name}`;
     const rightKey = `${right.source_record_id}|${right.target_card_id || ''}|${right.target_printing_id || ''}|${right.field_name}`;
     return leftKey.localeCompare(rightKey);
@@ -753,6 +884,7 @@ export async function planPokemonEnrichment(snapshot = {}, options = {}) {
     deferredCandidateRows: deferredCandidateRows.length,
     conflicts: conflicts.length,
     skippedSnapshotRows: selection.skipped.length,
+    scope: selection.scope,
     fields,
     observedAtFallback: observedFallback
   };
@@ -764,6 +896,7 @@ export async function planPokemonEnrichment(snapshot = {}, options = {}) {
     candidates: rows,
     rows,
     summary,
+    scope: selection.scope,
     conflicts,
     deferred: [...selection.deferred, ...deferredCandidateRows],
     skipped: selection.skipped,
