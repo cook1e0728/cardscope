@@ -99,6 +99,9 @@ test('rarity order is game-specific in both directions and keeps unknown values 
   const h=createHarness();
   h.run(`rarityRankings=${JSON.stringify(rarityRankings)}`);
   assert.ok(h.run("compareRarityLabels('pokemon','SAR','C','desc')")<0);
+  assert.equal(h.run("rarityCanonicalCode('pokemon','Radiant Rare')"),'K');
+  assert.ok(h.run("compareRarityLabels('pokemon','K','RRR','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('pokemon','K','RRR','asc')")>0);
   assert.ok(h.run("compareRarityLabels('pokemon','SAR','C','asc')")>0);
   assert.ok(h.run("compareRarityLabels('onepiece','SEC','UC','desc')")<0);
   assert.ok(h.run("compareRarityLabels('yugioh','Ghost Rare','Common','desc')")<0);

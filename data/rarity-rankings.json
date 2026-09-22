@@ -5,7 +5,7 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "Amazing Rare", "RRR", "RR", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C"],
+      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C"],
       "canonicalLabels": {"Rare Holo": "Rare Holo"},
       "aliases": {
         "UR": ["Ultra Rare"],
@@ -16,6 +16,7 @@
         "S": ["Shiny Rare"],
         "AR": ["Art Rare", "Illustration Rare"],
         "CHR": ["Character Rare"],
+        "K": ["Radiant Rare"],
         "RRR": ["Triple Rare"],
         "RR": ["Double Rare"],
         "R": ["Rare"],
@@ -34,6 +35,7 @@
         ["AR", "Art Rare", "Illustration Rare"],
         ["CHR", "Character Rare"],
         ["Amazing Rare"],
+        ["K", "Radiant Rare"],
         ["RRR", "Triple Rare"],
         ["RR", "Double Rare"],
         ["Rare Holo"],
@@ -64,6 +66,7 @@
         ["Rare Holo"],
         ["RR", "Double Rare"],
         ["RRR", "Triple Rare"],
+        ["K", "Radiant Rare"],
         ["Amazing Rare"],
         ["CHR", "Character Rare"],
         ["AR", "Art Rare", "Illustration Rare"],

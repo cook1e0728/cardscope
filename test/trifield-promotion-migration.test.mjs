@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const migrationUrl = new URL('../supabase/migrations/20260920062403_pokemon_tcgdex_trifield_promotion.sql', import.meta.url);
 const indexMigrationUrl = new URL('../supabase/migrations/20260920071646_index_enrichment_promotion_game_id.sql', import.meta.url);
 const raritySeedMigrationUrl = new URL('../supabase/migrations/20260921063506_seed_missing_pokemon_canonical_rarities.sql', import.meta.url);
+const radiantRarityMigrationUrl = new URL('../supabase/migrations/20260921095540_add_pokemon_radiant_rarity.sql', import.meta.url);
 
 test('tri-field promotion stays private, bounded, exact, atomic and rights-aware', async () => {
   const sql = await readFile(migrationUrl, 'utf8');
@@ -59,4 +60,12 @@ test('missing Pokemon canonical rarities are seeded with reviewed ranks', async 
   }
   assert.match(sql, /on conflict \(game_id, rarity_code\) do nothing/i);
   assert.match(sql, /pokemon-card-official-jp/);
+});
+
+test('Pokemon Radiant Rare maps to the official K code without rank collisions', async () => {
+  const sql = await readFile(radiantRarityMigrationUrl, 'utf8');
+  assert.match(sql, /rarity_tier = rarity_tier \+ 1/);
+  assert.match(sql, /'pokemon',\s*'K',\s*'K',\s*11/);
+  assert.match(sql, /"Radiant Rare"/);
+  assert.match(sql, /pokemon-card-official-tw/);
 });
