@@ -17,7 +17,7 @@
 ## 目前里程碑
 
 - 程式基準：本輪從 GitHub `main` commit `7a65bef` 開始；卡片詳細視窗歷史導覽修正為 commit `f79127c`。返回到不含 `card` 的網址會關閉詳細視窗，前進／重新整理會重開正確卡片，Esc 只在圖片縮放未開啟時關閉詳細視窗。
-- 驗證：Node 全套測試 `169/169` 通過；新增測試涵蓋返回、前進、重新整理、Esc 與縮放互斥。正式 Render 是否已取得本輪 GitHub commit，須在推送後另行核對；不可把本機 `127.0.0.1` 驗收當成正式部署完成。
+- 驗證：Node 全套測試 `169/169` 通過；新增測試涵蓋返回、前進、重新整理、Esc 與縮放互斥。Render 已自動部署 checkpoint commit `767fabc`，耗時 29.9 秒且狀態為 Live；正式 `/api/catalog/health` 回傳 HTTP 200。不可把本機 `127.0.0.1` 驗收當成正式部署完成。
 - Supabase：正式專案 `ubiaftrvmywwmifqzmik` 的既有 schema／migration 維持不變；本輪只使用既有私有候選與交易式升級函式，沒有新增 DDL。安全與效能 advisor 仍只有既有 INFO。
 - S10P 第一批：`pokemon-tcgdex-s10p-001-050-20260923` 提升 100 個候選，補上 50 張 card 與 50 個 printing 稀有度；50 個既有官方繁中名核對成功。checksum `ad55e62be6dd89ca4224a62d5ed01aaa`，立即重播 `replay=true` 且再次異動為 0。
 - S10P 第二批：`pokemon-tcgdex-s10p-051-067-20260923` 提升候選 `489–522` 共 34 筆，補上 17 張 card 與 17 個 printing 稀有度；17 個既有官方繁中名核對成功。checksum `db2aed5dd153fc894e7b4edf990f0978`，立即重播 `replay=true` 且再次異動為 0。
