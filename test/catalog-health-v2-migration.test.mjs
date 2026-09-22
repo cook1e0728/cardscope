@@ -5,6 +5,7 @@ import {readFile} from 'node:fs/promises';
 const sql=await readFile(new URL('../supabase/migrations/20260918082717_catalog_health_snapshot_v2.sql',import.meta.url),'utf8');
 const optimizedSql=await readFile(new URL('../supabase/migrations/20260922065244_optimize_catalog_health_snapshot_v3.sql',import.meta.url),'utf8');
 const workMemSql=await readFile(new URL('../supabase/migrations/20260922065933_tune_catalog_health_work_mem.sql',import.meta.url),'utf8');
+const timeoutSql=await readFile(new URL('../supabase/migrations/20260922070444_set_catalog_health_function_timeout.sql',import.meta.url),'utf8');
 
 test('health v2 is private, policy-driven, and keeps card and printing units separate',()=>{
   assert.match(sql,/catalog_health_snapshot_v2\(p_display_policies jsonb/);
@@ -32,4 +33,9 @@ test('catalog health memory tuning is function-scoped and does not raise global 
   assert.match(workMemSql,/alter function public\.catalog_health_snapshot_v2\(jsonb\)\s+set work_mem = '64MB'/i);
   assert.doesNotMatch(workMemSql,/alter (role|database)/i);
   assert.doesNotMatch(workMemSql,/statement_timeout/i);
+});
+
+test('catalog health cold-path timeout exemption stays scoped to the cached RPC',()=>{
+  assert.match(timeoutSql,/alter function public\.catalog_health_snapshot_v2\(jsonb\)\s+set statement_timeout = '15s'/i);
+  assert.doesNotMatch(timeoutSql,/alter (role|database)/i);
 });
