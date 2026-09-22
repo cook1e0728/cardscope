@@ -31,7 +31,8 @@ test('rarity choices remain directly switchable after a filtered request',()=>{
 test('card detail and zoom controls reserve a complete viewport',()=>{
   assert.match(ui,/card-zoom-viewport/);
   assert.match(ui,/card-zoom-canvas/);
-  assert.match(ui,/aspect-ratio:5 \/ 7/);
+  assert.match(ui,/card-zoom-media/);
+  assert.match(ui,/container-type:inline-size/);
   assert.match(ui,/max-height:100%/);
   assert.match(ui,/data-zoom-preset="fit"/);
   assert.match(ui,/data-zoom-preset="4"/);
