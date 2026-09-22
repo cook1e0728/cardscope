@@ -16,15 +16,15 @@
 
 ## 目前里程碑
 
-- 基準：GitHub `main` commit `7a3ca98`。PR #16、#17、#18 已合併且 CI 成功；分別完成 health v2 單次彙總、函式級 `work_mem=64MB` 與函式級 `statement_timeout=15s`。
-- Supabase：`optimize_catalog_health_snapshot_v3`、`tune_catalog_health_work_mem`、`set_catalog_health_function_timeout` 已正式套用。設定只作用於 `catalog_health_snapshot_v2()`，未提高角色、資料庫或一般瀏覽查詢的 timeout。安全與效能 advisor 只有既有 INFO，沒有本階段新增警告或錯誤。
-- Health v2：正式 Render `/api/catalog/health` 冷啟動約 11 秒後成功回傳 `supabase-health-snapshot-v2`，`healthCompatibilityWarning=null`、圖片指標為 `per-source-policy`、所有 orphan 計數為 0；已不再退回 legacy snapshot。快取 TTL 為 5 分鐘。
-- 資料批次：`pokemon-tcgdex-s10a-051-071-20260922` 已提升 42 個候選；21 張卡片稀有度與 21 個 printing 稀有度完成，21 個既有官方繁中名核對成功，名稱與圖片均未被重寫。
-- 冪等驗證：立即重播為 `replay=true`，卡片、printing、名稱與圖片的再次異動數均為 0。TCGdex 的 S10a-072 至 075 為 404；此系列實際止於 071，不列為資料缺口。
-- Render：S10a 全系列共 71 張，稀有度 facets 為 `C:26`、`U:23`、`R:10`、`RR:6`、`RRR:3`、`K:3`，未知稀有度為 0；抽查 051、057、062、071 的 card／printing 稀有度一致，printing／image 查詢錯誤皆為 `null`。
-- 圖片狀態：TCGdex 的 S10a 051–071 精確來源回應均未提供圖片 URL，所以本批圖片異動為 0；不得以其他 printing 圖片代填。這是來源覆蓋缺口，不是卡片名稱或 printing 關聯失敗。
-- 本機保留：`.playwright-cli/`、`output/`、`pnpm-lock.yaml` 目前未追蹤，不加入提交，也不得清除。
+- 程式基準：本輪從 GitHub `main` commit `7a65bef` 開始；卡片詳細視窗歷史導覽修正為 commit `f79127c`。返回到不含 `card` 的網址會關閉詳細視窗，前進／重新整理會重開正確卡片，Esc 只在圖片縮放未開啟時關閉詳細視窗。
+- 驗證：Node 全套測試 `169/169` 通過；新增測試涵蓋返回、前進、重新整理、Esc 與縮放互斥。正式 Render 是否已取得本輪 GitHub commit，須在推送後另行核對；不可把本機 `127.0.0.1` 驗收當成正式部署完成。
+- Supabase：正式專案 `ubiaftrvmywwmifqzmik` 的既有 schema／migration 維持不變；本輪只使用既有私有候選與交易式升級函式，沒有新增 DDL。安全與效能 advisor 仍只有既有 INFO。
+- S10P 第一批：`pokemon-tcgdex-s10p-001-050-20260923` 提升 100 個候選，補上 50 張 card 與 50 個 printing 稀有度；50 個既有官方繁中名核對成功。checksum `ad55e62be6dd89ca4224a62d5ed01aaa`，立即重播 `replay=true` 且再次異動為 0。
+- S10P 第二批：`pokemon-tcgdex-s10p-051-067-20260923` 提升候選 `489–522` 共 34 筆，補上 17 張 card 與 17 個 printing 稀有度；17 個既有官方繁中名核對成功。checksum `db2aed5dd153fc894e7b4edf990f0978`，立即重播 `replay=true` 且再次異動為 0。
+- S10P 完整結果：全系列 67 張，card／printing 稀有度缺口皆為 0、互相不一致為 0、缺少排名為 0；facets 為 `C:29`、`U:21`、`R:8`、`RR:6`、`RRR:3`。精確來源只提供前 20 張圖片，另 47 張維持缺圖；不得借用其他 printing 或推測圖片。
+- S10b 阻擋證據：TCGdex `zh-tw` 的 001–050 可取回 50 個名稱但稀有度欄位為 0；051–071 可取回 21 個名稱但稀有度欄位仍為 0；072–079 為 404。正式庫既有 79 張 card／printing 皆缺稀有度，故本輪建立 0 個候選，不以其他語言、其他 printing 或推測值填補。
+- 本機保留：`pnpm-lock.yaml` 目前未追蹤，不加入提交，也不得清除。若下一台電腦另有 `.playwright-cli/` 或 `output/`，同樣視為本機產物，不得誤刪或提交。
 
 ## 下一個安全起點
 
-從 `pokemon-tcgdex-tw-s10b`（Pokémon GO）001–050 開始下一個精確來源批次。該系列目前共 79 張，79 張 card／printing 稀有度待補、59 張缺圖；因每張卡會建立 card 與 printing 兩個稀有度候選，第一批最多處理 001–050（100 候選），第二批再處理 051–079（58 候選）。開始前必須重新抓取並逐筆核對 TCGdex `zh-tw` 名稱、稀有度與圖片欄位，先 dry-run；名稱只補空值，圖片只在同一 printing 有精確來源 URL 且通過既有權利／探測門檻時建立候選，不得借用其他 printing。完成後重播驗證冪等，並在 Render 核對總數、facets、名稱、稀有度及圖片狀態。
+先替 TCGdex 候選 CLI 增加「精確系列 + 數字卡號範圍」篩選，避免目前字串排序把 `10` 排在 `2` 前面；必須保留每批最多 100 個 provider group、checksum／cursor 冪等與 dry-run 預設。通過單元測試後，再完整預檢 S11 `001–050`；只有來源逐張提供官方繁中名稱與非空稀有度、正式目標仍空白且 exact provider ID 唯一時，才可建立下一批候選。S10b 維持 `source-field-missing`，除非同一來源後續補回欄位或另有來源完成治理審核，不得直接升級。
