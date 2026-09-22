@@ -40,6 +40,9 @@ test('card detail viewer exposes real magnification controls and pan gestures',(
   assert.match(uiSource,/class="card-zoom-media"/);
   assert.match(uiSource,/media\.style\.transform=/);
   assert.match(uiSource,/data-image-quality/);
+  assert.match(uiSource,/state\.maxScale/);
+  assert.match(uiSource,/最高無損/);
+  assert.match(uiSource,/button\.disabled=requested>state\.maxScale/);
   assert.match(uiSource,/touch-action:none/);
   assert.match(uiSource,/pointerdown/);
   assert.match(uiSource,/wheel/);
