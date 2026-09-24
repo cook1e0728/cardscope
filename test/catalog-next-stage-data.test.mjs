@@ -89,6 +89,13 @@ test('failed image or printing relations are unknown, not zero coverage or a ful
     assert.equal(report.coverage.missingImages.missing,null);
     assert.equal(report.linkAudit.missingImages.count,null);
     assert.equal(report.metricStatus.images,'unknown');
+    if(status.printingStatus==='unknown'){
+      assert.equal(report.rarities,null);
+      assert.equal(report.coverage.rarity.covered,null);
+      assert.equal(report.coverage.printings.covered,null);
+      assert.equal(report.coverage.versions.covered,null);
+      assert.equal(report.metricStatus.rarities,'unknown');
+    }
   }
 });
 

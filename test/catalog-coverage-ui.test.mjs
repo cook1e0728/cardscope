@@ -74,4 +74,7 @@ test('both public coverage panels do not turn failed image lookups into zero',as
   assert.equal(vm.runInContext("healthNumber(row,['displayableImages'])",healthContext),null);
   healthContext.row.metricStatus.images='catalog-file';
   assert.equal(vm.runInContext("healthNumber(row,['displayableImages'])",healthContext),0);
+  healthContext.row.rarities=0;
+  healthContext.row.metricStatus.rarities='unknown';
+  assert.equal(vm.runInContext("healthNumber(row,['rarities'])",healthContext),null);
 });

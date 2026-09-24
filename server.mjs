@@ -380,6 +380,11 @@ function buildCoverageGameRaw(gameId,cards=[],printings=[],images=[],options={})
 function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
   const report=buildCoverageGameRaw(gameId,cards,printings,images,options);
   if(options.printingStatus!=='unknown'&&options.imageStatus!=='unknown')return report;
+  if(options.printingStatus==='unknown'){
+    report.rarities=null;
+    for(const key of ['rarity','printings','versions'])report.coverage[key]={...report.coverage[key],covered:null,denominator:null,percent:null,status:'unknown'};
+    report.metricStatus.rarities='unknown';
+  }
   report.displayableImages=null;
   report.cardsWithImageUrls=null;
   report.imageUrlRecords=null;
