@@ -66,6 +66,21 @@ test('series index is a labelled fallback only when an IP has no physical produc
   assert.equal(vm.runInContext('baseSeriesRows().length',context),0);
   assert.match(navigator,/系列圖・非卡盒/);
 });
+test('series-only navigation clearly distinguishes an index from physical products',async()=>{
+  const navigator=await readFile(new URL('../series-navigator.js',import.meta.url),'utf8');
+  const definition=navigator.split('\n').find(line=>line.startsWith('function setSeriesContext('));
+  const title={textContent:''},description={textContent:''};
+  const section={querySelector:selector=>selector==='.title h2'?title:description};
+  const context=vm.createContext({document:{getElementById:()=>({closest:()=>section})}});
+  vm.runInContext(definition,context);
+  vm.runInContext('setSeriesContext(true,276)',context);
+  assert.match(title.textContent,/系列導覽（非卡盒）/);
+  assert.match(description.textContent,/276 個系列索引/);
+  assert.match(description.textContent,/不是卡盒封面/);
+  vm.runInContext('setSeriesContext(false,32)',context);
+  assert.equal(title.textContent,'商品圖鑑');
+  assert.doesNotMatch(description.textContent,/276|卡盒封面/);
+});
 test('verified prices cannot leak across games or non-Japanese editions',()=>{
   const h=harness();h.run("game='pokemon';verifiedPrices.set('001',{price:100,currency:'JPY'})");
   assert.equal(h.run("priceFor({game:'onepiece',region:'JP',officialCardNumber:'001'})"),null);
