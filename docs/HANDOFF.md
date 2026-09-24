@@ -16,7 +16,7 @@
 
 ## 目前里程碑
 
-- 目前工作基準：分支 `codex/detail-history-sync`，前次 GitHub `main` checkpoint `75d3f0c`。本輪 SV9a 只使用既有私有候選區與交易式升級函式，沒有更動程式或 schema；每次推送後須重新檢查 Render 部署狀態。
+- 目前工作基準：分支 `codex/detail-history-sync`，前次 GitHub `main` checkpoint `8526b04`。本輪 SV8 只使用既有私有候選區與交易式升級函式，沒有更動程式或 schema；每次推送後須重新檢查 Render 部署狀態。
 - 程式基準：本輪從 GitHub `main` commit `bf291f3` 開始；精確系列與數字卡號範圍功能為 commit `7dc89a4`。Pokémon 候選規劃／執行 CLI 現在支援 `--series`、`--card-number-from`、`--card-number-to`，使用正規化後的精確系列比對、含頭尾的數字範圍與數值排序，並拒絕無效或反向範圍。明確系列／卡號若與 provider ID 衝突會被排除。
 - 驗證：Node 全套測試 `175/175` 通過；既有 dry-run、每批最多 100 個 provider group、checksum／cursor 冪等與斷點續傳行為維持不變。程式與 S11 checkpoint 已推到 GitHub `main` commit `c5a7b10`；Render 自動部署成功、狀態為 Live（29.0 秒），正式 `/api/catalog/health` 回傳 HTTP 200。不可把本機 `127.0.0.1` 驗收當成正式部署完成。
 - Supabase：正式專案 `ubiaftrvmywwmifqzmik` 的既有 schema／migration 維持不變；本輪只使用既有私有候選與交易式升級函式，沒有新增 DDL。安全與效能 advisor 仍只有既有 INFO。
@@ -32,6 +32,7 @@
 - SV10：`001–050` 候選 `1047–1146`（checksum `84c9d2bdb77b90dbbd8bb5366c858854`），`051–098` 候選 `1147–1242`（checksum `f06a91f710e073b2c640d1cb7239264a`）。逐張核對來源 provider ID、官方繁中名稱與台版 printing，分別補上 50／48 張 card 及 printing 稀有度；兩批立即重播均為零異動。正式庫 98/98 稀有度完整、缺圖 0、卡片與 printing 不一致 0、缺少排名 0。
 - SV9：`001–050` 候選 `1243–1342`（checksum `f417dc03a5352c614a56089ec2e22673`），`051–100` 候選 `1343–1442`（checksum `4b28cd5f5d4720604f635b4254f7ea75`）。同樣逐張核對並各補上 50 張 card 及 printing 稀有度；兩批立即重播均為零異動。正式庫 100/100 稀有度完整、缺圖 0、不一致 0、缺少排名 0。正式 `/api/cards` 兩系列均回傳 HTTP 200 並顯示對應稀有度 facets。
 - SV9a 部分完成：來源 `001–092` 全數 HTTP 200，名稱、provider ID、台版 printing 與正式庫逐張一致；其中 `001–063` 稀有度可確定。`001–050` 候選 `1443–1542`，checksum `0ca1e0f65ec81bcf11a68958b6b5dd4a`；`051–063` 候選 `1543–1568`，checksum `07d37a33d88c3a3d77d65604dcdf2f3d`。兩批共補 63 張 card 與 63 個 printing 稀有度，立即重播皆零異動。`064–092` 共 29 張來源原值為 `None`，沒有受支援映射，未建立候選或猜值。正式庫 63/92 已補、29 張保留空值，卡片／printing 不一致 0、已填入者缺排名 0、缺圖 0；正式 `/api/cards` 顯示 `unknown:29`。
+- SV8 部分完成：`001–106` 來源逐張 HTTP 200，exact provider ID、官方繁中名稱及台版 printing 全部與正式庫一致。三批候選分別為 `1569–1668`（`001–050`，checksum `2d47498b221512874953798a44a67c3f`）、`1669–1762`（`051–100` 中 47 張，checksum `0d046f0ca03e08b7b01715a59431a078`）、`1763–1774`（`101–106`，checksum `b26285f3436664fa6eb08bf34e28876c`）。每批最多 100 個候選，均經零異常驗證與立即冪等重播；共補 103 張 card 和 103 個 printing 稀有度，名稱／圖片未異動。`SV8-095` 來源 `rarity: None`；`SV8-097`、`SV8-098` 來源為 `ACE SPEC Rare`，與現有 `Rare ACE` 無核准對映，均保留空值、不建立候選。正式庫 103/106 已填、互相不一致 0、缺圖 0；正式 `/api/cards` HTTP 200，facets `C:52`、`U:34`、`R:9`、`RR:8`、`unknown:3`。
 - 本輪阻擋複查：S12 原先保留的 20 張來源詳細資料再次回傳 20/20 HTTP 200，但稀有度與圖片仍全空；S10D `001–067` 回傳 67/67 HTTP 200、稀有度全空，正式庫 67 張稀有度缺值、47 張缺圖。兩者皆未建立新候選，也未以其他版本推測。
 - 已完成系列：S10a `001–071`、S10P `001–067`、S11 `001–100`、S11a `001–068`、SV9 `001–100`、SV10 `001–098` 的 card／printing 稀有度均已補齊，且官方繁中名稱均完成逐張核對。
 - S10b 阻擋證據：TCGdex `zh-tw` 的 001–050 可取回 50 個名稱但稀有度欄位為 0；051–071 可取回 21 個名稱但稀有度欄位仍為 0；072–079 為 404。正式庫既有 79 張 card／printing 皆缺稀有度，故本輪建立 0 個候選，不以其他語言、其他 printing 或推測值填補。
@@ -39,4 +40,4 @@
 
 ## 下一個安全起點
 
-下一個安全起點是唯讀預檢 SV8 `001–106`：正式庫目前 106 張稀有度缺值、圖片網址已全有；來源僅抽樣 `001`、`020`、`050`、`100`，四張均有可辨識稀有度，不代表全批。先全批核對 exact provider ID、官方繁中名稱、台版 printing、來源稀有度及受支援映射；未通過者保持空值，每批最多 100 個候選。SV9a `064–092` 的原始來源 `rarity: None` 見 `https://api.tcgdex.net/v2/zh-tw/cards/SV9a-{number}`（2026-09-23 查詢），待來源釐清前不映射。S12 的 20 張、S10D 的 67 張及 S10b 仍為來源缺口；S12 的 94 張缺圖也不借用其他 printing。
+下一個安全起點是唯讀預檢 SV8a：正式庫 237 張稀有度缺值、圖片網址已有，但尚未逐張驗證來源詳細資料。先全批核對 exact provider ID、官方繁中名稱、台版 printing、來源稀有度及受支援映射；未通過者保持空值，每批最多 100 個候選。SV8 的 3 張例外與 SV9a `064–092` 的 `rarity: None` 在可靠來源或明確映射到位前不猜值。S12 的 20 張、S10D 的 67 張及 S10b 仍為來源缺口；S12 的 94 張缺圖也不借用其他 printing。
