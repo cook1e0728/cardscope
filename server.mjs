@@ -323,7 +323,7 @@ async function browseDatabaseCards(game,options){
 }
 
 function coverageMetric(covered,denominator,status='complete',details={}){
-  const safeCovered=Number.isFinite(Number(covered))?Number(covered):null,safeDenominator=Number.isFinite(Number(denominator))&&Number(denominator)>=0?Number(denominator):null;
+  const safeCovered=covered===null||covered===undefined?null:Number.isFinite(Number(covered))?Number(covered):null,safeDenominator=denominator===null||denominator===undefined?null:Number.isFinite(Number(denominator))&&Number(denominator)>=0?Number(denominator):null;
   // A zero/unknown denominator is not a meaningful completeness percentage.
   // Keep the numeric fields for compatibility, but expose percent as null so
   // the UI cannot present an empty or unverified scope as 100% complete.
@@ -359,7 +359,7 @@ function attachCatalogBaselines(games,report){
   for(const [gameId,game] of Object.entries(games||{}))game.baseline=compactCatalogBaseline(rows.get(gameId));
   return games;
 }
-function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
+function buildCoverageGameRaw(gameId,cards=[],printings=[],images=[],options={}){
   const rows=Array.isArray(cards)?cards:[],cardIds=new Set(rows.map(card=>card?.id).filter(Boolean)),selectedPrintings=(printings||[]).filter(printing=>cardIds.has(printing?.cardId)),selectedImages=(images||[]).filter(image=>cardIds.has(image?.cardId)),printingByCard=buildPrintingIndex(selectedPrintings),imageByCard=new Map();
   for(const image of selectedImages){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
   const cardHasPrinting=card=>Boolean((printingByCard.get(card.id)||[]).length),cardHasImageUrl=card=>Boolean((imageByCard.get(card.id)||[]).some(image=>image?.imageUrl)||(printingByCard.get(card.id)||[]).some(printing=>printing?.imageUrl)||card?.imageUrl),cardHasUsableImage=card=>Boolean((imageByCard.get(card.id)||[]).some(browseHasUsableImage)||(printingByCard.get(card.id)||[]).some(browseHasUsableImage)||(card?.imageUrl&&imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt,imageSourceOf(card)))),cardHasChineseName=card=>Boolean(String(card?.nameZh||'').trim()),cardHasRarity=card=>browseValues(card,printingByCard.get(card.id)||[],'rarity').length;
@@ -376,6 +376,26 @@ function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
     sourceTimestamp:{value:timestamp.latest,oldest:timestamp.oldest,status:timestamp.status,field:timestamp.field}
   },sources=coverageSources(rows,selectedPrintings,selectedImages),expectedCards=options.expectedCards??null;
   return {cards:rows.length,displayableImages,chineseNames,rarities,cardsWithImageUrls,cardsWithSeries:rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length,totalPrintings:selectedPrintings.length,totalImages:selectedImages.length,totalSeries:seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,linkAudit,imageHealth, imageUrlRecords:imageHealth.urlRecords,policyEligibleImageUrlRecords:imageHealth.policyEligibleUrlRecords,sampledImageLoadCount:imageHealth.sampledLoadCount,sampledImageLoadStatus:imageHealth.sampledLoadStatus,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 可驗證的完整卡表分母，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
+}
+function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
+  const report=buildCoverageGameRaw(gameId,cards,printings,images,options);
+  if(options.printingStatus!=='unknown'&&options.imageStatus!=='unknown')return report;
+  report.displayableImages=null;
+  report.cardsWithImageUrls=null;
+  report.imageUrlRecords=null;
+  report.policyEligibleImageUrlRecords=null;
+  report.sampledImageLoadCount=null;
+  report.imageHealth=null;
+  report.totalPrintings=options.printingStatus==='unknown'?null:report.totalPrintings;
+  report.totalImages=options.imageStatus==='unknown'?null:report.totalImages;
+  report.coverage.images={...report.coverage.images,covered:null,denominator:null,percent:null,status:'unknown',urlRecords:null,policyEligibleUrlRecords:null,policyUnknownUrlRecords:null,policyExcludedUrlRecords:null,cardsWithImageUrls:null,sampledLoadCount:null};
+  report.coverage.missingImages={...report.coverage.missingImages,covered:null,denominator:null,percent:null,status:'unknown',missing:null,sampleIds:[]};
+  report.linkAudit={...report.linkAudit,missingImages:{count:null,sampleIds:[]}};
+  report.metricStatus.images='unknown';
+  report.complete=false;
+  report.scope.complete=false;
+  report.scope.limitations=[...report.scope.limitations,'圖片或印刷版本關聯查詢失敗；可顯示圖片與缺圖數量暫時無法核定。'];
+  return report;
 }
 function buildFallbackCatalogCoverage(fallback,extra={}){
   const games={};
@@ -696,6 +716,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { buildBrowseFacets, buildBrowsePage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { buildBrowseFacets, buildBrowsePage, buildCoverageGame, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 

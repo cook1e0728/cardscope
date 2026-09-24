@@ -6,7 +6,7 @@ import { normalizeRarityRecord, rarityCanonicalCode, rarityDisplayLabel } from '
 
 process.env.PORT = '0';
 process.env.CATALOG_SYNC_ON_START = 'false';
-const { coverageMetric, server } = await import('../server.mjs?catalog-next-stage-data');
+const { buildCoverageGame, coverageMetric, server } = await import('../server.mjs?catalog-next-stage-data');
 test.after(async () => {
   if (!server.listening) return;
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
@@ -72,7 +72,34 @@ test('catalog link coverage identifies missing names/images and orphan reference
 test('coverage does not report a percentage when the denominator is zero or unknown', () => {
   assert.equal(coverageMetric(0, 0).percent, null);
   assert.equal(coverageMetric(0, null).percent, null);
+  assert.equal(coverageMetric(null, 4).covered, null);
+  assert.equal(coverageMetric(0, null).denominator, null);
   assert.equal(coverageMetric(2, 4).percent, 50);
+});
+
+test('failed image or printing relations are unknown, not zero coverage or a full gap',()=>{
+  const cards=[{id:'card-1',game:'pokemon',nameZh:'測試卡'}];
+  for(const status of [{printingStatus:'unknown',imageStatus:'complete'},{printingStatus:'complete',imageStatus:'unknown'},{printingStatus:'unknown',imageStatus:'unknown'}]){
+    const report=buildCoverageGame('pokemon',cards,[],[],status);
+    assert.equal(report.cards,1);
+    assert.equal(report.displayableImages,null);
+    assert.equal(report.cardsWithImageUrls,null);
+    assert.equal(report.coverage.images.covered,null);
+    assert.equal(report.coverage.images.status,'unknown');
+    assert.equal(report.coverage.missingImages.missing,null);
+    assert.equal(report.linkAudit.missingImages.count,null);
+    assert.equal(report.metricStatus.images,'unknown');
+  }
+});
+
+test('verified zero and catalog-file sample image counts remain numeric',()=>{
+  const cards=[{id:'card-1',game:'pokemon',nameZh:'測試卡'}];
+  for(const status of [{printingStatus:'complete',imageStatus:'complete'},{printingStatus:'catalog-file',imageStatus:'catalog-file'}]){
+    const report=buildCoverageGame('pokemon',cards,[],[],status);
+    assert.equal(report.displayableImages,0);
+    assert.equal(report.coverage.images.covered,0);
+    assert.equal(report.coverage.missingImages.missing,1);
+  }
 });
 
 test('read-only reports fallback stays quiet when Supabase is unavailable', async () => {

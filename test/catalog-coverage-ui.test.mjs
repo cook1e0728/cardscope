@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
 
 const root=new URL('..',import.meta.url);
 const [html,css]=await Promise.all([
@@ -54,4 +55,23 @@ test('coverage status keeps the existing beta and browsing surfaces intact',()=>
   assert.match(html,/id="channels"/);
   assert.match(html,/id="browseRegion"/);
   assert.match(html,/id="cards"/);
+});
+
+test('both public coverage panels do not turn failed image lookups into zero',async()=>{
+  const definition=html.split('\n').find(line=>line.trim().startsWith('const metric='));
+  const context=vm.createContext({});
+  vm.runInContext("const read=(value,path)=>String(path).split('.').reduce((current,key)=>current&&typeof current==='object'?current[key]:undefined,value);const number=value=>value===null||value===undefined||value===''?null:Number(value);const first=(...values)=>{for(const value of values){const result=number(value);if(result!==null)return result}return null};",context);
+  vm.runInContext(definition,context);
+  context.row={cards:1,displayableImages:0,coverage:{images:{covered:0,status:'unknown'}}};
+  assert.equal(vm.runInContext("metric(row,'images',['displayableImages'],[]).covered",context),null);
+  assert.equal(vm.runInContext("metric(row,'images',['displayableImages'],[]).missing",context),null);
+  context.row.coverage.images.status='catalog-file';
+  assert.equal(vm.runInContext("metric(row,'images',['displayableImages'],[]).covered",context),0);
+  const enhancements=await readFile(new URL('ui-enhancements.js',root),'utf8');
+  const healthNumber=enhancements.split('\n').find(line=>line.startsWith('function healthNumber('));
+  const healthContext=vm.createContext({betaNumber:value=>value===null||value===undefined?null:Number(value),row:{displayableImages:0,metricStatus:{images:'unknown'}}});
+  vm.runInContext(healthNumber,healthContext);
+  assert.equal(vm.runInContext("healthNumber(row,['displayableImages'])",healthContext),null);
+  healthContext.row.metricStatus.images='catalog-file';
+  assert.equal(vm.runInContext("healthNumber(row,['displayableImages'])",healthContext),0);
 });

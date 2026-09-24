@@ -466,9 +466,9 @@ function installTrendTransparency(){
   const base=renderTrends;if(base.__cardscopeWrapped)return;
   const wrapped=function(){base();renderPublicTrends()};wrapped.__cardscopeWrapped=true;renderTrends=wrapped;setTimeout(renderPublicTrends,0);
 }
-function healthNumber(row,keys){for(const key of keys){const value=betaNumber(row?.[key]);if(value!==null)return value}return null}
+function healthNumber(row,keys){if(keys.includes('displayableImages')&&row?.metricStatus?.images==='unknown')return null;for(const key of keys){const value=betaNumber(row?.[key]);if(value!==null)return value}return null}
 function healthPercent(value,expected){return value!==null&&expected!==null&&expected>0?Math.max(0,Math.min(100,value/expected*100)):null}
-function healthMetric(label,value,denominator){const percent=healthPercent(value,denominator),display=value===null?'待補':value.toLocaleString(),width=percent===null?0:Math.round(percent);return`<div class="health-metric"><div><span>${e(label)}</span><b>${e(display)}</b></div>${percent===null?'<small>尚無目前收錄基準</small>':`<div class="health-meter" role="progressbar" aria-label="${e(label)}欄位覆蓋率" aria-valuenow="${width}" aria-valuemin="0" aria-valuemax="100"><span class="health-meter-fill" style="width:${width}%"></span></div><small>${width}%（以目前收錄卡片為分母）</small>`}</div>`}
+function healthMetric(label,value,denominator){const percent=healthPercent(value,denominator),display=value===null?'待核':value.toLocaleString(),width=percent===null?0:Math.round(percent);return`<div class="health-metric"><div><span>${e(label)}</span><b>${e(display)}</b></div>${percent===null?`<small>${value===null?'關聯資料待核':'尚無目前收錄基準'}</small>`:`<div class="health-meter" role="progressbar" aria-label="${e(label)}欄位覆蓋率" aria-valuenow="${width}" aria-valuemin="0" aria-valuemax="100"><span class="health-meter-fill" style="width:${width}%"></span></div><small>${width}%（以目前收錄卡片為分母）</small>`}</div>`}
 function installCatalogHealth(){
   if(document.getElementById('catalogHealth'))return;
   const section=document.createElement('details');section.id='catalogHealth';section.className='catalog-health';section.innerHTML='<summary>資料完整度與圖片權利狀態</summary><p class="health-note">正在讀取資料健康報告…</p>';
