@@ -44,6 +44,26 @@ test('cross-game product selection waits for the game reset before opening',asyn
   assert.equal(h.run('browse.product.id'),'op-box');
   assert.match(h.node('cardsMeta').textContent,/尚無可靠/);
 });
+test('series image opens its exact card set without counting as a box',async()=>{
+  const requests=[];const h=harness(async url=>{requests.push(String(url));return{ok:true,json:async()=>({data:[],meta:{total:0,hasMore:false,facets:{rarity:{}}}})}});
+  h.run("game='pokemon';S=[{id:'series-sv8',game:'pokemon',seriesId:'pokemon-tcgdex-tw-sv8',imageKind:'series-logo',nameZh:'超電突圍',region:'TW'}]");
+  await h.run("openSeriesIndex('series-sv8')");
+  assert.equal(h.run('browse.seriesId'),'pokemon-tcgdex-tw-sv8');
+  assert.match(h.node('selectedProduct').innerHTML,/系列索引圖・非卡盒封面/);
+  assert.equal(requests.length,1);
+  assert.match(requests[0],/series=pokemon-tcgdex-tw-sv8/);
+});
+test('series index is a labelled fallback only when an IP has no physical products',async()=>{
+  const navigator=await readFile(new URL('../series-navigator.js',import.meta.url),'utf8'),definition=navigator.split('\n').find(line=>line.startsWith('function baseSeriesRows()'));
+  const context=vm.createContext({P:[],S:[{id:'tw-series',game:'pokemon',imageKind:'series-logo',seriesId:'sv8',region:'TW'},{id:'us-series',game:'pokemon',imageKind:'series-logo',seriesId:'sv8-us',region:'US'}],game:'pokemon',productCategoryId:'sealed',productCategory:'原盒',document:{getElementById:()=>({value:'TW'})},productMatchesCategory:()=>true});
+  vm.runInContext(definition,context);
+  assert.equal(vm.runInContext('baseSeriesRows().map(row=>row.id).join(",")',context),'tw-series');
+  context.P=[{id:'real-box',game:'pokemon'}];
+  assert.equal(vm.runInContext('baseSeriesRows().map(row=>row.id).join(",")',context),'real-box');
+  context.P=[];context.productCategoryId='decks';
+  assert.equal(vm.runInContext('baseSeriesRows().length',context),0);
+  assert.match(navigator,/系列圖・非卡盒/);
+});
 test('verified prices cannot leak across games or non-Japanese editions',()=>{
   const h=harness();h.run("game='pokemon';verifiedPrices.set('001',{price:100,currency:'JPY'})");
   assert.equal(h.run("priceFor({game:'onepiece',region:'JP',officialCardNumber:'001'})"),null);
