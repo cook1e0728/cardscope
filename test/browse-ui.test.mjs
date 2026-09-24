@@ -33,6 +33,17 @@ test('product without verified series association does not request unrelated car
   assert.equal(requests,0);assert.equal(h.run('currentCardRows.length'),0);
   assert.match(h.node('cardsMeta').textContent,/尚無可靠/);
 });
+test('cross-game product selection waits for the game reset before opening',async()=>{
+  const h=harness();let finishSwitch;
+  h.context.switchGate=new Promise(resolve=>{finishSwitch=resolve});
+  h.run("game='pokemon';P=[{id:'op-box',game:'onepiece',nameZh:'航海王商品',catalogCategory:'原盒'}];window.choose=async id=>{await switchGate;game=id;clearProduct()}");
+  const opening=h.run("openProduct('op-box')");
+  assert.equal(h.run('browse.product'),null);
+  finishSwitch();await opening;
+  assert.equal(h.run('game'),'onepiece');
+  assert.equal(h.run('browse.product.id'),'op-box');
+  assert.match(h.node('cardsMeta').textContent,/尚無可靠/);
+});
 test('verified prices cannot leak across games or non-Japanese editions',()=>{
   const h=harness();h.run("game='pokemon';verifiedPrices.set('001',{price:100,currency:'JPY'})");
   assert.equal(h.run("priceFor({game:'onepiece',region:'JP',officialCardNumber:'001'})"),null);
