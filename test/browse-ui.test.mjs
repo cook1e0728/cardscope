@@ -84,10 +84,10 @@ test('series-only navigation clearly distinguishes an index from physical produc
 test('unclassified Pokémon series do not precede verified era groups',async()=>{
   const navigator=await readFile(new URL('../series-navigator.js',import.meta.url),'utf8');
   const definition=navigator.split('\n').find(line=>line.startsWith('function seriesGroupBuckets('));
-  const context=vm.createContext({game:'pokemon',seriesGroup:item=>item.group});
+  const context=vm.createContext({game:'pokemon',seriesGroup:item=>item.group,seriesRegionRank:{JP:0,TW:1,US:2}});
   vm.runInContext(definition,context);
-  context.rows=[{group:'待確認系列',releaseDate:'2026-01-01'},{group:'朱／紫系列',releaseDate:'2024-01-01'},{group:'MEGA 系列',releaseDate:'2025-01-01'}];
-  assert.equal(vm.runInContext('seriesGroupBuckets(rows).map(bucket=>bucket.label).join(",")',context),'MEGA 系列,朱／紫系列,待確認系列');
+  context.rows=[{group:'待確認系列',releaseDate:'2026-01-01',region:'US',imageKind:'series-logo'},{group:'朱／紫系列',releaseDate:'2024-01-01',region:'TW',imageKind:'series-logo'},{group:'MEGA 系列',releaseDate:'2025-01-01',region:'US',imageKind:'series-logo'}];
+  assert.equal(vm.runInContext('seriesGroupBuckets(rows).map(bucket=>bucket.label).join(",")',context),'朱／紫系列,MEGA 系列,待確認系列');
 });
 test('verified prices cannot leak across games or non-Japanese editions',()=>{
   const h=harness();h.run("game='pokemon';verifiedPrices.set('001',{price:100,currency:'JPY'})");
