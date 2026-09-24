@@ -110,6 +110,15 @@ test('product feed never promotes a single card as a box or series image',{timeo
   assert.ok(data.every(item=>PRODUCT_CATEGORIES.includes(item.catalogCategory)));
   assert.equal(meta.productCount,data.length);
   assert.equal(meta.seriesCount,series.length);
+  for(const game of ['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz']){
+    assert.equal(meta.productCountsByGame[game],data.filter(item=>item.game===game).length);
+    assert.equal(meta.seriesCountsByGame[game],series.filter(item=>item.game===game).length);
+    assert.equal(meta.productImageCountsByGame[game],data.filter(item=>item.game===game&&item.imageUrl).length);
+    assert.equal(meta.seriesImageCountsByGame[game],series.filter(item=>item.game===game&&item.imageUrl).length);
+  }
+  assert.deepEqual(meta.productSources,[...new Set(data.map(item=>item.source).filter(Boolean))].sort());
+  assert.deepEqual(meta.seriesSources,[...new Set(series.map(item=>item.source).filter(Boolean))].sort());
+  assert.deepEqual(meta.sources,[...new Set([...meta.productSources,...meta.seriesSources])].sort());
   for(const item of series.filter(item=>item.source==='curated-official-index')){
     assert.equal(item.imageUrl,null);
     assert.equal(item.cardsCount,null);
