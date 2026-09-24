@@ -58,6 +58,8 @@ test('series index is a labelled fallback only when an IP has no physical produc
   const context=vm.createContext({P:[],S:[{id:'tw-series',game:'pokemon',imageKind:'series-logo',seriesId:'sv8',region:'TW'},{id:'us-series',game:'pokemon',imageKind:'series-logo',seriesId:'sv8-us',region:'US'}],game:'pokemon',productCategoryId:'sealed',productCategory:'原盒',document:{getElementById:()=>({value:'TW'})},productMatchesCategory:()=>true});
   vm.runInContext(definition,context);
   assert.equal(vm.runInContext('baseSeriesRows().map(row=>row.id).join(",")',context),'tw-series');
+  context.document.getElementById=()=>({value:'all'});
+  assert.equal(vm.runInContext('baseSeriesRows().map(row=>row.id).join(",")',context),'tw-series,us-series');
   context.P=[{id:'real-box',game:'pokemon'}];
   assert.equal(vm.runInContext('baseSeriesRows().map(row=>row.id).join(",")',context),'real-box');
   context.P=[];context.productCategoryId='decks';
