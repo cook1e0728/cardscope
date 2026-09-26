@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
@@ -17,6 +18,13 @@ test.before(async()=>{
 test.after(()=>server?.kill());
 
 async function api(path){const response=await fetch(`http://127.0.0.1:${port}${path}`);assert.equal(response.status,200);return response.json()}
+
+async function listenOnEphemeralPort(httpServer){
+  await new Promise((resolve,reject)=>{httpServer.once('error',reject);httpServer.listen(0,'127.0.0.1',resolve)});
+  return httpServer.address().port;
+}
+async function closeHttpServer(httpServer){if(httpServer?.listening)await new Promise((resolve,reject)=>httpServer.close(error=>error?reject(error):resolve()))}
+async function freePort(){const probe=createServer();const free=await listenOnEphemeralPort(probe);await closeHttpServer(probe);return free}
 
 test('catalog exposes canonical cards and risk-accepted source images without marking them licensed',async()=>{
   const {data}=await api('/api/catalog');
@@ -234,4 +242,74 @@ for(const [query,expected] of [
   ['夢幻','Mew ex'],['Mew','Mew ex'],['ミュウ','Mew ex'],
   ['魯夫','Monkey.D.Luffy'],['黑魔導女孩','Dark Magician Girl']
 ])test(`multilingual search: ${query}`,async()=>{const {data,meta}=await api(`/api/search?q=${encodeURIComponent(query)}`);assert.equal(meta.architecture,'canonical-card-with-printings');assert.equal(data.length,1,`${query} should prefer one exact multilingual name`);assert.equal(data[0].nameEn,expected)});
+
+test('configured search merges local exact cards with bounded database matches and reports fallback truthfully',async()=>{
+  const sampleCard={id:'onepiece-luffy-op05-119-jp',canonicalId:'onepiece-monkey-d-luffy-op05-119',game:'onepiece',seriesId:'onepiece-op05-jp',officialCardNumber:'OP05-119',rarity:'SEC',nameZh:'魯夫',nameJa:'モンキー・D・ルフィ',nameEn:'Monkey.D.Luffy',nameKo:'몽키 D. 루피',aliases:['魯夫','luffy'],metadata:{}};
+  const searchCards=Array.from({length:100},(_,index)=>{
+    const suffix=String(index+1).padStart(3,'0');
+    return index===0?sampleCard:{...sampleCard,id:`onepiece-luffy-fixture-${suffix}`,canonicalId:`onepiece-luffy-fixture-canonical-${suffix}`,officialCardNumber:`OP05-${suffix}`};
+  });
+  const printings=searchCards.map((card,index)=>({id:`fixture-printing-${String(index+1).padStart(3,'0')}`,cardId:card.id,seriesId:'onepiece-op05-jp',region:index===0?'JP':'US',language:index===0?'ja-JP':'en-US',localSetCode:'OP05',localCardNumber:card.officialCardNumber,rarity:card.rarity,imageUrl:null,imageRehostRequired:false}));
+  let failSearch=false;
+  const searchQueries=[];
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1),respond=(status,body)=>{res.writeHead(status,{'content-type':'application/json'});res.end(JSON.stringify(body))};
+    if(table==='tcg_cards'&&url.searchParams.get('order')!=='created_at.asc'){
+      searchQueries.push(url.searchParams);
+      if(failSearch)return respond(503,{message:'fixture search unavailable'});
+      return respond(200,searchCards);
+    }
+    if(table==='tcg_cards')return respond(200,[sampleCard]);
+    if(table==='tcg_printings')return respond(200,printings);
+    return respond(200,[]);
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`search fixture server start timeout: ${output}`)),5000);
+      app.once('error',error=>{clearTimeout(timer);reject(error)});
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`search fixture server exited before start (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const call=async(region='')=>{
+      const suffix=region?`&region=${encodeURIComponent(region)}`:'';
+      const response=await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent('魯夫')}${suffix}`);
+      assert.equal(response.status,200);
+      return response.json();
+    };
+
+    const merged=await call();
+    const mergedIds=merged.data.map(card=>card.id);
+    assert.equal(mergedIds.length,40);
+    assert.equal(new Set(mergedIds).size,40,'same-name records with different canonical IDs must remain distinct');
+    assert.ok(mergedIds.includes('onepiece-monkey-d-luffy-op05-119'),'local exact card must be merged with database results');
+    assert.ok(mergedIds.includes('onepiece-luffy-fixture-canonical-002'),'second distinct same-name database card must remain visible');
+    assert.equal(merged.meta.source,'supabase-search');
+    assert.equal(merged.meta.databaseSearch,'available');
+    assert.equal(merged.meta.candidateCount,100);
+    assert.equal(merged.meta.candidateLimit,100);
+    assert.equal(merged.meta.resultLimit,40);
+    assert.equal(merged.meta.mayHaveMore,true);
+    assert.match(searchQueries[0].get('or'),/name_zh\.ilike\.\*魯夫\*/,'raw multilingual term should be queried');
+    assert.match(searchQueries[0].get('or'),/name_en\.ilike\.\*Luffy\*/,'mapped English alias should also be queried');
+    assert.equal(searchQueries[0].get('limit'),'100','database candidate reads must remain bounded');
+
+    const regional=await call('US');
+    assert.ok(regional.data.every(card=>card.printings.some(printing=>printing.region==='US')));
+    assert.ok(!regional.data.some(card=>card.id==='onepiece-monkey-d-luffy-op05-119'),'region filtering must exclude JP-only exact sample');
+    assert.ok(regional.data.some(card=>card.id==='onepiece-luffy-fixture-canonical-002'));
+
+    failSearch=true;
+    const fallback=await call();
+    assert.deepEqual(fallback.data.map(card=>card.id),['onepiece-monkey-d-luffy-op05-119']);
+    assert.equal(fallback.meta.databaseSearch,'unavailable');
+    assert.equal(fallback.meta.searchScope,'loaded-catalog-only');
+    assert.equal(fallback.meta.match,'exact-name');
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
 

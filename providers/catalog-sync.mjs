@@ -24,6 +24,7 @@ const TYPE_ZH={pokemon:'寶可夢系列',yugioh:'遊戲王系列',onepiece:'航�
 
 const CARD_NAME_LOCALES={name_zh:'zh-Hant-TW',name_ja:'ja-JP',name_en:'en',name_ko:'ko'};
 const PROTECTED_CARD_FIELDS=new Set(['name_zh','name_ja','name_en','name_ko','rarity','rarity_tier','aliases']);
+const PRINTING_RARITY_FIELDS=new Set(['rarity','rarity_code','rarity_label']);
 const CARD_NAME_SOURCE_URLS={
   pokemontcg:'https://github.com/PokemonTCG/pokemon-tcg-data',
   'tcgdex-zh-tw':'https://www.tcgdex.net/',
@@ -56,6 +57,7 @@ const cardNameRows=(card,{source,sourceUrl,dataStatus='verified'}={})=>Object.en
   .map(([field,locale])=>normalizeCardNameRecord({cardId:card.id,locale,name:card[field],nameType:'official',source,sourceUrl:sourceUrl||CARD_NAME_SOURCE_URLS[source],dataStatus}))
   .filter(Boolean);
 const protectNullEnrichment=row=>Object.fromEntries(Object.entries(row).filter(([key,value])=>!PROTECTED_CARD_FIELDS.has(key)||value!=null&&(key!=='aliases'||Array.isArray(value)&&value.length>0)));
+export const omitEmptyPrintingRarity=row=>Object.fromEntries(Object.entries(row).filter(([key,value])=>!PRINTING_RARITY_FIELDS.has(key)||clean(value)));
 export function localizeProductName(game,name,productType){const original=clean(name),exact=PRODUCT_ZH.get(original);if(exact)return exact;let translated=original;for(const [english,zh] of PRODUCT_ZH)translated=translated.replaceAll(english,zh);translated=translated.replace(/BOOSTER PACK/gi,'補充包').replace(/EXTRA BOOSTER/gi,'額外補充包').replace(/PREMIUM BOOSTER/gi,'高級補充包').replace(/STARTER DECK EX/gi,'起始牌組 EX').replace(/STARTER DECK/gi,'起始牌組').replace(/ULTIMATE DECK/gi,'終極牌組').replace(/Official Playmat/gi,'官方遊戲墊').replace(/Official Storage Box/gi,'官方收納盒').replace(/Premium Card Collection/gi,'高級卡片收藏組').replace(/Limited Card Sleeve/gi,'限定卡套');if(translated!==original)return translated;return `${TYPE_ZH[productType]||TYPE_ZH[game]||'系列'}｜${original}`}
 
 export function parsePokemonSpeciesNames(csv){
@@ -131,11 +133,12 @@ export function auditCatalogLinks({cards=[],printings=[],images=[]}={}){
 async function upsert(db,path,rows,onConflict='id'){
   rows=(rows||[]).filter(Boolean);
   if(path==='/tcg_cards')rows=rows.map(protectNullEnrichment);
+  if(path==='/tcg_printings')rows=rows.map(omitEmptyPrintingRarity);
   if(path==='/tcg_products'||path==='/tcg_series')rows=rows.map(row=>{if(row.name_zh)return row;const nameZh=localizeProductName(row.game_id,row.name_en,row.product_type);return {...row,name_zh:nameZh,metadata:{...(row.metadata||{}),translationStatus:'unofficial',translationOriginal:row.name_en}}});
   const conflictColumns=onConflict.split(','),deduped=[...new Map(rows.map(row=>[conflictColumns.map(column=>String(row[column]??'')).join('\u001f'),row])).values()];let written=0;
   // PostgREST rejects a bulk JSON payload when objects do not expose the same
-  // keys (PGRST102). Grouping by shape also lets protected null enrichments
-  // remain omitted instead of turning them into destructive null updates.
+  // keys (PGRST102). Grouping by shape keeps omitted card enrichments and
+  // printing rarity fields out of their respective request payloads.
   for(const sameShapeRows of groupRowsByShape(deduped))for(const batch of chunks(sameShapeRows)){
     await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch)});
     written+=batch.length;
