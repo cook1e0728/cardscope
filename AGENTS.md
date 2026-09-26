@@ -8,21 +8,21 @@ phase order, source policy, data priority, UX rules, and release gates. Use
 silently replace those decisions with data copied from a marketplace, social
 site, or image search result.
 
-Use GPT-5.6 Luna Max as the primary model for normal coding, analysis, testing, review, and task orchestration. Sol is an on-demand advisor, not the default supervisor.
+Use GPT-6 Luna Max as the primary model for normal coding, analysis, testing, review, and task orchestration. GPT-6 Sol is an on-demand advisor, not the default supervisor.
 
 ## Automatic routing
 
 Before substantial work, silently choose the cheapest route that preserves quality:
 
-1. `LUNA_LOCAL`: Luna handles the task in the primary thread when requirements are clear or delegation overhead would exceed the work.
-2. `LUNA_PARALLEL`: Luna delegates at least two genuinely independent packets to `luna_worker` when parallelism materially improves speed or protects the main context.
-3. `SOL_ADVISED`: Luna delegates one explicit hard decision to `sol_advisor`, receives a plan or ruling, then returns implementation to Luna.
+1. `LUNA_LOCAL`: GPT-6 Luna Max handles the task in the primary thread when requirements are clear or delegation overhead would exceed the work.
+2. `LUNA_PARALLEL`: GPT-6 Luna Max delegates at least two genuinely independent packets to `luna_worker` when parallelism materially improves speed or protects the main context.
+3. `SOL_ADVISED`: GPT-6 Luna Max delegates one explicit hard decision to `sol_advisor`, receives a plan or ruling, then returns implementation to GPT-6 Luna Max.
 
-Do not call Sol merely because a task is long or touches many files. Size creates Luna packets; uncertainty, risk, and reasoning difficulty justify Sol.
+Do not call GPT-6 Sol merely because a task is long or touches many files. Size creates GPT-6 Luna packets; uncertainty, risk, and reasoning difficulty justify GPT-6 Sol.
 
 ## Sol escalation gate
 
-Call `sol_advisor` only when at least one condition holds:
+Call `sol_advisor` (GPT-6 Sol) only when at least one condition holds:
 
 - requirements remain materially ambiguous or contradictory after targeted inspection;
 - architecture, security, privacy, authentication, authorization, cryptography, payments, destructive migration, data integrity, distributed consistency, or breaking compatibility requires a decision;
@@ -30,7 +30,7 @@ Call `sol_advisor` only when at least one condition holds:
 - two evidence-based implementation attempts failed;
 - final validation exposes an unresolved risk whose plausible failure cost is high.
 
-Before calling Sol, provide:
+Before calling GPT-6 Sol, provide:
 
 - one decision question;
 - relevant evidence already collected;
@@ -38,7 +38,7 @@ Before calling Sol, provide:
 - options considered, if known;
 - the required return format: recommendation, rationale, risks, implementation constraints, and acceptance criteria.
 
-Sol does not perform routine implementation. After its decision, Luna executes and validates the plan. Request Sol review at the end only when the final artifact still contains a high-risk judgment.
+GPT-6 Sol does not perform routine implementation. After its decision, GPT-6 Luna executes and validates the plan. Request GPT-6 Sol review at the end only when the final artifact still contains a high-risk judgment.
 
 ## Luna parallelism
 
@@ -48,7 +48,7 @@ Use `luna_worker` aggressively for independent implementation, tests, exploratio
 - every packet has explicit scope and acceptance criteria;
 - writable files are disjoint;
 - one owner is assigned per writable file;
-- the primary Luna thread can integrate and validate the results.
+- the primary GPT-6 Luna Max thread can integrate and validate the results.
 
 Do not spawn agents for trivial tasks. More agents consume more tokens and can increase coordination cost.
 
@@ -60,6 +60,6 @@ Workers must stop on ambiguity, unexpected interface/dependency changes, securit
 
 ## Acceptance
 
-The primary Luna thread owns integration and normal final acceptance. Inspect actual diffs and validation results; do not accept summaries alone. Sol owns only the difficult decision it was asked to make and any explicitly requested high-risk final review.
+The primary GPT-6 Luna Max thread owns integration and normal final acceptance. Inspect actual diffs and validation results; do not accept summaries alone. GPT-6 Sol owns only the difficult decision it was asked to make and any explicitly requested high-risk final review.
 
-Never claim a model ran unless the agent activity or tool result identifies it. If a configured model is unavailable, report the limitation and use the best available safe route.
+Never claim a model ran unless the agent activity or tool result identifies it. If a configured GPT-6 model is unavailable, report the limitation and use the best available safe route.
