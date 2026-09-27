@@ -17,7 +17,7 @@ test('public Beta surfaces explain coverage, freshness, and correction path',()=
 
 test('trend UI labels the market scope and keeps empty data honest',()=>{
   assert.match(ui,/renderPublicTrends/);
-  assert.match(ui,/日版買取價變動/);
+  assert.match(ui,/單一來源買取漲幅/);
   assert.match(ui,/目前沒有可驗證的漲勢資料/);
   assert.match(ui,/不代表全市場人氣或成交量/);
   assert.match(ui,/trend-scope/);

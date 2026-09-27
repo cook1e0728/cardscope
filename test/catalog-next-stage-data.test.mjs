@@ -174,6 +174,64 @@ test('aggregate coverage marks images unknown when printing lookup fails',async(
   }
 });
 
+test('coverage relation queries cap long-ID URLs, preserve fallback filters, and paginate every printing',async()=>{
+  const ids=Array.from({length:500},(_,index)=>`card-${String(index).padStart(3,'0')}-${'long-card-id-segment'.repeat(2)}`),requests=[];
+  let activePrintingRequests=0,maxConcurrentPrintingRequests=0;
+  const parseIds=value=>[...String(value||'').matchAll(/"([^"]+)"/g)].map(([,id])=>id),
+    mockDatabase=createServer((req,res)=>{
+      const url=new URL(req.url,`http://${req.headers.host}`),reply=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body))};
+      if(url.pathname==='/rest/v1/tcg_series'||url.pathname==='/rest/v1/card_images')return reply(200,[]);
+      if(url.pathname==='/rest/v1/tcg_cards')return reply(200,url.searchParams.get('game_id')==='eq.pokemon'?ids.map(id=>({id,game:'pokemon',nameZh:'測試卡'})):[]);
+      if(url.pathname==='/rest/v1/tcg_printings'){
+        const select=url.searchParams.get('select'),cardIds=parseIds(url.searchParams.get('card_id'));
+        requests.push({path:req.url,select,cardIds,offset:Number(url.searchParams.get('offset')||0)});
+        activePrintingRequests++;maxConcurrentPrintingRequests=Math.max(maxConcurrentPrintingRequests,activePrintingRequests);
+        setTimeout(()=>{
+          activePrintingRequests--;
+          if(select.includes('rarityCode'))return reply(400,{message:'printing schema requires legacy-select fallback'});
+          const rows=cardIds.flatMap(cardId=>Array.from({length:11},(_,index)=>({id:`${cardId}-printing-${index}`,cardId,seriesId:'test-series',region:'JP',language:'ja-JP',rarity:'R'}))),limit=Number(url.searchParams.get('limit')||1000);
+          return reply(200,rows.slice(Number(url.searchParams.get('offset')||0),Number(url.searchParams.get('offset')||0)+limit));
+        },10);
+        return;
+      }
+      return reply(200,[]);
+    });
+  await new Promise((resolve,reject)=>{mockDatabase.once('error',reject);mockDatabase.listen(0,'127.0.0.1',resolve)});
+  const envKeys=['PORT','CATALOG_SYNC_ON_START','CATALOG_RELATION_BATCH_SIZE','SUPABASE_URL','SUPABASE_SERVICE_KEY'],previousEnv=Object.fromEntries(envKeys.map(key=>[key,process.env[key]]));
+  let coverageServer;
+  try{
+    process.env.PORT='0';process.env.CATALOG_SYNC_ON_START='false';process.env.CATALOG_RELATION_BATCH_SIZE='500';
+    process.env.SUPABASE_URL=`http://127.0.0.1:${mockDatabase.address().port}`;process.env.SUPABASE_SERVICE_KEY='test-key';
+    ({server:coverageServer}=await import('../server.mjs?coverage-relation-url-bounded'));
+    if(!coverageServer.listening)await new Promise(resolve=>coverageServer.once('listening',resolve));
+    const address=coverageServer.address(),response=await fetch(`http://127.0.0.1:${address.port}/api/catalog/coverage`),body=await response.json(),report=body.data,gamesReport=report.games.pokemon;
+    assert.equal(response.status,200);
+    assert.equal(gamesReport.cards,500);
+    assert.equal(gamesReport.totalPrintings,5500,'coverage must include every row across the per-request response cap');
+    assert.equal(gamesReport.metricStatus.printings,'complete');
+    assert.equal(gamesReport.coverage.printings.covered,500);
+    assert.equal(report.errors.printings,null);
+
+    const fullSelectRequests=requests.filter(request=>request.select.includes('rarityCode')),
+      fallbackRequests=requests.filter(request=>!request.select.includes('rarityCode')),
+      fallbackBatches=[...new Map(fallbackRequests.map(request=>[request.cardIds.join(','),request.cardIds])).values()],
+      fullBatches=fullSelectRequests.map(request=>request.cardIds);
+    assert.equal(fullBatches.length,5,'500 card IDs should use at most 100 per initial query');
+    assert.equal(fallbackBatches.length,5,'legacy fallback should retry each bounded card batch');
+    assert.ok(fallbackRequests.length>fallbackBatches.length,'fallback must paginate batches whose rows exceed the per-page cap');
+    assert.deepEqual(fullBatches.map(batch=>[...batch].sort()).sort((a,b)=>a[0].localeCompare(b[0])),fallbackBatches.map(batch=>[...batch].sort()).sort((a,b)=>a[0].localeCompare(b[0])),'fallback must use the exact same card IDs as its primary query');
+    assert.deepEqual([...fullBatches.flat()].sort(),[...ids].sort());
+    assert.ok([...fullBatches,...fallbackRequests.map(request=>request.cardIds)].every(batch=>batch.length<=100));
+    assert.ok(requests.every(request=>Buffer.byteLength(`${process.env.SUPABASE_URL}${request.path}`,'utf8')<=8*1024),'all primary and fallback URLs must stay within 8 KiB');
+    assert.ok(maxConcurrentPrintingRequests>1,'relation batches should use bounded parallel requests');
+    assert.ok(maxConcurrentPrintingRequests<=4,'relation request concurrency must remain bounded');
+  }finally{
+    for(const key of envKeys){if(previousEnv[key]===undefined)delete process.env[key];else process.env[key]=previousEnv[key]}
+    if(coverageServer?.listening)await new Promise((resolve,reject)=>coverageServer.close(error=>error?reject(error):resolve()));
+    await new Promise((resolve,reject)=>mockDatabase.close(error=>error?reject(error):resolve()));
+  }
+});
+
 test('read-only reports fallback stays quiet when Supabase is unavailable', async () => {
   const address = server.address();
   const response = await fetch(`http://127.0.0.1:${address.port}/api/reports?cardId=pokemon-test`);

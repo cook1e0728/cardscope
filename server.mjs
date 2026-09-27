@@ -38,7 +38,9 @@ const BROWSE_CARD_SELECT = 'id,canonicalId:canonical_id,game:game_id,seriesId:se
 const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at,metadata,createdAt:created_at,updatedAt:updated_at';
 const BROWSE_IMAGE_SELECT = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at';
 const browseCache=new Map();
-const RELATION_BATCH_SIZE = Math.max(100, Number(process.env.CATALOG_RELATION_BATCH_SIZE) || 500);
+const RELATION_BATCH_SIZE = Math.min(100, Math.max(1, Number(process.env.CATALOG_RELATION_BATCH_SIZE) || 100));
+const RELATION_QUERY_MAX_BYTES = 8 * 1024;
+const RELATION_QUERY_CONCURRENCY = 4;
 const SNAPSHOT_TTL_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_CACHE_MS) || BROWSE_CACHE_MS);
 const SNAPSHOT_MAX_STALE_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_MAX_STALE_MS) || 30 * 60 * 1000);
 const catalogHealthCache = createBoundedSnapshotCache({ttlMs:SNAPSHOT_TTL_MS,maxStaleMs:SNAPSHOT_MAX_STALE_MS});
@@ -270,20 +272,43 @@ function databaseFastBrowseEligible({region=null,rarity=null,seriesId=null,sort=
 }
 async function loadDatabasePageRelations(table,select,cardIds,{legacySelect=null}={}){
   if(!cardIds.length)return [];
-  const ids=cardIds.map(id=>`"${String(id).replaceAll('"','')}"`).join(','),query=new URLSearchParams({select,card_id:`in.(${ids})`,order:'id.asc',limit:'2000'});
-  try{return await supabaseFetch(`/${table}?${query}`)||[]}
+  try{return await supabaseFetchAll(databaseRelationQuery(table,select,cardIds))}
   catch(error){
     if(!legacySelect)throw error;
-    query.set('select',legacySelect);
-    const rows=await supabaseFetch(`/${table}?${query}`)||[];
+    const rows=await supabaseFetchAll(databaseRelationQuery(table,legacySelect,cardIds));
     return table==='card_images'?rows.map(row=>({...row,imageRightsStatus:'not-provided'})):rows;
   }
 }
+function databaseRelationQuery(table,select,cardIds){
+  const ids=cardIds.map(id=>`"${String(id).replaceAll('"','')}"`).join(','),query=new URLSearchParams({select,card_id:`in.(${ids})`,order:'id.asc'});
+  return `/${table}?${query}`;
+}
+function databaseRelationQueryWithinLimit(table,select,cardIds){
+  const path=databaseRelationQuery(table,select,cardIds),url=`${process.env.SUPABASE_URL||''}/rest/v1${path}&limit=1000&offset=9999999999`;
+  return Buffer.byteLength(url,'utf8')<=RELATION_QUERY_MAX_BYTES;
+}
+function chunkDatabaseRelationCardIds(table,select,cardIds,legacySelect=null){
+  const selects=[select,legacySelect].filter(Boolean),batches=[];
+  for(const sizedBatch of chunkCardIds(cardIds,RELATION_BATCH_SIZE)){
+    let batch=[];
+    for(const cardId of sizedBatch){
+      const candidate=[...batch,cardId],fits=selects.every(candidateSelect=>databaseRelationQueryWithinLimit(table,candidateSelect,candidate));
+      if(batch.length&&!fits){batches.push(batch);batch=[cardId]}
+      else batch=candidate;
+      if(!selects.every(candidateSelect=>databaseRelationQueryWithinLimit(table,candidateSelect,batch)))throw new Error('RELATION_QUERY_TOO_LARGE');
+    }
+    if(batch.length)batches.push(batch);
+  }
+  return batches;
+}
 async function loadDatabaseRelationsForCards(table,select,cardIds,{legacySelect=null}={}){
-  const batches=chunkCardIds(cardIds,RELATION_BATCH_SIZE);
+  const batches=chunkDatabaseRelationCardIds(table,select,cardIds,legacySelect);
   if(!batches.length)return [];
   const rows=[];
-  for(const batch of batches)rows.push(...await loadDatabasePageRelations(table,select,batch,{legacySelect}));
+  for(let index=0;index<batches.length;index+=RELATION_QUERY_CONCURRENCY){
+    const pageRows=await Promise.all(batches.slice(index,index+RELATION_QUERY_CONCURRENCY).map(batch=>loadDatabasePageRelations(table,select,batch,{legacySelect})));
+    rows.push(...pageRows.flat());
+  }
   return rows;
 }
 async function browseDatabasePageFast(game,options={}){
@@ -447,7 +472,7 @@ function trendRecordKey(row){
 }
 function trendMeta(snapshot){
   const rowsScanned=Number(snapshot?.rowsScanned)||0,validRows=Number(snapshot?.validRows)||0,uniqueCards=Number(snapshot?.uniqueCards)||0,window=snapshot?.observationWindow||trendObservationWindow([]),complete=snapshot?.status==='complete',coveredGames=snapshot?.coveredGames||[],coveredSets=snapshot?.coveredSets||[],freshness=coverageFreshness(window.latest),limitations=['資料只涵蓋遊々亭日版買取價，不是全市場掛牌、成交或玩家熱度資料。','漲幅以同筆觀測中的 previous_price 與 price 計算；缺少其中一項的列不列入排名。'];
-  return {source:'yuyutei-buyback',label:'遊々亭買取價漲勢',formula:'(price - previous_price) / previous_price',priceType:'buyback',market:'JP',totalMatchingRecords:rowsScanned,coveredGames,coveredSets,observationWindow:window,freshness,sample:false,complete,scope:{source:'yuyutei',market:'JP',priceType:'buyback',filter:'source=yuyutei AND previous_price IS NOT NULL AND price > previous_price',rowsScanned,totalMatchingRecords:rowsScanned,rowsWithValidChange:validRows,uniqueCards,coveredGames,coveredSets,observationWindow:window,freshness,sample:false,complete,coverage:'source-only',limitations},completeness:{status:complete?'complete':'unavailable',sample:false,rowsScanned,totalMatchingRecords:rowsScanned,denominatorStatus:'source-filtered-observations-only',coveredGames,coveredSets,freshness},limitations,warning:'只反映遊々亭日版買取調價，不代表全市場熱度、成交量、掛牌價或成交價。'};
+  return {source:'yuyutei-buyback',label:'單一來源買取漲幅（遊々亭）',formula:'(price - previous_price) / previous_price',priceType:'buyback',market:'JP',totalMatchingRecords:rowsScanned,coveredGames,coveredSets,observationWindow:window,freshness,sample:false,complete,scope:{source:'yuyutei',market:'JP',priceType:'buyback',filter:'source=yuyutei AND previous_price IS NOT NULL AND price > previous_price',rowsScanned,totalMatchingRecords:rowsScanned,rowsWithValidChange:validRows,uniqueCards,coveredGames,coveredSets,observationWindow:window,freshness,sample:false,complete,coverage:'source-only',limitations},completeness:{status:complete?'complete':'unavailable',sample:false,rowsScanned,totalMatchingRecords:rowsScanned,denominatorStatus:'source-filtered-observations-only',coveredGames,coveredSets,freshness},limitations,warning:'只反映遊々亭日版買取調價，不代表全市場熱度、成交量、掛牌價或成交價。'};
 }
 async function loadTrendSnapshot(){
   if(trendCache.data&&trendCache.expiresAt>Date.now())return trendCache.data;
