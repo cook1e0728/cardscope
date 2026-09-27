@@ -57,23 +57,57 @@ test('coverage status keeps the existing beta and browsing surfaces intact',()=>
   assert.match(html,/id="cards"/);
 });
 
-test('both public coverage panels do not turn failed image lookups into zero',async()=>{
-  const definition=html.split('\n').find(line=>line.trim().startsWith('const metric='));
-  const context=vm.createContext({});
-  vm.runInContext("const read=(value,path)=>String(path).split('.').reduce((current,key)=>current&&typeof current==='object'?current[key]:undefined,value);const number=value=>value===null||value===undefined||value===''?null:Number(value);const first=(...values)=>{for(const value of values){const result=number(value);if(result!==null)return result}return null};",context);
-  vm.runInContext(definition,context);
-  context.row={cards:1,displayableImages:0,coverage:{images:{covered:0,status:'unknown'}}};
-  assert.equal(vm.runInContext("metric(row,'images',['displayableImages'],[]).covered",context),null);
-  assert.equal(vm.runInContext("metric(row,'images',['displayableImages'],[]).missing",context),null);
-  context.row.coverage.images.status='catalog-file';
-  assert.equal(vm.runInContext("metric(row,'images',['displayableImages'],[]).covered",context),0);
+test('coverage image gaps use the rights-policy displayable count, not the link audit',async()=>{
+  const nodes={coverageStatusGrid:{},coverageStatusSource:{},coverageStatusIntro:{},coverageStatusNote:{}};
+  const context=vm.createContext({document:{getElementById:id=>nodes[id]||null}});
+  for(const prefix of ['const labels=','const escapeValue=','const read=','const number=','const first=','const metric=','const baselineDetails=','const count=','const gap=','const render=']){
+    let definition;
+    if(prefix==='const metric='){
+      const start=html.indexOf('  const metric='),end=html.indexOf('\n  const baselineDetails=',start);
+      definition=start>=0&&end>start?html.slice(start,end).trim():null;
+    }else definition=html.split('\n').find(line=>line.trim().startsWith(prefix));
+    assert.ok(definition,`missing renderer definition: ${prefix}`);
+    vm.runInContext(definition,context);
+  }
+  const render=row=>{
+    context.payload={data:{source:'test fixture',games:{yugioh:row}}};
+    vm.runInContext('render(payload)',context);
+    return nodes.coverageStatusGrid.innerHTML;
+  };
+
+  const apiMarkup=render({cards:14609,displayableImages:14556,cardsWithImageUrls:14556,coverage:{images:{covered:14556,status:'complete'},missingImages:{missing:14574}}});
+  assert.match(apiMarkup,/<span>可顯示圖片<\/span><b>14,556<\/b><small>缺口 53 張<\/small>/);
+  assert.doesNotMatch(apiMarkup,/缺口 14,574 張/);
+
+  const fallbackMarkup=render({cards:14609,displayableImages:35,cardsWithImageUrls:14556,coverage:{images:{covered:null,status:'complete'},missingImages:{missing:14574}}});
+  assert.match(fallbackMarkup,/<span>可顯示圖片<\/span><b>35<\/b><small>缺口 14,574 張<\/small>/);
+
+  const urlOnlyMarkup=render({cards:14609,cardsWithImageUrls:14556,coverage:{images:{status:'complete'},missingImages:{missing:0}}});
+  assert.match(urlOnlyMarkup,/<span>可顯示圖片<\/span><b>待補<\/b><small>缺口 待核<\/small>/);
+});
+
+test('catalog health keeps image URLs separate and reports the displayable gap',async()=>{
   const enhancements=await readFile(new URL('ui-enhancements.js',root),'utf8');
-  const healthNumber=enhancements.split('\n').find(line=>line.startsWith('function healthNumber('));
-  const healthContext=vm.createContext({betaNumber:value=>value===null||value===undefined?null:Number(value),row:{displayableImages:0,metricStatus:{images:'unknown'}}});
-  vm.runInContext(healthNumber,healthContext);
-  assert.equal(vm.runInContext("healthNumber(row,['displayableImages'])",healthContext),null);
-  healthContext.row.metricStatus.images='catalog-file';
-  assert.equal(vm.runInContext("healthNumber(row,['displayableImages'])",healthContext),0);
+  const healthContext=vm.createContext({
+    betaNumber:value=>value===null||value===undefined?null:Number(value),
+    e:value=>String(value??''),
+    row:{cards:14609,displayableImages:35,cardsWithImageUrls:14556,metricStatus:{images:'catalog-file'}}
+  });
+  for(const prefix of ['function healthNumber(','function healthPercent(','function healthMetric(']){
+    const definition=enhancements.split('\n').find(line=>line.startsWith(prefix));
+    assert.ok(definition,`missing health renderer definition: ${prefix}`);
+    vm.runInContext(definition,healthContext);
+  }
+  assert.equal(vm.runInContext("healthNumber(row,['displayableImages','displayable_images'])",healthContext),35);
+  assert.equal(vm.runInContext("healthNumber(row,['cardsWithImageUrls','cards_with_image_urls'])",healthContext),14556);
+  const displayMarkup=vm.runInContext("healthMetric('可顯示圖片',healthNumber(row,['displayableImages','displayable_images']),row.cards,{showGap:true})",healthContext);
+  assert.match(displayMarkup,/>35<\/b>/);
+  assert.match(displayMarkup,/缺口 14,574/);
+  const urlMarkup=vm.runInContext("healthMetric('已有圖片網址',healthNumber(row,['cardsWithImageUrls','cards_with_image_urls']),row.cards)",healthContext);
+  assert.match(urlMarkup,/14,556/);
+  assert.doesNotMatch(urlMarkup,/缺口/);
+  healthContext.row.metricStatus.images='unknown';
+  assert.equal(vm.runInContext("healthNumber(row,['displayableImages','displayable_images'])",healthContext),null);
   healthContext.row.rarities=0;
   healthContext.row.metricStatus.rarities='unknown';
   assert.equal(vm.runInContext("healthNumber(row,['rarities'])",healthContext),null);

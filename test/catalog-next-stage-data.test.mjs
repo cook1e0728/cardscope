@@ -139,6 +139,21 @@ test('verified zero and catalog-file sample image counts remain numeric',()=>{
   }
 });
 
+test('displayable image gap uses the same policy-aware card set as its numerator',()=>{
+  const cards=[
+    {id:'allowed',game:'yugioh',imageUrl:'https://example.invalid/allowed.jpg',imageSource:'ygoprodeck',imageRightsStatus:'not-provided'},
+    {id:'blocked',game:'yugioh',imageUrl:'https://example.invalid/blocked.jpg',imageSource:'unregistered-source',imageRightsStatus:'not-provided'}
+  ];
+  const report=buildCoverageGame('yugioh',cards,[],[]);
+  assert.equal(report.cardsWithImageUrls,2);
+  assert.equal(report.coverage.images.covered,1);
+  assert.equal(report.coverage.missingImages.covered,1);
+  assert.equal(report.coverage.missingImages.missing,1);
+  assert.deepEqual(report.coverage.missingImages.sampleIds,['blocked']);
+  assert.equal(report.coverage.images.covered+report.coverage.missingImages.missing,report.cards);
+  assert.equal(report.linkAudit.missingImages.count,0,'raw URL audit remains a distinct diagnostic');
+});
+
 test('aggregate coverage marks images unknown when printing lookup fails',async()=>{
   const mockDatabase=createServer((req,res)=>{
     const url=new URL(req.url,`http://${req.headers.host}`),reply=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body))};

@@ -136,7 +136,18 @@ async function init(){const get=async url=>{const response=await fetch(url,{cach
   const read=(value,path)=>String(path).split('.').reduce((current,key)=>current&&typeof current==='object'?current[key]:undefined,value);
   const number=value=>{if(value===null||value===undefined||value==='')return null;const result=Number(value);return Number.isFinite(result)&&result>=0?result:null};
   const first=(...values)=>{for(const value of values){const result=number(value);if(result!==null)return result}return null};
-  const metric=(row,key,aliases,missingAliases)=>{const source=row?.coverage?.[key]??row?.fields?.[key]??{};if(source.status==='unknown'||row?.metricStatus?.[key]==='unknown')return{covered:null,missing:null};const cards=first(row?.cards,row?.cardCount,row?.card_count),covered=first(source.covered,...aliases.map(alias=>read(row,alias))),missing=first(source.missing,...missingAliases.map(alias=>read(row,alias)),cards!==null&&covered!==null?Math.max(0,cards-covered):null);return{covered,missing}};
+  const metric=(row,key,aliases,missingAliases)=>{
+    const source=row?.coverage?.[key]??row?.fields?.[key]??{};
+    if(source.status==='unknown'||row?.metricStatus?.[key]==='unknown')return{covered:null,missing:null};
+    const cards=first(row?.cards,row?.cardCount,row?.card_count),
+      // Image displayability has its own rights-policy metric; URL audits are separate.
+      coveredKeys=key==='images'?['displayableImages','displayable_images']:aliases,
+      covered=first(source.covered,...coveredKeys.map(alias=>read(row,alias))),
+      missing=key==='images'
+        ?cards!==null&&covered!==null?Math.max(0,cards-covered):null
+        :first(source.missing,...missingAliases.map(alias=>read(row,alias)),cards!==null&&covered!==null?Math.max(0,cards-covered):null);
+    return{covered,missing};
+  };
   const baselineDetails=row=>{const baseline=row?.baseline&&typeof row.baseline==='object'?row.baseline:{},source=baseline.source&&typeof baseline.source==='object'?baseline.source:{},kind=String(baseline.kind||'').toLowerCase(),value=first(baseline.value,baseline.expectedTotal,baseline.expectedCards,baseline.officialTotal,row?.expectedCards,row?.expected_cards,row?.officialTotal,row?.official_total,row?.scope?.expectedTotal,row?.scope?.expected_total),knownTotal=first(baseline.knownTotal,baseline.known_total),scopeComplete=row?.scope?.complete===true||row?.scope?.status==='complete'||baseline.scope?.complete===true||baseline.scopeComplete===true||baseline.scopeStatus==='complete',sourceVerified=baseline.sourceVerified===true||source.status==='verified'||baseline.sourceStatus==='verified',verified=kind==='official-total'&&baseline.status==='complete'&&value!==null&&sourceVerified&&scopeComplete;if(verified)return{label:'已核定範圍',kind:'verified',value,allowPercentage:true};if(kind==='provider-total'||baseline.status==='partial'||knownTotal!==null||value!==null)return{label:'來源回報基準（局部）',kind:'partial',value:value??knownTotal,allowPercentage:false};return{label:'完整分母未核定',kind:'unknown',value:null,allowPercentage:false}};
   const count=value=>value===null?'待補':value.toLocaleString('zh-TW');
   const gap=value=>value===null?'待核':`${value.toLocaleString('zh-TW')} 張`;
