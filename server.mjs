@@ -41,6 +41,7 @@ const browseCache=new Map();
 const RELATION_BATCH_SIZE = Math.min(100, Math.max(1, Number(process.env.CATALOG_RELATION_BATCH_SIZE) || 100));
 const RELATION_QUERY_MAX_BYTES = 8 * 1024;
 const RELATION_QUERY_CONCURRENCY = 4;
+const RELATION_SCAN_PAGE_SIZE = 1000;
 const SNAPSHOT_TTL_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_CACHE_MS) || BROWSE_CACHE_MS);
 const SNAPSHOT_MAX_STALE_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_MAX_STALE_MS) || 30 * 60 * 1000);
 const catalogHealthCache = createBoundedSnapshotCache({ttlMs:SNAPSHOT_TTL_MS,maxStaleMs:SNAPSHOT_MAX_STALE_MS});
@@ -311,6 +312,44 @@ async function loadDatabaseRelationsForCards(table,select,cardIds,{legacySelect=
   }
   return rows;
 }
+async function loadDatabaseAllRelationPages(table,select){
+  const rows=[],seenIds=new Set();let lastId=null;
+  while(true){
+    const query=new URLSearchParams({select,order:'id.asc',limit:String(RELATION_SCAN_PAGE_SIZE)});
+    if(lastId!==null)query.set('id',`gt.${lastId}`);
+    const page=await supabaseFetch(`/${table}?${query}`);
+    if(!Array.isArray(page)||page.length>RELATION_SCAN_PAGE_SIZE)throw relationPaginationError('invalid-page');
+    let pageLastId=lastId;
+    for(const row of page){
+      const value=row?.id,id=Number(value);
+      if((typeof value!=='number'&&typeof value!=='string')||!Number.isSafeInteger(id)||String(id)!==String(value))throw relationPaginationError('invalid-id');
+      if(seenIds.has(id))throw relationPaginationError('repeated-id');
+      if(pageLastId!==null&&id<=pageLastId)throw relationPaginationError('unordered-id');
+      seenIds.add(id);pageLastId=id;
+    }
+    if(!page.length)return rows;
+    rows.push(...page);
+    if(pageLastId===lastId)throw relationPaginationError('stalled-cursor');
+    lastId=pageLastId;
+  }
+}
+function relationPaginationError(reason){const error=new Error(`RELATION_PAGINATION_${reason.toUpperCase().replaceAll('-','_')}`);error.code='RELATION_PAGINATION_INVALID';return error}
+async function loadDatabaseAllRelations(table,select,{legacySelect=null}={}){
+  try{return await loadDatabaseAllRelationPages(table,select)}
+  catch(error){
+    if(!legacySelect||error.code==='RELATION_PAGINATION_INVALID')throw error;
+    const rows=await loadDatabaseAllRelationPages(table,legacySelect);
+    return table==='card_images'?rows.map(row=>({...row,imageRightsStatus:'not-provided'})):rows;
+  }
+}
+async function loadDatabaseCoveragePrintings(){
+  const legacySelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required';
+  return loadDatabaseAllRelations('tcg_printings',BROWSE_PRINTING_SELECT,{legacySelect});
+}
+async function loadDatabaseCoverageImages(){
+  const legacySelect='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
+  return loadDatabaseAllRelations('card_images',BROWSE_IMAGE_SELECT,{legacySelect});
+}
 async function browseDatabasePageFast(game,options={}){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc';
   const params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:`official_card_number.${direction},id.${direction}`,limit:String(take+1),offset:String(skip)}),page=await supabaseFetchPage(`/tcg_cards?${params}`),cards=(page.data||[]).slice(0,take),cardIds=cards.map(card=>card.id);
@@ -444,9 +483,9 @@ async function loadCatalogCoverageUncached(){
     const [seriesResult,...cardGroups]=await Promise.all([
       supabaseFetchAll('/tcg_series?select=id,gameId:game_id,region,language,providerId:provider_id,sourceUrl:source_url,updatedAt:updated_at,metadata&order=game_id,region,id').then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
       ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows,status:'complete'})).catch(error=>({gameId,rows:[],status:'unknown',error:error.message})))
-    ]),allCardIds=cardGroups.flatMap(group=>group.rows.map(card=>card.id)),[printingResult,imageResult]=await Promise.all([
-      loadDatabasePrintings(allCardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
-      loadDatabaseImages(allCardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message}))
+    ]),[printingResult,imageResult]=await Promise.all([
+      loadDatabaseCoveragePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
+      loadDatabaseCoverageImages().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message}))
     ]),games={},allTimestamps=[],baseline=catalogBaselineReport(seriesResult.rows);
     for(const group of cardGroups){
       const selectedIds=new Set(group.rows.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedIds.has(image.cardId)),entry=buildCoverageGame(group.gameId,group.rows,printings,images,{cardStatus:group.status,printingStatus:printingResult.status,imageStatus:imageResult.status});

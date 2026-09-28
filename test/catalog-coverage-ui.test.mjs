@@ -22,6 +22,12 @@ test('coverage status surface renders five IPs from the public coverage response
   assert.match(html,/缺口/);
 });
 
+test('inline page scripts remain syntactically valid',()=>{
+  const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(([,source])=>source).filter(source=>source.trim());
+  assert.ok(scripts.length>0);
+  for(const [index,source] of scripts.entries())assert.doesNotThrow(()=>new vm.Script(source),`inline script ${index+1}`);
+});
+
 test('coverage status keeps unknown denominators honest and supports future baselines',()=>{
   assert.match(html,/baseline/);
   assert.match(html,/baseline\.kind/);
@@ -55,6 +61,57 @@ test('coverage status keeps the existing beta and browsing surfaces intact',()=>
   assert.match(html,/id="channels"/);
   assert.match(html,/id="browseRegion"/);
   assert.match(html,/id="cards"/);
+});
+
+test('catalog status labels bootstrap rows as a sample until a complete database total is verified',()=>{
+  const start=html.indexOf('function verifiedCatalogCardTotal('),end=html.indexOf('\nasync function init(',start);
+  assert.ok(start>=0&&end>start,'catalog summary helpers must precede init');
+  const context=vm.createContext({});
+  vm.runInContext(html.slice(start,end),context);
+  const summarize=input=>{context.input=input;return vm.runInContext('catalogStatusSummary(input)',context)};
+  const sample=summarize({catalog:{cards:Array.from({length:156},()=>({}))},catalogState:'ready',coverage:null,coverageState:'loading',productsState:'ready',productsCount:12});
+  assert.match(sample.status,/目前載入樣本：156 張卡片/);
+  assert.match(sample.status,/資料庫總數查核中/);
+  assert.doesNotMatch(sample.status,/資料庫收錄：156/);
+  assert.match(sample.betaStatus,/目前載入樣本 · 156 張收錄/);
+
+  const verified=summarize({catalog:{cards:Array.from({length:156},()=>({}))},catalogState:'ready',coverage:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'complete'}},coverageState:'ready',productsState:'ready',productsCount:12});
+  assert.match(verified.status,/資料庫目前觀測 48,244 張卡片/);
+  assert.doesNotMatch(verified.status,/156 張卡片/);
+  assert.match(verified.betaStatus,/48,244 張收錄/);
+
+  const partial=summarize({catalog:{cards:Array.from({length:156},()=>({}))},catalogState:'ready',coverage:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'partial'}},coverageState:'ready',productsState:'loading'});
+  assert.match(partial.status,/目前載入樣本：156 張卡片/);
+  assert.match(partial.status,/資料庫卡片查詢未完成/);
+  assert.doesNotMatch(partial.status,/48,244/);
+
+  const fallback=summarize({catalog:{source:'catalog.json',cards:Array.from({length:156},()=>({}))},catalogState:'ready',coverage:{source:'catalog.json',sample:true,totalCards:156,metricStatus:{cards:'catalog-file'}},coverageState:'ready',productsState:'error'});
+  assert.match(fallback.status,/本機備援樣本：156 張卡片/);
+  assert.match(fallback.status,/資料庫完整總數未核定/);
+
+  const failed=summarize({catalog:{cards:Array.from({length:156},()=>({}))},catalogState:'ready',coverage:null,coverageState:'error',productsState:'ready'});
+  assert.match(failed.status,/目前載入樣本：156 張卡片/);
+  assert.match(failed.status,/資料庫總數暫時無法查核/);
+  const loading=summarize({catalog:{cards:[]},catalogState:'loading',coverage:null,coverageState:'loading',productsState:'loading'});
+  assert.match(loading.status,/卡片資料載入中/);
+  assert.doesNotMatch(loading.status,/0 張卡片/);
+});
+
+test('catalog health labels only verified totals as database counts',async()=>{
+  const enhancements=await readFile(new URL('ui-enhancements.js',root),'utf8');
+  const helperStart=enhancements.indexOf('function verifiedEnhancementCardTotal('),helperEnd=enhancements.indexOf('\nfunction healthPercent(',helperStart);
+  assert.ok(helperStart>=0&&helperEnd>helperStart,'enhancement coverage label helpers must precede healthPercent');
+  const context=vm.createContext({betaNumber:value=>value===null||value===undefined?null:Number(value)});
+  const healthNumber=enhancements.split('\n').find(line=>line.startsWith('function healthNumber('));
+  assert.ok(healthNumber);
+  vm.runInContext(healthNumber,context);
+  vm.runInContext(enhancements.slice(helperStart,helperEnd),context);
+  const label=input=>{context.input=input;return vm.runInContext('enhancementCoverageLabel(input.data,input.loadedCount)',context)};
+  assert.equal(label({data:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'complete'}},loadedCount:156}),'資料庫目前觀測 48,244 張');
+  assert.equal(label({data:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'partial'}},loadedCount:156}),'目前載入樣本 156 張；資料庫總數待核');
+  assert.equal(label({data:{source:'catalog.json',sample:true,totalCards:156,metricStatus:{cards:'catalog-file'}},loadedCount:156}),'本機備援樣本 156 張；資料庫總數未核定');
+  assert.equal(label({data:null,loadedCount:null}),'資料庫總數查核中；尚無載入樣本');
+  assert.doesNotMatch(enhancements,/資料庫收錄：\$\{healthTotal/);
 });
 
 test('coverage image gaps use the rights-policy displayable count, not the link audit',async()=>{
