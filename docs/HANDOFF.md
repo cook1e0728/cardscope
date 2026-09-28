@@ -14,7 +14,23 @@
 - 尚未執行的唯一下一步，以及開始前必須重新核對的外部狀態。
 - 未追蹤或屬於使用者的本機檔案，避免下一台電腦誤刪。
 
-## 目前里程碑
+## 目前里程碑（2026-09-28，優先於下方歷史）
+
+- GitHub main runtime checkpoint `4710f71`；正式網站回傳的程式確認包含完整關聯分頁與獨立查詢重疊。Dashboard 曾確認 `65f8b99` Live（20.1 秒），目前不能把 Dashboard 登入延續視為已驗證。本輪 metadata-only 工具及交接文件另隨後續提交發布。本機全套 Node 測試 213/213 通過；390px 手機版無橫向溢出，200% 縮放及完整五 IP 互動驗收尚未全部完成。
+- 完整 Supabase 搜尋已修復，線上「魯夫」「噴火龍」有結果；保留 `catalog.json` fallback。圖片展示數與缺口現在使用同一政策集合，URL 存在數／原始連結稽核另列。趨勢標示「單一來源買取漲幅」，不冒充成交或人氣。
+- 正式 coverage 觀測 48,269 張（寶可夢 28,073、航海王 4,284、遊戲王 14,634、芙莉蓮 751、排球少年 527），`sample=false`、六類查核 complete；完整官方分母仍 unknown。既有遊戲王同步持續變動，以上不是全系列已齊。
+- 同步空值不覆寫防護已部署；migration `20260926200419_repair_pokemon_tw_printing_rarity` 恢復 786 個台版 printing 的三個稀有度欄位。完成新 TW 同步後唯讀複核 786/786 仍與 after_snapshot 一致。私有 audit 保存 796 候選、10 筆排除證據及 786 筆前後快照；不是 7,436 個台版 printing 全面補齊。
+- 商品盤點：32 個實體封面商品皆有圖（航海王 10、排球少年 18、芙莉蓮 4）；寶可夢／遊戲王沒有實體卡盒商品列。先前系列快照 1,041 個／740 有圖／301 缺圖，可能隨同步變動；系列圖不能算卡盒，缺正式繁中主名不猜譯補值。
+- coverage 完整關聯 keyset 分頁已上線，失敗或重複頁面不報假 complete；獨立查詢並行但保留 browse 每表 <=4、每批 <=100、URL <=8 KiB。暖快取實測 815 ms，冷查詢仍曾超過 60 秒，不能宣稱冷啟動效能達標。
+- SV8a `074–237` 164 張全部重新取得 HTTP 200，逐張核對來源與台版。只提升 16 張明確 Double rare 為 RR（16 card +16 printing），兩批重播零異動；148 張原值 None 未寫。全系列 35/237 稀有度已知、202 未知、不一致 0；詳見 `docs/SV8A_SOURCE_RESUME_20260928.md`。
+- 日版 metadata-only manifest 與 CLI 已完成（每批 <=100、source/seed hash、cursor、碰撞隔離、來源時間與來源 URL），真實 PMCG1-001 canary 零寫入。SV4a 來源／seed 與變體計數異常須先協調；正式日版 importer、觸發器與自然鍵檢查尚未完成，不以 dry-run 假稱日版全量匯入。詳見 `docs/JP_METADATA_PREFLIGHT.md`。
+- 整合工作區 `cardscope-coverage-integrate`／`codex/coverage-integrate`。原 checkout 的未追蹤 `pnpm-lock.yaml` 保留。筆電先保留 dirty files，再於乾淨 main 執行 `git pull --ff-only origin main`；密鑰與登入不在 Git，不聲稱另一台全域設定已同步。
+- 模型活動：Luna Max workers 實作與測試，Sol advisor 裁決資料完整性／coverage 路徑；repo 保留 `luna_worker`／`sol_advisor`。不得因 config 存在就宣稱另一台 live inference 已驗證。
+- 來源未恢復或新增封面權利未確認時不猜資料、不複製卡拍拍／Pinterest、不付費、不繞過反爬；尚未取得可靠資料的項目不能標成計畫完成。
+
+下一個安全起點：先核對正式 DB 自然鍵、canonical trigger 與日版來源異常，完成單一系列的交易式 metadata pilot 設計後再導入；冷啟動、五 IP 鍵盤及 200% UI 驗收另列未完成。缺失官方封面／Logo 的可展示權利與 SV8a None 值需要新證據，不能靠重播本次來源補出。
+
+## 歷史紀錄（狀態以本文件上方與正式稽核為準）
 
 - 目前工作基準：分支 `codex/detail-history-sync`，前次 GitHub `main` checkpoint `54c74a6`（商品 API 來源與圖片覆蓋資訊；Render Live，20.4 秒）。本輪新增誠實的系列圖替代導覽，沒有更動 schema；每次推送後須重新檢查 Render 部署狀態。
 - 程式基準：本輪從 GitHub `main` commit `bf291f3` 開始；精確系列與數字卡號範圍功能為 commit `7dc89a4`。Pokémon 候選規劃／執行 CLI 現在支援 `--series`、`--card-number-from`、`--card-number-to`，使用正規化後的精確系列比對、含頭尾的數字範圍與數值排序，並拒絕無效或反向範圍。明確系列／卡號若與 provider ID 衝突會被排除。
@@ -42,6 +58,6 @@
 - S10b 阻擋證據：TCGdex `zh-tw` 的 001–050 可取回 50 個名稱但稀有度欄位為 0；051–071 可取回 21 個名稱但稀有度欄位仍為 0；072–079 為 404。正式庫既有 79 張 card／printing 皆缺稀有度，故本輪建立 0 個候選，不以其他語言、其他 printing 或推測值填補。
 - 本機保留：`pnpm-lock.yaml` 目前未追蹤，不加入提交，也不得清除。若下一台電腦另有 `.playwright-cli/` 或 `output/`，同樣視為本機產物，不得誤刪或提交。
 
-## 下一個安全起點
+## 歷史下一步（已由目前里程碑取代）
 
 下一個安全起點是來源恢復後唯讀預檢 SV8a `074–237`，不要密集重試 503；正式庫目前 218/237 張稀有度待補，其中 `001–073` 已確認的 54 張 `None` 保持空值。對恢復可讀的資料逐張核對 exact provider ID、官方繁中名稱、台版 printing、來源稀有度及受支援映射；未通過者保持空值，每批最多 100 個候選。SV8 的 3 張例外與 SV9a `064–092` 的 `rarity: None` 在可靠來源或明確映射到位前不猜值。S12 的 20 張、S10D 的 67 張及 S10b 仍為來源缺口；S12 的 94 張缺圖也不借用其他 printing。

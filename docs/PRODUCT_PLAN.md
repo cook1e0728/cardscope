@@ -1,7 +1,7 @@
 # CardScope 產品、資料與 UX 主方案
 
 狀態：已核准的執行基準
-更新日期：2026-09-23
+更新日期：2026-09-28
 
 ## 產品定位與成功標準
 
@@ -90,6 +90,15 @@ CardScope 是「繁體中文玩家的跨語言、跨版本 TCG 查證與收藏�
 - [TCGdex](https://github.com/tcgdex) 可供結構化資料；資料庫授權不代表卡圖授權。
 - [遊戲王 Neuron](https://www.db.yugioh-card.com/yugiohdb/)。
 - [排球少年官方卡表](https://www.takaratomy.co.jp/products/haikyuvobacabreak/cardlist/)。
+
+#### 2026-09-28 最新驗證（優先於上方歷史狀態）
+
+- SV8a 原先中斷的 `074–237` 已全部重新查核：164/164 普通公開請求成功、同版本身分與繁中名精確匹配；16 張有明確 `Double rare` 證據，經兩個私有交易批次補上 card／TW printing 的 RR，其餘 148 張來源為 `None` 未猜補。全系列目前 35/237 已知、202 未知、card／printing 不一致 0；兩批立即重播皆零異動。見 `docs/SV8A_SOURCE_RESUME_20260928.md`。
+- 台版同步防護已經歷後續 completed 同步（7,436 列來源）；既有修復 audit 的 786/786 printing 三欄位仍與 after snapshot 一致。沒有因此宣稱全部 7,436 個版本的稀有度完成。
+- coverage 已改成完整關聯 keyset 分頁，並讓系列、五 IP 卡片、printing、圖片查詢同時啟動；一般瀏覽仍保留 100-ID／8 KiB URL／每表最多 4 並行限制。失敗、格式錯誤、重複頁面不把部分資料標完整。
+- 公開介面分開標示 bootstrap 樣本與完整資料庫觀測量；正式完整報告已成功回應，暖快取測得 815 ms。冷路徑仍有超過 60 秒的測量，尚未通過冷啟動效能驗收；免費 Render 休眠與同步作業也會影響請求，不能宣稱全情境效能已完成。
+- 日版寶可夢新增 metadata-only 零寫入 manifest／CLI，最多 100 張、固定 JP source/locale、精確身分、seed 衝突隔離、source/seed checksum 與 cursor；真實 PMCG1 單卡預檢通過，未匯入正式庫、未啟用自動同步、未新增圖片／價格／猜譯中文。見 `docs/JP_METADATA_PREFLIGHT.md`。
+- 瀏覽器正式頁面已確認五個 IP 與上方切換同步、100 張首屏卡片正常載入，390px 手機版無橫向溢出；切換器 Enter 開啟、Escape 關閉並返回焦點已確認，完整鍵盤、200% 縮放與所有 IP 詳情仍需各自驗收。
 
 ### 3. 圖片與品牌辨識
 
