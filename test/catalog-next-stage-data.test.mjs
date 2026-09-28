@@ -288,6 +288,50 @@ test('global coverage scans complete keyset pages, filters orphan relations, and
   assert.deepEqual(relationRequestCounts,[6,8,9]);
 });
 
+test('catalog coverage starts relation scans before blocked card queries resolve',async()=>{
+  const deferred=()=>{let resolve,reject;const promise=new Promise((done,fail)=>{resolve=done;reject=fail});return {promise,resolve,reject}},
+    releaseCards=deferred(),allCardRequestsStarted=deferred(),seriesRequestStarted=deferred(),relationsStarted=deferred(),cardGamesStarted=new Set(),relationTablesStarted=new Set(),
+    cardRows=[{id:'coverage-overlap-pokemon-card',game:'pokemon',nameZh:'測試卡',rarity:'UR'}];
+  let cardResponsesSent=0;
+  const handleDatabaseRequest=async(req,res)=>{
+    const url=new URL(req.url,`http://${req.headers.host}`),reply=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body))};
+    if(url.pathname==='/rest/v1/tcg_series'){seriesRequestStarted.resolve();return reply(200,[])}
+    if(url.pathname==='/rest/v1/tcg_cards'){
+      const gameId=(url.searchParams.get('game_id')||'').replace(/^eq\./,'');
+      cardGamesStarted.add(gameId);
+      if(cardGamesStarted.size===games.length)allCardRequestsStarted.resolve();
+      await releaseCards.promise;
+      cardResponsesSent++;
+      return reply(200,gameId==='pokemon'?cardRows:[]);
+    }
+    const table=url.pathname.split('/').at(-1);
+    if(table==='tcg_printings'||table==='card_images'){
+      relationTablesStarted.add(table);
+      if(relationTablesStarted.size===2)relationsStarted.resolve();
+      return reply(200,[]);
+    }
+    return reply(200,[]);
+  };
+
+  await withCoverageDatabase('coverage-relation-overlap',handleDatabaseRequest,async baseUrl=>{
+    const responsePromise=fetch(`${baseUrl}/api/catalog/coverage`);
+    // This only prevents a regression from leaving the deferred card barrier hung; ordering is asserted by request events below.
+    const deadlockGuard=setTimeout(()=>relationsStarted.reject(new Error('relation scans did not start while card requests were blocked')),5000);
+    try{
+      await Promise.all([allCardRequestsStarted.promise,seriesRequestStarted.promise,relationsStarted.promise]);
+      assert.deepEqual([...cardGamesStarted].sort(),[...games].sort(),'all five card tasks must have started');
+      assert.deepEqual([...relationTablesStarted].sort(),['card_images','tcg_printings']);
+      assert.equal(cardResponsesSent,0,'relation calls must begin while every card response is still blocked');
+    }finally{clearTimeout(deadlockGuard);releaseCards.resolve()}
+    const response=await responsePromise,body=await response.json();
+    assert.equal(response.status,200);
+    assert.equal(body.data.complete,true);
+    assert.equal(body.data.totalCards,1);
+    assert.equal(body.data.errors.printings,null);
+    assert.equal(body.data.errors.images,null);
+  });
+});
+
 test('global coverage marks failed, malformed, and repeated later relation pages unknown',async t=>{
   for(const mode of ['later-page-failure','malformed-page','repeated-page'])await t.test(mode,async()=>{
     const fixture=coverageFixture(),requests=[];

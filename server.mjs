@@ -480,13 +480,12 @@ async function loadCatalogCoverageUncached(){
   const fallback=await loadFallbackCatalog();
   if(!supabaseConfigured())return buildFallbackCatalogCoverage(fallback);
   try{
-    const [seriesResult,...cardGroups]=await Promise.all([
+    const results=await Promise.all([
       supabaseFetchAll('/tcg_series?select=id,gameId:game_id,region,language,providerId:provider_id,sourceUrl:source_url,updatedAt:updated_at,metadata&order=game_id,region,id').then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
-      ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows,status:'complete'})).catch(error=>({gameId,rows:[],status:'unknown',error:error.message})))
-    ]),[printingResult,imageResult]=await Promise.all([
+      ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows,status:'complete'})).catch(error=>({gameId,rows:[],status:'unknown',error:error.message}))),
       loadDatabaseCoveragePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
       loadDatabaseCoverageImages().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message}))
-    ]),games={},allTimestamps=[],baseline=catalogBaselineReport(seriesResult.rows);
+    ]),seriesResult=results[0],cardGroups=results.slice(1,-2),printingResult=results.at(-2),imageResult=results.at(-1),games={},allTimestamps=[],baseline=catalogBaselineReport(seriesResult.rows);
     for(const group of cardGroups){
       const selectedIds=new Set(group.rows.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedIds.has(image.cardId)),entry=buildCoverageGame(group.gameId,group.rows,printings,images,{cardStatus:group.status,printingStatus:printingResult.status,imageStatus:imageResult.status});
       games[group.gameId]=entry;allTimestamps.push(entry.sourceTimestamp);
