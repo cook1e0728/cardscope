@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPokemonJpEnrichPlan } from '../providers/pokemon-jp-enrich-plan.mjs';
+import { buildPokemonJpEnrichPlan, chunkPokemonJpEnrichPlan } from '../providers/pokemon-jp-enrich-plan.mjs';
 import { buildPokemonJpEnrichSql } from '../providers/pokemon-jp-import-sql.mjs';
 
 const COMMIT = 'c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78';
@@ -80,4 +80,17 @@ test('cross-series names fill only cards that are still unnamed and cite a Taiwa
   const { sql } = buildPokemonJpEnrichSql(plan, { actor: 'tester', dryRun: false, gated: true });
   assert.match(sql, /\('093','大地の器','大地之容器','derived-cross-series',null,'pokemon-tcgdex-tw-sv4k-060'\)/);
   assert.match(sql, /"derived":2/);
+});
+
+test('large enrichment plans split into ordered chunks with links before derived names', () => {
+  const crossSeriesNames = new Map([['大地の器', { zh: '大地之容器', sourceCardId: 'pokemon-tcgdex-tw-sv4k-060' }]]);
+  const { plan } = buildPokemonJpEnrichPlan(input({ crossSeriesNames }));
+  const chunks = chunkPokemonJpEnrichPlan(plan, 2);
+  assert.deepEqual(chunks.map(c => c.cards.map(card => [card.id.slice(-3), card.basis])), [
+    [['001', 'tw-official'], ['002', 'tw-official']],
+    [['090', 'derived-same-name'], ['093', 'derived-cross-series']]
+  ]);
+  assert.deepEqual(chunks.map(c => c.series), [plan.series, null]);
+  assert.ok(chunks.every(c => c.evidenceHash === plan.evidenceHash));
+  assert.equal(chunks.flatMap(c => c.cards).length, plan.cards.length);
 });

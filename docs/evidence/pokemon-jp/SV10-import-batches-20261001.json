@@ -1,0 +1,3644 @@
+[
+  {
+    "planVersion": 1,
+    "source": "tcgdex-ja",
+    "seriesProviderId": "SV10",
+    "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+    "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+    "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d",
+    "sourceObservedAt": "2026-10-01T15:42:09.620Z",
+    "series": {
+      "id": "pokemon-tcgdex-ja-sv10",
+      "provider_id": "SV10",
+      "name_ja": "ロケット団の栄光",
+      "release_date": "2025-04-18",
+      "source_url": "https://api.tcgdex.net/v2/ja/sets/SV10",
+      "metadata": {
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/sets/SV10",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-01T15:42:09.620Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SV/SV10.ts"
+          }
+        },
+        "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+        "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+        "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+      }
+    },
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv10-001",
+        "provider_id": "SV10-001",
+        "official_card_number": "001",
+        "name_ja": "クヌギダマ",
+        "rarity_code": "C",
+        "search_text": "クヌギダマ 001 SV10-001 sv10001",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-001",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-001",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-001",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/001.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-002",
+        "provider_id": "SV10-002",
+        "official_card_number": "002",
+        "name_ja": "キノココ",
+        "rarity_code": "C",
+        "search_text": "キノココ 002 SV10-002 sv10002",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-002",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-002",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-002",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/002.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-003",
+        "provider_id": "SV10-003",
+        "official_card_number": "003",
+        "name_ja": "キノガッサ",
+        "rarity_code": "C",
+        "search_text": "キノガッサ 003 SV10-003 sv10003",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-003",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-003",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-003",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/003.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-004",
+        "provider_id": "SV10-004",
+        "official_card_number": "004",
+        "name_ja": "カットロトム",
+        "rarity_code": "C",
+        "search_text": "カットロトム 004 SV10-004 sv10004",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-004",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-004",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-004",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/004.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-005",
+        "provider_id": "SV10-005",
+        "official_card_number": "005",
+        "name_ja": "カリキリ",
+        "rarity_code": "C",
+        "search_text": "カリキリ 005 SV10-005 sv10005",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-005",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-005",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-005",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/005.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-006",
+        "provider_id": "SV10-006",
+        "official_card_number": "006",
+        "name_ja": "ラランテス",
+        "rarity_code": "U",
+        "search_text": "ラランテス 006 SV10-006 sv10006",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-006",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-006",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-006",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/006.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-007",
+        "provider_id": "SV10-007",
+        "official_card_number": "007",
+        "name_ja": "ロケット団のサッチムシ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のサッチムシ 007 SV10-007 sv10007",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-007",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-007",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-007",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/007.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-008",
+        "provider_id": "SV10-008",
+        "official_card_number": "008",
+        "name_ja": "ロケット団のタマンチュラ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のタマンチュラ 008 SV10-008 sv10008",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-008",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-008",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-008",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/008.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-009",
+        "provider_id": "SV10-009",
+        "official_card_number": "009",
+        "name_ja": "ロケット団のワナイダー",
+        "rarity_code": "R",
+        "search_text": "ロケット団のワナイダー 009 SV10-009 sv10009",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-009",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-009",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-009",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/009.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-010",
+        "provider_id": "SV10-010",
+        "official_card_number": "010",
+        "name_ja": "ミニーブ",
+        "rarity_code": "C",
+        "search_text": "ミニーブ 010 SV10-010 sv10010",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-010",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-010",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-010",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/010.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-011",
+        "provider_id": "SV10-011",
+        "official_card_number": "011",
+        "name_ja": "オリーニョ",
+        "rarity_code": "C",
+        "search_text": "オリーニョ 011 SV10-011 sv10011",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-011",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-011",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-011",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/011.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-012",
+        "provider_id": "SV10-012",
+        "official_card_number": "012",
+        "name_ja": "オリーヴァex",
+        "rarity_code": "RR",
+        "search_text": "オリーヴァex 012 SV10-012 sv10012",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-012",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-012",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-012",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/012.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-013",
+        "provider_id": "SV10-013",
+        "official_card_number": "013",
+        "name_ja": "ガーディ",
+        "rarity_code": "C",
+        "search_text": "ガーディ 013 SV10-013 sv10013",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-013",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-013",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-013",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/013.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-014",
+        "provider_id": "SV10-014",
+        "official_card_number": "014",
+        "name_ja": "ウインディ",
+        "rarity_code": "U",
+        "search_text": "ウインディ 014 SV10-014 sv10014",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-014",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-014",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-014",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/014.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-015",
+        "provider_id": "SV10-015",
+        "official_card_number": "015",
+        "name_ja": "ロケット団のファイヤーex",
+        "rarity_code": "RR",
+        "search_text": "ロケット団のファイヤーex 015 SV10-015 sv10015",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-015",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-015",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-015",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/015.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-016",
+        "provider_id": "SV10-016",
+        "official_card_number": "016",
+        "name_ja": "ロケット団のデルビル",
+        "rarity_code": "C",
+        "search_text": "ロケット団のデルビル 016 SV10-016 sv10016",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-016",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-016",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-016",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/016.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-017",
+        "provider_id": "SV10-017",
+        "official_card_number": "017",
+        "name_ja": "ロケット団のヘルガー",
+        "rarity_code": "U",
+        "search_text": "ロケット団のヘルガー 017 SV10-017 sv10017",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-017",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-017",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-017",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/017.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-018",
+        "provider_id": "SV10-018",
+        "official_card_number": "018",
+        "name_ja": "アチャモ",
+        "rarity_code": "C",
+        "search_text": "アチャモ 018 SV10-018 sv10018",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-018",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-018",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-018",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/018.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-019",
+        "provider_id": "SV10-019",
+        "official_card_number": "019",
+        "name_ja": "ワカシャモ",
+        "rarity_code": "C",
+        "search_text": "ワカシャモ 019 SV10-019 sv10019",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-019",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-019",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-019",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/019.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-020",
+        "provider_id": "SV10-020",
+        "official_card_number": "020",
+        "name_ja": "バシャーモ",
+        "rarity_code": "R",
+        "search_text": "バシャーモ 020 SV10-020 sv10020",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-020",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-020",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-020",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/020.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-021",
+        "provider_id": "SV10-021",
+        "official_card_number": "021",
+        "name_ja": "ヒートロトム",
+        "rarity_code": "C",
+        "search_text": "ヒートロトム 021 SV10-021 sv10021",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-021",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-021",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-021",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/021.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-022",
+        "provider_id": "SV10-022",
+        "official_card_number": "022",
+        "name_ja": "ロケット団のフリーザー",
+        "rarity_code": "R",
+        "search_text": "ロケット団のフリーザー 022 SV10-022 sv10022",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-022",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-022",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-022",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/022.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-023",
+        "provider_id": "SV10-023",
+        "official_card_number": "023",
+        "name_ja": "パールル",
+        "rarity_code": "C",
+        "search_text": "パールル 023 SV10-023 sv10023",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-023",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-023",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-023",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/023.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-024",
+        "provider_id": "SV10-024",
+        "official_card_number": "024",
+        "name_ja": "ハンテール",
+        "rarity_code": "U",
+        "search_text": "ハンテール 024 SV10-024 sv10024",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-024",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-024",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-024",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/024.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-025",
+        "provider_id": "SV10-025",
+        "official_card_number": "025",
+        "name_ja": "サクラビス",
+        "rarity_code": "R",
+        "search_text": "サクラビス 025 SV10-025 sv10025",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-025",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-025",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-025",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/025.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-026",
+        "provider_id": "SV10-026",
+        "official_card_number": "026",
+        "name_ja": "ユキカブリ",
+        "rarity_code": "C",
+        "search_text": "ユキカブリ 026 SV10-026 sv10026",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-026",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-026",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-026",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/026.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-027",
+        "provider_id": "SV10-027",
+        "official_card_number": "027",
+        "name_ja": "ユキノオー",
+        "rarity_code": "U",
+        "search_text": "ユキノオー 027 SV10-027 sv10027",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-027",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-027",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-027",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/027.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-028",
+        "provider_id": "SV10-028",
+        "official_card_number": "028",
+        "name_ja": "ウォッシュロトム",
+        "rarity_code": "C",
+        "search_text": "ウォッシュロトム 028 SV10-028 sv10028",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-028",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-028",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-028",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/028.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-029",
+        "provider_id": "SV10-029",
+        "official_card_number": "029",
+        "name_ja": "サシカマス",
+        "rarity_code": "C",
+        "search_text": "サシカマス 029 SV10-029 sv10029",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-029",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-029",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-029",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/029.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-030",
+        "provider_id": "SV10-030",
+        "official_card_number": "030",
+        "name_ja": "カマスジョー",
+        "rarity_code": "U",
+        "search_text": "カマスジョー 030 SV10-030 sv10030",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-030",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-030",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-030",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/030.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-031",
+        "provider_id": "SV10-031",
+        "official_card_number": "031",
+        "name_ja": "アルクジラ",
+        "rarity_code": "C",
+        "search_text": "アルクジラ 031 SV10-031 sv10031",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-031",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-031",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-031",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/031.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-032",
+        "provider_id": "SV10-032",
+        "official_card_number": "032",
+        "name_ja": "ハルクジラex",
+        "rarity_code": "RR",
+        "search_text": "ハルクジラex 032 SV10-032 sv10032",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-032",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-032",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-032",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/032.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-033",
+        "provider_id": "SV10-033",
+        "official_card_number": "033",
+        "name_ja": "ロケット団のサンダー",
+        "rarity_code": "R",
+        "search_text": "ロケット団のサンダー 033 SV10-033 sv10033",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-033",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-033",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-033",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/033.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-034",
+        "provider_id": "SV10-034",
+        "official_card_number": "034",
+        "name_ja": "ロケット団のメリープ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のメリープ 034 SV10-034 sv10034",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-034",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-034",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-034",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/034.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-035",
+        "provider_id": "SV10-035",
+        "official_card_number": "035",
+        "name_ja": "ロケット団のモココ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のモココ 035 SV10-035 sv10035",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-035",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-035",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-035",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/035.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-036",
+        "provider_id": "SV10-036",
+        "official_card_number": "036",
+        "name_ja": "ロケット団のデンリュウ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のデンリュウ 036 SV10-036 sv10036",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-036",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-036",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-036",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/036.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-037",
+        "provider_id": "SV10-037",
+        "official_card_number": "037",
+        "name_ja": "ロケット団のスリープ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のスリープ 037 SV10-037 sv10037",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-037",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-037",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-037",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/037.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-038",
+        "provider_id": "SV10-038",
+        "official_card_number": "038",
+        "name_ja": "ロケット団のスリーパー",
+        "rarity_code": "U",
+        "search_text": "ロケット団のスリーパー 038 SV10-038 sv10038",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-038",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-038",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-038",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/038.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-039",
+        "provider_id": "SV10-039",
+        "official_card_number": "039",
+        "name_ja": "ロケット団のミュウツーex",
+        "rarity_code": "RR",
+        "search_text": "ロケット団のミュウツーex 039 SV10-039 sv10039",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-039",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-039",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-039",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/039.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-040",
+        "provider_id": "SV10-040",
+        "official_card_number": "040",
+        "name_ja": "ロケット団のソーナンス",
+        "rarity_code": "R",
+        "search_text": "ロケット団のソーナンス 040 SV10-040 sv10040",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-040",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-040",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-040",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/040.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-041",
+        "provider_id": "SV10-041",
+        "official_card_number": "041",
+        "name_ja": "ロケット団のリーシャン",
+        "rarity_code": "C",
+        "search_text": "ロケット団のリーシャン 041 SV10-041 sv10041",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-041",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-041",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-041",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/041.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-042",
+        "provider_id": "SV10-042",
+        "official_card_number": "042",
+        "name_ja": "ロケット団のミミッキュ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のミミッキュ 042 SV10-042 sv10042",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-042",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-042",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-042",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/042.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-043",
+        "provider_id": "SV10-043",
+        "official_card_number": "043",
+        "name_ja": "ロケット団のレドームシ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のレドームシ 043 SV10-043 sv10043",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-043",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-043",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-043",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/043.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-044",
+        "provider_id": "SV10-044",
+        "official_card_number": "044",
+        "name_ja": "ロケット団のイオルブ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のイオルブ 044 SV10-044 sv10044",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-044",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-044",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-044",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/044.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-045",
+        "provider_id": "SV10-045",
+        "official_card_number": "045",
+        "name_ja": "マンキー",
+        "rarity_code": "C",
+        "search_text": "マンキー 045 SV10-045 sv10045",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-045",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-045",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-045",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/045.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-046",
+        "provider_id": "SV10-046",
+        "official_card_number": "046",
+        "name_ja": "オコリザル",
+        "rarity_code": "C",
+        "search_text": "オコリザル 046 SV10-046 sv10046",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-046",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-046",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-046",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/046.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-047",
+        "provider_id": "SV10-047",
+        "official_card_number": "047",
+        "name_ja": "コノヨザル",
+        "rarity_code": "R",
+        "search_text": "コノヨザル 047 SV10-047 sv10047",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-047",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-047",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-047",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/047.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-048",
+        "provider_id": "SV10-048",
+        "official_card_number": "048",
+        "name_ja": "ロケット団のヨーギラス",
+        "rarity_code": "C",
+        "search_text": "ロケット団のヨーギラス 048 SV10-048 sv10048",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-048",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-048",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-048",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/048.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-049",
+        "provider_id": "SV10-049",
+        "official_card_number": "049",
+        "name_ja": "ロケット団のサナギラス",
+        "rarity_code": "U",
+        "search_text": "ロケット団のサナギラス 049 SV10-049 sv10049",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-049",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-049",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-049",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/049.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-050",
+        "provider_id": "SV10-050",
+        "official_card_number": "050",
+        "name_ja": "ロケット団のバンギラス",
+        "rarity_code": "R",
+        "search_text": "ロケット団のバンギラス 050 SV10-050 sv10050",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-050",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-050",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-050",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/050.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-051",
+        "provider_id": "SV10-051",
+        "official_card_number": "051",
+        "name_ja": "ノズパス",
+        "rarity_code": "C",
+        "search_text": "ノズパス 051 SV10-051 sv10051",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-051",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-051",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-051",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/051.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-052",
+        "provider_id": "SV10-052",
+        "official_card_number": "052",
+        "name_ja": "ダイノーズ",
+        "rarity_code": "U",
+        "search_text": "ダイノーズ 052 SV10-052 sv10052",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-052",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-052",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-052",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/052.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-053",
+        "provider_id": "SV10-053",
+        "official_card_number": "053",
+        "name_ja": "アサナン",
+        "rarity_code": "C",
+        "search_text": "アサナン 053 SV10-053 sv10053",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-053",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-053",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-053",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/053.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-054",
+        "provider_id": "SV10-054",
+        "official_card_number": "054",
+        "name_ja": "チャーレム",
+        "rarity_code": "U",
+        "search_text": "チャーレム 054 SV10-054 sv10054",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-054",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-054",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-054",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/054.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-055",
+        "provider_id": "SV10-055",
+        "official_card_number": "055",
+        "name_ja": "レジロックex",
+        "rarity_code": "RR",
+        "search_text": "レジロックex 055 SV10-055 sv10055",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-055",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-055",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-055",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/055.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-056",
+        "provider_id": "SV10-056",
+        "official_card_number": "056",
+        "name_ja": "ロケット団のアーボ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のアーボ 056 SV10-056 sv10056",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-056",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-056",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-056",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/056.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-057",
+        "provider_id": "SV10-057",
+        "official_card_number": "057",
+        "name_ja": "ロケット団のアーボック",
+        "rarity_code": "U",
+        "search_text": "ロケット団のアーボック 057 SV10-057 sv10057",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-057",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-057",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-057",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/057.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-058",
+        "provider_id": "SV10-058",
+        "official_card_number": "058",
+        "name_ja": "ロケット団のニドラン♀",
+        "rarity_code": "C",
+        "search_text": "ロケット団のニドラン♀ 058 SV10-058 sv10058",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-058",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-058",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-058",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/058.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-059",
+        "provider_id": "SV10-059",
+        "official_card_number": "059",
+        "name_ja": "ロケット団のニドリーナ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のニドリーナ 059 SV10-059 sv10059",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-059",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-059",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-059",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/059.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-060",
+        "provider_id": "SV10-060",
+        "official_card_number": "060",
+        "name_ja": "ロケット団のニドクイン",
+        "rarity_code": "U",
+        "search_text": "ロケット団のニドクイン 060 SV10-060 sv10060",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-060",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-060",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-060",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/060.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-061",
+        "provider_id": "SV10-061",
+        "official_card_number": "061",
+        "name_ja": "ロケット団のニドラン♂",
+        "rarity_code": "C",
+        "search_text": "ロケット団のニドラン♂ 061 SV10-061 sv10061",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-061",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-061",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-061",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/061.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-062",
+        "provider_id": "SV10-062",
+        "official_card_number": "062",
+        "name_ja": "ロケット団のニドリーノ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のニドリーノ 062 SV10-062 sv10062",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-062",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-062",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-062",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/062.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-063",
+        "provider_id": "SV10-063",
+        "official_card_number": "063",
+        "name_ja": "ロケット団のニドキングex",
+        "rarity_code": "RR",
+        "search_text": "ロケット団のニドキングex 063 SV10-063 sv10063",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-063",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-063",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-063",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/063.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-064",
+        "provider_id": "SV10-064",
+        "official_card_number": "064",
+        "name_ja": "ロケット団のズバット",
+        "rarity_code": "C",
+        "search_text": "ロケット団のズバット 064 SV10-064 sv10064",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-064",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-064",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-064",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/064.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-065",
+        "provider_id": "SV10-065",
+        "official_card_number": "065",
+        "name_ja": "ロケット団のゴルバット",
+        "rarity_code": "U",
+        "search_text": "ロケット団のゴルバット 065 SV10-065 sv10065",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-065",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-065",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-065",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/065.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-066",
+        "provider_id": "SV10-066",
+        "official_card_number": "066",
+        "name_ja": "ロケット団のクロバットex",
+        "rarity_code": "RR",
+        "search_text": "ロケット団のクロバットex 066 SV10-066 sv10066",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-066",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-066",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-066",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/066.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-067",
+        "provider_id": "SV10-067",
+        "official_card_number": "067",
+        "name_ja": "ロケット団のベトベター",
+        "rarity_code": "C",
+        "search_text": "ロケット団のベトベター 067 SV10-067 sv10067",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-067",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-067",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-067",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/067.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-068",
+        "provider_id": "SV10-068",
+        "official_card_number": "068",
+        "name_ja": "ロケット団のベトベトン",
+        "rarity_code": "U",
+        "search_text": "ロケット団のベトベトン 068 SV10-068 sv10068",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-068",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-068",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-068",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/068.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-069",
+        "provider_id": "SV10-069",
+        "official_card_number": "069",
+        "name_ja": "ロケット団のドガース",
+        "rarity_code": "C",
+        "search_text": "ロケット団のドガース 069 SV10-069 sv10069",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-069",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-069",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-069",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/069.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-070",
+        "provider_id": "SV10-070",
+        "official_card_number": "070",
+        "name_ja": "ロケット団のマタドガス",
+        "rarity_code": "U",
+        "search_text": "ロケット団のマタドガス 070 SV10-070 sv10070",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-070",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-070",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-070",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/070.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-071",
+        "provider_id": "SV10-071",
+        "official_card_number": "071",
+        "name_ja": "ロケット団のヤミカラス",
+        "rarity_code": "U",
+        "search_text": "ロケット団のヤミカラス 071 SV10-071 sv10071",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-071",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-071",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-071",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/071.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-072",
+        "provider_id": "SV10-072",
+        "official_card_number": "072",
+        "name_ja": "ロケット団のニューラ",
+        "rarity_code": "R",
+        "search_text": "ロケット団のニューラ 072 SV10-072 sv10072",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-072",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-072",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-072",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/072.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-073",
+        "provider_id": "SV10-073",
+        "official_card_number": "073",
+        "name_ja": "フォレトス",
+        "rarity_code": "U",
+        "search_text": "フォレトス 073 SV10-073 sv10073",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-073",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-073",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-073",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/073.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-074",
+        "provider_id": "SV10-074",
+        "official_card_number": "074",
+        "name_ja": "エアームド",
+        "rarity_code": "C",
+        "search_text": "エアームド 074 SV10-074 sv10074",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-074",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-074",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-074",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/074.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-075",
+        "provider_id": "SV10-075",
+        "official_card_number": "075",
+        "name_ja": "ザマゼンタ",
+        "rarity_code": "R",
+        "search_text": "ザマゼンタ 075 SV10-075 sv10075",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-075",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-075",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-075",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/075.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-076",
+        "provider_id": "SV10-076",
+        "official_card_number": "076",
+        "name_ja": "ロケット団のコラッタ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のコラッタ 076 SV10-076 sv10076",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-076",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-076",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-076",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/076.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-077",
+        "provider_id": "SV10-077",
+        "official_card_number": "077",
+        "name_ja": "ロケット団のラッタ",
+        "rarity_code": "C",
+        "search_text": "ロケット団のラッタ 077 SV10-077 sv10077",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-077",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-077",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-077",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/077.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-078",
+        "provider_id": "SV10-078",
+        "official_card_number": "078",
+        "name_ja": "ロケット団のニャース",
+        "rarity_code": "C",
+        "search_text": "ロケット団のニャース 078 SV10-078 sv10078",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-078",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-078",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-078",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/078.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-079",
+        "provider_id": "SV10-079",
+        "official_card_number": "079",
+        "name_ja": "ロケット団のペルシアンex",
+        "rarity_code": "RR",
+        "search_text": "ロケット団のペルシアンex 079 SV10-079 sv10079",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-079",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-079",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-079",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/079.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-080",
+        "provider_id": "SV10-080",
+        "official_card_number": "080",
+        "name_ja": "ガルーラ",
+        "rarity_code": "C",
+        "search_text": "ガルーラ 080 SV10-080 sv10080",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-080",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-080",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-080",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/080.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-081",
+        "provider_id": "SV10-081",
+        "official_card_number": "081",
+        "name_ja": "ロケット団のポリゴン",
+        "rarity_code": "C",
+        "search_text": "ロケット団のポリゴン 081 SV10-081 sv10081",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-081",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-081",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-081",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/081.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-082",
+        "provider_id": "SV10-082",
+        "official_card_number": "082",
+        "name_ja": "ロケット団のポリゴン2",
+        "rarity_code": "C",
+        "search_text": "ロケット団のポリゴン2 082 SV10-082 sv10082",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-082",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-082",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-082",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/082.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-083",
+        "provider_id": "SV10-083",
+        "official_card_number": "083",
+        "name_ja": "ロケット団のポリゴンZ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のポリゴンZ 083 SV10-083 sv10083",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-083",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-083",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-083",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/083.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-084",
+        "provider_id": "SV10-084",
+        "official_card_number": "084",
+        "name_ja": "スバメ",
+        "rarity_code": "C",
+        "search_text": "スバメ 084 SV10-084 sv10084",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-084",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-084",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-084",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/084.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-085",
+        "provider_id": "SV10-085",
+        "official_card_number": "085",
+        "name_ja": "オオスバメ",
+        "rarity_code": "C",
+        "search_text": "オオスバメ 085 SV10-085 sv10085",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-085",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-085",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-085",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/085.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-086",
+        "provider_id": "SV10-086",
+        "official_card_number": "086",
+        "name_ja": "イキリンコ",
+        "rarity_code": "C",
+        "search_text": "イキリンコ 086 SV10-086 sv10086",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-086",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-086",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-086",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/086.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-087",
+        "provider_id": "SV10-087",
+        "official_card_number": "087",
+        "name_ja": "ロケット団のおじゃまロボ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のおじゃまロボ 087 SV10-087 sv10087",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-087",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-087",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-087",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/087.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-088",
+        "provider_id": "SV10-088",
+        "official_card_number": "088",
+        "name_ja": "ロケット団のスーパーボール",
+        "rarity_code": "U",
+        "search_text": "ロケット団のスーパーボール 088 SV10-088 sv10088",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-088",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-088",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-088",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/088.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-089",
+        "provider_id": "SV10-089",
+        "official_card_number": "089",
+        "name_ja": "ロケット団のびっくりボム",
+        "rarity_code": "U",
+        "search_text": "ロケット団のびっくりボム 089 SV10-089 sv10089",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-089",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-089",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-089",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/089.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-090",
+        "provider_id": "SV10-090",
+        "official_card_number": "090",
+        "name_ja": "ロケット団のレシーバー",
+        "rarity_code": "U",
+        "search_text": "ロケット団のレシーバー 090 SV10-090 sv10090",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-090",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-090",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-090",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/090.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-091",
+        "provider_id": "SV10-091",
+        "official_card_number": "091",
+        "name_ja": "ロケット団のアテナ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のアテナ 091 SV10-091 sv10091",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-091",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-091",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-091",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/091.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-092",
+        "provider_id": "SV10-092",
+        "official_card_number": "092",
+        "name_ja": "ロケット団のアポロ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のアポロ 092 SV10-092 sv10092",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-092",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-092",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-092",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/092.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-093",
+        "provider_id": "SV10-093",
+        "official_card_number": "093",
+        "name_ja": "ロケット団のサカキ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のサカキ 093 SV10-093 sv10093",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-093",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-093",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-093",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/093.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-094",
+        "provider_id": "SV10-094",
+        "official_card_number": "094",
+        "name_ja": "ロケット団のラムダ",
+        "rarity_code": "U",
+        "search_text": "ロケット団のラムダ 094 SV10-094 sv10094",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-094",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-094",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-094",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/094.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-095",
+        "provider_id": "SV10-095",
+        "official_card_number": "095",
+        "name_ja": "ロケット団のランス",
+        "rarity_code": "U",
+        "search_text": "ロケット団のランス 095 SV10-095 sv10095",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-095",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-095",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-095",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/095.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-096",
+        "provider_id": "SV10-096",
+        "official_card_number": "096",
+        "name_ja": "ロケット団の監視塔",
+        "rarity_code": "U",
+        "search_text": "ロケット団の監視塔 096 SV10-096 sv10096",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-096",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-096",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-096",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/096.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-097",
+        "provider_id": "SV10-097",
+        "official_card_number": "097",
+        "name_ja": "ロケット団のファクトリー",
+        "rarity_code": "U",
+        "search_text": "ロケット団のファクトリー 097 SV10-097 sv10097",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-097",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-097",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-097",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/097.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-098",
+        "provider_id": "SV10-098",
+        "official_card_number": "098",
+        "name_ja": "ロケット団エネルギー",
+        "rarity_code": "U",
+        "search_text": "ロケット団エネルギー 098 SV10-098 sv10098",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-098",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-098",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-098",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/098.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-099",
+        "provider_id": "SV10-099",
+        "official_card_number": "099",
+        "name_ja": "ロケット団のワナイダー",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のワナイダー 099 SV10-099 sv10099",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-099",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-099",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-099",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/099.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-100",
+        "provider_id": "SV10-100",
+        "official_card_number": "100",
+        "name_ja": "ロケット団のヘルガー",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のヘルガー 100 SV10-100 sv10100",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-100",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-100",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-100",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/100.ts"
+            }
+          },
+          "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      }
+    ],
+    "batch": {
+      "index": 1,
+      "count": 2,
+      "seriesCardCount": 132
+    }
+  },
+  {
+    "planVersion": 1,
+    "source": "tcgdex-ja",
+    "seriesProviderId": "SV10",
+    "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+    "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+    "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d",
+    "sourceObservedAt": "2026-10-01T15:42:09.620Z",
+    "series": {
+      "id": "pokemon-tcgdex-ja-sv10",
+      "provider_id": "SV10",
+      "name_ja": "ロケット団の栄光",
+      "release_date": "2025-04-18",
+      "source_url": "https://api.tcgdex.net/v2/ja/sets/SV10",
+      "metadata": {
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/sets/SV10",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-01T15:42:09.620Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SV/SV10.ts"
+          }
+        },
+        "manifestHash": "fe10d5ad9ff97267e4279ca96a7058bcde1966b60623476e646ec83297512173",
+        "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+        "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+      }
+    },
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv10-101",
+        "provider_id": "SV10-101",
+        "official_card_number": "101",
+        "name_ja": "バシャーモ",
+        "rarity_code": "AR",
+        "search_text": "バシャーモ 101 SV10-101 sv10101",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-101",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-101",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-101",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/101.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-102",
+        "provider_id": "SV10-102",
+        "official_card_number": "102",
+        "name_ja": "パールル",
+        "rarity_code": "AR",
+        "search_text": "パールル 102 SV10-102 sv10102",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-102",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-102",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-102",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/102.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-103",
+        "provider_id": "SV10-103",
+        "official_card_number": "103",
+        "name_ja": "ロケット団のソーナンス",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のソーナンス 103 SV10-103 sv10103",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-103",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-103",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-103",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/103.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-104",
+        "provider_id": "SV10-104",
+        "official_card_number": "104",
+        "name_ja": "ロケット団のイオルブ",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のイオルブ 104 SV10-104 sv10104",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-104",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-104",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-104",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/104.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-105",
+        "provider_id": "SV10-105",
+        "official_card_number": "105",
+        "name_ja": "ロケット団のマタドガス",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のマタドガス 105 SV10-105 sv10105",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-105",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-105",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-105",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/105.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-106",
+        "provider_id": "SV10-106",
+        "official_card_number": "106",
+        "name_ja": "ロケット団のヤミカラス",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のヤミカラス 106 SV10-106 sv10106",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-106",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-106",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-106",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/106.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-107",
+        "provider_id": "SV10-107",
+        "official_card_number": "107",
+        "name_ja": "ザマゼンタ",
+        "rarity_code": "AR",
+        "search_text": "ザマゼンタ 107 SV10-107 sv10107",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-107",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-107",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-107",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/107.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-108",
+        "provider_id": "SV10-108",
+        "official_card_number": "108",
+        "name_ja": "ロケット団のラッタ",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のラッタ 108 SV10-108 sv10108",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-108",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-108",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-108",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/108.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-109",
+        "provider_id": "SV10-109",
+        "official_card_number": "109",
+        "name_ja": "ロケット団のニャース",
+        "rarity_code": "AR",
+        "search_text": "ロケット団のニャース 109 SV10-109 sv10109",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-109",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-109",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-109",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/109.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-110",
+        "provider_id": "SV10-110",
+        "official_card_number": "110",
+        "name_ja": "ガルーラ",
+        "rarity_code": "AR",
+        "search_text": "ガルーラ 110 SV10-110 sv10110",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-110",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-110",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-110",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/110.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-111",
+        "provider_id": "SV10-111",
+        "official_card_number": "111",
+        "name_ja": "オリーヴァex",
+        "rarity_code": "UR",
+        "search_text": "オリーヴァex 111 SV10-111 sv10111",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-111",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-111",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-111",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/111.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-112",
+        "provider_id": "SV10-112",
+        "official_card_number": "112",
+        "name_ja": "ロケット団のファイヤーex",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のファイヤーex 112 SV10-112 sv10112",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-112",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-112",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-112",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/112.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-113",
+        "provider_id": "SV10-113",
+        "official_card_number": "113",
+        "name_ja": "ハルクジラex",
+        "rarity_code": "UR",
+        "search_text": "ハルクジラex 113 SV10-113 sv10113",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-113",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-113",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-113",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/113.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-114",
+        "provider_id": "SV10-114",
+        "official_card_number": "114",
+        "name_ja": "ロケット団のミュウツーex",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のミュウツーex 114 SV10-114 sv10114",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-114",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-114",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-114",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/114.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-115",
+        "provider_id": "SV10-115",
+        "official_card_number": "115",
+        "name_ja": "レジロックex",
+        "rarity_code": "UR",
+        "search_text": "レジロックex 115 SV10-115 sv10115",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-115",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-115",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-115",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/115.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-116",
+        "provider_id": "SV10-116",
+        "official_card_number": "116",
+        "name_ja": "ロケット団のニドキングex",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のニドキングex 116 SV10-116 sv10116",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-116",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-116",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-116",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/116.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-117",
+        "provider_id": "SV10-117",
+        "official_card_number": "117",
+        "name_ja": "ロケット団のクロバットex",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のクロバットex 117 SV10-117 sv10117",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-117",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-117",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-117",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/117.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-118",
+        "provider_id": "SV10-118",
+        "official_card_number": "118",
+        "name_ja": "ロケット団のペルシアンex",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のペルシアンex 118 SV10-118 sv10118",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-118",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-118",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-118",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/118.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-119",
+        "provider_id": "SV10-119",
+        "official_card_number": "119",
+        "name_ja": "ロケット団のアテナ",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のアテナ 119 SV10-119 sv10119",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-119",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-119",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-119",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/119.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-120",
+        "provider_id": "SV10-120",
+        "official_card_number": "120",
+        "name_ja": "ロケット団のアポロ",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のアポロ 120 SV10-120 sv10120",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-120",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-120",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-120",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/120.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-121",
+        "provider_id": "SV10-121",
+        "official_card_number": "121",
+        "name_ja": "ロケット団のサカキ",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のサカキ 121 SV10-121 sv10121",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-121",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-121",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-121",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/121.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-122",
+        "provider_id": "SV10-122",
+        "official_card_number": "122",
+        "name_ja": "ロケット団のラムダ",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のラムダ 122 SV10-122 sv10122",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-122",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-122",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-122",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/122.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-123",
+        "provider_id": "SV10-123",
+        "official_card_number": "123",
+        "name_ja": "ロケット団のランス",
+        "rarity_code": "UR",
+        "search_text": "ロケット団のランス 123 SV10-123 sv10123",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-123",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-123",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-123",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/123.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-124",
+        "provider_id": "SV10-124",
+        "official_card_number": "124",
+        "name_ja": "ロケット団のファイヤーex",
+        "rarity_code": "SAR",
+        "search_text": "ロケット団のファイヤーex 124 SV10-124 sv10124",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-124",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-124",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-124",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/124.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-125",
+        "provider_id": "SV10-125",
+        "official_card_number": "125",
+        "name_ja": "ロケット団のミュウツーex",
+        "rarity_code": "SAR",
+        "search_text": "ロケット団のミュウツーex 125 SV10-125 sv10125",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-125",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-125",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-125",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/125.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-126",
+        "provider_id": "SV10-126",
+        "official_card_number": "126",
+        "name_ja": "ロケット団のニドキングex",
+        "rarity_code": "SAR",
+        "search_text": "ロケット団のニドキングex 126 SV10-126 sv10126",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-126",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-126",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-126",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/126.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-127",
+        "provider_id": "SV10-127",
+        "official_card_number": "127",
+        "name_ja": "ロケット団のクロバットex",
+        "rarity_code": "SAR",
+        "search_text": "ロケット団のクロバットex 127 SV10-127 sv10127",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-127",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-127",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-127",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/127.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-128",
+        "provider_id": "SV10-128",
+        "official_card_number": "128",
+        "name_ja": "ロケット団のアテナ",
+        "rarity_code": "SAR",
+        "search_text": "ロケット団のアテナ 128 SV10-128 sv10128",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-128",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-128",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-128",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/128.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-129",
+        "provider_id": "SV10-129",
+        "official_card_number": "129",
+        "name_ja": "ロケット団のサカキ",
+        "rarity_code": "SAR",
+        "search_text": "ロケット団のサカキ 129 SV10-129 sv10129",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-129",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-129",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-129",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/129.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-130",
+        "provider_id": "SV10-130",
+        "official_card_number": "130",
+        "name_ja": "ロケット団のミュウツーex",
+        "rarity_code": null,
+        "search_text": "ロケット団のミュウツーex 130 SV10-130 sv10130",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-130",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-130",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-130",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/130.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-131",
+        "provider_id": "SV10-131",
+        "official_card_number": "131",
+        "name_ja": "ロケット団のクロバットex",
+        "rarity_code": null,
+        "search_text": "ロケット団のクロバットex 131 SV10-131 sv10131",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-131",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-131",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-131",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/131.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-132",
+        "provider_id": "SV10-132",
+        "official_card_number": "132",
+        "name_ja": "ジャミングタワー",
+        "rarity_code": null,
+        "search_text": "ジャミングタワー 132 SV10-132 sv10132",
+        "source_url": "https://api.tcgdex.net/v2/ja/cards/SV10-132",
+        "release_date": "2025-04-18",
+        "metadata": {
+          "tcgdexId": "SV10-132",
+          "sourceEvidence": {
+            "url": "https://api.tcgdex.net/v2/ja/cards/SV10-132",
+            "urlType": "derived-provider-endpoint",
+            "observedAt": "2026-10-01T15:42:09.620Z",
+            "retrievedVia": "github-archive",
+            "archive": {
+              "repository": "tcgdex/cards-database",
+              "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+              "path": "data-asia/SV/SV10/132.ts"
+            }
+          },
+          "manifestHash": "633c86c009ced59e3a15eff7da99662fd9bc608205d3b3232184eca0a4005799",
+          "sourceHash": "aaadcc6300b15a522c5183ac68264151a9b83697d6b745c9cbf25cf1878b69c6",
+          "seedHash": "31196320ef7e3ca72d950a482d6b33dfdca24f9c29c6e11e200c5de92b3d879d"
+        }
+      }
+    ],
+    "batch": {
+      "index": 2,
+      "count": 2,
+      "seriesCardCount": 132
+    }
+  }
+]

@@ -1,0 +1,4430 @@
+{
+  "plan": {
+    "planVersion": 1,
+    "kind": "jp-enrich",
+    "source": "tcgdex-ja",
+    "seriesProviderId": "SV10",
+    "seriesId": "pokemon-tcgdex-ja-sv10",
+    "evidenceHash": "5eb0ba82c4a540f31d7748d73f2012e4ab17e3198d67a707482fbe0057d903d2",
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "series": {
+      "name_zh": "火箭隊的榮耀",
+      "twSeriesId": "pokemon-tcgdex-tw-sv10"
+    },
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv10-001",
+        "name_ja": "クヌギダマ",
+        "link": "pokemon-tcgdex-tw-sv10-001",
+        "name_zh": "榛果球",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-002",
+        "name_ja": "キノココ",
+        "link": "pokemon-tcgdex-tw-sv10-002",
+        "name_zh": "蘑蘑菇",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-003",
+        "name_ja": "キノガッサ",
+        "link": "pokemon-tcgdex-tw-sv10-003",
+        "name_zh": "斗笠菇",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-004",
+        "name_ja": "カットロトム",
+        "link": "pokemon-tcgdex-tw-sv10-004",
+        "name_zh": "切割洛托姆",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-005",
+        "name_ja": "カリキリ",
+        "link": "pokemon-tcgdex-tw-sv10-005",
+        "name_zh": "偽螳草",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-006",
+        "name_ja": "ラランテス",
+        "link": "pokemon-tcgdex-tw-sv10-006",
+        "name_zh": "蘭螳花",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-007",
+        "name_ja": "ロケット団のサッチムシ",
+        "link": "pokemon-tcgdex-tw-sv10-007",
+        "name_zh": "<火箭隊的>索偵蟲",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-008",
+        "name_ja": "ロケット団のタマンチュラ",
+        "link": "pokemon-tcgdex-tw-sv10-008",
+        "name_zh": "<火箭隊的>團珠蛛",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-009",
+        "name_ja": "ロケット団のワナイダー",
+        "link": "pokemon-tcgdex-tw-sv10-009",
+        "name_zh": "<火箭隊的>操陷蛛",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-010",
+        "name_ja": "ミニーブ",
+        "link": "pokemon-tcgdex-tw-sv10-010",
+        "name_zh": "迷你芙",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-011",
+        "name_ja": "オリーニョ",
+        "link": "pokemon-tcgdex-tw-sv10-011",
+        "name_zh": "奧利紐",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-012",
+        "name_ja": "オリーヴァex",
+        "link": "pokemon-tcgdex-tw-sv10-012",
+        "name_zh": "奧利瓦ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-013",
+        "name_ja": "ガーディ",
+        "link": "pokemon-tcgdex-tw-sv10-013",
+        "name_zh": "卡蒂狗",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-014",
+        "name_ja": "ウインディ",
+        "link": "pokemon-tcgdex-tw-sv10-014",
+        "name_zh": "風速狗",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-015",
+        "name_ja": "ロケット団のファイヤーex",
+        "link": "pokemon-tcgdex-tw-sv10-015",
+        "name_zh": "<火箭隊的>火焰鳥ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-016",
+        "name_ja": "ロケット団のデルビル",
+        "link": "pokemon-tcgdex-tw-sv10-016",
+        "name_zh": "<火箭隊的>戴魯比",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-017",
+        "name_ja": "ロケット団のヘルガー",
+        "link": "pokemon-tcgdex-tw-sv10-017",
+        "name_zh": "<火箭隊的>黑魯加",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-018",
+        "name_ja": "アチャモ",
+        "link": "pokemon-tcgdex-tw-sv10-018",
+        "name_zh": "火稚雞",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-019",
+        "name_ja": "ワカシャモ",
+        "link": "pokemon-tcgdex-tw-sv10-019",
+        "name_zh": "力壯雞",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-020",
+        "name_ja": "バシャーモ",
+        "link": "pokemon-tcgdex-tw-sv10-020",
+        "name_zh": "火焰雞",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-021",
+        "name_ja": "ヒートロトム",
+        "link": "pokemon-tcgdex-tw-sv10-021",
+        "name_zh": "加熱洛托姆",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-022",
+        "name_ja": "ロケット団のフリーザー",
+        "link": "pokemon-tcgdex-tw-sv10-022",
+        "name_zh": "<火箭隊的>急凍鳥",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-023",
+        "name_ja": "パールル",
+        "link": "pokemon-tcgdex-tw-sv10-023",
+        "name_zh": "珍珠貝",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-024",
+        "name_ja": "ハンテール",
+        "link": "pokemon-tcgdex-tw-sv10-024",
+        "name_zh": "獵斑魚",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-025",
+        "name_ja": "サクラビス",
+        "link": "pokemon-tcgdex-tw-sv10-025",
+        "name_zh": "櫻花魚",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-026",
+        "name_ja": "ユキカブリ",
+        "link": "pokemon-tcgdex-tw-sv10-026",
+        "name_zh": "雪笠怪",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-027",
+        "name_ja": "ユキノオー",
+        "link": "pokemon-tcgdex-tw-sv10-027",
+        "name_zh": "暴雪王",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-028",
+        "name_ja": "ウォッシュロトム",
+        "link": "pokemon-tcgdex-tw-sv10-028",
+        "name_zh": "清洗洛托姆",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-029",
+        "name_ja": "サシカマス",
+        "link": "pokemon-tcgdex-tw-sv10-029",
+        "name_zh": "刺梭魚",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-030",
+        "name_ja": "カマスジョー",
+        "link": "pokemon-tcgdex-tw-sv10-030",
+        "name_zh": "戽斗尖梭",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-031",
+        "name_ja": "アルクジラ",
+        "link": "pokemon-tcgdex-tw-sv10-031",
+        "name_zh": "走鯨",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-032",
+        "name_ja": "ハルクジラex",
+        "link": "pokemon-tcgdex-tw-sv10-032",
+        "name_zh": "浩大鯨ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-033",
+        "name_ja": "ロケット団のサンダー",
+        "link": "pokemon-tcgdex-tw-sv10-033",
+        "name_zh": "<火箭隊的>閃電鳥",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-034",
+        "name_ja": "ロケット団のメリープ",
+        "link": "pokemon-tcgdex-tw-sv10-034",
+        "name_zh": "<火箭隊的>咩利羊",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-035",
+        "name_ja": "ロケット団のモココ",
+        "link": "pokemon-tcgdex-tw-sv10-035",
+        "name_zh": "<火箭隊的>茸茸羊",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-036",
+        "name_ja": "ロケット団のデンリュウ",
+        "link": "pokemon-tcgdex-tw-sv10-036",
+        "name_zh": "<火箭隊的>電龍",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-037",
+        "name_ja": "ロケット団のスリープ",
+        "link": "pokemon-tcgdex-tw-sv10-037",
+        "name_zh": "<火箭隊的>催眠貘",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-038",
+        "name_ja": "ロケット団のスリーパー",
+        "link": "pokemon-tcgdex-tw-sv10-038",
+        "name_zh": "<火箭隊的>引夢貘人",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-039",
+        "name_ja": "ロケット団のミュウツーex",
+        "link": "pokemon-tcgdex-tw-sv10-039",
+        "name_zh": "<火箭隊的>超夢ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-040",
+        "name_ja": "ロケット団のソーナンス",
+        "link": "pokemon-tcgdex-tw-sv10-040",
+        "name_zh": "<火箭隊的>果然翁",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-041",
+        "name_ja": "ロケット団のリーシャン",
+        "link": "pokemon-tcgdex-tw-sv10-041",
+        "name_zh": "<火箭隊的>鈴鐺響",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-042",
+        "name_ja": "ロケット団のミミッキュ",
+        "link": "pokemon-tcgdex-tw-sv10-042",
+        "name_zh": "<火箭隊的>謎擬Ｑ",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-043",
+        "name_ja": "ロケット団のレドームシ",
+        "link": "pokemon-tcgdex-tw-sv10-043",
+        "name_zh": "<火箭隊的>天罩蟲",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-044",
+        "name_ja": "ロケット団のイオルブ",
+        "link": "pokemon-tcgdex-tw-sv10-044",
+        "name_zh": "<火箭隊的>以歐路普",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-045",
+        "name_ja": "マンキー",
+        "link": "pokemon-tcgdex-tw-sv10-045",
+        "name_zh": "猴怪",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-046",
+        "name_ja": "オコリザル",
+        "link": "pokemon-tcgdex-tw-sv10-046",
+        "name_zh": "火爆猴",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-047",
+        "name_ja": "コノヨザル",
+        "link": "pokemon-tcgdex-tw-sv10-047",
+        "name_zh": "棄世猴",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-048",
+        "name_ja": "ロケット団のヨーギラス",
+        "link": "pokemon-tcgdex-tw-sv10-048",
+        "name_zh": "<火箭隊的>幼基拉斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-049",
+        "name_ja": "ロケット団のサナギラス",
+        "link": "pokemon-tcgdex-tw-sv10-049",
+        "name_zh": "<火箭隊的>沙基拉斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-050",
+        "name_ja": "ロケット団のバンギラス",
+        "link": "pokemon-tcgdex-tw-sv10-050",
+        "name_zh": "<火箭隊的>班基拉斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-051",
+        "name_ja": "ノズパス",
+        "link": "pokemon-tcgdex-tw-sv10-051",
+        "name_zh": "朝北鼻",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-052",
+        "name_ja": "ダイノーズ",
+        "link": "pokemon-tcgdex-tw-sv10-052",
+        "name_zh": "大朝北鼻",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-053",
+        "name_ja": "アサナン",
+        "link": "pokemon-tcgdex-tw-sv10-053",
+        "name_zh": "瑪沙那",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-054",
+        "name_ja": "チャーレム",
+        "link": "pokemon-tcgdex-tw-sv10-054",
+        "name_zh": "恰雷姆",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-055",
+        "name_ja": "レジロックex",
+        "link": "pokemon-tcgdex-tw-sv10-055",
+        "name_zh": "雷吉洛克ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-056",
+        "name_ja": "ロケット団のアーボ",
+        "link": "pokemon-tcgdex-tw-sv10-056",
+        "name_zh": "<火箭隊的>阿柏蛇",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-057",
+        "name_ja": "ロケット団のアーボック",
+        "link": "pokemon-tcgdex-tw-sv10-057",
+        "name_zh": "<火箭隊的>阿柏怪",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-058",
+        "name_ja": "ロケット団のニドラン♀",
+        "link": "pokemon-tcgdex-tw-sv10-058",
+        "name_zh": "<火箭隊的>尼多蘭",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-059",
+        "name_ja": "ロケット団のニドリーナ",
+        "link": "pokemon-tcgdex-tw-sv10-059",
+        "name_zh": "<火箭隊的>尼多娜",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-060",
+        "name_ja": "ロケット団のニドクイン",
+        "link": "pokemon-tcgdex-tw-sv10-060",
+        "name_zh": "<火箭隊的>尼多后",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-061",
+        "name_ja": "ロケット団のニドラン♂",
+        "link": "pokemon-tcgdex-tw-sv10-061",
+        "name_zh": "<火箭隊的>尼多朗",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-062",
+        "name_ja": "ロケット団のニドリーノ",
+        "link": "pokemon-tcgdex-tw-sv10-062",
+        "name_zh": "<火箭隊的>尼多力諾",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-063",
+        "name_ja": "ロケット団のニドキングex",
+        "link": "pokemon-tcgdex-tw-sv10-063",
+        "name_zh": "<火箭隊的>尼多王ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-064",
+        "name_ja": "ロケット団のズバット",
+        "link": "pokemon-tcgdex-tw-sv10-064",
+        "name_zh": "<火箭隊的>超音蝠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-065",
+        "name_ja": "ロケット団のゴルバット",
+        "link": "pokemon-tcgdex-tw-sv10-065",
+        "name_zh": "<火箭隊的>大嘴蝠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-066",
+        "name_ja": "ロケット団のクロバットex",
+        "link": "pokemon-tcgdex-tw-sv10-066",
+        "name_zh": "<火箭隊的>叉字蝠ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-067",
+        "name_ja": "ロケット団のベトベター",
+        "link": "pokemon-tcgdex-tw-sv10-067",
+        "name_zh": "<火箭隊的>臭泥",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-068",
+        "name_ja": "ロケット団のベトベトン",
+        "link": "pokemon-tcgdex-tw-sv10-068",
+        "name_zh": "<火箭隊的>臭臭泥",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-069",
+        "name_ja": "ロケット団のドガース",
+        "link": "pokemon-tcgdex-tw-sv10-069",
+        "name_zh": "<火箭隊的>瓦斯彈",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-070",
+        "name_ja": "ロケット団のマタドガス",
+        "link": "pokemon-tcgdex-tw-sv10-070",
+        "name_zh": "<火箭隊的>雙彈瓦斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-071",
+        "name_ja": "ロケット団のヤミカラス",
+        "link": "pokemon-tcgdex-tw-sv10-071",
+        "name_zh": "<火箭隊的>黑暗鴉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-072",
+        "name_ja": "ロケット団のニューラ",
+        "link": "pokemon-tcgdex-tw-sv10-072",
+        "name_zh": "<火箭隊的>狃拉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-073",
+        "name_ja": "フォレトス",
+        "link": "pokemon-tcgdex-tw-sv10-073",
+        "name_zh": "佛烈托斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-074",
+        "name_ja": "エアームド",
+        "link": "pokemon-tcgdex-tw-sv10-074",
+        "name_zh": "盔甲鳥",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-075",
+        "name_ja": "ザマゼンタ",
+        "link": "pokemon-tcgdex-tw-sv10-075",
+        "name_zh": "藏瑪然特",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-076",
+        "name_ja": "ロケット団のコラッタ",
+        "link": "pokemon-tcgdex-tw-sv10-076",
+        "name_zh": "<火箭隊的>小拉達",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-077",
+        "name_ja": "ロケット団のラッタ",
+        "link": "pokemon-tcgdex-tw-sv10-077",
+        "name_zh": "<火箭隊的>拉達",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-078",
+        "name_ja": "ロケット団のニャース",
+        "link": "pokemon-tcgdex-tw-sv10-078",
+        "name_zh": "<火箭隊的>喵喵",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-079",
+        "name_ja": "ロケット団のペルシアンex",
+        "link": "pokemon-tcgdex-tw-sv10-079",
+        "name_zh": "<火箭隊的>貓老大ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-080",
+        "name_ja": "ガルーラ",
+        "link": "pokemon-tcgdex-tw-sv10-080",
+        "name_zh": "袋獸",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-081",
+        "name_ja": "ロケット団のポリゴン",
+        "link": "pokemon-tcgdex-tw-sv10-081",
+        "name_zh": "<火箭隊的>多邊獸",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-082",
+        "name_ja": "ロケット団のポリゴン2",
+        "link": "pokemon-tcgdex-tw-sv10-082",
+        "name_zh": "<火箭隊的>多邊獸Ⅱ",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-083",
+        "name_ja": "ロケット団のポリゴンZ",
+        "link": "pokemon-tcgdex-tw-sv10-083",
+        "name_zh": "<火箭隊的>多邊獸Ｚ",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-084",
+        "name_ja": "スバメ",
+        "link": "pokemon-tcgdex-tw-sv10-084",
+        "name_zh": "傲骨燕",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-085",
+        "name_ja": "オオスバメ",
+        "link": "pokemon-tcgdex-tw-sv10-085",
+        "name_zh": "大王燕",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-086",
+        "name_ja": "イキリンコ",
+        "link": "pokemon-tcgdex-tw-sv10-086",
+        "name_zh": "怒鸚哥",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-087",
+        "name_ja": "ロケット団のおじゃまロボ",
+        "link": "pokemon-tcgdex-tw-sv10-087",
+        "name_zh": "火箭隊的妨礙機器人",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-088",
+        "name_ja": "ロケット団のスーパーボール",
+        "link": "pokemon-tcgdex-tw-sv10-088",
+        "name_zh": "火箭隊的超級球",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-089",
+        "name_ja": "ロケット団のびっくりボム",
+        "link": "pokemon-tcgdex-tw-sv10-089",
+        "name_zh": "火箭隊的驚嚇炸彈",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-090",
+        "name_ja": "ロケット団のレシーバー",
+        "link": "pokemon-tcgdex-tw-sv10-090",
+        "name_zh": "火箭隊的接收器",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-091",
+        "name_ja": "ロケット団のアテナ",
+        "link": "pokemon-tcgdex-tw-sv10-091",
+        "name_zh": "火箭隊的雅典娜",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-092",
+        "name_ja": "ロケット団のアポロ",
+        "link": "pokemon-tcgdex-tw-sv10-092",
+        "name_zh": "火箭隊的阿波羅",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-093",
+        "name_ja": "ロケット団のサカキ",
+        "link": "pokemon-tcgdex-tw-sv10-093",
+        "name_zh": "火箭隊的坂木",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-094",
+        "name_ja": "ロケット団のラムダ",
+        "link": "pokemon-tcgdex-tw-sv10-094",
+        "name_zh": "火箭隊的拉姆達",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-095",
+        "name_ja": "ロケット団のランス",
+        "link": "pokemon-tcgdex-tw-sv10-095",
+        "name_zh": "火箭隊的蘭斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-096",
+        "name_ja": "ロケット団の監視塔",
+        "link": "pokemon-tcgdex-tw-sv10-096",
+        "name_zh": "火箭隊的監視塔",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-097",
+        "name_ja": "ロケット団のファクトリー",
+        "link": "pokemon-tcgdex-tw-sv10-097",
+        "name_zh": "火箭隊的工廠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-098",
+        "name_ja": "ロケット団エネルギー",
+        "link": "pokemon-tcgdex-tw-sv10-098",
+        "name_zh": "火箭隊能量",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-099",
+        "name_ja": "ロケット団のワナイダー",
+        "link": null,
+        "name_zh": "<火箭隊的>操陷蛛",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-100",
+        "name_ja": "ロケット団のヘルガー",
+        "link": null,
+        "name_zh": "<火箭隊的>黑魯加",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-101",
+        "name_ja": "バシャーモ",
+        "link": null,
+        "name_zh": "火焰雞",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-102",
+        "name_ja": "パールル",
+        "link": null,
+        "name_zh": "珍珠貝",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-103",
+        "name_ja": "ロケット団のソーナンス",
+        "link": null,
+        "name_zh": "<火箭隊的>果然翁",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-104",
+        "name_ja": "ロケット団のイオルブ",
+        "link": null,
+        "name_zh": "<火箭隊的>以歐路普",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-105",
+        "name_ja": "ロケット団のマタドガス",
+        "link": null,
+        "name_zh": "<火箭隊的>雙彈瓦斯",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-106",
+        "name_ja": "ロケット団のヤミカラス",
+        "link": null,
+        "name_zh": "<火箭隊的>黑暗鴉",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-107",
+        "name_ja": "ザマゼンタ",
+        "link": null,
+        "name_zh": "藏瑪然特",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-108",
+        "name_ja": "ロケット団のラッタ",
+        "link": null,
+        "name_zh": "<火箭隊的>拉達",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-109",
+        "name_ja": "ロケット団のニャース",
+        "link": null,
+        "name_zh": "<火箭隊的>喵喵",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-110",
+        "name_ja": "ガルーラ",
+        "link": null,
+        "name_zh": "袋獸",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-111",
+        "name_ja": "オリーヴァex",
+        "link": null,
+        "name_zh": "奧利瓦ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-112",
+        "name_ja": "ロケット団のファイヤーex",
+        "link": null,
+        "name_zh": "<火箭隊的>火焰鳥ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-113",
+        "name_ja": "ハルクジラex",
+        "link": null,
+        "name_zh": "浩大鯨ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-114",
+        "name_ja": "ロケット団のミュウツーex",
+        "link": null,
+        "name_zh": "<火箭隊的>超夢ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-115",
+        "name_ja": "レジロックex",
+        "link": null,
+        "name_zh": "雷吉洛克ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-116",
+        "name_ja": "ロケット団のニドキングex",
+        "link": null,
+        "name_zh": "<火箭隊的>尼多王ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-117",
+        "name_ja": "ロケット団のクロバットex",
+        "link": null,
+        "name_zh": "<火箭隊的>叉字蝠ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-118",
+        "name_ja": "ロケット団のペルシアンex",
+        "link": null,
+        "name_zh": "<火箭隊的>貓老大ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-119",
+        "name_ja": "ロケット団のアテナ",
+        "link": null,
+        "name_zh": "火箭隊的雅典娜",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-120",
+        "name_ja": "ロケット団のアポロ",
+        "link": null,
+        "name_zh": "火箭隊的阿波羅",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-121",
+        "name_ja": "ロケット団のサカキ",
+        "link": null,
+        "name_zh": "火箭隊的坂木",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-122",
+        "name_ja": "ロケット団のラムダ",
+        "link": null,
+        "name_zh": "火箭隊的拉姆達",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-123",
+        "name_ja": "ロケット団のランス",
+        "link": null,
+        "name_zh": "火箭隊的蘭斯",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-124",
+        "name_ja": "ロケット団のファイヤーex",
+        "link": null,
+        "name_zh": "<火箭隊的>火焰鳥ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-125",
+        "name_ja": "ロケット団のミュウツーex",
+        "link": null,
+        "name_zh": "<火箭隊的>超夢ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-126",
+        "name_ja": "ロケット団のニドキングex",
+        "link": null,
+        "name_zh": "<火箭隊的>尼多王ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-127",
+        "name_ja": "ロケット団のクロバットex",
+        "link": null,
+        "name_zh": "<火箭隊的>叉字蝠ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-128",
+        "name_ja": "ロケット団のアテナ",
+        "link": null,
+        "name_zh": "火箭隊的雅典娜",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-129",
+        "name_ja": "ロケット団のサカキ",
+        "link": null,
+        "name_zh": "火箭隊的坂木",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-130",
+        "name_ja": "ロケット団のミュウツーex",
+        "link": null,
+        "name_zh": "<火箭隊的>超夢ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-131",
+        "name_ja": "ロケット団のクロバットex",
+        "link": null,
+        "name_zh": "<火箭隊的>叉字蝠ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-132",
+        "name_ja": "ジャミングタワー",
+        "link": null,
+        "name_zh": "阻礙之塔",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6-100"
+      }
+    ]
+  },
+  "evidence": {
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "jpSeries": {
+      "id": "pokemon-tcgdex-ja-sv10",
+      "providerId": "SV10",
+      "nameZh": null
+    },
+    "jpCards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv10-001",
+        "provider_id": "SV10-001",
+        "name_ja": "クヌギダマ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-001",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-002",
+        "provider_id": "SV10-002",
+        "name_ja": "キノココ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-002",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-003",
+        "provider_id": "SV10-003",
+        "name_ja": "キノガッサ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-003",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-004",
+        "provider_id": "SV10-004",
+        "name_ja": "カットロトム",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-004",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-005",
+        "provider_id": "SV10-005",
+        "name_ja": "カリキリ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-005",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-006",
+        "provider_id": "SV10-006",
+        "name_ja": "ラランテス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-006",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-007",
+        "provider_id": "SV10-007",
+        "name_ja": "ロケット団のサッチムシ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-007",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-008",
+        "provider_id": "SV10-008",
+        "name_ja": "ロケット団のタマンチュラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-008",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-009",
+        "provider_id": "SV10-009",
+        "name_ja": "ロケット団のワナイダー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-009",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-010",
+        "provider_id": "SV10-010",
+        "name_ja": "ミニーブ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-010",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-011",
+        "provider_id": "SV10-011",
+        "name_ja": "オリーニョ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-011",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-012",
+        "provider_id": "SV10-012",
+        "name_ja": "オリーヴァex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-012",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-013",
+        "provider_id": "SV10-013",
+        "name_ja": "ガーディ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-013",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-014",
+        "provider_id": "SV10-014",
+        "name_ja": "ウインディ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-014",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-015",
+        "provider_id": "SV10-015",
+        "name_ja": "ロケット団のファイヤーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-015",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-016",
+        "provider_id": "SV10-016",
+        "name_ja": "ロケット団のデルビル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-016",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-017",
+        "provider_id": "SV10-017",
+        "name_ja": "ロケット団のヘルガー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-017",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-018",
+        "provider_id": "SV10-018",
+        "name_ja": "アチャモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-018",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-019",
+        "provider_id": "SV10-019",
+        "name_ja": "ワカシャモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-019",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-020",
+        "provider_id": "SV10-020",
+        "name_ja": "バシャーモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-020",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-021",
+        "provider_id": "SV10-021",
+        "name_ja": "ヒートロトム",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-021",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-022",
+        "provider_id": "SV10-022",
+        "name_ja": "ロケット団のフリーザー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-022",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-023",
+        "provider_id": "SV10-023",
+        "name_ja": "パールル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-023",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-024",
+        "provider_id": "SV10-024",
+        "name_ja": "ハンテール",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-024",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-025",
+        "provider_id": "SV10-025",
+        "name_ja": "サクラビス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-025",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-026",
+        "provider_id": "SV10-026",
+        "name_ja": "ユキカブリ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-026",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-027",
+        "provider_id": "SV10-027",
+        "name_ja": "ユキノオー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-027",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-028",
+        "provider_id": "SV10-028",
+        "name_ja": "ウォッシュロトム",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-028",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-029",
+        "provider_id": "SV10-029",
+        "name_ja": "サシカマス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-029",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-030",
+        "provider_id": "SV10-030",
+        "name_ja": "カマスジョー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-030",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-031",
+        "provider_id": "SV10-031",
+        "name_ja": "アルクジラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-031",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-032",
+        "provider_id": "SV10-032",
+        "name_ja": "ハルクジラex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-032",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-033",
+        "provider_id": "SV10-033",
+        "name_ja": "ロケット団のサンダー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-033",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-034",
+        "provider_id": "SV10-034",
+        "name_ja": "ロケット団のメリープ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-034",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-035",
+        "provider_id": "SV10-035",
+        "name_ja": "ロケット団のモココ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-035",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-036",
+        "provider_id": "SV10-036",
+        "name_ja": "ロケット団のデンリュウ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-036",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-037",
+        "provider_id": "SV10-037",
+        "name_ja": "ロケット団のスリープ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-037",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-038",
+        "provider_id": "SV10-038",
+        "name_ja": "ロケット団のスリーパー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-038",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-039",
+        "provider_id": "SV10-039",
+        "name_ja": "ロケット団のミュウツーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-039",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-040",
+        "provider_id": "SV10-040",
+        "name_ja": "ロケット団のソーナンス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-040",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-041",
+        "provider_id": "SV10-041",
+        "name_ja": "ロケット団のリーシャン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-041",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-042",
+        "provider_id": "SV10-042",
+        "name_ja": "ロケット団のミミッキュ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-042",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-043",
+        "provider_id": "SV10-043",
+        "name_ja": "ロケット団のレドームシ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-043",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-044",
+        "provider_id": "SV10-044",
+        "name_ja": "ロケット団のイオルブ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-044",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-045",
+        "provider_id": "SV10-045",
+        "name_ja": "マンキー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-045",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-046",
+        "provider_id": "SV10-046",
+        "name_ja": "オコリザル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-046",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-047",
+        "provider_id": "SV10-047",
+        "name_ja": "コノヨザル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-047",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-048",
+        "provider_id": "SV10-048",
+        "name_ja": "ロケット団のヨーギラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-048",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-049",
+        "provider_id": "SV10-049",
+        "name_ja": "ロケット団のサナギラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-049",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-050",
+        "provider_id": "SV10-050",
+        "name_ja": "ロケット団のバンギラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-050",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-051",
+        "provider_id": "SV10-051",
+        "name_ja": "ノズパス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-051",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-052",
+        "provider_id": "SV10-052",
+        "name_ja": "ダイノーズ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-052",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-053",
+        "provider_id": "SV10-053",
+        "name_ja": "アサナン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-053",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-054",
+        "provider_id": "SV10-054",
+        "name_ja": "チャーレム",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-054",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-055",
+        "provider_id": "SV10-055",
+        "name_ja": "レジロックex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-055",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-056",
+        "provider_id": "SV10-056",
+        "name_ja": "ロケット団のアーボ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-056",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-057",
+        "provider_id": "SV10-057",
+        "name_ja": "ロケット団のアーボック",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-057",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-058",
+        "provider_id": "SV10-058",
+        "name_ja": "ロケット団のニドラン♀",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-058",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-059",
+        "provider_id": "SV10-059",
+        "name_ja": "ロケット団のニドリーナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-059",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-060",
+        "provider_id": "SV10-060",
+        "name_ja": "ロケット団のニドクイン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-060",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-061",
+        "provider_id": "SV10-061",
+        "name_ja": "ロケット団のニドラン♂",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-061",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-062",
+        "provider_id": "SV10-062",
+        "name_ja": "ロケット団のニドリーノ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-062",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-063",
+        "provider_id": "SV10-063",
+        "name_ja": "ロケット団のニドキングex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-063",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-064",
+        "provider_id": "SV10-064",
+        "name_ja": "ロケット団のズバット",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-064",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-065",
+        "provider_id": "SV10-065",
+        "name_ja": "ロケット団のゴルバット",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-065",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-066",
+        "provider_id": "SV10-066",
+        "name_ja": "ロケット団のクロバットex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-066",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-067",
+        "provider_id": "SV10-067",
+        "name_ja": "ロケット団のベトベター",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-067",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-068",
+        "provider_id": "SV10-068",
+        "name_ja": "ロケット団のベトベトン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-068",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-069",
+        "provider_id": "SV10-069",
+        "name_ja": "ロケット団のドガース",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-069",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-070",
+        "provider_id": "SV10-070",
+        "name_ja": "ロケット団のマタドガス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-070",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-071",
+        "provider_id": "SV10-071",
+        "name_ja": "ロケット団のヤミカラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-071",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-072",
+        "provider_id": "SV10-072",
+        "name_ja": "ロケット団のニューラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-072",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-073",
+        "provider_id": "SV10-073",
+        "name_ja": "フォレトス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-073",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-074",
+        "provider_id": "SV10-074",
+        "name_ja": "エアームド",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-074",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-075",
+        "provider_id": "SV10-075",
+        "name_ja": "ザマゼンタ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-075",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-076",
+        "provider_id": "SV10-076",
+        "name_ja": "ロケット団のコラッタ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-076",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-077",
+        "provider_id": "SV10-077",
+        "name_ja": "ロケット団のラッタ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-077",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-078",
+        "provider_id": "SV10-078",
+        "name_ja": "ロケット団のニャース",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-078",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-079",
+        "provider_id": "SV10-079",
+        "name_ja": "ロケット団のペルシアンex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-079",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-080",
+        "provider_id": "SV10-080",
+        "name_ja": "ガルーラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-080",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-081",
+        "provider_id": "SV10-081",
+        "name_ja": "ロケット団のポリゴン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-081",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-082",
+        "provider_id": "SV10-082",
+        "name_ja": "ロケット団のポリゴン2",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-082",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-083",
+        "provider_id": "SV10-083",
+        "name_ja": "ロケット団のポリゴンZ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-083",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-084",
+        "provider_id": "SV10-084",
+        "name_ja": "スバメ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-084",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-085",
+        "provider_id": "SV10-085",
+        "name_ja": "オオスバメ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-085",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-086",
+        "provider_id": "SV10-086",
+        "name_ja": "イキリンコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-086",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-087",
+        "provider_id": "SV10-087",
+        "name_ja": "ロケット団のおじゃまロボ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-087",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-088",
+        "provider_id": "SV10-088",
+        "name_ja": "ロケット団のスーパーボール",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-088",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-089",
+        "provider_id": "SV10-089",
+        "name_ja": "ロケット団のびっくりボム",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-089",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-090",
+        "provider_id": "SV10-090",
+        "name_ja": "ロケット団のレシーバー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-090",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-091",
+        "provider_id": "SV10-091",
+        "name_ja": "ロケット団のアテナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-091",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-092",
+        "provider_id": "SV10-092",
+        "name_ja": "ロケット団のアポロ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-092",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-093",
+        "provider_id": "SV10-093",
+        "name_ja": "ロケット団のサカキ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-093",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-094",
+        "provider_id": "SV10-094",
+        "name_ja": "ロケット団のラムダ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-094",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-095",
+        "provider_id": "SV10-095",
+        "name_ja": "ロケット団のランス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-095",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-096",
+        "provider_id": "SV10-096",
+        "name_ja": "ロケット団の監視塔",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-096",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-097",
+        "provider_id": "SV10-097",
+        "name_ja": "ロケット団のファクトリー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-097",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-098",
+        "provider_id": "SV10-098",
+        "name_ja": "ロケット団エネルギー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-098",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-099",
+        "provider_id": "SV10-099",
+        "name_ja": "ロケット団のワナイダー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-099",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-100",
+        "provider_id": "SV10-100",
+        "name_ja": "ロケット団のヘルガー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-100",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-101",
+        "provider_id": "SV10-101",
+        "name_ja": "バシャーモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-101",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-102",
+        "provider_id": "SV10-102",
+        "name_ja": "パールル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-102",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-103",
+        "provider_id": "SV10-103",
+        "name_ja": "ロケット団のソーナンス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-103",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-104",
+        "provider_id": "SV10-104",
+        "name_ja": "ロケット団のイオルブ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-104",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-105",
+        "provider_id": "SV10-105",
+        "name_ja": "ロケット団のマタドガス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-105",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-106",
+        "provider_id": "SV10-106",
+        "name_ja": "ロケット団のヤミカラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-106",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-107",
+        "provider_id": "SV10-107",
+        "name_ja": "ザマゼンタ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-107",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-108",
+        "provider_id": "SV10-108",
+        "name_ja": "ロケット団のラッタ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-108",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-109",
+        "provider_id": "SV10-109",
+        "name_ja": "ロケット団のニャース",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-109",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-110",
+        "provider_id": "SV10-110",
+        "name_ja": "ガルーラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-110",
+        "rarity": "AR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-111",
+        "provider_id": "SV10-111",
+        "name_ja": "オリーヴァex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-111",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-112",
+        "provider_id": "SV10-112",
+        "name_ja": "ロケット団のファイヤーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-112",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-113",
+        "provider_id": "SV10-113",
+        "name_ja": "ハルクジラex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-113",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-114",
+        "provider_id": "SV10-114",
+        "name_ja": "ロケット団のミュウツーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-114",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-115",
+        "provider_id": "SV10-115",
+        "name_ja": "レジロックex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-115",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-116",
+        "provider_id": "SV10-116",
+        "name_ja": "ロケット団のニドキングex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-116",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-117",
+        "provider_id": "SV10-117",
+        "name_ja": "ロケット団のクロバットex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-117",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-118",
+        "provider_id": "SV10-118",
+        "name_ja": "ロケット団のペルシアンex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-118",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-119",
+        "provider_id": "SV10-119",
+        "name_ja": "ロケット団のアテナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-119",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-120",
+        "provider_id": "SV10-120",
+        "name_ja": "ロケット団のアポロ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-120",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-121",
+        "provider_id": "SV10-121",
+        "name_ja": "ロケット団のサカキ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-121",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-122",
+        "provider_id": "SV10-122",
+        "name_ja": "ロケット団のラムダ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-122",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-123",
+        "provider_id": "SV10-123",
+        "name_ja": "ロケット団のランス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-123",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-124",
+        "provider_id": "SV10-124",
+        "name_ja": "ロケット団のファイヤーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-124",
+        "rarity": "SAR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-125",
+        "provider_id": "SV10-125",
+        "name_ja": "ロケット団のミュウツーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-125",
+        "rarity": "SAR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-126",
+        "provider_id": "SV10-126",
+        "name_ja": "ロケット団のニドキングex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-126",
+        "rarity": "SAR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-127",
+        "provider_id": "SV10-127",
+        "name_ja": "ロケット団のクロバットex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-127",
+        "rarity": "SAR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-128",
+        "provider_id": "SV10-128",
+        "name_ja": "ロケット団のアテナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-128",
+        "rarity": "SAR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-129",
+        "provider_id": "SV10-129",
+        "name_ja": "ロケット団のサカキ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-129",
+        "rarity": "SAR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-130",
+        "provider_id": "SV10-130",
+        "name_ja": "ロケット団のミュウツーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-130",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-131",
+        "provider_id": "SV10-131",
+        "name_ja": "ロケット団のクロバットex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-131",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv10-132",
+        "provider_id": "SV10-132",
+        "name_ja": "ジャミングタワー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv10-132",
+        "rarity": null
+      }
+    ],
+    "archiveSet": {
+      "zhTw": "火箭隊的榮耀"
+    },
+    "archiveCards": [
+      {
+        "providerId": "SV10-001",
+        "ja": "クヌギダマ",
+        "zhTw": "榛果球",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-002",
+        "ja": "キノココ",
+        "zhTw": "蘑蘑菇",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-003",
+        "ja": "キノガッサ",
+        "zhTw": "斗笠菇",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-004",
+        "ja": "カットロトム",
+        "zhTw": "切割洛托姆",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-005",
+        "ja": "カリキリ",
+        "zhTw": "偽螳草",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-006",
+        "ja": "ラランテス",
+        "zhTw": "蘭螳花",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-007",
+        "ja": "ロケット団のサッチムシ",
+        "zhTw": "<火箭隊的>索偵蟲",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-008",
+        "ja": "ロケット団のタマンチュラ",
+        "zhTw": "<火箭隊的>團珠蛛",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-009",
+        "ja": "ロケット団のワナイダー",
+        "zhTw": "<火箭隊的>操陷蛛",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-010",
+        "ja": "ミニーブ",
+        "zhTw": "迷你芙",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-011",
+        "ja": "オリーニョ",
+        "zhTw": "奧利紐",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-012",
+        "ja": "オリーヴァex",
+        "zhTw": "奧利瓦ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-013",
+        "ja": "ガーディ",
+        "zhTw": "卡蒂狗",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-014",
+        "ja": "ウインディ",
+        "zhTw": "風速狗",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-015",
+        "ja": "ロケット団のファイヤーex",
+        "zhTw": "<火箭隊的>火焰鳥ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-016",
+        "ja": "ロケット団のデルビル",
+        "zhTw": "<火箭隊的>戴魯比",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-017",
+        "ja": "ロケット団のヘルガー",
+        "zhTw": "<火箭隊的>黑魯加",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-018",
+        "ja": "アチャモ",
+        "zhTw": "火稚雞",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-019",
+        "ja": "ワカシャモ",
+        "zhTw": "力壯雞",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-020",
+        "ja": "バシャーモ",
+        "zhTw": "火焰雞",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-021",
+        "ja": "ヒートロトム",
+        "zhTw": "加熱洛托姆",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-022",
+        "ja": "ロケット団のフリーザー",
+        "zhTw": "<火箭隊的>急凍鳥",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-023",
+        "ja": "パールル",
+        "zhTw": "珍珠貝",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-024",
+        "ja": "ハンテール",
+        "zhTw": "獵斑魚",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-025",
+        "ja": "サクラビス",
+        "zhTw": "櫻花魚",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-026",
+        "ja": "ユキカブリ",
+        "zhTw": "雪笠怪",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-027",
+        "ja": "ユキノオー",
+        "zhTw": "暴雪王",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-028",
+        "ja": "ウォッシュロトム",
+        "zhTw": "清洗洛托姆",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-029",
+        "ja": "サシカマス",
+        "zhTw": "刺梭魚",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-030",
+        "ja": "カマスジョー",
+        "zhTw": "戽斗尖梭",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-031",
+        "ja": "アルクジラ",
+        "zhTw": "走鯨",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-032",
+        "ja": "ハルクジラex",
+        "zhTw": "浩大鯨ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-033",
+        "ja": "ロケット団のサンダー",
+        "zhTw": "<火箭隊的>閃電鳥",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-034",
+        "ja": "ロケット団のメリープ",
+        "zhTw": "<火箭隊的>咩利羊",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-035",
+        "ja": "ロケット団のモココ",
+        "zhTw": "<火箭隊的>茸茸羊",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-036",
+        "ja": "ロケット団のデンリュウ",
+        "zhTw": "<火箭隊的>電龍",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-037",
+        "ja": "ロケット団のスリープ",
+        "zhTw": "<火箭隊的>催眠貘",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-038",
+        "ja": "ロケット団のスリーパー",
+        "zhTw": "<火箭隊的>引夢貘人",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-039",
+        "ja": "ロケット団のミュウツーex",
+        "zhTw": "<火箭隊的>超夢ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-040",
+        "ja": "ロケット団のソーナンス",
+        "zhTw": "<火箭隊的>果然翁",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-041",
+        "ja": "ロケット団のリーシャン",
+        "zhTw": "<火箭隊的>鈴鐺響",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-042",
+        "ja": "ロケット団のミミッキュ",
+        "zhTw": "<火箭隊的>謎擬Ｑ",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-043",
+        "ja": "ロケット団のレドームシ",
+        "zhTw": "<火箭隊的>天罩蟲",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-044",
+        "ja": "ロケット団のイオルブ",
+        "zhTw": "<火箭隊的>以歐路普",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-045",
+        "ja": "マンキー",
+        "zhTw": "猴怪",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-046",
+        "ja": "オコリザル",
+        "zhTw": "火爆猴",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-047",
+        "ja": "コノヨザル",
+        "zhTw": "棄世猴",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-048",
+        "ja": "ロケット団のヨーギラス",
+        "zhTw": "<火箭隊的>幼基拉斯",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-049",
+        "ja": "ロケット団のサナギラス",
+        "zhTw": "<火箭隊的>沙基拉斯",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-050",
+        "ja": "ロケット団のバンギラス",
+        "zhTw": "<火箭隊的>班基拉斯",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-051",
+        "ja": "ノズパス",
+        "zhTw": "朝北鼻",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-052",
+        "ja": "ダイノーズ",
+        "zhTw": "大朝北鼻",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-053",
+        "ja": "アサナン",
+        "zhTw": "瑪沙那",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-054",
+        "ja": "チャーレム",
+        "zhTw": "恰雷姆",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-055",
+        "ja": "レジロックex",
+        "zhTw": "雷吉洛克ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-056",
+        "ja": "ロケット団のアーボ",
+        "zhTw": "<火箭隊的>阿柏蛇",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-057",
+        "ja": "ロケット団のアーボック",
+        "zhTw": "<火箭隊的>阿柏怪",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-058",
+        "ja": "ロケット団のニドラン♀",
+        "zhTw": "<火箭隊的>尼多蘭",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-059",
+        "ja": "ロケット団のニドリーナ",
+        "zhTw": "<火箭隊的>尼多娜",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-060",
+        "ja": "ロケット団のニドクイン",
+        "zhTw": "<火箭隊的>尼多后",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-061",
+        "ja": "ロケット団のニドラン♂",
+        "zhTw": "<火箭隊的>尼多朗",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-062",
+        "ja": "ロケット団のニドリーノ",
+        "zhTw": "<火箭隊的>尼多力諾",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-063",
+        "ja": "ロケット団のニドキングex",
+        "zhTw": "<火箭隊的>尼多王ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-064",
+        "ja": "ロケット団のズバット",
+        "zhTw": "<火箭隊的>超音蝠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-065",
+        "ja": "ロケット団のゴルバット",
+        "zhTw": "<火箭隊的>大嘴蝠",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-066",
+        "ja": "ロケット団のクロバットex",
+        "zhTw": "<火箭隊的>叉字蝠ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-067",
+        "ja": "ロケット団のベトベター",
+        "zhTw": "<火箭隊的>臭泥",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-068",
+        "ja": "ロケット団のベトベトン",
+        "zhTw": "<火箭隊的>臭臭泥",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-069",
+        "ja": "ロケット団のドガース",
+        "zhTw": "<火箭隊的>瓦斯彈",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-070",
+        "ja": "ロケット団のマタドガス",
+        "zhTw": "<火箭隊的>雙彈瓦斯",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-071",
+        "ja": "ロケット団のヤミカラス",
+        "zhTw": "<火箭隊的>黑暗鴉",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-072",
+        "ja": "ロケット団のニューラ",
+        "zhTw": "<火箭隊的>狃拉",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-073",
+        "ja": "フォレトス",
+        "zhTw": "佛烈托斯",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-074",
+        "ja": "エアームド",
+        "zhTw": "盔甲鳥",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-075",
+        "ja": "ザマゼンタ",
+        "zhTw": "藏瑪然特",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV10-076",
+        "ja": "ロケット団のコラッタ",
+        "zhTw": "<火箭隊的>小拉達",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-077",
+        "ja": "ロケット団のラッタ",
+        "zhTw": "<火箭隊的>拉達",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-078",
+        "ja": "ロケット団のニャース",
+        "zhTw": "<火箭隊的>喵喵",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-079",
+        "ja": "ロケット団のペルシアンex",
+        "zhTw": "<火箭隊的>貓老大ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV10-080",
+        "ja": "ガルーラ",
+        "zhTw": "袋獸",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-081",
+        "ja": "ロケット団のポリゴン",
+        "zhTw": "<火箭隊的>多邊獸",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-082",
+        "ja": "ロケット団のポリゴン2",
+        "zhTw": "<火箭隊的>多邊獸Ⅱ",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-083",
+        "ja": "ロケット団のポリゴンZ",
+        "zhTw": "<火箭隊的>多邊獸Ｚ",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-084",
+        "ja": "スバメ",
+        "zhTw": "傲骨燕",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-085",
+        "ja": "オオスバメ",
+        "zhTw": "大王燕",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-086",
+        "ja": "イキリンコ",
+        "zhTw": "怒鸚哥",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV10-087",
+        "ja": "ロケット団のおじゃまロボ",
+        "zhTw": "火箭隊的妨礙機器人",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-088",
+        "ja": "ロケット団のスーパーボール",
+        "zhTw": "火箭隊的超級球",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-089",
+        "ja": "ロケット団のびっくりボム",
+        "zhTw": "火箭隊的驚嚇炸彈",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-090",
+        "ja": "ロケット団のレシーバー",
+        "zhTw": "火箭隊的接收器",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-091",
+        "ja": "ロケット団のアテナ",
+        "zhTw": "火箭隊的雅典娜",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-092",
+        "ja": "ロケット団のアポロ",
+        "zhTw": "火箭隊的阿波羅",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-093",
+        "ja": "ロケット団のサカキ",
+        "zhTw": "火箭隊的坂木",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-094",
+        "ja": "ロケット団のラムダ",
+        "zhTw": "火箭隊的拉姆達",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-095",
+        "ja": "ロケット団のランス",
+        "zhTw": "火箭隊的蘭斯",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-096",
+        "ja": "ロケット団の監視塔",
+        "zhTw": "火箭隊的監視塔",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-097",
+        "ja": "ロケット団のファクトリー",
+        "zhTw": "火箭隊的工廠",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-098",
+        "ja": "ロケット団エネルギー",
+        "zhTw": "火箭隊能量",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV10-099",
+        "ja": "ロケット団のワナイダー",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-100",
+        "ja": "ロケット団のヘルガー",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-101",
+        "ja": "バシャーモ",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-102",
+        "ja": "パールル",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-103",
+        "ja": "ロケット団のソーナンス",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-104",
+        "ja": "ロケット団のイオルブ",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-105",
+        "ja": "ロケット団のマタドガス",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-106",
+        "ja": "ロケット団のヤミカラス",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-107",
+        "ja": "ザマゼンタ",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-108",
+        "ja": "ロケット団のラッタ",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-109",
+        "ja": "ロケット団のニャース",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-110",
+        "ja": "ガルーラ",
+        "zhTw": null,
+        "rarity": "Illustration rare"
+      },
+      {
+        "providerId": "SV10-111",
+        "ja": "オリーヴァex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-112",
+        "ja": "ロケット団のファイヤーex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-113",
+        "ja": "ハルクジラex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-114",
+        "ja": "ロケット団のミュウツーex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-115",
+        "ja": "レジロックex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-116",
+        "ja": "ロケット団のニドキングex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-117",
+        "ja": "ロケット団のクロバットex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-118",
+        "ja": "ロケット団のペルシアンex",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-119",
+        "ja": "ロケット団のアテナ",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-120",
+        "ja": "ロケット団のアポロ",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-121",
+        "ja": "ロケット団のサカキ",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-122",
+        "ja": "ロケット団のラムダ",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-123",
+        "ja": "ロケット団のランス",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "SV10-124",
+        "ja": "ロケット団のファイヤーex",
+        "zhTw": null,
+        "rarity": "Special illustration rare"
+      },
+      {
+        "providerId": "SV10-125",
+        "ja": "ロケット団のミュウツーex",
+        "zhTw": null,
+        "rarity": "Special illustration rare"
+      },
+      {
+        "providerId": "SV10-126",
+        "ja": "ロケット団のニドキングex",
+        "zhTw": null,
+        "rarity": "Special illustration rare"
+      },
+      {
+        "providerId": "SV10-127",
+        "ja": "ロケット団のクロバットex",
+        "zhTw": null,
+        "rarity": "Special illustration rare"
+      },
+      {
+        "providerId": "SV10-128",
+        "ja": "ロケット団のアテナ",
+        "zhTw": null,
+        "rarity": "Special illustration rare"
+      },
+      {
+        "providerId": "SV10-129",
+        "ja": "ロケット団のサカキ",
+        "zhTw": null,
+        "rarity": "Special illustration rare"
+      },
+      {
+        "providerId": "SV10-130",
+        "ja": "ロケット団のミュウツーex",
+        "zhTw": null,
+        "rarity": "Mega Hyper Rare"
+      },
+      {
+        "providerId": "SV10-131",
+        "ja": "ロケット団のクロバットex",
+        "zhTw": null,
+        "rarity": "Mega Hyper Rare"
+      },
+      {
+        "providerId": "SV10-132",
+        "ja": "ジャミングタワー",
+        "zhTw": null,
+        "rarity": "Mega Hyper Rare"
+      }
+    ],
+    "twSeries": {
+      "id": "pokemon-tcgdex-tw-sv10",
+      "official_code": "SV10",
+      "name_zh": "火箭隊的榮耀"
+    },
+    "twCards": [
+      {
+        "id": "pokemon-tcgdex-tw-sv10-001",
+        "provider_id": "SV10-001",
+        "name_zh": "榛果球",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-001",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-002",
+        "provider_id": "SV10-002",
+        "name_zh": "蘑蘑菇",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-002",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-003",
+        "provider_id": "SV10-003",
+        "name_zh": "斗笠菇",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-003",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-004",
+        "provider_id": "SV10-004",
+        "name_zh": "切割洛托姆",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-004",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-005",
+        "provider_id": "SV10-005",
+        "name_zh": "偽螳草",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-005",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-006",
+        "provider_id": "SV10-006",
+        "name_zh": "蘭螳花",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-006",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-007",
+        "provider_id": "SV10-007",
+        "name_zh": "<火箭隊的>索偵蟲",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-007",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-008",
+        "provider_id": "SV10-008",
+        "name_zh": "<火箭隊的>團珠蛛",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-008",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-009",
+        "provider_id": "SV10-009",
+        "name_zh": "<火箭隊的>操陷蛛",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-009",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-010",
+        "provider_id": "SV10-010",
+        "name_zh": "迷你芙",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-010",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-011",
+        "provider_id": "SV10-011",
+        "name_zh": "奧利紐",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-011",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-012",
+        "provider_id": "SV10-012",
+        "name_zh": "奧利瓦ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-012",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-013",
+        "provider_id": "SV10-013",
+        "name_zh": "卡蒂狗",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-013",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-014",
+        "provider_id": "SV10-014",
+        "name_zh": "風速狗",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-014",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-015",
+        "provider_id": "SV10-015",
+        "name_zh": "<火箭隊的>火焰鳥ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-015",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-016",
+        "provider_id": "SV10-016",
+        "name_zh": "<火箭隊的>戴魯比",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-016",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-017",
+        "provider_id": "SV10-017",
+        "name_zh": "<火箭隊的>黑魯加",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-017",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-018",
+        "provider_id": "SV10-018",
+        "name_zh": "火稚雞",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-018",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-019",
+        "provider_id": "SV10-019",
+        "name_zh": "力壯雞",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-019",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-020",
+        "provider_id": "SV10-020",
+        "name_zh": "火焰雞",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-020",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-021",
+        "provider_id": "SV10-021",
+        "name_zh": "加熱洛托姆",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-021",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-022",
+        "provider_id": "SV10-022",
+        "name_zh": "<火箭隊的>急凍鳥",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-022",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-023",
+        "provider_id": "SV10-023",
+        "name_zh": "珍珠貝",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-023",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-024",
+        "provider_id": "SV10-024",
+        "name_zh": "獵斑魚",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-024",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-025",
+        "provider_id": "SV10-025",
+        "name_zh": "櫻花魚",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-025",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-026",
+        "provider_id": "SV10-026",
+        "name_zh": "雪笠怪",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-026",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-027",
+        "provider_id": "SV10-027",
+        "name_zh": "暴雪王",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-027",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-028",
+        "provider_id": "SV10-028",
+        "name_zh": "清洗洛托姆",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-028",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-029",
+        "provider_id": "SV10-029",
+        "name_zh": "刺梭魚",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-029",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-030",
+        "provider_id": "SV10-030",
+        "name_zh": "戽斗尖梭",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-030",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-031",
+        "provider_id": "SV10-031",
+        "name_zh": "走鯨",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-031",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-032",
+        "provider_id": "SV10-032",
+        "name_zh": "浩大鯨ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-032",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-033",
+        "provider_id": "SV10-033",
+        "name_zh": "<火箭隊的>閃電鳥",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-033",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-034",
+        "provider_id": "SV10-034",
+        "name_zh": "<火箭隊的>咩利羊",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-034",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-035",
+        "provider_id": "SV10-035",
+        "name_zh": "<火箭隊的>茸茸羊",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-035",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-036",
+        "provider_id": "SV10-036",
+        "name_zh": "<火箭隊的>電龍",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-036",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-037",
+        "provider_id": "SV10-037",
+        "name_zh": "<火箭隊的>催眠貘",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-037",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-038",
+        "provider_id": "SV10-038",
+        "name_zh": "<火箭隊的>引夢貘人",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-038",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-039",
+        "provider_id": "SV10-039",
+        "name_zh": "<火箭隊的>超夢ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-039",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-040",
+        "provider_id": "SV10-040",
+        "name_zh": "<火箭隊的>果然翁",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-040",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-041",
+        "provider_id": "SV10-041",
+        "name_zh": "<火箭隊的>鈴鐺響",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-041",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-042",
+        "provider_id": "SV10-042",
+        "name_zh": "<火箭隊的>謎擬Ｑ",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-042",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-043",
+        "provider_id": "SV10-043",
+        "name_zh": "<火箭隊的>天罩蟲",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-043",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-044",
+        "provider_id": "SV10-044",
+        "name_zh": "<火箭隊的>以歐路普",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-044",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-045",
+        "provider_id": "SV10-045",
+        "name_zh": "猴怪",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-045",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-046",
+        "provider_id": "SV10-046",
+        "name_zh": "火爆猴",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-046",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-047",
+        "provider_id": "SV10-047",
+        "name_zh": "棄世猴",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-047",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-048",
+        "provider_id": "SV10-048",
+        "name_zh": "<火箭隊的>幼基拉斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-048",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-049",
+        "provider_id": "SV10-049",
+        "name_zh": "<火箭隊的>沙基拉斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-049",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-050",
+        "provider_id": "SV10-050",
+        "name_zh": "<火箭隊的>班基拉斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-050",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-051",
+        "provider_id": "SV10-051",
+        "name_zh": "朝北鼻",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-051",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-052",
+        "provider_id": "SV10-052",
+        "name_zh": "大朝北鼻",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-052",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-053",
+        "provider_id": "SV10-053",
+        "name_zh": "瑪沙那",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-053",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-054",
+        "provider_id": "SV10-054",
+        "name_zh": "恰雷姆",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-054",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-055",
+        "provider_id": "SV10-055",
+        "name_zh": "雷吉洛克ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-055",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-056",
+        "provider_id": "SV10-056",
+        "name_zh": "<火箭隊的>阿柏蛇",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-056",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-057",
+        "provider_id": "SV10-057",
+        "name_zh": "<火箭隊的>阿柏怪",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-057",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-058",
+        "provider_id": "SV10-058",
+        "name_zh": "<火箭隊的>尼多蘭",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-058",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-059",
+        "provider_id": "SV10-059",
+        "name_zh": "<火箭隊的>尼多娜",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-059",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-060",
+        "provider_id": "SV10-060",
+        "name_zh": "<火箭隊的>尼多后",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-060",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-061",
+        "provider_id": "SV10-061",
+        "name_zh": "<火箭隊的>尼多朗",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-061",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-062",
+        "provider_id": "SV10-062",
+        "name_zh": "<火箭隊的>尼多力諾",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-062",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-063",
+        "provider_id": "SV10-063",
+        "name_zh": "<火箭隊的>尼多王ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-063",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-064",
+        "provider_id": "SV10-064",
+        "name_zh": "<火箭隊的>超音蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-064",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-065",
+        "provider_id": "SV10-065",
+        "name_zh": "<火箭隊的>大嘴蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-065",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-066",
+        "provider_id": "SV10-066",
+        "name_zh": "<火箭隊的>叉字蝠ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-066",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-067",
+        "provider_id": "SV10-067",
+        "name_zh": "<火箭隊的>臭泥",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-067",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-068",
+        "provider_id": "SV10-068",
+        "name_zh": "<火箭隊的>臭臭泥",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-068",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-069",
+        "provider_id": "SV10-069",
+        "name_zh": "<火箭隊的>瓦斯彈",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-069",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-070",
+        "provider_id": "SV10-070",
+        "name_zh": "<火箭隊的>雙彈瓦斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-070",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-071",
+        "provider_id": "SV10-071",
+        "name_zh": "<火箭隊的>黑暗鴉",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-071",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-072",
+        "provider_id": "SV10-072",
+        "name_zh": "<火箭隊的>狃拉",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-072",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-073",
+        "provider_id": "SV10-073",
+        "name_zh": "佛烈托斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-073",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-074",
+        "provider_id": "SV10-074",
+        "name_zh": "盔甲鳥",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-074",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-075",
+        "provider_id": "SV10-075",
+        "name_zh": "藏瑪然特",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-075",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-076",
+        "provider_id": "SV10-076",
+        "name_zh": "<火箭隊的>小拉達",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-076",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-077",
+        "provider_id": "SV10-077",
+        "name_zh": "<火箭隊的>拉達",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-077",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-078",
+        "provider_id": "SV10-078",
+        "name_zh": "<火箭隊的>喵喵",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-078",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-079",
+        "provider_id": "SV10-079",
+        "name_zh": "<火箭隊的>貓老大ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-079",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-080",
+        "provider_id": "SV10-080",
+        "name_zh": "袋獸",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-080",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-081",
+        "provider_id": "SV10-081",
+        "name_zh": "<火箭隊的>多邊獸",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-081",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-082",
+        "provider_id": "SV10-082",
+        "name_zh": "<火箭隊的>多邊獸Ⅱ",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-082",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-083",
+        "provider_id": "SV10-083",
+        "name_zh": "<火箭隊的>多邊獸Ｚ",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-083",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-084",
+        "provider_id": "SV10-084",
+        "name_zh": "傲骨燕",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-084",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-085",
+        "provider_id": "SV10-085",
+        "name_zh": "大王燕",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-085",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-086",
+        "provider_id": "SV10-086",
+        "name_zh": "怒鸚哥",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-086",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-087",
+        "provider_id": "SV10-087",
+        "name_zh": "火箭隊的妨礙機器人",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-087",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-088",
+        "provider_id": "SV10-088",
+        "name_zh": "火箭隊的超級球",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-088",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-089",
+        "provider_id": "SV10-089",
+        "name_zh": "火箭隊的驚嚇炸彈",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-089",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-090",
+        "provider_id": "SV10-090",
+        "name_zh": "火箭隊的接收器",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-090",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-091",
+        "provider_id": "SV10-091",
+        "name_zh": "火箭隊的雅典娜",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-091",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-092",
+        "provider_id": "SV10-092",
+        "name_zh": "火箭隊的阿波羅",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-092",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-093",
+        "provider_id": "SV10-093",
+        "name_zh": "火箭隊的坂木",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-093",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-094",
+        "provider_id": "SV10-094",
+        "name_zh": "火箭隊的拉姆達",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-094",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-095",
+        "provider_id": "SV10-095",
+        "name_zh": "火箭隊的蘭斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-095",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-096",
+        "provider_id": "SV10-096",
+        "name_zh": "火箭隊的監視塔",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-096",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-097",
+        "provider_id": "SV10-097",
+        "name_zh": "火箭隊的工廠",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-097",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv10-098",
+        "provider_id": "SV10-098",
+        "name_zh": "火箭隊能量",
+        "canonical_id": "pokemon-tcgdex-tw-sv10-098",
+        "canonicalShared": false
+      }
+    ],
+    "crossSeriesNames": [
+      [
+        "なかよしポフィン",
+        {
+          "zh": "好友寶芬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5k-063"
+        }
+      ],
+      [
+        "アイアント",
+        {
+          "zh": "鐵蟻",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-042"
+        }
+      ],
+      [
+        "アギルダー",
+        {
+          "zh": "敏捷蟲",
+          "sourceCardId": "pokemon-tcgdex-tw-sv9-009"
+        }
+      ],
+      [
+        "アバゴーラ",
+        {
+          "zh": "肋骨海龜",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-023"
+        }
+      ],
+      [
+        "イシズマイ",
+        {
+          "zh": "石居蟹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-004"
+        }
+      ],
+      [
+        "イワパレス",
+        {
+          "zh": "岩殿居蟹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-005"
+        }
+      ],
+      [
+        "ウォーグル",
+        {
+          "zh": "勇士雄鷹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7a-050"
+        }
+      ],
+      [
+        "ウルガモス",
+        {
+          "zh": "火神蛾",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-013"
+        }
+      ],
+      [
+        "エモンガ",
+        {
+          "zh": "電飛鼠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-042"
+        }
+      ],
+      [
+        "オタマロ",
+        {
+          "zh": "圓蝌蚪",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-023"
+        }
+      ],
+      [
+        "オノノクス",
+        {
+          "zh": "雙斧戰龍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6a-046"
+        }
+      ],
+      [
+        "オノンド",
+        {
+          "zh": "斧牙龍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6a-045"
+        }
+      ],
+      [
+        "カブルモ",
+        {
+          "zh": "蓋蓋蟲",
+          "sourceCardId": "pokemon-tcgdex-tw-sv9-007"
+        }
+      ],
+      [
+        "ガマガル",
+        {
+          "zh": "藍蟾蜍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-024"
+        }
+      ],
+      [
+        "ガマゲロゲ",
+        {
+          "zh": "蟾蜍王",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-025"
+        }
+      ],
+      [
+        "キバゴ",
+        {
+          "zh": "牙牙",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6a-044"
+        }
+      ],
+      [
+        "キリキザン",
+        {
+          "zh": "劈斬司令",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-057"
+        }
+      ],
+      [
+        "ギアル",
+        {
+          "zh": "齒輪兒",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-067"
+        }
+      ],
+      [
+        "ギギアル",
+        {
+          "zh": "齒輪組",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-068"
+        }
+      ],
+      [
+        "ギギギアル",
+        {
+          "zh": "齒輪怪",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-069"
+        }
+      ],
+      [
+        "クイタラン",
+        {
+          "zh": "熔蟻獸",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-019"
+        }
+      ],
+      [
+        "クマシュン",
+        {
+          "zh": "噴嚏熊",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-026"
+        }
+      ],
+      [
+        "クリムガン",
+        {
+          "zh": "赤面龍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv9-073"
+        }
+      ],
+      [
+        "ケンホロウ",
+        {
+          "zh": "高傲雉雞",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5m-059"
+        }
+      ],
+      [
+        "コアルヒー",
+        {
+          "zh": "鴨寶寶",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-088"
+        }
+      ],
+      [
+        "ココロモリ",
+        {
+          "zh": "心蝙蝠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-029"
+        }
+      ],
+      [
+        "コジョフー",
+        {
+          "zh": "功夫鼬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-033"
+        }
+      ],
+      [
+        "コジョンド",
+        {
+          "zh": "師父鼬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-034"
+        }
+      ],
+      [
+        "コマタナ",
+        {
+          "zh": "駒刀小兵",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-056"
+        }
+      ],
+      [
+        "コロモリ",
+        {
+          "zh": "滾滾蝙蝠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-028"
+        }
+      ],
+      [
+        "ゴチミル",
+        {
+          "zh": "哥德小童",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-032"
+        }
+      ],
+      [
+        "ゴチム",
+        {
+          "zh": "哥德寶寶",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-031"
+        }
+      ],
+      [
+        "ゴチルゼル",
+        {
+          "zh": "哥德小姐",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-033"
+        }
+      ],
+      [
+        "サザンドラex",
+        {
+          "zh": "三首惡龍ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8-072"
+        }
+      ],
+      [
+        "シキジカ",
+        {
+          "zh": "四季鹿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5m-008"
+        }
+      ],
+      [
+        "シビシラス",
+        {
+          "zh": "麻麻小魚",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-033"
+        }
+      ],
+      [
+        "シビビール",
+        {
+          "zh": "麻麻鰻",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-034"
+        }
+      ],
+      [
+        "シビルドン",
+        {
+          "zh": "麻麻鰻魚王",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-035"
+        }
+      ],
+      [
+        "シママ",
+        {
+          "zh": "斑斑馬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-023"
+        }
+      ],
+      [
+        "シャンデラ",
+        {
+          "zh": "水晶燈火靈",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-021"
+        }
+      ],
+      [
+        "シュバルゴ",
+        {
+          "zh": "騎士蝸牛",
+          "sourceCardId": "pokemon-tcgdex-tw-sv9-063"
+        }
+      ],
+      [
+        "ジヘッド",
+        {
+          "zh": "雙首暴龍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-058"
+        }
+      ],
+      [
+        "ジャミングタワー",
+        {
+          "zh": "阻礙之塔",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-100"
+        }
+      ],
+      [
+        "スワンナ",
+        {
+          "zh": "舞天鵝",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-089"
+        }
+      ],
+      [
+        "ズルズキン",
+        {
+          "zh": "頭巾混混",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-038"
+        }
+      ],
+      [
+        "ズルッグ",
+        {
+          "zh": "滑滑小子",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-037"
+        }
+      ],
+      [
+        "ゼブライカ",
+        {
+          "zh": "雷電斑馬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-024"
+        }
+      ],
+      [
+        "ゾロア",
+        {
+          "zh": "索羅亞",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6a-031"
+        }
+      ],
+      [
+        "ゾロアーク",
+        {
+          "zh": "索羅亞克",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6a-032"
+        }
+      ],
+      [
+        "タマゲタケ",
+        {
+          "zh": "哎呀球菇",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-002"
+        }
+      ],
+      [
+        "ダストダス",
+        {
+          "zh": "灰塵山",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-050"
+        }
+      ],
+      [
+        "ダルマッカ",
+        {
+          "zh": "火紅不倒翁",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-017"
+        }
+      ],
+      [
+        "チョボマキ",
+        {
+          "zh": "小嘴蝸",
+          "sourceCardId": "pokemon-tcgdex-tw-sv9-008"
+        }
+      ],
+      [
+        "チョロネコ",
+        {
+          "zh": "扒手貓",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-047"
+        }
+      ],
+      [
+        "チラチーノ",
+        {
+          "zh": "奇諾栗鼠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5k-083"
+        }
+      ],
+      [
+        "チラーミィ",
+        {
+          "zh": "泡沫栗鼠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5k-082"
+        }
+      ],
+      [
+        "ツンベアー",
+        {
+          "zh": "凍原熊",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-027"
+        }
+      ],
+      [
+        "テッシード",
+        {
+          "zh": "種子鐵球",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-043"
+        }
+      ],
+      [
+        "デスカーン",
+        {
+          "zh": "死神棺",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8-052"
+        }
+      ],
+      [
+        "デスマス",
+        {
+          "zh": "哭哭面具",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-030"
+        }
+      ],
+      [
+        "デンチュラ",
+        {
+          "zh": "電蜘蛛",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-017"
+        }
+      ],
+      [
+        "トルネロス",
+        {
+          "zh": "龍捲雲",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-082"
+        }
+      ],
+      [
+        "ドッコラー",
+        {
+          "zh": "搬運小匠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-059"
+        }
+      ],
+      [
+        "ドテッコツ",
+        {
+          "zh": "鐵骨土人",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-060"
+        }
+      ],
+      [
+        "ナットレイ",
+        {
+          "zh": "堅果啞鈴",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-044"
+        }
+      ],
+      [
+        "ハトーボー",
+        {
+          "zh": "咕咕鴿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5m-058"
+        }
+      ],
+      [
+        "バイバニラ",
+        {
+          "zh": "雙倍多多冰",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-019"
+        }
+      ],
+      [
+        "バオッキー",
+        {
+          "zh": "爆香猿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-011"
+        }
+      ],
+      [
+        "バオップ",
+        {
+          "zh": "爆香猴",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-010"
+        }
+      ],
+      [
+        "バチュル",
+        {
+          "zh": "電電蟲",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-016"
+        }
+      ],
+      [
+        "バニプッチ",
+        {
+          "zh": "迷你冰",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-017"
+        }
+      ],
+      [
+        "バニリッチ",
+        {
+          "zh": "多多冰",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-018"
+        }
+      ],
+      [
+        "ヒトモシ",
+        {
+          "zh": "燭光靈",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-019"
+        }
+      ],
+      [
+        "ヒヒダルマ",
+        {
+          "zh": "達摩狒狒",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-018"
+        }
+      ],
+      [
+        "ヒヤッキー",
+        {
+          "zh": "冷水猿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-016"
+        }
+      ],
+      [
+        "ヒヤップ",
+        {
+          "zh": "冷水猴",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-015"
+        }
+      ],
+      [
+        "ビクティニ",
+        {
+          "zh": "比克提尼",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5m-019"
+        }
+      ],
+      [
+        "フシデ",
+        {
+          "zh": "百足蜈蚣",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-068"
+        }
+      ],
+      [
+        "フリージオ",
+        {
+          "zh": "幾何雪花",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-028"
+        }
+      ],
+      [
+        "プロトーガ",
+        {
+          "zh": "原蓋海龜",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-022"
+        }
+      ],
+      [
+        "ペンドラー",
+        {
+          "zh": "蜈蚣王",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-070"
+        }
+      ],
+      [
+        "ホイーガ",
+        {
+          "zh": "車輪毬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-069"
+        }
+      ],
+      [
+        "ボウルタウン",
+        {
+          "zh": "深缽鎮",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-070"
+        }
+      ],
+      [
+        "ボルトロス",
+        {
+          "zh": "雷電雲",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-036"
+        }
+      ],
+      [
+        "ポケモンいれかえ",
+        {
+          "zh": "寶可夢交替",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-054"
+        }
+      ],
+      [
+        "マッギョ",
+        {
+          "zh": "泥巴魚",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-059"
+        }
+      ],
+      [
+        "マメパト",
+        {
+          "zh": "豆豆鴿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5m-057"
+        }
+      ],
+      [
+        "マラカッチ",
+        {
+          "zh": "沙鈴仙人掌",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-003"
+        }
+      ],
+      [
+        "メグロコ",
+        {
+          "zh": "黑眼鱷",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-042"
+        }
+      ],
+      [
+        "メブキジカ",
+        {
+          "zh": "萌芽鹿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5m-009"
+        }
+      ],
+      [
+        "メラルバ",
+        {
+          "zh": "燃燒蟲",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-012"
+        }
+      ],
+      [
+        "モグリュー",
+        {
+          "zh": "螺釘地鼠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5m-039"
+        }
+      ],
+      [
+        "モノズ",
+        {
+          "zh": "單首龍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-057"
+        }
+      ],
+      [
+        "モロバレル",
+        {
+          "zh": "敗露球菇",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-003"
+        }
+      ],
+      [
+        "モンメン",
+        {
+          "zh": "木棉球",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5k-007"
+        }
+      ],
+      [
+        "ヤナッキー",
+        {
+          "zh": "花椰猿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-002"
+        }
+      ],
+      [
+        "ヤナップ",
+        {
+          "zh": "花椰猴",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-001"
+        }
+      ],
+      [
+        "ヤブクロン",
+        {
+          "zh": "破破袋",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-049"
+        }
+      ],
+      [
+        "ランクルス",
+        {
+          "zh": "人造細胞卵",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5k-075"
+        }
+      ],
+      [
+        "ランドロス",
+        {
+          "zh": "土地雲",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7a-030"
+        }
+      ],
+      [
+        "ランプラー",
+        {
+          "zh": "燈火幽靈",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-020"
+        }
+      ],
+      [
+        "レパルダス",
+        {
+          "zh": "酷豹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-048"
+        }
+      ],
+      [
+        "ローブシン",
+        {
+          "zh": "修建老匠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-061"
+        }
+      ],
+      [
+        "ワシボン",
+        {
+          "zh": "毛頭小鷹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7a-049"
+        }
+      ],
+      [
+        "ワルビアル",
+        {
+          "zh": "流氓鱷",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-044"
+        }
+      ],
+      [
+        "ワルビル",
+        {
+          "zh": "混混鱷",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-043"
+        }
+      ],
+      [
+        "勇気のおまもり",
+        {
+          "zh": "勇氣護符",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2d-067"
+        }
+      ],
+      [
+        "博士の研究",
+        {
+          "zh": "博士的研究",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4a-176"
+        }
+      ],
+      [
+        "古びたふたの化石",
+        {
+          "zh": "陳舊的背蓋化石",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-091"
+        }
+      ],
+      [
+        "夜のタンカ",
+        {
+          "zh": "夜間擔架",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6a-056"
+        }
+      ],
+      [
+        "改造ハンマー",
+        {
+          "zh": "改造之錘",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5a-054"
+        }
+      ]
+    ]
+  },
+  "quarantined": [],
+  "summary": {
+    "cards": 132,
+    "links": 98,
+    "derived": 34,
+    "rarities": 0,
+    "series": 1,
+    "quarantined": 0,
+    "stillWithoutZh": 0
+  },
+  "fingerprints": {
+    "twCards": "c5940daf8ec600453b97f055b5c95507",
+    "twCardCount": 98,
+    "jpCards": "186d0375d42b7e95f8cecf454e6cd426"
+  }
+}

@@ -1,0 +1,890 @@
+[
+  {
+    "planVersion": 1,
+    "kind": "jp-enrich",
+    "source": "tcgdex-ja",
+    "seriesProviderId": "SV11W",
+    "seriesId": "pokemon-tcgdex-ja-sv11w",
+    "evidenceHash": "55825e06a552458226e28d284c048b0fb13a23a6823907fb81b309bb73a01b00",
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "series": null,
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-004",
+        "name_ja": "モンメン",
+        "link": null,
+        "name_zh": "木棉球",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv5k-007"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-006",
+        "name_ja": "シキジカ",
+        "link": null,
+        "name_zh": "四季鹿",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv5m-008"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-007",
+        "name_ja": "メブキジカ",
+        "link": null,
+        "name_zh": "萌芽鹿",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv5m-009"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-008",
+        "name_ja": "チョボマキ",
+        "link": null,
+        "name_zh": "小嘴蝸",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv9-008"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-009",
+        "name_ja": "アギルダー",
+        "link": null,
+        "name_zh": "敏捷蟲",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv9-009"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-014",
+        "name_ja": "バオップ",
+        "link": null,
+        "name_zh": "爆香猴",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-010"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-015",
+        "name_ja": "バオッキー",
+        "link": null,
+        "name_zh": "爆香猿",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-011"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-016",
+        "name_ja": "クイタラン",
+        "link": null,
+        "name_zh": "熔蟻獸",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3-019"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-022",
+        "name_ja": "コアルヒー",
+        "link": null,
+        "name_zh": "鴨寶寶",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6-088"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-023",
+        "name_ja": "スワンナ",
+        "link": null,
+        "name_zh": "舞天鵝",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6-089"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-024",
+        "name_ja": "バニプッチ",
+        "link": null,
+        "name_zh": "迷你冰",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-017"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-025",
+        "name_ja": "バニリッチ",
+        "link": null,
+        "name_zh": "多多冰",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-018"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-026",
+        "name_ja": "バイバニラ",
+        "link": null,
+        "name_zh": "雙倍多多冰",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-019"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-028",
+        "name_ja": "シママ",
+        "link": null,
+        "name_zh": "斑斑馬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-023"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-029",
+        "name_ja": "ゼブライカ",
+        "link": null,
+        "name_zh": "雷電斑馬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-024"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-030",
+        "name_ja": "バチュル",
+        "link": null,
+        "name_zh": "電電蟲",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-016"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-031",
+        "name_ja": "デンチュラ",
+        "link": null,
+        "name_zh": "電蜘蛛",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-017"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-032",
+        "name_ja": "マッギョ",
+        "link": null,
+        "name_zh": "泥巴魚",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3-059"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-033",
+        "name_ja": "コロモリ",
+        "link": null,
+        "name_zh": "滾滾蝙蝠",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-028"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-034",
+        "name_ja": "ココロモリ",
+        "link": null,
+        "name_zh": "心蝙蝠",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-029"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-036",
+        "name_ja": "デスマス",
+        "link": null,
+        "name_zh": "哭哭面具",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-030"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-037",
+        "name_ja": "デスカーン",
+        "link": null,
+        "name_zh": "死神棺",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv8-052"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-038",
+        "name_ja": "ゴチム",
+        "link": null,
+        "name_zh": "哥德寶寶",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-031"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-039",
+        "name_ja": "ゴチミル",
+        "link": null,
+        "name_zh": "哥德小童",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-032"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-040",
+        "name_ja": "ゴチルゼル",
+        "link": null,
+        "name_zh": "哥德小姐",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-033"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-049",
+        "name_ja": "コジョフー",
+        "link": null,
+        "name_zh": "功夫鼬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-033"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-050",
+        "name_ja": "コジョンド",
+        "link": null,
+        "name_zh": "師父鼬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-034"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-052",
+        "name_ja": "チョロネコ",
+        "link": null,
+        "name_zh": "扒手貓",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-047"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-053",
+        "name_ja": "レパルダス",
+        "link": null,
+        "name_zh": "酷豹",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-048"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-054",
+        "name_ja": "ズルッグ",
+        "link": null,
+        "name_zh": "滑滑小子",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-037"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-055",
+        "name_ja": "ズルズキン",
+        "link": null,
+        "name_zh": "頭巾混混",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-038"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-056",
+        "name_ja": "ヤブクロン",
+        "link": null,
+        "name_zh": "破破袋",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-049"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-057",
+        "name_ja": "ダストダス",
+        "link": null,
+        "name_zh": "灰塵山",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-050"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-058",
+        "name_ja": "ゾロア",
+        "link": null,
+        "name_zh": "索羅亞",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6a-031"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-059",
+        "name_ja": "ゾロアーク",
+        "link": null,
+        "name_zh": "索羅亞克",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6a-032"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-060",
+        "name_ja": "モノズ",
+        "link": null,
+        "name_zh": "單首龍",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv1a-057"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-061",
+        "name_ja": "ジヘッド",
+        "link": null,
+        "name_zh": "雙首暴龍",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv1a-058"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-062",
+        "name_ja": "サザンドラex",
+        "link": null,
+        "name_zh": "三首惡龍ex",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv8-072"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-063",
+        "name_ja": "テッシード",
+        "link": null,
+        "name_zh": "種子鐵球",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-043"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-064",
+        "name_ja": "ナットレイ",
+        "link": null,
+        "name_zh": "堅果啞鈴",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-044"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-065",
+        "name_ja": "ギアル",
+        "link": null,
+        "name_zh": "齒輪兒",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-067"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-066",
+        "name_ja": "ギギアル",
+        "link": null,
+        "name_zh": "齒輪組",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-068"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-067",
+        "name_ja": "ギギギアル",
+        "link": null,
+        "name_zh": "齒輪怪",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-069"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-068",
+        "name_ja": "アイアント",
+        "link": null,
+        "name_zh": "鐵蟻",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-042"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-069",
+        "name_ja": "クリムガン",
+        "link": null,
+        "name_zh": "赤面龍",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv9-073"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-076",
+        "name_ja": "ワシボン",
+        "link": null,
+        "name_zh": "毛頭小鷹",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7a-049"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-077",
+        "name_ja": "ウォーグル",
+        "link": null,
+        "name_zh": "勇士雄鷹",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7a-050"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-078",
+        "name_ja": "トルネロス",
+        "link": null,
+        "name_zh": "龍捲雲",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-082"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-090",
+        "name_ja": "モンメン",
+        "link": null,
+        "name_zh": "木棉球",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv5k-007"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-091",
+        "name_ja": "シキジカ",
+        "link": null,
+        "name_zh": "四季鹿",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv5m-008"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-092",
+        "name_ja": "メブキジカ",
+        "link": null,
+        "name_zh": "萌芽鹿",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv5m-009"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-093",
+        "name_ja": "チョボマキ",
+        "link": null,
+        "name_zh": "小嘴蝸",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv9-008"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-094",
+        "name_ja": "アギルダー",
+        "link": null,
+        "name_zh": "敏捷蟲",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv9-009"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-099",
+        "name_ja": "バオップ",
+        "link": null,
+        "name_zh": "爆香猴",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-010"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-100",
+        "name_ja": "バオッキー",
+        "link": null,
+        "name_zh": "爆香猿",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-011"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-101",
+        "name_ja": "クイタラン",
+        "link": null,
+        "name_zh": "熔蟻獸",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3-019"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-106",
+        "name_ja": "コアルヒー",
+        "link": null,
+        "name_zh": "鴨寶寶",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6-088"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-107",
+        "name_ja": "スワンナ",
+        "link": null,
+        "name_zh": "舞天鵝",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6-089"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-108",
+        "name_ja": "バニプッチ",
+        "link": null,
+        "name_zh": "迷你冰",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-017"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-109",
+        "name_ja": "バニリッチ",
+        "link": null,
+        "name_zh": "多多冰",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-018"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-110",
+        "name_ja": "バイバニラ",
+        "link": null,
+        "name_zh": "雙倍多多冰",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-019"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-111",
+        "name_ja": "シママ",
+        "link": null,
+        "name_zh": "斑斑馬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-023"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-112",
+        "name_ja": "ゼブライカ",
+        "link": null,
+        "name_zh": "雷電斑馬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-024"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-113",
+        "name_ja": "バチュル",
+        "link": null,
+        "name_zh": "電電蟲",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-016"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-114",
+        "name_ja": "デンチュラ",
+        "link": null,
+        "name_zh": "電蜘蛛",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-017"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-115",
+        "name_ja": "マッギョ",
+        "link": null,
+        "name_zh": "泥巴魚",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3-059"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-116",
+        "name_ja": "コロモリ",
+        "link": null,
+        "name_zh": "滾滾蝙蝠",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-028"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-117",
+        "name_ja": "ココロモリ",
+        "link": null,
+        "name_zh": "心蝙蝠",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-029"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-119",
+        "name_ja": "デスマス",
+        "link": null,
+        "name_zh": "哭哭面具",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-030"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-120",
+        "name_ja": "デスカーン",
+        "link": null,
+        "name_zh": "死神棺",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv8-052"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-121",
+        "name_ja": "ゴチム",
+        "link": null,
+        "name_zh": "哥德寶寶",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-031"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-122",
+        "name_ja": "ゴチミル",
+        "link": null,
+        "name_zh": "哥德小童",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-032"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-123",
+        "name_ja": "ゴチルゼル",
+        "link": null,
+        "name_zh": "哥德小姐",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-033"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-131",
+        "name_ja": "コジョフー",
+        "link": null,
+        "name_zh": "功夫鼬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-033"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-132",
+        "name_ja": "コジョンド",
+        "link": null,
+        "name_zh": "師父鼬",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-034"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-134",
+        "name_ja": "チョロネコ",
+        "link": null,
+        "name_zh": "扒手貓",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-047"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-135",
+        "name_ja": "レパルダス",
+        "link": null,
+        "name_zh": "酷豹",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-048"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-136",
+        "name_ja": "ズルッグ",
+        "link": null,
+        "name_zh": "滑滑小子",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-037"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-137",
+        "name_ja": "ズルズキン",
+        "link": null,
+        "name_zh": "頭巾混混",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-038"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-138",
+        "name_ja": "ヤブクロン",
+        "link": null,
+        "name_zh": "破破袋",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-049"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-139",
+        "name_ja": "ダストダス",
+        "link": null,
+        "name_zh": "灰塵山",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4k-050"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-140",
+        "name_ja": "ゾロア",
+        "link": null,
+        "name_zh": "索羅亞",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6a-031"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-141",
+        "name_ja": "ゾロアーク",
+        "link": null,
+        "name_zh": "索羅亞克",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv6a-032"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-142",
+        "name_ja": "モノズ",
+        "link": null,
+        "name_zh": "單首龍",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv1a-057"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-143",
+        "name_ja": "ジヘッド",
+        "link": null,
+        "name_zh": "雙首暴龍",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv1a-058"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-144",
+        "name_ja": "テッシード",
+        "link": null,
+        "name_zh": "種子鐵球",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-043"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-145",
+        "name_ja": "ナットレイ",
+        "link": null,
+        "name_zh": "堅果啞鈴",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-044"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-146",
+        "name_ja": "ギアル",
+        "link": null,
+        "name_zh": "齒輪兒",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-067"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-147",
+        "name_ja": "ギギアル",
+        "link": null,
+        "name_zh": "齒輪組",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-068"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-148",
+        "name_ja": "ギギギアル",
+        "link": null,
+        "name_zh": "齒輪怪",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-069"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-149",
+        "name_ja": "アイアント",
+        "link": null,
+        "name_zh": "鐵蟻",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4m-042"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-150",
+        "name_ja": "クリムガン",
+        "link": null,
+        "name_zh": "赤面龍",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv9-073"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-156",
+        "name_ja": "ワシボン",
+        "link": null,
+        "name_zh": "毛頭小鷹",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7a-049"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-157",
+        "name_ja": "ウォーグル",
+        "link": null,
+        "name_zh": "勇士雄鷹",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7a-050"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-158",
+        "name_ja": "トルネロス",
+        "link": null,
+        "name_zh": "龍捲雲",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-082"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-163",
+        "name_ja": "サザンドラex",
+        "link": null,
+        "name_zh": "三首惡龍ex",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv8-072"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv11w-171",
+        "name_ja": "サザンドラex",
+        "link": null,
+        "name_zh": "三首惡龍ex",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv8-072"
+      }
+    ]
+  }
+]

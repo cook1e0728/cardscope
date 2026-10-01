@@ -33,7 +33,16 @@
 - 2 剩餘中文名：全世代比對發現 SV-P 日台編號錯位（55 筆），已建立 9 個同系列連結經覆核無錯位。ADR 0004 允許跨系列同名推導（朱紫世代、排除 SV-P、日文名須唯一對應、須引用資料庫中同名台版卡）。Migration `20261001153532_pokemon_jp_enrichment_cross_series`（只替換函式，套用前已整批回滾測試）。9 個系列 73 張寫入＋重播零異動（稽核累計 36 筆）；名稱證據 `docs/evidence/pokemon-jp/cross-series-names-20261001.json`（49 個名稱），計畫 `<系列>-enrich-cross-plan-20261001.json`。
 - 結果：日版 944 張中 917 張有中文名（台版官方 649、同系列推導 195、跨系列推導 73）；仍缺 27 張（劍盾世代再錄如かがやく系列、ネオラントV，及基本能量等在朱紫世代無唯一對應者）。台版 7,436／美版 20,635 不變。詳細頁「同名推導」標示涵蓋兩種推導。
 
-下一個安全起點：依序執行 3（>100 張系列分批匯入）、4（日版 data_status 升級定義）。後續候選：>100 張日版系列的分批匯入、SVLN／SVLS／SVK 的中文名來源、日版 `data_status` 升級定義。日版修改一律走 `enrich_pokemon_jp_metadata`，只填空值。
+### 依序執行 3：超過 100 張的系列分批匯入（2026-10-01～02）
+
+- ADR 0005：同一快照依 100 張分頁成有序批次，第 1 批建立系列，第 N 批需第 N−1 批已完成且同快照，最後一批核對總數；稽核 `private.catalog_jp_import_batch_audit`（每系列每批一筆 import）。`private.pokemon_jp_series_imported` 只在最後一批完成後成立，中文化才可作用。Migration `20261001154929_pokemon_jp_metadata_import_batches`（套用前以 SV1a 在正式庫整批回滾測試，確認零殘留）。程式：`buildPokemonJpImportBatchPlans`、`scripts/build-pokemon-jp-import-batches.mjs`、SQL 產生器的 batch 模式。
+- 匯入：13 個系列 1,925 張、28 批（SV1S 108、SV1V 108、SV1a 103、SV2a 210、SV3 141、SV6 133、SV7 135、SV8 138、SV8a 237、SV9 132、SV10 132、SV11B 174、SV11W 174），每批 gated（同一敘述先 dry-run，digest／before／inserted 完全相符才寫），每系列最後檢查總數，否則整組回滾。28 批 import＋28 筆重播，重播全數零異動。排除 SV-P（編號錯位）、SV4a、SV5K、SV5M（隔離清單）。
+- 中文化：11 個系列台版指紋（md5）與正式庫逐一相同、無共用作品層；SV11B／SV11W 在來源封存中沒有台版資料，只用跨系列推導。跨系列名稱證據 `docs/evidence/pokemon-jp/cross-series-names-20261002.json`（111 個名稱，皆引用資料庫中同名台版卡的最小 id）。計畫超過 100 張時以 `chunkPokemonJpEnrichPlan` 切塊（先官方連結＋系列名，再推導），共 32 份計畫，寫入後重播 32 份全數零異動；11 個系列取得台版官方標題。
+- 結果：日版 25 個系列 2,869 張，2,697 張有中文名（台版官方 2,026、同系列推導 384、跨系列推導 287），172 張無中文名（基本能量 4 張、SV11B 64 與 SV11W 77 張台灣未發行且朱紫世代沒有唯一對應的黑白寶可夢／訓練家，以及前一輪的 27 張）。日版卡的作品層都有日文名；台版 7,436／美版 20,634（`pokemontcg`，先前 20,635 含 1 筆 source 為空的 Seed）不變。中文化稽核累計 100 筆。
+- 證據：`<系列>-snapshot-20261001.json`、`-import-batches-20261001.json`、`-enrich-plan-20261002.json`、`-enrich-chunks-20261002.json`。Node 全套 237/237。
+- 觀察到的來源資料特性（未修改）：台版名稱帶有 `[支援者]`、`[進化前分岐α]`、`<火箭隊的>` 等標記，以及 SV8a-161 含零寬字元；日版連結沿用台版官方原字串。
+
+下一個安全起點：依序執行 4（日版 data_status 升級定義）。後續候選：SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、台版名稱標記的顯示整理。日版修改一律走 `enrich_pokemon_jp_metadata`，只填空值。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 

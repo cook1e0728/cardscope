@@ -27,6 +27,24 @@ function supportedRarityCode(value) {
  * Derived name only when every linked card with the same Japanese name agrees
  * on one Taiwanese name. Anything inconsistent is quarantined, not planned.
  */
+/**
+ * Split an enrichment plan into ordered plans of at most `size` cards (ADR 0005).
+ * Links (and rarity-only entries) go first so every same-series Derived name
+ * finds its official source already in the database; the series name rides on
+ * the first chunk. Each chunk keeps the evidence hash of the whole plan.
+ */
+export function chunkPokemonJpEnrichPlan(plan, size = 100) {
+  const official = plan.cards.filter(card => !card.basis || card.basis === 'tw-official');
+  const derived = plan.cards.filter(card => card.basis && card.basis !== 'tw-official');
+  const groups = [];
+  for (const part of [official, derived]) {
+    for (let index = 0; index < part.length; index += size) {
+      groups.push(part.slice(index, index + size).sort((a, b) => compareText(a.id, b.id)));
+    }
+  }
+  return groups.map((cards, index) => ({ ...plan, series: index === 0 ? plan.series : null, cards }));
+}
+
 export function buildPokemonJpEnrichPlan({ jpSeries, jpCards, archiveSet, archiveCards, twSeries, twCards, sourceArchive, crossSeriesNames = null }) {
   if (!jpSeries?.id || !jpSeries?.providerId) throw new Error('POKEMON_JP_ENRICH_SERIES_REQUIRED');
   if (!/^[0-9a-f]{40}$/.test(String(sourceArchive?.commit))) throw new Error('POKEMON_JP_ENRICH_ARCHIVE_REQUIRED');
