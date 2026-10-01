@@ -25,14 +25,20 @@
 - 唯讀複核：台版 7,436／美版 20,635 不變；SV4a Seed 兩個 md5 不變；SVLN 22 card／22 canonical／22 printing 全 `data_status='pending'`，圖片、繁中名、稀有度皆 0。
 - 正式網站：`/api/cards?series=pokemon-tcgdex-ja-svln` HTTP 200、22 筆；`/api/search?q=ニンフィア` 命中 `pokemon-tcgdex-ja-svln-005`（`マンタイン` 命中 001）；詳情 `/api/cards/pokemon-tcgdex-ja-svln-005` HTTP 200；永久網址 `/?game=pokemon&card=pokemon-tcgdex-ja-svln-005` 顯示「中文名稱待補｜ニンフィアex」、圖片待補、稀有度待補、日版 SVLN 005。注意 `/api/cards` 不吃 `q`，日文名搜尋要用 `/api/search`。
 
-### 第二個 pilot：SV6a（進行中，2026-10-01 晚）
+### 第二個 pilot：SV6a（已正式匯入，2026-10-01 晚）
+
+- 真實匯入與立即重播皆以 digest 守門 SQL 執行（actor `claude-code-local:aa26488931`）：匯入 `inserted` 1／94／94／94；重播 `replay=true`、零異動、`present` 1/94/94。稽核共 4 筆（SVLN、SV6a 各 import／replay）。
+- 唯讀複核：台版 7,436／美版 20,635、SV4a card md5、SVLN cards／printings md5 全與匯入前基準相同；SV6a 94 card／94 canonical／94 printing 全 pending、無圖、無繁中名，printing 稀有度 C28／U20／R7／RR6／AR12／UR10／SAR5／空 6，card 與 printing 稀有度不一致 0。
+- 正式網站：`/api/cards?series=pokemon-tcgdex-ja-sv6a` 94 筆，rarity facets 與上相同（空值顯示 `unknown:6`）；`/api/search?q=モモワロウ` 命中 039 RR／082 UR／090 SAR／092 空，`カシオペア` 命中 061／085／091；永久網址 `/?game=pokemon&card=pokemon-tcgdex-ja-sv6a-090` 顯示 モモワロウex、SAR、日版 SV6a 090。已知限制：搜尋系列名「ナイトワンダラー」無結果（`search_text` 只含卡名與卡號，非本輪問題）；首次搜尋冷啟動約 27 秒。
+
+以下為 dry-run 時的紀錄：
 
 - `api.tcgdex.net` 拒絕連線（ECONNREFUSED），依 ADR 0002 改讀 `tcgdex/cards-database` commit `c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78`（解析不執行）。同 commit 重建的 SVLN 計畫與 API 計畫列內容完全相同。Node 全套 221/221。
 - SV6a（ナイトワンダラー，2024-06-07）94 張零隔離零碰撞；稀有度 C28／U20／R7／RR6／AR12／UR10／SAR5，6 張留空（054、055、063 為 `ACE SPEC Rare`；092–094 來源標 `Mega Hyper Rare`）。證據 `docs/evidence/pokemon-jp/SV6a-*-20261001.json`；manifestHash `fdad7649…e538`，planDigest `bcbdb5889dee08b4752889f042d693f9e22bae5ca1a0bff3485debf00a9f6b6b`。
 - 計畫 80 KB 太大不手貼：SQL 以「卡號、名稱、稀有度」短表加常數重建 jsonb，函式只在 digest 等於上值時呼叫（本機以 PostgreSQL jsonb 文字規則計算 digest，已用 SVLN 驗證）。
 - 正式 dry-run：`replay=false`、digest 相符、`before` 全 0、`inserted` 1／94／94／94，零殘留；稽核仍 2 筆。匯入前基準：台版 7,436／美版 20,635、SV4a card md5 `50098b20…1024`、SVLN cards md5 `76043fb70654b199f5580daf891fe29f`、SVLN printings（去 updated_at）md5 `62331c1ab63d26eee321d191fc1daa6a`。
 
-下一個安全起點：等使用者確認後，以同一 digest 守門 SQL 用 `false` 真實匯入 SV6a、立即重播（應 `replay=true` 零異動、稽核累計 4 筆），再複核上列基準不變、新列 94 張全 pending／無圖／無繁中名，並抽查 `/api/search?q=モモワロウ` 與 SV6a 系列頁。合併本分支到 main 另需使用者決定。
+下一個安全起點：兩個 pilot 皆完成，日版 metadata 匯入機制（API 或 GitHub 封存來源）已驗證。後續可選：(1) 依同流程擴大到其他 ≤100 張的日版系列（>100 張需先設計多批交易）；(2) 為 `ACE SPEC Rare`、金卡等未對映稀有度補核准對映；(3) 讓系列名稱可被搜尋；(4) 合併本分支到 main（需使用者決定）。每次匯入前重新讀取正式日版既有列並重建快照，稽核表目前 4 筆。
 
 ## 前一里程碑（2026-10-01，SVLN 匯入前）
 
