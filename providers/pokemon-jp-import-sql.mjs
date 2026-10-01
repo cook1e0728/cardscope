@@ -143,11 +143,12 @@ export function buildPokemonJpEnrichSql(plan, { actor, dryRun, gated = false }) 
     const expected = {
       id: `${prefix}${n}`, name_ja: card.name_ja,
       link: card.basis === 'tw-official' ? `pokemon-tcgdex-tw-${code.toLowerCase()}-${n}` : null,
-      name_zh: card.name_zh, basis: card.basis, rarity_code: card.rarity_code
+      name_zh: card.name_zh, basis: card.basis, rarity_code: card.rarity_code,
+      ...(card.basis === 'derived-cross-series' ? { nameSource: card.nameSource } : {})
     };
     if (!n || JSON.stringify(expected) !== JSON.stringify(card)) throw new Error(`POKEMON_JP_SQL_CARD_NOT_DERIVABLE:${card.id}`);
     const value = v => (v == null ? 'null' : sqlText(v));
-    return `(${sqlText(n)},${value(card.name_ja)},${value(card.name_zh)},${value(card.basis)},${value(card.rarity_code)})`;
+    return `(${sqlText(n)},${value(card.name_ja)},${value(card.name_zh)},${value(card.basis)},${value(card.rarity_code)},${value(card.nameSource)})`;
   });
   const digest = pokemonJpPlanDigest(plan);
   const series = plan.series
@@ -156,9 +157,9 @@ export function buildPokemonJpEnrichSql(plan, { actor, dryRun, gated = false }) 
   const cards = rows.length
     ? `(select jsonb_agg(jsonb_build_object('id', ${sqlText(prefix)} || c.n, 'name_ja', c.ja,
       'link', case when c.basis = 'tw-official' then ${sqlText(`pokemon-tcgdex-tw-${code.toLowerCase()}-`)} || c.n end,
-      'name_zh', c.zh, 'basis', c.basis, 'rarity_code', c.rar) order by ${sqlText(prefix)} || c.n collate "C") from c)`
+      'name_zh', c.zh, 'basis', c.basis, 'rarity_code', c.rar) || case when c.src is null then '{}'::jsonb else jsonb_build_object('nameSource', c.src) end order by ${sqlText(prefix)} || c.n collate "C") from c)`
     : `'[]'::jsonb`;
-  const head = `with ${rows.length ? `c(n, ja, zh, basis, rar) as (values ${rows.join(',')}),\n` : ''}p as (select jsonb_build_object(
+  const head = `with ${rows.length ? `c(n, ja, zh, basis, rar, src) as (values ${rows.join(',')}),\n` : ''}p as (select jsonb_build_object(
   'planVersion', ${Number(plan.planVersion)}, 'kind', 'jp-enrich', 'source', ${sqlText(plan.source)},
   'seriesProviderId', ${sqlText(code)}, 'seriesId', ${sqlText(plan.seriesId)}, 'evidenceHash', ${sqlText(plan.evidenceHash)},
   'sourceArchive', jsonb_build_object('repository', ${sqlText(plan.sourceArchive.repository)}, 'commit', ${sqlText(plan.sourceArchive.commit)}),
@@ -175,7 +176,7 @@ from (${hashed}) h;
   const changed = {
     cards: plan.cards.length,
     links: plan.cards.filter(c => c.basis === 'tw-official').length,
-    derived: plan.cards.filter(c => c.basis === 'derived-same-name').length,
+    derived: plan.cards.filter(c => c.basis === 'derived-same-name' || c.basis === 'derived-cross-series').length,
     rarities: plan.cards.filter(c => c.rarity_code).length,
     series: plan.series ? 1 : 0
   };

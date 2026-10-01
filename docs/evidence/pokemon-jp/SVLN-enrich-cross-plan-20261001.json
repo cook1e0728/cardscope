@@ -1,0 +1,862 @@
+{
+  "plan": {
+    "planVersion": 1,
+    "kind": "jp-enrich",
+    "source": "tcgdex-ja",
+    "seriesProviderId": "SVLN",
+    "seriesId": "pokemon-tcgdex-ja-svln",
+    "evidenceHash": "d1d2ae63e7336b141288879e204977d6e87f3b8bc1a19619530a6d5a46c2a001",
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "series": null,
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-svln-002",
+        "name_ja": "サンダー",
+        "link": null,
+        "name_zh": "閃電鳥",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv5a-027"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-003",
+        "name_ja": "マリル",
+        "link": null,
+        "name_zh": "瑪力露",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-016"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-004",
+        "name_ja": "マリルリ",
+        "link": null,
+        "name_zh": "瑪力露麗",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-017"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-005",
+        "name_ja": "ニンフィアex",
+        "link": null,
+        "name_zh": "仙子伊布ex",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv8a-069"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-007",
+        "name_ja": "オドリドリ",
+        "link": null,
+        "name_zh": "花舞鳥",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv1a-016"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-008",
+        "name_ja": "ミミッキュ",
+        "link": null,
+        "name_zh": "謎擬Ｑ",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-034"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-009",
+        "name_ja": "イーブイ",
+        "link": null,
+        "name_zh": "伊布",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2a-133"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-010",
+        "name_ja": "カビゴン",
+        "link": null,
+        "name_zh": "卡比獸",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2a-143"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-011",
+        "name_ja": "すごいつりざお",
+        "link": null,
+        "name_zh": "厲害釣竿",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2p-066"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-012",
+        "name_ja": "テラスタルオーブ",
+        "link": null,
+        "name_zh": "太晶珠",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv8a-145"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-013",
+        "name_ja": "ネストボール",
+        "link": null,
+        "name_zh": "巢穴球",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv1s-070"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-014",
+        "name_ja": "ハイパーボール",
+        "link": null,
+        "name_zh": "高級球",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv1v-070"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-017",
+        "name_ja": "ポケモンいれかえ",
+        "link": null,
+        "name_zh": "寶可夢交替",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-054"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-018",
+        "name_ja": "アカマツ",
+        "link": null,
+        "name_zh": "赤松",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv7-097"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-019",
+        "name_ja": "ナンジャモ",
+        "link": null,
+        "name_zh": "奇樹",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv2d-069"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-020",
+        "name_ja": "ネモ",
+        "link": null,
+        "name_zh": "妮莫",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4a-343"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-021",
+        "name_ja": "博士の研究",
+        "link": null,
+        "name_zh": "博士的研究",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4a-176"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-022",
+        "name_ja": "ボスの指令",
+        "link": null,
+        "name_zh": "老大的指令",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv4a-181"
+      }
+    ]
+  },
+  "summary": {
+    "cards": 18,
+    "links": 0,
+    "derived": 18,
+    "rarities": 0,
+    "series": 0,
+    "quarantined": 0,
+    "stillWithoutZh": 4
+  },
+  "quarantined": [],
+  "evidence": {
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "jpSeries": {
+      "id": "pokemon-tcgdex-ja-svln",
+      "providerId": "SVLN",
+      "nameZh": null
+    },
+    "jpCards": [
+      {
+        "id": "pokemon-tcgdex-ja-svln-001",
+        "provider_id": "SVLN-001",
+        "name_ja": "マンタイン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-001",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-002",
+        "provider_id": "SVLN-002",
+        "name_ja": "サンダー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-002",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-003",
+        "provider_id": "SVLN-003",
+        "name_ja": "マリル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-003",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-004",
+        "provider_id": "SVLN-004",
+        "name_ja": "マリルリ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-004",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-005",
+        "provider_id": "SVLN-005",
+        "name_ja": "ニンフィアex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-005",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-006",
+        "provider_id": "SVLN-006",
+        "name_ja": "ゼルネアス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-006",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-007",
+        "provider_id": "SVLN-007",
+        "name_ja": "オドリドリ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-007",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-008",
+        "provider_id": "SVLN-008",
+        "name_ja": "ミミッキュ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-008",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-009",
+        "provider_id": "SVLN-009",
+        "name_ja": "イーブイ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-009",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-010",
+        "provider_id": "SVLN-010",
+        "name_ja": "カビゴン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-010",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-011",
+        "provider_id": "SVLN-011",
+        "name_ja": "すごいつりざお",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-011",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-012",
+        "provider_id": "SVLN-012",
+        "name_ja": "テラスタルオーブ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-012",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-013",
+        "provider_id": "SVLN-013",
+        "name_ja": "ネストボール",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-013",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-014",
+        "provider_id": "SVLN-014",
+        "name_ja": "ハイパーボール",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-014",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-015",
+        "provider_id": "SVLN-015",
+        "name_ja": "プレシャスキャリー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-015",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-016",
+        "provider_id": "SVLN-016",
+        "name_ja": "ポケギア3.0",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-016",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-017",
+        "provider_id": "SVLN-017",
+        "name_ja": "ポケモンいれかえ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-017",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-018",
+        "provider_id": "SVLN-018",
+        "name_ja": "アカマツ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-018",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-019",
+        "provider_id": "SVLN-019",
+        "name_ja": "ナンジャモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-019",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-020",
+        "provider_id": "SVLN-020",
+        "name_ja": "ネモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-020",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-021",
+        "provider_id": "SVLN-021",
+        "name_ja": "博士の研究",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-021",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-022",
+        "provider_id": "SVLN-022",
+        "name_ja": "ボスの指令",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-svln-022",
+        "rarity": null
+      }
+    ],
+    "archiveSet": {
+      "zhTw": null
+    },
+    "archiveCards": [
+      {
+        "providerId": "SVLN-001",
+        "ja": "マンタイン",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-002",
+        "ja": "サンダー",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-003",
+        "ja": "マリル",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-004",
+        "ja": "マリルリ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-005",
+        "ja": "ニンフィアex",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-006",
+        "ja": "ゼルネアス",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-007",
+        "ja": "オドリドリ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-008",
+        "ja": "ミミッキュ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-009",
+        "ja": "イーブイ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-010",
+        "ja": "カビゴン",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-011",
+        "ja": "すごいつりざお",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-012",
+        "ja": "テラスタルオーブ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-013",
+        "ja": "ネストボール",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-014",
+        "ja": "ハイパーボール",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-015",
+        "ja": "プレシャスキャリー",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-016",
+        "ja": "ポケギア3.0",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-017",
+        "ja": "ポケモンいれかえ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-018",
+        "ja": "アカマツ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-019",
+        "ja": "ナンジャモ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-020",
+        "ja": "ネモ",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-021",
+        "ja": "博士の研究",
+        "zhTw": null,
+        "rarity": "None"
+      },
+      {
+        "providerId": "SVLN-022",
+        "ja": "ボスの指令",
+        "zhTw": null,
+        "rarity": "None"
+      }
+    ],
+    "twSeries": null,
+    "twCards": [],
+    "crossSeriesNames": [
+      [
+        "すごいつりざお",
+        {
+          "zh": "厲害釣竿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-066"
+        }
+      ],
+      [
+        "なかよしポフィン",
+        {
+          "zh": "好友寶芬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5k-063"
+        }
+      ],
+      [
+        "ふしぎなアメ",
+        {
+          "zh": "神奇糖果",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1v-072"
+        }
+      ],
+      [
+        "むしとりセット",
+        {
+          "zh": "捕蟲組合",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-094"
+        }
+      ],
+      [
+        "アカマツ",
+        {
+          "zh": "赤松",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-097"
+        }
+      ],
+      [
+        "イキリンコex",
+        {
+          "zh": "怒鸚哥ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-065"
+        }
+      ],
+      [
+        "イーブイ",
+        {
+          "zh": "伊布",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-133"
+        }
+      ],
+      [
+        "オドリドリ",
+        {
+          "zh": "花舞鳥",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-016"
+        }
+      ],
+      [
+        "カウンターキャッチャー",
+        {
+          "zh": "反擊捕捉器",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-059"
+        }
+      ],
+      [
+        "カビゴン",
+        {
+          "zh": "卡比獸",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-143"
+        }
+      ],
+      [
+        "カルボウ",
+        {
+          "zh": "炭小侍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-010"
+        }
+      ],
+      [
+        "キュウコン",
+        {
+          "zh": "九尾",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-015"
+        }
+      ],
+      [
+        "ゴージャスマント",
+        {
+          "zh": "豪華斗篷",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-055"
+        }
+      ],
+      [
+        "サンダー",
+        {
+          "zh": "閃電鳥",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5a-027"
+        }
+      ],
+      [
+        "ジェットエネルギー",
+        {
+          "zh": "噴射能量",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-072"
+        }
+      ],
+      [
+        "スイレンのお世話",
+        {
+          "zh": "水蓮的照顧",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5a-064"
+        }
+      ],
+      [
+        "スグリ",
+        {
+          "zh": "烏栗",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-096"
+        }
+      ],
+      [
+        "スーパーエネルギー回収",
+        {
+          "zh": "超級能量回收",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-064"
+        }
+      ],
+      [
+        "ソウブレイズex",
+        {
+          "zh": "蒼炎刃鬼ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-203"
+        }
+      ],
+      [
+        "タウンデパート",
+        {
+          "zh": "城鎮百貨公司",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-107"
+        }
+      ],
+      [
+        "テラスタルオーブ",
+        {
+          "zh": "太晶珠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-145"
+        }
+      ],
+      [
+        "ナンジャモ",
+        {
+          "zh": "奇樹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2d-069"
+        }
+      ],
+      [
+        "ニンフィアex",
+        {
+          "zh": "仙子伊布ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-069"
+        }
+      ],
+      [
+        "ネストボール",
+        {
+          "zh": "巢穴球",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-070"
+        }
+      ],
+      [
+        "ネモ",
+        {
+          "zh": "妮莫",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4a-343"
+        }
+      ],
+      [
+        "ハイパーボール",
+        {
+          "zh": "高級球",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1v-070"
+        }
+      ],
+      [
+        "ビーチコート",
+        {
+          "zh": "海灘場地",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-078"
+        }
+      ],
+      [
+        "ピジョットex",
+        {
+          "zh": "大比鳥ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-089"
+        }
+      ],
+      [
+        "ピジョン",
+        {
+          "zh": "比比鳥",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-017"
+        }
+      ],
+      [
+        "フトゥー博士のシナリオ",
+        {
+          "zh": "弗圖博士的劇本",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-065"
+        }
+      ],
+      [
+        "ペパー",
+        {
+          "zh": "派帕",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1v-076"
+        }
+      ],
+      [
+        "ホーホー",
+        {
+          "zh": "咕咕",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-076"
+        }
+      ],
+      [
+        "ボウルタウン",
+        {
+          "zh": "深缽鎮",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-070"
+        }
+      ],
+      [
+        "ボスの指令",
+        {
+          "zh": "老大的指令",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4a-181"
+        }
+      ],
+      [
+        "ポケモンいれかえ",
+        {
+          "zh": "寶可夢交替",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-054"
+        }
+      ],
+      [
+        "ポッポ",
+        {
+          "zh": "波波",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-016"
+        }
+      ],
+      [
+        "マリル",
+        {
+          "zh": "瑪力露",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-016"
+        }
+      ],
+      [
+        "マリルリ",
+        {
+          "zh": "瑪力露麗",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-017"
+        }
+      ],
+      [
+        "ミミッキュ",
+        {
+          "zh": "謎擬Ｑ",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-034"
+        }
+      ],
+      [
+        "ミュウex",
+        {
+          "zh": "夢幻ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-151"
+        }
+      ],
+      [
+        "ヨルノズク",
+        {
+          "zh": "貓頭夜鷹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-077"
+        }
+      ],
+      [
+        "リバーサルエネルギー",
+        {
+          "zh": "反轉能量",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-071"
+        }
+      ],
+      [
+        "ルミナスエネルギー",
+        {
+          "zh": "夜光能量",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-073"
+        }
+      ],
+      [
+        "ロコン",
+        {
+          "zh": "六尾",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-037"
+        }
+      ],
+      [
+        "ワザマシン エヴォリューション",
+        {
+          "zh": "招式學習器 演進",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-063"
+        }
+      ],
+      [
+        "勇気のおまもり",
+        {
+          "zh": "勇氣護符",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2d-067"
+        }
+      ],
+      [
+        "博士の研究",
+        {
+          "zh": "博士的研究",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4a-176"
+        }
+      ],
+      [
+        "大地の器",
+        {
+          "zh": "大地之容器",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-060"
+        }
+      ],
+      [
+        "緊急ボード",
+        {
+          "zh": "緊急滑板",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-153"
+        }
+      ]
+    ]
+  }
+}

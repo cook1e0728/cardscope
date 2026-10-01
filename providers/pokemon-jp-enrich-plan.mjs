@@ -27,7 +27,7 @@ function supportedRarityCode(value) {
  * Derived name only when every linked card with the same Japanese name agrees
  * on one Taiwanese name. Anything inconsistent is quarantined, not planned.
  */
-export function buildPokemonJpEnrichPlan({ jpSeries, jpCards, archiveSet, archiveCards, twSeries, twCards, sourceArchive }) {
+export function buildPokemonJpEnrichPlan({ jpSeries, jpCards, archiveSet, archiveCards, twSeries, twCards, sourceArchive, crossSeriesNames = null }) {
   if (!jpSeries?.id || !jpSeries?.providerId) throw new Error('POKEMON_JP_ENRICH_SERIES_REQUIRED');
   if (!/^[0-9a-f]{40}$/.test(String(sourceArchive?.commit))) throw new Error('POKEMON_JP_ENRICH_ARCHIVE_REQUIRED');
   const code = jpSeries.providerId;
@@ -72,6 +72,18 @@ export function buildPokemonJpEnrichPlan({ jpSeries, jpCards, archiveSet, archiv
     else quarantined.push({ id: card.id, reasons: ['ambiguous-derived-name'], candidates: names.sort() });
   }
 
+  // ADR 0004: a card still without a name may take a cross-series Derived
+  // name, given as ja -> { zh, sourceCardId } and already limited to names
+  // that map to exactly one Taiwanese name across the generation.
+  if (crossSeriesNames) {
+    for (const card of jpCards) {
+      const entry = entries.get(card.id);
+      const cross = crossSeriesNames.get(card.name_ja);
+      if (entry.basis || card.name_zh || !cross) continue;
+      Object.assign(entry, { name_zh: cross.zh, basis: 'derived-cross-series', nameSource: cross.sourceCardId });
+    }
+  }
+
   let series = null;
   if (twSeries && !jpSeries.nameZh && twSeries.name_zh) {
     if (String(twSeries.official_code).toUpperCase() !== code.toUpperCase()) {
@@ -92,7 +104,8 @@ export function buildPokemonJpEnrichPlan({ jpSeries, jpCards, archiveSet, archiv
     archiveSet: archiveSet ?? null,
     archiveCards: [...archiveCards].sort((a, b) => compareText(a.providerId, b.providerId)),
     twSeries: twSeries ?? null,
-    twCards: [...(twCards || [])].sort((a, b) => compareText(a.id, b.id))
+    twCards: [...(twCards || [])].sort((a, b) => compareText(a.id, b.id)),
+    ...(crossSeriesNames ? { crossSeriesNames: [...crossSeriesNames].sort((a, b) => compareText(a[0], b[0])) } : {})
   };
   const plan = {
     planVersion: POKEMON_JP_ENRICH_PLAN_VERSION,
@@ -112,7 +125,7 @@ export function buildPokemonJpEnrichPlan({ jpSeries, jpCards, archiveSet, archiv
     summary: {
       cards: cards.length,
       links: cards.filter(c => c.basis === 'tw-official').length,
-      derived: cards.filter(c => c.basis === 'derived-same-name').length,
+      derived: cards.filter(c => c.basis === 'derived-same-name' || c.basis === 'derived-cross-series').length,
       rarities: cards.filter(c => c.rarity_code).length,
       series: series ? 1 : 0,
       quarantined: quarantined.length,

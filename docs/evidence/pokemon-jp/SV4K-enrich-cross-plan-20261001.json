@@ -1,0 +1,2198 @@
+{
+  "plan": {
+    "planVersion": 1,
+    "kind": "jp-enrich",
+    "source": "tcgdex-ja",
+    "seriesProviderId": "SV4K",
+    "seriesId": "pokemon-tcgdex-ja-sv4k",
+    "evidenceHash": "677be1030fcf7f14353567513e4cf0aba0fc3e662f0772e69b3b14e510e845ff",
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "series": null,
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-094",
+        "name_ja": "ゴージャスマント",
+        "link": null,
+        "name_zh": "豪華斗篷",
+        "basis": "derived-cross-series",
+        "rarity_code": null,
+        "nameSource": "pokemon-tcgdex-tw-sv3a-055"
+      }
+    ]
+  },
+  "summary": {
+    "cards": 1,
+    "links": 0,
+    "derived": 1,
+    "rarities": 0,
+    "series": 0,
+    "quarantined": 0,
+    "stillWithoutZh": 1
+  },
+  "quarantined": [],
+  "evidence": {
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "jpSeries": {
+      "id": "pokemon-tcgdex-ja-sv4k",
+      "providerId": "SV4K",
+      "nameZh": "古代咆哮"
+    },
+    "jpCards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-001",
+        "provider_id": "SV4K-001",
+        "name_ja": "ヤナップ",
+        "name_zh": "花椰猴",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-001",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-002",
+        "provider_id": "SV4K-002",
+        "name_ja": "ヤナッキー",
+        "name_zh": "花椰猿",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-002",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-003",
+        "provider_id": "SV4K-003",
+        "name_ja": "マラカッチ",
+        "name_zh": "沙鈴仙人掌",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-003",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-004",
+        "provider_id": "SV4K-004",
+        "name_ja": "イシズマイ",
+        "name_zh": "石居蟹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-004",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-005",
+        "provider_id": "SV4K-005",
+        "name_ja": "イワパレス",
+        "name_zh": "岩殿居蟹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-005",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-006",
+        "provider_id": "SV4K-006",
+        "name_ja": "アマカジ",
+        "name_zh": "甜竹竹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-006",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-007",
+        "provider_id": "SV4K-007",
+        "name_ja": "アママイコ",
+        "name_zh": "甜舞妮",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-007",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-008",
+        "provider_id": "SV4K-008",
+        "name_ja": "マメバッタ",
+        "name_zh": "豆蟋蟀",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-008",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-009",
+        "provider_id": "SV4K-009",
+        "name_ja": "マメバッタ",
+        "name_zh": "豆蟋蟀",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-009",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-010",
+        "provider_id": "SV4K-010",
+        "name_ja": "ブビィ",
+        "name_zh": "鴨嘴寶寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-010",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-011",
+        "provider_id": "SV4K-011",
+        "name_ja": "ドンメル",
+        "name_zh": "呆火駝",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-011",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-012",
+        "provider_id": "SV4K-012",
+        "name_ja": "バクーダ",
+        "name_zh": "噴火駝",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-012",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-013",
+        "provider_id": "SV4K-013",
+        "name_ja": "カルボウ",
+        "name_zh": "炭小侍",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-013",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-014",
+        "provider_id": "SV4K-014",
+        "name_ja": "カルボウ",
+        "name_zh": "炭小侍",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-014",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-015",
+        "provider_id": "SV4K-015",
+        "name_ja": "グレンアルマex",
+        "name_zh": "紅蓮鎧騎ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-015",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-016",
+        "provider_id": "SV4K-016",
+        "name_ja": "イーユイ",
+        "name_zh": "古玉魚",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-016",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-017",
+        "provider_id": "SV4K-017",
+        "name_ja": "タッツー",
+        "name_zh": "墨海馬",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-017",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-018",
+        "provider_id": "SV4K-018",
+        "name_ja": "シードラ",
+        "name_zh": "海刺龍",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-018",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-019",
+        "provider_id": "SV4K-019",
+        "name_ja": "キングドラ",
+        "name_zh": "刺龍王",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-019",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-020",
+        "provider_id": "SV4K-020",
+        "name_ja": "アマージョex",
+        "name_zh": "甜冷美后ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-020",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-021",
+        "provider_id": "SV4K-021",
+        "name_ja": "コソクムシ",
+        "name_zh": "膽小蟲",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-021",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-022",
+        "provider_id": "SV4K-022",
+        "name_ja": "グソクムシャex",
+        "name_zh": "具甲武者ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-022",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-023",
+        "provider_id": "SV4K-023",
+        "name_ja": "ウミディグダ",
+        "name_zh": "海地鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-023",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-024",
+        "provider_id": "SV4K-024",
+        "name_ja": "ウミディグダ",
+        "name_zh": "海地鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-024",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-025",
+        "provider_id": "SV4K-025",
+        "name_ja": "ウミトリオ",
+        "name_zh": "三海地鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-025",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-026",
+        "provider_id": "SV4K-026",
+        "name_ja": "ミガルーサ",
+        "name_zh": "輕身鱈",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-026",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-027",
+        "provider_id": "SV4K-027",
+        "name_ja": "ラティオス",
+        "name_zh": "拉帝歐斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-027",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-028",
+        "provider_id": "SV4K-028",
+        "name_ja": "コロモリ",
+        "name_zh": "滾滾蝙蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-028",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-029",
+        "provider_id": "SV4K-029",
+        "name_ja": "ココロモリ",
+        "name_zh": "心蝙蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-029",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-030",
+        "provider_id": "SV4K-030",
+        "name_ja": "デスマス",
+        "name_zh": "哭哭面具",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-030",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-031",
+        "provider_id": "SV4K-031",
+        "name_ja": "デスカーンex",
+        "name_zh": "死神棺ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-031",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-032",
+        "provider_id": "SV4K-032",
+        "name_ja": "サケブシッポ",
+        "name_zh": "吼叫尾",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-032",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-033",
+        "provider_id": "SV4K-033",
+        "name_ja": "コジョフー",
+        "name_zh": "功夫鼬",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-033",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-034",
+        "provider_id": "SV4K-034",
+        "name_ja": "コジョンド",
+        "name_zh": "師父鼬",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-034",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-035",
+        "provider_id": "SV4K-035",
+        "name_ja": "タタッコ",
+        "name_zh": "拳拳蛸",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-035",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-036",
+        "provider_id": "SV4K-036",
+        "name_ja": "オトスパス",
+        "name_zh": "八爪武師",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-036",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-037",
+        "provider_id": "SV4K-037",
+        "name_ja": "コジオ",
+        "name_zh": "鹽石寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-037",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-038",
+        "provider_id": "SV4K-038",
+        "name_ja": "コジオ",
+        "name_zh": "鹽石寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-038",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-039",
+        "provider_id": "SV4K-039",
+        "name_ja": "ジオヅム",
+        "name_zh": "鹽石壘",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-039",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-040",
+        "provider_id": "SV4K-040",
+        "name_ja": "キョジオーン",
+        "name_zh": "鹽石巨靈",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-040",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-041",
+        "provider_id": "SV4K-041",
+        "name_ja": "チヲハウハネ",
+        "name_zh": "爬地翅",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-041",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-042",
+        "provider_id": "SV4K-042",
+        "name_ja": "スナノケガワex",
+        "name_zh": "沙鐵皮ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-042",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-043",
+        "provider_id": "SV4K-043",
+        "name_ja": "ディンルー",
+        "name_zh": "古鼎鹿",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-043",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-044",
+        "provider_id": "SV4K-044",
+        "name_ja": "ズバット",
+        "name_zh": "超音蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-044",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-045",
+        "provider_id": "SV4K-045",
+        "name_ja": "ゴルバット",
+        "name_zh": "大嘴蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-045",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-046",
+        "provider_id": "SV4K-046",
+        "name_ja": "クロバット",
+        "name_zh": "叉字蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-046",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-047",
+        "provider_id": "SV4K-047",
+        "name_ja": "チョロネコ",
+        "name_zh": "扒手貓",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-047",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-048",
+        "provider_id": "SV4K-048",
+        "name_ja": "レパルダス",
+        "name_zh": "酷豹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-048",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-049",
+        "provider_id": "SV4K-049",
+        "name_ja": "ヤブクロン",
+        "name_zh": "破破袋",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-049",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-050",
+        "provider_id": "SV4K-050",
+        "name_ja": "ダストダス",
+        "name_zh": "灰塵山",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-050",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-051",
+        "provider_id": "SV4K-051",
+        "name_ja": "モルペコ",
+        "name_zh": "莫魯貝可",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-051",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-052",
+        "provider_id": "SV4K-052",
+        "name_ja": "エクスレッグ",
+        "name_zh": "烈腿蝗",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-052",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-053",
+        "provider_id": "SV4K-053",
+        "name_ja": "アラブルタケ",
+        "name_zh": "猛惡菇",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-053",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-054",
+        "provider_id": "SV4K-054",
+        "name_ja": "トドロクツキex",
+        "name_zh": "轟鳴月ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-054",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-055",
+        "provider_id": "SV4K-055",
+        "name_ja": "ゴニョニョ",
+        "name_zh": "咕妞妞",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-055",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-056",
+        "provider_id": "SV4K-056",
+        "name_ja": "ドゴーム",
+        "name_zh": "吼爆彈",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-056",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-057",
+        "provider_id": "SV4K-057",
+        "name_ja": "バクオング",
+        "name_zh": "爆音怪",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-057",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-058",
+        "provider_id": "SV4K-058",
+        "name_ja": "パッチール",
+        "name_zh": "晃晃斑",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-058",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-059",
+        "provider_id": "SV4K-059",
+        "name_ja": "カビゴンドール",
+        "name_zh": "卡比獸娃娃",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-059",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-060",
+        "provider_id": "SV4K-060",
+        "name_ja": "大地の器",
+        "name_zh": "大地之容器",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-060",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-061",
+        "provider_id": "SV4K-061",
+        "name_ja": "ブーストエナジー 古代",
+        "name_zh": "驅勁能量 古代",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-061",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-062",
+        "provider_id": "SV4K-062",
+        "name_ja": "まけんきチョッキ",
+        "name_zh": "不服輸背心",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-062",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-063",
+        "provider_id": "SV4K-063",
+        "name_ja": "ワザマシン デヴォリューション",
+        "name_zh": "招式學習器 衰退",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-063",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-064",
+        "provider_id": "SV4K-064",
+        "name_ja": "オーリム博士の気迫",
+        "name_zh": "奧琳博士的氣魄",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-064",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-065",
+        "provider_id": "SV4K-065",
+        "name_ja": "センリ",
+        "name_zh": "千里",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-065",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-066",
+        "provider_id": "SV4K-066",
+        "name_ja": "メロコ",
+        "name_zh": "梅洛可",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-066",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-067",
+        "provider_id": "SV4K-067",
+        "name_ja": "イワパレス",
+        "name_zh": "岩殿居蟹",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-067",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-068",
+        "provider_id": "SV4K-068",
+        "name_ja": "ブビィ",
+        "name_zh": "鴨嘴寶寶",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-068",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-069",
+        "provider_id": "SV4K-069",
+        "name_ja": "コソクムシ",
+        "name_zh": "膽小蟲",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-069",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-070",
+        "provider_id": "SV4K-070",
+        "name_ja": "ミガルーサ",
+        "name_zh": "輕身鱈",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-070",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-071",
+        "provider_id": "SV4K-071",
+        "name_ja": "サケブシッポ",
+        "name_zh": "吼叫尾",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-071",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-072",
+        "provider_id": "SV4K-072",
+        "name_ja": "コジョンド",
+        "name_zh": "師父鼬",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-072",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-073",
+        "provider_id": "SV4K-073",
+        "name_ja": "キョジオーン",
+        "name_zh": "鹽石巨靈",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-073",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-074",
+        "provider_id": "SV4K-074",
+        "name_ja": "チヲハウハネ",
+        "name_zh": "爬地翅",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-074",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-075",
+        "provider_id": "SV4K-075",
+        "name_ja": "ダストダス",
+        "name_zh": "灰塵山",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-075",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-076",
+        "provider_id": "SV4K-076",
+        "name_ja": "モルペコ",
+        "name_zh": "莫魯貝可",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-076",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-077",
+        "provider_id": "SV4K-077",
+        "name_ja": "アラブルタケ",
+        "name_zh": "猛惡菇",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-077",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-078",
+        "provider_id": "SV4K-078",
+        "name_ja": "ドゴーム",
+        "name_zh": "吼爆彈",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-078",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-079",
+        "provider_id": "SV4K-079",
+        "name_ja": "グレンアルマex",
+        "name_zh": "紅蓮鎧騎ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-079",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-080",
+        "provider_id": "SV4K-080",
+        "name_ja": "アマージョex",
+        "name_zh": "甜冷美后ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-080",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-081",
+        "provider_id": "SV4K-081",
+        "name_ja": "グソクムシャex",
+        "name_zh": "具甲武者ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-081",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-082",
+        "provider_id": "SV4K-082",
+        "name_ja": "デスカーンex",
+        "name_zh": "死神棺ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-082",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-083",
+        "provider_id": "SV4K-083",
+        "name_ja": "スナノケガワex",
+        "name_zh": "沙鐵皮ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-083",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-084",
+        "provider_id": "SV4K-084",
+        "name_ja": "トドロクツキex",
+        "name_zh": "轟鳴月ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-084",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-085",
+        "provider_id": "SV4K-085",
+        "name_ja": "オーリム博士の気迫",
+        "name_zh": "奧琳博士的氣魄",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-085",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-086",
+        "provider_id": "SV4K-086",
+        "name_ja": "センリ",
+        "name_zh": "千里",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-086",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-087",
+        "provider_id": "SV4K-087",
+        "name_ja": "メロコ",
+        "name_zh": "梅洛可",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-087",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-088",
+        "provider_id": "SV4K-088",
+        "name_ja": "グソクムシャex",
+        "name_zh": "具甲武者ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-088",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-089",
+        "provider_id": "SV4K-089",
+        "name_ja": "スナノケガワex",
+        "name_zh": "沙鐵皮ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-089",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-090",
+        "provider_id": "SV4K-090",
+        "name_ja": "トドロクツキex",
+        "name_zh": "轟鳴月ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-090",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-091",
+        "provider_id": "SV4K-091",
+        "name_ja": "オーリム博士の気迫",
+        "name_zh": "奧琳博士的氣魄",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-091",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-092",
+        "provider_id": "SV4K-092",
+        "name_ja": "メロコ",
+        "name_zh": "梅洛可",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-092",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-093",
+        "provider_id": "SV4K-093",
+        "name_ja": "トドロクツキex",
+        "name_zh": "轟鳴月ex",
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-093",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-094",
+        "provider_id": "SV4K-094",
+        "name_ja": "ゴージャスマント",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-094",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv4k-095",
+        "provider_id": "SV4K-095",
+        "name_ja": "基本悪エネルギー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv4k-095",
+        "rarity": null
+      }
+    ],
+    "archiveSet": {
+      "zhTw": "古代咆哮"
+    },
+    "archiveCards": [
+      {
+        "providerId": "SV4K-001",
+        "ja": "ヤナップ",
+        "zhTw": "花椰猴",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-002",
+        "ja": "ヤナッキー",
+        "zhTw": "花椰猿",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-003",
+        "ja": "マラカッチ",
+        "zhTw": "沙鈴仙人掌",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-004",
+        "ja": "イシズマイ",
+        "zhTw": "石居蟹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-005",
+        "ja": "イワパレス",
+        "zhTw": "岩殿居蟹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-006",
+        "ja": "アマカジ",
+        "zhTw": "甜竹竹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-007",
+        "ja": "アママイコ",
+        "zhTw": "甜舞妮",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-008",
+        "ja": "マメバッタ",
+        "zhTw": "豆蟋蟀",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-009",
+        "ja": "マメバッタ",
+        "zhTw": "豆蟋蟀",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-010",
+        "ja": "ブビィ",
+        "zhTw": "鴨嘴寶寶",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-011",
+        "ja": "ドンメル",
+        "zhTw": "呆火駝",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-012",
+        "ja": "バクーダ",
+        "zhTw": "噴火駝",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-013",
+        "ja": "カルボウ",
+        "zhTw": "炭小侍",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-014",
+        "ja": "カルボウ",
+        "zhTw": "炭小侍",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-015",
+        "ja": "グレンアルマex",
+        "zhTw": "紅蓮鎧騎ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV4K-016",
+        "ja": "イーユイ",
+        "zhTw": "古玉魚",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-017",
+        "ja": "タッツー",
+        "zhTw": "墨海馬",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-018",
+        "ja": "シードラ",
+        "zhTw": "海刺龍",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-019",
+        "ja": "キングドラ",
+        "zhTw": "刺龍王",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-020",
+        "ja": "アマージョex",
+        "zhTw": "甜冷美后ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV4K-021",
+        "ja": "コソクムシ",
+        "zhTw": "膽小蟲",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-022",
+        "ja": "グソクムシャex",
+        "zhTw": "具甲武者ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV4K-023",
+        "ja": "ウミディグダ",
+        "zhTw": "海地鼠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-024",
+        "ja": "ウミディグダ",
+        "zhTw": "海地鼠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-025",
+        "ja": "ウミトリオ",
+        "zhTw": "三海地鼠",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-026",
+        "ja": "ミガルーサ",
+        "zhTw": "輕身鱈",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-027",
+        "ja": "ラティオス",
+        "zhTw": "拉帝歐斯",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-028",
+        "ja": "コロモリ",
+        "zhTw": "滾滾蝙蝠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-029",
+        "ja": "ココロモリ",
+        "zhTw": "心蝙蝠",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-030",
+        "ja": "デスマス",
+        "zhTw": "哭哭面具",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-031",
+        "ja": "デスカーンex",
+        "zhTw": "死神棺ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV4K-032",
+        "ja": "サケブシッポ",
+        "zhTw": "吼叫尾",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-033",
+        "ja": "コジョフー",
+        "zhTw": "功夫鼬",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-034",
+        "ja": "コジョンド",
+        "zhTw": "師父鼬",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-035",
+        "ja": "タタッコ",
+        "zhTw": "拳拳蛸",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-036",
+        "ja": "オトスパス",
+        "zhTw": "八爪武師",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-037",
+        "ja": "コジオ",
+        "zhTw": "鹽石寶",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-038",
+        "ja": "コジオ",
+        "zhTw": "鹽石寶",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-039",
+        "ja": "ジオヅム",
+        "zhTw": "鹽石壘",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-040",
+        "ja": "キョジオーン",
+        "zhTw": "鹽石巨靈",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-041",
+        "ja": "チヲハウハネ",
+        "zhTw": "爬地翅",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-042",
+        "ja": "スナノケガワex",
+        "zhTw": "沙鐵皮ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV4K-043",
+        "ja": "ディンルー",
+        "zhTw": "古鼎鹿",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-044",
+        "ja": "ズバット",
+        "zhTw": "超音蝠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-045",
+        "ja": "ゴルバット",
+        "zhTw": "大嘴蝠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-046",
+        "ja": "クロバット",
+        "zhTw": "叉字蝠",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-047",
+        "ja": "チョロネコ",
+        "zhTw": "扒手貓",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-048",
+        "ja": "レパルダス",
+        "zhTw": "酷豹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-049",
+        "ja": "ヤブクロン",
+        "zhTw": "破破袋",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-050",
+        "ja": "ダストダス",
+        "zhTw": "灰塵山",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-051",
+        "ja": "モルペコ",
+        "zhTw": "莫魯貝可",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-052",
+        "ja": "エクスレッグ",
+        "zhTw": "烈腿蝗",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-053",
+        "ja": "アラブルタケ",
+        "zhTw": "猛惡菇",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV4K-054",
+        "ja": "トドロクツキex",
+        "zhTw": "轟鳴月ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV4K-055",
+        "ja": "ゴニョニョ",
+        "zhTw": "咕妞妞",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-056",
+        "ja": "ドゴーム",
+        "zhTw": "吼爆彈",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-057",
+        "ja": "バクオング",
+        "zhTw": "爆音怪",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-058",
+        "ja": "パッチール",
+        "zhTw": "晃晃斑",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV4K-059",
+        "ja": "カビゴンドール",
+        "zhTw": "卡比獸娃娃",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-060",
+        "ja": "大地の器",
+        "zhTw": "大地之容器",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-061",
+        "ja": "ブーストエナジー 古代",
+        "zhTw": "驅勁能量 古代",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-062",
+        "ja": "まけんきチョッキ",
+        "zhTw": "不服輸背心",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-063",
+        "ja": "ワザマシン デヴォリューション",
+        "zhTw": "招式學習器 衰退",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-064",
+        "ja": "オーリム博士の気迫",
+        "zhTw": "奧琳博士的氣魄",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-065",
+        "ja": "センリ",
+        "zhTw": "千里",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-066",
+        "ja": "メロコ",
+        "zhTw": "梅洛可",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV4K-067",
+        "ja": "イワパレス",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-068",
+        "ja": "ブビィ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-069",
+        "ja": "コソクムシ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-070",
+        "ja": "ミガルーサ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-071",
+        "ja": "サケブシッポ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-072",
+        "ja": "コジョンド",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-073",
+        "ja": "キョジオーン",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-074",
+        "ja": "チヲハウハネ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-075",
+        "ja": "ダストダス",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-076",
+        "ja": "モルペコ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-077",
+        "ja": "アラブルタケ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-078",
+        "ja": "ドゴーム",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-079",
+        "ja": "グレンアルマex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-080",
+        "ja": "アマージョex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-081",
+        "ja": "グソクムシャex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-082",
+        "ja": "デスカーンex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-083",
+        "ja": "スナノケガワex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-084",
+        "ja": "トドロクツキex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-085",
+        "ja": "オーリム博士の気迫",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-086",
+        "ja": "センリ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-087",
+        "ja": "メロコ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-088",
+        "ja": "グソクムシャex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-089",
+        "ja": "スナノケガワex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-090",
+        "ja": "トドロクツキex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-091",
+        "ja": "オーリム博士の気迫",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-092",
+        "ja": "メロコ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-093",
+        "ja": "トドロクツキex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-094",
+        "ja": "ゴージャスマント",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV4K-095",
+        "ja": "基本悪エネルギー",
+        "zhTw": null,
+        "rarity": null
+      }
+    ],
+    "twSeries": {
+      "id": "pokemon-tcgdex-tw-sv4k",
+      "official_code": "SV4K",
+      "name_zh": "古代咆哮"
+    },
+    "twCards": [
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-001",
+        "provider_id": "SV4K-001",
+        "name_zh": "花椰猴",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-001",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-002",
+        "provider_id": "SV4K-002",
+        "name_zh": "花椰猿",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-002",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-003",
+        "provider_id": "SV4K-003",
+        "name_zh": "沙鈴仙人掌",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-003",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-004",
+        "provider_id": "SV4K-004",
+        "name_zh": "石居蟹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-004",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-005",
+        "provider_id": "SV4K-005",
+        "name_zh": "岩殿居蟹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-005",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-006",
+        "provider_id": "SV4K-006",
+        "name_zh": "甜竹竹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-006",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-007",
+        "provider_id": "SV4K-007",
+        "name_zh": "甜舞妮",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-007",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-008",
+        "provider_id": "SV4K-008",
+        "name_zh": "豆蟋蟀",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-008",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-009",
+        "provider_id": "SV4K-009",
+        "name_zh": "豆蟋蟀",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-009",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-010",
+        "provider_id": "SV4K-010",
+        "name_zh": "鴨嘴寶寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-010",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-011",
+        "provider_id": "SV4K-011",
+        "name_zh": "呆火駝",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-011",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-012",
+        "provider_id": "SV4K-012",
+        "name_zh": "噴火駝",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-012",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-013",
+        "provider_id": "SV4K-013",
+        "name_zh": "炭小侍",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-013",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-014",
+        "provider_id": "SV4K-014",
+        "name_zh": "炭小侍",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-014",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-015",
+        "provider_id": "SV4K-015",
+        "name_zh": "紅蓮鎧騎ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-015",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-016",
+        "provider_id": "SV4K-016",
+        "name_zh": "古玉魚",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-016",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-017",
+        "provider_id": "SV4K-017",
+        "name_zh": "墨海馬",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-017",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-018",
+        "provider_id": "SV4K-018",
+        "name_zh": "海刺龍",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-018",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-019",
+        "provider_id": "SV4K-019",
+        "name_zh": "刺龍王",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-019",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-020",
+        "provider_id": "SV4K-020",
+        "name_zh": "甜冷美后ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-020",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-021",
+        "provider_id": "SV4K-021",
+        "name_zh": "膽小蟲",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-021",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-022",
+        "provider_id": "SV4K-022",
+        "name_zh": "具甲武者ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-022",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-023",
+        "provider_id": "SV4K-023",
+        "name_zh": "海地鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-023",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-024",
+        "provider_id": "SV4K-024",
+        "name_zh": "海地鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-024",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-025",
+        "provider_id": "SV4K-025",
+        "name_zh": "三海地鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-025",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-026",
+        "provider_id": "SV4K-026",
+        "name_zh": "輕身鱈",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-026",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-027",
+        "provider_id": "SV4K-027",
+        "name_zh": "拉帝歐斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-027",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-028",
+        "provider_id": "SV4K-028",
+        "name_zh": "滾滾蝙蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-028",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-029",
+        "provider_id": "SV4K-029",
+        "name_zh": "心蝙蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-029",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-030",
+        "provider_id": "SV4K-030",
+        "name_zh": "哭哭面具",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-030",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-031",
+        "provider_id": "SV4K-031",
+        "name_zh": "死神棺ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-031",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-032",
+        "provider_id": "SV4K-032",
+        "name_zh": "吼叫尾",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-032",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-033",
+        "provider_id": "SV4K-033",
+        "name_zh": "功夫鼬",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-033",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-034",
+        "provider_id": "SV4K-034",
+        "name_zh": "師父鼬",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-034",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-035",
+        "provider_id": "SV4K-035",
+        "name_zh": "拳拳蛸",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-035",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-036",
+        "provider_id": "SV4K-036",
+        "name_zh": "八爪武師",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-036",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-037",
+        "provider_id": "SV4K-037",
+        "name_zh": "鹽石寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-037",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-038",
+        "provider_id": "SV4K-038",
+        "name_zh": "鹽石寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-038",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-039",
+        "provider_id": "SV4K-039",
+        "name_zh": "鹽石壘",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-039",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-040",
+        "provider_id": "SV4K-040",
+        "name_zh": "鹽石巨靈",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-040",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-041",
+        "provider_id": "SV4K-041",
+        "name_zh": "爬地翅",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-041",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-042",
+        "provider_id": "SV4K-042",
+        "name_zh": "沙鐵皮ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-042",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-043",
+        "provider_id": "SV4K-043",
+        "name_zh": "古鼎鹿",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-043",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-044",
+        "provider_id": "SV4K-044",
+        "name_zh": "超音蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-044",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-045",
+        "provider_id": "SV4K-045",
+        "name_zh": "大嘴蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-045",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-046",
+        "provider_id": "SV4K-046",
+        "name_zh": "叉字蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-046",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-047",
+        "provider_id": "SV4K-047",
+        "name_zh": "扒手貓",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-047",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-048",
+        "provider_id": "SV4K-048",
+        "name_zh": "酷豹",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-048",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-049",
+        "provider_id": "SV4K-049",
+        "name_zh": "破破袋",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-049",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-050",
+        "provider_id": "SV4K-050",
+        "name_zh": "灰塵山",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-050",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-051",
+        "provider_id": "SV4K-051",
+        "name_zh": "莫魯貝可",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-051",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-052",
+        "provider_id": "SV4K-052",
+        "name_zh": "烈腿蝗",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-052",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-053",
+        "provider_id": "SV4K-053",
+        "name_zh": "猛惡菇",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-053",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-054",
+        "provider_id": "SV4K-054",
+        "name_zh": "轟鳴月ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-054",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-055",
+        "provider_id": "SV4K-055",
+        "name_zh": "咕妞妞",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-055",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-056",
+        "provider_id": "SV4K-056",
+        "name_zh": "吼爆彈",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-056",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-057",
+        "provider_id": "SV4K-057",
+        "name_zh": "爆音怪",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-057",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-058",
+        "provider_id": "SV4K-058",
+        "name_zh": "晃晃斑",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-058",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-059",
+        "provider_id": "SV4K-059",
+        "name_zh": "卡比獸娃娃",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-059",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-060",
+        "provider_id": "SV4K-060",
+        "name_zh": "大地之容器",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-060",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-061",
+        "provider_id": "SV4K-061",
+        "name_zh": "驅勁能量 古代",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-061",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-062",
+        "provider_id": "SV4K-062",
+        "name_zh": "不服輸背心",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-062",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-063",
+        "provider_id": "SV4K-063",
+        "name_zh": "招式學習器 衰退",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-063",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-064",
+        "provider_id": "SV4K-064",
+        "name_zh": "奧琳博士的氣魄",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-064",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-065",
+        "provider_id": "SV4K-065",
+        "name_zh": "千里",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-065",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv4k-066",
+        "provider_id": "SV4K-066",
+        "name_zh": "梅洛可",
+        "canonical_id": "pokemon-tcgdex-tw-sv4k-066",
+        "canonicalShared": false
+      }
+    ],
+    "crossSeriesNames": [
+      [
+        "すごいつりざお",
+        {
+          "zh": "厲害釣竿",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-066"
+        }
+      ],
+      [
+        "なかよしポフィン",
+        {
+          "zh": "好友寶芬",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5k-063"
+        }
+      ],
+      [
+        "ふしぎなアメ",
+        {
+          "zh": "神奇糖果",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1v-072"
+        }
+      ],
+      [
+        "むしとりセット",
+        {
+          "zh": "捕蟲組合",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-094"
+        }
+      ],
+      [
+        "アカマツ",
+        {
+          "zh": "赤松",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-097"
+        }
+      ],
+      [
+        "イキリンコex",
+        {
+          "zh": "怒鸚哥ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-065"
+        }
+      ],
+      [
+        "イーブイ",
+        {
+          "zh": "伊布",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-133"
+        }
+      ],
+      [
+        "オドリドリ",
+        {
+          "zh": "花舞鳥",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-016"
+        }
+      ],
+      [
+        "カウンターキャッチャー",
+        {
+          "zh": "反擊捕捉器",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-059"
+        }
+      ],
+      [
+        "カビゴン",
+        {
+          "zh": "卡比獸",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-143"
+        }
+      ],
+      [
+        "カルボウ",
+        {
+          "zh": "炭小侍",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-010"
+        }
+      ],
+      [
+        "キュウコン",
+        {
+          "zh": "九尾",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-015"
+        }
+      ],
+      [
+        "ゴージャスマント",
+        {
+          "zh": "豪華斗篷",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-055"
+        }
+      ],
+      [
+        "サンダー",
+        {
+          "zh": "閃電鳥",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5a-027"
+        }
+      ],
+      [
+        "ジェットエネルギー",
+        {
+          "zh": "噴射能量",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-072"
+        }
+      ],
+      [
+        "スイレンのお世話",
+        {
+          "zh": "水蓮的照顧",
+          "sourceCardId": "pokemon-tcgdex-tw-sv5a-064"
+        }
+      ],
+      [
+        "スグリ",
+        {
+          "zh": "烏栗",
+          "sourceCardId": "pokemon-tcgdex-tw-sv6-096"
+        }
+      ],
+      [
+        "スーパーエネルギー回収",
+        {
+          "zh": "超級能量回收",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-064"
+        }
+      ],
+      [
+        "ソウブレイズex",
+        {
+          "zh": "蒼炎刃鬼ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-203"
+        }
+      ],
+      [
+        "タウンデパート",
+        {
+          "zh": "城鎮百貨公司",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-107"
+        }
+      ],
+      [
+        "テラスタルオーブ",
+        {
+          "zh": "太晶珠",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-145"
+        }
+      ],
+      [
+        "ナンジャモ",
+        {
+          "zh": "奇樹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2d-069"
+        }
+      ],
+      [
+        "ニンフィアex",
+        {
+          "zh": "仙子伊布ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-069"
+        }
+      ],
+      [
+        "ネストボール",
+        {
+          "zh": "巢穴球",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-070"
+        }
+      ],
+      [
+        "ネモ",
+        {
+          "zh": "妮莫",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4a-343"
+        }
+      ],
+      [
+        "ハイパーボール",
+        {
+          "zh": "高級球",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1v-070"
+        }
+      ],
+      [
+        "ビーチコート",
+        {
+          "zh": "海灘場地",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1s-078"
+        }
+      ],
+      [
+        "ピジョットex",
+        {
+          "zh": "大比鳥ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3-089"
+        }
+      ],
+      [
+        "ピジョン",
+        {
+          "zh": "比比鳥",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-017"
+        }
+      ],
+      [
+        "フトゥー博士のシナリオ",
+        {
+          "zh": "弗圖博士的劇本",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-065"
+        }
+      ],
+      [
+        "ペパー",
+        {
+          "zh": "派帕",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1v-076"
+        }
+      ],
+      [
+        "ホーホー",
+        {
+          "zh": "咕咕",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-076"
+        }
+      ],
+      [
+        "ボウルタウン",
+        {
+          "zh": "深缽鎮",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-070"
+        }
+      ],
+      [
+        "ボスの指令",
+        {
+          "zh": "老大的指令",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4a-181"
+        }
+      ],
+      [
+        "ポケモンいれかえ",
+        {
+          "zh": "寶可夢交替",
+          "sourceCardId": "pokemon-tcgdex-tw-sv3a-054"
+        }
+      ],
+      [
+        "ポッポ",
+        {
+          "zh": "波波",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-016"
+        }
+      ],
+      [
+        "マリル",
+        {
+          "zh": "瑪力露",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-016"
+        }
+      ],
+      [
+        "マリルリ",
+        {
+          "zh": "瑪力露麗",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-017"
+        }
+      ],
+      [
+        "ミミッキュ",
+        {
+          "zh": "謎擬Ｑ",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-034"
+        }
+      ],
+      [
+        "ミュウex",
+        {
+          "zh": "夢幻ex",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-151"
+        }
+      ],
+      [
+        "ヨルノズク",
+        {
+          "zh": "貓頭夜鷹",
+          "sourceCardId": "pokemon-tcgdex-tw-sv7-077"
+        }
+      ],
+      [
+        "リバーサルエネルギー",
+        {
+          "zh": "反轉能量",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2p-071"
+        }
+      ],
+      [
+        "ルミナスエネルギー",
+        {
+          "zh": "夜光能量",
+          "sourceCardId": "pokemon-tcgdex-tw-sv1a-073"
+        }
+      ],
+      [
+        "ロコン",
+        {
+          "zh": "六尾",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2a-037"
+        }
+      ],
+      [
+        "ワザマシン エヴォリューション",
+        {
+          "zh": "招式學習器 演進",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4m-063"
+        }
+      ],
+      [
+        "勇気のおまもり",
+        {
+          "zh": "勇氣護符",
+          "sourceCardId": "pokemon-tcgdex-tw-sv2d-067"
+        }
+      ],
+      [
+        "博士の研究",
+        {
+          "zh": "博士的研究",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4a-176"
+        }
+      ],
+      [
+        "大地の器",
+        {
+          "zh": "大地之容器",
+          "sourceCardId": "pokemon-tcgdex-tw-sv4k-060"
+        }
+      ],
+      [
+        "緊急ボード",
+        {
+          "zh": "緊急滑板",
+          "sourceCardId": "pokemon-tcgdex-tw-sv8a-153"
+        }
+      ]
+    ]
+  }
+}

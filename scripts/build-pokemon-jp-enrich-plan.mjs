@@ -46,6 +46,25 @@ try {
   const jpCards = jpPlan.cards.map(card => ({
     id: card.id, provider_id: card.provider_id, name_ja: card.name_ja, name_zh: null, canonical_id: card.id, rarity: card.rarity_code
   }));
+  // --after <enrich-plan evidence>: replay an earlier, already-applied enrichment so this plan only fills what is still empty.
+  let seriesNameZh = null;
+  const afterPath = option('after');
+  if (afterPath) {
+    const after = JSON.parse(readFileSync(afterPath, 'utf8')).plan;
+    if (after.seriesProviderId !== setId) throw new Error('AFTER_PLAN_SERIES_MISMATCH');
+    const byId = new Map(jpCards.map(card => [card.id, card]));
+    for (const entry of after.cards) {
+      const card = byId.get(entry.id);
+      if (!card) throw new Error(`AFTER_PLAN_UNKNOWN_CARD:${entry.id}`);
+      if (entry.name_zh) card.name_zh = entry.name_zh;
+      if (entry.link) card.canonical_id = entry.link;
+      if (entry.rarity_code) card.rarity = entry.rarity_code;
+    }
+    seriesNameZh = after.series?.name_zh ?? null;
+  }
+  // --cross-names <json>: [[name_ja, { zh, sourceCardId }], ...] (ADR 0004).
+  const crossPath = option('cross-names');
+  const crossSeriesNames = crossPath ? new Map(JSON.parse(readFileSync(crossPath, 'utf8')).names) : null;
 
   const twSeriesId = `pokemon-tcgdex-tw-${setId.toLowerCase()}`;
   const twCards = archiveCards.filter(card => card.zhTw).map(card => ({
@@ -55,13 +74,14 @@ try {
   const twSeries = zhTw(set.name) && twCards.length ? { id: twSeriesId, official_code: setId, name_zh: zhTw(set.name) } : null;
 
   const result = buildPokemonJpEnrichPlan({
-    jpSeries: { id: jpPlan.series.id, providerId: setId, nameZh: null },
+    jpSeries: { id: jpPlan.series.id, providerId: setId, nameZh: seriesNameZh },
     jpCards,
     archiveSet: { zhTw: zhTw(set.name) },
     archiveCards,
     twSeries,
     twCards: twSeries ? twCards : [],
-    sourceArchive: { repository: TCGDEX_ARCHIVE_REPOSITORY, commit }
+    sourceArchive: { repository: TCGDEX_ARCHIVE_REPOSITORY, commit },
+    crossSeriesNames
   });
   // Compare with: md5(string_agg(concat_ws('|', id, provider_id, name_zh, canonical_id), E'\n' order by id collate "C"))
   result.fingerprints = {

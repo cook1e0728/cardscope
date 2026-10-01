@@ -1,0 +1,352 @@
+{
+  "rule": "ADR 0004: Source archive tcgdex/cards-database data-asia/SV (SV-P excluded); name_ja maps to exactly one zh-tw name; sourceCardId is the lowest such Taiwanese card present in the database with that exact name_zh (verified 2026-10-01).",
+  "sourceArchive": {
+    "repository": "tcgdex/cards-database",
+    "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+  },
+  "names": [
+    [
+      "すごいつりざお",
+      {
+        "zh": "厲害釣竿",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2p-066"
+      }
+    ],
+    [
+      "なかよしポフィン",
+      {
+        "zh": "好友寶芬",
+        "sourceCardId": "pokemon-tcgdex-tw-sv5k-063"
+      }
+    ],
+    [
+      "ふしぎなアメ",
+      {
+        "zh": "神奇糖果",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1v-072"
+      }
+    ],
+    [
+      "むしとりセット",
+      {
+        "zh": "捕蟲組合",
+        "sourceCardId": "pokemon-tcgdex-tw-sv6-094"
+      }
+    ],
+    [
+      "アカマツ",
+      {
+        "zh": "赤松",
+        "sourceCardId": "pokemon-tcgdex-tw-sv7-097"
+      }
+    ],
+    [
+      "イキリンコex",
+      {
+        "zh": "怒鸚哥ex",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2p-065"
+      }
+    ],
+    [
+      "イーブイ",
+      {
+        "zh": "伊布",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2a-133"
+      }
+    ],
+    [
+      "オドリドリ",
+      {
+        "zh": "花舞鳥",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1a-016"
+      }
+    ],
+    [
+      "カウンターキャッチャー",
+      {
+        "zh": "反擊捕捉器",
+        "sourceCardId": "pokemon-tcgdex-tw-sv4m-059"
+      }
+    ],
+    [
+      "カビゴン",
+      {
+        "zh": "卡比獸",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2a-143"
+      }
+    ],
+    [
+      "カルボウ",
+      {
+        "zh": "炭小侍",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1s-010"
+      }
+    ],
+    [
+      "キュウコン",
+      {
+        "zh": "九尾",
+        "sourceCardId": "pokemon-tcgdex-tw-sv3-015"
+      }
+    ],
+    [
+      "ゴージャスマント",
+      {
+        "zh": "豪華斗篷",
+        "sourceCardId": "pokemon-tcgdex-tw-sv3a-055"
+      }
+    ],
+    [
+      "サンダー",
+      {
+        "zh": "閃電鳥",
+        "sourceCardId": "pokemon-tcgdex-tw-sv5a-027"
+      }
+    ],
+    [
+      "ジェットエネルギー",
+      {
+        "zh": "噴射能量",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1a-072"
+      }
+    ],
+    [
+      "スイレンのお世話",
+      {
+        "zh": "水蓮的照顧",
+        "sourceCardId": "pokemon-tcgdex-tw-sv5a-064"
+      }
+    ],
+    [
+      "スグリ",
+      {
+        "zh": "烏栗",
+        "sourceCardId": "pokemon-tcgdex-tw-sv6-096"
+      }
+    ],
+    [
+      "スーパーエネルギー回収",
+      {
+        "zh": "超級能量回收",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1a-064"
+      }
+    ],
+    [
+      "ソウブレイズex",
+      {
+        "zh": "蒼炎刃鬼ex",
+        "sourceCardId": "pokemon-tcgdex-tw-sv8a-203"
+      }
+    ],
+    [
+      "タウンデパート",
+      {
+        "zh": "城鎮百貨公司",
+        "sourceCardId": "pokemon-tcgdex-tw-sv3-107"
+      }
+    ],
+    [
+      "テラスタルオーブ",
+      {
+        "zh": "太晶珠",
+        "sourceCardId": "pokemon-tcgdex-tw-sv8a-145"
+      }
+    ],
+    [
+      "ナンジャモ",
+      {
+        "zh": "奇樹",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2d-069"
+      }
+    ],
+    [
+      "ニンフィアex",
+      {
+        "zh": "仙子伊布ex",
+        "sourceCardId": "pokemon-tcgdex-tw-sv8a-069"
+      }
+    ],
+    [
+      "ネストボール",
+      {
+        "zh": "巢穴球",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1s-070"
+      }
+    ],
+    [
+      "ネモ",
+      {
+        "zh": "妮莫",
+        "sourceCardId": "pokemon-tcgdex-tw-sv4a-343"
+      }
+    ],
+    [
+      "ハイパーボール",
+      {
+        "zh": "高級球",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1v-070"
+      }
+    ],
+    [
+      "ビーチコート",
+      {
+        "zh": "海灘場地",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1s-078"
+      }
+    ],
+    [
+      "ピジョットex",
+      {
+        "zh": "大比鳥ex",
+        "sourceCardId": "pokemon-tcgdex-tw-sv3-089"
+      }
+    ],
+    [
+      "ピジョン",
+      {
+        "zh": "比比鳥",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2a-017"
+      }
+    ],
+    [
+      "フトゥー博士のシナリオ",
+      {
+        "zh": "弗圖博士的劇本",
+        "sourceCardId": "pokemon-tcgdex-tw-sv4m-065"
+      }
+    ],
+    [
+      "ペパー",
+      {
+        "zh": "派帕",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1v-076"
+      }
+    ],
+    [
+      "ホーホー",
+      {
+        "zh": "咕咕",
+        "sourceCardId": "pokemon-tcgdex-tw-sv7-076"
+      }
+    ],
+    [
+      "ボウルタウン",
+      {
+        "zh": "深缽鎮",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1a-070"
+      }
+    ],
+    [
+      "ボスの指令",
+      {
+        "zh": "老大的指令",
+        "sourceCardId": "pokemon-tcgdex-tw-sv4a-181"
+      }
+    ],
+    [
+      "ポケモンいれかえ",
+      {
+        "zh": "寶可夢交替",
+        "sourceCardId": "pokemon-tcgdex-tw-sv3a-054"
+      }
+    ],
+    [
+      "ポッポ",
+      {
+        "zh": "波波",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2a-016"
+      }
+    ],
+    [
+      "マリル",
+      {
+        "zh": "瑪力露",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2p-016"
+      }
+    ],
+    [
+      "マリルリ",
+      {
+        "zh": "瑪力露麗",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2p-017"
+      }
+    ],
+    [
+      "ミミッキュ",
+      {
+        "zh": "謎擬Ｑ",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2p-034"
+      }
+    ],
+    [
+      "ミュウex",
+      {
+        "zh": "夢幻ex",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2a-151"
+      }
+    ],
+    [
+      "ヨルノズク",
+      {
+        "zh": "貓頭夜鷹",
+        "sourceCardId": "pokemon-tcgdex-tw-sv7-077"
+      }
+    ],
+    [
+      "リバーサルエネルギー",
+      {
+        "zh": "反轉能量",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2p-071"
+      }
+    ],
+    [
+      "ルミナスエネルギー",
+      {
+        "zh": "夜光能量",
+        "sourceCardId": "pokemon-tcgdex-tw-sv1a-073"
+      }
+    ],
+    [
+      "ロコン",
+      {
+        "zh": "六尾",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2a-037"
+      }
+    ],
+    [
+      "ワザマシン エヴォリューション",
+      {
+        "zh": "招式學習器 演進",
+        "sourceCardId": "pokemon-tcgdex-tw-sv4m-063"
+      }
+    ],
+    [
+      "勇気のおまもり",
+      {
+        "zh": "勇氣護符",
+        "sourceCardId": "pokemon-tcgdex-tw-sv2d-067"
+      }
+    ],
+    [
+      "博士の研究",
+      {
+        "zh": "博士的研究",
+        "sourceCardId": "pokemon-tcgdex-tw-sv4a-176"
+      }
+    ],
+    [
+      "大地の器",
+      {
+        "zh": "大地之容器",
+        "sourceCardId": "pokemon-tcgdex-tw-sv4k-060"
+      }
+    ],
+    [
+      "緊急ボード",
+      {
+        "zh": "緊急滑板",
+        "sourceCardId": "pokemon-tcgdex-tw-sv8a-153"
+      }
+    ]
+  ]
+}

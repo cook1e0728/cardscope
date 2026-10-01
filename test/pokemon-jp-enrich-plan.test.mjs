@@ -58,9 +58,26 @@ test('enrichment SQL is digest-guarded and gated on the dry-run summary', () => 
   const { plan } = buildPokemonJpEnrichPlan(input());
   const { digest, sql } = buildPokemonJpEnrichSql(plan, { actor: 'tester', dryRun: false, gated: true });
   assert.match(digest, /^[0-9a-f]{64}$/);
-  assert.match(sql, /\('090','モモワロウex','桃歹郎ex','derived-same-name',null\)/);
+  assert.match(sql, /\('090','モモワロウex','桃歹郎ex','derived-same-name',null,null\)/);
   assert.match(sql, /dry->'changed' = '\{"cards":3,"links":2,"derived":1,"rarities":1,"series":1\}'::jsonb/);
   assert.match(sql, /then private\.enrich_pokemon_jp_metadata\(plan, 'tester', true\) end as dry/);
   const tampered = { ...plan, cards: plan.cards.map((c, i) => (i === 0 ? { ...c, link: 'pokemon-tcgdex-tw-other-001' } : c)) };
   assert.throws(() => buildPokemonJpEnrichSql(tampered, { actor: 'tester', dryRun: true }), /NOT_DERIVABLE/);
+});
+
+test('cross-series names fill only cards that are still unnamed and cite a Taiwanese card', () => {
+  const crossSeriesNames = new Map([
+    ['大地の器', { zh: '大地之容器', sourceCardId: 'pokemon-tcgdex-tw-sv4k-060' }],
+    ['モモワロウex', { zh: '不該使用', sourceCardId: 'pokemon-tcgdex-tw-other-001' }]
+  ]);
+  const { plan, summary } = buildPokemonJpEnrichPlan(input({ crossSeriesNames }));
+  assert.deepEqual(plan.cards.find(c => c.id === 'pokemon-tcgdex-ja-svt-093'), {
+    id: 'pokemon-tcgdex-ja-svt-093', name_ja: '大地の器', link: null, name_zh: '大地之容器', basis: 'derived-cross-series', rarity_code: null, nameSource: 'pokemon-tcgdex-tw-sv4k-060'
+  });
+  assert.equal(plan.cards.find(c => c.id === 'pokemon-tcgdex-ja-svt-090').basis, 'derived-same-name', 'same-series names win over cross-series ones');
+  assert.equal(summary.derived, 2);
+  assert.equal(summary.stillWithoutZh, 0);
+  const { sql } = buildPokemonJpEnrichSql(plan, { actor: 'tester', dryRun: false, gated: true });
+  assert.match(sql, /\('093','大地の器','大地之容器','derived-cross-series',null,'pokemon-tcgdex-tw-sv4k-060'\)/);
+  assert.match(sql, /"derived":2/);
 });
