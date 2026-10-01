@@ -13,6 +13,20 @@ node scripts/plan-pokemon-jp-import.mjs snapshot.json --series PMCG1 --limit 100
 node --test test/pokemon-jp-manifest.test.mjs
 ```
 
+## Archive source when the API is down (ADR 0002)
+
+When `api.tcgdex.net` is unreachable, read the same data from a clean checkout of `github.com/tcgdex/cards-database` pinned to one commit. Data files are parsed as literals, never executed. The snapshot adds `sourceArchive` and per-card `sourceFile`; the rest of the pipeline is unchanged.
+
+```powershell
+git clone --depth 1 --filter=blob:none --sparse https://github.com/tcgdex/cards-database.git $env:TEMP\tcgdex-ja
+git -C $env:TEMP\tcgdex-ja sparse-checkout set data-asia/SV
+node scripts/snapshot-pokemon-jp-from-tcgdex-archive.mjs $env:TEMP\tcgdex-ja --series SV6a --existing existing-jp-rows.json > SV6a-snapshot.json
+node scripts/plan-pokemon-jp-import.mjs SV6a-snapshot.json --series SV6a > SV6a-manifest.json
+node scripts/build-pokemon-jp-import-plan.mjs SV6a-manifest.json > SV6a-import-plan.json
+```
+
+`existing-jp-rows.json` is `{series, cards, printings}` of the live JP Pokémon rows, read just before planning.
+
 ## Real-source canary (2026-09-28)
 
 Two ordinary metadata GETs at `2026-09-28T15:34:23.4821772Z` verified `https://api.tcgdex.net/v2/ja/sets/PMCG1` and `https://api.tcgdex.net/v2/ja/cards/PMCG1-001`. One saved card produced three proposed manifest records (series/card/printing), zero quarantines, zero writes. Source name `フシギダネ`, local ID `001`, source rarity `Common` mapped to `C`. This source-local ID is not independently verified as an official printed card number.

@@ -82,13 +82,15 @@ function rowsByStableIdentity(rows, identity) {
   });
 }
 
-function sourceSnapshotHash(sourceIdentity, observedAt, seriesId, sets, cards) {
+function sourceSnapshotHash(sourceIdentity, observedAt, seriesId, sets, cards, sourceArchive) {
   return sha256PokemonJpPayload({
     sourceIdentity,
     observedAt,
     seriesId,
     sets: rowsByStableIdentity(sets, 'id'),
-    cards: rowsByStableIdentity(cards, 'id')
+    cards: rowsByStableIdentity(cards, 'id'),
+    // Absent for API snapshots so their existing hashes stay unchanged.
+    ...(sourceArchive ? { sourceArchive } : {})
   });
 }
 
@@ -162,6 +164,30 @@ function sourceEvidence(resource, providerId, observedAt) {
     urlType: providerId == null ? 'unavailable-provider-id' : 'derived-provider-endpoint',
     observedAt
   };
+}
+
+const ARCHIVE_REPOSITORY = 'tcgdex/cards-database';
+const ARCHIVE_SET_FILE = /^data-asia\/[A-Za-z0-9]+\/([A-Za-z0-9]+(?:\.[A-Za-z0-9]+)*)\.ts$/;
+
+// Snapshots read from the TCGdex repository (ADR 0002) name the commit and set
+// file; every card must then come from <set file without .ts>/<localId>.ts.
+function validSourceArchive(value, seriesId) {
+  if (value == null) return null;
+  const match = isObject(value) ? ARCHIVE_SET_FILE.exec(String(value.setFile)) : null;
+  if (!match || match[1] !== seriesId || value.repository !== ARCHIVE_REPOSITORY
+    || !/^[0-9a-f]{40}$/.test(String(value.commit)) || Object.keys(value).length !== 3) {
+    throw new Error('INVALID_POKEMON_JP_SOURCE_ARCHIVE');
+  }
+  return { repository: value.repository, commit: value.commit, setFile: value.setFile };
+}
+
+function archiveCardFile(sourceArchive, localId) {
+  return `${sourceArchive.setFile.slice(0, -3)}/${localId}.ts`;
+}
+
+function withArchive(evidence, sourceArchive, path) {
+  if (!sourceArchive) return evidence;
+  return { ...evidence, retrievedVia: 'github-archive', archive: { repository: sourceArchive.repository, commit: sourceArchive.commit, path } };
 }
 
 function supportedRarity(value) {
@@ -251,7 +277,8 @@ function validateInput(input, options) {
   }
   const matchingSets = input.sets.filter(row => isObject(row) && row.id === seriesId);
   if (matchingSets.length === 0) throw new Error('POKEMON_JP_SERIES_NOT_IN_SOURCE_SNAPSHOT');
-  return { seriesId, limit, matchingSets, observedAt };
+  const sourceArchive = validSourceArchive(input.sourceArchive, seriesId);
+  return { seriesId, limit, matchingSets, observedAt, sourceArchive };
 }
 
 /**
@@ -259,9 +286,12 @@ function validateInput(input, options) {
  * its card details. This module never fetches data or writes to a database.
  */
 export function planPokemonJpManifest(input, options = {}) {
-  const { seriesId, limit, matchingSets, observedAt } = validateInput(input, options);
+  const { seriesId, limit, matchingSets, observedAt, sourceArchive } = validateInput(input, options);
   const sourceIdentity = { ...POKEMON_JP_SOURCE_IDENTITY };
-  const sourceHash = sourceSnapshotHash(sourceIdentity, observedAt, seriesId, input.sets, input.cards);
+  const sourceHash = sourceSnapshotHash(sourceIdentity, observedAt, seriesId, input.sets, input.cards, sourceArchive);
+  const seriesEvidence = () => withArchive(sourceEvidence('sets', seriesId, observedAt), sourceArchive, sourceArchive?.setFile);
+  const cardEvidence = (providerId, localId) => withArchive(sourceEvidence('cards', providerId, observedAt), sourceArchive,
+    sourceArchive && localId ? archiveCardFile(sourceArchive, localId) : null);
   const seedHash = seedSnapshotHash(input.existingJpRows);
   const sourceCards = rowsByStableIdentity(input.cards, 'id');
   const cursor = options.cursor == null ? null : String(options.cursor);
@@ -313,9 +343,9 @@ export function planPokemonJpManifest(input, options = {}) {
   const quarantined = [];
   const seedNumberCollisions = [];
   if (sourceSeriesIdentityIssue) {
-    quarantined.push({ entity: 'series', sourceProviderId: seriesId, targetId: seriesTargetId, reasons: [sourceSeriesIdentityIssue], sourceEvidence: sourceEvidence('sets', seriesId, observedAt) });
+    quarantined.push({ entity: 'series', sourceProviderId: seriesId, targetId: seriesTargetId, reasons: [sourceSeriesIdentityIssue], sourceEvidence: seriesEvidence() });
   } else if (seriesReason) {
-    quarantined.push({ entity: 'series', sourceProviderId: seriesId, targetId: seriesTargetId, reasons: [seriesReason], sourceEvidence: sourceEvidence('sets', seriesId, observedAt) });
+    quarantined.push({ entity: 'series', sourceProviderId: seriesId, targetId: seriesTargetId, reasons: [seriesReason], sourceEvidence: seriesEvidence() });
   } else if (offset === 0) {
     records.push({
       entity: 'series',
@@ -325,7 +355,7 @@ export function planPokemonJpManifest(input, options = {}) {
       gameId: GAME_ID,
       region: POKEMON_JP_SOURCE_IDENTITY.region,
       locale: POKEMON_JP_SOURCE_IDENTITY.locale,
-      sourceEvidence: sourceEvidence('sets', seriesId, observedAt),
+      sourceEvidence: seriesEvidence(),
       metadata: {
         name_ja: clean(selectedSet?.name),
         releaseDate: normalizeDate(selectedSet?.releaseDate)
@@ -346,6 +376,7 @@ export function planPokemonJpManifest(input, options = {}) {
     if (sourceSeriesIdentityIssue) reasons.push(sourceSeriesIdentityIssue);
     if (seriesReason) reasons.push(seriesReason);
     if (rawId && allCardIds.get(rawId) > 1) reasons.push('duplicate-source-card-id');
+    if (sourceArchive && rawLocalId && card?.sourceFile !== archiveCardFile(sourceArchive, rawLocalId)) reasons.push('archive-source-file-mismatch');
     if (rawId && rawLocalId && rawId === `${seriesId}-${rawLocalId}` && seriesTargetId != null
       && pokemonJpTargetId('card', rawId, seriesId) == null) reasons.push('unsupported-readable-card-id');
     const numberKey = normalizeCardNumber(rawLocalId);
@@ -371,7 +402,7 @@ export function planPokemonJpManifest(input, options = {}) {
         localId: rawLocalId,
         targetId: rawId ? pokemonJpTargetId('card', rawId, seriesId) : null,
         reasons: [...new Set(reasons)].sort(compareText),
-        sourceEvidence: sourceEvidence('cards', rawId, observedAt)
+        sourceEvidence: cardEvidence(rawId, rawLocalId)
       });
       continue;
     }
@@ -389,7 +420,7 @@ export function planPokemonJpManifest(input, options = {}) {
       gameId: GAME_ID,
       region: POKEMON_JP_SOURCE_IDENTITY.region,
       locale: POKEMON_JP_SOURCE_IDENTITY.locale,
-      sourceEvidence: sourceEvidence('cards', rawId, observedAt),
+      sourceEvidence: cardEvidence(rawId, rawLocalId),
       metadata: { name_ja: clean(card?.name) }
     });
     records.push({
@@ -403,7 +434,7 @@ export function planPokemonJpManifest(input, options = {}) {
       region: POKEMON_JP_SOURCE_IDENTITY.region,
       locale: POKEMON_JP_SOURCE_IDENTITY.locale,
       identity: { setProviderId: seriesId, localId: rawLocalId },
-      sourceEvidence: sourceEvidence('cards', rawId, observedAt),
+      sourceEvidence: cardEvidence(rawId, rawLocalId),
       metadata: { cardNumber: rawLocalId, releaseDate, rarity }
     });
   }
@@ -427,7 +458,8 @@ export function planPokemonJpManifest(input, options = {}) {
       hashAlgorithm: 'sha256',
       sourceHash,
       seedHash,
-      sourceObservedAt: observedAt
+      sourceObservedAt: observedAt,
+      ...(sourceArchive ? { sourceArchive } : {})
     },
     scope: {
       gameId: GAME_ID,
