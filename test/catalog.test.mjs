@@ -346,6 +346,41 @@ test('cards sharing a canonical merge into one result that keeps both printings 
   }
 });
 
+test('series search results also carry the printings of linked cards in the same canonical',async()=>{
+  const tw={id:'pokemon-tcgdex-tw-sv6a-039',canonicalId:'pokemon-tcgdex-tw-sv6a-039',game:'pokemon',seriesId:'pokemon-tcgdex-tw-sv6a',officialCardNumber:'039',rarity:null,nameZh:'桃歹郎ex',nameJa:null,nameEn:null,nameKo:null,aliases:[],metadata:{}};
+  const jp={...tw,id:'pokemon-tcgdex-ja-sv6a-039',seriesId:'pokemon-tcgdex-ja-sv6a',rarity:'RR',nameJa:'モモワロウex'};
+  const requests=[];
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1),respond=body=>{res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(body))};
+    requests.push([table,url.searchParams]);
+    if(table==='tcg_cards'&&url.searchParams.has('or'))return respond([]);
+    if(table==='tcg_series'&&url.searchParams.has('or'))return respond([{id:'pokemon-tcgdex-ja-sv6a'}]);
+    if(table==='tcg_printings'&&url.searchParams.has('series_id'))return respond([{cardId:jp.id}]);
+    if(table==='tcg_cards'&&url.searchParams.has('id'))return respond([jp]);
+    if(table==='tcg_cards'&&url.searchParams.has('canonical_id'))return respond([jp,tw]);
+    if(table==='tcg_printings')return respond([jp,tw].map(card=>({id:`${card.id}-p`,cardId:card.id,seriesId:card.seriesId,region:card===jp?'JP':'TW',language:card===jp?'ja-JP':'zh-TW',localSetCode:'SV6a',localCardNumber:'039',rarity:card.rarity,imageUrl:null,imageRehostRequired:false})));
+    return respond([]);
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`sibling fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`sibling fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent('ナイトワンダラー')}`)).json();
+    assert.equal(body.meta.match,'database-series');
+    assert.equal(body.meta.candidateCount,1,'siblings must not inflate the candidate count');
+    assert.deepEqual(body.data.map(card=>[card.id,card.rarity,card.printings.map(p=>p.region).sort().join('/')]),[[tw.id,'RR','JP/TW']]);
+    assert.match(requests.find(([table,params])=>table==='tcg_cards'&&params.has('canonical_id'))[1].get('canonical_id'),/pokemon-tcgdex-tw-sv6a-039/);
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
 test('database search falls back to series names and lists that series in card-number order',async()=>{
   const seriesId='pokemon-tcgdex-ja-sv6a';
   const cards=['002','001'].map(n=>({id:`${seriesId}-${n}`,canonicalId:`${seriesId}-${n}`,game:'pokemon',seriesId,officialCardNumber:n,rarity:null,nameZh:null,nameJa:n==='001'?'バチュル':'デンチュラ',nameEn:null,nameKo:null,aliases:[`SV6a-${n}`],metadata:{}}));
