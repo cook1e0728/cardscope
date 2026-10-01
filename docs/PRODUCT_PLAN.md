@@ -100,7 +100,7 @@ CardScope 是「繁體中文玩家的跨語言、跨版本 TCG 查證與收藏�
 - 日版寶可夢新增 metadata-only 零寫入 manifest／CLI，最多 100 張、固定 JP source/locale、精確身分、seed 衝突隔離、source/seed checksum 與 cursor；真實 PMCG1 單卡預檢通過，未匯入正式庫、未啟用自動同步、未新增圖片／價格／猜譯中文。見 `docs/JP_METADATA_PREFLIGHT.md`。
 - 瀏覽器正式頁面已確認五個 IP 與上方切換同步、100 張首屏卡片正常載入，390px 手機版無橫向溢出；切換器 Enter 開啟、Escape 關閉並返回焦點已確認，完整鍵盤、200% 縮放與所有 IP 詳情仍需各自驗收。
 
-#### Phase 2C 日版 metadata pilot 設計（2026-10-01 定案；兩個 pilot 與朱紫 10 系列共 12 系列 944 張已正式匯入並通過複核）
+#### Phase 2C 日版 metadata pilot 設計（2026-10-01 定案；12 系列 944 張已匯入，其中 844 張已有中文名並與台版連結或同名推導，見 ADR 0003）
 
 - 2026-10-01 SVLN 正式結果：dry-run、真實匯入、立即重播皆符合預期（planDigest `48f1dbfe…1b46`；新增 1 series／22 card／22 canonical／22 printing，重播 `replay=true` 零異動，稽核 import／replay 各一筆）。台版 7,436／美版 20,635 printing 與 SV4a Seed 未變；新列全 `pending`、無圖、無繁中名、無稀有度。正式 `/api/cards`、`/api/search`（`ニンフィア`）與詳情永久網址抽查通過。第二個 pilot SV6a（ナイトワンダラー，94 張）因 TCGdex API 拒絕連線，依 ADR 0002 改讀 GitHub 固定 commit，已正式匯入、重播零異動並通過複核與 API 抽查；88 張有稀有度（含 AR／UR／SAR），6 張無核准對映留空。
 

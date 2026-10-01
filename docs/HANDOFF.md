@@ -16,7 +16,18 @@
 - 尚未執行的唯一下一步，以及開始前必須重新核對的外部狀態。
 - 未追蹤或屬於使用者的本機檔案，避免下一台電腦誤刪。
 
-## 目前里程碑（2026-10-01 晚，SVLN 已正式匯入；優先於下方所有段落）
+## 目前里程碑（2026-10-01 夜，日版中文化；優先於下方所有段落）
+
+- 分支 `claude/jp-zh-names`（依主方案第 0 節每主題一條；完成後快轉 main）。決策經 grill-with-docs 三輪定案：日版連結台版既有 Canonical card（ADR 0003）、同系列 Derived name、新增稀有度 `ACE`（ACE SPEC，排序在 RR 與 Rare Holo 之間）、SV6a 092–094 金卡維持空值、沒有台版的系列不猜譯。詞彙表新增 Source archive、Derived name。
+- Migration `20261001114348_pokemon_jp_enrichment`：新增 `ACE`（`tcg_rarities` tier 14，原 ≥14 者 +1，比照 K 的先例）、追加式稽核表 `private.catalog_jp_enrich_audit`、只填空值的 `private.enrich_pokemon_jp_metadata(jsonb, text, boolean)`（dry-run、digest 重播、連結四項檢查、同名推導檢查、系列名須等於同代碼台版名）。套用前先在正式庫以「整批執行後拋例外」的交易完整測過 SV6a 寫入與重播，並確認全數回滾。
+- 計畫：`scripts/build-pokemon-jp-enrich-plan.mjs`（`providers/pokemon-jp-enrich-plan.mjs`）由 Source archive 與匯入計畫產生；台版列以封存資料推導，9 個系列的指紋 md5 與正式庫逐一相同才使用。SQL 由 `buildPokemonJpEnrichSql`（gated：同一敘述先 dry-run，`changed` 完全相符才寫入）產生。證據 `docs/evidence/pokemon-jp/<系列>-enrich-plan-20261001.json`。
+- 結果（每系列 enrich＋replay 各一筆稽核，重播零異動，共 18 筆）：SV6a 93 張（連結 64、推導 29、ACE 3）、SV2D 97（71/26）、SV2P 98（71/27）、SV3a 90（89/1）、SV4K 93（66/27）、SV4M 94（66/28）、SV5a 94（66/28）、SV7a 93（64/29）、SV9a 92（92/0）；9 個系列取得台版官方中文標題。SVLN、SVLS、SVK 無台版，本輪不變。
+- 複核：日版 944 張中 844 張有中文名（連結 649、推導 195），仍待補 100 張（9 系列共 12 張無同名可推導，加上 3 個無台版系列 88 張）；台版 649 張仍是自己的作品層、指紋不變、作品層新增日文名；沒有作品層被超過 2 張卡共用；card／printing 稀有度不一致 0；台版 7,436／美版 20,635、SV4a 不變。
+- 程式：詳細頁對同名推導名稱加註小字「同名推導」；`loadCardFromDatabase` 會一併帶出同一作品層的其他卡（日版詳細頁可看到台版 Printing）。`data/rarity-rankings.json` 新增 `ACE`（美版 `ACE SPEC Rare` 33 張隨之顯示為 ACE）。Node 全套 230/230。
+
+下一個安全起點：部署後抽查 `/api/search?q=桃歹郎`、日版 SV6a-039 詳細頁並列日／台版、SV6a-090 顯示「同名推導」。後續候選：>100 張日版系列的分批匯入、SVLN／SVLS／SVK 的中文名來源、日版 `data_status` 升級定義。日版修改一律走 `enrich_pokemon_jp_metadata`，只填空值。
+
+## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
 - 分支 `claude/grill-with-docs-4i2eha`（尚未合併 main、未開 PR）；本輪只改文件，無程式變更、Render 無需部署。
 - 執行前複核：正式函式 `prosrc` md5 `d9ce6c66c2704bb304cc2e4100342e10` 與交接一致；SV4a Seed 1/1/1（card md5 `50098b2093bf91ef2fd336c258291024`、printing md5 `c6f030ffab6701f5eda2e77627734c38`）；台版 7,436／美版 20,635；SVLN／`tcgdex-ja` 零碰撞、稽核 0 筆。
@@ -50,7 +61,7 @@
 
 - `/api/search` 在卡名與 `search_text` 皆無結果時，改查 `tcg_series` 名稱／官方代號（最多 5 個系列），依 `series_id, local_card_number` 列出該系列卡（上限 100），`meta.match='database-series'`。新增 mock 測試；Node 全套 226/226。需部署後才在正式網站生效。
 
-### 稀有度對映（待使用者決定，未改動）
+### 稀有度對映（已由上方目前里程碑處理：ACE 已新增，金卡維持空值）
 
 - `ACE SPEC Rare`：DB 已有此代碼（美版 33 筆）但排序表無；與既有 `Rare ACE` 是否同義、日版是否應顯示 `ACE` 需產品決定。加入別名會改變全站顯示與 facets，且已匯入日版列需 UPDATE（匯入函式只允許 INSERT，需另寫 migration）。
 - `Mega Hyper Rare`：TCGdex 在 Mega 世代代表 MUR，但 SV6a 092–094 金卡也被標成此值，來源不一致，不能全域對映；維持空值。
@@ -60,7 +71,7 @@
 - main 快轉到 `d51fefa` 並推送（`a88900c..d51fefa`），Render 自動部署後正式 `/api/search?q=ナイトワンダラー` 回 `match=database-series`、40 筆、依卡號從 SV6a-001 起；`モモワロウ`、`噴火龍`、`SV9a` 搜尋與 `/api/catalog/health` 皆 HTTP 200。
 - 本機 `.claude/settings.local.json`（全域 gitignore，不進版控）已加入允許規則 `Bash(git push origin main)`，經使用者指示；其他電腦需各自設定。
 
-下一個安全起點：稀有度對映等使用者決定；>100 張系列需先設計多批交易。每次再匯入前重新讀取正式日版既有列並重建快照，稽核表目前 24 筆。
+（當時的下一步：稀有度對映等使用者決定；>100 張系列需先設計多批交易。匯入稽核表 24 筆。）
 
 ## 前一里程碑（2026-10-01，SVLN 匯入前）
 
