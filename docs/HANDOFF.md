@@ -55,7 +55,12 @@
 - `ACE SPEC Rare`：DB 已有此代碼（美版 33 筆）但排序表無；與既有 `Rare ACE` 是否同義、日版是否應顯示 `ACE` 需產品決定。加入別名會改變全站顯示與 facets，且已匯入日版列需 UPDATE（匯入函式只允許 INSERT，需另寫 migration）。
 - `Mega Hyper Rare`：TCGdex 在 Mega 世代代表 MUR，但 SV6a 092–094 金卡也被標成此值，來源不一致，不能全域對映；維持空值。
 
-下一個安全起點：部署系列名稱搜尋（合併 main），部署後驗證 `/api/search?q=ナイトワンダラー`。稀有度對映等使用者決定。每次再匯入前重新讀取正式日版既有列並重建快照。
+### 部署（2026-10-01 晚）
+
+- main 快轉到 `d51fefa` 並推送（`a88900c..d51fefa`），Render 自動部署後正式 `/api/search?q=ナイトワンダラー` 回 `match=database-series`、40 筆、依卡號從 SV6a-001 起；`モモワロウ`、`噴火龍`、`SV9a` 搜尋與 `/api/catalog/health` 皆 HTTP 200。
+- 本機 `.claude/settings.local.json`（全域 gitignore，不進版控）已加入允許規則 `Bash(git push origin main)`，經使用者指示；其他電腦需各自設定。
+
+下一個安全起點：稀有度對映等使用者決定；>100 張系列需先設計多批交易。每次再匯入前重新讀取正式日版既有列並重建快照，稽核表目前 24 筆。
 
 ## 前一里程碑（2026-10-01，SVLN 匯入前）
 
