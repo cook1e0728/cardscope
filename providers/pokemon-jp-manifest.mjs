@@ -9,7 +9,7 @@ export const POKEMON_JP_SOURCE_IDENTITY = Object.freeze({
 
 export const MAX_POKEMON_JP_MANIFEST_CARDS = 100;
 
-const NAMESPACE = 'pokemon-tcgdex-jp';
+const NAMESPACE = 'pokemon-tcgdex-ja';
 const GAME_ID = 'pokemon';
 const TCGDEX_JA_API_BASE = 'https://api.tcgdex.net/v2/ja';
 const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -36,44 +36,24 @@ function requireProviderId(value, code) {
   return value;
 }
 
+const READABLE_SERIES_ID = /^[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)*$/;
+const READABLE_LOCAL_ID = /^[A-Za-z0-9]+$/;
+
 /**
- * Encode a source identity without slugging or dropping provider characters.
- * Card/printing IDs include the set ID in the encoded tuple so repeated raw
- * card IDs in different sets cannot collide in the JP namespace.
+ * Build the readable catalog ID used for a JP series, card or printing.
+ * Identity lives in (source, provider ID); this ID is only a stable label, so
+ * provider IDs outside the unambiguous character set return null and the row
+ * is quarantined instead of being slugged. Card and printing IDs require the
+ * provider ID to be `<series>-<local ID>`, so different sets cannot collide.
  */
 export function pokemonJpTargetId(entity, providerId, seriesProviderId = null) {
   if (!['series', 'card', 'printing'].includes(entity)) throw new Error('INVALID_POKEMON_JP_ENTITY');
   const id = requireProviderId(providerId, 'INVALID_POKEMON_JP_PROVIDER_ID');
-  const payload = entity === 'series'
-    ? [POKEMON_JP_SOURCE_IDENTITY.source, entity, id]
-    : [POKEMON_JP_SOURCE_IDENTITY.source, entity, requireProviderId(seriesProviderId, 'INVALID_POKEMON_JP_SERIES_ID'), id];
-  return `${NAMESPACE}-${entity}-${Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url')}`;
-}
-
-export function decodePokemonJpTargetId(value) {
-  const text = clean(value);
-  if (!text?.startsWith(`${NAMESPACE}-`)) throw new Error('INVALID_POKEMON_JP_TARGET_ID');
-  const suffix = text.slice(`${NAMESPACE}-`.length);
-  const split = suffix.indexOf('-');
-  if (split < 0) throw new Error('INVALID_POKEMON_JP_TARGET_ID');
-  const entity = suffix.slice(0, split);
-  if (!['series', 'card', 'printing'].includes(entity)) throw new Error('INVALID_POKEMON_JP_TARGET_ID');
-  let payload;
-  try {
-    payload = JSON.parse(Buffer.from(suffix.slice(split + 1), 'base64url').toString('utf8'));
-  } catch {
-    throw new Error('INVALID_POKEMON_JP_TARGET_ID');
-  }
-  if (!Array.isArray(payload) || payload[0] !== POKEMON_JP_SOURCE_IDENTITY.source || payload[1] !== entity) {
-    throw new Error('INVALID_POKEMON_JP_TARGET_ID');
-  }
-  if (entity === 'series' && payload.length === 3 && typeof payload[2] === 'string') {
-    return { entity, providerId: payload[2] };
-  }
-  if (entity !== 'series' && payload.length === 4 && typeof payload[2] === 'string' && typeof payload[3] === 'string') {
-    return { entity, seriesProviderId: payload[2], providerId: payload[3] };
-  }
-  throw new Error('INVALID_POKEMON_JP_TARGET_ID');
+  if (entity === 'series') return READABLE_SERIES_ID.test(id) ? `${NAMESPACE}-${id.toLowerCase()}` : null;
+  const seriesId = requireProviderId(seriesProviderId, 'INVALID_POKEMON_JP_SERIES_ID');
+  if (!READABLE_SERIES_ID.test(seriesId) || !id.startsWith(`${seriesId}-`)) return null;
+  const localId = id.slice(seriesId.length + 1);
+  return READABLE_LOCAL_ID.test(localId) ? `${NAMESPACE}-${seriesId.toLowerCase()}-${localId.toLowerCase()}` : null;
 }
 
 function assertSourceIdentity(value) {
@@ -213,12 +193,13 @@ function isJapanesePrinting(row) {
 }
 
 function jpSeriesRows(existingJpRows, targetId) {
+  const seriesTargetId = pokemonJpTargetId('series', targetId);
   return existingJpRows.series.filter(row => {
     const gameId = clean(row?.gameId ?? row?.game_id ?? row?.game);
     if (gameId !== GAME_ID || regionOf(row) !== 'JP') return false;
     const officialCode = row?.officialCode ?? row?.official_code ?? row?.setCode ?? row?.set_code;
     return normalizeSeriesCode(officialCode) === normalizeSeriesCode(targetId)
-      || row?.id === pokemonJpTargetId('series', targetId);
+      || (seriesTargetId != null && row?.id === seriesTargetId);
   });
 }
 
@@ -227,7 +208,7 @@ function jpCardProviderRows(existingJpRows, cardId, seriesId) {
   return existingJpRows.cards.filter(row => {
     const source = clean(row?.source);
     const providerId = clean(row?.providerId ?? row?.provider_id);
-    const exactNamespacedId = row?.id === targetId
+    const exactNamespacedId = targetId != null && row?.id === targetId
       && (source == null || source === POKEMON_JP_SOURCE_IDENTITY.source);
     return source === POKEMON_JP_SOURCE_IDENTITY.source && providerId === cardId
       || exactNamespacedId;
@@ -239,7 +220,7 @@ function jpPrintingRows(existingJpRows, cardId, seriesId, localId) {
   const numberKey = normalizeCardNumber(localId);
   return existingJpRows.printings.filter(row => {
     if (!isJapanesePrinting(row)) return false;
-    if (row?.id === providerTargetId) return true;
+    if (providerTargetId != null && row?.id === providerTargetId) return true;
     const source = clean(row?.source);
     const providerId = clean(row?.providerId ?? row?.provider_id);
     if (source === POKEMON_JP_SOURCE_IDENTITY.source && providerId === cardId) return true;
@@ -314,7 +295,9 @@ export function planPokemonJpManifest(input, options = {}) {
       ? 'duplicate-jp-series-seed'
       : seriesSeeds.length === 1 ? 'existing-jp-series-natural-key' : null;
   const selectedSet = matchingSets.length === 1 ? matchingSets[0] : null;
-  const sourceSeriesIdentityIssue = selectedSet ? optionalRowIdentityIssue(selectedSet) : null;
+  const sourceSeriesIdentityIssue = selectedSet
+    ? optionalRowIdentityIssue(selectedSet) || (seriesTargetId == null ? 'unsupported-readable-series-id' : null)
+    : null;
   const allCardIds = new Map();
   const allLocalIds = new Map();
   for (const card of sourceCards) {
@@ -363,6 +346,8 @@ export function planPokemonJpManifest(input, options = {}) {
     if (sourceSeriesIdentityIssue) reasons.push(sourceSeriesIdentityIssue);
     if (seriesReason) reasons.push(seriesReason);
     if (rawId && allCardIds.get(rawId) > 1) reasons.push('duplicate-source-card-id');
+    if (rawId && rawLocalId && rawId === `${seriesId}-${rawLocalId}` && seriesTargetId != null
+      && pokemonJpTargetId('card', rawId, seriesId) == null) reasons.push('unsupported-readable-card-id');
     const numberKey = normalizeCardNumber(rawLocalId);
     if (numberKey && allLocalIds.get(numberKey) > 1) reasons.push('duplicate-source-local-id');
 
@@ -392,7 +377,7 @@ export function planPokemonJpManifest(input, options = {}) {
     }
 
     const cardTargetId = pokemonJpTargetId('card', rawId, seriesId);
-    const printingTargetId = pokemonJpTargetId('printing', rawId, seriesId);
+    const printingTargetId = cardTargetId;
     const rarity = supportedRarity(card?.rarity);
     const releaseDate = normalizeDate(selectedSet?.releaseDate);
     records.push({

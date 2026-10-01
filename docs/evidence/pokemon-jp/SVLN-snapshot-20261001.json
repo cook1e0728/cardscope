@@ -1,0 +1,1305 @@
+{
+  "observedAt": "2026-10-01T09:13:37.000Z",
+  "sourceIdentity": {
+    "source": "tcgdex-ja",
+    "region": "JP",
+    "locale": "ja-JP"
+  },
+  "sets": [
+    {
+      "id": "SVLN",
+      "name": "スターターセット テラスタイプ：ステラ ニンフィアex",
+      "releaseDate": "2024-08-30",
+      "region": "JP",
+      "locale": "ja-JP"
+    }
+  ],
+  "cards": [
+    {
+      "category": "Pokemon",
+      "id": "SVLN-001",
+      "illustrator": "satoma",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/001",
+      "localId": "001",
+      "name": "マンタイン",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        226
+      ],
+      "hp": 110,
+      "types": [
+        "Water"
+      ],
+      "description": "泳いで スピードが のってくると 波の上に 飛びだし そのまま １００メートルも 滑空 する。",
+      "stage": "Basic",
+      "attacks": [
+        {
+          "cost": [
+            "Water"
+          ],
+          "name": "スプラッシュ",
+          "damage": 30
+        },
+        {
+          "cost": [
+            "Water",
+            "Colorless"
+          ],
+          "name": "ウォーターダイブ",
+          "effect": "相手のポケモン1匹に、50ダメージ。［ベンチは弱点・抵抗力を計算しない。］"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "retreat": 1,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:11.385Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-002",
+      "illustrator": "Nisota Niso",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/002",
+      "localId": "002",
+      "name": "サンダー",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        145
+      ],
+      "hp": 110,
+      "types": [
+        "Lightning"
+      ],
+      "description": "電気を 自在に 操る。 真っ黒な 雷雲の 中に 巣があると 言い伝えられている。",
+      "stage": "Basic",
+      "attacks": [
+        {
+          "cost": [
+            "Lightning",
+            "Colorless"
+          ],
+          "name": "ついげきボルト",
+          "effect": "相手のバトルポケモンにのっているダメカンの数×10ダメージ追加。",
+          "damage": "20＋"
+        },
+        {
+          "cost": [
+            "Lightning",
+            "Colorless",
+            "Colorless"
+          ],
+          "name": "ドリルくちばし",
+          "damage": 80
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Lightning",
+          "value": "×2"
+        }
+      ],
+      "resistances": [
+        {
+          "type": "Fighting",
+          "value": "－30"
+        }
+      ],
+      "retreat": 1,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:11.669Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-003",
+      "illustrator": "Shimaris Yukichi",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/003",
+      "localId": "003",
+      "name": "マリル",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        183
+      ],
+      "hp": 60,
+      "types": [
+        "Psychic"
+      ],
+      "description": "脂が 詰まっている 尻尾が 浮き袋の 代わりと なるので 流れの 速い 川も 平気。",
+      "stage": "Basic",
+      "attacks": [
+        {
+          "cost": [
+            "Psychic"
+          ],
+          "name": "ころがりタックル",
+          "damage": 20
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "retreat": 1,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:12.068Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-004",
+      "illustrator": "Orca",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/004",
+      "localId": "004",
+      "name": "マリルリ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        184
+      ],
+      "hp": 120,
+      "types": [
+        "Psychic"
+      ],
+      "description": "じっと 耳を すますと 激しい 流れの 川の 中に なにが いるのか 聞き分けられる。",
+      "stage": "Stage1",
+      "abilities": [
+        {
+          "type": "Ability",
+          "name": "きらきらシャボン",
+          "effect": "自分の場に「テラスタル」のポケモンがいるなら、このポケモンが「すてみタックル」を使うためのエネルギーは、エネルギー1個になる。"
+        }
+      ],
+      "attacks": [
+        {
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Psychic",
+            "Psychic"
+          ],
+          "name": "すてみタックル",
+          "effect": "このポケモンにも50ダメージ。",
+          "damage": 230
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "retreat": 2,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:12.229Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-005",
+      "illustrator": "5ban Graphics",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/005",
+      "localId": "005",
+      "name": "ニンフィアex",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "hp": 270,
+      "types": [
+        "Psychic"
+      ],
+      "stage": "Stage1",
+      "suffix": "EX",
+      "attacks": [
+        {
+          "cost": [
+            "Psychic",
+            "Colorless",
+            "Colorless"
+          ],
+          "name": "マジカルチャーム",
+          "effect": "次の相手の番、このワザを受けたポケモンが使うワザのダメージは「-100」される。",
+          "damage": 160
+        },
+        {
+          "cost": [
+            "Water",
+            "Lightning",
+            "Psychic"
+          ],
+          "name": "エンジェライト",
+          "effect": "相手のベンチポケモンを2匹選び、そのポケモンと、ついているすべてのカードを、山札にもどして切る。前の自分の番に、自分のポケモンが「エンジェライト」を使っていたなら、このワザは使えない。"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "retreat": 2,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:13.093Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-006",
+      "illustrator": "Ryuta Fuse",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/006",
+      "localId": "006",
+      "name": "ゼルネアス",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        716
+      ],
+      "hp": 130,
+      "types": [
+        "Psychic"
+      ],
+      "description": "永遠の 命を 分け与えると 言われている。樹木の 姿で １０００年 眠り 復活する。",
+      "stage": "Basic",
+      "attacks": [
+        {
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "name": "オーロラゲイン",
+          "effect": "このポケモンのHPを「30」回復する。",
+          "damage": 30
+        },
+        {
+          "cost": [
+            "Psychic",
+            "Psychic",
+            "Colorless"
+          ],
+          "name": "ギガインパクト",
+          "effect": "次の自分の番、このポケモンはワザが使えない。",
+          "damage": 130
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "retreat": 2,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:12.755Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-007",
+      "illustrator": "saino misaki",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/007",
+      "localId": "007",
+      "name": "オドリドリ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        741
+      ],
+      "hp": 90,
+      "types": [
+        "Psychic"
+      ],
+      "description": "うすもものミツを 吸った 姿。 緩やかな ステップで 精神を 高め サイコパワーを 放つ。",
+      "stage": "Basic",
+      "attacks": [
+        {
+          "cost": [
+            "Psychic"
+          ],
+          "name": "エネアシスト",
+          "effect": "自分のトラッシュから基本エネルギーを2枚まで選び、ベンチポケモン1匹につける。"
+        },
+        {
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "name": "げんわくダンス",
+          "effect": "相手のバトルポケモンをこんらんにする。",
+          "damage": 20
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Darkness",
+          "value": "×2"
+        }
+      ],
+      "resistances": [
+        {
+          "type": "Fighting",
+          "value": "－30"
+        }
+      ],
+      "retreat": 1,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:13.122Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-008",
+      "illustrator": "Kagemaru Himeno",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/008",
+      "localId": "008",
+      "name": "ミミッキュ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        778
+      ],
+      "hp": 70,
+      "types": [
+        "Psychic"
+      ],
+      "description": "陽の 当たらない 暗がりに 棲む。 人前に 出るときは ピカチュウに 似せた 布で 全身を 隠す。",
+      "stage": "Basic",
+      "abilities": [
+        {
+          "type": "Ability",
+          "name": "しんぴのまもり",
+          "effect": "このポケモンは、相手の「ポケモンex・V」からワザのダメージを受けない。"
+        }
+      ],
+      "attacks": [
+        {
+          "cost": [
+            "Psychic",
+            "Colorless"
+          ],
+          "name": "ゴーストアイ",
+          "effect": "相手のバトルポケモンに、ダメカンを7個のせる。"
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Metal",
+          "value": "×2"
+        }
+      ],
+      "retreat": 1,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:13.380Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-009",
+      "illustrator": "Naoyo Kimura",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/009",
+      "localId": "009",
+      "name": "イーブイ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        133
+      ],
+      "hp": 50,
+      "types": [
+        "Colorless"
+      ],
+      "description": "不規則な 遺伝子を 持つ。 石から出る 放射線によって 体が 突然変異を 起こす。",
+      "stage": "Basic",
+      "abilities": [
+        {
+          "type": "Ability",
+          "name": "ブーストしんか",
+          "effect": "このポケモンは、バトル場にいるかぎり、最初の自分の番や、出したばかりの番でも進化できる。"
+        }
+      ],
+      "attacks": [
+        {
+          "cost": [
+            "Colorless",
+            "Colorless"
+          ],
+          "name": "とつげき",
+          "effect": "このポケモンにも10ダメージ。",
+          "damage": 30
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "retreat": 1,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:13.193Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Pokemon",
+      "id": "SVLN-010",
+      "illustrator": "Ounishi",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/010",
+      "localId": "010",
+      "name": "カビゴン",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "dexId": [
+        143
+      ],
+      "hp": 150,
+      "types": [
+        "Colorless"
+      ],
+      "description": "胃袋の 消化液は どんな 毒も 消化できる。 落ちているものを 食べても 平気。",
+      "stage": "Basic",
+      "attacks": [
+        {
+          "cost": [
+            "Colorless"
+          ],
+          "name": "スパイクドロー",
+          "effect": "自分の山札を1枚引く。",
+          "damage": 20
+        },
+        {
+          "cost": [
+            "Colorless",
+            "Colorless",
+            "Colorless"
+          ],
+          "name": "メガトンパンチ",
+          "damage": 100
+        }
+      ],
+      "weaknesses": [
+        {
+          "type": "Fighting",
+          "value": "×2"
+        }
+      ],
+      "retreat": 3,
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:13.515Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-011",
+      "illustrator": "Toyste Beach",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/011",
+      "localId": "011",
+      "name": "すごいつりざお",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分のトラッシュからポケモンと基本エネルギーを合計3枚まで選び、相手に見せて、山札にもどして切る。",
+      "trainerType": "Item",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:14.143Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-012",
+      "illustrator": "Ayaka Yoshida",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/012",
+      "localId": "012",
+      "name": "テラスタルオーブ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分の山札から「テラスタル」のポケモンを1枚選び、相手に見せて、手札に加える。そして山札を切る。",
+      "trainerType": "Item",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:13.863Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-013",
+      "illustrator": "Toyste Beach",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/013",
+      "localId": "013",
+      "name": "ネストボール",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分の山札からたねポケモンを1枚選び、ベンチに出す。そして山札を切る。",
+      "trainerType": "Item",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:13.749Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-014",
+      "illustrator": "Ayaka Yoshida",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/014",
+      "localId": "014",
+      "name": "ハイパーボール",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "このカードは、自分の手札を2枚トラッシュしなければ使えない。\n\n自分の山札からポケモンを1枚選び、相手に見せて、手札に加える。そして山札を切る。",
+      "trainerType": "Item",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:15.108Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-015",
+      "illustrator": "inose yukie",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/015",
+      "localId": "015",
+      "name": "プレシャスキャリー",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分の山札からたねポケモンを好きなだけ選び、ベンチに出す。そして山札を切る。",
+      "trainerType": "Item",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:14.308Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-016",
+      "illustrator": "Toyste Beach",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/016",
+      "localId": "016",
+      "name": "ポケギア3.0",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分の山札を上から7枚見て、その中からサポートを1枚選び、相手に見せて、手札に加える。残りのカードは山札にもどして切る。",
+      "trainerType": "Item",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:15.235Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-017",
+      "illustrator": "Studio Bora Inc.",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/017",
+      "localId": "017",
+      "name": "ポケモンいれかえ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分のバトルポケモンをベンチポケモンと入れ替える。",
+      "trainerType": "Item",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:14.297Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-018",
+      "illustrator": "GIDORA",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/018",
+      "localId": "018",
+      "name": "アカマツ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分の山札から、それぞれちがうタイプの基本エネルギーを2枚まで選び、相手に見せて、どちらか1枚を手札に加え、残りのエネルギーを自分のポケモンにつける。そして山札を切る。",
+      "trainerType": "Supporter",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:16.765Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-019",
+      "illustrator": "Sanosuke Sakuma",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/019",
+      "localId": "019",
+      "name": "ナンジャモ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "おたがいのプレイヤーは、それぞれ自分の手札をすべてウラにして切り、山札の下にもどす。その後、それぞれ自分のサイドの残り枚数ぶん、山札を引く。",
+      "trainerType": "Supporter",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:15.810Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-020",
+      "illustrator": "Sanosuke Sakuma",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/020",
+      "localId": "020",
+      "name": "ネモ",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分の山札を3枚引く。",
+      "trainerType": "Supporter",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:14.645Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-021",
+      "illustrator": "kirisAki",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/021",
+      "localId": "021",
+      "name": "博士の研究",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "自分の手札をすべてトラッシュし、山札を7枚引く。",
+      "trainerType": "Supporter",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:15.460Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    },
+    {
+      "category": "Trainer",
+      "id": "SVLN-022",
+      "illustrator": "NC Empire",
+      "image": "https://assets.tcgdex.net/ja/SV/SVLN/022",
+      "localId": "022",
+      "name": "ボスの指令",
+      "rarity": "None",
+      "set": {
+        "cardCount": {
+          "official": 22,
+          "total": 22
+        },
+        "id": "SVLN",
+        "name": "スターターセット テラスタイプ：ステラ ニンフィアex"
+      },
+      "variants": {
+        "firstEdition": false,
+        "holo": false,
+        "normal": true,
+        "reverse": false,
+        "wPromo": false
+      },
+      "variants_detailed": [
+        {
+          "type": "normal",
+          "size": "standard",
+          "variantId": "generated"
+        }
+      ],
+      "effect": "相手のベンチポケモンを1匹選び、バトルポケモンと入れ替える。",
+      "trainerType": "Supporter",
+      "legal": {
+        "standard": false,
+        "expanded": false
+      },
+      "updated": "2026-09-16T22:51:15.827Z",
+      "pricing": {
+        "cardmarket": null,
+        "tcgplayer": null
+      }
+    }
+  ],
+  "existingJpRows": {
+    "series": [
+      {
+        "id": "pokemon-sv4a-jp",
+        "game_id": "pokemon",
+        "official_code": "SV4a",
+        "region": "JP",
+        "source": null,
+        "provider_id": null
+      }
+    ],
+    "cards": [
+      {
+        "id": "pokemon-mew-ex-sv4a-347-jp",
+        "series_id": "pokemon-sv4a-jp",
+        "official_card_number": "347/190",
+        "source": null,
+        "provider_id": null
+      }
+    ],
+    "printings": [
+      {
+        "id": 1,
+        "card_id": "pokemon-mew-ex-sv4a-347-jp",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV4a",
+        "local_card_number": "347/190",
+        "source": null,
+        "provider_id": null
+      }
+    ]
+  }
+}

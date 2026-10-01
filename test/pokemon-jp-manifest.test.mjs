@@ -6,7 +6,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  decodePokemonJpTargetId,
   planPokemonJpManifest,
   pokemonJpTargetId
 } from '../providers/pokemon-jp-manifest.mjs';
@@ -112,22 +111,31 @@ test('emits a stable, JP-only metadata manifest with a hashed source and no imag
   assert.doesNotMatch(JSON.stringify({ records: first.records, quarantined: first.quarantined }), /"(?:image|images|logo|logos|price|prices|marketPrice)"\s*:/i);
 });
 
-test('uses a lossless namespaced ID encoding without slug collisions', () => {
-  const ids = [
-    pokemonJpTargetId('card', 'SV4a/001', 'SV4a'),
-    pokemonJpTargetId('card', 'SV4a%2F001', 'SV4a'),
-    pokemonJpTargetId('card', 'SV4a', '001'),
-    pokemonJpTargetId('card', 'ピカチュウ', 'SV4a')
-  ];
-  assert.equal(new Set(ids).size, ids.length);
-  assert.ok(ids.every(id => id.startsWith('pokemon-tcgdex-jp-card-')));
-  assert.deepEqual(decodePokemonJpTargetId(ids[0]), {
-    entity: 'card', seriesProviderId: 'SV4a', providerId: 'SV4a/001'
-  });
-  assert.deepEqual(decodePokemonJpTargetId(ids[3]), {
-    entity: 'card', seriesProviderId: 'SV4a', providerId: 'ピカチュウ'
-  });
-  assert.notEqual(pokemonJpTargetId('card', 'same-id', 'set-a'), pokemonJpTargetId('card', 'same-id', 'set-b'));
+test('builds readable lower-case IDs and refuses provider IDs it cannot label unambiguously', () => {
+  assert.equal(pokemonJpTargetId('series', 'SVLN'), 'pokemon-tcgdex-ja-svln');
+  assert.equal(pokemonJpTargetId('series', 'CS1.5'), 'pokemon-tcgdex-ja-cs1.5');
+  assert.equal(pokemonJpTargetId('card', 'SVLN-001', 'SVLN'), 'pokemon-tcgdex-ja-svln-001');
+  assert.equal(pokemonJpTargetId('printing', 'SVLN-001', 'SVLN'), 'pokemon-tcgdex-ja-svln-001');
+  for (const [providerId, seriesId] of [
+    ['SV4a/001', 'SV4a'],
+    ['SV4a-00/1', 'SV4a'],
+    ['SV4a-001', 'SV4b'],
+    ['ピカチュウ', 'SV4a'],
+    ['SV4a-ピカ', 'SV4a'],
+    ['SV-P-001', 'SV-P']
+  ]) assert.equal(pokemonJpTargetId('card', providerId, seriesId), null, providerId);
+  assert.equal(pokemonJpTargetId('series', 'SV/4a'), null);
+  assert.equal(pokemonJpTargetId('series', 'SV-P'), null);
+  assert.throws(() => pokemonJpTargetId('card', ' SVLN-001', 'SVLN'), /INVALID_POKEMON_JP_PROVIDER_ID/);
+
+  const manifest = plan(snapshot({ cardRows: [
+    { id: 'sv8a-001', localId: '001', name: 'イーブイ', set: { id: 'sv8a' } },
+    { id: 'sv8a-P-1', localId: 'P-1', name: 'プロモ', set: { id: 'sv8a' } }
+  ] }));
+  assert.equal(findRecord(manifest, 'card', 'sv8a-001').targetId, 'pokemon-tcgdex-ja-sv8a-001');
+  assert.equal(findRecord(manifest, 'printing', 'sv8a-001').cardTargetId, 'pokemon-tcgdex-ja-sv8a-001');
+  assert.equal(findRecord(manifest, 'series', 'sv8a').targetId, 'pokemon-tcgdex-ja-sv8a');
+  assert.deepEqual(manifest.quarantined.find(row => row.sourceProviderId === 'sv8a-P-1').reasons, ['unsupported-readable-card-id']);
 });
 
 test('encodes provider IDs into fixed Japanese metadata endpoint paths', () => {
@@ -137,8 +145,14 @@ test('encodes provider IDs into fixed Japanese metadata endpoint paths', () => {
     cardRows: [{ id: 'SV/4a-001', localId: '001', name: 'カード', set: { id: 'SV/4a' } }]
   });
   const manifest = plan(input, { seriesId: 'SV/4a' });
-  assert.equal(findRecord(manifest, 'series', 'SV/4a').sourceEvidence.url, 'https://api.tcgdex.net/v2/ja/sets/SV%2F4a');
-  assert.equal(findRecord(manifest, 'card', 'SV/4a-001').sourceEvidence.url, 'https://api.tcgdex.net/v2/ja/cards/SV%2F4a-001');
+  const quarantinedSeries = manifest.quarantined.find(row => row.entity === 'series');
+  const quarantinedCard = manifest.quarantined.find(row => row.entity === 'card');
+  assert.equal(manifest.records.length, 0);
+  assert.deepEqual(quarantinedSeries.reasons, ['unsupported-readable-series-id']);
+  assert.equal(quarantinedSeries.targetId, null);
+  assert.equal(quarantinedSeries.sourceEvidence.url, 'https://api.tcgdex.net/v2/ja/sets/SV%2F4a');
+  assert.ok(quarantinedCard.reasons.includes('unsupported-readable-series-id'));
+  assert.equal(quarantinedCard.sourceEvidence.url, 'https://api.tcgdex.net/v2/ja/cards/SV%2F4a-001');
 });
 
 test('enforces the 100-card hard limit and resumes with a source- and seed-bound cursor', () => {
