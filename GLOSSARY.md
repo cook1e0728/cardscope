@@ -20,6 +20,10 @@ _Avoid_: 版別、variant
 跨語言保存角色與多語名稱的卡片層級。只有官方編號或可靠 Provider ID 能證明兩張 Card 屬於同一個 Canonical card；名稱相似只能當搜尋別名。
 _Avoid_: master card、統一卡
 
+**Derived name（同名推導名稱）**:
+同一來源、同一 Series 中，日文名完全相同的另一張卡已有可靠繁中名時，沿用該繁中名作為顯示與搜尋用名稱。它只是名稱，不是身分證據，也不據以連結 Canonical card。
+_Avoid_: 翻譯名、猜譯、暫譯
+
 **Provider ID（來源識別碼）**:
 資料來源為某一筆 Series、Card 或 Printing 給的識別碼，與來源名稱合起來才具唯一性。
 _Avoid_: 外部 ID、API ID
@@ -27,6 +31,10 @@ _Avoid_: 外部 ID、API ID
 **Natural key（自然鍵）**:
 不靠系統產生編號、單由資料本身特徵（卡、地區、語言、系列代碼、編號）決定的身分。日版 Printing 以 Provider ID 為主身分，自然鍵只作一致性檢查。
 _Avoid_: 業務鍵
+
+**Source archive（來源封存）**:
+某資料來源公開的資料集，固定在某一個版本。它和該來源的 API 視為同一個來源，證據會記錄版本與檔案路徑。
+_Avoid_: 備份、鏡像、快取
 
 **Seed（舊種子資料）**:
 未經來源驗證、由人手寫入的早期資料列。Seed 在被來源證據核對前，不視為可靠資料，也不作為匯入的基準。

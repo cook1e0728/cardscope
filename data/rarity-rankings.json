@@ -5,7 +5,7 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C"],
+      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C"],
       "canonicalLabels": {"Rare Holo": "Rare Holo"},
       "aliases": {
         "UR": ["Ultra Rare"],
@@ -19,6 +19,7 @@
         "K": ["Radiant Rare"],
         "RRR": ["Triple Rare"],
         "RR": ["Double Rare"],
+        "ACE": ["ACE SPEC Rare"],
         "R": ["Rare"],
         "U": ["Uncommon"],
         "C": ["Common"]
@@ -38,6 +39,7 @@
         ["K", "Radiant Rare"],
         ["RRR", "Triple Rare"],
         ["RR", "Double Rare"],
+        ["ACE", "ACE SPEC Rare"],
         ["Rare Holo"],
         ["Rare ACE"],
         ["Rare BREAK"],
@@ -64,6 +66,7 @@
         ["Rare BREAK"],
         ["Rare ACE"],
         ["Rare Holo"],
+        ["ACE", "ACE SPEC Rare"],
         ["RR", "Double Rare"],
         ["RRR", "Triple Rare"],
         ["K", "Radiant Rare"],

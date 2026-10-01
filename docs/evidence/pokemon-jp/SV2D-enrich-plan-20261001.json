@@ -1,0 +1,2719 @@
+{
+  "plan": {
+    "planVersion": 1,
+    "kind": "jp-enrich",
+    "source": "tcgdex-ja",
+    "seriesProviderId": "SV2D",
+    "seriesId": "pokemon-tcgdex-ja-sv2d",
+    "evidenceHash": "344489ecd5a540310612ffb6dc79f626ae6f7f1fd4df197a5928a87b4ad6745e",
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "series": {
+      "name_zh": "碟旋暴擊",
+      "twSeriesId": "pokemon-tcgdex-tw-sv2d"
+    },
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-001",
+        "name_ja": "ハネッコ",
+        "link": "pokemon-tcgdex-tw-sv2d-001",
+        "name_zh": "毽子草",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-002",
+        "name_ja": "ポポッコ",
+        "link": "pokemon-tcgdex-tw-sv2d-002",
+        "name_zh": "毽子花",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-003",
+        "name_ja": "ワタッコ",
+        "link": "pokemon-tcgdex-tw-sv2d-003",
+        "name_zh": "毽子棉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-004",
+        "name_ja": "クヌギダマ",
+        "link": "pokemon-tcgdex-tw-sv2d-004",
+        "name_zh": "榛果球",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-005",
+        "name_ja": "フォレトスex",
+        "link": "pokemon-tcgdex-tw-sv2d-005",
+        "name_zh": "佛烈托斯ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-006",
+        "name_ja": "ヘラクロス",
+        "link": "pokemon-tcgdex-tw-sv2d-006",
+        "name_zh": "赫拉克羅斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-007",
+        "name_ja": "タマンチュラ",
+        "link": "pokemon-tcgdex-tw-sv2d-007",
+        "name_zh": "團珠蛛",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-008",
+        "name_ja": "タマンチュラ",
+        "link": "pokemon-tcgdex-tw-sv2d-008",
+        "name_zh": "團珠蛛",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-009",
+        "name_ja": "ワナイダー",
+        "link": "pokemon-tcgdex-tw-sv2d-009",
+        "name_zh": "操陷蛛",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-010",
+        "name_ja": "ドンメル",
+        "link": "pokemon-tcgdex-tw-sv2d-010",
+        "name_zh": "呆火駝",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-011",
+        "name_ja": "バクーダ",
+        "link": "pokemon-tcgdex-tw-sv2d-011",
+        "name_zh": "噴火駝",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-012",
+        "name_ja": "ヒノヤコマ",
+        "link": "pokemon-tcgdex-tw-sv2d-012",
+        "name_zh": "火箭雀",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-013",
+        "name_ja": "ファイアロー",
+        "link": "pokemon-tcgdex-tw-sv2d-013",
+        "name_zh": "烈箭鷹",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-014",
+        "name_ja": "カルボウ",
+        "link": "pokemon-tcgdex-tw-sv2d-014",
+        "name_zh": "炭小侍",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-015",
+        "name_ja": "カルボウ",
+        "link": "pokemon-tcgdex-tw-sv2d-015",
+        "name_zh": "炭小侍",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-016",
+        "name_ja": "イーユイex",
+        "link": "pokemon-tcgdex-tw-sv2d-016",
+        "name_zh": "古玉魚ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-017",
+        "name_ja": "ピカチュウ",
+        "link": "pokemon-tcgdex-tw-sv2d-017",
+        "name_zh": "皮卡丘",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-018",
+        "name_ja": "ライチュウ",
+        "link": "pokemon-tcgdex-tw-sv2d-018",
+        "name_zh": "雷丘",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-019",
+        "name_ja": "コリンク",
+        "link": "pokemon-tcgdex-tw-sv2d-019",
+        "name_zh": "小貓怪",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-020",
+        "name_ja": "ルクシオ",
+        "link": "pokemon-tcgdex-tw-sv2d-020",
+        "name_zh": "勒克貓",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-021",
+        "name_ja": "レントラー",
+        "link": "pokemon-tcgdex-tw-sv2d-021",
+        "name_zh": "倫琴貓",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-022",
+        "name_ja": "バチンウニ",
+        "link": "pokemon-tcgdex-tw-sv2d-022",
+        "name_zh": "啪嚓海膽",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-023",
+        "name_ja": "ズピカ",
+        "link": "pokemon-tcgdex-tw-sv2d-023",
+        "name_zh": "光蚪仔",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-024",
+        "name_ja": "ズピカ",
+        "link": "pokemon-tcgdex-tw-sv2d-024",
+        "name_zh": "光蚪仔",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-025",
+        "name_ja": "ハラバリーex",
+        "link": "pokemon-tcgdex-tw-sv2d-025",
+        "name_zh": "電肚蛙ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-026",
+        "name_ja": "プリン",
+        "link": "pokemon-tcgdex-tw-sv2d-026",
+        "name_zh": "胖丁",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-027",
+        "name_ja": "プクリン",
+        "link": "pokemon-tcgdex-tw-sv2d-027",
+        "name_zh": "胖可丁",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-028",
+        "name_ja": "ミカルゲ",
+        "link": "pokemon-tcgdex-tw-sv2d-028",
+        "name_zh": "花岩怪",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-029",
+        "name_ja": "スナバァ",
+        "link": "pokemon-tcgdex-tw-sv2d-029",
+        "name_zh": "沙丘娃",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-030",
+        "name_ja": "シロデスナ",
+        "link": "pokemon-tcgdex-tw-sv2d-030",
+        "name_zh": "噬沙堡爺",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-031",
+        "name_ja": "ソウブレイズ",
+        "link": "pokemon-tcgdex-tw-sv2d-031",
+        "name_zh": "蒼炎刃鬼",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-032",
+        "name_ja": "カヌチャン",
+        "link": "pokemon-tcgdex-tw-sv2d-032",
+        "name_zh": "小鍛匠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-033",
+        "name_ja": "カヌチャン",
+        "link": "pokemon-tcgdex-tw-sv2d-033",
+        "name_zh": "小鍛匠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-034",
+        "name_ja": "ナカヌチャン",
+        "link": "pokemon-tcgdex-tw-sv2d-034",
+        "name_zh": "巧鍛匠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-035",
+        "name_ja": "デカヌチャンex",
+        "link": "pokemon-tcgdex-tw-sv2d-035",
+        "name_zh": "巨鍛匠ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-036",
+        "name_ja": "ヨーギラス",
+        "link": "pokemon-tcgdex-tw-sv2d-036",
+        "name_zh": "幼基拉斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-037",
+        "name_ja": "サナギラス",
+        "link": "pokemon-tcgdex-tw-sv2d-037",
+        "name_zh": "沙基拉斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-038",
+        "name_ja": "ドジョッチ",
+        "link": "pokemon-tcgdex-tw-sv2d-038",
+        "name_zh": "泥泥鰍",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-039",
+        "name_ja": "ナマズン",
+        "link": "pokemon-tcgdex-tw-sv2d-039",
+        "name_zh": "鯰魚王",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-040",
+        "name_ja": "グレッグル",
+        "link": "pokemon-tcgdex-tw-sv2d-040",
+        "name_zh": "不良蛙",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-041",
+        "name_ja": "ドクロッグ",
+        "link": "pokemon-tcgdex-tw-sv2d-041",
+        "name_zh": "毒骷蛙",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-042",
+        "name_ja": "マケンカニ",
+        "link": "pokemon-tcgdex-tw-sv2d-042",
+        "name_zh": "好勝蟹",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-043",
+        "name_ja": "ケケンカニ",
+        "link": "pokemon-tcgdex-tw-sv2d-043",
+        "name_zh": "好勝毛蟹",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-044",
+        "name_ja": "ナゲツケサル",
+        "link": "pokemon-tcgdex-tw-sv2d-044",
+        "name_zh": "投擲猴",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-045",
+        "name_ja": "コジオ",
+        "link": "pokemon-tcgdex-tw-sv2d-045",
+        "name_zh": "鹽石寶",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-046",
+        "name_ja": "コジオ",
+        "link": "pokemon-tcgdex-tw-sv2d-046",
+        "name_zh": "鹽石寶",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-047",
+        "name_ja": "ジオヅム",
+        "link": "pokemon-tcgdex-tw-sv2d-047",
+        "name_zh": "鹽石壘",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-048",
+        "name_ja": "キョジオーン",
+        "link": "pokemon-tcgdex-tw-sv2d-048",
+        "name_zh": "鹽石巨靈",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-049",
+        "name_ja": "ディンルーex",
+        "link": "pokemon-tcgdex-tw-sv2d-049",
+        "name_zh": "古鼎鹿ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-050",
+        "name_ja": "ニューラ",
+        "link": "pokemon-tcgdex-tw-sv2d-050",
+        "name_zh": "狃拉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-051",
+        "name_ja": "マニューラ",
+        "link": "pokemon-tcgdex-tw-sv2d-051",
+        "name_zh": "瑪狃拉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-052",
+        "name_ja": "バンギラス",
+        "link": "pokemon-tcgdex-tw-sv2d-052",
+        "name_zh": "班基拉斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-053",
+        "name_ja": "シルシュルー",
+        "link": "pokemon-tcgdex-tw-sv2d-053",
+        "name_zh": "滋汁鼴",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-054",
+        "name_ja": "シルシュルー",
+        "link": "pokemon-tcgdex-tw-sv2d-054",
+        "name_zh": "滋汁鼴",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-055",
+        "name_ja": "タギングル",
+        "link": "pokemon-tcgdex-tw-sv2d-055",
+        "name_zh": "塗標客",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-056",
+        "name_ja": "オトシドリ",
+        "link": "pokemon-tcgdex-tw-sv2d-056",
+        "name_zh": "下石鳥",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-057",
+        "name_ja": "オンバット",
+        "link": "pokemon-tcgdex-tw-sv2d-057",
+        "name_zh": "嗡蝠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-058",
+        "name_ja": "オンバーンex",
+        "link": "pokemon-tcgdex-tw-sv2d-058",
+        "name_zh": "音波龍ex",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-059",
+        "name_ja": "キリンリキ",
+        "link": "pokemon-tcgdex-tw-sv2d-059",
+        "name_zh": "麒麟奇",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-060",
+        "name_ja": "リキキリン",
+        "link": "pokemon-tcgdex-tw-sv2d-060",
+        "name_zh": "奇麒麟",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-061",
+        "name_ja": "ヤヤコマ",
+        "link": "pokemon-tcgdex-tw-sv2d-061",
+        "name_zh": "小箭雀",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-062",
+        "name_ja": "ワッカネズミ",
+        "link": "pokemon-tcgdex-tw-sv2d-062",
+        "name_zh": "一對鼠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-063",
+        "name_ja": "ワッカネズミ",
+        "link": "pokemon-tcgdex-tw-sv2d-063",
+        "name_zh": "一對鼠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-064",
+        "name_ja": "イッカネズミ",
+        "link": "pokemon-tcgdex-tw-sv2d-064",
+        "name_zh": "一家鼠",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-065",
+        "name_ja": "カラミンゴ",
+        "link": "pokemon-tcgdex-tw-sv2d-065",
+        "name_zh": "纏紅鶴",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-066",
+        "name_ja": "おとどけドローン",
+        "link": "pokemon-tcgdex-tw-sv2d-066",
+        "name_zh": "親送無人機",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-067",
+        "name_ja": "勇気のおまもり",
+        "link": "pokemon-tcgdex-tw-sv2d-067",
+        "name_zh": "勇氣護符",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-068",
+        "name_ja": "サワロ",
+        "link": "pokemon-tcgdex-tw-sv2d-068",
+        "name_zh": "薩瓦羅",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-069",
+        "name_ja": "ナンジャモ",
+        "link": "pokemon-tcgdex-tw-sv2d-069",
+        "name_zh": "奇樹",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-070",
+        "name_ja": "災いの荒野",
+        "link": "pokemon-tcgdex-tw-sv2d-070",
+        "name_zh": "災禍荒野",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-071",
+        "name_ja": "セラピーエネルギー",
+        "link": "pokemon-tcgdex-tw-sv2d-071",
+        "name_zh": "治療能量",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-072",
+        "name_ja": "ヘラクロス",
+        "link": null,
+        "name_zh": "赫拉克羅斯",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-073",
+        "name_ja": "ヒノヤコマ",
+        "link": null,
+        "name_zh": "火箭雀",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-074",
+        "name_ja": "ライチュウ",
+        "link": null,
+        "name_zh": "雷丘",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-075",
+        "name_ja": "スナバァ",
+        "link": null,
+        "name_zh": "沙丘娃",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-076",
+        "name_ja": "カヌチャン",
+        "link": null,
+        "name_zh": "小鍛匠",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-077",
+        "name_ja": "ナカヌチャン",
+        "link": null,
+        "name_zh": "巧鍛匠",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-078",
+        "name_ja": "コジオ",
+        "link": null,
+        "name_zh": "鹽石寶",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-079",
+        "name_ja": "バンギラス",
+        "link": null,
+        "name_zh": "班基拉斯",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-080",
+        "name_ja": "タギングル",
+        "link": null,
+        "name_zh": "塗標客",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-081",
+        "name_ja": "イッカネズミ",
+        "link": null,
+        "name_zh": "一家鼠",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-082",
+        "name_ja": "カラミンゴ",
+        "link": null,
+        "name_zh": "纏紅鶴",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-083",
+        "name_ja": "リキキリン",
+        "link": null,
+        "name_zh": "奇麒麟",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-084",
+        "name_ja": "フォレトスex",
+        "link": null,
+        "name_zh": "佛烈托斯ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-085",
+        "name_ja": "イーユイex",
+        "link": null,
+        "name_zh": "古玉魚ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-086",
+        "name_ja": "ハラバリーex",
+        "link": null,
+        "name_zh": "電肚蛙ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-087",
+        "name_ja": "デカヌチャンex",
+        "link": null,
+        "name_zh": "巨鍛匠ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-088",
+        "name_ja": "ディンルーex",
+        "link": null,
+        "name_zh": "古鼎鹿ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-089",
+        "name_ja": "オンバーンex",
+        "link": null,
+        "name_zh": "音波龍ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-090",
+        "name_ja": "サワロ",
+        "link": null,
+        "name_zh": "薩瓦羅",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-091",
+        "name_ja": "ナンジャモ",
+        "link": null,
+        "name_zh": "奇樹",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-092",
+        "name_ja": "イーユイex",
+        "link": null,
+        "name_zh": "古玉魚ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-093",
+        "name_ja": "デカヌチャンex",
+        "link": null,
+        "name_zh": "巨鍛匠ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-094",
+        "name_ja": "ディンルーex",
+        "link": null,
+        "name_zh": "古鼎鹿ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-095",
+        "name_ja": "サワロ",
+        "link": null,
+        "name_zh": "薩瓦羅",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-096",
+        "name_ja": "ナンジャモ",
+        "link": null,
+        "name_zh": "奇樹",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-097",
+        "name_ja": "ディンルーex",
+        "link": null,
+        "name_zh": "古鼎鹿ex",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      }
+    ]
+  },
+  "summary": {
+    "cards": 97,
+    "links": 71,
+    "derived": 26,
+    "rarities": 0,
+    "series": 1,
+    "quarantined": 0,
+    "stillWithoutZh": 2
+  },
+  "quarantined": [],
+  "fingerprints": {
+    "twCards": "8dc1f8f13c50ff0ac6a4c42c2cb1c5d5",
+    "twCardCount": 71,
+    "jpCards": "03f2eb164548a37c9cb5b7673027c96e"
+  },
+  "evidence": {
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "jpSeries": {
+      "id": "pokemon-tcgdex-ja-sv2d",
+      "providerId": "SV2D",
+      "nameZh": null
+    },
+    "jpCards": [
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-001",
+        "provider_id": "SV2D-001",
+        "name_ja": "ハネッコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-001",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-002",
+        "provider_id": "SV2D-002",
+        "name_ja": "ポポッコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-002",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-003",
+        "provider_id": "SV2D-003",
+        "name_ja": "ワタッコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-003",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-004",
+        "provider_id": "SV2D-004",
+        "name_ja": "クヌギダマ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-004",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-005",
+        "provider_id": "SV2D-005",
+        "name_ja": "フォレトスex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-005",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-006",
+        "provider_id": "SV2D-006",
+        "name_ja": "ヘラクロス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-006",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-007",
+        "provider_id": "SV2D-007",
+        "name_ja": "タマンチュラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-007",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-008",
+        "provider_id": "SV2D-008",
+        "name_ja": "タマンチュラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-008",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-009",
+        "provider_id": "SV2D-009",
+        "name_ja": "ワナイダー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-009",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-010",
+        "provider_id": "SV2D-010",
+        "name_ja": "ドンメル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-010",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-011",
+        "provider_id": "SV2D-011",
+        "name_ja": "バクーダ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-011",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-012",
+        "provider_id": "SV2D-012",
+        "name_ja": "ヒノヤコマ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-012",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-013",
+        "provider_id": "SV2D-013",
+        "name_ja": "ファイアロー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-013",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-014",
+        "provider_id": "SV2D-014",
+        "name_ja": "カルボウ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-014",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-015",
+        "provider_id": "SV2D-015",
+        "name_ja": "カルボウ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-015",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-016",
+        "provider_id": "SV2D-016",
+        "name_ja": "イーユイex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-016",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-017",
+        "provider_id": "SV2D-017",
+        "name_ja": "ピカチュウ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-017",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-018",
+        "provider_id": "SV2D-018",
+        "name_ja": "ライチュウ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-018",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-019",
+        "provider_id": "SV2D-019",
+        "name_ja": "コリンク",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-019",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-020",
+        "provider_id": "SV2D-020",
+        "name_ja": "ルクシオ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-020",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-021",
+        "provider_id": "SV2D-021",
+        "name_ja": "レントラー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-021",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-022",
+        "provider_id": "SV2D-022",
+        "name_ja": "バチンウニ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-022",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-023",
+        "provider_id": "SV2D-023",
+        "name_ja": "ズピカ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-023",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-024",
+        "provider_id": "SV2D-024",
+        "name_ja": "ズピカ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-024",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-025",
+        "provider_id": "SV2D-025",
+        "name_ja": "ハラバリーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-025",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-026",
+        "provider_id": "SV2D-026",
+        "name_ja": "プリン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-026",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-027",
+        "provider_id": "SV2D-027",
+        "name_ja": "プクリン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-027",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-028",
+        "provider_id": "SV2D-028",
+        "name_ja": "ミカルゲ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-028",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-029",
+        "provider_id": "SV2D-029",
+        "name_ja": "スナバァ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-029",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-030",
+        "provider_id": "SV2D-030",
+        "name_ja": "シロデスナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-030",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-031",
+        "provider_id": "SV2D-031",
+        "name_ja": "ソウブレイズ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-031",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-032",
+        "provider_id": "SV2D-032",
+        "name_ja": "カヌチャン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-032",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-033",
+        "provider_id": "SV2D-033",
+        "name_ja": "カヌチャン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-033",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-034",
+        "provider_id": "SV2D-034",
+        "name_ja": "ナカヌチャン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-034",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-035",
+        "provider_id": "SV2D-035",
+        "name_ja": "デカヌチャンex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-035",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-036",
+        "provider_id": "SV2D-036",
+        "name_ja": "ヨーギラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-036",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-037",
+        "provider_id": "SV2D-037",
+        "name_ja": "サナギラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-037",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-038",
+        "provider_id": "SV2D-038",
+        "name_ja": "ドジョッチ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-038",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-039",
+        "provider_id": "SV2D-039",
+        "name_ja": "ナマズン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-039",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-040",
+        "provider_id": "SV2D-040",
+        "name_ja": "グレッグル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-040",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-041",
+        "provider_id": "SV2D-041",
+        "name_ja": "ドクロッグ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-041",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-042",
+        "provider_id": "SV2D-042",
+        "name_ja": "マケンカニ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-042",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-043",
+        "provider_id": "SV2D-043",
+        "name_ja": "ケケンカニ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-043",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-044",
+        "provider_id": "SV2D-044",
+        "name_ja": "ナゲツケサル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-044",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-045",
+        "provider_id": "SV2D-045",
+        "name_ja": "コジオ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-045",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-046",
+        "provider_id": "SV2D-046",
+        "name_ja": "コジオ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-046",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-047",
+        "provider_id": "SV2D-047",
+        "name_ja": "ジオヅム",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-047",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-048",
+        "provider_id": "SV2D-048",
+        "name_ja": "キョジオーン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-048",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-049",
+        "provider_id": "SV2D-049",
+        "name_ja": "ディンルーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-049",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-050",
+        "provider_id": "SV2D-050",
+        "name_ja": "ニューラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-050",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-051",
+        "provider_id": "SV2D-051",
+        "name_ja": "マニューラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-051",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-052",
+        "provider_id": "SV2D-052",
+        "name_ja": "バンギラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-052",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-053",
+        "provider_id": "SV2D-053",
+        "name_ja": "シルシュルー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-053",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-054",
+        "provider_id": "SV2D-054",
+        "name_ja": "シルシュルー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-054",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-055",
+        "provider_id": "SV2D-055",
+        "name_ja": "タギングル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-055",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-056",
+        "provider_id": "SV2D-056",
+        "name_ja": "オトシドリ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-056",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-057",
+        "provider_id": "SV2D-057",
+        "name_ja": "オンバット",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-057",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-058",
+        "provider_id": "SV2D-058",
+        "name_ja": "オンバーンex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-058",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-059",
+        "provider_id": "SV2D-059",
+        "name_ja": "キリンリキ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-059",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-060",
+        "provider_id": "SV2D-060",
+        "name_ja": "リキキリン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-060",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-061",
+        "provider_id": "SV2D-061",
+        "name_ja": "ヤヤコマ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-061",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-062",
+        "provider_id": "SV2D-062",
+        "name_ja": "ワッカネズミ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-062",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-063",
+        "provider_id": "SV2D-063",
+        "name_ja": "ワッカネズミ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-063",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-064",
+        "provider_id": "SV2D-064",
+        "name_ja": "イッカネズミ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-064",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-065",
+        "provider_id": "SV2D-065",
+        "name_ja": "カラミンゴ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-065",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-066",
+        "provider_id": "SV2D-066",
+        "name_ja": "おとどけドローン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-066",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-067",
+        "provider_id": "SV2D-067",
+        "name_ja": "勇気のおまもり",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-067",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-068",
+        "provider_id": "SV2D-068",
+        "name_ja": "サワロ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-068",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-069",
+        "provider_id": "SV2D-069",
+        "name_ja": "ナンジャモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-069",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-070",
+        "provider_id": "SV2D-070",
+        "name_ja": "災いの荒野",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-070",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-071",
+        "provider_id": "SV2D-071",
+        "name_ja": "セラピーエネルギー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-071",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-072",
+        "provider_id": "SV2D-072",
+        "name_ja": "ヘラクロス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-072",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-073",
+        "provider_id": "SV2D-073",
+        "name_ja": "ヒノヤコマ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-073",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-074",
+        "provider_id": "SV2D-074",
+        "name_ja": "ライチュウ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-074",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-075",
+        "provider_id": "SV2D-075",
+        "name_ja": "スナバァ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-075",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-076",
+        "provider_id": "SV2D-076",
+        "name_ja": "カヌチャン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-076",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-077",
+        "provider_id": "SV2D-077",
+        "name_ja": "ナカヌチャン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-077",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-078",
+        "provider_id": "SV2D-078",
+        "name_ja": "コジオ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-078",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-079",
+        "provider_id": "SV2D-079",
+        "name_ja": "バンギラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-079",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-080",
+        "provider_id": "SV2D-080",
+        "name_ja": "タギングル",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-080",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-081",
+        "provider_id": "SV2D-081",
+        "name_ja": "イッカネズミ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-081",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-082",
+        "provider_id": "SV2D-082",
+        "name_ja": "カラミンゴ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-082",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-083",
+        "provider_id": "SV2D-083",
+        "name_ja": "リキキリン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-083",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-084",
+        "provider_id": "SV2D-084",
+        "name_ja": "フォレトスex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-084",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-085",
+        "provider_id": "SV2D-085",
+        "name_ja": "イーユイex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-085",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-086",
+        "provider_id": "SV2D-086",
+        "name_ja": "ハラバリーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-086",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-087",
+        "provider_id": "SV2D-087",
+        "name_ja": "デカヌチャンex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-087",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-088",
+        "provider_id": "SV2D-088",
+        "name_ja": "ディンルーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-088",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-089",
+        "provider_id": "SV2D-089",
+        "name_ja": "オンバーンex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-089",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-090",
+        "provider_id": "SV2D-090",
+        "name_ja": "サワロ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-090",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-091",
+        "provider_id": "SV2D-091",
+        "name_ja": "ナンジャモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-091",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-092",
+        "provider_id": "SV2D-092",
+        "name_ja": "イーユイex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-092",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-093",
+        "provider_id": "SV2D-093",
+        "name_ja": "デカヌチャンex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-093",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-094",
+        "provider_id": "SV2D-094",
+        "name_ja": "ディンルーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-094",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-095",
+        "provider_id": "SV2D-095",
+        "name_ja": "サワロ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-095",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-096",
+        "provider_id": "SV2D-096",
+        "name_ja": "ナンジャモ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-096",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-097",
+        "provider_id": "SV2D-097",
+        "name_ja": "ディンルーex",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-097",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-098",
+        "provider_id": "SV2D-098",
+        "name_ja": "スーパーエネルギー回収",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-098",
+        "rarity": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv2d-099",
+        "provider_id": "SV2D-099",
+        "name_ja": "基本草エネルギー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-sv2d-099",
+        "rarity": null
+      }
+    ],
+    "archiveSet": {
+      "zhTw": "碟旋暴擊"
+    },
+    "archiveCards": [
+      {
+        "providerId": "SV2D-001",
+        "ja": "ハネッコ",
+        "zhTw": "毽子草",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-002",
+        "ja": "ポポッコ",
+        "zhTw": "毽子花",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-003",
+        "ja": "ワタッコ",
+        "zhTw": "毽子棉",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-004",
+        "ja": "クヌギダマ",
+        "zhTw": "榛果球",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-005",
+        "ja": "フォレトスex",
+        "zhTw": "佛烈托斯ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV2D-006",
+        "ja": "ヘラクロス",
+        "zhTw": "赫拉克羅斯",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-007",
+        "ja": "タマンチュラ",
+        "zhTw": "團珠蛛",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-008",
+        "ja": "タマンチュラ",
+        "zhTw": "團珠蛛",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-009",
+        "ja": "ワナイダー",
+        "zhTw": "操陷蛛",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-010",
+        "ja": "ドンメル",
+        "zhTw": "呆火駝",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-011",
+        "ja": "バクーダ",
+        "zhTw": "噴火駝",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-012",
+        "ja": "ヒノヤコマ",
+        "zhTw": "火箭雀",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-013",
+        "ja": "ファイアロー",
+        "zhTw": "烈箭鷹",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-014",
+        "ja": "カルボウ",
+        "zhTw": "炭小侍",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-015",
+        "ja": "カルボウ",
+        "zhTw": "炭小侍",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-016",
+        "ja": "イーユイex",
+        "zhTw": "古玉魚ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV2D-017",
+        "ja": "ピカチュウ",
+        "zhTw": "皮卡丘",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-018",
+        "ja": "ライチュウ",
+        "zhTw": "雷丘",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-019",
+        "ja": "コリンク",
+        "zhTw": "小貓怪",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-020",
+        "ja": "ルクシオ",
+        "zhTw": "勒克貓",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-021",
+        "ja": "レントラー",
+        "zhTw": "倫琴貓",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-022",
+        "ja": "バチンウニ",
+        "zhTw": "啪嚓海膽",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-023",
+        "ja": "ズピカ",
+        "zhTw": "光蚪仔",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-024",
+        "ja": "ズピカ",
+        "zhTw": "光蚪仔",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-025",
+        "ja": "ハラバリーex",
+        "zhTw": "電肚蛙ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV2D-026",
+        "ja": "プリン",
+        "zhTw": "胖丁",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-027",
+        "ja": "プクリン",
+        "zhTw": "胖可丁",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-028",
+        "ja": "ミカルゲ",
+        "zhTw": "花岩怪",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-029",
+        "ja": "スナバァ",
+        "zhTw": "沙丘娃",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-030",
+        "ja": "シロデスナ",
+        "zhTw": "噬沙堡爺",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-031",
+        "ja": "ソウブレイズ",
+        "zhTw": "蒼炎刃鬼",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-032",
+        "ja": "カヌチャン",
+        "zhTw": "小鍛匠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-033",
+        "ja": "カヌチャン",
+        "zhTw": "小鍛匠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-034",
+        "ja": "ナカヌチャン",
+        "zhTw": "巧鍛匠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-035",
+        "ja": "デカヌチャンex",
+        "zhTw": "巨鍛匠ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV2D-036",
+        "ja": "ヨーギラス",
+        "zhTw": "幼基拉斯",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-037",
+        "ja": "サナギラス",
+        "zhTw": "沙基拉斯",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-038",
+        "ja": "ドジョッチ",
+        "zhTw": "泥泥鰍",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-039",
+        "ja": "ナマズン",
+        "zhTw": "鯰魚王",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-040",
+        "ja": "グレッグル",
+        "zhTw": "不良蛙",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-041",
+        "ja": "ドクロッグ",
+        "zhTw": "毒骷蛙",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-042",
+        "ja": "マケンカニ",
+        "zhTw": "好勝蟹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-043",
+        "ja": "ケケンカニ",
+        "zhTw": "好勝毛蟹",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-044",
+        "ja": "ナゲツケサル",
+        "zhTw": "投擲猴",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-045",
+        "ja": "コジオ",
+        "zhTw": "鹽石寶",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-046",
+        "ja": "コジオ",
+        "zhTw": "鹽石寶",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-047",
+        "ja": "ジオヅム",
+        "zhTw": "鹽石壘",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-048",
+        "ja": "キョジオーン",
+        "zhTw": "鹽石巨靈",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-049",
+        "ja": "ディンルーex",
+        "zhTw": "古鼎鹿ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV2D-050",
+        "ja": "ニューラ",
+        "zhTw": "狃拉",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-051",
+        "ja": "マニューラ",
+        "zhTw": "瑪狃拉",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-052",
+        "ja": "バンギラス",
+        "zhTw": "班基拉斯",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "SV2D-053",
+        "ja": "シルシュルー",
+        "zhTw": "滋汁鼴",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-054",
+        "ja": "シルシュルー",
+        "zhTw": "滋汁鼴",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-055",
+        "ja": "タギングル",
+        "zhTw": "塗標客",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-056",
+        "ja": "オトシドリ",
+        "zhTw": "下石鳥",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-057",
+        "ja": "オンバット",
+        "zhTw": "嗡蝠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-058",
+        "ja": "オンバーンex",
+        "zhTw": "音波龍ex",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "SV2D-059",
+        "ja": "キリンリキ",
+        "zhTw": "麒麟奇",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-060",
+        "ja": "リキキリン",
+        "zhTw": "奇麒麟",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-061",
+        "ja": "ヤヤコマ",
+        "zhTw": "小箭雀",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-062",
+        "ja": "ワッカネズミ",
+        "zhTw": "一對鼠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-063",
+        "ja": "ワッカネズミ",
+        "zhTw": "一對鼠",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "SV2D-064",
+        "ja": "イッカネズミ",
+        "zhTw": "一家鼠",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-065",
+        "ja": "カラミンゴ",
+        "zhTw": "纏紅鶴",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-066",
+        "ja": "おとどけドローン",
+        "zhTw": "親送無人機",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-067",
+        "ja": "勇気のおまもり",
+        "zhTw": "勇氣護符",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-068",
+        "ja": "サワロ",
+        "zhTw": "薩瓦羅",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-069",
+        "ja": "ナンジャモ",
+        "zhTw": "奇樹",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-070",
+        "ja": "災いの荒野",
+        "zhTw": "災禍荒野",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-071",
+        "ja": "セラピーエネルギー",
+        "zhTw": "治療能量",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "SV2D-072",
+        "ja": "ヘラクロス",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-073",
+        "ja": "ヒノヤコマ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-074",
+        "ja": "ライチュウ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-075",
+        "ja": "スナバァ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-076",
+        "ja": "カヌチャン",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-077",
+        "ja": "ナカヌチャン",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-078",
+        "ja": "コジオ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-079",
+        "ja": "バンギラス",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-080",
+        "ja": "タギングル",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-081",
+        "ja": "イッカネズミ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-082",
+        "ja": "カラミンゴ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-083",
+        "ja": "リキキリン",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-084",
+        "ja": "フォレトスex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-085",
+        "ja": "イーユイex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-086",
+        "ja": "ハラバリーex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-087",
+        "ja": "デカヌチャンex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-088",
+        "ja": "ディンルーex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-089",
+        "ja": "オンバーンex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-090",
+        "ja": "サワロ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-091",
+        "ja": "ナンジャモ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-092",
+        "ja": "イーユイex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-093",
+        "ja": "デカヌチャンex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-094",
+        "ja": "ディンルーex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-095",
+        "ja": "サワロ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-096",
+        "ja": "ナンジャモ",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-097",
+        "ja": "ディンルーex",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-098",
+        "ja": "スーパーエネルギー回収",
+        "zhTw": null,
+        "rarity": null
+      },
+      {
+        "providerId": "SV2D-099",
+        "ja": "基本草エネルギー",
+        "zhTw": null,
+        "rarity": null
+      }
+    ],
+    "twSeries": {
+      "id": "pokemon-tcgdex-tw-sv2d",
+      "official_code": "SV2D",
+      "name_zh": "碟旋暴擊"
+    },
+    "twCards": [
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-001",
+        "provider_id": "SV2D-001",
+        "name_zh": "毽子草",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-001",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-002",
+        "provider_id": "SV2D-002",
+        "name_zh": "毽子花",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-002",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-003",
+        "provider_id": "SV2D-003",
+        "name_zh": "毽子棉",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-003",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-004",
+        "provider_id": "SV2D-004",
+        "name_zh": "榛果球",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-004",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-005",
+        "provider_id": "SV2D-005",
+        "name_zh": "佛烈托斯ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-005",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-006",
+        "provider_id": "SV2D-006",
+        "name_zh": "赫拉克羅斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-006",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-007",
+        "provider_id": "SV2D-007",
+        "name_zh": "團珠蛛",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-007",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-008",
+        "provider_id": "SV2D-008",
+        "name_zh": "團珠蛛",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-008",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-009",
+        "provider_id": "SV2D-009",
+        "name_zh": "操陷蛛",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-009",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-010",
+        "provider_id": "SV2D-010",
+        "name_zh": "呆火駝",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-010",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-011",
+        "provider_id": "SV2D-011",
+        "name_zh": "噴火駝",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-011",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-012",
+        "provider_id": "SV2D-012",
+        "name_zh": "火箭雀",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-012",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-013",
+        "provider_id": "SV2D-013",
+        "name_zh": "烈箭鷹",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-013",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-014",
+        "provider_id": "SV2D-014",
+        "name_zh": "炭小侍",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-014",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-015",
+        "provider_id": "SV2D-015",
+        "name_zh": "炭小侍",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-015",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-016",
+        "provider_id": "SV2D-016",
+        "name_zh": "古玉魚ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-016",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-017",
+        "provider_id": "SV2D-017",
+        "name_zh": "皮卡丘",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-017",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-018",
+        "provider_id": "SV2D-018",
+        "name_zh": "雷丘",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-018",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-019",
+        "provider_id": "SV2D-019",
+        "name_zh": "小貓怪",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-019",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-020",
+        "provider_id": "SV2D-020",
+        "name_zh": "勒克貓",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-020",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-021",
+        "provider_id": "SV2D-021",
+        "name_zh": "倫琴貓",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-021",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-022",
+        "provider_id": "SV2D-022",
+        "name_zh": "啪嚓海膽",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-022",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-023",
+        "provider_id": "SV2D-023",
+        "name_zh": "光蚪仔",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-023",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-024",
+        "provider_id": "SV2D-024",
+        "name_zh": "光蚪仔",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-024",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-025",
+        "provider_id": "SV2D-025",
+        "name_zh": "電肚蛙ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-025",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-026",
+        "provider_id": "SV2D-026",
+        "name_zh": "胖丁",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-026",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-027",
+        "provider_id": "SV2D-027",
+        "name_zh": "胖可丁",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-027",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-028",
+        "provider_id": "SV2D-028",
+        "name_zh": "花岩怪",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-028",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-029",
+        "provider_id": "SV2D-029",
+        "name_zh": "沙丘娃",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-029",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-030",
+        "provider_id": "SV2D-030",
+        "name_zh": "噬沙堡爺",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-030",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-031",
+        "provider_id": "SV2D-031",
+        "name_zh": "蒼炎刃鬼",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-031",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-032",
+        "provider_id": "SV2D-032",
+        "name_zh": "小鍛匠",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-032",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-033",
+        "provider_id": "SV2D-033",
+        "name_zh": "小鍛匠",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-033",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-034",
+        "provider_id": "SV2D-034",
+        "name_zh": "巧鍛匠",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-034",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-035",
+        "provider_id": "SV2D-035",
+        "name_zh": "巨鍛匠ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-035",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-036",
+        "provider_id": "SV2D-036",
+        "name_zh": "幼基拉斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-036",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-037",
+        "provider_id": "SV2D-037",
+        "name_zh": "沙基拉斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-037",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-038",
+        "provider_id": "SV2D-038",
+        "name_zh": "泥泥鰍",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-038",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-039",
+        "provider_id": "SV2D-039",
+        "name_zh": "鯰魚王",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-039",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-040",
+        "provider_id": "SV2D-040",
+        "name_zh": "不良蛙",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-040",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-041",
+        "provider_id": "SV2D-041",
+        "name_zh": "毒骷蛙",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-041",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-042",
+        "provider_id": "SV2D-042",
+        "name_zh": "好勝蟹",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-042",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-043",
+        "provider_id": "SV2D-043",
+        "name_zh": "好勝毛蟹",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-043",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-044",
+        "provider_id": "SV2D-044",
+        "name_zh": "投擲猴",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-044",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-045",
+        "provider_id": "SV2D-045",
+        "name_zh": "鹽石寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-045",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-046",
+        "provider_id": "SV2D-046",
+        "name_zh": "鹽石寶",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-046",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-047",
+        "provider_id": "SV2D-047",
+        "name_zh": "鹽石壘",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-047",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-048",
+        "provider_id": "SV2D-048",
+        "name_zh": "鹽石巨靈",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-048",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-049",
+        "provider_id": "SV2D-049",
+        "name_zh": "古鼎鹿ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-049",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-050",
+        "provider_id": "SV2D-050",
+        "name_zh": "狃拉",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-050",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-051",
+        "provider_id": "SV2D-051",
+        "name_zh": "瑪狃拉",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-051",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-052",
+        "provider_id": "SV2D-052",
+        "name_zh": "班基拉斯",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-052",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-053",
+        "provider_id": "SV2D-053",
+        "name_zh": "滋汁鼴",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-053",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-054",
+        "provider_id": "SV2D-054",
+        "name_zh": "滋汁鼴",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-054",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-055",
+        "provider_id": "SV2D-055",
+        "name_zh": "塗標客",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-055",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-056",
+        "provider_id": "SV2D-056",
+        "name_zh": "下石鳥",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-056",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-057",
+        "provider_id": "SV2D-057",
+        "name_zh": "嗡蝠",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-057",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-058",
+        "provider_id": "SV2D-058",
+        "name_zh": "音波龍ex",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-058",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-059",
+        "provider_id": "SV2D-059",
+        "name_zh": "麒麟奇",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-059",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-060",
+        "provider_id": "SV2D-060",
+        "name_zh": "奇麒麟",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-060",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-061",
+        "provider_id": "SV2D-061",
+        "name_zh": "小箭雀",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-061",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-062",
+        "provider_id": "SV2D-062",
+        "name_zh": "一對鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-062",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-063",
+        "provider_id": "SV2D-063",
+        "name_zh": "一對鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-063",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-064",
+        "provider_id": "SV2D-064",
+        "name_zh": "一家鼠",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-064",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-065",
+        "provider_id": "SV2D-065",
+        "name_zh": "纏紅鶴",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-065",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-066",
+        "provider_id": "SV2D-066",
+        "name_zh": "親送無人機",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-066",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-067",
+        "provider_id": "SV2D-067",
+        "name_zh": "勇氣護符",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-067",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-068",
+        "provider_id": "SV2D-068",
+        "name_zh": "薩瓦羅",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-068",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-069",
+        "provider_id": "SV2D-069",
+        "name_zh": "奇樹",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-069",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-070",
+        "provider_id": "SV2D-070",
+        "name_zh": "災禍荒野",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-070",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-sv2d-071",
+        "provider_id": "SV2D-071",
+        "name_zh": "治療能量",
+        "canonical_id": "pokemon-tcgdex-tw-sv2d-071",
+        "canonicalShared": false
+      }
+    ]
+  }
+}
