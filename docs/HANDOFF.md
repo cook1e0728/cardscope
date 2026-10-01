@@ -25,7 +25,14 @@
 - 唯讀複核：台版 7,436／美版 20,635 不變；SV4a Seed 兩個 md5 不變；SVLN 22 card／22 canonical／22 printing 全 `data_status='pending'`，圖片、繁中名、稀有度皆 0。
 - 正式網站：`/api/cards?series=pokemon-tcgdex-ja-svln` HTTP 200、22 筆；`/api/search?q=ニンフィア` 命中 `pokemon-tcgdex-ja-svln-005`（`マンタイン` 命中 001）；詳情 `/api/cards/pokemon-tcgdex-ja-svln-005` HTTP 200；永久網址 `/?game=pokemon&card=pokemon-tcgdex-ja-svln-005` 顯示「中文名稱待補｜ニンフィアex」、圖片待補、稀有度待補、日版 SVLN 005。注意 `/api/cards` 不吃 `q`，日文名搜尋要用 `/api/search`。
 
-下一個安全起點：第二個 pilot（含稀有度的擴充包，挑選條件「取回數＝`total`」），先跑 manifest 預檢與新匯入計畫，再沿用同一函式走 dry-run → 確認 → 匯入 → 重播 → 複核。開始前重新核對正式庫稽核表仍只有 SVLN 兩筆、函式 md5 未變。合併本分支到 main 另需使用者決定。
+### 第二個 pilot：SV6a（進行中，2026-10-01 晚）
+
+- `api.tcgdex.net` 拒絕連線（ECONNREFUSED），依 ADR 0002 改讀 `tcgdex/cards-database` commit `c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78`（解析不執行）。同 commit 重建的 SVLN 計畫與 API 計畫列內容完全相同。Node 全套 221/221。
+- SV6a（ナイトワンダラー，2024-06-07）94 張零隔離零碰撞；稀有度 C28／U20／R7／RR6／AR12／UR10／SAR5，6 張留空（054、055、063 為 `ACE SPEC Rare`；092–094 來源標 `Mega Hyper Rare`）。證據 `docs/evidence/pokemon-jp/SV6a-*-20261001.json`；manifestHash `fdad7649…e538`，planDigest `bcbdb5889dee08b4752889f042d693f9e22bae5ca1a0bff3485debf00a9f6b6b`。
+- 計畫 80 KB 太大不手貼：SQL 以「卡號、名稱、稀有度」短表加常數重建 jsonb，函式只在 digest 等於上值時呼叫（本機以 PostgreSQL jsonb 文字規則計算 digest，已用 SVLN 驗證）。
+- 正式 dry-run：`replay=false`、digest 相符、`before` 全 0、`inserted` 1／94／94／94，零殘留；稽核仍 2 筆。匯入前基準：台版 7,436／美版 20,635、SV4a card md5 `50098b20…1024`、SVLN cards md5 `76043fb70654b199f5580daf891fe29f`、SVLN printings（去 updated_at）md5 `62331c1ab63d26eee321d191fc1daa6a`。
+
+下一個安全起點：等使用者確認後，以同一 digest 守門 SQL 用 `false` 真實匯入 SV6a、立即重播（應 `replay=true` 零異動、稽核累計 4 筆），再複核上列基準不變、新列 94 張全 pending／無圖／無繁中名，並抽查 `/api/search?q=モモワロウ` 與 SV6a 系列頁。合併本分支到 main 另需使用者決定。
 
 ## 前一里程碑（2026-10-01，SVLN 匯入前）
 
