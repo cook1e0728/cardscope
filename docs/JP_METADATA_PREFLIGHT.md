@@ -37,9 +37,8 @@ Decided:
 
 Still blocking:
 
-- No pilot series has been selected yet; selection waits for `api.tcgdex.net`, which this cloud environment's network policy currently denies.
-- The manifest still emits opaque base64url target IDs and must be changed to readable IDs.
-- The migration, the local PostgreSQL scenario tests and the production dry-run have not been written or run.
+- The pilot series is SVLN (22 cards, zero quarantine); evidence is in `docs/evidence/pokemon-jp/`.
+- Readable IDs, the migration (production version `20261001095010`) and local PostgreSQL scenario tests are done; the SVLN production dry-run and import have not been run. See `docs/HANDOFF.md`.
 - Immediately before the pilot, live constraints, triggers, seeds and natural keys must be re-read.
 
 Do not use the generic TW upsert: it can synthesize Chinese series/product labels and perform non-atomic cross-table writes. No production Japanese import is authorized by dry-run output alone. Image rights and cross-edition canonical mapping require independent evidence.

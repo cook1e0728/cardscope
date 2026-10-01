@@ -14,7 +14,21 @@
 - 尚未執行的唯一下一步，以及開始前必須重新核對的外部狀態。
 - 未追蹤或屬於使用者的本機檔案，避免下一台電腦誤刪。
 
-## 目前里程碑（2026-09-28，優先於下方歷史）
+## 目前里程碑（2026-10-01，日版 metadata pilot；優先於下方所有段落）
+
+- 分支 `claude/grill-with-docs-4i2eha`（尚未合併 main、未開 PR）。設計見 `docs/PRODUCT_PLAN.md` Phase 2C、`docs/adr/0001-jp-canonical-isolation.md`、`GLOSSARY.md`；pilot 系列定為 **SVLN**（スターターセット テラスタイプ：ステラ ニンフィアex，22 張，2024-08-30）。
+- 來源證據：2026-10-01 一般 GET 共 26 次全 HTTP 200；快照 `docs/evidence/pokemon-jp/SVLN-snapshot-20261001.json`，manifest 零隔離（1 series／22 card／22 printing），22 張來源稀有度皆 `None`，匯入後稀有度全空。匯入計畫 `docs/evidence/pokemon-jp/SVLN-import-plan-20261001.json`：manifestHash `e399ef342f0473f948c98e1707de2bbb120fe77f4458b33fd6b47b32ba6ecc4f`，預期函式回傳 planDigest `48f1dbfe08d5775ba2c2b5dc1deaca7f86910721e1f7a346fcbf249913d91b46`（不同即表示貼上內容有誤，不得寫入）。
+- 程式：manifest 改為可讀 ID `pokemon-tcgdex-ja-<系列>-<編號>`；新增 `providers/pokemon-jp-import-plan.mjs`、`scripts/build-pokemon-jp-import-plan.mjs`。Node 全套 216/216；本機 PostgreSQL 16 情境測試 `scripts/test-pokemon-jp-import-sql.sh` 全通過（權限、dry-run、中途回滾、匯入、既有列不變、重播零異動、不同計畫拒絕、SV4a／canonical 碰撞、稽核禁止修改）；不在 CI。
+- Supabase：已套用正式 migration `20261001095010_pokemon_jp_metadata_import`（private 追加式稽核表 `private.catalog_jp_import_audit` 與僅 `service_role`／postgres 可執行的 `private.import_pokemon_jp_metadata(jsonb, text, boolean)`）。正式函式與稽核表結構 md5 與 repo 一致（函式 `d9ce6c66c2704bb304cc2e4100342e10`）。**尚未執行 dry-run 或任何資料寫入**；匯入前正式庫日版寶可夢仍只有 SV4a Seed（1 series／1 card／1 printing），SVLN 與 `pokemon-tcgdex-ja-*` 零碰撞。
+- Render：本輪沒有應用程式變更需要部署。
+
+下一個安全起點（依序，任一步不符預期即停止）：
+1. 正式 dry-run：以 SQL 執行 `select private.import_pokemon_jp_metadata('<SVLN-import-plan 內容>'::jsonb, '<actor>', true);`，必須回傳 `replay=false`、`planDigest` 等於上方值、`before` 全 0、`inserted` 為 series 1／cards 22／canonical 22／printings 22，且正式庫無殘留列。
+2. 同一內容以 `false` 真實匯入一次，再以相同內容 `false` 重播：必須 `replay=true`、零異動、稽核各一筆 import／replay。
+3. 唯讀複核：台版 7,436／美版 20,635 printing 與 SV4a Seed 未變；新列 `data_status='pending'`、無圖片、無繁中名。
+4. 正式 `/api/cards`、日文名搜尋（如 `ニンフィア`）、詳情永久網址抽查；之後更新本文件與 Phase 2C 狀態。第二個 pilot（含稀有度的擴充包）沿用同一函式，另跑 manifest 預檢。
+
+## 前一里程碑（2026-09-28）
 
 - GitHub main runtime checkpoint `4710f71`；正式網站回傳的程式確認包含完整關聯分頁與獨立查詢重疊。Dashboard 曾確認 `65f8b99` Live（20.1 秒），目前不能把 Dashboard 登入延續視為已驗證。本輪 metadata-only 工具及交接文件另隨後續提交發布。本機全套 Node 測試 213/213 通過；390px 手機版無橫向溢出，200% 縮放及完整五 IP 互動驗收尚未全部完成。
 - 完整 Supabase 搜尋已修復，線上「魯夫」「噴火龍」有結果；保留 `catalog.json` fallback。圖片展示數與缺口現在使用同一政策集合，URL 存在數／原始連結稽核另列。趨勢標示「單一來源買取漲幅」，不冒充成交或人氣。

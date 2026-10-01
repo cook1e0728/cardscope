@@ -19,7 +19,7 @@ node "$root/scripts/build-pokemon-jp-import-plan.mjs" "$work/manifest.json" > "$
 
 createdb "$db"
 psql -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/test/sql/pokemon-jp-import-fixture.sql"
-psql -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/migrations/20261001120000_pokemon_jp_metadata_import.sql"
+psql -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/migrations/20261001095010_pokemon_jp_metadata_import.sql"
 # Running the migration twice proves it is re-runnable.
-psql -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/migrations/20261001120000_pokemon_jp_metadata_import.sql"
+psql -q -v ON_ERROR_STOP=1 -d "$db" -f "$root/supabase/migrations/20261001095010_pokemon_jp_metadata_import.sql"
 psql -q -v ON_ERROR_STOP=1 -d "$db" -v plan="$(cat "$work/plan.json")" -f "$root/test/sql/pokemon-jp-import.test.sql"

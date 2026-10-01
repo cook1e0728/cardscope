@@ -100,7 +100,9 @@ CardScope 是「繁體中文玩家的跨語言、跨版本 TCG 查證與收藏�
 - 日版寶可夢新增 metadata-only 零寫入 manifest／CLI，最多 100 張、固定 JP source/locale、精確身分、seed 衝突隔離、source/seed checksum 與 cursor；真實 PMCG1 單卡預檢通過，未匯入正式庫、未啟用自動同步、未新增圖片／價格／猜譯中文。見 `docs/JP_METADATA_PREFLIGHT.md`。
 - 瀏覽器正式頁面已確認五個 IP 與上方切換同步、100 張首屏卡片正常載入，390px 手機版無橫向溢出；切換器 Enter 開啟、Escape 關閉並返回焦點已確認，完整鍵盤、200% 縮放與所有 IP 詳情仍需各自驗收。
 
-#### Phase 2C 日版 metadata pilot 設計（2026-10-01 定案，尚未寫入正式庫）
+#### Phase 2C 日版 metadata pilot 設計（2026-10-01 定案；匯入函式已部署，尚未寫入卡片資料）
+
+- 2026-10-01 實際挑選結果：符合「取回數＝`total`＝`official`」的朱紫世代系列只有 SVLN、SVLS、SVK（皆為牌組商品、台版未收錄）；一般擴充包因 `total` 含秘密稀有卡而必然大於 `official`。決定先以 SVLN（22 張、零隔離）驗證機制，成功後再選一個含稀有度的擴充包作第二個 pilot，屆時挑選條件改為「取回數＝`total`」。
 
 - 2026-10-01 唯讀核對正式庫：日版寶可夢只有手寫 SV4a Seed（1 系列、1 卡、1 printing，`source`／`provider_id` 皆空）；台版 7,436、美版 20,635 個 printing。`tcg_series` 的 `unique(game_id, official_code, region)`、各表 `(source, provider_id)` 唯一鍵與 printing 自然鍵均為 valid；`tcg_cards` 的 canonical trigger 在 canonical ID 相同時會合併名稱與別名。
 - 範圍：單一乾淨系列、來源卡數 ≤100、一份 manifest 即一個交易（全有或全無）。挑選條件：取回數＝`cardCount.total`＝`cardCount.official`、manifest 零隔離、不在 `svp`／`sve`／`CS1.5`／`SV5K`／`SV4a`／`PMCG1` 隔離清單、有上市日期，優先台版已收錄的朱紫世代系列，多個符合時取卡數最少者。系列待來源可連線後附證據確認。
