@@ -6,6 +6,8 @@
 
 在下列任一節點更新本文件：PR 合併、正式 migration、正式資料批次、Render 發布驗收。每次覆寫已過期的「目前里程碑」，不要累積聊天逐字稿。
 
+每完成一個段落（上述節點，或一組可獨立驗證的程式／文件修改），立即把本文件與相關修改 commit 並 push 到目前工作分支，不必再等使用者指示，確保另一台電腦 `git pull` 即可接手。不 push 密鑰或本機產物；合併到 `main`（會觸發 Render 部署）仍需使用者確認。
+
 交接必須包含：
 
 - GitHub `main` commit 與 PR。
@@ -14,7 +16,18 @@
 - 尚未執行的唯一下一步，以及開始前必須重新核對的外部狀態。
 - 未追蹤或屬於使用者的本機檔案，避免下一台電腦誤刪。
 
-## 目前里程碑（2026-10-01，日版 metadata pilot；優先於下方所有段落）
+## 目前里程碑（2026-10-01 晚，SVLN 已正式匯入；優先於下方所有段落）
+
+- 分支 `claude/grill-with-docs-4i2eha`（尚未合併 main、未開 PR）；本輪只改文件，無程式變更、Render 無需部署。
+- 執行前複核：正式函式 `prosrc` md5 `d9ce6c66c2704bb304cc2e4100342e10` 與交接一致；SV4a Seed 1/1/1（card md5 `50098b2093bf91ef2fd336c258291024`、printing md5 `c6f030ffab6701f5eda2e77627734c38`）；台版 7,436／美版 20,635；SVLN／`tcgdex-ja` 零碰撞、稽核 0 筆。
+- 正式 dry-run：`replay=false`、planDigest `48f1dbfe08d5775ba2c2b5dc1deaca7f86910721e1f7a346fcbf249913d91b46`、`before` 全 0、`inserted` series 1／cards 22／canonical 22／printings 22；執行後零殘留。
+- 真實匯入（actor `claude-code-local:aa26488931`，2026-10-01 10:08:44 UTC）結果同上；立即重播（10:10:27 UTC）`replay=true`、`inserted` 全 0、`present` 1/22/22。稽核表恰 import、replay 各一筆，digest 相同。
+- 唯讀複核：台版 7,436／美版 20,635 不變；SV4a Seed 兩個 md5 不變；SVLN 22 card／22 canonical／22 printing 全 `data_status='pending'`，圖片、繁中名、稀有度皆 0。
+- 正式網站：`/api/cards?series=pokemon-tcgdex-ja-svln` HTTP 200、22 筆；`/api/search?q=ニンフィア` 命中 `pokemon-tcgdex-ja-svln-005`（`マンタイン` 命中 001）；詳情 `/api/cards/pokemon-tcgdex-ja-svln-005` HTTP 200；永久網址 `/?game=pokemon&card=pokemon-tcgdex-ja-svln-005` 顯示「中文名稱待補｜ニンフィアex」、圖片待補、稀有度待補、日版 SVLN 005。注意 `/api/cards` 不吃 `q`，日文名搜尋要用 `/api/search`。
+
+下一個安全起點：第二個 pilot（含稀有度的擴充包，挑選條件「取回數＝`total`」），先跑 manifest 預檢與新匯入計畫，再沿用同一函式走 dry-run → 確認 → 匯入 → 重播 → 複核。開始前重新核對正式庫稽核表仍只有 SVLN 兩筆、函式 md5 未變。合併本分支到 main 另需使用者決定。
+
+## 前一里程碑（2026-10-01，SVLN 匯入前）
 
 - 分支 `claude/grill-with-docs-4i2eha`（尚未合併 main、未開 PR）。設計見 `docs/PRODUCT_PLAN.md` Phase 2C、`docs/adr/0001-jp-canonical-isolation.md`、`GLOSSARY.md`；pilot 系列定為 **SVLN**（スターターセット テラスタイプ：ステラ ニンフィアex，22 張，2024-08-30）。
 - 來源證據：2026-10-01 一般 GET 共 26 次全 HTTP 200；快照 `docs/evidence/pokemon-jp/SVLN-snapshot-20261001.json`，manifest 零隔離（1 series／22 card／22 printing），22 張來源稀有度皆 `None`，匯入後稀有度全空。匯入計畫 `docs/evidence/pokemon-jp/SVLN-import-plan-20261001.json`：manifestHash `e399ef342f0473f948c98e1707de2bbb120fe77f4458b33fd6b47b32ba6ecc4f`，預期函式回傳 planDigest `48f1dbfe08d5775ba2c2b5dc1deaca7f86910721e1f7a346fcbf249913d91b46`（不同即表示貼上內容有誤，不得寫入）。
