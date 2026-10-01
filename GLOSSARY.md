@@ -24,6 +24,10 @@ _Avoid_: master card、統一卡
 同一來源中，日文名完全相同的另一張卡已有可靠繁中名時，沿用該繁中名作為顯示與搜尋用名稱。先找同一 Series；找不到時，才在同一世代中找，且該日文名在整個世代只能對應唯一一個繁中名。它只是名稱，不是身分證據，也不據以連結 Canonical card。
 _Avoid_: 翻譯名、猜譯、暫譯
 
+**Data status（資料狀態）**:
+一筆 Card 或 Printing 可信到什麼程度。Card 的身分已由可靠來源確認時為「已驗證」，尚未確認時為「待核」；Printing 必須所屬 Card 已驗證且稀有度齊全才算已驗證，否則為「不完整」。
+_Avoid_: 審核狀態、品質分數
+
 **Provider ID（來源識別碼）**:
 資料來源為某一筆 Series、Card 或 Printing 給的識別碼，與來源名稱合起來才具唯一性。
 _Avoid_: 外部 ID、API ID
