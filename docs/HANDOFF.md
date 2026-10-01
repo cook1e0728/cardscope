@@ -16,7 +16,7 @@
 - 尚未執行的唯一下一步，以及開始前必須重新核對的外部狀態。
 - 未追蹤或屬於使用者的本機檔案，避免下一台電腦誤刪。
 
-## 目前里程碑（2026-10-01 夜，日版中文化；優先於下方所有段落）
+## 目前里程碑（2026-10-02，日版中文化、分批匯入、data status；優先於下方所有段落）
 
 - 分支 `claude/jp-zh-names`（依主方案第 0 節每主題一條；完成後快轉 main）。決策經 grill-with-docs 三輪定案：日版連結台版既有 Canonical card（ADR 0003）、同系列 Derived name、新增稀有度 `ACE`（ACE SPEC，排序在 RR 與 Rare Holo 之間）、SV6a 092–094 金卡維持空值、沒有台版的系列不猜譯。詞彙表新增 Source archive、Derived name。
 - Migration `20261001114348_pokemon_jp_enrichment`：新增 `ACE`（`tcg_rarities` tier 14，原 ≥14 者 +1，比照 K 的先例）、追加式稽核表 `private.catalog_jp_enrich_audit`、只填空值的 `private.enrich_pokemon_jp_metadata(jsonb, text, boolean)`（dry-run、digest 重播、連結四項檢查、同名推導檢查、系列名須等於同代碼台版名）。套用前先在正式庫以「整批執行後拋例外」的交易完整測過 SV6a 寫入與重播，並確認全數回滾。
@@ -42,7 +42,13 @@
 - 證據：`<系列>-snapshot-20261001.json`、`-import-batches-20261001.json`、`-enrich-plan-20261002.json`、`-enrich-chunks-20261002.json`。Node 全套 237/237。
 - 觀察到的來源資料特性（未修改）：台版名稱帶有 `[支援者]`、`[進化前分岐α]`、`<火箭隊的>` 等標記，以及 SV8a-161 含零寬字元；日版連結沿用台版官方原字串。
 
-下一個安全起點：依序執行 4（日版 data_status 升級定義）。後續候選：SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、台版名稱標記的顯示整理。日版修改一律走 `enrich_pokemon_jp_metadata`，只填空值。
+### 依序執行 4：日版 data_status 升級（2026-10-02）
+
+- ADR 0006＋詞彙表 Data status：日版 Card 已依 ADR 0003 連結到 `verified` 台版 Card（Provider ID、名稱、作品層仍一致）才升為 `verified`；其 Printing 沿用既有規則（有稀有度 `verified`、無則 `incomplete`）；未連結、只有推導名稱、無台版的系列維持 `pending`。只升不降。
+- Migration `20261001162114_pokemon_jp_data_status_promotion`：追加式稽核 `private.catalog_jp_status_audit`、`private.promote_pokemon_jp_data_status(text, text, boolean)`（每次最多 100 張、dry-run CJ004）。套用前在正式庫以 SV6a／SV8a／SVLN 整批回滾測試（64／100+100+37／0，重播 0）。
+- 執行：20 個系列 dry-run 後，以 28 次呼叫（每次 ≤100）正式升級 2,026 張，總數檢查通過；25 個系列重播全數 0。結果：Card verified 2,026／pending 843；Printing verified 1,698、incomplete 328（多為 SV8a、SV3a、SV9a 來源缺稀有度）、pending 843。台版、美版不變。
+
+下一個安全起點：無指定項目。後續候選：SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、台版名稱標記（`[支援者]`、`<火箭隊的>` 等）的顯示整理、日版缺稀有度的 328 筆、搜尋延遲（約 2–4 秒）。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
