@@ -84,7 +84,7 @@ export function buildPokemonJpImportSql(plan, { actor, dryRun, gated = false }) 
     .map(card => `(${sqlText(card.official_card_number)},${sqlText(card.name_ja)},${card.rarity_code == null ? 'null' : sqlText(card.rarity_code)})`)
     .join(',');
   const code = plan.seriesProviderId;
-  const sql = `with k as (select ${sqlText(plan.manifestHash)}::text mh, ${sqlText(plan.sourceHash)}::text sh, ${sqlText(plan.seedHash)}::text seh, ${sqlText(plan.sourceObservedAt)}::text obs, ${sqlText(archive?.repository ?? '')}::text repo, ${sqlText(archive?.commit ?? '')}::text sha),
+  const sql = `with k as (select ${sqlText(plan.manifestHash)}::text mh, ${sqlText(plan.series.metadata.manifestHash)}::text smh, ${sqlText(plan.sourceHash)}::text sh, ${sqlText(plan.seedHash)}::text seh, ${sqlText(plan.sourceObservedAt)}::text obs, ${sqlText(archive?.repository ?? '')}::text repo, ${sqlText(archive?.commit ?? '')}::text sha),
 c(n, name, rar) as (values ${values}),
 p as (select jsonb_build_object(
   'planVersion', ${Number(plan.planVersion)}, 'source', ${sqlText(plan.source)}, 'seriesProviderId', ${sqlText(code)},
@@ -93,7 +93,7 @@ p as (select jsonb_build_object(
     'release_date', ${s.release_date == null ? 'null::text' : sqlText(s.release_date)}, 'source_url', ${sqlText(s.source_url)},
     'metadata', jsonb_build_object(
       'sourceEvidence', jsonb_build_object('url', ${sqlText(s.metadata.sourceEvidence.url)}, 'urlType', 'derived-provider-endpoint', 'observedAt', k.obs${evidence ? `, ${evidence}` : ''}),
-      'manifestHash', k.mh, 'sourceHash', k.sh, 'seedHash', k.seh)),
+      'manifestHash', k.smh, 'sourceHash', k.sh, 'seedHash', k.seh)),
   'cards', (select jsonb_agg(jsonb_build_object(
       'id', ${sqlText(s.id + '-')} || lower(c.n), 'provider_id', ${sqlText(code + '-')} || c.n, 'official_card_number', c.n,
       'name_ja', c.name, 'rarity_code', c.rar::text,
@@ -101,11 +101,12 @@ p as (select jsonb_build_object(
       'source_url', ${sqlText(`https://api.tcgdex.net/v2/ja/cards/${code}-`)} || c.n, 'release_date', ${s.release_date == null ? 'null::text' : sqlText(s.release_date)},
       'metadata', jsonb_build_object('tcgdexId', ${sqlText(code + '-')} || c.n,
         'sourceEvidence', jsonb_build_object('url', ${sqlText(`https://api.tcgdex.net/v2/ja/cards/${code}-`)} || c.n, 'urlType', 'derived-provider-endpoint', 'observedAt', k.obs${cardEvidence ? `, ${cardEvidence}` : ''}),
-        'manifestHash', k.mh, 'sourceHash', k.sh, 'seedHash', k.seh)) order by c.n collate "C") from c)
+        'manifestHash', k.mh, 'sourceHash', k.sh, 'seedHash', k.seh)) order by c.n collate "C") from c)${plan.batch ? `,
+  'batch', jsonb_build_object('index', ${Number(plan.batch.index)}, 'count', ${Number(plan.batch.count)}, 'seriesCardCount', ${Number(plan.batch.seriesCardCount)})` : ''}
 ) as plan from k)
 `;
   const hashed = `select plan, encode(pg_catalog.sha256(convert_to(plan::text, 'UTF8')), 'hex') as digest from p`;
-  const call = flag => `private.import_pokemon_jp_metadata(plan, ${sqlText(actor)}, ${flag})`;
+  const call = flag => `private.${plan.batch ? 'import_pokemon_jp_metadata_batch' : 'import_pokemon_jp_metadata'}(plan, ${sqlText(actor)}, ${flag})`;
   if (!gated) {
     return { digest, sql: `${sql}select digest, case when digest = ${sqlText(digest)} then ${call(dryRun)} end as result
 from (${hashed}) h;
@@ -118,7 +119,7 @@ from (${hashed}) h;
   return { digest, sql: `${sql}select digest, dry, case when dry->>'replay' = 'false'
     and dry->>'planDigest' = ${sqlText(digest)}
     and dry->'before' = '{"series":0,"cards":0,"canonical":0,"printings":0}'::jsonb
-    and dry->'inserted' = '{"series":1,"cards":${n},"canonical":${n},"printings":${n}}'::jsonb
+    and dry->'inserted' = '{"series":${plan.batch && plan.batch.index !== 1 ? 0 : 1},"cards":${n},"canonical":${n},"printings":${n}}'::jsonb
   then ${call(false)} end as result
 from (select plan, digest, case when digest = ${sqlText(digest)} then ${call(true)} end as dry from (${hashed}) h offset 0) d;
 ` };

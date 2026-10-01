@@ -9,12 +9,13 @@ export const POKEMON_JP_IMPORT_PLAN_VERSION = 1;
  * Constant columns (game, source, region, language, status, image fields) are
  * fixed by the database function and deliberately absent from the plan.
  */
-export function buildPokemonJpImportPlan(manifest) {
+export function buildPokemonJpImportPlan(manifest, { skipManifestHash = false } = {}) {
   if (manifest?.manifestType !== 'pokemon-jp-metadata-only' || manifest.schemaVersion !== 1) {
     throw new Error('INVALID_POKEMON_JP_MANIFEST');
   }
   const { manifestHash, ...unhashed } = manifest;
-  if (sha256PokemonJpPayload(unhashed) !== manifestHash) throw new Error('POKEMON_JP_MANIFEST_HASH_MISMATCH');
+  // Batch plans re-assemble already verified pages and restore the real hashes afterwards.
+  if (!skipManifestHash && sha256PokemonJpPayload(unhashed) !== manifestHash) throw new Error('POKEMON_JP_MANIFEST_HASH_MISMATCH');
   if (manifest.scope.seriesStatus !== 'eligible') throw new Error('POKEMON_JP_SERIES_NOT_ELIGIBLE');
   if (manifest.scope.cursor != null || manifest.scope.hasMore) throw new Error('POKEMON_JP_PLAN_REQUIRES_WHOLE_SERIES');
   if (manifest.quarantined.length > 0) throw new Error('POKEMON_JP_PLAN_HAS_QUARANTINE');
@@ -65,4 +66,53 @@ export function buildPokemonJpImportPlan(manifest) {
       };
     })
   };
+}
+
+/**
+ * Split one series larger than 100 cards into the ordered batch plans accepted
+ * by private.import_pokemon_jp_metadata_batch (ADR 0005). `manifests` are the
+ * consecutive cursor pages of one snapshot (same source/seed hashes); every
+ * page must be quarantine-free. Each plan carries the full series row so the
+ * database can re-check identity, but only batch 1 inserts it.
+ */
+export function buildPokemonJpImportBatchPlans(manifests) {
+  if (!Array.isArray(manifests) || manifests.length < 2) throw new Error('POKEMON_JP_BATCH_NEEDS_PAGES');
+  const [first] = manifests;
+  const seriesRecord = first.records.find(row => row.entity === 'series');
+  if (!seriesRecord) throw new Error('POKEMON_JP_BATCH_FIRST_PAGE_NEEDS_SERIES');
+  const total = first.summary.sourceCards;
+  const plans = manifests.map((manifest, index) => {
+    if (manifest?.manifestType !== 'pokemon-jp-metadata-only' || manifest.schemaVersion !== 1) throw new Error('INVALID_POKEMON_JP_MANIFEST');
+    const { manifestHash, ...unhashed } = manifest;
+    if (sha256PokemonJpPayload(unhashed) !== manifestHash) throw new Error('POKEMON_JP_MANIFEST_HASH_MISMATCH');
+    if (manifest.scope.seriesStatus !== 'eligible') throw new Error('POKEMON_JP_SERIES_NOT_ELIGIBLE');
+    if (manifest.quarantined.length > 0) throw new Error('POKEMON_JP_PLAN_HAS_QUARANTINE');
+    if (manifest.provenance.sourceHash !== first.provenance.sourceHash || manifest.provenance.seedHash !== first.provenance.seedHash
+      || manifest.summary.sourceCards !== total || manifest.scope.seriesProviderId !== first.scope.seriesProviderId) {
+      throw new Error('POKEMON_JP_BATCH_PAGES_DIFFER');
+    }
+    if ((index === manifests.length - 1) === manifest.scope.hasMore) throw new Error('POKEMON_JP_BATCH_PAGES_INCOMPLETE');
+    const cards = manifest.records.filter(row => row.entity === 'card');
+    const printings = manifest.records.filter(row => row.entity === 'printing');
+    if (cards.length === 0 || cards.length !== printings.length) throw new Error('POKEMON_JP_PLAN_SHAPE_MISMATCH');
+    return { manifest, cards, printings };
+  });
+  if (plans.reduce((sum, page) => sum + page.cards.length, 0) !== total) throw new Error('POKEMON_JP_PLAN_SHAPE_MISMATCH');
+
+  return plans.map(({ manifest, cards, printings }, index) => {
+    const single = buildPokemonJpImportPlan({
+      ...manifest,
+      scope: { ...manifest.scope, cursor: null, hasMore: false, seriesStatus: 'eligible' },
+      summary: { ...manifest.summary, sourceCards: cards.length },
+      records: [seriesRecord, ...cards, ...printings],
+      manifestHash: undefined
+    }, { skipManifestHash: true });
+    return {
+      ...single,
+      manifestHash: manifest.manifestHash,
+      series: { ...single.series, metadata: { ...single.series.metadata, manifestHash: first.manifestHash } },
+      cards: single.cards.map(card => ({ ...card, metadata: { ...card.metadata, manifestHash: manifest.manifestHash } })),
+      batch: { index: index + 1, count: plans.length, seriesCardCount: total }
+    };
+  });
 }
