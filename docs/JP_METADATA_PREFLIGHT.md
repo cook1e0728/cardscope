@@ -26,6 +26,22 @@ The source reports 184 Japanese series and 18,031 cards; these are unverified so
 
 ## Production gates still required
 
-Re-read live constraints, triggers, seeds and natural keys immediately before any pilot. Prepare an additive single-transaction importer, explicit idempotent replay test, exact relationships and before/after evidence. Do not use the generic TW upsert: it can synthesize Chinese series/product labels and perform non-atomic cross-table writes. No production Japanese import is authorized by this dry-run output alone. Image rights and cross-edition canonical mapping require independent evidence.
+The pilot design was settled on 2026-10-01; see `docs/PRODUCT_PLAN.md` Phase 2C and `docs/adr/0001-jp-canonical-isolation.md`.
+
+Decided:
+
+- A read-only live check on 2026-10-01 confirmed that the only Japanese Pokémon rows are the hand-written SV4a seed (1 series, 1 card, 1 printing, null source/provider ID). The constraints are valid, and the canonical trigger merges names/aliases on a canonical ID collision.
+- The pilot covers one clean series of at most 100 cards, imported as one manifest in one transaction.
+- Writes are insert-only. Card and printing IDs are readable (`pokemon-tcgdex-ja-<set>-<local>`), each card gets its own 1:1 canonical, and `data_status` is `pending`. No Chinese name or image is written.
+- The import runs through a private append-only audit table and a `service_role`-only import function. Replaying the same hash makes zero changes; a different hash for an already-imported series is rejected.
+
+Still blocking:
+
+- No pilot series has been selected yet; selection waits for `api.tcgdex.net`, which this cloud environment's network policy currently denies.
+- The manifest still emits opaque base64url target IDs and must be changed to readable IDs.
+- The migration, the local PostgreSQL scenario tests and the production dry-run have not been written or run.
+- Immediately before the pilot, live constraints, triggers, seeds and natural keys must be re-read.
+
+Do not use the generic TW upsert: it can synthesize Chinese series/product labels and perform non-atomic cross-table writes. No production Japanese import is authorized by dry-run output alone. Image rights and cross-edition canonical mapping require independent evidence.
 
 References: [TCGdex documentation](https://tcgdex.dev/faq), [database licensing](https://github.com/tcgdex/cards-database#licenses). Metadata licensing does not grant Pokémon card-art display rights.

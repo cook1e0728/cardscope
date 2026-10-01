@@ -1,7 +1,7 @@
 # CardScope 產品、資料與 UX 主方案
 
 狀態：已核准的執行基準
-更新日期：2026-09-28
+更新日期：2026-10-01
 
 ## 產品定位與成功標準
 
@@ -99,6 +99,17 @@ CardScope 是「繁體中文玩家的跨語言、跨版本 TCG 查證與收藏�
 - 公開介面分開標示 bootstrap 樣本與完整資料庫觀測量；正式完整報告已成功回應，暖快取測得 815 ms。冷路徑仍有超過 60 秒的測量，尚未通過冷啟動效能驗收；免費 Render 休眠與同步作業也會影響請求，不能宣稱全情境效能已完成。
 - 日版寶可夢新增 metadata-only 零寫入 manifest／CLI，最多 100 張、固定 JP source/locale、精確身分、seed 衝突隔離、source/seed checksum 與 cursor；真實 PMCG1 單卡預檢通過，未匯入正式庫、未啟用自動同步、未新增圖片／價格／猜譯中文。見 `docs/JP_METADATA_PREFLIGHT.md`。
 - 瀏覽器正式頁面已確認五個 IP 與上方切換同步、100 張首屏卡片正常載入，390px 手機版無橫向溢出；切換器 Enter 開啟、Escape 關閉並返回焦點已確認，完整鍵盤、200% 縮放與所有 IP 詳情仍需各自驗收。
+
+#### Phase 2C 日版 metadata pilot 設計（2026-10-01 定案，尚未寫入正式庫）
+
+- 2026-10-01 唯讀核對正式庫：日版寶可夢只有手寫 SV4a Seed（1 系列、1 卡、1 printing，`source`／`provider_id` 皆空）；台版 7,436、美版 20,635 個 printing。`tcg_series` 的 `unique(game_id, official_code, region)`、各表 `(source, provider_id)` 唯一鍵與 printing 自然鍵均為 valid；`tcg_cards` 的 canonical trigger 在 canonical ID 相同時會合併名稱與別名。
+- 範圍：單一乾淨系列、來源卡數 ≤100、一份 manifest 即一個交易（全有或全無）。挑選條件：取回數＝`cardCount.total`＝`cardCount.official`、manifest 零隔離、不在 `svp`／`sve`／`CS1.5`／`SV5K`／`SV4a`／`PMCG1` 隔離清單、有上市日期，優先台版已收錄的朱紫世代系列，多個符合時取卡數最少者。系列待來源可連線後附證據確認。
+- 身分：Provider ID（`tcgdex-ja`）為主身分，printing 自然鍵為一致性檢查，兩者任一衝突即中止。Card／printing 使用可讀 ID `pokemon-tcgdex-ja-<系列>-<編號>`，canonical 與 card 1:1、不連結台／美版（見 `docs/adr/0001-jp-canonical-isolation.md`）；任何 ID、自然鍵或 canonical 碰撞即中止。
+- 寫入：只 INSERT series／card／printing 與稽核紀錄，不 UPDATE、不補空值；只寫 `name_ja`，`name_zh` 不猜譯；`image_url` 空、`image_rights_status='not-provided'`；`data_status='pending'`（localId 尚未驗證為官方卡號）。
+- 執行：新增式 migration 建立 private 追加式稽核表（禁止修改與 truncate）及僅 `service_role` 可呼叫的匯入函式；函式在單一交易內取得系列 advisory lock、重驗 manifest／source／seed hash、檢查碰撞並寫入。相同 hash 重播回傳 `replay=true` 且零異動；同系列已匯入後送來不同 hash 一律中止，不做差額增量。
+- 驗證與發布：Node 測試＋本機 PostgreSQL 16 SQL 情境測試（成功、重播、不同 hash、各類碰撞、中途回滾、權限拒絕；不加入 CI）→ 正式唯讀複核 → migration → 正式 dry-run（執行後主動回滾）→ 真實匯入 → 立即重播 → 前後差異複核（台／美版零異動）→ 正式 API 抽查 → 文件。migration 與真實寫入前各需使用者確認；資料庫不做破壞性回滾。
+- 公開：通過 API 抽查後立即出現在卡表、搜尋與 coverage，標示繁中名稱尚未取得；日版系列分母維持 unknown，只標示來源觀測數。
+- 不在 pilot：SV4a Seed 維持原狀，之後另行核對是否認領；PMCG1 變體數超出總數只作來源品質問題，不納入完整度，原因另行調查；圖片、商品、價格、跨版本連結與多批大系列。
 
 ### 3. 圖片與品牌辨識
 
