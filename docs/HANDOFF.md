@@ -10,6 +10,8 @@
 
 用量檢查點：5 小時用量剩餘 5% 以下時，不再開始新步驟，立即在本文件「目前里程碑」記下進行中的動作（已完成步驟、下一個確切步驟、未提交狀態、暫存檔位置），commit 並 push 到工作分支，以便切換裝置接續。
 
+本機直連資料庫：`node scripts/run-sql.mjs <檔案.sql>`（或 `-e "sql"`、唯讀加 `--read-only`）經 Supabase Management API 執行，整個請求是一個交易，出錯全部回滾（已實測）。需要 repo 根目錄的 `.env.local` 內有 `SUPABASE_ACCESS_TOKEN=sbp_…`（個人存取權杖，已被 .gitignore 排除；每台電腦各自建立，勿提交）。大批寫入一律用此工具執行檔案，不再把 SQL 貼進 MCP。
+
 交接必須包含：
 
 - GitHub `main` commit 與 PR。
