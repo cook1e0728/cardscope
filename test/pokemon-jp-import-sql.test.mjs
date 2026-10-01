@@ -24,3 +24,11 @@ test('import SQL is guarded by the plan digest and rejects non-derivable cards',
   assert.throws(() => buildPokemonJpImportSql(tampered, { actor: 'tester', dryRun: true }), /NOT_DERIVABLE:SV6a-001/);
   assert.throws(() => buildPokemonJpImportSql(plan, { actor: '', dryRun: true }), /ACTOR_REQUIRED/);
 });
+
+test('gated import runs the dry run first and writes only on an exact fresh insert', async () => {
+  const plan = await readPlan('SV6a-import-plan-20261001.json');
+  const { sql } = buildPokemonJpImportSql(plan, { actor: 'tester', dryRun: false, gated: true });
+  assert.match(sql, /then private\.import_pokemon_jp_metadata\(plan, 'tester', true\) end as dry from \(.*\) h offset 0\) d;/s);
+  assert.match(sql, /dry->'inserted' = '\{"series":1,"cards":94,"canonical":94,"printings":94\}'::jsonb\s+then private\.import_pokemon_jp_metadata\(plan, 'tester', false\)/);
+  assert.throws(() => buildPokemonJpImportSql(plan, { actor: 'tester', dryRun: true, gated: true }), /GATE_REQUIRES_IMPORT/);
+});

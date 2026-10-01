@@ -38,7 +38,24 @@
 - 計畫 80 KB 太大不手貼：SQL 以「卡號、名稱、稀有度」短表加常數重建 jsonb，函式只在 digest 等於上值時呼叫（本機以 PostgreSQL jsonb 文字規則計算 digest，已用 SVLN 驗證）。
 - 正式 dry-run：`replay=false`、digest 相符、`before` 全 0、`inserted` 1／94／94／94，零殘留；稽核仍 2 筆。匯入前基準：台版 7,436／美版 20,635、SV4a card md5 `50098b20…1024`、SVLN cards md5 `76043fb70654b199f5580daf891fe29f`、SVLN printings（去 updated_at）md5 `62331c1ab63d26eee321d191fc1daa6a`。
 
-下一個安全起點：兩個 pilot 皆完成，日版 metadata 匯入機制（API 或 GitHub 封存來源）已驗證。後續可選：(1) 依同流程擴大到其他 ≤100 張的日版系列（>100 張需先設計多批交易）；(2) 為 `ACE SPEC Rare`、金卡等未對映稀有度補核准對映；(3) 讓系列名稱可被搜尋；(4) 合併本分支到 main（需使用者決定）。每次匯入前重新讀取正式日版既有列並重建快照，稽核表目前 4 筆。
+### 擴大匯入：朱紫 10 個系列（2026-10-01 晚，使用者指示「全部執行」）
+
+- 同一 commit `c5c0a8a…`、同一 observedAt `2026-10-01T10:54:37.173Z`、同一既有列快照（SV4a+SVLN+SV6a，三組 md5 與正式庫一致，seedHash `a46a6c05…8dff`）。證據在 `docs/evidence/pokemon-jp/<系列>-*-20261001.json`。
+- 新工具 `scripts/emit-pokemon-jp-import-sql.mjs`（`providers/pokemon-jp-import-sql.mjs`）：以短表在 SQL 內重建計畫並以 digest 守門；`gated-import` 模式在同一敘述先 dry-run，結果須 `replay=false`、digest 相同、`before` 全 0、`inserted` 1/N/N/N 才寫入。SVLN 以此工具 dry-run 得相同 digest（重播路徑零寫入）。
+- 結果（全部 import＋replay 各一筆稽核、重播零異動）：SV2D クレイバースト 99（稀有度 71）、SV2P スノーハザード 99（71）、SV3a レイジングサーフ 92（62）、SV4K 古代の咆哮 95（66）、SV4M 未来の一閃 95（66）、SV5a クリムゾンヘイズ 96（63）、SV7a 楽園ドラゴーナ 94（61）、SV9a 熱風のアリーナ 92（63）、SVK デッキビルドBOX ステラミラクル 44（0）、SVLS スターターセット ソウブレイズex 22（0）。SV2D 為逐步 dry-run→匯入→重播；其餘為 gated-import 後統一重播。
+- 複核：日版 12 系列共 944 張，全部 pending、無圖、無繁中名，card／printing 稀有度不一致 0；台版 7,436／美版 20,635、SV4a 與 SVLN md5 不變；稽核 24 筆（12 系列各 import／replay）。
+- 未匯入：SV5K／SV5M（SV5K 在來源異常隔離清單，SV5M 為同期姊妹包一併保留）；>100 張系列（SV1S、SV1V、SV1a、SV3、SV6、SV7、SV8、SV9、SV10 等）需先設計多批交易；`data-asia/SV` 下僅有繁中／其他語言日期的系列不屬日版。
+
+### 系列名稱搜尋（程式）
+
+- `/api/search` 在卡名與 `search_text` 皆無結果時，改查 `tcg_series` 名稱／官方代號（最多 5 個系列），依 `series_id, local_card_number` 列出該系列卡（上限 100），`meta.match='database-series'`。新增 mock 測試；Node 全套 226/226。需部署後才在正式網站生效。
+
+### 稀有度對映（待使用者決定，未改動）
+
+- `ACE SPEC Rare`：DB 已有此代碼（美版 33 筆）但排序表無；與既有 `Rare ACE` 是否同義、日版是否應顯示 `ACE` 需產品決定。加入別名會改變全站顯示與 facets，且已匯入日版列需 UPDATE（匯入函式只允許 INSERT，需另寫 migration）。
+- `Mega Hyper Rare`：TCGdex 在 Mega 世代代表 MUR，但 SV6a 092–094 金卡也被標成此值，來源不一致，不能全域對映；維持空值。
+
+下一個安全起點：部署系列名稱搜尋（合併 main），部署後驗證 `/api/search?q=ナイトワンダラー`。稀有度對映等使用者決定。每次再匯入前重新讀取正式日版既有列並重建快照。
 
 ## 前一里程碑（2026-10-01，SVLN 匯入前）
 

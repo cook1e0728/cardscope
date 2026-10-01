@@ -59,9 +59,10 @@ function expectedCard(plan, card, evidenceExtra) {
  * jsonb hashes to the plan's digest, so a pasted typo can never write data.
  * Throws when any card does not follow the derivable template.
  */
-export function buildPokemonJpImportSql(plan, { actor, dryRun }) {
+export function buildPokemonJpImportSql(plan, { actor, dryRun, gated = false }) {
   if (typeof actor !== 'string' || !actor.trim()) throw new Error('POKEMON_JP_SQL_ACTOR_REQUIRED');
   if (typeof dryRun !== 'boolean') throw new Error('POKEMON_JP_SQL_DRY_RUN_REQUIRED');
+  if (gated && dryRun) throw new Error('POKEMON_JP_SQL_GATE_REQUIRES_IMPORT');
   const archive = plan.series.metadata.sourceEvidence.archive;
   const archiveExtra = archive
     ? n => ({ retrievedVia: 'github-archive', archive: { repository: archive.repository, commit: archive.commit, path: `${archive.path.slice(0, -3)}/${n}.ts` } })
@@ -102,10 +103,23 @@ p as (select jsonb_build_object(
         'sourceEvidence', jsonb_build_object('url', ${sqlText(`https://api.tcgdex.net/v2/ja/cards/${code}-`)} || c.n, 'urlType', 'derived-provider-endpoint', 'observedAt', k.obs${cardEvidence ? `, ${cardEvidence}` : ''}),
         'manifestHash', k.mh, 'sourceHash', k.sh, 'seedHash', k.seh)) order by c.n collate "C") from c)
 ) as plan from k)
-select encode(pg_catalog.sha256(convert_to(plan::text, 'UTF8')), 'hex') as digest,
-  case when encode(pg_catalog.sha256(convert_to(plan::text, 'UTF8')), 'hex') = ${sqlText(digest)}
-    then private.import_pokemon_jp_metadata(plan, ${sqlText(actor)}, ${dryRun}) end as result
-from p;
 `;
-  return { digest, sql };
+  const hashed = `select plan, encode(pg_catalog.sha256(convert_to(plan::text, 'UTF8')), 'hex') as digest from p`;
+  const call = flag => `private.import_pokemon_jp_metadata(plan, ${sqlText(actor)}, ${flag})`;
+  if (!gated) {
+    return { digest, sql: `${sql}select digest, case when digest = ${sqlText(digest)} then ${call(dryRun)} end as result
+from (${hashed}) h;
+` };
+  }
+  // Gated import: a dry run in the inner query (an optimisation fence keeps it
+  // first) must report a fresh, collision-free insert of exactly this plan
+  // before the outer query performs the real write in the same statement.
+  const n = plan.cards.length;
+  return { digest, sql: `${sql}select digest, dry, case when dry->>'replay' = 'false'
+    and dry->>'planDigest' = ${sqlText(digest)}
+    and dry->'before' = '{"series":0,"cards":0,"canonical":0,"printings":0}'::jsonb
+    and dry->'inserted' = '{"series":1,"cards":${n},"canonical":${n},"printings":${n}}'::jsonb
+  then ${call(false)} end as result
+from (select plan, digest, case when digest = ${sqlText(digest)} then ${call(true)} end as dry from (${hashed}) h offset 0) d;
+` };
 }
