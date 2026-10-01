@@ -1,0 +1,3629 @@
+{
+  "observedAt": "2026-10-01T10:54:37.173Z",
+  "sourceIdentity": {
+    "source": "tcgdex-ja",
+    "region": "JP",
+    "locale": "ja-JP"
+  },
+  "sourceArchive": {
+    "repository": "tcgdex/cards-database",
+    "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+    "setFile": "data-asia/SV/SV2P.ts"
+  },
+  "sets": [
+    {
+      "id": "SV2P",
+      "name": "スノーハザード",
+      "releaseDate": "2023-04-14",
+      "region": "JP",
+      "locale": "ja-JP"
+    }
+  ],
+  "cards": [
+    {
+      "id": "SV2P-001",
+      "localId": "001",
+      "name": "アメタマ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/001.ts"
+    },
+    {
+      "id": "SV2P-002",
+      "localId": "002",
+      "name": "アメモース",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/002.ts"
+    },
+    {
+      "id": "SV2P-003",
+      "localId": "003",
+      "name": "ミツハニー",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/003.ts"
+    },
+    {
+      "id": "SV2P-004",
+      "localId": "004",
+      "name": "ビークイン",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/004.ts"
+    },
+    {
+      "id": "SV2P-005",
+      "localId": "005",
+      "name": "ユキカブリ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/005.ts"
+    },
+    {
+      "id": "SV2P-006",
+      "localId": "006",
+      "name": "ユキノオー",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/006.ts"
+    },
+    {
+      "id": "SV2P-007",
+      "localId": "007",
+      "name": "アマカジ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/007.ts"
+    },
+    {
+      "id": "SV2P-008",
+      "localId": "008",
+      "name": "アママイコ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/008.ts"
+    },
+    {
+      "id": "SV2P-009",
+      "localId": "009",
+      "name": "アマージョ",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/009.ts"
+    },
+    {
+      "id": "SV2P-010",
+      "localId": "010",
+      "name": "アノクサ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/010.ts"
+    },
+    {
+      "id": "SV2P-011",
+      "localId": "011",
+      "name": "アノクサ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/011.ts"
+    },
+    {
+      "id": "SV2P-012",
+      "localId": "012",
+      "name": "アノホラグサ",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/012.ts"
+    },
+    {
+      "id": "SV2P-013",
+      "localId": "013",
+      "name": "シガロコ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/013.ts"
+    },
+    {
+      "id": "SV2P-014",
+      "localId": "014",
+      "name": "シガロコ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/014.ts"
+    },
+    {
+      "id": "SV2P-015",
+      "localId": "015",
+      "name": "チオンジェンex",
+      "category": "Pokemon",
+      "rarity": "Double rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/015.ts"
+    },
+    {
+      "id": "SV2P-016",
+      "localId": "016",
+      "name": "マリル",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/016.ts"
+    },
+    {
+      "id": "SV2P-017",
+      "localId": "017",
+      "name": "マリルリ",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/017.ts"
+    },
+    {
+      "id": "SV2P-018",
+      "localId": "018",
+      "name": "ラブカス",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/018.ts"
+    },
+    {
+      "id": "SV2P-019",
+      "localId": "019",
+      "name": "コオリッポ",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/019.ts"
+    },
+    {
+      "id": "SV2P-020",
+      "localId": "020",
+      "name": "アルクジラ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/020.ts"
+    },
+    {
+      "id": "SV2P-021",
+      "localId": "021",
+      "name": "アルクジラ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/021.ts"
+    },
+    {
+      "id": "SV2P-022",
+      "localId": "022",
+      "name": "ハルクジラ",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/022.ts"
+    },
+    {
+      "id": "SV2P-023",
+      "localId": "023",
+      "name": "ミガルーサ",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/023.ts"
+    },
+    {
+      "id": "SV2P-024",
+      "localId": "024",
+      "name": "セビエ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/024.ts"
+    },
+    {
+      "id": "SV2P-025",
+      "localId": "025",
+      "name": "セビエ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/025.ts"
+    },
+    {
+      "id": "SV2P-026",
+      "localId": "026",
+      "name": "セゴール",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/026.ts"
+    },
+    {
+      "id": "SV2P-027",
+      "localId": "027",
+      "name": "セグレイブ",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/027.ts"
+    },
+    {
+      "id": "SV2P-028",
+      "localId": "028",
+      "name": "パオジアンex",
+      "category": "Pokemon",
+      "rarity": "Double rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/028.ts"
+    },
+    {
+      "id": "SV2P-029",
+      "localId": "029",
+      "name": "ヤドン",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/029.ts"
+    },
+    {
+      "id": "SV2P-030",
+      "localId": "030",
+      "name": "ヤドキングex",
+      "category": "Pokemon",
+      "rarity": "Double rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/030.ts"
+    },
+    {
+      "id": "SV2P-031",
+      "localId": "031",
+      "name": "ゴチム",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/031.ts"
+    },
+    {
+      "id": "SV2P-032",
+      "localId": "032",
+      "name": "ゴチミル",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/032.ts"
+    },
+    {
+      "id": "SV2P-033",
+      "localId": "033",
+      "name": "ゴチルゼル",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/033.ts"
+    },
+    {
+      "id": "SV2P-034",
+      "localId": "034",
+      "name": "ミミッキュ",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/034.ts"
+    },
+    {
+      "id": "SV2P-035",
+      "localId": "035",
+      "name": "ヤバチャ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/035.ts"
+    },
+    {
+      "id": "SV2P-036",
+      "localId": "036",
+      "name": "ポットデス",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/036.ts"
+    },
+    {
+      "id": "SV2P-037",
+      "localId": "037",
+      "name": "ベラカス",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/037.ts"
+    },
+    {
+      "id": "SV2P-038",
+      "localId": "038",
+      "name": "マンキー",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/038.ts"
+    },
+    {
+      "id": "SV2P-039",
+      "localId": "039",
+      "name": "オコリザル",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/039.ts"
+    },
+    {
+      "id": "SV2P-040",
+      "localId": "040",
+      "name": "コノヨザルex",
+      "category": "Pokemon",
+      "rarity": "Double rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/040.ts"
+    },
+    {
+      "id": "SV2P-041",
+      "localId": "041",
+      "name": "ウソッキー",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/041.ts"
+    },
+    {
+      "id": "SV2P-042",
+      "localId": "042",
+      "name": "キラーメ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/042.ts"
+    },
+    {
+      "id": "SV2P-043",
+      "localId": "043",
+      "name": "キラーメ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/043.ts"
+    },
+    {
+      "id": "SV2P-044",
+      "localId": "044",
+      "name": "キラフロル",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/044.ts"
+    },
+    {
+      "id": "SV2P-045",
+      "localId": "045",
+      "name": "ヤミカラス",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/045.ts"
+    },
+    {
+      "id": "SV2P-046",
+      "localId": "046",
+      "name": "ドンカラス",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/046.ts"
+    },
+    {
+      "id": "SV2P-047",
+      "localId": "047",
+      "name": "オラチフ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/047.ts"
+    },
+    {
+      "id": "SV2P-048",
+      "localId": "048",
+      "name": "オラチフ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/048.ts"
+    },
+    {
+      "id": "SV2P-049",
+      "localId": "049",
+      "name": "マフィティフ",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/049.ts"
+    },
+    {
+      "id": "SV2P-050",
+      "localId": "050",
+      "name": "ドーミラー",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/050.ts"
+    },
+    {
+      "id": "SV2P-051",
+      "localId": "051",
+      "name": "ドータクン",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/051.ts"
+    },
+    {
+      "id": "SV2P-052",
+      "localId": "052",
+      "name": "アーマーガア",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/052.ts"
+    },
+    {
+      "id": "SV2P-053",
+      "localId": "053",
+      "name": "ゾウドウ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/053.ts"
+    },
+    {
+      "id": "SV2P-054",
+      "localId": "054",
+      "name": "ダイオウドウex",
+      "category": "Pokemon",
+      "rarity": "Double rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/054.ts"
+    },
+    {
+      "id": "SV2P-055",
+      "localId": "055",
+      "name": "ミミズズ",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/055.ts"
+    },
+    {
+      "id": "SV2P-056",
+      "localId": "056",
+      "name": "ノコッチ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/056.ts"
+    },
+    {
+      "id": "SV2P-057",
+      "localId": "057",
+      "name": "ノココッチ",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/057.ts"
+    },
+    {
+      "id": "SV2P-058",
+      "localId": "058",
+      "name": "キャモメ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/058.ts"
+    },
+    {
+      "id": "SV2P-059",
+      "localId": "059",
+      "name": "ペリッパー",
+      "category": "Pokemon",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/059.ts"
+    },
+    {
+      "id": "SV2P-060",
+      "localId": "060",
+      "name": "ナマケロ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/060.ts"
+    },
+    {
+      "id": "SV2P-061",
+      "localId": "061",
+      "name": "ヤルキモノ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/061.ts"
+    },
+    {
+      "id": "SV2P-062",
+      "localId": "062",
+      "name": "ケッキング",
+      "category": "Pokemon",
+      "rarity": "Rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/062.ts"
+    },
+    {
+      "id": "SV2P-063",
+      "localId": "063",
+      "name": "ココガラ",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/063.ts"
+    },
+    {
+      "id": "SV2P-064",
+      "localId": "064",
+      "name": "アオガラス",
+      "category": "Pokemon",
+      "rarity": "Common",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/064.ts"
+    },
+    {
+      "id": "SV2P-065",
+      "localId": "065",
+      "name": "イキリンコex",
+      "category": "Pokemon",
+      "rarity": "Double rare",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/065.ts"
+    },
+    {
+      "id": "SV2P-066",
+      "localId": "066",
+      "name": "すごいつりざお",
+      "category": "Trainer",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/066.ts"
+    },
+    {
+      "id": "SV2P-067",
+      "localId": "067",
+      "name": "ファイトオレ",
+      "category": "Trainer",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/067.ts"
+    },
+    {
+      "id": "SV2P-068",
+      "localId": "068",
+      "name": "グルーシャ",
+      "category": "Trainer",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/068.ts"
+    },
+    {
+      "id": "SV2P-069",
+      "localId": "069",
+      "name": "ピーニャ",
+      "category": "Trainer",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/069.ts"
+    },
+    {
+      "id": "SV2P-070",
+      "localId": "070",
+      "name": "災いの雪山",
+      "category": "Trainer",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/070.ts"
+    },
+    {
+      "id": "SV2P-071",
+      "localId": "071",
+      "name": "リバーサルエネルギー",
+      "category": "Energy",
+      "rarity": "Uncommon",
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/071.ts"
+    },
+    {
+      "id": "SV2P-072",
+      "localId": "072",
+      "name": "アノクサ",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/072.ts"
+    },
+    {
+      "id": "SV2P-073",
+      "localId": "073",
+      "name": "マリル",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/073.ts"
+    },
+    {
+      "id": "SV2P-074",
+      "localId": "074",
+      "name": "コオリッポ",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/074.ts"
+    },
+    {
+      "id": "SV2P-075",
+      "localId": "075",
+      "name": "セビエ",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/075.ts"
+    },
+    {
+      "id": "SV2P-076",
+      "localId": "076",
+      "name": "セゴール",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/076.ts"
+    },
+    {
+      "id": "SV2P-077",
+      "localId": "077",
+      "name": "セグレイブ",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/077.ts"
+    },
+    {
+      "id": "SV2P-078",
+      "localId": "078",
+      "name": "ゴチミル",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/078.ts"
+    },
+    {
+      "id": "SV2P-079",
+      "localId": "079",
+      "name": "ベラカス",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/079.ts"
+    },
+    {
+      "id": "SV2P-080",
+      "localId": "080",
+      "name": "ウソッキー",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/080.ts"
+    },
+    {
+      "id": "SV2P-081",
+      "localId": "081",
+      "name": "ミミズズ",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/081.ts"
+    },
+    {
+      "id": "SV2P-082",
+      "localId": "082",
+      "name": "ココガラ",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/082.ts"
+    },
+    {
+      "id": "SV2P-083",
+      "localId": "083",
+      "name": "ノココッチ",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/083.ts"
+    },
+    {
+      "id": "SV2P-084",
+      "localId": "084",
+      "name": "チオンジェンex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/084.ts"
+    },
+    {
+      "id": "SV2P-085",
+      "localId": "085",
+      "name": "パオジアンex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/085.ts"
+    },
+    {
+      "id": "SV2P-086",
+      "localId": "086",
+      "name": "ヤドキングex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/086.ts"
+    },
+    {
+      "id": "SV2P-087",
+      "localId": "087",
+      "name": "コノヨザルex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/087.ts"
+    },
+    {
+      "id": "SV2P-088",
+      "localId": "088",
+      "name": "ダイオウドウex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/088.ts"
+    },
+    {
+      "id": "SV2P-089",
+      "localId": "089",
+      "name": "イキリンコex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/089.ts"
+    },
+    {
+      "id": "SV2P-090",
+      "localId": "090",
+      "name": "グルーシャ",
+      "category": "Trainer",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/090.ts"
+    },
+    {
+      "id": "SV2P-091",
+      "localId": "091",
+      "name": "ピーニャ",
+      "category": "Trainer",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/091.ts"
+    },
+    {
+      "id": "SV2P-092",
+      "localId": "092",
+      "name": "チオンジェンex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/092.ts"
+    },
+    {
+      "id": "SV2P-093",
+      "localId": "093",
+      "name": "パオジアンex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/093.ts"
+    },
+    {
+      "id": "SV2P-094",
+      "localId": "094",
+      "name": "イキリンコex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/094.ts"
+    },
+    {
+      "id": "SV2P-095",
+      "localId": "095",
+      "name": "グルーシャ",
+      "category": "Trainer",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/095.ts"
+    },
+    {
+      "id": "SV2P-096",
+      "localId": "096",
+      "name": "ピーニャ",
+      "category": "Trainer",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/096.ts"
+    },
+    {
+      "id": "SV2P-097",
+      "localId": "097",
+      "name": "パオジアンex",
+      "category": "Pokemon",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/097.ts"
+    },
+    {
+      "id": "SV2P-098",
+      "localId": "098",
+      "name": "すごいつりざお",
+      "category": "Trainer",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/098.ts"
+    },
+    {
+      "id": "SV2P-099",
+      "localId": "099",
+      "name": "基本水エネルギー",
+      "category": "Energy",
+      "rarity": null,
+      "set": {
+        "id": "SV2P",
+        "name": "スノーハザード",
+        "cardCount": {
+          "official": 71,
+          "total": 99
+        }
+      },
+      "sourceFile": "data-asia/SV/SV2P/099.ts"
+    }
+  ],
+  "existingJpRows": {
+    "series": [
+      {
+        "id": "pokemon-sv4a-jp",
+        "game_id": "pokemon",
+        "official_code": "SV4a",
+        "region": "JP",
+        "source": null,
+        "provider_id": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a",
+        "game_id": "pokemon",
+        "official_code": "SV6a",
+        "region": "JP",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln",
+        "game_id": "pokemon",
+        "official_code": "SVLN",
+        "region": "JP",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN"
+      }
+    ],
+    "cards": [
+      {
+        "id": "pokemon-mew-ex-sv4a-347-jp",
+        "series_id": "pokemon-sv4a-jp",
+        "official_card_number": "347/190",
+        "source": null,
+        "provider_id": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-001",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "001",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-001"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-002",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "002",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-002"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-003",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "003",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-003"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-004",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "004",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-004"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-005",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "005",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-005"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-006",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "006",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-006"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-007",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "007",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-007"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-008",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "008",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-008"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-009",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "009",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-009"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-010",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "010",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-010"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-011",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "011",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-011"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-012",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "012",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-012"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-013",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "013",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-013"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-014",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "014",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-014"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-015",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "015",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-015"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-016",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "016",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-016"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-017",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "017",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-017"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-018",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "018",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-018"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-019",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "019",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-019"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-020",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "020",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-020"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-021",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "021",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-021"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-svln-022",
+        "series_id": "pokemon-tcgdex-ja-svln",
+        "official_card_number": "022",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-022"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-001",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "001",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-001"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-002",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "002",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-002"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-003",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "003",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-003"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-004",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "004",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-004"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-005",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "005",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-005"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-006",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "006",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-006"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-007",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "007",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-007"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-008",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "008",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-008"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-009",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "009",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-009"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-010",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "010",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-010"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-011",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "011",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-011"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-012",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "012",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-012"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-013",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "013",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-013"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-014",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "014",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-014"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-015",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "015",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-015"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-016",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "016",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-016"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-017",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "017",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-017"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-018",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "018",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-018"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-019",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "019",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-019"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-020",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "020",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-020"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-021",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "021",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-021"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-022",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "022",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-022"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-023",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "023",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-023"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-024",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "024",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-024"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-025",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "025",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-025"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-026",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "026",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-026"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-027",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "027",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-027"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-028",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "028",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-028"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-029",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "029",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-029"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-030",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "030",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-030"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-031",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "031",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-031"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-032",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "032",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-032"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-033",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "033",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-033"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-034",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "034",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-034"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-035",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "035",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-035"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-036",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "036",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-036"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-037",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "037",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-037"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-038",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "038",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-038"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-039",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "039",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-039"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-040",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "040",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-040"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-041",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "041",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-041"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-042",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "042",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-042"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-043",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "043",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-043"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-044",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "044",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-044"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-045",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "045",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-045"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-046",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "046",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-046"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-047",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "047",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-047"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-048",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "048",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-048"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-049",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "049",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-049"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-050",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "050",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-050"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-051",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "051",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-051"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-052",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "052",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-052"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-053",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "053",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-053"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-054",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "054",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-054"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-055",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "055",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-055"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-056",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "056",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-056"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-057",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "057",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-057"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-058",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "058",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-058"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-059",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "059",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-059"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-060",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "060",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-060"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-061",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "061",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-061"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-062",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "062",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-062"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-063",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "063",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-063"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-064",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "064",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-064"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-065",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "065",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-065"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-066",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "066",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-066"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-067",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "067",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-067"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-068",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "068",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-068"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-069",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "069",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-069"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-070",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "070",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-070"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-071",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "071",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-071"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-072",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "072",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-072"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-073",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "073",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-073"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-074",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "074",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-074"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-075",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "075",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-075"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-076",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "076",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-076"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-077",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "077",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-077"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-078",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "078",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-078"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-079",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "079",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-079"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-080",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "080",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-080"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-081",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "081",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-081"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-082",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "082",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-082"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-083",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "083",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-083"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-084",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "084",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-084"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-085",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "085",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-085"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-086",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "086",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-086"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-087",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "087",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-087"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-088",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "088",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-088"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-089",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "089",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-089"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-090",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "090",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-090"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-091",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "091",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-091"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-092",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "092",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-092"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-093",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "093",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-093"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-sv6a-094",
+        "series_id": "pokemon-tcgdex-ja-sv6a",
+        "official_card_number": "094",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-094"
+      }
+    ],
+    "printings": [
+      {
+        "id": 1,
+        "card_id": "pokemon-mew-ex-sv4a-347-jp",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV4a",
+        "local_card_number": "347/190",
+        "source": null,
+        "provider_id": null
+      },
+      {
+        "id": 802808,
+        "card_id": "pokemon-tcgdex-ja-svln-001",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "001",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-001"
+      },
+      {
+        "id": 802809,
+        "card_id": "pokemon-tcgdex-ja-svln-002",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "002",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-002"
+      },
+      {
+        "id": 802810,
+        "card_id": "pokemon-tcgdex-ja-svln-003",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "003",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-003"
+      },
+      {
+        "id": 802811,
+        "card_id": "pokemon-tcgdex-ja-svln-004",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "004",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-004"
+      },
+      {
+        "id": 802812,
+        "card_id": "pokemon-tcgdex-ja-svln-005",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "005",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-005"
+      },
+      {
+        "id": 802813,
+        "card_id": "pokemon-tcgdex-ja-svln-006",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "006",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-006"
+      },
+      {
+        "id": 802814,
+        "card_id": "pokemon-tcgdex-ja-svln-007",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "007",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-007"
+      },
+      {
+        "id": 802815,
+        "card_id": "pokemon-tcgdex-ja-svln-008",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "008",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-008"
+      },
+      {
+        "id": 802816,
+        "card_id": "pokemon-tcgdex-ja-svln-009",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "009",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-009"
+      },
+      {
+        "id": 802817,
+        "card_id": "pokemon-tcgdex-ja-svln-010",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "010",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-010"
+      },
+      {
+        "id": 802818,
+        "card_id": "pokemon-tcgdex-ja-svln-011",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "011",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-011"
+      },
+      {
+        "id": 802819,
+        "card_id": "pokemon-tcgdex-ja-svln-012",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "012",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-012"
+      },
+      {
+        "id": 802820,
+        "card_id": "pokemon-tcgdex-ja-svln-013",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "013",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-013"
+      },
+      {
+        "id": 802821,
+        "card_id": "pokemon-tcgdex-ja-svln-014",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "014",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-014"
+      },
+      {
+        "id": 802822,
+        "card_id": "pokemon-tcgdex-ja-svln-015",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "015",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-015"
+      },
+      {
+        "id": 802823,
+        "card_id": "pokemon-tcgdex-ja-svln-016",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "016",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-016"
+      },
+      {
+        "id": 802824,
+        "card_id": "pokemon-tcgdex-ja-svln-017",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "017",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-017"
+      },
+      {
+        "id": 802825,
+        "card_id": "pokemon-tcgdex-ja-svln-018",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "018",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-018"
+      },
+      {
+        "id": 802826,
+        "card_id": "pokemon-tcgdex-ja-svln-019",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "019",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-019"
+      },
+      {
+        "id": 802827,
+        "card_id": "pokemon-tcgdex-ja-svln-020",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "020",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-020"
+      },
+      {
+        "id": 802828,
+        "card_id": "pokemon-tcgdex-ja-svln-021",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "021",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-021"
+      },
+      {
+        "id": 802829,
+        "card_id": "pokemon-tcgdex-ja-svln-022",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SVLN",
+        "local_card_number": "022",
+        "source": "tcgdex-ja",
+        "provider_id": "SVLN-022"
+      },
+      {
+        "id": 810360,
+        "card_id": "pokemon-tcgdex-ja-sv6a-001",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "001",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-001"
+      },
+      {
+        "id": 810361,
+        "card_id": "pokemon-tcgdex-ja-sv6a-002",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "002",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-002"
+      },
+      {
+        "id": 810362,
+        "card_id": "pokemon-tcgdex-ja-sv6a-003",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "003",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-003"
+      },
+      {
+        "id": 810363,
+        "card_id": "pokemon-tcgdex-ja-sv6a-004",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "004",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-004"
+      },
+      {
+        "id": 810364,
+        "card_id": "pokemon-tcgdex-ja-sv6a-005",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "005",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-005"
+      },
+      {
+        "id": 810365,
+        "card_id": "pokemon-tcgdex-ja-sv6a-006",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "006",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-006"
+      },
+      {
+        "id": 810366,
+        "card_id": "pokemon-tcgdex-ja-sv6a-007",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "007",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-007"
+      },
+      {
+        "id": 810367,
+        "card_id": "pokemon-tcgdex-ja-sv6a-008",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "008",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-008"
+      },
+      {
+        "id": 810368,
+        "card_id": "pokemon-tcgdex-ja-sv6a-009",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "009",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-009"
+      },
+      {
+        "id": 810369,
+        "card_id": "pokemon-tcgdex-ja-sv6a-010",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "010",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-010"
+      },
+      {
+        "id": 810370,
+        "card_id": "pokemon-tcgdex-ja-sv6a-011",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "011",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-011"
+      },
+      {
+        "id": 810371,
+        "card_id": "pokemon-tcgdex-ja-sv6a-012",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "012",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-012"
+      },
+      {
+        "id": 810372,
+        "card_id": "pokemon-tcgdex-ja-sv6a-013",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "013",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-013"
+      },
+      {
+        "id": 810373,
+        "card_id": "pokemon-tcgdex-ja-sv6a-014",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "014",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-014"
+      },
+      {
+        "id": 810374,
+        "card_id": "pokemon-tcgdex-ja-sv6a-015",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "015",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-015"
+      },
+      {
+        "id": 810375,
+        "card_id": "pokemon-tcgdex-ja-sv6a-016",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "016",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-016"
+      },
+      {
+        "id": 810376,
+        "card_id": "pokemon-tcgdex-ja-sv6a-017",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "017",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-017"
+      },
+      {
+        "id": 810377,
+        "card_id": "pokemon-tcgdex-ja-sv6a-018",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "018",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-018"
+      },
+      {
+        "id": 810378,
+        "card_id": "pokemon-tcgdex-ja-sv6a-019",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "019",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-019"
+      },
+      {
+        "id": 810379,
+        "card_id": "pokemon-tcgdex-ja-sv6a-020",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "020",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-020"
+      },
+      {
+        "id": 810380,
+        "card_id": "pokemon-tcgdex-ja-sv6a-021",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "021",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-021"
+      },
+      {
+        "id": 810381,
+        "card_id": "pokemon-tcgdex-ja-sv6a-022",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "022",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-022"
+      },
+      {
+        "id": 810382,
+        "card_id": "pokemon-tcgdex-ja-sv6a-023",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "023",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-023"
+      },
+      {
+        "id": 810383,
+        "card_id": "pokemon-tcgdex-ja-sv6a-024",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "024",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-024"
+      },
+      {
+        "id": 810384,
+        "card_id": "pokemon-tcgdex-ja-sv6a-025",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "025",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-025"
+      },
+      {
+        "id": 810385,
+        "card_id": "pokemon-tcgdex-ja-sv6a-026",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "026",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-026"
+      },
+      {
+        "id": 810386,
+        "card_id": "pokemon-tcgdex-ja-sv6a-027",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "027",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-027"
+      },
+      {
+        "id": 810387,
+        "card_id": "pokemon-tcgdex-ja-sv6a-028",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "028",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-028"
+      },
+      {
+        "id": 810388,
+        "card_id": "pokemon-tcgdex-ja-sv6a-029",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "029",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-029"
+      },
+      {
+        "id": 810389,
+        "card_id": "pokemon-tcgdex-ja-sv6a-030",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "030",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-030"
+      },
+      {
+        "id": 810390,
+        "card_id": "pokemon-tcgdex-ja-sv6a-031",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "031",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-031"
+      },
+      {
+        "id": 810391,
+        "card_id": "pokemon-tcgdex-ja-sv6a-032",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "032",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-032"
+      },
+      {
+        "id": 810392,
+        "card_id": "pokemon-tcgdex-ja-sv6a-033",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "033",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-033"
+      },
+      {
+        "id": 810393,
+        "card_id": "pokemon-tcgdex-ja-sv6a-034",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "034",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-034"
+      },
+      {
+        "id": 810394,
+        "card_id": "pokemon-tcgdex-ja-sv6a-035",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "035",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-035"
+      },
+      {
+        "id": 810395,
+        "card_id": "pokemon-tcgdex-ja-sv6a-036",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "036",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-036"
+      },
+      {
+        "id": 810396,
+        "card_id": "pokemon-tcgdex-ja-sv6a-037",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "037",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-037"
+      },
+      {
+        "id": 810397,
+        "card_id": "pokemon-tcgdex-ja-sv6a-038",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "038",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-038"
+      },
+      {
+        "id": 810398,
+        "card_id": "pokemon-tcgdex-ja-sv6a-039",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "039",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-039"
+      },
+      {
+        "id": 810399,
+        "card_id": "pokemon-tcgdex-ja-sv6a-040",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "040",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-040"
+      },
+      {
+        "id": 810400,
+        "card_id": "pokemon-tcgdex-ja-sv6a-041",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "041",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-041"
+      },
+      {
+        "id": 810401,
+        "card_id": "pokemon-tcgdex-ja-sv6a-042",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "042",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-042"
+      },
+      {
+        "id": 810402,
+        "card_id": "pokemon-tcgdex-ja-sv6a-043",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "043",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-043"
+      },
+      {
+        "id": 810403,
+        "card_id": "pokemon-tcgdex-ja-sv6a-044",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "044",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-044"
+      },
+      {
+        "id": 810404,
+        "card_id": "pokemon-tcgdex-ja-sv6a-045",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "045",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-045"
+      },
+      {
+        "id": 810405,
+        "card_id": "pokemon-tcgdex-ja-sv6a-046",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "046",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-046"
+      },
+      {
+        "id": 810406,
+        "card_id": "pokemon-tcgdex-ja-sv6a-047",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "047",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-047"
+      },
+      {
+        "id": 810407,
+        "card_id": "pokemon-tcgdex-ja-sv6a-048",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "048",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-048"
+      },
+      {
+        "id": 810408,
+        "card_id": "pokemon-tcgdex-ja-sv6a-049",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "049",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-049"
+      },
+      {
+        "id": 810409,
+        "card_id": "pokemon-tcgdex-ja-sv6a-050",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "050",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-050"
+      },
+      {
+        "id": 810410,
+        "card_id": "pokemon-tcgdex-ja-sv6a-051",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "051",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-051"
+      },
+      {
+        "id": 810411,
+        "card_id": "pokemon-tcgdex-ja-sv6a-052",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "052",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-052"
+      },
+      {
+        "id": 810412,
+        "card_id": "pokemon-tcgdex-ja-sv6a-053",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "053",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-053"
+      },
+      {
+        "id": 810413,
+        "card_id": "pokemon-tcgdex-ja-sv6a-054",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "054",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-054"
+      },
+      {
+        "id": 810414,
+        "card_id": "pokemon-tcgdex-ja-sv6a-055",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "055",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-055"
+      },
+      {
+        "id": 810415,
+        "card_id": "pokemon-tcgdex-ja-sv6a-056",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "056",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-056"
+      },
+      {
+        "id": 810416,
+        "card_id": "pokemon-tcgdex-ja-sv6a-057",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "057",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-057"
+      },
+      {
+        "id": 810417,
+        "card_id": "pokemon-tcgdex-ja-sv6a-058",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "058",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-058"
+      },
+      {
+        "id": 810418,
+        "card_id": "pokemon-tcgdex-ja-sv6a-059",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "059",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-059"
+      },
+      {
+        "id": 810419,
+        "card_id": "pokemon-tcgdex-ja-sv6a-060",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "060",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-060"
+      },
+      {
+        "id": 810420,
+        "card_id": "pokemon-tcgdex-ja-sv6a-061",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "061",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-061"
+      },
+      {
+        "id": 810421,
+        "card_id": "pokemon-tcgdex-ja-sv6a-062",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "062",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-062"
+      },
+      {
+        "id": 810422,
+        "card_id": "pokemon-tcgdex-ja-sv6a-063",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "063",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-063"
+      },
+      {
+        "id": 810423,
+        "card_id": "pokemon-tcgdex-ja-sv6a-064",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "064",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-064"
+      },
+      {
+        "id": 810424,
+        "card_id": "pokemon-tcgdex-ja-sv6a-065",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "065",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-065"
+      },
+      {
+        "id": 810425,
+        "card_id": "pokemon-tcgdex-ja-sv6a-066",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "066",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-066"
+      },
+      {
+        "id": 810426,
+        "card_id": "pokemon-tcgdex-ja-sv6a-067",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "067",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-067"
+      },
+      {
+        "id": 810427,
+        "card_id": "pokemon-tcgdex-ja-sv6a-068",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "068",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-068"
+      },
+      {
+        "id": 810428,
+        "card_id": "pokemon-tcgdex-ja-sv6a-069",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "069",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-069"
+      },
+      {
+        "id": 810429,
+        "card_id": "pokemon-tcgdex-ja-sv6a-070",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "070",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-070"
+      },
+      {
+        "id": 810430,
+        "card_id": "pokemon-tcgdex-ja-sv6a-071",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "071",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-071"
+      },
+      {
+        "id": 810431,
+        "card_id": "pokemon-tcgdex-ja-sv6a-072",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "072",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-072"
+      },
+      {
+        "id": 810432,
+        "card_id": "pokemon-tcgdex-ja-sv6a-073",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "073",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-073"
+      },
+      {
+        "id": 810433,
+        "card_id": "pokemon-tcgdex-ja-sv6a-074",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "074",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-074"
+      },
+      {
+        "id": 810434,
+        "card_id": "pokemon-tcgdex-ja-sv6a-075",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "075",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-075"
+      },
+      {
+        "id": 810435,
+        "card_id": "pokemon-tcgdex-ja-sv6a-076",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "076",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-076"
+      },
+      {
+        "id": 810436,
+        "card_id": "pokemon-tcgdex-ja-sv6a-077",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "077",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-077"
+      },
+      {
+        "id": 810437,
+        "card_id": "pokemon-tcgdex-ja-sv6a-078",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "078",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-078"
+      },
+      {
+        "id": 810438,
+        "card_id": "pokemon-tcgdex-ja-sv6a-079",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "079",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-079"
+      },
+      {
+        "id": 810439,
+        "card_id": "pokemon-tcgdex-ja-sv6a-080",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "080",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-080"
+      },
+      {
+        "id": 810440,
+        "card_id": "pokemon-tcgdex-ja-sv6a-081",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "081",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-081"
+      },
+      {
+        "id": 810441,
+        "card_id": "pokemon-tcgdex-ja-sv6a-082",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "082",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-082"
+      },
+      {
+        "id": 810442,
+        "card_id": "pokemon-tcgdex-ja-sv6a-083",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "083",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-083"
+      },
+      {
+        "id": 810443,
+        "card_id": "pokemon-tcgdex-ja-sv6a-084",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "084",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-084"
+      },
+      {
+        "id": 810444,
+        "card_id": "pokemon-tcgdex-ja-sv6a-085",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "085",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-085"
+      },
+      {
+        "id": 810445,
+        "card_id": "pokemon-tcgdex-ja-sv6a-086",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "086",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-086"
+      },
+      {
+        "id": 810446,
+        "card_id": "pokemon-tcgdex-ja-sv6a-087",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "087",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-087"
+      },
+      {
+        "id": 810447,
+        "card_id": "pokemon-tcgdex-ja-sv6a-088",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "088",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-088"
+      },
+      {
+        "id": 810448,
+        "card_id": "pokemon-tcgdex-ja-sv6a-089",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "089",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-089"
+      },
+      {
+        "id": 810449,
+        "card_id": "pokemon-tcgdex-ja-sv6a-090",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "090",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-090"
+      },
+      {
+        "id": 810450,
+        "card_id": "pokemon-tcgdex-ja-sv6a-091",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "091",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-091"
+      },
+      {
+        "id": 810451,
+        "card_id": "pokemon-tcgdex-ja-sv6a-092",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "092",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-092"
+      },
+      {
+        "id": 810452,
+        "card_id": "pokemon-tcgdex-ja-sv6a-093",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "093",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-093"
+      },
+      {
+        "id": 810453,
+        "card_id": "pokemon-tcgdex-ja-sv6a-094",
+        "region": "JP",
+        "language": "ja-JP",
+        "local_set_code": "SV6a",
+        "local_card_number": "094",
+        "source": "tcgdex-ja",
+        "provider_id": "SV6a-094"
+      }
+    ]
+  }
+}
