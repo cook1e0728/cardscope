@@ -313,6 +313,39 @@ test('configured search merges local exact cards with bounded database matches a
   }
 });
 
+test('cards sharing a canonical merge into one result that keeps both printings and the known rarity',async()=>{
+  const canonical='pokemon-tcgdex-tw-sv6a-039';
+  const cards=[
+    {id:canonical,canonicalId:canonical,game:'pokemon',seriesId:'pokemon-tcgdex-tw-sv6a',officialCardNumber:'039',rarity:null,nameZh:'桃歹郎ex',nameJa:null,nameEn:null,nameKo:null,aliases:['SV6a-039'],metadata:{}},
+    {id:'pokemon-tcgdex-ja-sv6a-039',canonicalId:canonical,game:'pokemon',seriesId:'pokemon-tcgdex-ja-sv6a',officialCardNumber:'039',rarity:'RR',nameZh:'桃歹郎ex',nameJa:'モモワロウex',nameEn:null,nameKo:null,aliases:['SV6a-039'],metadata:{nameZhBasis:'tw-official'}}
+  ];
+  const printing=(card,region,language,rarity)=>({id:`${card.id}-p`,cardId:card.id,seriesId:card.seriesId,region,language,localSetCode:'SV6a',localCardNumber:'039',rarity,imageUrl:null,imageRehostRequired:false});
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1),respond=body=>{res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(body))};
+    if(table==='tcg_cards'&&url.searchParams.has('or'))return respond(cards);
+    if(table==='tcg_printings')return respond([printing(cards[0],'TW','zh-TW',null),printing(cards[1],'JP','ja-JP','RR')]);
+    return respond([]);
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`canonical merge fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`canonical merge fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent('桃歹郎')}`)).json();
+    const merged=body.data.filter(card=>card.id===canonical);
+    assert.equal(merged.length,1);
+    assert.equal(merged[0].rarity,'RR');
+    assert.deepEqual(merged[0].printings.map(p=>p.region).sort(),['JP','TW']);
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
 test('database search falls back to series names and lists that series in card-number order',async()=>{
   const seriesId='pokemon-tcgdex-ja-sv6a';
   const cards=['002','001'].map(n=>({id:`${seriesId}-${n}`,canonicalId:`${seriesId}-${n}`,game:'pokemon',seriesId,officialCardNumber:n,rarity:null,nameZh:null,nameJa:n==='001'?'バチュル':'デンチュラ',nameEn:null,nameKo:null,aliases:[`SV6a-${n}`],metadata:{}}));
