@@ -89,7 +89,15 @@
 - 最終累計：fill 457（稽核 25＋25 重播）、correct 91（16＋16；UR→SR 87、HR→UR 3、SR→UR 1，舊值在 `rarityBeforeOfficial`）、identity 843 張（狀態稽核 35 筆）。日版 2,869 張 Card 全部 verified；Printing verified 2,619、incomplete 250；Card／Printing 稀有度不一致 0；官方依據 548 筆。寶可夢台版 7,436、美版 20,635 不變（最後更新仍為 10-01／09-30）。
 - 仍為空值 250（官方頁無稀有度圖示，依 ADR 0007 維持未知）：SV8a 152、SVK 44、SVLS 22、SVLN 22、ACE SPEC 等 10（SV5a、SV7、SV7a 各 3，SV8 1）。
 
-下一個安全起點：無指定項目。後續候選：SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+### 依序執行 9：台版稀有度以台灣官方卡片搜尋補齊、無標記 NONE（2026-10-02，進行中）
+
+- 查證：台版沒有任何 UR／SR／HR，原先「台版 UR 錯對映」的疑慮不存在；但台版 7,436 筆中 6,634 筆缺稀有度（83 系列）。台灣官方（asia.pokemon-card.com/tw，robots.txt 空白）詳細頁無稀有度，但搜尋可依稀有度篩選，含「無標記」。SV8a 試查：無標記 288、RR 35、SAR 33、SR 12、ACE 8、UR 5（清單 380 筆含同卡號多版本）。
+- 決策（使用者授權照建議）：ADR 0010——台版稀有度取自台灣官方稀有度篩選、身分以詳細頁系列標記＋卡號＋中文名（去 Source name markup）核對、同卡號多版本須一致；官方「無標記」存為新代碼 `NONE`（顯示「無標記」、排序最低）；日版官方頁無圖示且已連結同系列同卡號台版、台版已有台灣官方值時，日版沿用。詞彙表 No rarity mark 已更新。記憶：之後決策直接照建議執行。
+- 程式：`providers/pokemon-tw-official.mjs`、`scripts/fetch-pokemon-tw-official-rarity.mjs`（三階段：全系列稀有度清單→各系列清單→詳細頁；`--max-requests` 可分段）、`scripts/build-pokemon-tw-official-rarity-plan.mjs`（tw-official／jp-via-tw）。`normalize.mjs` 防止來源字串 `None` 被當成 NONE。前端 `rarityText` 把 NONE 顯示為「無標記」（尚未部署）。Node 260/260。
+- Migration `20261002140000_pokemon_tw_official_rarity`（NONE tier 27、`private.catalog_official_rarity_audit`、`private.fill_pokemon_official_rarity_tw` md5 `d124aecd…`）：先在正式庫以 SV8a-001 回滾測試（日版在台版前被拒、錯值被拒、台／日填入與重播零異動），已套用並寫入 schema_migrations；尚未寫入任何稀有度。
+- 抓取：由 Claude 以 `Start-Process` 開獨立 PowerShell 視窗（標題 CardScope TW official fetch，使用者授權）執行，快取 `docs/evidence/pokemon-tw/official-rarity-20261002.json` 可接續；預估約 1 萬次請求、8–9 小時。中斷後以同一指令重跑。
+
+下一個安全起點：抓取完成（或 SV 世代先完成）後，以 `build-pokemon-tw-official-rarity-plan.mjs` 產生 tw-official 計畫寫入並重播，重新匯出後再產生 jp-via-tw；最後部署 NONE 顯示。其餘後續候選：SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
