@@ -61,6 +61,8 @@ try {
     }
     const checked = rows.filter(row => valueOf(row.num) && (row.name_zh || row.rarity)).length;
     if (disagreements.length) { report.series[code] = { status: 'REJECTED_MISALIGNED', checked, disagreements }; continue; }
+    // Agreement on a handful of cards proves nothing about numbering: at least half of the series must be checkable.
+    if (checked * 2 < rows.length) { report.series[code] = { status: 'REJECTED_UNVERIFIABLE', checked, rows: rows.length }; continue; }
 
     const planRows = [];
     for (const row of rows) {

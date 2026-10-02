@@ -128,6 +128,13 @@
 - 剩餘瓶頸：RPC 回應 250–900 ms，但モモワロウ僅 22 KB 仍約 500 ms，推斷是 Render 與 Supabase（ap-northeast-1 東京）之間的固定往返；Render 服務區域未知（需使用者在 Render 後台確認）。若在美國，新建同區域（如 Singapore）服務才能明顯改善，屬基礎設施變更，未自行處理。暖機 P95 < 800 ms 目前尚未達成。
 - 搜尋結果快取（`845078e`）：同一 region＋查詢 60 秒內直接回傳（最多 200 筆、LRU），`Server-Timing: cache;desc="hit"`；正式命中時伺服器 0 ms、本機量得約 0.3 秒。
 
+### 依序執行 14：日版 MEGA（M）世代匯入（2026-10-03，進行中）
+
+- 封存 data-asia/M 有日文名的 12 系列；匯入 9 個擴充包：M1L 92、M1S 92、M2 116、M2a 250（3 批）、M3 117、M4 120、M5 118、M6 113、M6a 176，共 1,194 張，皆 gated＋重播零異動（同 `scripts/import-pokemon-jp-series.sh`）。暫不匯入 M-P（特典）、MC（スタートデッキ100，742）、MF（牌組）。封存無台版 → 無 Canonical 連結、無中文名；稀有度空值多在 M2a 167、M6a 136、M6 37。證據 `docs/evidence/pokemon-jp/m-era/`。
+- 另：封存 SM 世代有 SM1p–SM5p 共 403 張有日文名（未匯入）。
+- ADR 0011 補強：可比對卡少於系列一半時不採用（`REJECTED_UNVERIFIABLE`），M 世代須先以日本官方補正稀有度再以稀有度對齊。
+- 下一步：抓 M 世代日本官方頁（稀有度補／修、身分）→ 抓台灣官方 M 系列 → ADR 0011 補中文名。
+
 下一個安全起點：無指定項目。後續候選：SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
