@@ -447,3 +447,28 @@ test('search typed as printed matches TW names whose owner prefix carries source
     await closeHttpServer(mockSupabase);
   }
 });
+
+test('repeated searches reuse the loaded catalog instead of re-paging every series',async()=>{
+  const requests=[];
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1);
+    requests.push([table,url.searchParams]);
+    res.writeHead(200,{'content-type':'application/json'});res.end('[]');
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`catalog cache fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`catalog cache fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const seriesPages=()=>requests.filter(([table,params])=>table==='tcg_series'&&!params.has('or')&&!params.has('id')).length;
+    for(const q of ['噴火龍','皮卡丘'])assert.equal((await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`)).status,200);
+    assert.equal(seriesPages(),1);
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
