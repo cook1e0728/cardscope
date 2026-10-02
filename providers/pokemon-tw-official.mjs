@@ -86,7 +86,8 @@ export function sameTwName(databaseName, officialName) {
 export function matchOfficialTwRarity(printing, entries) {
   const same = entries.filter(entry => entry.listCode === printing.code && entry.number === printing.num);
   if (!same.length) return { quarantine: 'OFFICIAL_ENTRY_NOT_FOUND' };
-  if (same.some(entry => !twSetMarkMatches(entry.setMark, printing.code))) return { quarantine: `SET_MARK_MISMATCH:${same.map(entry => entry.setMark).join('|')}` };
+  // Promos carry a generic PROMO.MARK image but print the set after the slash (001/SV-P).
+  if (same.some(entry => !twSetMarkMatches(entry.setMark, printing.code) && entry.total !== printing.code)) return { quarantine: `SET_MARK_MISMATCH:${same.map(entry => entry.setMark).join('|')}` };
   if (same.some(entry => !sameTwName(printing.name_zh, entry.nameZh))) return { quarantine: `NAME_MISMATCH:${same.map(entry => entry.nameZh).join('|')}` };
   const labels = new Set(same.flatMap(entry => entry.rarityLabels || []));
   if (same.some(entry => (entry.rarityLabels || []).length !== 1) || labels.size !== 1) return { quarantine: `RARITY_AMBIGUOUS:${[...labels].join('|') || 'none'}` };

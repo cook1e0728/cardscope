@@ -76,3 +76,9 @@ test('TW printing status promotion is upgrade-only and needs a verified card wit
   assert.match(statusMigration, /limit 100/);
   assert.match(statusMigration, /revoke all on function private\.promote_pokemon_tw_printing_status\(text, text, boolean\) from public, anon, authenticated/);
 });
+
+test('TW promos match by the set printed after the slash instead of the generic promo mark', () => {
+  const promo = { detailId: '7800', listCode: 'SV-P', setMark: 'PROMO.MARK', number: '001', total: 'SV-P', nameZh: '皮卡丘', rarityLabels: ['無標記'] };
+  assert.deepEqual(matchOfficialTwRarity({ code: 'SV-P', num: '001', name_zh: '皮卡丘' }, [promo]), { rarity: 'NONE', detailIds: ['7800'] });
+  assert.match(matchOfficialTwRarity({ code: 'SV-P', num: '001', name_zh: '皮卡丘' }, [{ ...promo, total: 'S-P' }]).quarantine, /SET_MARK_MISMATCH/);
+});
