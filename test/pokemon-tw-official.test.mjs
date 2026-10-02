@@ -50,7 +50,7 @@ test('a source "None" stays unknown; only the exact code NONE is No rarity mark'
 import { twSetMarkMatches } from '../providers/pokemon-tw-official.mjs';
 
 test('TW set marks must contain the series code as a token, whatever the image naming', () => {
-  for (const mark of ['SV6a', 'sv6a_f', 'SV6a F@4x', 'SV6a_F@4x', 'twhk_sv6a_exp', 'exp_SV6a']) assert.equal(twSetMarkMatches(mark, 'SV6a'), true, mark);
+  for (const mark of ['SV6a', 'sv6a_f', 'SV6a F@4x', 'SV6a_F@4x', 'twhk_sv6a_exp', 'exp_SV6a', 'SV6aF_exp']) assert.equal(twSetMarkMatches(mark, 'SV6a'), true, mark);
   assert.equal(twSetMarkMatches('sv6a_f', 'SV6'), false);
   assert.equal(twSetMarkMatches('PROMO.MARK', 'SV-P'), false);
   const entry = { detailId: '1', listCode: 'SV1a', setMark: 'sv1a_f', number: '001', nameZh: '熱帶龍', rarityLabels: ['C'] };

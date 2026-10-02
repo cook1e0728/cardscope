@@ -52,11 +52,12 @@ export function parseOfficialTwDetail(html) {
 
 // The official series filter (expansionCodes) decides which set a card belongs to. The set
 // mark image name is only a consistency check, and it is written inconsistently
-// (SV6a_F, sv1a_f, "SV2a F@4x", exp_sv4K, twhk_sv4a_exp): it must contain the series code
-// as its own token, case-insensitively, so SV4 never matches SV4a.
+// (SV6a_F, sv1a_f, "SV2a F@4x", exp_sv4K, twhk_sv4a_exp, SV9aF_exp): it must contain the
+// series code as its own token (an F suffix glued to it is allowed), case-insensitively, so
+// SV4 never matches SV4a.
 export function twSetMarkMatches(mark, code) {
   const escaped = String(code ?? '').replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
-  return Boolean(code) && new RegExp(`(?:^|[^a-z0-9])${escaped}(?:[^a-z0-9]|$)`, 'i').test(String(mark ?? ''));
+  return Boolean(code) && new RegExp(`(?:^|[^a-z0-9])${escaped}f?(?:[^a-z0-9]|$)`, 'i').test(String(mark ?? ''));
 }
 
 // Compare names after dropping Source name markup (<火箭隊的>, trailing [支援者], zero-width
