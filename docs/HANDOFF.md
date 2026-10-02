@@ -126,6 +126,7 @@
 - `/api/search` 新增 `Server-Timing`（catalog、db、names／text／rpc／siblings／printings、total）。部署 `a5b0020` 後量得：catalog 快取約 10 ms，names 250–800 ms、siblings 200–700 ms（依序），伺服器總計 465–1,300 ms；資料庫端名稱查詢實際僅約 160 ms。
 - Migration `20261003020000_search_cards_with_siblings`：`public.search_cards_with_siblings(text[], integer)`（唯讀、service_role 限定，anon 無權）一次回傳命中卡（≤100）與同作品層卡（≤200）及 printings；資料庫端 45–200 ms。伺服器先呼叫 RPC，失敗或格式不符時退回原兩次 PostgREST 查詢。部署 `a629f4e` 後伺服器總計 270–915 ms（固定驗收詞 luffy、魯夫、噴火龍、Charizard、リザードン、超夢、夢幻、黑魔導女孩皆有結果）。
 - 剩餘瓶頸：RPC 回應 250–900 ms，但モモワロウ僅 22 KB 仍約 500 ms，推斷是 Render 與 Supabase（ap-northeast-1 東京）之間的固定往返；Render 服務區域未知（需使用者在 Render 後台確認）。若在美國，新建同區域（如 Singapore）服務才能明顯改善，屬基礎設施變更，未自行處理。暖機 P95 < 800 ms 目前尚未達成。
+- 搜尋結果快取（`845078e`）：同一 region＋查詢 60 秒內直接回傳（最多 200 筆、LRU），`Server-Timing: cache;desc="hit"`；正式命中時伺服器 0 ms、本機量得約 0.3 秒。
 
 下一個安全起點：無指定項目。後續候選：SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
