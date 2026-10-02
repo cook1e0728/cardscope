@@ -133,7 +133,10 @@
 - 封存 data-asia/M 有日文名的 12 系列；匯入 9 個擴充包：M1L 92、M1S 92、M2 116、M2a 250（3 批）、M3 117、M4 120、M5 118、M6 113、M6a 176，共 1,194 張，皆 gated＋重播零異動（同 `scripts/import-pokemon-jp-series.sh`）。暫不匯入 M-P（特典）、MC（スタートデッキ100，742）、MF（牌組）。封存無台版 → 無 Canonical 連結、無中文名；稀有度空值多在 M2a 167、M6a 136、M6 37。證據 `docs/evidence/pokemon-jp/m-era/`。
 - 另：封存 SM 世代有 SM1p–SM5p 共 403 張有日文名（未匯入）。
 - ADR 0011 補強：可比對卡少於系列一半時不採用（`REJECTED_UNVERIFIABLE`），M 世代須先以日本官方補正稀有度再以稀有度對齊。
-- 下一步：抓 M 世代日本官方頁（稀有度補／修、身分）→ 抓台灣官方 M 系列 → ADR 0011 補中文名。
+- 日本官方（1,194 筆，另開視窗）：fill 42、correct 91（UR→SR）、identity 1,140，重播零異動。台灣官方 M 系列同時抓取（不同網站，各一條連線）。
+- ADR 0011 中文名：M1L、M1S、M2、M3、M4、M5、M6 以稀有度對齊（可比對筆數全數一致）→ 寫入 762 名（M6 另補稀有度 2）。M2a、M6a 稀有度多未知而被 REJECTED_UNVERIFIABLE；加入「官方名稱字典」證據（同日文名已有台版官方／同卡號中文名者，唯一對應才算；`--name-dictionary`）後 M2a 233/250、M6a 133/176 可比對且全數一致 → 寫入名 250＋159、稀有度 166＋121（多為 NONE）。
+- MA（Mega Attack Rare）：日本官方 `ic_rare_ma` 與台灣官方 MA 一致 → migration `20261003060000_pokemon_rarity_ma` 新增，再以 `20261003070000_pokemon_rarity_ma_rank` 更正排序到 SAR 之後（M2a 卡號 SR 214–222 < MA 223–232 < SAR 233–249）；M2a 10 張 UR→MA（ADR 0009）。
+- M 世代結果：1,194 張、中文名 1,171（M6 6、M6a 17 官方缺卡號）、M6a 稀有度空值 15、verified 約 1,140。
 
 下一個安全起點：無指定項目。後續候選：SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 

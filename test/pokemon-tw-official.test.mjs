@@ -18,7 +18,7 @@ test('TW list pages give detail IDs and the page count', () => {
 test('TW rarity labels map to database codes; 無標記 is NONE; unknown labels are quarantined', () => {
   assert.deepEqual(officialTwRarityCode('無標記'), { rarity: 'NONE' });
   assert.deepEqual(officialTwRarityCode('SAR'), { rarity: 'SAR' });
-  assert.match(officialTwRarityCode('MA').quarantine, /UNMAPPED_TW_RARITY/);
+  assert.match(officialTwRarityCode('FUR').quarantine, /UNMAPPED_TW_RARITY/);
 });
 
 test('TW names compare after dropping source name markup only', () => {

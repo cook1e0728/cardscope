@@ -10,7 +10,7 @@ export const OFFICIAL_TW_RARITY_FILTERS = {
   1: 'C', 2: 'U', 3: 'R', 4: 'RR', 5: 'RRR', 6: 'PR', 7: 'TR', 8: 'SR', 9: 'HR', 10: 'UR', 11: '無標記',
   12: 'K', 13: 'A', 14: 'AR', 15: 'SAR', 16: 'S', 17: 'SSR', 18: 'ACE', 19: 'BWR', 20: 'MUR', 21: 'MA', 22: 'FUR'
 };
-const DATABASE_CODES = new Set(['C', 'U', 'R', 'RR', 'RRR', 'SR', 'HR', 'UR', 'K', 'AR', 'SAR', 'S', 'SSR', 'ACE', 'BWR', 'MUR', 'CSR']);
+const DATABASE_CODES = new Set(['C', 'U', 'R', 'RR', 'RRR', 'SR', 'HR', 'UR', 'K', 'AR', 'SAR', 'S', 'SSR', 'ACE', 'BWR', 'MUR', 'CSR', 'MA']);
 
 export function officialTwRarityCode(label) {
   if (label === '無標記') return { rarity: 'NONE' };

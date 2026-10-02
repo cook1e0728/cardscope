@@ -5,7 +5,7 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "NONE"],
+      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "MA", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "NONE"],
       "canonicalLabels": {"Rare Holo": "Rare Holo", "NONE": "無標記"},
       "aliases": {
         "UR": ["Ultra Rare"],
@@ -20,6 +20,7 @@
         "K": ["Radiant Rare"],
         "RRR": ["Triple Rare"],
         "RR": ["Double Rare"],
+        "MA": ["Mega Attack Rare", "MEGA_ATTACK_RARE"],
         "ACE": ["ACE SPEC Rare"],
         "R": ["Rare"],
         "U": ["Uncommon"],
@@ -31,6 +32,7 @@
         ["UR", "Ultra Rare"],
         ["HR", "Hyper Rare", "Rainbow Rare"],
         ["SAR", "Special Art Rare", "Special Illustration Rare"],
+        ["MA", "Mega Attack Rare", "MEGA_ATTACK_RARE"],
         ["SSR", "Shiny Super Rare", "Shiny Ultra Rare"],
         ["SR", "Super Rare", "Secret Rare"],
         ["CSR", "Character Super Rare"],
@@ -81,6 +83,7 @@
         ["CSR", "Character Super Rare"],
         ["SR", "Super Rare", "Secret Rare"],
         ["SSR", "Shiny Super Rare", "Shiny Ultra Rare"],
+        ["MA", "Mega Attack Rare", "MEGA_ATTACK_RARE"],
         ["SAR", "Special Art Rare", "Special Illustration Rare"],
         ["HR", "Hyper Rare", "Rainbow Rare"],
         ["UR", "Ultra Rare"],

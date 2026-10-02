@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { OFFICIAL_TW_RARITY_FILTERS, officialTwRarityCode, sameTwName, twNameKey, twSetMarkMatches } from '../providers/pokemon-tw-official.mjs';
 
 const usage = [
-  'Usage: node scripts/build-pokemon-jp-from-tw-official-plan.mjs <jp-printings.json> <tw-cache.json> <out-dir> --series CODE,CODE [--actor NAME]',
+  'Usage: node scripts/build-pokemon-jp-from-tw-official-plan.mjs <jp-printings.json> <tw-cache.json> <out-dir> --series CODE,CODE [--name-dictionary names.json] [--actor NAME]',
   '',
   'Plans for private.fill_pokemon_jp_from_tw_official (ADR 0011): empty Japanese Chinese names and rarities',
   'from the Taiwanese official card with the same series code and number. A series is used only when every',
@@ -21,6 +21,11 @@ try {
   const codes = option('series').split(',');
   const jpRows = JSON.parse(readFileSync(jpPath, 'utf8'));
   const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
+  // Optional extra alignment evidence: Japanese names whose official Chinese name is already known
+  // elsewhere ([{ name_ja, name_zh }], official bases only). A name with more than one Chinese name is ignored.
+  const dictionary = new Map();
+  if (option('name-dictionary')) for (const entry of JSON.parse(readFileSync(option('name-dictionary'), 'utf8'))) dictionary.set(entry.name_ja, new Set([...(dictionary.get(entry.name_ja) || []), entry.name_zh]));
+  const knownName = row => { const names = !row.name_zh && dictionary.get(row.name_ja); return names && names.size === 1 ? [...names][0] : null; };
   if (!Object.keys(OFFICIAL_TW_RARITY_FILTERS).every(value => cache.rarityLists?.[value]?.complete)) throw new Error('TW_RARITY_LISTS_INCOMPLETE');
   const labelsById = new Map();
   for (const [value, list] of Object.entries(cache.rarityLists)) for (const id of Object.values(list.pages).flat()) labelsById.set(id, [...(labelsById.get(id) || []), OFFICIAL_TW_RARITY_FILTERS[value]]);
@@ -58,8 +63,10 @@ try {
       if (!value) continue;
       if (row.name_zh && value.name && !sameTwName(row.name_zh, value.name) && twNameKey(row.name_zh) !== twNameKey(value.name)) disagreements.push({ num: row.num, field: 'name', database: row.name_zh, official: value.name });
       if (row.rarity && value.rarity && row.rarity !== value.rarity) disagreements.push({ num: row.num, field: 'rarity', database: row.rarity, official: value.rarity });
+      const known = knownName(row);
+      if (known && value.name && !sameTwName(known, value.name) && twNameKey(known) !== twNameKey(value.name)) disagreements.push({ num: row.num, field: 'name-dictionary', database: known, official: value.name });
     }
-    const checked = rows.filter(row => valueOf(row.num) && (row.name_zh || row.rarity)).length;
+    const checked = rows.filter(row => valueOf(row.num) && (row.name_zh || row.rarity || knownName(row))).length;
     if (disagreements.length) { report.series[code] = { status: 'REJECTED_MISALIGNED', checked, disagreements }; continue; }
     // Agreement on a handful of cards proves nothing about numbering: at least half of the series must be checkable.
     if (checked * 2 < rows.length) { report.series[code] = { status: 'REJECTED_UNVERIFIABLE', checked, rows: rows.length }; continue; }

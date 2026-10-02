@@ -5,7 +5,7 @@ export const OFFICIAL_JP_ORIGIN = 'https://www.pokemon-card.com';
 
 // Rarity codes the database already holds for pokemon; the official icon file is
 // ic_rare_<code lower-case>.gif. Anything else is quarantined, never guessed.
-export const OFFICIAL_JP_RARITY_CODES = new Set(['C', 'U', 'R', 'RR', 'RRR', 'AR', 'SR', 'SAR', 'UR', 'HR', 'S', 'SSR', 'K', 'ACE', 'MUR', 'BWR', 'CHR', 'CSR']);
+export const OFFICIAL_JP_RARITY_CODES = new Set(['C', 'U', 'R', 'RR', 'RRR', 'AR', 'SR', 'SAR', 'UR', 'HR', 'S', 'SSR', 'K', 'ACE', 'MUR', 'BWR', 'CHR', 'CSR', 'MA']);
 
 export function officialJpListUrl(seriesCode, page) {
   const params = new URLSearchParams({ keyword: '', se_ta: '', regulation_sidebar_form: 'all', pg: seriesCode, illust: '', sm_and_keyword: 'true', page: String(page) });
