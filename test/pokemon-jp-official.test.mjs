@@ -65,6 +65,6 @@ test('official identity promotion is upgrade-only and needs one printing with th
   assert.match(correction, /p\.local_card_number = pl\.number\) then 'number'/);
   assert.match(correction, /'identityBasis', 'pokemon-card-official-jp'/);
   for (const fn of ['correct_pokemon_jp_official_rarity', 'promote_pokemon_jp_official_identity']) {
-    assert.match(correction, new RegExp(`revoke all on function private\.${fn}\(jsonb, text, boolean\) from public, anon, authenticated`));
+    assert.match(correction, new RegExp(String.raw`revoke all on function private\.${fn}\(jsonb, text, boolean\) from public, anon, authenticated`));
   }
 });
