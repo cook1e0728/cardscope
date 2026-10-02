@@ -30,7 +30,7 @@ test('TW names compare after dropping source name markup only', () => {
 
 test('a TW printing takes the rarity only when every official entry for its number agrees', () => {
   const printing = { code: 'SV8a', num: '001', name_zh: '蛋蛋' };
-  const entry = (detailId, labels, nameZh = '蛋蛋') => ({ detailId, setMark: 'SV8a', number: '001', nameZh, rarityLabels: labels });
+  const entry = (detailId, labels, nameZh = '蛋蛋') => ({ detailId, listCode: 'SV8a', setMark: 'SV8a', number: '001', nameZh, rarityLabels: labels });
   assert.deepEqual(matchOfficialTwRarity(printing, [entry('1', ['無標記']), entry('2', ['無標記'])]), { rarity: 'NONE', detailIds: ['1', '2'] });
   assert.match(matchOfficialTwRarity(printing, [entry('1', ['無標記']), entry('2', ['RR'])]).quarantine, /RARITY_AMBIGUOUS/);
   assert.match(matchOfficialTwRarity(printing, [entry('1', [])]).quarantine, /RARITY_AMBIGUOUS/);
@@ -47,10 +47,14 @@ test('a source "None" stays unknown; only the exact code NONE is No rarity mark'
   assert.equal(normalizeRarityValue('pokemon', '無標記').code, 'NONE');
 });
 
-import { twSetMarkKey } from '../providers/pokemon-tw-official.mjs';
+import { twSetMarkMatches } from '../providers/pokemon-tw-official.mjs';
 
-test('TW set marks compare without the image-name suffix or case', () => {
-  for (const mark of ['SV6a', 'sv6a_f', 'SV6a F@4x', 'SV6a_F']) assert.equal(twSetMarkKey(mark), 'SV6A');
-  assert.notEqual(twSetMarkKey('SV6'), twSetMarkKey('SV6a'));
-  assert.equal(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [{ detailId: '1', setMark: 'sv1a_f', number: '001', nameZh: '熱帶龍', rarityLabels: ['C'] }]).rarity, 'C');
+test('TW set marks must contain the series code as a token, whatever the image naming', () => {
+  for (const mark of ['SV6a', 'sv6a_f', 'SV6a F@4x', 'SV6a_F@4x', 'twhk_sv6a_exp', 'exp_SV6a']) assert.equal(twSetMarkMatches(mark, 'SV6a'), true, mark);
+  assert.equal(twSetMarkMatches('sv6a_f', 'SV6'), false);
+  assert.equal(twSetMarkMatches('PROMO.MARK', 'SV-P'), false);
+  const entry = { detailId: '1', listCode: 'SV1a', setMark: 'sv1a_f', number: '001', nameZh: '熱帶龍', rarityLabels: ['C'] };
+  assert.equal(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [entry]).rarity, 'C');
+  assert.match(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [{ ...entry, setMark: 'sv1_f' }]).quarantine, /SET_MARK_MISMATCH/);
+  assert.match(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [{ ...entry, listCode: 'SV1S' }]).quarantine, /OFFICIAL_ENTRY_NOT_FOUND/);
 });

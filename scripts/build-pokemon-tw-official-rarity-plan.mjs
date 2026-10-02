@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { OFFICIAL_TW_RARITY_FILTERS, matchOfficialTwRarity, twSetMarkKey } from '../providers/pokemon-tw-official.mjs';
+import { OFFICIAL_TW_RARITY_FILTERS, matchOfficialTwRarity } from '../providers/pokemon-tw-official.mjs';
 
 const usage = [
   'Usage: node scripts/build-pokemon-tw-official-rarity-plan.mjs <tw-printings.json> <tw-cache.json> <out-dir>',
@@ -41,8 +41,8 @@ try {
     if (ids.some(id => !cache.details[id])) continue; // a series counts only once every detail page is cached
     for (const id of ids) {
       const detail = cache.details[id];
-      const key = `${twSetMarkKey(detail.setMark)}|${detail.number}`;
-      entriesByIdentity.set(key, [...(entriesByIdentity.get(key) || []), { detailId: id, ...detail, rarityLabels: labelsById.get(id) || [] }]);
+      const key = `${code}|${detail.number}`;
+      entriesByIdentity.set(key, [...(entriesByIdentity.get(key) || []), { detailId: id, ...detail, listCode: code, rarityLabels: labelsById.get(id) || [] }]);
     }
   }
   const readySeries = new Set(Object.entries(cache.seriesLists || {}).filter(([, list]) => list.complete && Object.values(list.pages).flat().every(id => cache.details[id])).map(([code]) => code));
@@ -51,7 +51,7 @@ try {
   const add = (kind, seriesId, row) => { const rows = plans[kind].get(seriesId) || []; rows.push(row); plans[kind].set(seriesId, rows); };
   for (const row of twRows.filter(item => !item.rarity)) {
     if (!readySeries.has(row.code)) { waiting.push({ code: row.code, num: row.num }); continue; }
-    const decision = matchOfficialTwRarity(row, entriesByIdentity.get(`${twSetMarkKey(row.code)}|${row.num}`) || []);
+    const decision = matchOfficialTwRarity(row, entriesByIdentity.get(`${row.code}|${row.num}`) || []);
     if (decision.quarantine) { quarantined.push({ kind: 'tw-official', code: row.code, num: row.num, name: row.name_zh, reason: decision.quarantine }); continue; }
     add('tw-official', row.series_id, { printingId: Number(row.printing_id), cardId: row.card_id, number: row.num, name: row.name_zh, rarity: decision.rarity, officialDetailIds: decision.detailIds });
   }
