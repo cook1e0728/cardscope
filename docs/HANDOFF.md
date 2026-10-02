@@ -75,7 +75,16 @@
 - 正確性：`火箭隊的超夢` 4 筆、`モモワロウ` 7 筆、`ナイトワンダラー`（系列 fallback）40 筆，全部 `databaseSearch=available`、無缺 printing 的卡，日台 printing 合併正常（如 SV10-039 JP RR／TW RR）。
 - 延遲（連續 3 次，秒；括號為執行 6 部署後）：噴火龍 4.69/1.41/1.32（3.92/1.26/1.67）；モモワロウ 1.32/0.90/0.91（1.91/1.47/1.46）；火箭隊的超夢 1.05/1.06/1.13（1.92/1.25/1.23）；Pikachu 1.59/1.29/1.23（1.17/1.11/2.06）。多數查詢再降約 0.1–0.5 秒；若嵌入失敗走退回路徑會多一次失敗請求而變慢，實測變快，推斷嵌入有效，但未能直接查看 Render log 確認沒有 `search printing embed failed`。
 
-下一個安全起點：無指定項目。其餘後續候選：Render log 抽查上述訊息；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+### 依序執行 8：日版稀有度與身分以日本官方卡片頁補正（2026-10-02，進行中）
+
+- grill-with-docs 決策：ADR 0007（官方卡片搜尋為日版稀有度來源，只取文字事實）、ADR 0008（官方頁系列標記＋卡號＋日文名一致即升為 verified，使用者同意）、ADR 0009（既有值與官方不同時改為官方值，舊值存 `rarityBeforeOfficial`，使用者選 a）。詞彙表新增 No rarity mark。實查發現：官方頁沒有稀有度圖示不代表卡面無記號（SV6a-063 ACE SPEC 也沒有），所以無圖示一律隔離；牌組（SVK／SVLN／SVLS）與 SV8a 大部分維持未知；圖示 `_c` 後綴去掉後對映（u_c 與既有 U 7/7 一致）；TCGdex 的 `Ultra Rare` 在日版其實是 SR。
+- 程式：`providers/pokemon-jp-official.mjs`、`scripts/fetch-pokemon-jp-official-rarity.mjs`（單一連線、間隔 ≥1.5 秒、非 200 即停、快取可接續）、`scripts/build-pokemon-jp-official-rarity-plan.mjs`（fill／correct／identity 三種計畫與受檢查 SQL）。證據快取 `docs/evidence/pokemon-jp/official-rarity-20261002.json`（只含文字事實）。
+- Migration（皆先在正式庫整批回滾測試）：`20261002095027_pokemon_jp_official_rarity`（fill，函式 md5 `20ab149b…`）、`20261002110000_pokemon_jp_official_correction_and_identity`（correct＋identity，md5 `1f7e85b1…`／`978aea3d…`；以本機工具執行並寫入 schema_migrations）。
+- 第一批寫入（官方頁 900 頁時的快取）：fill 414 筆（20 批）、correct 13 筆（7 批）、identity 326 張（20 批），全部重播零異動（稽核 fill 20+20、correct 7+7、status 20）。結果：日版 Card verified 2,352／pending 517；Printing verified 2,139、incomplete 213、pending 517；稀有度空值 707→293；Card／Printing 稀有度不一致 0。寶可夢台版 7,436、美版 20,635 不變。
+- 隔離：官方頁無圖示 186、日文名不一致 5（官方標題沒有括號人名，如「ボスの指令」vs「ボスの指令（ゲーチス）」，未放寬規則）、SV2P-099 找不到官方頁。
+- 進行中：全部日版 printing 的官方頁抓取（約 2,000 頁、可中斷接續；背景工作有時間上限，被中止時以同一指令重跑即可）。完成後重跑計畫產生器，執行剩餘 fill／correct／identity 並重播，再提交證據快取。
+
+下一個安全起點：接續上述抓取與寫入。其餘後續候選：Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
