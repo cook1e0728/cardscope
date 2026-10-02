@@ -26,3 +26,9 @@ test('detail page shows the bracket note beside the cleaned Chinese name',async(
   assert.match(ui,/zhPart=zhParts\(c\.nameZh\),zhName=zhPart\.name\|\|'中文名稱待補'/);
   assert.match(ui,/zhPart\.note\?/);
 });
+
+test('detail page notes rarities corrected from the official card page', async () => {
+  const ui = await readFile(new URL('../ui-enhancements.js', import.meta.url), 'utf8');
+  assert.match(ui, /p\.metadata\?\.rarityBeforeOfficial\?\.rarity&&p\.rarity/);
+  assert.match(ui, /依官方修正（原資料為 \$\{e\(p\.metadata\.rarityBeforeOfficial\.rarity\)\}）/);
+});

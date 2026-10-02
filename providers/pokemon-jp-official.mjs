@@ -55,6 +55,14 @@ export function officialJpRarity(rarityIcon) {
 
 const nfkc = value => String(value ?? '').normalize('NFKC').replace(/\s+/g, '').trim();
 
+// The official page title drops the small bracketed note printed on some trainers
+// (ボスの指令（ゲーチス） is titled ボスの指令); set and number still have to match.
+export function sameOfficialName(databaseName, officialName) {
+  const stored = nfkc(databaseName), official = nfkc(officialName);
+  if (!official) return false;
+  return stored === official || (stored.startsWith(official) && /^\([^()]+\)$/.test(stored.slice(official.length)));
+}
+
 /**
  * Decide one printing against one parsed official page (ADR 0007): the set mark and
  * card number must equal the printing's series code and number and the Japanese
@@ -64,6 +72,6 @@ export function matchOfficialJpRarity(printing, detail) {
   if (!detail?.setMark || !detail.number) return { quarantine: 'OFFICIAL_IDENTITY_MISSING' };
   if (detail.setMark !== printing.code) return { quarantine: `SET_MISMATCH:${detail.setMark}` };
   if (detail.number !== printing.num) return { quarantine: `NUMBER_MISMATCH:${detail.number}` };
-  if (nfkc(detail.nameJa) !== nfkc(printing.name_ja)) return { quarantine: `NAME_MISMATCH:${detail.nameJa}` };
+  if (!sameOfficialName(printing.name_ja, detail.nameJa)) return { quarantine: `NAME_MISMATCH:${detail.nameJa}` };
   return officialJpRarity(detail.rarityIcon);
 }

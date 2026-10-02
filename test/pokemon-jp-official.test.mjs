@@ -68,3 +68,15 @@ test('official identity promotion is upgrade-only and needs one printing with th
     assert.match(correction, new RegExp(String.raw`revoke all on function private\.${fn}\(jsonb, text, boolean\) from public, anon, authenticated`));
   }
 });
+
+import { sameOfficialName } from '../providers/pokemon-jp-official.mjs';
+
+test('official names may drop a trailing full-width bracket note, nothing else', () => {
+  assert.equal(sameOfficialName('ボスの指令（ゲーチス）', 'ボスの指令'), true);
+  assert.equal(sameOfficialName('博士の研究（オーリム博士）', '博士の研究'), true);
+  assert.equal(sameOfficialName('ボスの指令', 'ボスの指令'), true);
+  assert.equal(sameOfficialName('ボスの指令のなにか', 'ボスの指令'), false);
+  assert.equal(sameOfficialName('ボスの指令（ゲーチス）（別）', 'ボスの指令'), false);
+  assert.equal(sameOfficialName('ボスの指令', ''), false);
+  assert.equal(matchOfficialJpRarity({ code: 'SV8a', num: '103', name_ja: 'マシマシラex（注）' }, parseOfficialJpDetail(detail())).rarity, 'RR');
+});
