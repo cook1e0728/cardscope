@@ -20,7 +20,7 @@
 - 尚未執行的唯一下一步，以及開始前必須重新核對的外部狀態。
 - 未追蹤或屬於使用者的本機檔案，避免下一台電腦誤刪。
 
-## 目前里程碑（2026-10-02，日版中文化、分批匯入、data status；優先於下方所有段落）
+## 目前里程碑（2026-10-03，日版中文化、分批匯入、官方來源匯入；優先於下方所有段落）
 
 - 分支 `claude/jp-zh-names`（依主方案第 0 節每主題一條；完成後快轉 main）。決策經 grill-with-docs 三輪定案：日版連結台版既有 Canonical card（ADR 0003）、同系列 Derived name、新增稀有度 `ACE`（ACE SPEC，排序在 RR 與 Rare Holo 之間）、SV6a 092–094 金卡維持空值、沒有台版的系列不猜譯。詞彙表新增 Source archive、Derived name。
 - Migration `20261001114348_pokemon_jp_enrichment`：新增 `ACE`（`tcg_rarities` tier 14，原 ≥14 者 +1，比照 K 的先例）、追加式稽核表 `private.catalog_jp_enrich_audit`、只填空值的 `private.enrich_pokemon_jp_metadata(jsonb, text, boolean)`（dry-run、digest 重播、連結四項檢查、同名推導檢查、系列名須等於同代碼台版名）。套用前先在正式庫以「整批執行後拋例外」的交易完整測過 SV6a 寫入與重播，並確認全數回滾。
@@ -140,12 +140,19 @@
 - MA（Mega Attack Rare）：日本官方 `ic_rare_ma` 與台灣官方 MA 一致 → migration `20261003060000_pokemon_rarity_ma` 新增，再以 `20261003070000_pokemon_rarity_ma_rank` 更正排序到 SAR 之後（M2a 卡號 SR 214–222 < MA 223–232 < SAR 233–249）；M2a 10 張 UR→MA（ADR 0009）。
 - M 世代結果：1,194 張、中文名 1,171（M6 6、M6a 17 官方缺卡號）、M6a 稀有度空值 15、verified 約 1,140。
 
-下一個安全起點：實作 ADR 0012（使用者已同意；建議在新對話開始，先讀本文件與 ADR 0012）。步驟：
-1. 用 `scripts/fetch-pokemon-jp-official-rarity.mjs` 的清單／詳細頁解析（`providers/pokemon-jp-official.mjs`）為 S4、S4a、S5a、S5R、S6a、S7R、S8a、S10b、S10D 建快照：先抓 `resultAPI.php?pg=<系列>` 全部 card ID，再抓每張詳細頁（可沿用快取 `docs/evidence/pokemon-jp/official-rarity-20261002.json`）。抓取一律另開 PowerShell 視窗（`Start-Process`，背景工作 10 分鐘上限），且抓取期間不要切換 git 分支、不要讀寫同一快取檔；部署用 `git push origin claude/jp-zh-names:main`。
-2. 新 migration：`private.import_pokemon_jp_official_series`（比照 `supabase/migrations/20261001154929_pokemon_jp_metadata_import_batches.sql` 的批次、gated、digest、稽核、碰撞檢查），source `pokemon-card-official-jp`。先在正式庫以「整批執行後拋例外」回滾測試，再套用並寫入 schema_migrations。
-3. 計畫產生器＋gated SQL（仿 `scripts/build-pokemon-jp-official-rarity-plan.mjs` 輸出格式），逐系列匯入→重播。
-4. 中文名依 ADR 0011：`scripts/build-pokemon-jp-from-tw-official-plan.mjs`（台版 S4 等已在 DB 與台灣官方快取中；用 `--name-dictionary`）。注意該函式目前只接受 `tcgdex-ja` 系列，需擴充或另寫。
-其他後續候選：搜尋延遲——Render（Ohio）與 Supabase（ap-northeast-1）跨區不是主因：使用者建立 Singapore 測試服務 `https://cardscope-1.onrender.com`（CATALOG_SYNC_ON_START／CARD_IMAGE_CACHE_ON_START=false），暖機後 10 個不同查詢 rpc 386–1,331 ms，Ohio 456–1,090 ms，無明顯改善；建議保留 Ohio 為正式站、由使用者刪除或停用 Singapore 測試服務。瓶頸在 RPC 本身（常見詞回傳 150–230 KB、PostgREST 端浮動；資料庫內直接執行 45–200 ms）→ 下一步縮小回傳（只回前 40 筆所需欄位，評分移入 SQL）與名稱 trigram 索引，以 Server-Timing 驗證；暖機 P95 < 800 ms 仍未達；M-P 特典與封存無日文名的 S 世代 9 系列（需日本官方頁作為主要來源，屬新決策）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+### 依序執行 15：ADR 0012 日本官方卡片搜尋匯入 S 世代 9 系列（2026-10-03，已完成）
+
+- 抓取：`scripts/fetch-pokemon-jp-official-rarity.mjs --whole-series <代碼,...> <cache>` 新模式，開每個系列清單的全部詳細頁（本次用 Bash 背景工作、上限設 2 小時，約 25 分鐘跑完，991 頁全 200）。快取 `docs/evidence/pokemon-jp/official-series/official-series-cache-20261003.json`（只含文字事實）。系列日文名／日文發售日取自封存系列檔（`series-meta-20261003.json`，ADR 0012 已補註）。
+- Migration `20261003080000_pokemon_jp_official_series_import`：`private.import_pokemon_jp_official_series`（md5 `a7006c9c…`；批次 ≤100、gated、digest 重播、追加式稽核 `private.catalog_jp_official_import_audit`、同代碼已有 tcgdex-ja 系列即拒絕）；同時讓 `private.fill_pokemon_jp_from_tw_official`（md5 `0cc40d87…`）接受官方來源系列。套用前以 S4 在正式庫整批回滾測試（批次 2 先跑被拒、雙批匯入、重播零異動、SV6a 碰撞被拒、ADR 0011 填名與重播，零殘留）。
+- 程式：`providers/pokemon-jp-official-series-plan.mjs`、`scripts/build-pokemon-jp-official-series-plan.mjs`、`scripts/import-pokemon-jp-official-series.sh`（可重跑：已匯入批次以重播確認）。官方圖示 `_2` 後綴比照 `_c` 去掉（S4a 200–303 `ic_rare_s_2` → S，ADR 0007 已補註）。ADR 0011 名稱字典比對：只差結尾括號附註（`老大的指令` vs `老大的指令（坂木）`、`博士的研究（山梨博士）` vs `(木蘭博士)`）不算不一致，因日本官方標題省略該附註。Node 272/272。
+- 結果（每批 import＋重播零異動，稽核 import 13 筆）：S4 111、S4a 326（4 批）、S5a 84、S5R 81、S6a 87、S7R 79、S8a 25、S10b 93、S10D 88，共 974 張，全部 Card／Printing verified、稀有度無空值（S4a 166 與 S8a 17 張官方無圖示者依 ADR 0011 取台灣官方 NONE；S10b 5 張同理）。隔離：S8a 9（V-UNION 與基本能量無卡號）、S10b 8（基本能量無卡號）。中文名（ADR 0011，S4a／S8a 另用名稱字典 `name-dictionary-20261003.json`）728 張；其餘 246 張為台版未收錄的高卡號（SR／HR／UR、S4a 色違 S／SSR 等），維持空值。證據 `docs/evidence/pokemon-jp/official-series/`。
+- 這些卡不與台版連結（ADR 0012），搜尋會與台版各列一筆；正式網站 `pokemon-official-ja-s4-104` 詳細頁顯示「ピカチュウV、SR、日版 S4 104」，無需改程式或部署。
+- 複核：台版 7,436、美版 20,634（＋source 空值 2）、日版 tcgdex-ja 7,085 不變；日版合計 8,059 張。
+
+下一個安全起點（擇一，建議依序）：
+1. 搜尋延遲：縮小 `search_cards_with_siblings` 回傳（只回前 40 筆所需欄位、評分移入 SQL）與名稱 trigram 索引，以 Server-Timing 驗證暖機 P95 < 800 ms。
+2. 新官方來源系列 246 張無中文名：ADR 0004 跨系列推導目前只限 tcgdex-ja、朱紫世代，若要擴及劍盾世代需新決策。
+其他後續候選：搜尋延遲——Render（Ohio）與 Supabase（ap-northeast-1）跨區不是主因：使用者建立 Singapore 測試服務 `https://cardscope-1.onrender.com`（CATALOG_SYNC_ON_START／CARD_IMAGE_CACHE_ON_START=false），暖機後 10 個不同查詢 rpc 386–1,331 ms，Ohio 456–1,090 ms，無明顯改善；建議保留 Ohio 為正式站、由使用者刪除或停用 Singapore 測試服務。瓶頸在 RPC 本身（常見詞回傳 150–230 KB、PostgREST 端浮動；資料庫內直接執行 45–200 ms）→ 下一步縮小回傳（只回前 40 筆所需欄位，評分移入 SQL）與名稱 trigram 索引，以 Server-Timing 驗證；暖機 P95 < 800 ms 仍未達；M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 

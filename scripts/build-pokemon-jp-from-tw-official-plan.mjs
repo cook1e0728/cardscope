@@ -25,6 +25,9 @@ try {
   // elsewhere ([{ name_ja, name_zh }], official bases only). A name with more than one Chinese name is ignored.
   const dictionary = new Map();
   if (option('name-dictionary')) for (const entry of JSON.parse(readFileSync(option('name-dictionary'), 'utf8'))) dictionary.set(entry.name_ja, new Set([...(dictionary.get(entry.name_ja) || []), entry.name_zh]));
+  // The Japanese official title drops the bracketed note on some trainers (博士の研究, ボスの指令), so a dictionary
+  // name that differs from the official one only by that trailing note says nothing about numbering.
+  const withoutNote = value => twNameKey(String(value).replace(/\s*[（(][^（）()]+[）)]$/, ''));
   const knownName = row => { const names = !row.name_zh && dictionary.get(row.name_ja); return names && names.size === 1 ? [...names][0] : null; };
   if (!Object.keys(OFFICIAL_TW_RARITY_FILTERS).every(value => cache.rarityLists?.[value]?.complete)) throw new Error('TW_RARITY_LISTS_INCOMPLETE');
   const labelsById = new Map();
@@ -64,7 +67,7 @@ try {
       if (row.name_zh && value.name && !sameTwName(row.name_zh, value.name) && twNameKey(row.name_zh) !== twNameKey(value.name)) disagreements.push({ num: row.num, field: 'name', database: row.name_zh, official: value.name });
       if (row.rarity && value.rarity && row.rarity !== value.rarity) disagreements.push({ num: row.num, field: 'rarity', database: row.rarity, official: value.rarity });
       const known = knownName(row);
-      if (known && value.name && !sameTwName(known, value.name) && twNameKey(known) !== twNameKey(value.name)) disagreements.push({ num: row.num, field: 'name-dictionary', database: known, official: value.name });
+      if (known && value.name && !sameTwName(known, value.name) && twNameKey(known) !== twNameKey(value.name) && withoutNote(known) !== withoutNote(value.name)) disagreements.push({ num: row.num, field: 'name-dictionary', database: known, official: value.name });
     }
     const checked = rows.filter(row => valueOf(row.num) && (row.name_zh || row.rarity || knownName(row))).length;
     if (disagreements.length) { report.series[code] = { status: 'REJECTED_MISALIGNED', checked, disagreements }; continue; }

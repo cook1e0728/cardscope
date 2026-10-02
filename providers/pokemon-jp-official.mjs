@@ -43,13 +43,14 @@ export function parseOfficialJpDetail(html) {
 
 /**
  * Map a parsed rarity icon to { rarity } | { quarantine }. Icons may carry a `_c` suffix
- * (SV6a: u_c on cards the archive already lists as U, sr_c, ur_c); it is dropped. A page
+ * (SV6a: u_c on cards the archive already lists as U, sr_c, ur_c) or a `_2` suffix (S4a: s_2 on the
+ * shiny cards 200-303, the S mark drawn in its second style); both are dropped. A page
  * without an icon is not proof of a card without a rarity mark: ACE SPEC cards (SV6a-063)
  * show none either, so it is quarantined as unknown.
  */
 export function officialJpRarity(rarityIcon) {
   if (!rarityIcon) return { quarantine: 'OFFICIAL_NO_RARITY_ICON' };
-  const code = rarityIcon.replace(/^ic_rare_/, '').replace(/_c$/, '').toUpperCase();
+  const code = rarityIcon.replace(/^ic_rare_/, '').replace(/_(c|2)$/, '').toUpperCase();
   return OFFICIAL_JP_RARITY_CODES.has(code) ? { rarity: code } : { quarantine: `UNKNOWN_RARITY_ICON:${rarityIcon}` };
 }
 

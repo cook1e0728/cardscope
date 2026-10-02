@@ -15,6 +15,7 @@ test('rarity icons map to existing codes (dropping _c), while missing or unknown
   assert.deepEqual(officialJpRarity('ic_rare_ace'), { rarity: 'ACE' });
   assert.deepEqual(officialJpRarity('ic_rare_sr_c'), { rarity: 'SR' });
   assert.deepEqual(officialJpRarity('ic_rare_u_c'), { rarity: 'U' });
+  assert.deepEqual(officialJpRarity('ic_rare_s_2'), { rarity: 'S' });
   assert.deepEqual(officialJpRarity(null), { quarantine: 'OFFICIAL_NO_RARITY_ICON' });
   assert.match(officialJpRarity('ic_rare_new').quarantine, /UNKNOWN_RARITY_ICON/);
 });
