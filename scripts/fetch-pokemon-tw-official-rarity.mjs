@@ -30,7 +30,17 @@ const args = process.argv.slice(2);
 const [neededPath, cachePath] = args;
 const option = name => { const index = args.indexOf(`--${name}`); return index === -1 ? null : args[index + 1]; };
 let cache;
-const save = () => { writeFileSync(`${cachePath}.tmp`, `${JSON.stringify(cache)}\n`); renameSync(`${cachePath}.tmp`, cachePath); };
+// On Windows the rename fails with EPERM/EBUSY while another process is reading the cache
+// (an incremental plan build copying it); wait briefly and retry instead of aborting the run.
+const save = () => {
+  writeFileSync(`${cachePath}.tmp`, `${JSON.stringify(cache)}\n`);
+  for (let attempt = 1; ; attempt++) {
+    try { renameSync(`${cachePath}.tmp`, cachePath); return; } catch (error) {
+      if (!['EPERM', 'EBUSY', 'EACCES'].includes(error.code) || attempt >= 20) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250);
+    }
+  }
+};
 
 async function collectList(store, key, urlFor) {
   const entry = store[key] ||= { pages: {}, totalPages: null };
