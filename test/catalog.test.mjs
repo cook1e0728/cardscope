@@ -531,3 +531,14 @@ test('search reports where its time went in a Server-Timing header',async()=>{
   const timing=headers.get('server-timing')||'';
   for(const name of ['catalog','db','names','siblings','total'])assert.match(timing,new RegExp('(^|, )'+name+';dur=[0-9]+'),name);
 });
+
+test('search uses the one-round-trip database function when it is available',async()=>{
+  const twin={...embedCard,id:'pokemon-tcgdex-ja-sv2a-006',canonicalId:embedCard.canonicalId,nameJa:'テスト獣ex',printings:[{...embedPrinting,id:'p-jp-006',cardId:'pokemon-tcgdex-ja-sv2a-006',region:'JP',language:'ja-JP'}]};
+  const {body,requests,headers}=await searchWithMock((table,params,respond)=>{
+    if(table==='search_cards_with_siblings')return respond({hits:[{...embedCard,printings:[embedPrinting]}],siblings:[twin]});
+    return respond([]);
+  },'測試獸');
+  assert.deepEqual(body.data.map(c=>[c.id,c.printings.map(p=>p.region).sort().join('/')]),[[embedCard.id,'JP/TW']]);
+  assert.equal(requests.filter(([table,params])=>(table==='tcg_cards'&&(params.has('or')||params.has('canonical_id')))||(table==='tcg_printings'&&String(params.get('card_id')).includes(embedCard.id))).length,0,'no PostgREST search queries');
+  assert.match(headers.get('server-timing')||'',/(^|, )rpc;dur=[0-9]+/);
+});
