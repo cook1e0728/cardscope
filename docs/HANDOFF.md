@@ -75,7 +75,7 @@
 - 正確性：`火箭隊的超夢` 4 筆、`モモワロウ` 7 筆、`ナイトワンダラー`（系列 fallback）40 筆，全部 `databaseSearch=available`、無缺 printing 的卡，日台 printing 合併正常（如 SV10-039 JP RR／TW RR）。
 - 延遲（連續 3 次，秒；括號為執行 6 部署後）：噴火龍 4.69/1.41/1.32（3.92/1.26/1.67）；モモワロウ 1.32/0.90/0.91（1.91/1.47/1.46）；火箭隊的超夢 1.05/1.06/1.13（1.92/1.25/1.23）；Pikachu 1.59/1.29/1.23（1.17/1.11/2.06）。多數查詢再降約 0.1–0.5 秒；若嵌入失敗走退回路徑會多一次失敗請求而變慢，實測變快，推斷嵌入有效，但未能直接查看 Render log 確認沒有 `search printing embed failed`。
 
-### 依序執行 8：日版稀有度與身分以日本官方卡片頁補正（2026-10-02，進行中）
+### 依序執行 8：日版稀有度與身分以日本官方卡片頁補正（2026-10-02，已完成）
 
 - grill-with-docs 決策：ADR 0007（官方卡片搜尋為日版稀有度來源，只取文字事實）、ADR 0008（官方頁系列標記＋卡號＋日文名一致即升為 verified，使用者同意）、ADR 0009（既有值與官方不同時改為官方值，舊值存 `rarityBeforeOfficial`，使用者選 a）。詞彙表新增 No rarity mark。實查發現：官方頁沒有稀有度圖示不代表卡面無記號（SV6a-063 ACE SPEC 也沒有），所以無圖示一律隔離；牌組（SVK／SVLN／SVLS）與 SV8a 大部分維持未知；圖示 `_c` 後綴去掉後對映（u_c 與既有 U 7/7 一致）；TCGdex 的 `Ultra Rare` 在日版其實是 SR。
 - 程式：`providers/pokemon-jp-official.mjs`、`scripts/fetch-pokemon-jp-official-rarity.mjs`（單一連線、間隔 ≥1.5 秒、非 200 即停、快取可接續）、`scripts/build-pokemon-jp-official-rarity-plan.mjs`（fill／correct／identity 三種計畫與受檢查 SQL）。證據快取 `docs/evidence/pokemon-jp/official-rarity-20261002.json`（只含文字事實）。
@@ -85,9 +85,11 @@
 - 第二、三批（增量，快取 1,889 頁後）：fill 1＋3、correct 52＋1、identity 393＋4，全部重播零異動。使用者同意兩項：名稱比對允許「官方標題＋一組全形括號說明」（如「ボスの指令（ゲーチス）」，ADR 0007 已更新）；詳細頁標示「依官方修正（原資料為 X）」。累計：fill 418、correct 66、identity 723；日版 Card verified 2,749／pending 120；Printing verified 2,536、incomplete 213、pending 120；稀有度空值 289。
 - 部署（使用者同意 Q2 即同意部署）：main 快轉 `31ea34f..3bc4fa1`；瀏覽器確認 SV6a-080 稀有度欄顯示「SR 日版依官方修正（原資料為 UR）」。
 - 背景工作上限 10 分鐘會中止抓取；改由使用者在自己的 PowerShell 執行抓取指令（App 終端機面板的 shell integration 載入失敗）。
-- 進行中：全部日版 printing 的官方頁抓取（約 2,000 頁、可中斷接續；背景工作有時間上限，被中止時以同一指令重跑即可）。完成後重跑計畫產生器，執行剩餘 fill／correct／identity 並重播，再提交證據快取。
+- 完成：使用者在自己的 PowerShell 跑完全量抓取，快取 2,869 頁（25 個系列清單、無找不到的卡），提交為 `docs/evidence/pokemon-jp/official-rarity-20261002.json`（695 KB，只含系列標記、卡號、日文名、稀有度圖示與 card ID）。第四批：fill 39、correct 25、identity 120，重播零異動。
+- 最終累計：fill 457（稽核 25＋25 重播）、correct 91（16＋16；UR→SR 87、HR→UR 3、SR→UR 1，舊值在 `rarityBeforeOfficial`）、identity 843 張（狀態稽核 35 筆）。日版 2,869 張 Card 全部 verified；Printing verified 2,619、incomplete 250；Card／Printing 稀有度不一致 0；官方依據 548 筆。寶可夢台版 7,436、美版 20,635 不變（最後更新仍為 10-01／09-30）。
+- 仍為空值 250（官方頁無稀有度圖示，依 ADR 0007 維持未知）：SV8a 152、SVK 44、SVLS 22、SVLN 22、ACE SPEC 等 10（SV5a、SV7、SV7a 各 3，SV8 1）。
 
-下一個安全起點：接續上述抓取與寫入。其餘後續候選：Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+下一個安全起點：無指定項目。後續候選：SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
