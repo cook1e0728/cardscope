@@ -145,7 +145,7 @@
 2. 新 migration：`private.import_pokemon_jp_official_series`（比照 `supabase/migrations/20261001154929_pokemon_jp_metadata_import_batches.sql` 的批次、gated、digest、稽核、碰撞檢查），source `pokemon-card-official-jp`。先在正式庫以「整批執行後拋例外」回滾測試，再套用並寫入 schema_migrations。
 3. 計畫產生器＋gated SQL（仿 `scripts/build-pokemon-jp-official-rarity-plan.mjs` 輸出格式），逐系列匯入→重播。
 4. 中文名依 ADR 0011：`scripts/build-pokemon-jp-from-tw-official-plan.mjs`（台版 S4 等已在 DB 與台灣官方快取中；用 `--name-dictionary`）。注意該函式目前只接受 `tcgdex-ja` 系列，需擴充或另寫。
-其他後續候選：Render 服務區域（使用者到後台確認；Supabase 在 ap-northeast-1，搜尋固定往返約 300–400 ms，暖機 P95 < 800 ms 未達）；M-P 特典與封存無日文名的 S 世代 9 系列（需日本官方頁作為主要來源，屬新決策）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+其他後續候選：Render 服務在 Ohio（US East，使用者 2026-10-03 截圖確認）、Supabase 在 ap-northeast-1，搜尋固定往返約 300–400 ms，暖機 P95 < 800 ms 未達。建議由使用者在 Render 新建 Singapore 區域的 Web Service（同 repo／main、複製環境變數），新服務上線後量 Server-Timing 驗證，再決定網址切換（`cardscope.onrender.com` 能否轉移未確認；自訂網域最穩）；屬基礎設施與密鑰操作，須使用者執行；M-P 特典與封存無日文名的 S 世代 9 系列（需日本官方頁作為主要來源，屬新決策）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
