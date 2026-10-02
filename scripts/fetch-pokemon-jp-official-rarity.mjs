@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { OFFICIAL_JP_ORIGIN, officialJpDetailUrl, officialJpListUrl, parseOfficialJpDetail, parseOfficialJpList } from '../providers/pokemon-jp-official.mjs';
 
 const usage = [
@@ -31,7 +31,20 @@ try {
   const only = args.includes('--series') ? new Set(seriesOption.split(',')) : null;
   const needed = JSON.parse(readFileSync(neededPath, 'utf8')).filter(row => !only || only.has(row.code));
   const cache = existsSync(cachePath) ? JSON.parse(readFileSync(cachePath, 'utf8')) : { source: 'pokemon-card.com card search', lists: {}, details: {} };
-  const save = () => writeFileSync(cachePath, `${JSON.stringify(cache, null, 1)}\n`);
+  // Write a temp file and rename it, retrying while Windows reports the cache busy (another process
+  // reading it, or git touching the working tree), so a run is not lost to a transient lock.
+  const save = () => {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        writeFileSync(`${cachePath}.tmp`, `${JSON.stringify(cache, null, 1)}\n`);
+        renameSync(`${cachePath}.tmp`, cachePath);
+        return;
+      } catch (error) {
+        if (!['EPERM', 'EBUSY', 'EACCES', 'UNKNOWN'].includes(error.code) || attempt >= 20) throw error;
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 250);
+      }
+    }
+  };
 
   for (const code of [...new Set(needed.map(row => row.code))]) {
     if (!cache.lists[code]) {
