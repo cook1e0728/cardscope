@@ -472,3 +472,52 @@ test('repeated searches reuse the loaded catalog instead of re-paging every seri
     await closeHttpServer(mockSupabase);
   }
 });
+
+async function searchWithMock(handler,q){
+  const requests=[];
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1),respond=(body,status=200)=>{res.writeHead(status,{'content-type':'application/json'});res.end(JSON.stringify(body))};
+    requests.push([table,url.searchParams]);
+    return handler(table,url.searchParams,respond);
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`embed fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`embed fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`)).json();
+    return {body,requests};
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+}
+const embedCard={id:'pokemon-tcgdex-tw-sv2a-006',canonicalId:'pokemon-tcgdex-tw-sv2a-006',game:'pokemon',seriesId:'pokemon-tcgdex-tw-sv2a',officialCardNumber:'006',rarity:'RR',nameZh:'測試獸ex',nameJa:null,nameEn:null,nameKo:null,aliases:[],metadata:{}};
+const embedPrinting={id:'p-006',cardId:embedCard.id,seriesId:embedCard.seriesId,region:'TW',language:'zh-TW',localSetCode:'SV2a',localCardNumber:'006',rarity:'RR',imageUrl:null,imageRehostRequired:false};
+
+test('search reads printings embedded in the card query without a separate printing request',async()=>{
+  const {body,requests}=await searchWithMock((table,params,respond)=>{
+    if(table==='tcg_cards'&&params.has('or'))return respond([{...embedCard,printings:[embedPrinting]}]);
+    if(table==='tcg_cards'&&params.has('canonical_id'))return respond([{...embedCard,printings:[embedPrinting]}]);
+    return respond([]);
+  },'測試獸');
+  assert.deepEqual(body.data.map(c=>[c.id,c.printings.map(p=>p.region).join('/')]),[[embedCard.id,'TW']]);
+  assert.match(requests.find(([table,params])=>table==='tcg_cards'&&params.has('or'))[1].get('select'),/printings:tcg_printings!tcg_printings_card_id_fkey\(/);
+  assert.equal(requests.filter(([table,params])=>table==='tcg_printings'&&params.has('card_id')).length,0);
+});
+
+test('search falls back to a plain card select and a printing fetch when the embed is rejected',async()=>{
+  const {body,requests}=await searchWithMock((table,params,respond)=>{
+    if(table==='tcg_cards'&&String(params.get('select')).includes('tcg_printings'))return respond({message:'Could not find a relationship'},400);
+    if(table==='tcg_cards'&&params.has('or'))return respond([embedCard]);
+    if(table==='tcg_printings'&&params.has('card_id'))return respond([embedPrinting]);
+    return respond([]);
+  },'測試獸');
+  assert.equal(body.meta.databaseSearch,'available');
+  assert.deepEqual(body.data.map(c=>[c.id,c.printings.map(p=>p.region).join('/')]),[[embedCard.id,'TW']]);
+  assert.equal(requests.filter(([table,params])=>table==='tcg_cards'&&String(params.get('select')).includes('tcg_printings')).length,1,'the embed is tried once, then dropped for the rest of the search');
+});
