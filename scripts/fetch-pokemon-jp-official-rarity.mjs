@@ -3,6 +3,10 @@ import { OFFICIAL_JP_ORIGIN, officialJpDetailUrl, officialJpListUrl, parseOffici
 
 const usage = [
   'Usage: node scripts/fetch-pokemon-jp-official-rarity.mjs <needed.json> <cache.json> [--series CODE,CODE]',
+  '       node scripts/fetch-pokemon-jp-official-rarity.mjs --whole-series CODE,CODE <cache.json>',
+  '',
+  '--whole-series opens every detail page in each series list (ADR 0012 snapshot of a series the',
+  'Source archive has no Japanese names for); no needed.json is read.',
   '',
   'Reads the public pokemon-card.com card search for JP printings whose rarity is empty (ADR 0007).',
   'needed.json: [{ code, num, name_ja, ... }] read from the database. For each series it lists the',
@@ -25,11 +29,13 @@ async function politeGet(url) {
 
 try {
   const args = process.argv.slice(2);
-  const [neededPath, cachePath] = args;
-  if (!neededPath || !cachePath || neededPath.startsWith('--')) throw new Error('ARGUMENTS_REQUIRED');
-  const seriesOption = args[args.indexOf('--series') + 1];
-  const only = args.includes('--series') ? new Set(seriesOption.split(',')) : null;
-  const needed = JSON.parse(readFileSync(neededPath, 'utf8')).filter(row => !only || only.has(row.code));
+  const flagValue = flag => (args.includes(flag) ? args[args.indexOf(flag) + 1] : null);
+  const positional = args.filter((arg, index) => !arg.startsWith('--') && !args[index - 1]?.startsWith('--'));
+  const whole = flagValue('--whole-series')?.split(',') ?? null;
+  const [neededPath, cachePath] = whole ? [null, positional[0]] : positional;
+  if ((!whole && !neededPath) || !cachePath) throw new Error('ARGUMENTS_REQUIRED');
+  const only = flagValue('--series') ? new Set(flagValue('--series').split(',')) : null;
+  const needed = whole ? [] : JSON.parse(readFileSync(neededPath, 'utf8')).filter(row => !only || only.has(row.code));
   const cache = existsSync(cachePath) ? JSON.parse(readFileSync(cachePath, 'utf8')) : { source: 'pokemon-card.com card search', lists: {}, details: {} };
   // Write a temp file and rename it, retrying while Windows reports the cache busy (another process
   // reading it, or git touching the working tree), so a run is not lost to a transient lock.
@@ -46,7 +52,7 @@ try {
     }
   };
 
-  for (const code of [...new Set(needed.map(row => row.code))]) {
+  for (const code of whole ?? [...new Set(needed.map(row => row.code))]) {
     if (!cache.lists[code]) {
       const first = parseOfficialJpList(await politeGet(officialJpListUrl(code, 1)));
       const cardIds = [...first.cardIds];
@@ -61,6 +67,11 @@ try {
       if (!cache.details[cardId]) { cache.details[cardId] = { ...parseOfficialJpDetail(await politeGet(officialJpDetailUrl(cardId))), cardId, list: code, fetchedAt: new Date().toISOString() }; save(); }
       return cache.details[cardId];
     };
+    if (whole) {
+      for (let index = 0; index < cardIds.length; index++) await detailAt(index);
+      console.log(`${code} ${cardIds.length} detail pages`);
+      continue;
+    }
     for (const row of needed.filter(item => item.code === code)) {
       let index = Math.min(Math.max(Number(row.num) - 1, 0), cardIds.length - 1), found = null;
       for (let step = 0; step < 6 && index >= 0 && index < cardIds.length; step++) {
