@@ -140,7 +140,12 @@
 - MA（Mega Attack Rare）：日本官方 `ic_rare_ma` 與台灣官方 MA 一致 → migration `20261003060000_pokemon_rarity_ma` 新增，再以 `20261003070000_pokemon_rarity_ma_rank` 更正排序到 SAR 之後（M2a 卡號 SR 214–222 < MA 223–232 < SAR 233–249）；M2a 10 張 UR→MA（ADR 0009）。
 - M 世代結果：1,194 張、中文名 1,171（M6 6、M6a 17 官方缺卡號）、M6a 稀有度空值 15、verified 約 1,140。
 
-下一個安全起點：無指定項目。後續候選：M-P 特典與封存無日文名的 S 世代 9 系列（需日本官方頁作為主要來源，屬新決策）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+下一個安全起點：實作 ADR 0012（使用者已同意；建議在新對話開始，先讀本文件與 ADR 0012）。步驟：
+1. 用 `scripts/fetch-pokemon-jp-official-rarity.mjs` 的清單／詳細頁解析（`providers/pokemon-jp-official.mjs`）為 S4、S4a、S5a、S5R、S6a、S7R、S8a、S10b、S10D 建快照：先抓 `resultAPI.php?pg=<系列>` 全部 card ID，再抓每張詳細頁（可沿用快取 `docs/evidence/pokemon-jp/official-rarity-20261002.json`）。抓取一律另開 PowerShell 視窗（`Start-Process`，背景工作 10 分鐘上限），且抓取期間不要切換 git 分支、不要讀寫同一快取檔；部署用 `git push origin claude/jp-zh-names:main`。
+2. 新 migration：`private.import_pokemon_jp_official_series`（比照 `supabase/migrations/20261001154929_pokemon_jp_metadata_import_batches.sql` 的批次、gated、digest、稽核、碰撞檢查），source `pokemon-card-official-jp`。先在正式庫以「整批執行後拋例外」回滾測試，再套用並寫入 schema_migrations。
+3. 計畫產生器＋gated SQL（仿 `scripts/build-pokemon-jp-official-rarity-plan.mjs` 輸出格式），逐系列匯入→重播。
+4. 中文名依 ADR 0011：`scripts/build-pokemon-jp-from-tw-official-plan.mjs`（台版 S4 等已在 DB 與台灣官方快取中；用 `--name-dictionary`）。注意該函式目前只接受 `tcgdex-ja` 系列，需擴充或另寫。
+其他後續候選：Render 服務區域（使用者到後台確認；Supabase 在 ap-northeast-1，搜尋固定往返約 300–400 ms，暖機 P95 < 800 ms 未達）；M-P 特典與封存無日文名的 S 世代 9 系列（需日本官方頁作為主要來源，屬新決策）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
