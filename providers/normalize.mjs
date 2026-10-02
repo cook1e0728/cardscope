@@ -45,6 +45,8 @@ function rarityEntries(definition){
 function rarityEntry(gameId,value){
   const token=rarityToken(value);
   if(!token)return null;
+  // NONE is No rarity mark (ADR 0010); a source's "None"/"none" means unknown and must not map to it.
+  if(token===rarityToken('NONE')&&String(value).trim()!=='NONE')return null;
   return rarityEntries(rarityDefinition(gameId)).find(entry=>[entry.code,entry.label,...(entry.aliases||[])].some(candidate=>rarityToken(candidate)===token))||null;
 }
 

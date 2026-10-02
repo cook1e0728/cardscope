@@ -32,3 +32,16 @@ test('detail page notes rarities corrected from the official card page', async (
   assert.match(ui, /p\.metadata\?\.rarityBeforeOfficial\?\.rarity&&p\.rarity/);
   assert.match(ui, /依官方修正（原資料為 \$\{e\(p\.metadata\.rarityBeforeOfficial\.rarity\)\}）/);
 });
+
+test('No rarity mark (NONE) is shown as 無標記 on cards and the detail page', async () => {
+  const definition = html.match(/rarityText=r=>[^,]*/)[0];
+  const rarityText = vm.runInNewContext(`(()=>{const ${definition};return rarityText})()`);
+  assert.equal(rarityText('NONE'), '無標記');
+  assert.equal(rarityText('SR'), 'SR');
+  assert.equal(rarityText(null), null);
+  const ui = await readFile(new URL('../ui-enhancements.js', import.meta.url), 'utf8');
+  assert.match(ui, /\.filter\(Boolean\)\.map\(rarityText\)/);
+  const rankings = JSON.parse(await readFile(new URL('../data/rarity-rankings.json', import.meta.url), 'utf8')).systems.pokemon;
+  assert.equal(rankings.canonicalLabels.NONE, '無標記');
+  assert.deepEqual(rankings.highToLow.at(-1), ['NONE']);
+});
