@@ -58,3 +58,12 @@ test('TW set marks must contain the series code as a token, whatever the image n
   assert.match(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [{ ...entry, setMark: 'sv1_f' }]).quarantine, /SET_MARK_MISMATCH/);
   assert.match(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [{ ...entry, listCode: 'SV1S' }]).quarantine, /OFFICIAL_ENTRY_NOT_FOUND/);
 });
+
+import { sameTwName } from '../providers/pokemon-tw-official.mjs';
+
+test('TW names may drop one trailing bracket note, as on the Japanese page', () => {
+  assert.equal(sameTwName('妮莫（過去）', '妮莫'), true);
+  assert.equal(sameTwName('博士的研究(弗圖博士)', '博士的研究(弗圖博士)'), true);
+  assert.equal(sameTwName('妮莫的什麼', '妮莫'), false);
+  assert.equal(sameTwName('妮莫', ''), false);
+});

@@ -70,6 +70,14 @@ export function twNameKey(value) {
     .replace(/\s+/g, '');
 }
 
+// As on the Japanese page (ADR 0007), the official title may drop one bracketed note
+// printed on the card: 妮莫（過去） is titled 妮莫.
+export function sameTwName(databaseName, officialName) {
+  const stored = twNameKey(databaseName), official = twNameKey(officialName);
+  if (!official) return false;
+  return stored === official || (stored.startsWith(official) && /^\([^()]+\)$/.test(stored.slice(official.length)));
+}
+
 /**
  * Decide one TW printing { code, num, name_zh } against the official entries for that set and
  * number: [{ detailId, setMark, number, nameZh, rarityLabels: [...] }]. Every entry must carry
@@ -79,7 +87,7 @@ export function matchOfficialTwRarity(printing, entries) {
   const same = entries.filter(entry => entry.listCode === printing.code && entry.number === printing.num);
   if (!same.length) return { quarantine: 'OFFICIAL_ENTRY_NOT_FOUND' };
   if (same.some(entry => !twSetMarkMatches(entry.setMark, printing.code))) return { quarantine: `SET_MARK_MISMATCH:${same.map(entry => entry.setMark).join('|')}` };
-  if (same.some(entry => twNameKey(entry.nameZh) !== twNameKey(printing.name_zh))) return { quarantine: `NAME_MISMATCH:${same.map(entry => entry.nameZh).join('|')}` };
+  if (same.some(entry => !sameTwName(printing.name_zh, entry.nameZh))) return { quarantine: `NAME_MISMATCH:${same.map(entry => entry.nameZh).join('|')}` };
   const labels = new Set(same.flatMap(entry => entry.rarityLabels || []));
   if (same.some(entry => (entry.rarityLabels || []).length !== 1) || labels.size !== 1) return { quarantine: `RARITY_AMBIGUOUS:${[...labels].join('|') || 'none'}` };
   return { ...officialTwRarityCode([...labels][0]), detailIds: same.map(entry => entry.detailId) };
