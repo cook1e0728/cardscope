@@ -11,6 +11,7 @@ Source archive（TCGdex `c5c0a8a`）的 data-asia/S 中有 9 個日版系列有�
 - 身分已由官方頁確認，Card 直接為 `verified`；Printing 依既有規則（稀有度已知為 `verified`，否則 `incomplete`）。
 - 寫入：新的 private 匯入函式，比照 `import_pokemon_jp_metadata_batch`——每批 ≤100、同一敘述 dry-run 後才寫、digest 重播零異動、追加式稽核、與既有日版列（同系列代碼或同 Provider ID）任何碰撞即中止；系列代碼已有 `tcgdex-ja` 系列時一律拒絕。
 - 中文名之後依 ADR 0011（台灣官方同卡號，須通過對齊檢查），不在匯入時填。
+- 實作（2026-10-03）：系列的日文名與日文發售日取自 Source archive 的系列檔（`data-asia/S/<系列>.ts` 的 `name.ja`、`releaseDate.ja`；卡片層沒有日文名，系列層有），依據記在 series metadata `seriesNameBasis`。卡數以官方系列清單為準；官方清單可能漏列個別卡（先前 SV6a-092 的例子），漏列者不補、不猜。函式 `private.import_pokemon_jp_official_series`（migration `20261003080000`），證據為整個系列的官方頁快取與每系列 evidenceHash。
 
 ## Considered Options
 
