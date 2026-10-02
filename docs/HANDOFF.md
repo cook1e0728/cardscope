@@ -113,6 +113,13 @@
 - 抓取 SV11B 254、SV11W 254、SVK 50 詳細頁（另開視窗，約 20 分鐘）。對齊：SV11B、SV11W 各 174 筆已有值全部一致 → 寫入中文名 64＋77，重播零異動，兩系列 174/174 皆有中文名；SVK 29 筆中 28 筆不一致（台版 SVK 卡號排列不同，如 006 夢幻ex≠怒鸚哥ex）→ 整系列不採用。日版無中文名 172→31（SVK 14 劍盾再錄、SVLS 5、SVLN 4、基本能量 8）。
 - 觀察：`tcg_cards.rarity_tier` 全站與 `tcg_rarities` 不一致（美版 17,140 筆等），伺服器排序未使用此欄（用 rarity-rankings.json），未處理。
 
+### 依序執行 12：日版劍盾（S）世代匯入（2026-10-03，進行中）
+
+- 依主方案「日版全系列」：Source archive `tcgdex/cards-database` `c5c0a8a` 的 data-asia/S 中有日文名的 14 系列（S5I 91、S6H 95、S6K 95、S7D 90、S8 129、S8b 285、S9 127、S9a 93、S10P 88、S10a 99、S11 127、S11a 94、S12 125、S12a 258，共 1,696 張）。S4、S4a、S5a、S5R、S6a、S7R、S8a、S10b、S10D 封存無日文名，跳過；SC*／SI 等為中文版商品，不屬日版。
+- 流程 `scripts/import-pokemon-jp-series.sh <SET>`（`CARDSCOPE_WORK` 指定含封存 checkout、`existing-jp-rows.json`、`s-observed-at.txt` 的工作夾）：快照→匯入（≤100 一次、>100 依 ADR 0005 分批，皆 gated）→重播→enrich 計畫（台／日指紋須與正式庫相同）→gated enrich（`scripts/emit-pokemon-jp-enrich-sql.mjs`）→重播→ADR 0006 升級。可重跑（已匯入批次以 dry-run replay 視為完成）。證據 `docs/evidence/pokemon-jp/s-era/`（現有日版列只存一份 `existing-jp-rows-20261003.json`，快照內以檔名參照）。
+- 已完成：S10P 88（連結 67、推導 20，87 有中文名，verified 67）、S5I 91（70／21，91，70）、S8 129（2 批；100／25，125，100）；皆重播零異動。
+- 之後：其餘 11 系列；全部完成後抓這些系列的日本官方頁，依 ADR 0007–0009 補／修稀有度並升級待核卡。
+
 下一個安全起點：無指定項目。後續候選：SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
