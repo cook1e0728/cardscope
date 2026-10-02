@@ -67,3 +67,12 @@ test('TW names may drop one trailing bracket note, as on the Japanese page', () 
   assert.equal(sameTwName('妮莫的什麼', '妮莫'), false);
   assert.equal(sameTwName('妮莫', ''), false);
 });
+
+const statusMigration = await (await import('node:fs/promises')).readFile(new URL('../supabase/migrations/20261002160000_pokemon_tw_printing_status.sql', import.meta.url), 'utf8');
+
+test('TW printing status promotion is upgrade-only and needs a verified card with a known rarity', () => {
+  assert.match(statusMigration, /p\.data_status = 'incomplete' and c\.data_status = 'verified'/);
+  assert.match(statusMigration, /p\.rarity_code is not null and c\.rarity is not distinct from p\.rarity/);
+  assert.match(statusMigration, /limit 100/);
+  assert.match(statusMigration, /revoke all on function private\.promote_pokemon_tw_printing_status\(text, text, boolean\) from public, anon, authenticated/);
+});

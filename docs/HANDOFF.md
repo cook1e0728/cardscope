@@ -101,7 +101,12 @@
 - 最終：tw-official 6,465 筆（106 批＋106 重播，零異動）、jp-via-tw 162 筆（6＋6）。台版 Printing verified 6,465（NONE 2,512）、incomplete 971（其中 169 空值＋802 筆先前即有稀有度卻為 incomplete 的既有狀態）；日版 verified 2,781（NONE 144）、incomplete 88（牌組 SVK／SVLN／SVLS，無台版連結）。日台已連結配對稀有度不一致 0；Card／Printing 不一致 0；美版 20,635、遊戲王、航海王不變。
 - 台版仍空值 169：SV-P 特典 85（系列標記 PROMO.MARK、卡號格式不同）、基本能量 79（官方無卡號）、SP5 3、S8a 1、S8b 1。
 
-下一個安全起點：無指定項目。後續候選：台版 802 筆有稀有度卻為 incomplete 的狀態查明；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+### 依序執行 10：台版既有稀有度的狀態修正（2026-10-02）
+
+- 802 筆台版 Printing 有稀有度、Card verified，卻是 incomplete：來源是 9 月 TCGdex enrichment 只填稀有度未更新狀態（SV8、S11、SV9、SV10、S12、S10a、S11a、S10P、SV9a、SV8a、SV6a、SC1a）。其中 298 筆所在系列有台灣官方證據，與 TCGdex 值 298/298 一致。
+- Migration `20261002160000_pokemon_tw_printing_status`（`private.promote_pokemon_tw_printing_status`，md5 `34c2b38a…`，只升不降、每次 ≤100、稽核 kind 'status'；先以 SV8 回滾測試）已套用。13 次呼叫升級 802 筆，續呼叫皆 0。台版現為 verified 7,267、incomplete 169（全為空值）。Node 263/263。
+
+下一個安全起點：無指定項目。後續候選：SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
