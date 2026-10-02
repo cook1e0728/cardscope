@@ -1,0 +1,1789 @@
+{
+  "planVersion": 1,
+  "source": "tcgdex-ja",
+  "seriesProviderId": "SM2p",
+  "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+  "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+  "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+  "sourceObservedAt": "2026-10-02T15:59:00.000Z",
+  "series": {
+    "id": "pokemon-tcgdex-ja-sm2p",
+    "provider_id": "SM2p",
+    "name_ja": "新たなる試練の向こう",
+    "release_date": "2017-04-21",
+    "source_url": "https://api.tcgdex.net/v2/ja/sets/SM2p",
+    "metadata": {
+      "sourceEvidence": {
+        "url": "https://api.tcgdex.net/v2/ja/sets/SM2p",
+        "urlType": "derived-provider-endpoint",
+        "observedAt": "2026-10-02T15:59:00.000Z",
+        "retrievedVia": "github-archive",
+        "archive": {
+          "repository": "tcgdex/cards-database",
+          "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+          "path": "data-asia/SM/SM2p.ts"
+        }
+      },
+      "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+      "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+      "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+    }
+  },
+  "cards": [
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-001",
+      "provider_id": "SM2p-001",
+      "official_card_number": "001",
+      "name_ja": "マダツボミ",
+      "rarity_code": null,
+      "search_text": "マダツボミ 001 SM2p-001 sm2p001",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-001",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-001",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-001",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/001.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-002",
+      "provider_id": "SM2p-002",
+      "official_card_number": "002",
+      "name_ja": "ウツドン",
+      "rarity_code": null,
+      "search_text": "ウツドン 002 SM2p-002 sm2p002",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-002",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-002",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-002",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/002.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-003",
+      "provider_id": "SM2p-003",
+      "official_card_number": "003",
+      "name_ja": "ウツボット",
+      "rarity_code": null,
+      "search_text": "ウツボット 003 SM2p-003 sm2p003",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-003",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-003",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-003",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/003.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-004",
+      "provider_id": "SM2p-004",
+      "official_card_number": "004",
+      "name_ja": "レディバ",
+      "rarity_code": null,
+      "search_text": "レディバ 004 SM2p-004 sm2p004",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-004",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-004",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-004",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/004.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-005",
+      "provider_id": "SM2p-005",
+      "official_card_number": "005",
+      "name_ja": "レディアン",
+      "rarity_code": null,
+      "search_text": "レディアン 005 SM2p-005 sm2p005",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-005",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-005",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-005",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/005.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-006",
+      "provider_id": "SM2p-006",
+      "official_card_number": "006",
+      "name_ja": "カプ・ブルル",
+      "rarity_code": null,
+      "search_text": "カプ・ブルル 006 SM2p-006 sm2p006",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-006",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-006",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-006",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/006.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-007",
+      "provider_id": "SM2p-007",
+      "official_card_number": "007",
+      "name_ja": "カプ・ブルルGX",
+      "rarity_code": "RR",
+      "search_text": "カプ・ブルルGX 007 SM2p-007 sm2p007",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-007",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-007",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-007",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/007.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-008",
+      "provider_id": "SM2p-008",
+      "official_card_number": "008",
+      "name_ja": "ヤトウモリ",
+      "rarity_code": null,
+      "search_text": "ヤトウモリ 008 SM2p-008 sm2p008",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-008",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-008",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-008",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/008.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-009",
+      "provider_id": "SM2p-009",
+      "official_card_number": "009",
+      "name_ja": "エンニュート",
+      "rarity_code": null,
+      "search_text": "エンニュート 009 SM2p-009 sm2p009",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-009",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-009",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-009",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/009.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-010",
+      "provider_id": "SM2p-010",
+      "official_card_number": "010",
+      "name_ja": "エンニュートGX",
+      "rarity_code": "RR",
+      "search_text": "エンニュートGX 010 SM2p-010 sm2p010",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-010",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-010",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-010",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/010.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-011",
+      "provider_id": "SM2p-011",
+      "official_card_number": "011",
+      "name_ja": "アローラサンド",
+      "rarity_code": null,
+      "search_text": "アローラサンド 011 SM2p-011 sm2p011",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-011",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-011",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-011",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/011.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-012",
+      "provider_id": "SM2p-012",
+      "official_card_number": "012",
+      "name_ja": "アローラサンドパン",
+      "rarity_code": null,
+      "search_text": "アローラサンドパン 012 SM2p-012 sm2p012",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-012",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-012",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-012",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/012.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-013",
+      "provider_id": "SM2p-013",
+      "official_card_number": "013",
+      "name_ja": "アローラロコン",
+      "rarity_code": null,
+      "search_text": "アローラロコン 013 SM2p-013 sm2p013",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-013",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-013",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-013",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/013.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-014",
+      "provider_id": "SM2p-014",
+      "official_card_number": "014",
+      "name_ja": "アローラキュウコン",
+      "rarity_code": null,
+      "search_text": "アローラキュウコン 014 SM2p-014 sm2p014",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-014",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-014",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-014",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/014.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-015",
+      "provider_id": "SM2p-015",
+      "official_card_number": "015",
+      "name_ja": "ホエルコ",
+      "rarity_code": null,
+      "search_text": "ホエルコ 015 SM2p-015 sm2p015",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-015",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-015",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-015",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/015.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-016",
+      "provider_id": "SM2p-016",
+      "official_card_number": "016",
+      "name_ja": "ホエルオー",
+      "rarity_code": null,
+      "search_text": "ホエルオー 016 SM2p-016 sm2p016",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-016",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-016",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-016",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/016.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-017",
+      "provider_id": "SM2p-017",
+      "official_card_number": "017",
+      "name_ja": "ヨワシ",
+      "rarity_code": null,
+      "search_text": "ヨワシ 017 SM2p-017 sm2p017",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-017",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-017",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-017",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/017.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-018",
+      "provider_id": "SM2p-018",
+      "official_card_number": "018",
+      "name_ja": "カプ・レヒレGX",
+      "rarity_code": "RR",
+      "search_text": "カプ・レヒレGX 018 SM2p-018 sm2p018",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-018",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-018",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-018",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/018.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-019",
+      "provider_id": "SM2p-019",
+      "official_card_number": "019",
+      "name_ja": "エレブー",
+      "rarity_code": null,
+      "search_text": "エレブー 019 SM2p-019 sm2p019",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-019",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-019",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-019",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/019.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-020",
+      "provider_id": "SM2p-020",
+      "official_card_number": "020",
+      "name_ja": "エレキブル",
+      "rarity_code": null,
+      "search_text": "エレキブル 020 SM2p-020 sm2p020",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-020",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-020",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-020",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/020.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-021",
+      "provider_id": "SM2p-021",
+      "official_card_number": "021",
+      "name_ja": "カプ・コケコ",
+      "rarity_code": null,
+      "search_text": "カプ・コケコ 021 SM2p-021 sm2p021",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-021",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-021",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-021",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/021.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-022",
+      "provider_id": "SM2p-022",
+      "official_card_number": "022",
+      "name_ja": "ヤドン",
+      "rarity_code": null,
+      "search_text": "ヤドン 022 SM2p-022 sm2p022",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-022",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-022",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-022",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/022.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-023",
+      "provider_id": "SM2p-023",
+      "official_card_number": "023",
+      "name_ja": "ヤドキング",
+      "rarity_code": null,
+      "search_text": "ヤドキング 023 SM2p-023 sm2p023",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-023",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-023",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-023",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/023.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-024",
+      "provider_id": "SM2p-024",
+      "official_card_number": "024",
+      "name_ja": "ヤブクロン",
+      "rarity_code": null,
+      "search_text": "ヤブクロン 024 SM2p-024 sm2p024",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-024",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-024",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-024",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/024.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-025",
+      "provider_id": "SM2p-025",
+      "official_card_number": "025",
+      "name_ja": "ダストダス",
+      "rarity_code": null,
+      "search_text": "ダストダス 025 SM2p-025 sm2p025",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-025",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-025",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-025",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/025.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-026",
+      "provider_id": "SM2p-026",
+      "official_card_number": "026",
+      "name_ja": "カプ・テテフ",
+      "rarity_code": null,
+      "search_text": "カプ・テテフ 026 SM2p-026 sm2p026",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-026",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-026",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-026",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/026.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-027",
+      "provider_id": "SM2p-027",
+      "official_card_number": "027",
+      "name_ja": "ワンリキー",
+      "rarity_code": null,
+      "search_text": "ワンリキー 027 SM2p-027 sm2p027",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-027",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-027",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-027",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/027.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-028",
+      "provider_id": "SM2p-028",
+      "official_card_number": "028",
+      "name_ja": "ゴーリキー",
+      "rarity_code": null,
+      "search_text": "ゴーリキー 028 SM2p-028 sm2p028",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-028",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-028",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-028",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/028.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-029",
+      "provider_id": "SM2p-029",
+      "official_card_number": "029",
+      "name_ja": "カイリキーGX",
+      "rarity_code": "RR",
+      "search_text": "カイリキーGX 029 SM2p-029 sm2p029",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-029",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-029",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-029",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/029.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-030",
+      "provider_id": "SM2p-030",
+      "official_card_number": "030",
+      "name_ja": "ルナトーン",
+      "rarity_code": null,
+      "search_text": "ルナトーン 030 SM2p-030 sm2p030",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-030",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-030",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-030",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/030.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-031",
+      "provider_id": "SM2p-031",
+      "official_card_number": "031",
+      "name_ja": "ソルロック",
+      "rarity_code": null,
+      "search_text": "ソルロック 031 SM2p-031 sm2p031",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-031",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-031",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-031",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/031.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-032",
+      "provider_id": "SM2p-032",
+      "official_card_number": "032",
+      "name_ja": "イワンコ",
+      "rarity_code": null,
+      "search_text": "イワンコ 032 SM2p-032 sm2p032",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-032",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-032",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-032",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/032.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-033",
+      "provider_id": "SM2p-033",
+      "official_card_number": "033",
+      "name_ja": "ルガルガン",
+      "rarity_code": null,
+      "search_text": "ルガルガン 033 SM2p-033 sm2p033",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-033",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-033",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-033",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/033.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-034",
+      "provider_id": "SM2p-034",
+      "official_card_number": "034",
+      "name_ja": "ルガルガンGX",
+      "rarity_code": "RR",
+      "search_text": "ルガルガンGX 034 SM2p-034 sm2p034",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-034",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-034",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-034",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/034.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-035",
+      "provider_id": "SM2p-035",
+      "official_card_number": "035",
+      "name_ja": "ヤミカラス",
+      "rarity_code": null,
+      "search_text": "ヤミカラス 035 SM2p-035 sm2p035",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-035",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-035",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-035",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/035.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-036",
+      "provider_id": "SM2p-036",
+      "official_card_number": "036",
+      "name_ja": "ドンカラス",
+      "rarity_code": null,
+      "search_text": "ドンカラス 036 SM2p-036 sm2p036",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-036",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-036",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-036",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/036.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-037",
+      "provider_id": "SM2p-037",
+      "official_card_number": "037",
+      "name_ja": "ニューラ",
+      "rarity_code": null,
+      "search_text": "ニューラ 037 SM2p-037 sm2p037",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-037",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-037",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-037",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/037.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-038",
+      "provider_id": "SM2p-038",
+      "official_card_number": "038",
+      "name_ja": "マニューラ",
+      "rarity_code": null,
+      "search_text": "マニューラ 038 SM2p-038 sm2p038",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-038",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-038",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-038",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/038.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-039",
+      "provider_id": "SM2p-039",
+      "official_card_number": "039",
+      "name_ja": "ヤミラミ",
+      "rarity_code": null,
+      "search_text": "ヤミラミ 039 SM2p-039 sm2p039",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-039",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-039",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-039",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/039.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-040",
+      "provider_id": "SM2p-040",
+      "official_card_number": "040",
+      "name_ja": "ダークライGX",
+      "rarity_code": "RR",
+      "search_text": "ダークライGX 040 SM2p-040 sm2p040",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-040",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-040",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-040",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/040.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-041",
+      "provider_id": "SM2p-041",
+      "official_card_number": "041",
+      "name_ja": "モンメン",
+      "rarity_code": null,
+      "search_text": "モンメン 041 SM2p-041 sm2p041",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-041",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-041",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-041",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/041.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-042",
+      "provider_id": "SM2p-042",
+      "official_card_number": "042",
+      "name_ja": "エルフーン",
+      "rarity_code": null,
+      "search_text": "エルフーン 042 SM2p-042 sm2p042",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-042",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-042",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-042",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/042.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-043",
+      "provider_id": "SM2p-043",
+      "official_card_number": "043",
+      "name_ja": "ネッコアラ",
+      "rarity_code": null,
+      "search_text": "ネッコアラ 043 SM2p-043 sm2p043",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-043",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-043",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-043",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/043.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-044",
+      "provider_id": "SM2p-044",
+      "official_card_number": "044",
+      "name_ja": "あなぬけのヒモ",
+      "rarity_code": null,
+      "search_text": "あなぬけのヒモ 044 SM2p-044 sm2p044",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-044",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-044",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-044",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/044.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-045",
+      "provider_id": "SM2p-045",
+      "official_card_number": "045",
+      "name_ja": "じゃくてんほけん",
+      "rarity_code": null,
+      "search_text": "じゃくてんほけん 045 SM2p-045 sm2p045",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-045",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-045",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-045",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/045.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-046",
+      "provider_id": "SM2p-046",
+      "official_card_number": "046",
+      "name_ja": "ねがいのバトン",
+      "rarity_code": null,
+      "search_text": "ねがいのバトン 046 SM2p-046 sm2p046",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-046",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-046",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-046",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/046.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-047",
+      "provider_id": "SM2p-047",
+      "official_card_number": "047",
+      "name_ja": "アセロラ",
+      "rarity_code": null,
+      "search_text": "アセロラ 047 SM2p-047 sm2p047",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-047",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-047",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-047",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/047.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-048",
+      "provider_id": "SM2p-048",
+      "official_card_number": "048",
+      "name_ja": "マーマネ",
+      "rarity_code": null,
+      "search_text": "マーマネ 048 SM2p-048 sm2p048",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-048",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-048",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-048",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/048.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-049",
+      "provider_id": "SM2p-049",
+      "official_card_number": "049",
+      "name_ja": "ライチ",
+      "rarity_code": null,
+      "search_text": "ライチ 049 SM2p-049 sm2p049",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-049",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-049",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-049",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/049.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-050",
+      "provider_id": "SM2p-050",
+      "official_card_number": "050",
+      "name_ja": "カプ・ブルルGX",
+      "rarity_code": "UR",
+      "search_text": "カプ・ブルルGX 050 SM2p-050 sm2p050",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-050",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-050",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-050",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/050.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-051",
+      "provider_id": "SM2p-051",
+      "official_card_number": "051",
+      "name_ja": "エンニュートGX",
+      "rarity_code": "UR",
+      "search_text": "エンニュートGX 051 SM2p-051 sm2p051",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-051",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-051",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-051",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/051.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-052",
+      "provider_id": "SM2p-052",
+      "official_card_number": "052",
+      "name_ja": "カプ・レヒレGX",
+      "rarity_code": "UR",
+      "search_text": "カプ・レヒレGX 052 SM2p-052 sm2p052",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-052",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-052",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-052",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/052.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-053",
+      "provider_id": "SM2p-053",
+      "official_card_number": "053",
+      "name_ja": "カイリキーGX",
+      "rarity_code": "UR",
+      "search_text": "カイリキーGX 053 SM2p-053 sm2p053",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-053",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-053",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-053",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/053.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-054",
+      "provider_id": "SM2p-054",
+      "official_card_number": "054",
+      "name_ja": "ルガルガンGX",
+      "rarity_code": "UR",
+      "search_text": "ルガルガンGX 054 SM2p-054 sm2p054",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-054",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-054",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-054",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/054.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-055",
+      "provider_id": "SM2p-055",
+      "official_card_number": "055",
+      "name_ja": "ダークライGX",
+      "rarity_code": "UR",
+      "search_text": "ダークライGX 055 SM2p-055 sm2p055",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-055",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-055",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-055",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/055.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-056",
+      "provider_id": "SM2p-056",
+      "official_card_number": "056",
+      "name_ja": "アセロラ",
+      "rarity_code": "UR",
+      "search_text": "アセロラ 056 SM2p-056 sm2p056",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-056",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-056",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-056",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/056.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-057",
+      "provider_id": "SM2p-057",
+      "official_card_number": "057",
+      "name_ja": "マーマネ",
+      "rarity_code": "UR",
+      "search_text": "マーマネ 057 SM2p-057 sm2p057",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-057",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-057",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-057",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/057.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-058",
+      "provider_id": "SM2p-058",
+      "official_card_number": "058",
+      "name_ja": "カプ・ブルルGX",
+      "rarity_code": "HR",
+      "search_text": "カプ・ブルルGX 058 SM2p-058 sm2p058",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-058",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-058",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-058",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/058.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-059",
+      "provider_id": "SM2p-059",
+      "official_card_number": "059",
+      "name_ja": "エンニュートGX",
+      "rarity_code": "HR",
+      "search_text": "エンニュートGX 059 SM2p-059 sm2p059",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-059",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-059",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-059",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/059.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-060",
+      "provider_id": "SM2p-060",
+      "official_card_number": "060",
+      "name_ja": "カプ・レヒレGX",
+      "rarity_code": "HR",
+      "search_text": "カプ・レヒレGX 060 SM2p-060 sm2p060",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-060",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-060",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-060",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/060.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-061",
+      "provider_id": "SM2p-061",
+      "official_card_number": "061",
+      "name_ja": "カイリキーGX",
+      "rarity_code": "HR",
+      "search_text": "カイリキーGX 061 SM2p-061 sm2p061",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-061",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-061",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-061",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/061.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-062",
+      "provider_id": "SM2p-062",
+      "official_card_number": "062",
+      "name_ja": "ルガルガンGX",
+      "rarity_code": "HR",
+      "search_text": "ルガルガンGX 062 SM2p-062 sm2p062",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-062",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-062",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-062",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/062.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-063",
+      "provider_id": "SM2p-063",
+      "official_card_number": "063",
+      "name_ja": "ダークライGX",
+      "rarity_code": "HR",
+      "search_text": "ダークライGX 063 SM2p-063 sm2p063",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-063",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-063",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-063",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/063.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-064",
+      "provider_id": "SM2p-064",
+      "official_card_number": "064",
+      "name_ja": "こだわりハチマキ",
+      "rarity_code": "SR",
+      "search_text": "こだわりハチマキ 064 SM2p-064 sm2p064",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-064",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-064",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-064",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/064.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-sm2p-065",
+      "provider_id": "SM2p-065",
+      "official_card_number": "065",
+      "name_ja": "マルチつけかえ",
+      "rarity_code": "SR",
+      "search_text": "マルチつけかえ 065 SM2p-065 sm2p065",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/SM2p-065",
+      "release_date": "2017-04-21",
+      "metadata": {
+        "tcgdexId": "SM2p-065",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/SM2p-065",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/SM/SM2p/065.ts"
+          }
+        },
+        "manifestHash": "1b62d06780db9fb9cc2bf1b991797eb2b46cb2cd1a7c19ce8d5c8016c175aeb0",
+        "sourceHash": "4282d852232879fc35f2e6b89a9233b42f414e1249f7424b78853c12e52a862a",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    }
+  ]
+}
