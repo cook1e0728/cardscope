@@ -302,7 +302,8 @@ test('configured search merges local exact cards with bounded database matches a
     assert.ok(regional.data.some(card=>card.id==='onepiece-luffy-fixture-canonical-002'));
 
     failSearch=true;
-    const fallback=await call();
+    // A query answered within the last minute is served from the search cache, so the failure path uses one not asked yet.
+    const fallback=await call('JP');
     assert.deepEqual(fallback.data.map(card=>card.id),['onepiece-monkey-d-luffy-op05-119']);
     assert.equal(fallback.meta.databaseSearch,'unavailable');
     assert.equal(fallback.meta.searchScope,'loaded-catalog-only');
@@ -473,7 +474,7 @@ test('repeated searches reuse the loaded catalog instead of re-paging every seri
   }
 });
 
-async function searchWithMock(handler,q){
+async function searchWithMock(handler,q,repeat=1){
   const requests=[];
   const mockSupabase=createServer((req,res)=>{
     const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1),respond=(body,status=200)=>{res.writeHead(status,{'content-type':'application/json'});res.end(JSON.stringify(body))};
@@ -489,8 +490,8 @@ async function searchWithMock(handler,q){
       app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`embed fixture exited (${code??signal})`))});
       app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
     });
-    const response=await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`),body=await response.json();
-    return {body,requests,headers:response.headers};
+    const responses=[];for(let index=0;index<repeat;index++){const response=await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`);responses.push({body:await response.json(),headers:response.headers})}
+    return {...responses[0],requests,responses};
   }finally{
     if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
     await closeHttpServer(mockSupabase);
@@ -541,4 +542,14 @@ test('search uses the one-round-trip database function when it is available',asy
   assert.deepEqual(body.data.map(c=>[c.id,c.printings.map(p=>p.region).sort().join('/')]),[[embedCard.id,'JP/TW']]);
   assert.equal(requests.filter(([table,params])=>(table==='tcg_cards'&&(params.has('or')||params.has('canonical_id')))||(table==='tcg_printings'&&String(params.get('card_id')).includes(embedCard.id))).length,0,'no PostgREST search queries');
   assert.match(headers.get('server-timing')||'',/(^|, )rpc;dur=[0-9]+/);
+});
+
+test('a repeated search within a minute is answered from the search cache',async()=>{
+  const {requests,responses}=await searchWithMock((table,params,respond)=>{
+    if(table==='search_cards_with_siblings')return respond({hits:[{...embedCard,printings:[embedPrinting]}],siblings:[]});
+    return respond([]);
+  },'測試獸',2);
+  assert.deepEqual(responses[1].body,responses[0].body);
+  assert.match(responses[1].headers.get('server-timing')||'',/cache;desc="hit"/);
+  assert.equal(requests.filter(([table])=>table==='search_cards_with_siblings').length,1);
 });
