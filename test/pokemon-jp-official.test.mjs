@@ -48,3 +48,23 @@ test('official rarity migration fills nulls only, rechecks identity, audits appe
   assert.match(migration, /catalog_jp_rarity_audit_no_change[\s\S]*before update or delete/);
   assert.match(migration, /errcode = 'CJ005'/);
 });
+
+const correction = await readFile(new URL('../supabase/migrations/20261002110000_pokemon_jp_official_correction_and_identity.sql', import.meta.url), 'utf8');
+
+test('official correction keeps the old value and only moves rows still at the planned old value', () => {
+  assert.match(correction, /'rarityBeforeOfficial', jsonb_build_object\('rarity', p\.rarity/);
+  assert.match(correction, /where p\.id = f\.printing_id and p\.rarity_code = f\.from_rarity/);
+  assert.match(correction, /'printing-moved'/);
+  assert.match(correction, /'no-change-planned'/);
+  assert.match(correction, /mode text not null default 'fill' check \(mode in \('fill', 'correct'\)\)/);
+});
+
+test('official identity promotion is upgrade-only and needs one printing with the official number', () => {
+  assert.match(correction, /where c\.id = pl\.card_id and c\.data_status = 'pending'/);
+  assert.match(correction, /'printing-count'/);
+  assert.match(correction, /p\.local_card_number = pl\.number\) then 'number'/);
+  assert.match(correction, /'identityBasis', 'pokemon-card-official-jp'/);
+  for (const fn of ['correct_pokemon_jp_official_rarity', 'promote_pokemon_jp_official_identity']) {
+    assert.match(correction, new RegExp(`revoke all on function private\.${fn}\(jsonb, text, boolean\) from public, anon, authenticated`));
+  }
+});
