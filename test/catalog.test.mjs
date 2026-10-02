@@ -489,8 +489,8 @@ async function searchWithMock(handler,q){
       app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`embed fixture exited (${code??signal})`))});
       app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
     });
-    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`)).json();
-    return {body,requests};
+    const response=await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`),body=await response.json();
+    return {body,requests,headers:response.headers};
   }finally{
     if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
     await closeHttpServer(mockSupabase);
@@ -520,4 +520,14 @@ test('search falls back to a plain card select and a printing fetch when the emb
   assert.equal(body.meta.databaseSearch,'available');
   assert.deepEqual(body.data.map(c=>[c.id,c.printings.map(p=>p.region).join('/')]),[[embedCard.id,'TW']]);
   assert.equal(requests.filter(([table,params])=>table==='tcg_cards'&&String(params.get('select')).includes('tcg_printings')).length,1,'the embed is tried once, then dropped for the rest of the search');
+});
+
+test('search reports where its time went in a Server-Timing header',async()=>{
+  const {headers}=await searchWithMock((table,params,respond)=>{
+    if(table==='tcg_cards'&&params.has('or'))return respond([{...embedCard,printings:[embedPrinting]}]);
+    if(table==='tcg_cards'&&params.has('canonical_id'))return respond([{...embedCard,printings:[embedPrinting]}]);
+    return respond([]);
+  },'測試獸');
+  const timing=headers.get('server-timing')||'';
+  for(const name of ['catalog','db','names','siblings','total'])assert.match(timing,new RegExp('(^|, )'+name+';dur=[0-9]+'),name);
 });
