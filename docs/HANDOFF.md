@@ -82,6 +82,9 @@
 - Migration（皆先在正式庫整批回滾測試）：`20261002095027_pokemon_jp_official_rarity`（fill，函式 md5 `20ab149b…`）、`20261002110000_pokemon_jp_official_correction_and_identity`（correct＋identity，md5 `1f7e85b1…`／`978aea3d…`；以本機工具執行並寫入 schema_migrations）。
 - 第一批寫入（官方頁 900 頁時的快取）：fill 414 筆（20 批）、correct 13 筆（7 批）、identity 326 張（20 批），全部重播零異動（稽核 fill 20+20、correct 7+7、status 20）。結果：日版 Card verified 2,352／pending 517；Printing verified 2,139、incomplete 213、pending 517；稀有度空值 707→293；Card／Printing 稀有度不一致 0。寶可夢台版 7,436、美版 20,635 不變。
 - 隔離：官方頁無圖示 186、日文名不一致 5（官方標題沒有括號人名，如「ボスの指令」vs「ボスの指令（ゲーチス）」，未放寬規則）、SV2P-099 找不到官方頁。
+- 第二、三批（增量，快取 1,889 頁後）：fill 1＋3、correct 52＋1、identity 393＋4，全部重播零異動。使用者同意兩項：名稱比對允許「官方標題＋一組全形括號說明」（如「ボスの指令（ゲーチス）」，ADR 0007 已更新）；詳細頁標示「依官方修正（原資料為 X）」。累計：fill 418、correct 66、identity 723；日版 Card verified 2,749／pending 120；Printing verified 2,536、incomplete 213、pending 120；稀有度空值 289。
+- 部署（使用者同意 Q2 即同意部署）：main 快轉 `31ea34f..3bc4fa1`；瀏覽器確認 SV6a-080 稀有度欄顯示「SR 日版依官方修正（原資料為 UR）」。
+- 背景工作上限 10 分鐘會中止抓取；改由使用者在自己的 PowerShell 執行抓取指令（App 終端機面板的 shell integration 載入失敗）。
 - 進行中：全部日版 printing 的官方頁抓取（約 2,000 頁、可中斷接續；背景工作有時間上限，被中止時以同一指令重跑即可）。完成後重跑計畫產生器，執行剩餘 fill／correct／identity 並重播，再提交證據快取。
 
 下一個安全起點：接續上述抓取與寫入。其餘後續候選：Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
