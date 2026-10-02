@@ -82,3 +82,13 @@ test('TW promos match by the set printed after the slash instead of the generic 
   assert.deepEqual(matchOfficialTwRarity({ code: 'SV-P', num: '001', name_zh: '皮卡丘' }, [promo]), { rarity: 'NONE', detailIds: ['7800'] });
   assert.match(matchOfficialTwRarity({ code: 'SV-P', num: '001', name_zh: '皮卡丘' }, [{ ...promo, total: 'S-P' }]).quarantine, /SET_MARK_MISMATCH/);
 });
+
+const sameNumberMigration = await (await import('node:fs/promises')).readFile(new URL('../supabase/migrations/20261003000000_pokemon_jp_from_tw_official.sql', import.meta.url), 'utf8');
+
+test('JP fill from the TW official same-number card is fill-only and rejects conflicts', () => {
+  assert.match(sameNumberMigration, /'name-conflict'/);
+  assert.match(sameNumberMigration, /'printing-conflict'/);
+  assert.match(sameNumberMigration, /pl\.name_zh is not null and c\.name_zh is null/);
+  assert.match(sameNumberMigration, /pl\.rarity is not null and p\.rarity_code is null/);
+  assert.match(sameNumberMigration, /'nameZhBasis', 'tw-official-same-number'/);
+});
