@@ -67,13 +67,15 @@
 
 - 本機 `.claude/settings.local.json`（全域 gitignore）新增 `Bash(git checkout main)`、`Bash(git checkout claude/jp-zh-names)`、`Bash(git merge --ff-only claude/jp-zh-names)`，經使用者指示；串成一行的指令不會套用這些規則，需分開執行。
 
-### 依序執行 7：搜尋少一次 DB 來回（2026-10-02，程式，未部署）
+### 依序執行 7：搜尋少一次 DB 來回（2026-10-02，已部署）
 
 - 本機量測（publishable key 打 PostgREST）：空請求約 0.28 秒、卡片 ilike 約 0.4 秒，同一請求嵌入 printing 幾乎不增加時間。匿名金鑰受 RLS 限制讀不到資料，無法在本機以正式資料驗證嵌入。
 - `searchCatalogDatabase` 的卡片查詢（名稱、search_text、系列 fallback、同作品層）改為嵌入 `tcg_printings!tcg_printings_card_id_fkey(...)`，省掉最後的 printing 請求；嵌入被拒時記錄錯誤、改用原 select 並分開抓 printing（與舊行為相同）。新增 2 個測試（嵌入成功時零 printing 請求、嵌入失敗時退回且結果不變）。Node 全套 244/244。
-- 部署後須確認：Render log 沒有 `search printing embed failed`；量測同上 4 個查詢，與執行 6 的部署後數字比較。
+- 部署（經使用者確認）：main 快轉 `1771e15..31ea34f`。GitHub 沒有 Render 部署狀態可查，以健康檢查連續 2 分鐘正常判斷切換完成；新實例首次搜尋（噴火龍 4.7 秒）顯示快取重建，符合新版上線。
+- 正確性：`火箭隊的超夢` 4 筆、`モモワロウ` 7 筆、`ナイトワンダラー`（系列 fallback）40 筆，全部 `databaseSearch=available`、無缺 printing 的卡，日台 printing 合併正常（如 SV10-039 JP RR／TW RR）。
+- 延遲（連續 3 次，秒；括號為執行 6 部署後）：噴火龍 4.69/1.41/1.32（3.92/1.26/1.67）；モモワロウ 1.32/0.90/0.91（1.91/1.47/1.46）；火箭隊的超夢 1.05/1.06/1.13（1.92/1.25/1.23）；Pikachu 1.59/1.29/1.23（1.17/1.11/2.06）。多數查詢再降約 0.1–0.5 秒；若嵌入失敗走退回路徑會多一次失敗請求而變慢，實測變快，推斷嵌入有效，但未能直接查看 Render log 確認沒有 `search printing embed failed`。
 
-下一個安全起點：取得使用者確認後快轉 main 部署執行 7 並驗證。其餘後續候選：SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+下一個安全起點：無指定項目。其餘後續候選：Render log 抽查上述訊息；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
