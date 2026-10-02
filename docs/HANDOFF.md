@@ -95,6 +95,8 @@
 - 決策（使用者授權照建議）：ADR 0010——台版稀有度取自台灣官方稀有度篩選、身分以詳細頁系列標記＋卡號＋中文名（去 Source name markup）核對、同卡號多版本須一致；官方「無標記」存為新代碼 `NONE`（顯示「無標記」、排序最低）；日版官方頁無圖示且已連結同系列同卡號台版、台版已有台灣官方值時，日版沿用。詞彙表 No rarity mark 已更新。記憶：之後決策直接照建議執行。
 - 程式：`providers/pokemon-tw-official.mjs`、`scripts/fetch-pokemon-tw-official-rarity.mjs`（三階段：全系列稀有度清單→各系列清單→詳細頁；`--max-requests` 可分段）、`scripts/build-pokemon-tw-official-rarity-plan.mjs`（tw-official／jp-via-tw）。`normalize.mjs` 防止來源字串 `None` 被當成 NONE。前端 `rarityText` 把 NONE 顯示為「無標記」（尚未部署）。Node 260/260。
 - Migration `20261002140000_pokemon_tw_official_rarity`（NONE tier 27、`private.catalog_official_rarity_audit`、`private.fill_pokemon_official_rarity_tw` md5 `d124aecd…`）：先在正式庫以 SV8a-001 回滾測試（日版在台版前被拒、錯值被拒、台／日填入與重播零異動），已套用並寫入 schema_migrations；尚未寫入任何稀有度。
+- 稀有度清單 22 種完成：14,582 張、無任何一張同時出現在兩個清單；無標記 6,273。抽查一般擴充包 S11 無標記為 0，確認「無標記」不是舊系列的預設值。官方系列標記圖檔名不一致（`SV6a_F`、`sv1a_f`、`SV2a F@4x`），比對前去掉後綴並不分大小寫（`twSetMarkKey`）。SV-P 特典卡系列標記為 `PROMO.MARK`、卡號格式不同，94 筆隔離。
+- 第一批台版寫入（SV1a／SV1S／SV1V／SV2a／SV2D／SV2P／SV3／SV3a）：805 筆、11 批，重播零異動，皆升 verified。SV2a 台版分布與日版依日本官方修正後完全相同（C66 U62 R25 AR18 SR16 RR12 SAR8）。jp-via-tw 暫 0（SV8a 台版詳細頁未完成；牌組 88 筆無台版連結）。另發現既有台版有稀有度的 802 筆狀態為 incomplete（先前即存在，未處理）。
 - 抓取：由 Claude 以 `Start-Process` 開獨立 PowerShell 視窗（標題 CardScope TW official fetch，使用者授權）執行，快取 `docs/evidence/pokemon-tw/official-rarity-20261002.json` 可接續；預估約 1 萬次請求、8–9 小時。中斷後以同一指令重跑。
 
 下一個安全起點：抓取完成（或 SV 世代先完成）後，以 `build-pokemon-tw-official-rarity-plan.mjs` 產生 tw-official 計畫寫入並重播，重新匯出後再產生 jp-via-tw；最後部署 NONE 顯示。其餘後續候選：SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。

@@ -50,6 +50,12 @@ export function parseOfficialTwDetail(html) {
   return { nameZh: nameZh || null, setMark, number: numbers?.[1] ?? null, total: numbers?.[2] ?? null };
 }
 
+// The set mark comes from the mark image file name, which is written inconsistently
+// (SV6a_F.png, sv1a_f.png, "SV2a F@4x.png"); compare it without that suffix and case.
+export function twSetMarkKey(mark) {
+  return String(mark ?? '').replace(/(?:[ _]f)?(?:@\dx)?$/i, '').toUpperCase();
+}
+
 // Compare names after dropping Source name markup (<火箭隊的>, trailing [支援者], zero-width
 // characters) and spaces; nothing else is forgiven.
 export function twNameKey(value) {
@@ -66,7 +72,7 @@ export function twNameKey(value) {
  * exactly one rarity label and all must agree.
  */
 export function matchOfficialTwRarity(printing, entries) {
-  const same = entries.filter(entry => entry.setMark === printing.code && entry.number === printing.num);
+  const same = entries.filter(entry => twSetMarkKey(entry.setMark) === twSetMarkKey(printing.code) && entry.number === printing.num);
   if (!same.length) return { quarantine: 'OFFICIAL_ENTRY_NOT_FOUND' };
   if (same.some(entry => twNameKey(entry.nameZh) !== twNameKey(printing.name_zh))) return { quarantine: `NAME_MISMATCH:${same.map(entry => entry.nameZh).join('|')}` };
   const labels = new Set(same.flatMap(entry => entry.rarityLabels || []));

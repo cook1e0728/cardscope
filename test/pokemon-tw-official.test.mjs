@@ -46,3 +46,11 @@ test('a source "None" stays unknown; only the exact code NONE is No rarity mark'
   assert.equal(normalizeRarityValue('pokemon', 'NONE').code, 'NONE');
   assert.equal(normalizeRarityValue('pokemon', '無標記').code, 'NONE');
 });
+
+import { twSetMarkKey } from '../providers/pokemon-tw-official.mjs';
+
+test('TW set marks compare without the image-name suffix or case', () => {
+  for (const mark of ['SV6a', 'sv6a_f', 'SV6a F@4x', 'SV6a_F']) assert.equal(twSetMarkKey(mark), 'SV6A');
+  assert.notEqual(twSetMarkKey('SV6'), twSetMarkKey('SV6a'));
+  assert.equal(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [{ detailId: '1', setMark: 'sv1a_f', number: '001', nameZh: '熱帶龍', rarityLabels: ['C'] }]).rarity, 'C');
+});
