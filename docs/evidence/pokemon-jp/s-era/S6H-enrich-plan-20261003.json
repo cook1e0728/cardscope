@@ -1,0 +1,2616 @@
+{
+  "plan": {
+    "planVersion": 1,
+    "kind": "jp-enrich",
+    "source": "tcgdex-ja",
+    "seriesProviderId": "S6H",
+    "seriesId": "pokemon-tcgdex-ja-s6h",
+    "evidenceHash": "aa90456c8f74d02eeeee32306efaefd7118e236d2b5e84a6652bbbdcab40abc6",
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "series": {
+      "name_zh": "銀白戰槍",
+      "twSeriesId": "pokemon-tcgdex-tw-s6h"
+    },
+    "cards": [
+      {
+        "id": "pokemon-tcgdex-ja-s6h-001",
+        "name_ja": "ユキカブリ",
+        "link": "pokemon-tcgdex-tw-s6h-001",
+        "name_zh": "雪笠怪",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-002",
+        "name_ja": "ユキノオー",
+        "link": "pokemon-tcgdex-tw-s6h-002",
+        "name_zh": "暴雪王",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-003",
+        "name_ja": "イシズマイ",
+        "link": "pokemon-tcgdex-tw-s6h-003",
+        "name_zh": "石居蟹",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-004",
+        "name_ja": "イワパレス",
+        "link": "pokemon-tcgdex-tw-s6h-004",
+        "name_zh": "岩殿居蟹",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-005",
+        "name_ja": "シキジカ",
+        "link": "pokemon-tcgdex-tw-s6h-005",
+        "name_zh": "四季鹿",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-006",
+        "name_ja": "メブキジカ",
+        "link": "pokemon-tcgdex-tw-s6h-006",
+        "name_zh": "萌芽鹿",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-007",
+        "name_ja": "アマカジ",
+        "link": "pokemon-tcgdex-tw-s6h-007",
+        "name_zh": "甜竹竹",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-008",
+        "name_ja": "アママイコ",
+        "link": "pokemon-tcgdex-tw-s6h-008",
+        "name_zh": "甜舞妮",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-009",
+        "name_ja": "アマージョ",
+        "link": "pokemon-tcgdex-tw-s6h-009",
+        "name_zh": "甜冷美后",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-010",
+        "name_ja": "ザルード",
+        "link": "pokemon-tcgdex-tw-s6h-010",
+        "name_zh": "薩戮德",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-011",
+        "name_ja": "ポワルン たいようのすがた",
+        "link": "pokemon-tcgdex-tw-s6h-011",
+        "name_zh": "飄浮泡泡 太陽的樣子",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-012",
+        "name_ja": "シシコ",
+        "link": "pokemon-tcgdex-tw-s6h-012",
+        "name_zh": "小獅獅",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-013",
+        "name_ja": "カエンジシ",
+        "link": "pokemon-tcgdex-tw-s6h-013",
+        "name_zh": "火炎獅",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-014",
+        "name_ja": "ボルケニオンV",
+        "link": "pokemon-tcgdex-tw-s6h-014",
+        "name_zh": "波爾凱尼恩V",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-015",
+        "name_ja": "ヒバニー",
+        "link": "pokemon-tcgdex-tw-s6h-015",
+        "name_zh": "炎兔兒",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-016",
+        "name_ja": "ラビフット",
+        "link": "pokemon-tcgdex-tw-s6h-016",
+        "name_zh": "騰蹴小將",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-017",
+        "name_ja": "エースバーン",
+        "link": "pokemon-tcgdex-tw-s6h-017",
+        "name_zh": "閃焰王牌",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-018",
+        "name_ja": "ラプラス",
+        "link": "pokemon-tcgdex-tw-s6h-018",
+        "name_zh": "拉普拉斯",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-019",
+        "name_ja": "ポワルン ゆきぐものすがた",
+        "link": "pokemon-tcgdex-tw-s6h-019",
+        "name_zh": "飄浮泡泡 雪雲的樣子",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-020",
+        "name_ja": "ユキワラシ",
+        "link": "pokemon-tcgdex-tw-s6h-020",
+        "name_zh": "雪童子",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-021",
+        "name_ja": "ユキメノコ",
+        "link": "pokemon-tcgdex-tw-s6h-021",
+        "name_zh": "雪妖女",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-022",
+        "name_ja": "タマザラシ",
+        "link": "pokemon-tcgdex-tw-s6h-022",
+        "name_zh": "海豹球",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-023",
+        "name_ja": "トドグラー",
+        "link": "pokemon-tcgdex-tw-s6h-023",
+        "name_zh": "海魔獅",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-024",
+        "name_ja": "トドゼルガ",
+        "link": "pokemon-tcgdex-tw-s6h-024",
+        "name_zh": "帝牙海獅",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-025",
+        "name_ja": "カチコール",
+        "link": "pokemon-tcgdex-tw-s6h-025",
+        "name_zh": "冰寶",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-026",
+        "name_ja": "クレベース",
+        "link": "pokemon-tcgdex-tw-s6h-026",
+        "name_zh": "冰岩怪",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-027",
+        "name_ja": "はくばバドレックスV",
+        "link": "pokemon-tcgdex-tw-s6h-027",
+        "name_zh": "白馬蕾冠王V",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-028",
+        "name_ja": "はくばバドレックスVMAX",
+        "link": "pokemon-tcgdex-tw-s6h-028",
+        "name_zh": "白馬蕾冠王VMAX",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-029",
+        "name_ja": "ガラル ギャロップV",
+        "link": "pokemon-tcgdex-tw-s6h-029",
+        "name_zh": "伽勒爾 烈焰馬V",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-030",
+        "name_ja": "ガラル ヤドン",
+        "link": "pokemon-tcgdex-tw-s6h-030",
+        "name_zh": "伽勒爾 呆呆獸",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-031",
+        "name_ja": "スリープ",
+        "link": "pokemon-tcgdex-tw-s6h-031",
+        "name_zh": "催眠貘",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-032",
+        "name_ja": "スリーパー",
+        "link": "pokemon-tcgdex-tw-s6h-032",
+        "name_zh": "引夢貘人",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-033",
+        "name_ja": "ラルトス",
+        "link": "pokemon-tcgdex-tw-s6h-033",
+        "name_zh": "拉魯拉絲",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-034",
+        "name_ja": "キルリア",
+        "link": "pokemon-tcgdex-tw-s6h-034",
+        "name_zh": "奇魯莉安",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-035",
+        "name_ja": "サーナイト",
+        "link": "pokemon-tcgdex-tw-s6h-035",
+        "name_zh": "沙奈朵",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-036",
+        "name_ja": "カゲボウズ",
+        "link": "pokemon-tcgdex-tw-s6h-036",
+        "name_zh": "怨影娃娃",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-037",
+        "name_ja": "ジュペッタ",
+        "link": "pokemon-tcgdex-tw-s6h-037",
+        "name_zh": "詛咒娃娃",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-038",
+        "name_ja": "ヒポポタス",
+        "link": "pokemon-tcgdex-tw-s6h-038",
+        "name_zh": "沙河馬",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-039",
+        "name_ja": "カバルドン",
+        "link": "pokemon-tcgdex-tw-s6h-039",
+        "name_zh": "河馬獸",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-040",
+        "name_ja": "エルレイド",
+        "link": "pokemon-tcgdex-tw-s6h-040",
+        "name_zh": "艾路雷朵",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-041",
+        "name_ja": "イワンコ",
+        "link": "pokemon-tcgdex-tw-s6h-041",
+        "name_zh": "岩狗狗",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-042",
+        "name_ja": "ルガルガン",
+        "link": "pokemon-tcgdex-tw-s6h-042",
+        "name_zh": "鬃岩狼人",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-043",
+        "name_ja": "サダイジャV",
+        "link": "pokemon-tcgdex-tw-s6h-043",
+        "name_zh": "沙螺蟒V",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-044",
+        "name_ja": "サダイジャVMAX",
+        "link": "pokemon-tcgdex-tw-s6h-044",
+        "name_zh": "沙螺蟒VMAX",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-045",
+        "name_ja": "ガラル ヤドキング",
+        "link": "pokemon-tcgdex-tw-s6h-045",
+        "name_zh": "伽勒爾 呆呆王",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-046",
+        "name_ja": "ハリーセン",
+        "link": "pokemon-tcgdex-tw-s6h-046",
+        "name_zh": "千針魚",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-047",
+        "name_ja": "レパルダスV",
+        "link": "pokemon-tcgdex-tw-s6h-047",
+        "name_zh": "酷豹V",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-048",
+        "name_ja": "ココドラ",
+        "link": "pokemon-tcgdex-tw-s6h-048",
+        "name_zh": "可可多拉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-049",
+        "name_ja": "コドラ",
+        "link": "pokemon-tcgdex-tw-s6h-049",
+        "name_zh": "可多拉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-050",
+        "name_ja": "ボスゴドラ",
+        "link": "pokemon-tcgdex-tw-s6h-050",
+        "name_zh": "波士可多拉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-051",
+        "name_ja": "ケンタロス",
+        "link": "pokemon-tcgdex-tw-s6h-051",
+        "name_zh": "肯泰羅",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-052",
+        "name_ja": "ポリゴン",
+        "link": "pokemon-tcgdex-tw-s6h-052",
+        "name_zh": "多邊獸",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-053",
+        "name_ja": "ポリゴン２",
+        "link": "pokemon-tcgdex-tw-s6h-053",
+        "name_zh": "多邊獸Ⅱ",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-054",
+        "name_ja": "ポリゴンＺ",
+        "link": "pokemon-tcgdex-tw-s6h-054",
+        "name_zh": "多邊獸Ｚ",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-055",
+        "name_ja": "ヒメグマ",
+        "link": "pokemon-tcgdex-tw-s6h-055",
+        "name_zh": "熊寶寶",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-056",
+        "name_ja": "リングマ",
+        "link": "pokemon-tcgdex-tw-s6h-056",
+        "name_zh": "圈圈熊",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-057",
+        "name_ja": "トルネロスV",
+        "link": "pokemon-tcgdex-tw-s6h-057",
+        "name_zh": "龍捲雲V",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-058",
+        "name_ja": "トルネロスVMAX",
+        "link": "pokemon-tcgdex-tw-s6h-058",
+        "name_zh": "龍捲雲VMAX",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-059",
+        "name_ja": "トリミアン",
+        "link": "pokemon-tcgdex-tw-s6h-059",
+        "name_zh": "多麗米亞",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-060",
+        "name_ja": "サバイバルセット",
+        "link": "pokemon-tcgdex-tw-s6h-060",
+        "name_zh": "生存組合",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-061",
+        "name_ja": "いかついメット",
+        "link": "pokemon-tcgdex-tw-s6h-061",
+        "name_zh": "粗硬頭盔",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-062",
+        "name_ja": "いちげきの巻物 貫通の巻",
+        "link": "pokemon-tcgdex-tw-s6h-062",
+        "name_zh": "一擊的卷軸 貫通之卷",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-063",
+        "name_ja": "耐火グローブ",
+        "link": "pokemon-tcgdex-tw-s6h-063",
+        "name_zh": "防火手套",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-064",
+        "name_ja": "ブレイクグローブ",
+        "link": "pokemon-tcgdex-tw-s6h-064",
+        "name_zh": "破壞手套",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-065",
+        "name_ja": "アスナ",
+        "link": "pokemon-tcgdex-tw-s6h-065",
+        "name_zh": "亞莎",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-066",
+        "name_ja": "ドクター",
+        "link": "pokemon-tcgdex-tw-s6h-066",
+        "name_zh": "醫生",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-067",
+        "name_ja": "ピオニー",
+        "link": "pokemon-tcgdex-tw-s6h-067",
+        "name_zh": "皮歐尼",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-068",
+        "name_ja": "メロン",
+        "link": "pokemon-tcgdex-tw-s6h-068",
+        "name_zh": "美蓉",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-069",
+        "name_ja": "頂への雪道",
+        "link": "pokemon-tcgdex-tw-s6h-069",
+        "name_zh": "通頂雪道",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-070",
+        "name_ja": "インパクトエネルギー",
+        "link": "pokemon-tcgdex-tw-s6h-070",
+        "name_zh": "衝擊能量",
+        "basis": "tw-official",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-071",
+        "name_ja": "ボルケニオンV",
+        "link": null,
+        "name_zh": "波爾凱尼恩V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-072",
+        "name_ja": "はくばバドレックスV",
+        "link": null,
+        "name_zh": "白馬蕾冠王V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-073",
+        "name_ja": "はくばバドレックスV",
+        "link": null,
+        "name_zh": "白馬蕾冠王V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-074",
+        "name_ja": "ガラル ギャロップV",
+        "link": null,
+        "name_zh": "伽勒爾 烈焰馬V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-075",
+        "name_ja": "ガラル ギャロップV",
+        "link": null,
+        "name_zh": "伽勒爾 烈焰馬V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-076",
+        "name_ja": "サダイジャV",
+        "link": null,
+        "name_zh": "沙螺蟒V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-077",
+        "name_ja": "レパルダスV",
+        "link": null,
+        "name_zh": "酷豹V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-078",
+        "name_ja": "トルネロスV",
+        "link": null,
+        "name_zh": "龍捲雲V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-079",
+        "name_ja": "トルネロスV",
+        "link": null,
+        "name_zh": "龍捲雲V",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-080",
+        "name_ja": "アスナ",
+        "link": null,
+        "name_zh": "亞莎",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-081",
+        "name_ja": "ドクター",
+        "link": null,
+        "name_zh": "醫生",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-082",
+        "name_ja": "ピオニー",
+        "link": null,
+        "name_zh": "皮歐尼",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-083",
+        "name_ja": "メロン",
+        "link": null,
+        "name_zh": "美蓉",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-084",
+        "name_ja": "はくばバドレックスVMAX",
+        "link": null,
+        "name_zh": "白馬蕾冠王VMAX",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-085",
+        "name_ja": "はくばバドレックスVMAX",
+        "link": null,
+        "name_zh": "白馬蕾冠王VMAX",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-086",
+        "name_ja": "サダイジャVMAX",
+        "link": null,
+        "name_zh": "沙螺蟒VMAX",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-087",
+        "name_ja": "トルネロスVMAX",
+        "link": null,
+        "name_zh": "龍捲雲VMAX",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-088",
+        "name_ja": "アスナ",
+        "link": null,
+        "name_zh": "亞莎",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-089",
+        "name_ja": "ドクター",
+        "link": null,
+        "name_zh": "醫生",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-090",
+        "name_ja": "ピオニー",
+        "link": null,
+        "name_zh": "皮歐尼",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-091",
+        "name_ja": "メロン",
+        "link": null,
+        "name_zh": "美蓉",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-094",
+        "name_ja": "いかついメット",
+        "link": null,
+        "name_zh": "粗硬頭盔",
+        "basis": "derived-same-name",
+        "rarity_code": null
+      }
+    ]
+  },
+  "evidence": {
+    "sourceArchive": {
+      "repository": "tcgdex/cards-database",
+      "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78"
+    },
+    "jpSeries": {
+      "id": "pokemon-tcgdex-ja-s6h",
+      "providerId": "S6H",
+      "nameZh": null
+    },
+    "jpCards": [
+      {
+        "id": "pokemon-tcgdex-ja-s6h-001",
+        "provider_id": "S6H-001",
+        "name_ja": "ユキカブリ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-001",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-002",
+        "provider_id": "S6H-002",
+        "name_ja": "ユキノオー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-002",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-003",
+        "provider_id": "S6H-003",
+        "name_ja": "イシズマイ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-003",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-004",
+        "provider_id": "S6H-004",
+        "name_ja": "イワパレス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-004",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-005",
+        "provider_id": "S6H-005",
+        "name_ja": "シキジカ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-005",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-006",
+        "provider_id": "S6H-006",
+        "name_ja": "メブキジカ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-006",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-007",
+        "provider_id": "S6H-007",
+        "name_ja": "アマカジ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-007",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-008",
+        "provider_id": "S6H-008",
+        "name_ja": "アママイコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-008",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-009",
+        "provider_id": "S6H-009",
+        "name_ja": "アマージョ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-009",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-010",
+        "provider_id": "S6H-010",
+        "name_ja": "ザルード",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-010",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-011",
+        "provider_id": "S6H-011",
+        "name_ja": "ポワルン たいようのすがた",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-011",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-012",
+        "provider_id": "S6H-012",
+        "name_ja": "シシコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-012",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-013",
+        "provider_id": "S6H-013",
+        "name_ja": "カエンジシ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-013",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-014",
+        "provider_id": "S6H-014",
+        "name_ja": "ボルケニオンV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-014",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-015",
+        "provider_id": "S6H-015",
+        "name_ja": "ヒバニー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-015",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-016",
+        "provider_id": "S6H-016",
+        "name_ja": "ラビフット",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-016",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-017",
+        "provider_id": "S6H-017",
+        "name_ja": "エースバーン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-017",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-018",
+        "provider_id": "S6H-018",
+        "name_ja": "ラプラス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-018",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-019",
+        "provider_id": "S6H-019",
+        "name_ja": "ポワルン ゆきぐものすがた",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-019",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-020",
+        "provider_id": "S6H-020",
+        "name_ja": "ユキワラシ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-020",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-021",
+        "provider_id": "S6H-021",
+        "name_ja": "ユキメノコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-021",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-022",
+        "provider_id": "S6H-022",
+        "name_ja": "タマザラシ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-022",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-023",
+        "provider_id": "S6H-023",
+        "name_ja": "トドグラー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-023",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-024",
+        "provider_id": "S6H-024",
+        "name_ja": "トドゼルガ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-024",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-025",
+        "provider_id": "S6H-025",
+        "name_ja": "カチコール",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-025",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-026",
+        "provider_id": "S6H-026",
+        "name_ja": "クレベース",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-026",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-027",
+        "provider_id": "S6H-027",
+        "name_ja": "はくばバドレックスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-027",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-028",
+        "provider_id": "S6H-028",
+        "name_ja": "はくばバドレックスVMAX",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-028",
+        "rarity": "RRR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-029",
+        "provider_id": "S6H-029",
+        "name_ja": "ガラル ギャロップV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-029",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-030",
+        "provider_id": "S6H-030",
+        "name_ja": "ガラル ヤドン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-030",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-031",
+        "provider_id": "S6H-031",
+        "name_ja": "スリープ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-031",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-032",
+        "provider_id": "S6H-032",
+        "name_ja": "スリーパー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-032",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-033",
+        "provider_id": "S6H-033",
+        "name_ja": "ラルトス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-033",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-034",
+        "provider_id": "S6H-034",
+        "name_ja": "キルリア",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-034",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-035",
+        "provider_id": "S6H-035",
+        "name_ja": "サーナイト",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-035",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-036",
+        "provider_id": "S6H-036",
+        "name_ja": "カゲボウズ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-036",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-037",
+        "provider_id": "S6H-037",
+        "name_ja": "ジュペッタ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-037",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-038",
+        "provider_id": "S6H-038",
+        "name_ja": "ヒポポタス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-038",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-039",
+        "provider_id": "S6H-039",
+        "name_ja": "カバルドン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-039",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-040",
+        "provider_id": "S6H-040",
+        "name_ja": "エルレイド",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-040",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-041",
+        "provider_id": "S6H-041",
+        "name_ja": "イワンコ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-041",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-042",
+        "provider_id": "S6H-042",
+        "name_ja": "ルガルガン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-042",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-043",
+        "provider_id": "S6H-043",
+        "name_ja": "サダイジャV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-043",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-044",
+        "provider_id": "S6H-044",
+        "name_ja": "サダイジャVMAX",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-044",
+        "rarity": "RRR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-045",
+        "provider_id": "S6H-045",
+        "name_ja": "ガラル ヤドキング",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-045",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-046",
+        "provider_id": "S6H-046",
+        "name_ja": "ハリーセン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-046",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-047",
+        "provider_id": "S6H-047",
+        "name_ja": "レパルダスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-047",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-048",
+        "provider_id": "S6H-048",
+        "name_ja": "ココドラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-048",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-049",
+        "provider_id": "S6H-049",
+        "name_ja": "コドラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-049",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-050",
+        "provider_id": "S6H-050",
+        "name_ja": "ボスゴドラ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-050",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-051",
+        "provider_id": "S6H-051",
+        "name_ja": "ケンタロス",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-051",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-052",
+        "provider_id": "S6H-052",
+        "name_ja": "ポリゴン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-052",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-053",
+        "provider_id": "S6H-053",
+        "name_ja": "ポリゴン２",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-053",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-054",
+        "provider_id": "S6H-054",
+        "name_ja": "ポリゴンＺ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-054",
+        "rarity": "R"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-055",
+        "provider_id": "S6H-055",
+        "name_ja": "ヒメグマ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-055",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-056",
+        "provider_id": "S6H-056",
+        "name_ja": "リングマ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-056",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-057",
+        "provider_id": "S6H-057",
+        "name_ja": "トルネロスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-057",
+        "rarity": "RR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-058",
+        "provider_id": "S6H-058",
+        "name_ja": "トルネロスVMAX",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-058",
+        "rarity": "RRR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-059",
+        "provider_id": "S6H-059",
+        "name_ja": "トリミアン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-059",
+        "rarity": "C"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-060",
+        "provider_id": "S6H-060",
+        "name_ja": "サバイバルセット",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-060",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-061",
+        "provider_id": "S6H-061",
+        "name_ja": "いかついメット",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-061",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-062",
+        "provider_id": "S6H-062",
+        "name_ja": "いちげきの巻物 貫通の巻",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-062",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-063",
+        "provider_id": "S6H-063",
+        "name_ja": "耐火グローブ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-063",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-064",
+        "provider_id": "S6H-064",
+        "name_ja": "ブレイクグローブ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-064",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-065",
+        "provider_id": "S6H-065",
+        "name_ja": "アスナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-065",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-066",
+        "provider_id": "S6H-066",
+        "name_ja": "ドクター",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-066",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-067",
+        "provider_id": "S6H-067",
+        "name_ja": "ピオニー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-067",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-068",
+        "provider_id": "S6H-068",
+        "name_ja": "メロン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-068",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-069",
+        "provider_id": "S6H-069",
+        "name_ja": "頂への雪道",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-069",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-070",
+        "provider_id": "S6H-070",
+        "name_ja": "インパクトエネルギー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-070",
+        "rarity": "U"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-071",
+        "provider_id": "S6H-071",
+        "name_ja": "ボルケニオンV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-071",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-072",
+        "provider_id": "S6H-072",
+        "name_ja": "はくばバドレックスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-072",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-073",
+        "provider_id": "S6H-073",
+        "name_ja": "はくばバドレックスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-073",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-074",
+        "provider_id": "S6H-074",
+        "name_ja": "ガラル ギャロップV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-074",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-075",
+        "provider_id": "S6H-075",
+        "name_ja": "ガラル ギャロップV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-075",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-076",
+        "provider_id": "S6H-076",
+        "name_ja": "サダイジャV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-076",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-077",
+        "provider_id": "S6H-077",
+        "name_ja": "レパルダスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-077",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-078",
+        "provider_id": "S6H-078",
+        "name_ja": "トルネロスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-078",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-079",
+        "provider_id": "S6H-079",
+        "name_ja": "トルネロスV",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-079",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-080",
+        "provider_id": "S6H-080",
+        "name_ja": "アスナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-080",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-081",
+        "provider_id": "S6H-081",
+        "name_ja": "ドクター",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-081",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-082",
+        "provider_id": "S6H-082",
+        "name_ja": "ピオニー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-082",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-083",
+        "provider_id": "S6H-083",
+        "name_ja": "メロン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-083",
+        "rarity": "UR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-084",
+        "provider_id": "S6H-084",
+        "name_ja": "はくばバドレックスVMAX",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-084",
+        "rarity": "HR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-085",
+        "provider_id": "S6H-085",
+        "name_ja": "はくばバドレックスVMAX",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-085",
+        "rarity": "SR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-086",
+        "provider_id": "S6H-086",
+        "name_ja": "サダイジャVMAX",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-086",
+        "rarity": "HR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-087",
+        "provider_id": "S6H-087",
+        "name_ja": "トルネロスVMAX",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-087",
+        "rarity": "HR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-088",
+        "provider_id": "S6H-088",
+        "name_ja": "アスナ",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-088",
+        "rarity": "HR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-089",
+        "provider_id": "S6H-089",
+        "name_ja": "ドクター",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-089",
+        "rarity": "HR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-090",
+        "provider_id": "S6H-090",
+        "name_ja": "ピオニー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-090",
+        "rarity": "HR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-091",
+        "provider_id": "S6H-091",
+        "name_ja": "メロン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-091",
+        "rarity": "HR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-092",
+        "provider_id": "S6H-092",
+        "name_ja": "ドータクン",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-092",
+        "rarity": "SR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-093",
+        "provider_id": "S6H-093",
+        "name_ja": "おむかえちょうちん",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-093",
+        "rarity": "SR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-094",
+        "provider_id": "S6H-094",
+        "name_ja": "いかついメット",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-094",
+        "rarity": "SR"
+      },
+      {
+        "id": "pokemon-tcgdex-ja-s6h-095",
+        "provider_id": "S6H-095",
+        "name_ja": "基本水エネルギー",
+        "name_zh": null,
+        "canonical_id": "pokemon-tcgdex-ja-s6h-095",
+        "rarity": "SR"
+      }
+    ],
+    "archiveSet": {
+      "zhTw": "銀白戰槍"
+    },
+    "archiveCards": [
+      {
+        "providerId": "S6H-001",
+        "ja": "ユキカブリ",
+        "zhTw": "雪笠怪",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-002",
+        "ja": "ユキノオー",
+        "zhTw": "暴雪王",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-003",
+        "ja": "イシズマイ",
+        "zhTw": "石居蟹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-004",
+        "ja": "イワパレス",
+        "zhTw": "岩殿居蟹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-005",
+        "ja": "シキジカ",
+        "zhTw": "四季鹿",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-006",
+        "ja": "メブキジカ",
+        "zhTw": "萌芽鹿",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-007",
+        "ja": "アマカジ",
+        "zhTw": "甜竹竹",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-008",
+        "ja": "アママイコ",
+        "zhTw": "甜舞妮",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-009",
+        "ja": "アマージョ",
+        "zhTw": "甜冷美后",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-010",
+        "ja": "ザルード",
+        "zhTw": "薩戮德",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-011",
+        "ja": "ポワルン たいようのすがた",
+        "zhTw": "飄浮泡泡 太陽的樣子",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-012",
+        "ja": "シシコ",
+        "zhTw": "小獅獅",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-013",
+        "ja": "カエンジシ",
+        "zhTw": "火炎獅",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-014",
+        "ja": "ボルケニオンV",
+        "zhTw": "波爾凱尼恩V",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "S6H-015",
+        "ja": "ヒバニー",
+        "zhTw": "炎兔兒",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-016",
+        "ja": "ラビフット",
+        "zhTw": "騰蹴小將",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-017",
+        "ja": "エースバーン",
+        "zhTw": "閃焰王牌",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-018",
+        "ja": "ラプラス",
+        "zhTw": "拉普拉斯",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-019",
+        "ja": "ポワルン ゆきぐものすがた",
+        "zhTw": "飄浮泡泡 雪雲的樣子",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-020",
+        "ja": "ユキワラシ",
+        "zhTw": "雪童子",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-021",
+        "ja": "ユキメノコ",
+        "zhTw": "雪妖女",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-022",
+        "ja": "タマザラシ",
+        "zhTw": "海豹球",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-023",
+        "ja": "トドグラー",
+        "zhTw": "海魔獅",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-024",
+        "ja": "トドゼルガ",
+        "zhTw": "帝牙海獅",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-025",
+        "ja": "カチコール",
+        "zhTw": "冰寶",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-026",
+        "ja": "クレベース",
+        "zhTw": "冰岩怪",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-027",
+        "ja": "はくばバドレックスV",
+        "zhTw": "白馬蕾冠王V",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "S6H-028",
+        "ja": "はくばバドレックスVMAX",
+        "zhTw": "白馬蕾冠王VMAX",
+        "rarity": "Triple Rare"
+      },
+      {
+        "providerId": "S6H-029",
+        "ja": "ガラル ギャロップV",
+        "zhTw": "伽勒爾 烈焰馬V",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "S6H-030",
+        "ja": "ガラル ヤドン",
+        "zhTw": "伽勒爾 呆呆獸",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-031",
+        "ja": "スリープ",
+        "zhTw": "催眠貘",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-032",
+        "ja": "スリーパー",
+        "zhTw": "引夢貘人",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-033",
+        "ja": "ラルトス",
+        "zhTw": "拉魯拉絲",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-034",
+        "ja": "キルリア",
+        "zhTw": "奇魯莉安",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-035",
+        "ja": "サーナイト",
+        "zhTw": "沙奈朵",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-036",
+        "ja": "カゲボウズ",
+        "zhTw": "怨影娃娃",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-037",
+        "ja": "ジュペッタ",
+        "zhTw": "詛咒娃娃",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-038",
+        "ja": "ヒポポタス",
+        "zhTw": "沙河馬",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-039",
+        "ja": "カバルドン",
+        "zhTw": "河馬獸",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-040",
+        "ja": "エルレイド",
+        "zhTw": "艾路雷朵",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-041",
+        "ja": "イワンコ",
+        "zhTw": "岩狗狗",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-042",
+        "ja": "ルガルガン",
+        "zhTw": "鬃岩狼人",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-043",
+        "ja": "サダイジャV",
+        "zhTw": "沙螺蟒V",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "S6H-044",
+        "ja": "サダイジャVMAX",
+        "zhTw": "沙螺蟒VMAX",
+        "rarity": "Triple Rare"
+      },
+      {
+        "providerId": "S6H-045",
+        "ja": "ガラル ヤドキング",
+        "zhTw": "伽勒爾 呆呆王",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-046",
+        "ja": "ハリーセン",
+        "zhTw": "千針魚",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-047",
+        "ja": "レパルダスV",
+        "zhTw": "酷豹V",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "S6H-048",
+        "ja": "ココドラ",
+        "zhTw": "可可多拉",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-049",
+        "ja": "コドラ",
+        "zhTw": "可多拉",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-050",
+        "ja": "ボスゴドラ",
+        "zhTw": "波士可多拉",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-051",
+        "ja": "ケンタロス",
+        "zhTw": "肯泰羅",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-052",
+        "ja": "ポリゴン",
+        "zhTw": "多邊獸",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-053",
+        "ja": "ポリゴン２",
+        "zhTw": "多邊獸Ⅱ",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-054",
+        "ja": "ポリゴンＺ",
+        "zhTw": "多邊獸Ｚ",
+        "rarity": "Rare"
+      },
+      {
+        "providerId": "S6H-055",
+        "ja": "ヒメグマ",
+        "zhTw": "熊寶寶",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-056",
+        "ja": "リングマ",
+        "zhTw": "圈圈熊",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-057",
+        "ja": "トルネロスV",
+        "zhTw": "龍捲雲V",
+        "rarity": "Double rare"
+      },
+      {
+        "providerId": "S6H-058",
+        "ja": "トルネロスVMAX",
+        "zhTw": "龍捲雲VMAX",
+        "rarity": "Triple Rare"
+      },
+      {
+        "providerId": "S6H-059",
+        "ja": "トリミアン",
+        "zhTw": "多麗米亞",
+        "rarity": "Common"
+      },
+      {
+        "providerId": "S6H-060",
+        "ja": "サバイバルセット",
+        "zhTw": "生存組合",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-061",
+        "ja": "いかついメット",
+        "zhTw": "粗硬頭盔",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-062",
+        "ja": "いちげきの巻物 貫通の巻",
+        "zhTw": "一擊的卷軸 貫通之卷",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-063",
+        "ja": "耐火グローブ",
+        "zhTw": "防火手套",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-064",
+        "ja": "ブレイクグローブ",
+        "zhTw": "破壞手套",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-065",
+        "ja": "アスナ",
+        "zhTw": "亞莎",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-066",
+        "ja": "ドクター",
+        "zhTw": "醫生",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-067",
+        "ja": "ピオニー",
+        "zhTw": "皮歐尼",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-068",
+        "ja": "メロン",
+        "zhTw": "美蓉",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-069",
+        "ja": "頂への雪道",
+        "zhTw": "通頂雪道",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-070",
+        "ja": "インパクトエネルギー",
+        "zhTw": "衝擊能量",
+        "rarity": "Uncommon"
+      },
+      {
+        "providerId": "S6H-071",
+        "ja": "ボルケニオンV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-072",
+        "ja": "はくばバドレックスV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-073",
+        "ja": "はくばバドレックスV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-074",
+        "ja": "ガラル ギャロップV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-075",
+        "ja": "ガラル ギャロップV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-076",
+        "ja": "サダイジャV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-077",
+        "ja": "レパルダスV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-078",
+        "ja": "トルネロスV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-079",
+        "ja": "トルネロスV",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-080",
+        "ja": "アスナ",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-081",
+        "ja": "ドクター",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-082",
+        "ja": "ピオニー",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-083",
+        "ja": "メロン",
+        "zhTw": null,
+        "rarity": "Ultra Rare"
+      },
+      {
+        "providerId": "S6H-084",
+        "ja": "はくばバドレックスVMAX",
+        "zhTw": null,
+        "rarity": "Hyper rare"
+      },
+      {
+        "providerId": "S6H-085",
+        "ja": "はくばバドレックスVMAX",
+        "zhTw": null,
+        "rarity": "Secret Rare"
+      },
+      {
+        "providerId": "S6H-086",
+        "ja": "サダイジャVMAX",
+        "zhTw": null,
+        "rarity": "Hyper rare"
+      },
+      {
+        "providerId": "S6H-087",
+        "ja": "トルネロスVMAX",
+        "zhTw": null,
+        "rarity": "Hyper rare"
+      },
+      {
+        "providerId": "S6H-088",
+        "ja": "アスナ",
+        "zhTw": null,
+        "rarity": "Hyper rare"
+      },
+      {
+        "providerId": "S6H-089",
+        "ja": "ドクター",
+        "zhTw": null,
+        "rarity": "Hyper rare"
+      },
+      {
+        "providerId": "S6H-090",
+        "ja": "ピオニー",
+        "zhTw": null,
+        "rarity": "Hyper rare"
+      },
+      {
+        "providerId": "S6H-091",
+        "ja": "メロン",
+        "zhTw": null,
+        "rarity": "Hyper rare"
+      },
+      {
+        "providerId": "S6H-092",
+        "ja": "ドータクン",
+        "zhTw": null,
+        "rarity": "Secret Rare"
+      },
+      {
+        "providerId": "S6H-093",
+        "ja": "おむかえちょうちん",
+        "zhTw": null,
+        "rarity": "Secret Rare"
+      },
+      {
+        "providerId": "S6H-094",
+        "ja": "いかついメット",
+        "zhTw": null,
+        "rarity": "Secret Rare"
+      },
+      {
+        "providerId": "S6H-095",
+        "ja": "基本水エネルギー",
+        "zhTw": null,
+        "rarity": "Secret Rare"
+      }
+    ],
+    "twSeries": {
+      "id": "pokemon-tcgdex-tw-s6h",
+      "official_code": "S6H",
+      "name_zh": "銀白戰槍"
+    },
+    "twCards": [
+      {
+        "id": "pokemon-tcgdex-tw-s6h-001",
+        "provider_id": "S6H-001",
+        "name_zh": "雪笠怪",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-001",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-002",
+        "provider_id": "S6H-002",
+        "name_zh": "暴雪王",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-002",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-003",
+        "provider_id": "S6H-003",
+        "name_zh": "石居蟹",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-003",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-004",
+        "provider_id": "S6H-004",
+        "name_zh": "岩殿居蟹",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-004",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-005",
+        "provider_id": "S6H-005",
+        "name_zh": "四季鹿",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-005",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-006",
+        "provider_id": "S6H-006",
+        "name_zh": "萌芽鹿",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-006",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-007",
+        "provider_id": "S6H-007",
+        "name_zh": "甜竹竹",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-007",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-008",
+        "provider_id": "S6H-008",
+        "name_zh": "甜舞妮",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-008",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-009",
+        "provider_id": "S6H-009",
+        "name_zh": "甜冷美后",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-009",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-010",
+        "provider_id": "S6H-010",
+        "name_zh": "薩戮德",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-010",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-011",
+        "provider_id": "S6H-011",
+        "name_zh": "飄浮泡泡 太陽的樣子",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-011",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-012",
+        "provider_id": "S6H-012",
+        "name_zh": "小獅獅",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-012",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-013",
+        "provider_id": "S6H-013",
+        "name_zh": "火炎獅",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-013",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-014",
+        "provider_id": "S6H-014",
+        "name_zh": "波爾凱尼恩V",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-014",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-015",
+        "provider_id": "S6H-015",
+        "name_zh": "炎兔兒",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-015",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-016",
+        "provider_id": "S6H-016",
+        "name_zh": "騰蹴小將",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-016",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-017",
+        "provider_id": "S6H-017",
+        "name_zh": "閃焰王牌",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-017",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-018",
+        "provider_id": "S6H-018",
+        "name_zh": "拉普拉斯",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-018",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-019",
+        "provider_id": "S6H-019",
+        "name_zh": "飄浮泡泡 雪雲的樣子",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-019",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-020",
+        "provider_id": "S6H-020",
+        "name_zh": "雪童子",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-020",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-021",
+        "provider_id": "S6H-021",
+        "name_zh": "雪妖女",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-021",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-022",
+        "provider_id": "S6H-022",
+        "name_zh": "海豹球",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-022",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-023",
+        "provider_id": "S6H-023",
+        "name_zh": "海魔獅",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-023",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-024",
+        "provider_id": "S6H-024",
+        "name_zh": "帝牙海獅",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-024",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-025",
+        "provider_id": "S6H-025",
+        "name_zh": "冰寶",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-025",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-026",
+        "provider_id": "S6H-026",
+        "name_zh": "冰岩怪",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-026",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-027",
+        "provider_id": "S6H-027",
+        "name_zh": "白馬蕾冠王V",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-027",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-028",
+        "provider_id": "S6H-028",
+        "name_zh": "白馬蕾冠王VMAX",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-028",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-029",
+        "provider_id": "S6H-029",
+        "name_zh": "伽勒爾 烈焰馬V",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-029",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-030",
+        "provider_id": "S6H-030",
+        "name_zh": "伽勒爾 呆呆獸",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-030",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-031",
+        "provider_id": "S6H-031",
+        "name_zh": "催眠貘",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-031",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-032",
+        "provider_id": "S6H-032",
+        "name_zh": "引夢貘人",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-032",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-033",
+        "provider_id": "S6H-033",
+        "name_zh": "拉魯拉絲",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-033",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-034",
+        "provider_id": "S6H-034",
+        "name_zh": "奇魯莉安",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-034",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-035",
+        "provider_id": "S6H-035",
+        "name_zh": "沙奈朵",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-035",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-036",
+        "provider_id": "S6H-036",
+        "name_zh": "怨影娃娃",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-036",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-037",
+        "provider_id": "S6H-037",
+        "name_zh": "詛咒娃娃",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-037",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-038",
+        "provider_id": "S6H-038",
+        "name_zh": "沙河馬",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-038",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-039",
+        "provider_id": "S6H-039",
+        "name_zh": "河馬獸",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-039",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-040",
+        "provider_id": "S6H-040",
+        "name_zh": "艾路雷朵",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-040",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-041",
+        "provider_id": "S6H-041",
+        "name_zh": "岩狗狗",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-041",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-042",
+        "provider_id": "S6H-042",
+        "name_zh": "鬃岩狼人",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-042",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-043",
+        "provider_id": "S6H-043",
+        "name_zh": "沙螺蟒V",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-043",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-044",
+        "provider_id": "S6H-044",
+        "name_zh": "沙螺蟒VMAX",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-044",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-045",
+        "provider_id": "S6H-045",
+        "name_zh": "伽勒爾 呆呆王",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-045",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-046",
+        "provider_id": "S6H-046",
+        "name_zh": "千針魚",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-046",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-047",
+        "provider_id": "S6H-047",
+        "name_zh": "酷豹V",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-047",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-048",
+        "provider_id": "S6H-048",
+        "name_zh": "可可多拉",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-048",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-049",
+        "provider_id": "S6H-049",
+        "name_zh": "可多拉",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-049",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-050",
+        "provider_id": "S6H-050",
+        "name_zh": "波士可多拉",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-050",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-051",
+        "provider_id": "S6H-051",
+        "name_zh": "肯泰羅",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-051",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-052",
+        "provider_id": "S6H-052",
+        "name_zh": "多邊獸",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-052",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-053",
+        "provider_id": "S6H-053",
+        "name_zh": "多邊獸Ⅱ",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-053",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-054",
+        "provider_id": "S6H-054",
+        "name_zh": "多邊獸Ｚ",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-054",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-055",
+        "provider_id": "S6H-055",
+        "name_zh": "熊寶寶",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-055",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-056",
+        "provider_id": "S6H-056",
+        "name_zh": "圈圈熊",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-056",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-057",
+        "provider_id": "S6H-057",
+        "name_zh": "龍捲雲V",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-057",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-058",
+        "provider_id": "S6H-058",
+        "name_zh": "龍捲雲VMAX",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-058",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-059",
+        "provider_id": "S6H-059",
+        "name_zh": "多麗米亞",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-059",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-060",
+        "provider_id": "S6H-060",
+        "name_zh": "生存組合",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-060",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-061",
+        "provider_id": "S6H-061",
+        "name_zh": "粗硬頭盔",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-061",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-062",
+        "provider_id": "S6H-062",
+        "name_zh": "一擊的卷軸 貫通之卷",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-062",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-063",
+        "provider_id": "S6H-063",
+        "name_zh": "防火手套",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-063",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-064",
+        "provider_id": "S6H-064",
+        "name_zh": "破壞手套",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-064",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-065",
+        "provider_id": "S6H-065",
+        "name_zh": "亞莎",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-065",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-066",
+        "provider_id": "S6H-066",
+        "name_zh": "醫生",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-066",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-067",
+        "provider_id": "S6H-067",
+        "name_zh": "皮歐尼",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-067",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-068",
+        "provider_id": "S6H-068",
+        "name_zh": "美蓉",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-068",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-069",
+        "provider_id": "S6H-069",
+        "name_zh": "通頂雪道",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-069",
+        "canonicalShared": false
+      },
+      {
+        "id": "pokemon-tcgdex-tw-s6h-070",
+        "provider_id": "S6H-070",
+        "name_zh": "衝擊能量",
+        "canonical_id": "pokemon-tcgdex-tw-s6h-070",
+        "canonicalShared": false
+      }
+    ]
+  },
+  "quarantined": [],
+  "summary": {
+    "cards": 92,
+    "links": 70,
+    "derived": 22,
+    "rarities": 0,
+    "series": 1,
+    "quarantined": 0,
+    "stillWithoutZh": 3
+  },
+  "fingerprints": {
+    "twCards": "b7ffd9b0a0d7bfc7c6c85d46e0ec5d89",
+    "twCardCount": 70,
+    "jpCards": "e4e209afb977df24d78a9247c218ca9b"
+  }
+}

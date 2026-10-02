@@ -1,0 +1,2707 @@
+{
+  "planVersion": 1,
+  "source": "tcgdex-ja",
+  "seriesProviderId": "S10a",
+  "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+  "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+  "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+  "sourceObservedAt": "2026-10-02T15:59:00.000Z",
+  "series": {
+    "id": "pokemon-tcgdex-ja-s10a",
+    "provider_id": "S10a",
+    "name_ja": "ダークファンタズマ",
+    "release_date": "2022-05-13",
+    "source_url": "https://api.tcgdex.net/v2/ja/sets/S10a",
+    "metadata": {
+      "sourceEvidence": {
+        "url": "https://api.tcgdex.net/v2/ja/sets/S10a",
+        "urlType": "derived-provider-endpoint",
+        "observedAt": "2026-10-02T15:59:00.000Z",
+        "retrievedVia": "github-archive",
+        "archive": {
+          "repository": "tcgdex/cards-database",
+          "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+          "path": "data-asia/S/S10a.ts"
+        }
+      },
+      "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+      "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+      "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+    }
+  },
+  "cards": [
+    {
+      "id": "pokemon-tcgdex-ja-s10a-001",
+      "provider_id": "S10a-001",
+      "official_card_number": "001",
+      "name_ja": "パラス",
+      "rarity_code": "C",
+      "search_text": "パラス 001 S10a-001 s10a001",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-001",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-001",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-001",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/001.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-002",
+      "provider_id": "S10a-002",
+      "official_card_number": "002",
+      "name_ja": "パラセクト",
+      "rarity_code": "U",
+      "search_text": "パラセクト 002 S10a-002 s10a002",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-002",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-002",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-002",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/002.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-003",
+      "provider_id": "S10a-003",
+      "official_card_number": "003",
+      "name_ja": "ヒスイ マルマインV",
+      "rarity_code": "RR",
+      "search_text": "ヒスイ マルマインV 003 S10a-003 s10a003",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-003",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-003",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-003",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/003.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-004",
+      "provider_id": "S10a-004",
+      "official_card_number": "004",
+      "name_ja": "ケムッソ",
+      "rarity_code": "C",
+      "search_text": "ケムッソ 004 S10a-004 s10a004",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-004",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-004",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-004",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/004.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-005",
+      "provider_id": "S10a-005",
+      "official_card_number": "005",
+      "name_ja": "カラサリス",
+      "rarity_code": "C",
+      "search_text": "カラサリス 005 S10a-005 s10a005",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-005",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-005",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-005",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/005.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-006",
+      "provider_id": "S10a-006",
+      "official_card_number": "006",
+      "name_ja": "アゲハント",
+      "rarity_code": "R",
+      "search_text": "アゲハント 006 S10a-006 s10a006",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-006",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-006",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-006",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/006.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-007",
+      "provider_id": "S10a-007",
+      "official_card_number": "007",
+      "name_ja": "マユルド",
+      "rarity_code": "C",
+      "search_text": "マユルド 007 S10a-007 s10a007",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-007",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-007",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-007",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/007.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-008",
+      "provider_id": "S10a-008",
+      "official_card_number": "008",
+      "name_ja": "ドクケイル",
+      "rarity_code": "U",
+      "search_text": "ドクケイル 008 S10a-008 s10a008",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-008",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-008",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-008",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/008.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-009",
+      "provider_id": "S10a-009",
+      "official_card_number": "009",
+      "name_ja": "ユキカブリ",
+      "rarity_code": "C",
+      "search_text": "ユキカブリ 009 S10a-009 s10a009",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-009",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-009",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-009",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/009.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-010",
+      "provider_id": "S10a-010",
+      "official_card_number": "010",
+      "name_ja": "ユキノオー",
+      "rarity_code": "C",
+      "search_text": "ユキノオー 010 S10a-010 s10a010",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-010",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-010",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-010",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/010.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-011",
+      "provider_id": "S10a-011",
+      "official_card_number": "011",
+      "name_ja": "フィオネ",
+      "rarity_code": "U",
+      "search_text": "フィオネ 011 S10a-011 s10a011",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-011",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-011",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-011",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/011.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-012",
+      "provider_id": "S10a-012",
+      "official_card_number": "012",
+      "name_ja": "ヒスイ バスラオ",
+      "rarity_code": "C",
+      "search_text": "ヒスイ バスラオ 012 S10a-012 s10a012",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-012",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-012",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-012",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/012.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-013",
+      "provider_id": "S10a-013",
+      "official_card_number": "013",
+      "name_ja": "ヒスイ イダイトウ",
+      "rarity_code": "R",
+      "search_text": "ヒスイ イダイトウ 013 S10a-013 s10a013",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-013",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-013",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-013",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/013.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-014",
+      "provider_id": "S10a-014",
+      "official_card_number": "014",
+      "name_ja": "ピカチュウ",
+      "rarity_code": "C",
+      "search_text": "ピカチュウ 014 S10a-014 s10a014",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-014",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-014",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-014",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/014.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-015",
+      "provider_id": "S10a-015",
+      "official_card_number": "015",
+      "name_ja": "ライチュウ",
+      "rarity_code": "U",
+      "search_text": "ライチュウ 015 S10a-015 s10a015",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-015",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-015",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-015",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/015.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-016",
+      "provider_id": "S10a-016",
+      "official_card_number": "016",
+      "name_ja": "ジバコイルV",
+      "rarity_code": "RR",
+      "search_text": "ジバコイルV 016 S10a-016 s10a016",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-016",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-016",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-016",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/016.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-017",
+      "provider_id": "S10a-017",
+      "official_card_number": "017",
+      "name_ja": "ジバコイルVSTAR",
+      "rarity_code": "RRR",
+      "search_text": "ジバコイルVSTAR 017 S10a-017 s10a017",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-017",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-017",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-017",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/017.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-018",
+      "provider_id": "S10a-018",
+      "official_card_number": "018",
+      "name_ja": "ロトム",
+      "rarity_code": "C",
+      "search_text": "ロトム 018 S10a-018 s10a018",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-018",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-018",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-018",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/018.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-019",
+      "provider_id": "S10a-019",
+      "official_card_number": "019",
+      "name_ja": "ピッピ",
+      "rarity_code": "C",
+      "search_text": "ピッピ 019 S10a-019 s10a019",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-019",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-019",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-019",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/019.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-020",
+      "provider_id": "S10a-020",
+      "official_card_number": "020",
+      "name_ja": "ピクシー",
+      "rarity_code": "U",
+      "search_text": "ピクシー 020 S10a-020 s10a020",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-020",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-020",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-020",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/020.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-021",
+      "provider_id": "S10a-021",
+      "official_card_number": "021",
+      "name_ja": "ゴース",
+      "rarity_code": "C",
+      "search_text": "ゴース 021 S10a-021 s10a021",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-021",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-021",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-021",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/021.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-022",
+      "provider_id": "S10a-022",
+      "official_card_number": "022",
+      "name_ja": "ゴースト",
+      "rarity_code": "C",
+      "search_text": "ゴースト 022 S10a-022 s10a022",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-022",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-022",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-022",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/022.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-023",
+      "provider_id": "S10a-023",
+      "official_card_number": "023",
+      "name_ja": "ゲンガー",
+      "rarity_code": "R",
+      "search_text": "ゲンガー 023 S10a-023 s10a023",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-023",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-023",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-023",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/023.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-024",
+      "provider_id": "S10a-024",
+      "official_card_number": "024",
+      "name_ja": "バリヤード",
+      "rarity_code": "U",
+      "search_text": "バリヤード 024 S10a-024 s10a024",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-024",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-024",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-024",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/024.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-025",
+      "provider_id": "S10a-025",
+      "official_card_number": "025",
+      "name_ja": "ムウマ",
+      "rarity_code": "C",
+      "search_text": "ムウマ 025 S10a-025 s10a025",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-025",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-025",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-025",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/025.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-026",
+      "provider_id": "S10a-026",
+      "official_card_number": "026",
+      "name_ja": "ムウマージ",
+      "rarity_code": "U",
+      "search_text": "ムウマージ 026 S10a-026 s10a026",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-026",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-026",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-026",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/026.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-027",
+      "provider_id": "S10a-027",
+      "official_card_number": "027",
+      "name_ja": "かがやくサーナイト",
+      "rarity_code": "K",
+      "search_text": "かがやくサーナイト 027 S10a-027 s10a027",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-027",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-027",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-027",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/027.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-028",
+      "provider_id": "S10a-028",
+      "official_card_number": "028",
+      "name_ja": "チリーン",
+      "rarity_code": "C",
+      "search_text": "チリーン 028 S10a-028 s10a028",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-028",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-028",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-028",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/028.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-029",
+      "provider_id": "S10a-029",
+      "official_card_number": "029",
+      "name_ja": "ヒスイ ゾロア",
+      "rarity_code": "C",
+      "search_text": "ヒスイ ゾロア 029 S10a-029 s10a029",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-029",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-029",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-029",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/029.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-030",
+      "provider_id": "S10a-030",
+      "official_card_number": "030",
+      "name_ja": "ヒスイ ゾロアーク",
+      "rarity_code": "R",
+      "search_text": "ヒスイ ゾロアーク 030 S10a-030 s10a030",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-030",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-030",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-030",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/030.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-031",
+      "provider_id": "S10a-031",
+      "official_card_number": "031",
+      "name_ja": "ラブトロスV",
+      "rarity_code": "RR",
+      "search_text": "ラブトロスV 031 S10a-031 s10a031",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-031",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-031",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-031",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/031.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-032",
+      "provider_id": "S10a-032",
+      "official_card_number": "032",
+      "name_ja": "ヒスイ ガーディ",
+      "rarity_code": "C",
+      "search_text": "ヒスイ ガーディ 032 S10a-032 s10a032",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-032",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-032",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-032",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/032.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-033",
+      "provider_id": "S10a-033",
+      "official_card_number": "033",
+      "name_ja": "ヒスイ ウインディ",
+      "rarity_code": "R",
+      "search_text": "ヒスイ ウインディ 033 S10a-033 s10a033",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-033",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-033",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-033",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/033.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-034",
+      "provider_id": "S10a-034",
+      "official_card_number": "034",
+      "name_ja": "ワンリキー",
+      "rarity_code": "C",
+      "search_text": "ワンリキー 034 S10a-034 s10a034",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-034",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-034",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-034",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/034.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-035",
+      "provider_id": "S10a-035",
+      "official_card_number": "035",
+      "name_ja": "ゴーリキー",
+      "rarity_code": "U",
+      "search_text": "ゴーリキー 035 S10a-035 s10a035",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-035",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-035",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-035",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/035.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-036",
+      "provider_id": "S10a-036",
+      "official_card_number": "036",
+      "name_ja": "カイリキー",
+      "rarity_code": "R",
+      "search_text": "カイリキー 036 S10a-036 s10a036",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-036",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-036",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-036",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/036.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-037",
+      "provider_id": "S10a-037",
+      "official_card_number": "037",
+      "name_ja": "ウソッキー",
+      "rarity_code": "C",
+      "search_text": "ウソッキー 037 S10a-037 s10a037",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-037",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-037",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-037",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/037.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-038",
+      "provider_id": "S10a-038",
+      "official_card_number": "038",
+      "name_ja": "グライガー",
+      "rarity_code": "C",
+      "search_text": "グライガー 038 S10a-038 s10a038",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-038",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-038",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-038",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/038.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-039",
+      "provider_id": "S10a-039",
+      "official_card_number": "039",
+      "name_ja": "グライオン",
+      "rarity_code": "U",
+      "search_text": "グライオン 039 S10a-039 s10a039",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-039",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-039",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-039",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/039.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-040",
+      "provider_id": "S10a-040",
+      "official_card_number": "040",
+      "name_ja": "エルレイドV",
+      "rarity_code": "RR",
+      "search_text": "エルレイドV 040 S10a-040 s10a040",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-040",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-040",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-040",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/040.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-041",
+      "provider_id": "S10a-041",
+      "official_card_number": "041",
+      "name_ja": "ズバット",
+      "rarity_code": "C",
+      "search_text": "ズバット 041 S10a-041 s10a041",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-041",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-041",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-041",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/041.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-042",
+      "provider_id": "S10a-042",
+      "official_card_number": "042",
+      "name_ja": "ゴルバット",
+      "rarity_code": "C",
+      "search_text": "ゴルバット 042 S10a-042 s10a042",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-042",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-042",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-042",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/042.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-043",
+      "provider_id": "S10a-043",
+      "official_card_number": "043",
+      "name_ja": "クロバット",
+      "rarity_code": "R",
+      "search_text": "クロバット 043 S10a-043 s10a043",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-043",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-043",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-043",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/043.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-044",
+      "provider_id": "S10a-044",
+      "official_card_number": "044",
+      "name_ja": "ヤミカラス",
+      "rarity_code": "C",
+      "search_text": "ヤミカラス 044 S10a-044 s10a044",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-044",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-044",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-044",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/044.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-045",
+      "provider_id": "S10a-045",
+      "official_card_number": "045",
+      "name_ja": "ドンカラス",
+      "rarity_code": "U",
+      "search_text": "ドンカラス 045 S10a-045 s10a045",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-045",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-045",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-045",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/045.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-046",
+      "provider_id": "S10a-046",
+      "official_card_number": "046",
+      "name_ja": "かがやくヒスイ オオニューラ",
+      "rarity_code": "K",
+      "search_text": "かがやくヒスイ オオニューラ 046 S10a-046 s10a046",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-046",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-046",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-046",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/046.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-047",
+      "provider_id": "S10a-047",
+      "official_card_number": "047",
+      "name_ja": "ミカルゲ",
+      "rarity_code": "U",
+      "search_text": "ミカルゲ 047 S10a-047 s10a047",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-047",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-047",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-047",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/047.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-048",
+      "provider_id": "S10a-048",
+      "official_card_number": "048",
+      "name_ja": "グレッグル",
+      "rarity_code": "C",
+      "search_text": "グレッグル 048 S10a-048 s10a048",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-048",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-048",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-048",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/048.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-049",
+      "provider_id": "S10a-049",
+      "official_card_number": "049",
+      "name_ja": "ドクロッグ",
+      "rarity_code": "U",
+      "search_text": "ドクロッグ 049 S10a-049 s10a049",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-049",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-049",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-049",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/049.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-050",
+      "provider_id": "S10a-050",
+      "official_card_number": "050",
+      "name_ja": "かがやくハガネール",
+      "rarity_code": "K",
+      "search_text": "かがやくハガネール 050 S10a-050 s10a050",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-050",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-050",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-050",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/050.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-051",
+      "provider_id": "S10a-051",
+      "official_card_number": "051",
+      "name_ja": "ドーミラー",
+      "rarity_code": "C",
+      "search_text": "ドーミラー 051 S10a-051 s10a051",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-051",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-051",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-051",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/051.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-052",
+      "provider_id": "S10a-052",
+      "official_card_number": "052",
+      "name_ja": "ドータクン",
+      "rarity_code": "U",
+      "search_text": "ドータクン 052 S10a-052 s10a052",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-052",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-052",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-052",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/052.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-053",
+      "provider_id": "S10a-053",
+      "official_card_number": "053",
+      "name_ja": "ヌメラ",
+      "rarity_code": "C",
+      "search_text": "ヌメラ 053 S10a-053 s10a053",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-053",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-053",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-053",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/053.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-054",
+      "provider_id": "S10a-054",
+      "official_card_number": "054",
+      "name_ja": "ヒスイ ヌメイル",
+      "rarity_code": "U",
+      "search_text": "ヒスイ ヌメイル 054 S10a-054 s10a054",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-054",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-054",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-054",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/054.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-055",
+      "provider_id": "S10a-055",
+      "official_card_number": "055",
+      "name_ja": "ヒスイ ヌメルゴン",
+      "rarity_code": "R",
+      "search_text": "ヒスイ ヌメルゴン 055 S10a-055 s10a055",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-055",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-055",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-055",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/055.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-056",
+      "provider_id": "S10a-056",
+      "official_card_number": "056",
+      "name_ja": "ヒスイ ヌメルゴンV",
+      "rarity_code": "RR",
+      "search_text": "ヒスイ ヌメルゴンV 056 S10a-056 s10a056",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-056",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-056",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-056",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/056.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-057",
+      "provider_id": "S10a-057",
+      "official_card_number": "057",
+      "name_ja": "ヒスイ ヌメルゴンVSTAR",
+      "rarity_code": "RRR",
+      "search_text": "ヒスイ ヌメルゴンVSTAR 057 S10a-057 s10a057",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-057",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-057",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-057",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/057.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-058",
+      "provider_id": "S10a-058",
+      "official_card_number": "058",
+      "name_ja": "カビゴン",
+      "rarity_code": "R",
+      "search_text": "カビゴン 058 S10a-058 s10a058",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-058",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-058",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-058",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/058.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-059",
+      "provider_id": "S10a-059",
+      "official_card_number": "059",
+      "name_ja": "エイパム",
+      "rarity_code": "C",
+      "search_text": "エイパム 059 S10a-059 s10a059",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-059",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-059",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-059",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/059.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-060",
+      "provider_id": "S10a-060",
+      "official_card_number": "060",
+      "name_ja": "エテボース",
+      "rarity_code": "U",
+      "search_text": "エテボース 060 S10a-060 s10a060",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-060",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-060",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-060",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/060.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-061",
+      "provider_id": "S10a-061",
+      "official_card_number": "061",
+      "name_ja": "ヒスイ ゾロアークV",
+      "rarity_code": "RR",
+      "search_text": "ヒスイ ゾロアークV 061 S10a-061 s10a061",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-061",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-061",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-061",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/061.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-062",
+      "provider_id": "S10a-062",
+      "official_card_number": "062",
+      "name_ja": "ヒスイ ゾロアークVSTAR",
+      "rarity_code": "RRR",
+      "search_text": "ヒスイ ゾロアークVSTAR 062 S10a-062 s10a062",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-062",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-062",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-062",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/062.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-063",
+      "provider_id": "S10a-063",
+      "official_card_number": "063",
+      "name_ja": "アルセウスフォン",
+      "rarity_code": "U",
+      "search_text": "アルセウスフォン 063 S10a-063 s10a063",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-063",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-063",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-063",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/063.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-064",
+      "provider_id": "S10a-064",
+      "official_card_number": "064",
+      "name_ja": "ダメージポンプ",
+      "rarity_code": "U",
+      "search_text": "ダメージポンプ 064 S10a-064 s10a064",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-064",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-064",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-064",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/064.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-065",
+      "provider_id": "S10a-065",
+      "official_card_number": "065",
+      "name_ja": "からくりアーム",
+      "rarity_code": "U",
+      "search_text": "からくりアーム 065 S10a-065 s10a065",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-065",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-065",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-065",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/065.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-066",
+      "provider_id": "S10a-066",
+      "official_card_number": "066",
+      "name_ja": "災いの箱",
+      "rarity_code": "U",
+      "search_text": "災いの箱 066 S10a-066 s10a066",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-066",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-066",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-066",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/066.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-067",
+      "provider_id": "S10a-067",
+      "official_card_number": "067",
+      "name_ja": "ウォロ",
+      "rarity_code": "R",
+      "search_text": "ウォロ 067 S10a-067 s10a067",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-067",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-067",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-067",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/067.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-068",
+      "provider_id": "S10a-068",
+      "official_card_number": "068",
+      "name_ja": "ススキ",
+      "rarity_code": "U",
+      "search_text": "ススキ 068 S10a-068 s10a068",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-068",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-068",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-068",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/068.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-069",
+      "provider_id": "S10a-069",
+      "official_card_number": "069",
+      "name_ja": "ヒナツ",
+      "rarity_code": "U",
+      "search_text": "ヒナツ 069 S10a-069 s10a069",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-069",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-069",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-069",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/069.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-070",
+      "provider_id": "S10a-070",
+      "official_card_number": "070",
+      "name_ja": "野盗三姉妹",
+      "rarity_code": "U",
+      "search_text": "野盗三姉妹 070 S10a-070 s10a070",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-070",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-070",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-070",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/070.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-071",
+      "provider_id": "S10a-071",
+      "official_card_number": "071",
+      "name_ja": "エイチ湖",
+      "rarity_code": "U",
+      "search_text": "エイチ湖 071 S10a-071 s10a071",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-071",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-071",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-071",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/071.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-072",
+      "provider_id": "S10a-072",
+      "official_card_number": "072",
+      "name_ja": "パラセクト",
+      "rarity_code": "CHR",
+      "search_text": "パラセクト 072 S10a-072 s10a072",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-072",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-072",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-072",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/072.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-073",
+      "provider_id": "S10a-073",
+      "official_card_number": "073",
+      "name_ja": "ピカチュウ",
+      "rarity_code": "CHR",
+      "search_text": "ピカチュウ 073 S10a-073 s10a073",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-073",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-073",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-073",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/073.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-074",
+      "provider_id": "S10a-074",
+      "official_card_number": "074",
+      "name_ja": "ゲンガー",
+      "rarity_code": "CHR",
+      "search_text": "ゲンガー 074 S10a-074 s10a074",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-074",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-074",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-074",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/074.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-075",
+      "provider_id": "S10a-075",
+      "official_card_number": "075",
+      "name_ja": "ヒスイ ウインディ",
+      "rarity_code": "CHR",
+      "search_text": "ヒスイ ウインディ 075 S10a-075 s10a075",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-075",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-075",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-075",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/075.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-076",
+      "provider_id": "S10a-076",
+      "official_card_number": "076",
+      "name_ja": "ミカルゲ",
+      "rarity_code": "CHR",
+      "search_text": "ミカルゲ 076 S10a-076 s10a076",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-076",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-076",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-076",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/076.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-077",
+      "provider_id": "S10a-077",
+      "official_card_number": "077",
+      "name_ja": "カビゴン",
+      "rarity_code": "CHR",
+      "search_text": "カビゴン 077 S10a-077 s10a077",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-077",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-077",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-077",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/077.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-078",
+      "provider_id": "S10a-078",
+      "official_card_number": "078",
+      "name_ja": "ヒスイ マルマインV",
+      "rarity_code": "UR",
+      "search_text": "ヒスイ マルマインV 078 S10a-078 s10a078",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-078",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-078",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-078",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/078.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-079",
+      "provider_id": "S10a-079",
+      "official_card_number": "079",
+      "name_ja": "ジバコイルV",
+      "rarity_code": "UR",
+      "search_text": "ジバコイルV 079 S10a-079 s10a079",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-079",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-079",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-079",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/079.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-080",
+      "provider_id": "S10a-080",
+      "official_card_number": "080",
+      "name_ja": "ラブトロスV",
+      "rarity_code": "UR",
+      "search_text": "ラブトロスV 080 S10a-080 s10a080",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-080",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-080",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-080",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/080.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-081",
+      "provider_id": "S10a-081",
+      "official_card_number": "081",
+      "name_ja": "エルレイドV",
+      "rarity_code": "UR",
+      "search_text": "エルレイドV 081 S10a-081 s10a081",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-081",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-081",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-081",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/081.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-082",
+      "provider_id": "S10a-082",
+      "official_card_number": "082",
+      "name_ja": "ヒスイ ヌメルゴンV",
+      "rarity_code": "UR",
+      "search_text": "ヒスイ ヌメルゴンV 082 S10a-082 s10a082",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-082",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-082",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-082",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/082.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-083",
+      "provider_id": "S10a-083",
+      "official_card_number": "083",
+      "name_ja": "ヒスイ ゾロアークV",
+      "rarity_code": "UR",
+      "search_text": "ヒスイ ゾロアークV 083 S10a-083 s10a083",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-083",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-083",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-083",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/083.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-084",
+      "provider_id": "S10a-084",
+      "official_card_number": "084",
+      "name_ja": "ウォロ",
+      "rarity_code": "UR",
+      "search_text": "ウォロ 084 S10a-084 s10a084",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-084",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-084",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-084",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/084.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-085",
+      "provider_id": "S10a-085",
+      "official_card_number": "085",
+      "name_ja": "ススキ",
+      "rarity_code": "UR",
+      "search_text": "ススキ 085 S10a-085 s10a085",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-085",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-085",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-085",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/085.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-086",
+      "provider_id": "S10a-086",
+      "official_card_number": "086",
+      "name_ja": "ヒナツ",
+      "rarity_code": "UR",
+      "search_text": "ヒナツ 086 S10a-086 s10a086",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-086",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-086",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-086",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/086.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-087",
+      "provider_id": "S10a-087",
+      "official_card_number": "087",
+      "name_ja": "野盗三姉妹",
+      "rarity_code": "UR",
+      "search_text": "野盗三姉妹 087 S10a-087 s10a087",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-087",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-087",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-087",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/087.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-088",
+      "provider_id": "S10a-088",
+      "official_card_number": "088",
+      "name_ja": "ラブトロスV",
+      "rarity_code": null,
+      "search_text": "ラブトロスV 088 S10a-088 s10a088",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-088",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-088",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-088",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/088.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-089",
+      "provider_id": "S10a-089",
+      "official_card_number": "089",
+      "name_ja": "エルレイドV",
+      "rarity_code": null,
+      "search_text": "エルレイドV 089 S10a-089 s10a089",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-089",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-089",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-089",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/089.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-090",
+      "provider_id": "S10a-090",
+      "official_card_number": "090",
+      "name_ja": "ジバコイルVSTAR",
+      "rarity_code": null,
+      "search_text": "ジバコイルVSTAR 090 S10a-090 s10a090",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-090",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-090",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-090",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/090.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-091",
+      "provider_id": "S10a-091",
+      "official_card_number": "091",
+      "name_ja": "ヒスイ ヌメルゴンVSTAR",
+      "rarity_code": null,
+      "search_text": "ヒスイ ヌメルゴンVSTAR 091 S10a-091 s10a091",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-091",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-091",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-091",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/091.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-092",
+      "provider_id": "S10a-092",
+      "official_card_number": "092",
+      "name_ja": "ヒスイ ゾロアークVSTAR",
+      "rarity_code": null,
+      "search_text": "ヒスイ ゾロアークVSTAR 092 S10a-092 s10a092",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-092",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-092",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-092",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/092.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-093",
+      "provider_id": "S10a-093",
+      "official_card_number": "093",
+      "name_ja": "ウォロ",
+      "rarity_code": null,
+      "search_text": "ウォロ 093 S10a-093 s10a093",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-093",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-093",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-093",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/093.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-094",
+      "provider_id": "S10a-094",
+      "official_card_number": "094",
+      "name_ja": "ススキ",
+      "rarity_code": null,
+      "search_text": "ススキ 094 S10a-094 s10a094",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-094",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-094",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-094",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/094.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-095",
+      "provider_id": "S10a-095",
+      "official_card_number": "095",
+      "name_ja": "ヒナツ",
+      "rarity_code": null,
+      "search_text": "ヒナツ 095 S10a-095 s10a095",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-095",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-095",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-095",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/095.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-096",
+      "provider_id": "S10a-096",
+      "official_card_number": "096",
+      "name_ja": "野盗三姉妹",
+      "rarity_code": null,
+      "search_text": "野盗三姉妹 096 S10a-096 s10a096",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-096",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-096",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-096",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/096.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-097",
+      "provider_id": "S10a-097",
+      "official_card_number": "097",
+      "name_ja": "ヒスイ ゾロアークVSTAR",
+      "rarity_code": null,
+      "search_text": "ヒスイ ゾロアークVSTAR 097 S10a-097 s10a097",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-097",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-097",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-097",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/097.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-098",
+      "provider_id": "S10a-098",
+      "official_card_number": "098",
+      "name_ja": "ダークパッチ",
+      "rarity_code": null,
+      "search_text": "ダークパッチ 098 S10a-098 s10a098",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-098",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-098",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-098",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/098.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-s10a-099",
+      "provider_id": "S10a-099",
+      "official_card_number": "099",
+      "name_ja": "災いの箱",
+      "rarity_code": null,
+      "search_text": "災いの箱 099 S10a-099 s10a099",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/S10a-099",
+      "release_date": "2022-05-13",
+      "metadata": {
+        "tcgdexId": "S10a-099",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/S10a-099",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-02T15:59:00.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/S/S10a/099.ts"
+          }
+        },
+        "manifestHash": "11d1e0feb97b197342440bc0b6ab65087b242d3bccf2d3bb75b7ef8fb30473c0",
+        "sourceHash": "e7790e321a61bd610122ce051387f09b736ab0895cf30cf674c316f30ec68448",
+        "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58"
+      }
+    }
+  ]
+}
