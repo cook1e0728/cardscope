@@ -5,7 +5,7 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "NONE"],
+      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "NONE"],
       "canonicalLabels": {"Rare Holo": "Rare Holo", "NONE": "無標記"},
       "aliases": {
         "UR": ["Ultra Rare"],
@@ -13,6 +13,7 @@
         "SAR": ["Special Art Rare", "Special Illustration Rare"],
         "SSR": ["Shiny Super Rare", "Shiny Ultra Rare"],
         "SR": ["Super Rare", "Secret Rare"],
+        "CSR": ["Character Super Rare"],
         "S": ["Shiny Rare"],
         "AR": ["Art Rare", "Illustration Rare"],
         "CHR": ["Character Rare"],
@@ -32,6 +33,7 @@
         ["SAR", "Special Art Rare", "Special Illustration Rare"],
         ["SSR", "Shiny Super Rare", "Shiny Ultra Rare"],
         ["SR", "Super Rare", "Secret Rare"],
+        ["CSR", "Character Super Rare"],
         ["S", "Shiny Rare"],
         ["AR", "Art Rare", "Illustration Rare"],
         ["CHR", "Character Rare"],
@@ -76,6 +78,7 @@
         ["CHR", "Character Rare"],
         ["AR", "Art Rare", "Illustration Rare"],
         ["S", "Shiny Rare"],
+        ["CSR", "Character Super Rare"],
         ["SR", "Super Rare", "Secret Rare"],
         ["SSR", "Shiny Super Rare", "Shiny Ultra Rare"],
         ["SAR", "Special Art Rare", "Special Illustration Rare"],

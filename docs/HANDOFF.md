@@ -119,7 +119,7 @@
 - 流程 `scripts/import-pokemon-jp-series.sh <SET>`（`CARDSCOPE_WORK` 指定含封存 checkout、`existing-jp-rows.json`、`s-observed-at.txt` 的工作夾）：快照→匯入（≤100 一次、>100 依 ADR 0005 分批，皆 gated）→重播→enrich 計畫（台／日指紋須與正式庫相同）→gated enrich（`scripts/emit-pokemon-jp-enrich-sql.mjs`）→重播→ADR 0006 升級。可重跑（已匯入批次以 dry-run replay 視為完成）。證據 `docs/evidence/pokemon-jp/s-era/`（現有日版列只存一份 `existing-jp-rows-20261003.json`，快照內以檔名參照）。
 - 已完成：S10P 88（連結 67、推導 20，87 有中文名，verified 67）、S5I 91（70／21，91，70）、S8 129（2 批；100／25，125，100）；皆重播零異動。
 - 其餘 11 系列同流程完成（指紋全部相符、重播零異動）：S6H 95（92 中文名）、S6K 95（92）、S7D 90（88）、S9 127（127）、S9a 93（92）、S10a 99（98）、S11 127（126）、S11a 94（94）、S12 125（123）、S8b 285（3 批；連結 181、推導 89、270）、S12a 258（3 批；250／4、254）。合計 14 系列 1,796 張：中文名 1,759、verified 1,395、稀有度空值 438。台版 7,436、美版 20,635 不變。
-- 之後：全部完成後抓這些系列的日本官方頁，依 ADR 0007–0009 補／修稀有度並升級待核卡。
+- 日本官方核對（另開視窗抓 1,796 筆，中途一次因 git 切換分支觸碰快取檔而 UNKNOWN 開檔失敗，已改為暫存檔＋重試存檔後接續；最終 `done: 4830 detail pages cached`）：fill 128、correct 144（各系列 UR→SR，S12a SR→UR 4）、identity 323，重播零異動。官方頁無圖示者沿用台灣官方（ADR 0010）262 筆：S8b NONE 140、S12a NONE 119、S9a K 3。官方圖示 `ic_rare_csr` 為新稀有度 CSR：migration `20261003040000_pokemon_rarity_csr`（tier 7，S 以下順移，NONE 變 28）、rarity-rankings.json 與官方對映同步，補 44 筆。劍盾世代剩：待核 78（官方頁找不到）、稀有度空值 4（S8b 251–254）。日版全體稀有度空值 92（牌組 88＋S8b 4）。部署時改以 `git push origin claude/jp-zh-names:main` 推送，避免切換分支觸碰工作目錄。
 
 ### 依序執行 13：搜尋延遲（Server-Timing 與單次往返 RPC，2026-10-03，已部署）
 
