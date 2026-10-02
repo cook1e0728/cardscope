@@ -35,7 +35,7 @@ test('list parsing keeps order and rejects unexpected responses', () => {
 });
 
 import { readFile } from 'node:fs/promises';
-const migration = await readFile(new URL('../supabase/migrations/20261002080000_pokemon_jp_official_rarity.sql', import.meta.url), 'utf8');
+const migration = await readFile(new URL('../supabase/migrations/20261002095027_pokemon_jp_official_rarity.sql', import.meta.url), 'utf8');
 
 test('official rarity migration fills nulls only, rechecks identity, audits append-only and stays private', () => {
   assert.match(migration, /security invoker/i);
