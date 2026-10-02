@@ -419,3 +419,31 @@ test('database search falls back to series names and lists that series in card-n
   }
 });
 
+
+test('search typed as printed matches TW names whose owner prefix carries source markup',async()=>{
+  const card={id:'pokemon-tcgdex-tw-sv10-039',canonicalId:'pokemon-tcgdex-tw-sv10-039',game:'pokemon',seriesId:'pokemon-tcgdex-tw-sv10',officialCardNumber:'039',rarity:'RR',nameZh:'<火箭隊的>超夢ex',nameJa:null,nameEn:null,nameKo:null,aliases:[],metadata:{}};
+  const requests=[];
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1),respond=body=>{res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(body))};
+    requests.push([table,url.searchParams]);
+    if(table==='tcg_cards'&&url.searchParams.has('or'))return respond(url.searchParams.get('or').includes('name_zh.ilike.*<火箭隊的>超夢*')?[card]:[]);
+    if(table==='tcg_printings')return respond([{id:`${card.id}-p`,cardId:card.id,seriesId:card.seriesId,region:'TW',language:'zh-TW',localSetCode:'SV10',localCardNumber:'039',rarity:'RR',imageUrl:null,imageRehostRequired:false}]);
+    return respond([]);
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`markup search fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`markup search fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent('火箭隊的超夢')}`)).json();
+    assert.deepEqual(body.data.map(c=>c.id),[card.id]);
+    assert.doesNotMatch(requests.find(([table,params])=>table==='tcg_cards'&&params.has('or'))[1].get('or'),/<<|>>/);
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
