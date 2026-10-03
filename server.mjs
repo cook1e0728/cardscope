@@ -170,6 +170,8 @@ async function cachedBrowseRows(key,loader){
   if(cached?.promise)return cached.promise;
   const promise=Promise.resolve().then(loader).then(data=>{browseCache.set(key,{data,expiresAt:Date.now()+BROWSE_CACHE_MS});return data}).catch(error=>{browseCache.delete(key);throw error});
   browseCache.set(key,{promise,expiresAt:now+BROWSE_CACHE_MS});
+  // Pages of every offset can be cached now; drop expired entries, then the oldest, past 400 keys.
+  if(browseCache.size>400){for(const [entryKey,entry] of browseCache)if(entry.data&&entry.expiresAt<=now)browseCache.delete(entryKey);while(browseCache.size>400)browseCache.delete(browseCache.keys().next().value)}
   return promise;
 }
 function clearBrowseCache(){browseCache.clear()}
@@ -353,7 +355,8 @@ async function loadDatabaseCoverageImages(){
 async function browseDatabasePageFast(game,options={}){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc';
   // One round trip through browse_cards_page when the database has it; otherwise the page, printing and image queries below.
-  let rpc=null;try{rpc=await supabaseFetch('/rpc/browse_cards_page',{method:'POST',body:JSON.stringify({p_game:safeGame,p_limit:take,p_offset:skip,p_desc:direction==='desc'})})}catch(error){console.error('browse rpc failed; using PostgREST queries',error.message)}
+  // Kept for BROWSE_CACHE_MS like other browse rows (catalog data only changes in batch imports); callers get a copy.
+  let rpc=null;try{rpc=structuredClone(await cachedBrowseRows(`rpc:browse_cards_page:${safeGame}|${take}|${skip}|${direction}`,()=>supabaseFetch('/rpc/browse_cards_page',{method:'POST',body:JSON.stringify({p_game:safeGame,p_limit:take,p_offset:skip,p_desc:direction==='desc'})})))}catch(error){console.error('browse rpc failed; using PostgREST queries',error.message)}
   if(rpc&&Array.isArray(rpc.cards)&&Number.isFinite(Number(rpc.total))){
     const cards=rpc.cards.slice(0,take),printingByCard=buildPrintingIndex(cards.flatMap(card=>card.printings||[])),imageByCard=new Map(cards.map(card=>[card.id,card.images||[]]));
     const data=cards.map(({printings,images,...card})=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=Number(rpc.total);
@@ -373,7 +376,7 @@ async function browseDatabaseSeriesCards(game,options={}){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),safeSeries=String(options.seriesId||'').replace(/[^a-z0-9:_-]/gi,'');
   if(!safeSeries)return browseDatabasePageFast(game,options);
   // One round trip through browse_series_cards (same three row sets); otherwise the paged PostgREST queries below.
-  let rpc=null;try{rpc=await supabaseFetch('/rpc/browse_series_cards',{method:'POST',body:JSON.stringify({p_game:safeGame,p_series:safeSeries})})}catch(error){console.error('series browse rpc failed; using PostgREST queries',error.message)}
+  let rpc=null;try{rpc=structuredClone(await cachedBrowseRows(`rpc:browse_series_cards:${safeGame}|${safeSeries}`,()=>supabaseFetch('/rpc/browse_series_cards',{method:'POST',body:JSON.stringify({p_game:safeGame,p_series:safeSeries})})))}catch(error){console.error('series browse rpc failed; using PostgREST queries',error.message)}
   if(rpc&&Array.isArray(rpc.printings)&&Array.isArray(rpc.cards)&&Array.isArray(rpc.images)){
     if(!rpc.cards.length)return {data:[],total:0,hasMore:false,facets:{rarity:{},region:{},language:{},rarityLabels:{}},facetStatus:'complete',limit:options.limit,offset:options.offset,errors:{printings:null,images:null}};
     const printingByCard=buildPrintingIndex(rpc.printings),imageByCard=new Map();
