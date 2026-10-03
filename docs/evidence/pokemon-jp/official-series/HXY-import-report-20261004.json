@@ -1,0 +1,548 @@
+{
+ "summary": {
+  "code": "HXY",
+  "listed": 51,
+  "cards": 36,
+  "batches": 1,
+  "quarantined": 15,
+  "rarityUnknown": 36,
+  "claimed": 0,
+  "evidenceHash": "8ecb916c3a1a199dee410e92167e805663f440eb8a4f5a83a80d0517e04850e7"
+ },
+ "digests": [
+  {
+   "batch": 1,
+   "cards": 36,
+   "planDigest": "38f5338a443e1dbae5433d705c87a846b6d186cbcdb7b9c3ec90949fbbfac313"
+  }
+ ],
+ "quarantined": [
+  {
+   "cardId": "30040",
+   "number": null,
+   "nameJa": "基本草エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "30041",
+   "number": null,
+   "nameJa": "基本フェアリーエネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "30042",
+   "number": null,
+   "nameJa": "基本炎エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "30043",
+   "number": null,
+   "nameJa": "基本悪エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "30044",
+   "number": null,
+   "nameJa": "基本水エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "30045",
+   "number": null,
+   "nameJa": "基本鋼エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "30036",
+   "number": "036",
+   "nameJa": "ポケモンいれかえ",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30168",
+   "number": "036",
+   "nameJa": "ポケモンいれかえ",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30169",
+   "number": "036",
+   "nameJa": "ポケモンいれかえ",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30038",
+   "number": "038",
+   "nameJa": "モンスターボール",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30170",
+   "number": "038",
+   "nameJa": "モンスターボール",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30171",
+   "number": "038",
+   "nameJa": "モンスターボール",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30039",
+   "number": "039",
+   "nameJa": "ティエルノ",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30172",
+   "number": "039",
+   "nameJa": "ティエルノ",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "30173",
+   "number": "039",
+   "nameJa": "ティエルノ",
+   "reason": "DUPLICATE_NUMBER"
+  }
+ ],
+ "rarityUnknown": [
+  {
+   "number": "001",
+   "cardId": "30001",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "002",
+   "cardId": "30002",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "003",
+   "cardId": "30003",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "004",
+   "cardId": "30004",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "005",
+   "cardId": "30005",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "006",
+   "cardId": "30006",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "007",
+   "cardId": "30007",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "008",
+   "cardId": "30008",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "009",
+   "cardId": "30009",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "010",
+   "cardId": "30010",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "011",
+   "cardId": "30011",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "012",
+   "cardId": "30012",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "013",
+   "cardId": "30013",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "014",
+   "cardId": "30014",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "015",
+   "cardId": "30015",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "016",
+   "cardId": "30016",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "017",
+   "cardId": "30017",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "018",
+   "cardId": "30018",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "019",
+   "cardId": "30019",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "020",
+   "cardId": "30020",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "021",
+   "cardId": "30021",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "022",
+   "cardId": "30022",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "023",
+   "cardId": "30023",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "024",
+   "cardId": "30024",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "025",
+   "cardId": "30025",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "026",
+   "cardId": "30026",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "027",
+   "cardId": "30027",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "028",
+   "cardId": "30028",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "029",
+   "cardId": "30029",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "030",
+   "cardId": "30030",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "031",
+   "cardId": "30031",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "032",
+   "cardId": "30032",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "033",
+   "cardId": "30033",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "034",
+   "cardId": "30034",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "035",
+   "cardId": "30035",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "037",
+   "cardId": "30037",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  }
+ ],
+ "claimed": [],
+ "evidence": [
+  {
+   "cardId": "30001",
+   "setMark": "HXY",
+   "number": "001",
+   "nameJa": "ビードル",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30002",
+   "setMark": "HXY",
+   "number": "002",
+   "nameJa": "ヤナップ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30003",
+   "setMark": "HXY",
+   "number": "003",
+   "nameJa": "ハリマロン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30004",
+   "setMark": "HXY",
+   "number": "004",
+   "nameJa": "ハリボーグ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30005",
+   "setMark": "HXY",
+   "number": "005",
+   "nameJa": "ブリガロン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30006",
+   "setMark": "HXY",
+   "number": "006",
+   "nameJa": "マグマッグ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30007",
+   "setMark": "HXY",
+   "number": "007",
+   "nameJa": "バオップ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30008",
+   "setMark": "HXY",
+   "number": "008",
+   "nameJa": "フォッコ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30009",
+   "setMark": "HXY",
+   "number": "009",
+   "nameJa": "テールナー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30010",
+   "setMark": "HXY",
+   "number": "010",
+   "nameJa": "マフォクシー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30011",
+   "setMark": "HXY",
+   "number": "011",
+   "nameJa": "ヒヤップ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30012",
+   "setMark": "HXY",
+   "number": "012",
+   "nameJa": "ケロマツ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30013",
+   "setMark": "HXY",
+   "number": "013",
+   "nameJa": "ゲコガシラ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30014",
+   "setMark": "HXY",
+   "number": "014",
+   "nameJa": "ゲッコウガ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30015",
+   "setMark": "HXY",
+   "number": "015",
+   "nameJa": "ウデッポウ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30016",
+   "setMark": "HXY",
+   "number": "016",
+   "nameJa": "ポチエナ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30017",
+   "setMark": "HXY",
+   "number": "017",
+   "nameJa": "グラエナ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30018",
+   "setMark": "HXY",
+   "number": "018",
+   "nameJa": "マーイーカ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30019",
+   "setMark": "HXY",
+   "number": "019",
+   "nameJa": "コマタナ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30020",
+   "setMark": "HXY",
+   "number": "020",
+   "nameJa": "キリキザン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30021",
+   "setMark": "HXY",
+   "number": "021",
+   "nameJa": "ヒトツキ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30022",
+   "setMark": "HXY",
+   "number": "022",
+   "nameJa": "ブルー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30023",
+   "setMark": "HXY",
+   "number": "023",
+   "nameJa": "グランブル",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30024",
+   "setMark": "HXY",
+   "number": "024",
+   "nameJa": "ペロッパフ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30025",
+   "setMark": "HXY",
+   "number": "025",
+   "nameJa": "カモネギ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30026",
+   "setMark": "HXY",
+   "number": "026",
+   "nameJa": "カビゴン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30027",
+   "setMark": "HXY",
+   "number": "027",
+   "nameJa": "ミルタンク",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30028",
+   "setMark": "HXY",
+   "number": "028",
+   "nameJa": "エネコ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30029",
+   "setMark": "HXY",
+   "number": "029",
+   "nameJa": "ビッパ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30030",
+   "setMark": "HXY",
+   "number": "030",
+   "nameJa": "ホルビー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30031",
+   "setMark": "HXY",
+   "number": "031",
+   "nameJa": "ヤヤコマ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30032",
+   "setMark": "HXY",
+   "number": "032",
+   "nameJa": "トリミアン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30033",
+   "setMark": "HXY",
+   "number": "033",
+   "nameJa": "トリミアン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30034",
+   "setMark": "HXY",
+   "number": "034",
+   "nameJa": "きずぐすり",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30035",
+   "setMark": "HXY",
+   "number": "035",
+   "nameJa": "クラッシュハンマー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "30037",
+   "setMark": "HXY",
+   "number": "037",
+   "nameJa": "ポケモンキャッチャー",
+   "rarityIcon": null
+  }
+ ]
+}

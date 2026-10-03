@@ -98,3 +98,11 @@ test('promo series codes keep their hyphen in IDs and leave the rarity unknown (
     ['pokemon-official-ja-sv-p-259', null, 'ピカチュウ 259 SV-P-259 sv-p259']
   ]);
 });
+
+test('XY-era set marks keep their hyphenated suffix in IDs (ADR 0018)', () => {
+  const card = { cardId: '1', setMark: 'XY7-B', number: '001', nameJa: 'フシギダネ', rarityIcon: 'ic_rare_c', total: '081', list: 'XY7-B', fetchedAt: '2026-10-04T00:00:00Z' };
+  const cache = { lists: { 'XY7-B': { hitCount: 1, cardIds: ['1'], fetchedAt: '2026-10-04T00:00:00Z' } }, details: { 1: card } };
+  const { plans } = buildOfficialJpSeriesPlans({ code: 'XY7-B', seriesMeta: { name_ja: '拡張パック「バンデットリング」', release_date: '2015-06-20' }, cache });
+  assert.equal(plans[0].series.id, 'pokemon-official-ja-xy7-b');
+  assert.deepEqual([plans[0].cards[0].id, plans[0].cards[0].rarity_code], ['pokemon-official-ja-xy7-b-001', 'C']);
+});
