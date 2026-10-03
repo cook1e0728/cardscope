@@ -1,0 +1,721 @@
+{
+ "summary": {
+  "code": "SVD",
+  "listed": 139,
+  "cards": 139,
+  "batches": 2,
+  "quarantined": 0,
+  "rarityUnknown": 139,
+  "evidenceHash": "b120220654a81ef3ee199bf332984e3bc76d3e35a72c260588d0d2c80ef882aa"
+ },
+ "digests": [
+  {
+   "batch": 1,
+   "cards": 100,
+   "planDigest": "081e932d388241b213e16412940709626f56c3668888b78d16f8ab65b8ea80c9"
+  },
+  {
+   "batch": 2,
+   "cards": 39,
+   "planDigest": "a48f981f3c165260a92d34e3f830e5a6240bf392e24c9f57b67aa8fc84ca2e64"
+  }
+ ],
+ "quarantined": [],
+ "rarityUnknown": [
+  {
+   "number": "001",
+   "cardId": "43703",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "002",
+   "cardId": "43704",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "003",
+   "cardId": "43705",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "004",
+   "cardId": "43706",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "005",
+   "cardId": "43707",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "006",
+   "cardId": "43708",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "007",
+   "cardId": "43709",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "008",
+   "cardId": "43710",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "009",
+   "cardId": "43711",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "010",
+   "cardId": "43712",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "011",
+   "cardId": "43713",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "012",
+   "cardId": "43714",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "013",
+   "cardId": "43715",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "014",
+   "cardId": "43716",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "015",
+   "cardId": "43717",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "016",
+   "cardId": "43718",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "017",
+   "cardId": "43719",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "018",
+   "cardId": "43720",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "019",
+   "cardId": "43721",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "020",
+   "cardId": "43722",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "021",
+   "cardId": "43723",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "022",
+   "cardId": "43724",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "023",
+   "cardId": "43725",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "024",
+   "cardId": "43726",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "025",
+   "cardId": "43727",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "026",
+   "cardId": "43728",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "027",
+   "cardId": "43729",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "028",
+   "cardId": "43730",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "029",
+   "cardId": "43731",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "030",
+   "cardId": "43732",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "031",
+   "cardId": "43733",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "032",
+   "cardId": "43734",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "033",
+   "cardId": "43735",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "034",
+   "cardId": "43736",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "035",
+   "cardId": "43737",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "036",
+   "cardId": "43738",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "037",
+   "cardId": "43739",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "038",
+   "cardId": "43740",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "039",
+   "cardId": "43741",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "040",
+   "cardId": "43742",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "041",
+   "cardId": "43743",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "042",
+   "cardId": "43744",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "043",
+   "cardId": "43745",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "044",
+   "cardId": "43746",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "045",
+   "cardId": "43747",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "046",
+   "cardId": "43748",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "047",
+   "cardId": "43749",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "048",
+   "cardId": "43750",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "049",
+   "cardId": "43751",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "050",
+   "cardId": "43752",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "051",
+   "cardId": "43753",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "052",
+   "cardId": "43754",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "053",
+   "cardId": "43755",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "054",
+   "cardId": "43756",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "055",
+   "cardId": "43757",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "056",
+   "cardId": "43758",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "057",
+   "cardId": "43759",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "058",
+   "cardId": "43760",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "059",
+   "cardId": "43761",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "060",
+   "cardId": "43762",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "061",
+   "cardId": "43763",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "062",
+   "cardId": "43764",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "063",
+   "cardId": "43765",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "064",
+   "cardId": "43766",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "065",
+   "cardId": "43767",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "066",
+   "cardId": "43768",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "067",
+   "cardId": "43769",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "068",
+   "cardId": "43770",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "069",
+   "cardId": "43771",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "070",
+   "cardId": "43772",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "071",
+   "cardId": "43773",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "072",
+   "cardId": "43774",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "073",
+   "cardId": "43775",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "074",
+   "cardId": "43776",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "075",
+   "cardId": "43777",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "076",
+   "cardId": "43778",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "077",
+   "cardId": "43779",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "078",
+   "cardId": "43780",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "079",
+   "cardId": "43781",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "080",
+   "cardId": "43782",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "081",
+   "cardId": "43783",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "082",
+   "cardId": "43784",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "083",
+   "cardId": "43785",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "084",
+   "cardId": "43786",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "085",
+   "cardId": "43787",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "086",
+   "cardId": "43788",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "087",
+   "cardId": "43789",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "088",
+   "cardId": "43790",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "089",
+   "cardId": "43791",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "090",
+   "cardId": "43792",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "091",
+   "cardId": "43793",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "092",
+   "cardId": "43794",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "093",
+   "cardId": "43795",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "094",
+   "cardId": "43796",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "095",
+   "cardId": "43797",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "096",
+   "cardId": "43798",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "097",
+   "cardId": "43799",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "098",
+   "cardId": "43800",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "099",
+   "cardId": "43801",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "100",
+   "cardId": "43802",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "101",
+   "cardId": "43803",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "102",
+   "cardId": "43804",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "103",
+   "cardId": "43805",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "104",
+   "cardId": "43806",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "105",
+   "cardId": "43807",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "106",
+   "cardId": "43808",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "107",
+   "cardId": "43809",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "108",
+   "cardId": "43810",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "109",
+   "cardId": "43811",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "110",
+   "cardId": "43812",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "111",
+   "cardId": "43813",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "112",
+   "cardId": "43814",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "113",
+   "cardId": "43815",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "114",
+   "cardId": "43816",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "115",
+   "cardId": "43817",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "116",
+   "cardId": "43818",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "117",
+   "cardId": "43819",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "118",
+   "cardId": "43820",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "119",
+   "cardId": "43821",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "120",
+   "cardId": "43822",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "121",
+   "cardId": "43823",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "122",
+   "cardId": "43824",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "123",
+   "cardId": "43825",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "124",
+   "cardId": "43826",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "125",
+   "cardId": "43827",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "126",
+   "cardId": "43828",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "127",
+   "cardId": "43829",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "128",
+   "cardId": "43830",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "129",
+   "cardId": "43831",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "130",
+   "cardId": "43832",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "131",
+   "cardId": "43833",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "132",
+   "cardId": "43834",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "133",
+   "cardId": "43835",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "134",
+   "cardId": "43836",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "135",
+   "cardId": "43837",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "136",
+   "cardId": "43838",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "137",
+   "cardId": "43839",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "138",
+   "cardId": "43840",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "139",
+   "cardId": "43841",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  }
+ ]
+}

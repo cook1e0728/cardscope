@@ -196,6 +196,13 @@
 - 這兩個朱紫擴充包在 Source archive 中被列入來源異常隔離清單，一直未匯入；ADR 0012 補充適用範圍（封存資料被隔離不可用者同樣以官方卡片搜尋匯入），系列名與發售日取自封存系列檔（`series-meta-sv5-20261003.json`）。
 - 官方各 100 張，零隔離；匯入＋重播零異動；ADR 0011 對齊（可比對 99／100 筆全一致）後 200 張全部取得台灣官方中文名，6 張官方頁無圖示者取台灣官方 ACE。200 張全部 verified、無稀有度空值。快取 `official-series-sv5-cache-20261003.json`。
 
+### 依序執行 23：朱紫／MEGA 牌組類商品 27 個系列（2026-10-03，已完成）
+
+- 官方卡片搜尋頁內嵌的擴充包選單（`pg` 值＝商品 ID）逐一查第一頁，建立「代碼 → 商品名」對照（scratchpad `pg-product-codes.json`）；系列日文名取官方商品名（多款共用代碼者取共同名稱：SVD exスタートデッキ、SVM スタートデッキGenerations、SVI バトルアカデミー），發售日官方清單沒有，留空。`series-meta-decks-20261003.json`。這些代碼在封存中都沒有日文卡名，依 ADR 0012 匯入。
+- 抓取 1,092 頁；匯入 1,006 張（SVAL 18、SVAM 20、SVAW 20、SVB 28、SVC 18、SVD 139、SVEL 18、SVEM 18、SVF 38、SVHK 53、SVHM 53、SVP1 7、SVG 52、SVI 50、SVM 175、SVN 45、SVOD 19、SVOM 20、SVJL 21、SVJP 19、WCS23 30、MA 43、MBD 22、MBG 22、MEE 20、MEZ 20、MEM 18），全部 verified，重播零異動。隔離 86 張：同卡號在官方有兩張（牌組不同卡圖）整號隔離、基本能量官方無卡號。
+- 中文名：ADR 0011 對齊通過 11 個系列（SVAL／SVAM／SVAW／SVB／SVC／SVD／SVEL／SVEM／SVF／SVP1）並取得台灣官方「無標記」；SVHK／SVHM 台版同代碼卡號排列不同（18–21 筆名稱不一致）整系列拒絕；其餘台灣官方快取無資料。之後以 ADR 0013 推導 611 張（7 批，重播零異動，候選 `derived-names/adr-0013-candidates-decks-20261003.json`）。官方頁無稀有度圖示且無台版者維持空值（Printing incomplete）。
+- 日版合計：94 個系列、9,266 張卡；中文名 8,945；`pokemon-card-official-jp` 38 系列 2,180 張（稀有度空值 682，多為牌組）。台版 7,436、美版 20,635 不變。正式站 `pokemon-official-ja-svm-059` 顯示「小仙奶 同名推導、日版 SVM 059」；`マホミル` 日版搜尋 8 筆。
+
 下一個安全起點（擇一，建議依序）：
 1. 手機 CLS 的 0.204 歸因需以真實使用者數據確認（可考慮加入 web-vitals RUM 回報）。
 2. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
