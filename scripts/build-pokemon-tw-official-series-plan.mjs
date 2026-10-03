@@ -8,13 +8,14 @@ const usage = [
   '',
   'ADR 0015: turns the Taiwanese official card search cache into import plans of at most 100 cards for',
   'private.import_pokemon_tw_official_series. expansion-names.json: { expansions: { CODE: official label } };',
-  'the series name is the text inside 「」 of the label, or the whole label. Writes per batch <CODE>-<n>.json,',
+  'the series name is the label without a booster-pack prefix or quote marks. Writes per batch <CODE>-<n>.json,',
   '<CODE>-<n>.sql (gated) and <CODE>-<n>-replay.sql, plus <CODE>-report.json. No network or database calls.'
 ].join('\n');
 
+// Drop the booster-pack prefix (擴充包「超級勇氣」 -> 超級勇氣) but keep deck types and anything after the
+// quotes, so sibling products stay distinct (擴充包「傳說交鋒」SET A, G超起始牌組「傳說交鋒」).
 export function seriesNameFromLabel(label) {
-  const quoted = String(label || '').match(/「([^」]+)」/);
-  return (quoted ? quoted[1] : String(label || '')).trim();
+  return String(label || '').replace(/^(?:擴充包|強化擴充包|高級擴充包)\s*/, '').replace(/\s*[「」]\s*/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 try {

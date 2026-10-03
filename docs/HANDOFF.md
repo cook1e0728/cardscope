@@ -223,7 +223,8 @@
 - 台灣官方系列清單有 134 個代碼，資料庫台版只有 98 個；其中 MEGA 世代（M1L、M1S、M2、M2a、M3、M4、M5、M6、M6a、MC、MF）、SV11B、SV11W、SVK 的官方頁已完整在快取中，不需再連網。
 - 程式：`providers/pokemon-tw-official-series-plan.mjs`、`scripts/build-pokemon-tw-official-series-plan.mjs`（`buildOfficialJpSeriesSql` 增加函式名參數以共用閘門 SQL）。Migration `20261003200000_pokemon_tw_official_series_import`（先以 M1L 在正式庫整批回滾測試）、`20261003210000_pokemon_jp_tw_official_link`。
 - 結果：台版匯入 2,366 張（每批 gated＋重播零異動；隔離 51：同號版本名稱不一致、無卡號），稀有度幾乎全有（M6a 2 張未知）。日版 2,117 張依 ADR 0011 依據的官方詳細頁 ID 連結到台版卡（22 批，重播零異動），作品層最多 2 張卡共用。台版 Printing 7,436 → 9,802。正式站 `pokemon-tcgdex-ja-m3-010` 詳細頁並列「JP M3 010 C」與「TW M3 010 C」。
-- 尚未處理：官方快取沒有的台版代碼（戰術牌組 MT*／SVT*、挑戰牌組 MBD／MBG／SVOD／SVOM、SVM、SVI、SVPS／SVPN、SVQL／SVQP、MJ、SO、AS*／AC* 等，以及特典 M-P／S-P／SM-P）。需先以 `scripts/fetch-pokemon-tw-official-rarity.mjs` 抓清單與詳細頁，再走同一流程。
+- 第二批（同日）：以 `scripts/fetch-pokemon-tw-official-rarity.mjs` 抓 34 個代碼的清單與詳細頁（3,071 個請求，快取累計 13,652 頁）。系列標記比對允許代碼後接 `OUT`（AS／AC 系列圖檔名如 `SM_expantion_mark_as6aOUT`）；SVOM 官方標記為 `SVO_ex`（缺 M，疑為官方筆誤），依 ADR 0010 規則整系列不匯入。系列名改為「去掉擴充包類前綴、保留其他前綴與「」後文字」（傳說交鋒 SET A／G超起始牌組 傳說交鋒 可區分；第一批的 MF 名稱維持原樣）。匯入 33 個系列 2,779 張（戰術牌組 MT*／SVT*、挑戰牌組 MBD／MBG／SVOD、ex初階牌組 SVQL／SVQP、SVM、SVI、SVPS／SVPN、MJ、SO，以及 SM 時期台版 AS5a／As5b／AS5D／AS6a／AS6b／AS6D／AC1a／AC1b／AC1D／AC2a／AC2b／AC2D），全部重播零異動。日版 SVM／SVI 依 ADR 0011 補 26 名、225 個稀有度並連結 26 張；MBD／MBG／SVOD 日台卡號排列不同被拒。
+- 合計：台版 Printing 12,581（稀有度空值 117），日版 12,062（空值 1,063），美版 20,635；作品層最多 2 張卡。尚未處理：SVOM（標記不符）、特典 M-P／S-P／SM-P。
 
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 

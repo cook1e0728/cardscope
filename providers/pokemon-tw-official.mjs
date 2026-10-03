@@ -57,7 +57,8 @@ export function parseOfficialTwDetail(html) {
 // SV4 never matches SV4a.
 export function twSetMarkMatches(mark, code) {
   const escaped = String(code ?? '').replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
-  return Boolean(code) && new RegExp(`(?:^|[^a-z0-9])${escaped}f?(?:[^a-z0-9]|$)`, 'i').test(String(mark ?? ''));
+  // File names may append F (SV9aF_exp) or OUT (SM_expantion_mark_as6aOUT) to the code.
+  return Boolean(code) && new RegExp(`(?:^|[^a-z0-9])${escaped}(?:f|out)?(?:[^a-z0-9]|$)`, 'i').test(String(mark ?? ''));
 }
 
 // Compare names after dropping Source name markup (<火箭隊的>, trailing [支援者], zero-width

@@ -52,6 +52,9 @@ import { twSetMarkMatches } from '../providers/pokemon-tw-official.mjs';
 test('TW set marks must contain the series code as a token, whatever the image naming', () => {
   for (const mark of ['SV6a', 'sv6a_f', 'SV6a F@4x', 'SV6a_F@4x', 'twhk_sv6a_exp', 'exp_SV6a', 'SV6aF_exp']) assert.equal(twSetMarkMatches(mark, 'SV6a'), true, mark);
   assert.equal(twSetMarkMatches('sv6a_f', 'SV6'), false);
+  assert.equal(twSetMarkMatches('SM_expantion_mark_as6aOUT', 'AS6a'), true);
+  assert.equal(twSetMarkMatches('SM_expantion_mark_as6aOUT', 'AS6'), false);
+  assert.equal(twSetMarkMatches('SVO_ex', 'SVOM'), false);
   assert.equal(twSetMarkMatches('PROMO.MARK', 'SV-P'), false);
   const entry = { detailId: '1', listCode: 'SV1a', setMark: 'sv1a_f', number: '001', nameZh: '熱帶龍', rarityLabels: ['C'] };
   assert.equal(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [entry]).rarity, 'C');
