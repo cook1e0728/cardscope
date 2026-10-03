@@ -240,12 +240,18 @@
 - 正式站（無需部署）：`/api/cards/pokemon-mew-ex-sv4a-347-jp` 顯示「夢幻ex、SAR、347」；`/api/cards?series=pokemon-sv4a-jp` 共 360 張；搜尋 `ミュウex`／`夢幻ex` 含 JP SV4a-347／076／327。
 - 證據 `docs/evidence/pokemon-jp/official-series/`：`official-series-sv4a-cache-20261004.json`、`series-meta-sv4a-20261004.json`、`sv4a-seed-20261004.json`、`SV4a-seed-claim-plan-20261004.json`、`SV4a-import-report-20261004.json`、`SV4a-zh-alignment-20261004.json`。
 
+### 依序執行 29：SM0、SMP2 以日本官方卡片搜尋匯入；SM 牌組類與 XY 的查證（2026-10-04）
+
+- 官方清單探查（各一頁）：SMA 68、SMB 15、SMC 21、SMD 32、SMH 131、SMI 38、SMJ 35、SMK 31、SML 69、SMM 31、SMN 29、SMG 12、SMF 12、SME 21、SM0 4、SMP2 25、CP3 32、CP4 140、CP5 38、CP6 103、XYA 23；XY 一般擴充包不完整（XY2 87、XY7 只有 11、XY1／XY8／XY11 為 0），不以官方搜尋整系列匯入。
+- SM0（ピカチュウと新しい仲間たち）4 張、SMP2（名探偵ピカチュウ）25 張：封存有系列檔（日文名、發售日）但無卡片 → ADR 0012 匯入（`series-meta-smp-20261004.json`、快取 `official-series-smp-cache-20261004.json`），各 1 批、重播零異動、全部 verified；SM0 官方頁無稀有度圖示（4 張 Printing incomplete）。台灣官方未收錄 → ADR 0013 推導 23 名（重播零異動，`derived-names/adr-0013-candidates-smp-20261004.json`）；SMP2 剩 6 張無中文名（GX 卡、名探偵ピカチュウ、ヨシダ警部補）。
+- SM 牌組類（SMA–SMN 等 13 個代碼）與 CP3–CP6、XYA：官方卡片搜尋可抓卡，但封存沒有系列檔、官方搜尋頁的商品選單只列現行（SV／MEGA）商品、詳細頁也沒有商品名 → 缺系列日文名的可靠來源，未匯入。若要做，需先查證官方商品頁（另一組頁面，需看 robots 與條款）作為系列名來源。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-03 收尾時的狀態）：
 - 正式庫（2026-10-04 SV4a 後）：寶可夢日版 Printing 12,422、台版 12,581、美版 20,637；SV4a 已完成（依序執行 28）；遊戲王 14,634（中文名 1）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於最新提交，Render 已部署。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
-- 可自行推進但價值較低：日版剩約 1,430 張無中文名（SM 世代 GX／TAG TEAM 與台灣未發行訓練家，無官方中文名可沿用）；台版 SVOM（官方標記 `SVO_ex` 缺 M，依規則未匯入）；MBD／MBG／SVOD／SVK 日台卡號排列不同未連結；特典 SV-P／M-P／S-P／SM-P／SMP 未匯入；手機 CLS 0.204 的歸因需真實使用者數據。
+- 可自行推進但價值較低：SM 牌組類／CP3–CP6 的系列名來源（依序執行 29）；日版剩約 1,430 張無中文名（SM 世代 GX／TAG TEAM 與台灣未發行訓練家，無官方中文名可沿用）；台版 SVOM（官方標記 `SVO_ex` 缺 M，依規則未匯入）；MBD／MBG／SVOD／SVK 日台卡號排列不同未連結；特典 SV-P／M-P／S-P／SM-P／SMP 未匯入；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選：M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
