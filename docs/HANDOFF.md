@@ -208,6 +208,7 @@
 - 發現：Source archive 的 data-asia/SM 其實有 SM1S～SM12a 的日文卡名（先前只匯入 SM1p–SM5p），所以走原本的封存流程（`scripts/import-pokemon-jp-series.sh`，`CARDSCOPE_WORK` 必須用 Windows 路徑如 `C:/Users/...`，否則腳本內的 `node require` 失敗）。重新產生既有日版列快照 `sm-era/existing-jp-rows-sm-20261003.json`（9,266 列），observedAt `2026-10-03T06:04:38Z`。
 - 匯入 30 個系列 2,736 張（SM6／SM7／SM8／SM9／SM10／SM11／SM12 各 2 批、SM8b／SM12a 3 批），全部 gated＋重播零異動；無台版，所以無台版連結。ADR 0013 推導中文名 1,601 張（17 批，重播零異動，候選 `derived-names/adr-0013-candidates-sm-20261003.json`）。
 - 日版合計：124 個系列、12,002 張，10,546 張有中文名。SM 世代（含 SM1p–SM5p）3,139 張：中文名 1,820、verified 366。
+- XY 世代：封存只有 CP1（34）、CP2（27）有日文名（BW 以前沒有），已同流程匯入（重播零異動），ADR 0013 推導 22 名；既有列快照 `xy-era/existing-jp-rows-xy-20261003.json`。其餘 XY 以前的系列只能走 ADR 0012（日本官方卡片搜尋），尚未查證官方是否收錄。
 - 進行中：日本官方卡片頁核對（ADR 0007／0008／0009）——背景抓取 2,736 筆到 `docs/evidence/pokemon-jp/official-series/official-sm-cache-20261003.json`（scratchpad `sm-needed.json`、`sm-fetch.log`）。完成後以 `scripts/build-pokemon-jp-official-rarity-plan.mjs` 產生 fill／correct／identity 計畫並執行、重播。尚未匯入：SM 特典 SMP（445，比照 SV-P 不匯入）、牌組代碼 SMA／SMH／SMI／SMJ／SMK／SML／SMM／SMN（封存無系列檔）。
 
 下一個安全起點（擇一，建議依序）：

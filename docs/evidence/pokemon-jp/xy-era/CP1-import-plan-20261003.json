@@ -1,0 +1,952 @@
+{
+  "planVersion": 1,
+  "source": "tcgdex-ja",
+  "seriesProviderId": "CP1",
+  "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+  "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+  "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac",
+  "sourceObservedAt": "2026-10-03T06:12:58.000Z",
+  "series": {
+    "id": "pokemon-tcgdex-ja-cp1",
+    "provider_id": "CP1",
+    "name_ja": "マグマ団VSアクア団 ダブルクライシス",
+    "release_date": "2015-01-30",
+    "source_url": "https://api.tcgdex.net/v2/ja/sets/CP1",
+    "metadata": {
+      "sourceEvidence": {
+        "url": "https://api.tcgdex.net/v2/ja/sets/CP1",
+        "urlType": "derived-provider-endpoint",
+        "observedAt": "2026-10-03T06:12:58.000Z",
+        "retrievedVia": "github-archive",
+        "archive": {
+          "repository": "tcgdex/cards-database",
+          "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+          "path": "data-asia/XY/CP1.ts"
+        }
+      },
+      "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+      "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+      "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+    }
+  },
+  "cards": [
+    {
+      "id": "pokemon-tcgdex-ja-cp1-001",
+      "provider_id": "CP1-001",
+      "official_card_number": "001",
+      "name_ja": "マグマ団のドンメル",
+      "rarity_code": "C",
+      "search_text": "マグマ団のドンメル 001 CP1-001 cp1001",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-001",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-001",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-001",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/001.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-002",
+      "provider_id": "CP1-002",
+      "official_card_number": "002",
+      "name_ja": "マグマ団のバクーダ",
+      "rarity_code": "R",
+      "search_text": "マグマ団のバクーダ 002 CP1-002 cp1002",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-002",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-002",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-002",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/002.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-003",
+      "provider_id": "CP1-003",
+      "official_card_number": "003",
+      "name_ja": "アクア団のタマザラシ",
+      "rarity_code": "C",
+      "search_text": "アクア団のタマザラシ 003 CP1-003 cp1003",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-003",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-003",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-003",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/003.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-004",
+      "provider_id": "CP1-004",
+      "official_card_number": "004",
+      "name_ja": "アクア団のトドグラー",
+      "rarity_code": "C",
+      "search_text": "アクア団のトドグラー 004 CP1-004 cp1004",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-004",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-004",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-004",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/004.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-005",
+      "provider_id": "CP1-005",
+      "official_card_number": "005",
+      "name_ja": "アクア団のトドゼルガ",
+      "rarity_code": "R",
+      "search_text": "アクア団のトドゼルガ 005 CP1-005 cp1005",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-005",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-005",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-005",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/005.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-006",
+      "provider_id": "CP1-006",
+      "official_card_number": "006",
+      "name_ja": "アクア団のカイオーガEX",
+      "rarity_code": "RR",
+      "search_text": "アクア団のカイオーガEX 006 CP1-006 cp1006",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-006",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-006",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-006",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/006.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-007",
+      "provider_id": "CP1-007",
+      "official_card_number": "007",
+      "name_ja": "アクア団のベトベター",
+      "rarity_code": "C",
+      "search_text": "アクア団のベトベター 007 CP1-007 cp1007",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-007",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-007",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-007",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/007.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-008",
+      "provider_id": "CP1-008",
+      "official_card_number": "008",
+      "name_ja": "アクア団のベトベトン",
+      "rarity_code": "R",
+      "search_text": "アクア団のベトベトン 008 CP1-008 cp1008",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-008",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-008",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-008",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/008.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-009",
+      "provider_id": "CP1-009",
+      "official_card_number": "009",
+      "name_ja": "アクア団のハブネーク",
+      "rarity_code": "C",
+      "search_text": "アクア団のハブネーク 009 CP1-009 cp1009",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-009",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-009",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-009",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/009.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-010",
+      "provider_id": "CP1-010",
+      "official_card_number": "010",
+      "name_ja": "マグマ団のヤジロン",
+      "rarity_code": "C",
+      "search_text": "マグマ団のヤジロン 010 CP1-010 cp1010",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-010",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-010",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-010",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/010.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-011",
+      "provider_id": "CP1-011",
+      "official_card_number": "011",
+      "name_ja": "マグマ団のネンドール",
+      "rarity_code": "R",
+      "search_text": "マグマ団のネンドール 011 CP1-011 cp1011",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-011",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-011",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-011",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/011.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-012",
+      "provider_id": "CP1-012",
+      "official_card_number": "012",
+      "name_ja": "マグマ団のココドラ",
+      "rarity_code": "C",
+      "search_text": "マグマ団のココドラ 012 CP1-012 cp1012",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-012",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-012",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-012",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/012.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-013",
+      "provider_id": "CP1-013",
+      "official_card_number": "013",
+      "name_ja": "マグマ団のコドラ",
+      "rarity_code": "C",
+      "search_text": "マグマ団のコドラ 013 CP1-013 cp1013",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-013",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-013",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-013",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/013.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-014",
+      "provider_id": "CP1-014",
+      "official_card_number": "014",
+      "name_ja": "マグマ団のボスゴドラ",
+      "rarity_code": "R",
+      "search_text": "マグマ団のボスゴドラ 014 CP1-014 cp1014",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-014",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-014",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-014",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/014.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-015",
+      "provider_id": "CP1-015",
+      "official_card_number": "015",
+      "name_ja": "マグマ団のグラードンEX",
+      "rarity_code": "RR",
+      "search_text": "マグマ団のグラードンEX 015 CP1-015 cp1015",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-015",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-015",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-015",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/015.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-016",
+      "provider_id": "CP1-016",
+      "official_card_number": "016",
+      "name_ja": "アクア団のポチエナ",
+      "rarity_code": "C",
+      "search_text": "アクア団のポチエナ 016 CP1-016 cp1016",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-016",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-016",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-016",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/016.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-017",
+      "provider_id": "CP1-017",
+      "official_card_number": "017",
+      "name_ja": "マグマ団のポチエナ",
+      "rarity_code": "C",
+      "search_text": "マグマ団のポチエナ 017 CP1-017 cp1017",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-017",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-017",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-017",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/017.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-018",
+      "provider_id": "CP1-018",
+      "official_card_number": "018",
+      "name_ja": "アクア団のグラエナ",
+      "rarity_code": "C",
+      "search_text": "アクア団のグラエナ 018 CP1-018 cp1018",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-018",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-018",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-018",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/018.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-019",
+      "provider_id": "CP1-019",
+      "official_card_number": "019",
+      "name_ja": "マグマ団のグラエナ",
+      "rarity_code": "C",
+      "search_text": "マグマ団のグラエナ 019 CP1-019 cp1019",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-019",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-019",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-019",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/019.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-020",
+      "provider_id": "CP1-020",
+      "official_card_number": "020",
+      "name_ja": "アクア団のキバニア",
+      "rarity_code": "C",
+      "search_text": "アクア団のキバニア 020 CP1-020 cp1020",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-020",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-020",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-020",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/020.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-021",
+      "provider_id": "CP1-021",
+      "official_card_number": "021",
+      "name_ja": "アクア団のサメハダー",
+      "rarity_code": "R",
+      "search_text": "アクア団のサメハダー 021 CP1-021 cp1021",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-021",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-021",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-021",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/021.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-022",
+      "provider_id": "CP1-022",
+      "official_card_number": "022",
+      "name_ja": "マグマ団のザングース",
+      "rarity_code": "C",
+      "search_text": "マグマ団のザングース 022 CP1-022 cp1022",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-022",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-022",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-022",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/022.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-023",
+      "provider_id": "CP1-023",
+      "official_card_number": "023",
+      "name_ja": "アクア団のスーパーボール",
+      "rarity_code": "U",
+      "search_text": "アクア団のスーパーボール 023 CP1-023 cp1023",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-023",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-023",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-023",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/023.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-024",
+      "provider_id": "CP1-024",
+      "official_card_number": "024",
+      "name_ja": "マグマ団のスーパーボール",
+      "rarity_code": "U",
+      "search_text": "マグマ団のスーパーボール 024 CP1-024 cp1024",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-024",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-024",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-024",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/024.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-025",
+      "provider_id": "CP1-025",
+      "official_card_number": "025",
+      "name_ja": "アクアディフューザー",
+      "rarity_code": "U",
+      "search_text": "アクアディフューザー 025 CP1-025 cp1025",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-025",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-025",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-025",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/025.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-026",
+      "provider_id": "CP1-026",
+      "official_card_number": "026",
+      "name_ja": "マグマポインター",
+      "rarity_code": "U",
+      "search_text": "マグマポインター 026 CP1-026 cp1026",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-026",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-026",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-026",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/026.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-027",
+      "provider_id": "CP1-027",
+      "official_card_number": "027",
+      "name_ja": "アクア団の幹部",
+      "rarity_code": "U",
+      "search_text": "アクア団の幹部 027 CP1-027 cp1027",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-027",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-027",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-027",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/027.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-028",
+      "provider_id": "CP1-028",
+      "official_card_number": "028",
+      "name_ja": "アクア団のしたっぱ",
+      "rarity_code": "U",
+      "search_text": "アクア団のしたっぱ 028 CP1-028 cp1028",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-028",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-028",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-028",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/028.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-029",
+      "provider_id": "CP1-029",
+      "official_card_number": "029",
+      "name_ja": "マグマ団の幹部",
+      "rarity_code": "U",
+      "search_text": "マグマ団の幹部 029 CP1-029 cp1029",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-029",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-029",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-029",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/029.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-030",
+      "provider_id": "CP1-030",
+      "official_card_number": "030",
+      "name_ja": "マグマ団のしたっぱ",
+      "rarity_code": "U",
+      "search_text": "マグマ団のしたっぱ 030 CP1-030 cp1030",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-030",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-030",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-030",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/030.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-031",
+      "provider_id": "CP1-031",
+      "official_card_number": "031",
+      "name_ja": "アクア団の秘密基地",
+      "rarity_code": "U",
+      "search_text": "アクア団の秘密基地 031 CP1-031 cp1031",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-031",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-031",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-031",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/031.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-032",
+      "provider_id": "CP1-032",
+      "official_card_number": "032",
+      "name_ja": "マグマ団の秘密基地",
+      "rarity_code": "U",
+      "search_text": "マグマ団の秘密基地 032 CP1-032 cp1032",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-032",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-032",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-032",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/032.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-033",
+      "provider_id": "CP1-033",
+      "official_card_number": "033",
+      "name_ja": "ダブルアクアエネルギー",
+      "rarity_code": "U",
+      "search_text": "ダブルアクアエネルギー 033 CP1-033 cp1033",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-033",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-033",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-033",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/033.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    },
+    {
+      "id": "pokemon-tcgdex-ja-cp1-034",
+      "provider_id": "CP1-034",
+      "official_card_number": "034",
+      "name_ja": "ダブルマグマエネルギー",
+      "rarity_code": "U",
+      "search_text": "ダブルマグマエネルギー 034 CP1-034 cp1034",
+      "source_url": "https://api.tcgdex.net/v2/ja/cards/CP1-034",
+      "release_date": "2015-01-30",
+      "metadata": {
+        "tcgdexId": "CP1-034",
+        "sourceEvidence": {
+          "url": "https://api.tcgdex.net/v2/ja/cards/CP1-034",
+          "urlType": "derived-provider-endpoint",
+          "observedAt": "2026-10-03T06:12:58.000Z",
+          "retrievedVia": "github-archive",
+          "archive": {
+            "repository": "tcgdex/cards-database",
+            "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+            "path": "data-asia/XY/CP1/034.ts"
+          }
+        },
+        "manifestHash": "ef4ea41649ec64d7d87acea6fb90df7efc34377e7bf87592a80e340638cc37d3",
+        "sourceHash": "ab7ca91e35e3bbfd09c6d926d50da33b8fe9f1b38178ed610aa9fb40e3e975dd",
+        "seedHash": "0069c1c7edcb893b0fb3ad528c35852d599bbd4151c1d5a4e2f12f91552d45ac"
+      }
+    }
+  ]
+}
