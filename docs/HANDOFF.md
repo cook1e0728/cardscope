@@ -211,6 +211,8 @@
 - XY 世代：封存只有 CP1（34）、CP2（27）有日文名（BW 以前沒有），已同流程匯入（重播零異動），ADR 0013 推導 22 名；既有列快照 `xy-era/existing-jp-rows-xy-20261003.json`。其餘 XY 以前的系列只能走 ADR 0012（日本官方卡片搜尋），尚未查證官方是否收錄。
 - 進行中：日本官方卡片頁核對（ADR 0007／0008／0009）——背景抓取 2,736 筆到 `docs/evidence/pokemon-jp/official-series/official-sm-cache-20261003.json`（scratchpad `sm-needed.json`、`sm-fetch.log`）。完成後以 `scripts/build-pokemon-jp-official-rarity-plan.mjs` 產生 fill／correct／identity 計畫並執行、重播。尚未匯入：SM 特典 SMP（445，比照 SV-P 不匯入）、牌組代碼 SMA／SMH／SMI／SMJ／SMK／SML／SMM／SMN（封存無系列檔）。
 
+待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
+
 下一個安全起點（擇一，建議依序）：
 1. 手機 CLS 的 0.204 歸因需以真實使用者數據確認（可考慮加入 web-vitals RUM 回報）。
 2. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
