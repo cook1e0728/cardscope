@@ -253,12 +253,20 @@
 - 中文名：ADR 0011 對 SV-P 不對齊（REJECTED_MISALIGNED）、M-P 台灣官方無資料；ADR 0013 推導 249 名（3 批，重播零異動，`derived-names/adr-0013-candidates-promo-20261004.json`）→ SV-P 187／282、M-P 62／126 有中文名。
 - 正式站：`/api/cards?series=pokemon-official-ja-sv-p` 共 282 張（001 皮卡丘…）；`pokemon-official-ja-m-p-154` 顯示「路卡利歐｜ルカリオ、JP M-P 154」。寶可夢 Printing：日版 12,859、台版 12,581、美版 20,637。
 
+### 依序執行 31：SM 牌組類、CP3–CP6、特典 S-P 以官方商品名為系列名匯入（ADR 0012 補充，2026-10-04，已完成）
+
+- 系列名來源（使用者同意查官方商品頁）：pokemon-card.com 沒有 robots.txt（404）。官方商品清單 `/products/resultAPI.php`（1,963 筆）多數 SM 商品沒有卡片清單連結；改以卡片搜尋 `resultAPI.php?pg=<商品 ID>` 掃描 ID 380–700，其 `searchCondition` 回傳官方商品名、卡圖資料夾即系列代碼（證據 `official-product-ids-20261004.json`）。規則記於 ADR 0012：去品牌前綴、多款共用代碼取共同名稱、發售日取商品清單同名商品，同名多年份（SMB、SML）留空。`pg=S-P` 的 `searchCondition` 為「ポケモンカードゲームソード&シールド プロモーションカード」（ADR 0017 已補註）。
+- 抓取 1,192 頁（快取 `official-series-smdecks-cache-20261004.json`，系列 meta `series-meta-smdecks-20261004.json`＋`series-meta-sp-20261004.json`）。匯入 19 個系列 1,114 張，全部 gated＋重播零異動、Card verified：SMA 59、SMB 6、SMC 21、SMD 24、SME 21、SMF 12、SMG 12、SMH 131、SMI 38、SMJ 35、SMK 31、SML 44、SMM 31、SMN 29、CP3 32、CP4 131、CP5 38、CP6 103、S-P 316。隔離 78（同卡號多張、無卡號）。官方頁有稀有度圖示者只有 CP3、CP6 與 S-P 5 張，其餘稀有度未知（Printing incomplete）。
+- 中文名：台灣官方未收錄（ADR 0011 NOT_READY）；ADR 0013 推導 705 名（8 批，重播零異動，`derived-names/adr-0013-candidates-smdecks-20261004.json`）。
+- 日版合計：149 個系列、13,973 張，中文名 11,967。寶可夢 Printing：日版 13,973、台版 12,581、美版 20,637。正式站 `/api/cards?series=pokemon-official-ja-sma` 59 張（001 凱羅斯）、`-cp6` 103、`-s-p` 316。
+- 未做：XY 世代其他商品（官方以 XY1-Bx 等資料夾代碼列出，與 `pg=XY7` 結果不一致，需另行查證系列標記）、20th、SM-XY、MMB-P／MMB-S。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-03 收尾時的狀態）：
-- 正式庫（2026-10-04 依序執行 30 後）：寶可夢日版 Printing 12,859、台版 12,581、美版 20,637；SV4a、SM0／SMP2、SV-P／M-P 已完成（依序執行 28–30）；遊戲王 14,634（中文名 1）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於最新提交，Render 已部署。
+- 正式庫（2026-10-04 依序執行 31 後）：寶可夢日版 Printing 13,973（149 系列、中文名 11,967）、台版 12,581、美版 20,637；SV4a、SM0／SMP2、SV-P／M-P、SM 牌組類／CP3–CP6／S-P 已完成（依序執行 28–31）；遊戲王 14,634（中文名 1）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於最新提交，Render 已部署。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
-- 可自行推進但價值較低：SM 牌組類／CP3–CP6 的系列名來源（依序執行 29）；日版剩約 1,430 張無中文名（SM 世代 GX／TAG TEAM 與台灣未發行訓練家，無官方中文名可沿用）；台版 SVOM（官方標記 `SVO_ex` 缺 M，依規則未匯入）；MBD／MBG／SVOD／SVK 日台卡號排列不同未連結；特典 S-P（無日文系列名來源）未匯入；手機 CLS 0.204 的歸因需真實使用者數據。
+- 可自行推進但價值較低：XY 世代其他商品的系列標記查證（依序執行 31）；日版剩約 1,430 張無中文名（SM 世代 GX／TAG TEAM 與台灣未發行訓練家，無官方中文名可沿用）；台版 SVOM（官方標記 `SVO_ex` 缺 M，依規則未匯入）；MBD／MBG／SVOD／SVK 日台卡號排列不同未連結；特典已匯入 SV-P／M-P／S-P；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選：M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）

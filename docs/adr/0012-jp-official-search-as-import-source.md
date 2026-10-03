@@ -13,6 +13,7 @@ Source archive（TCGdex `c5c0a8a`）的 data-asia/S 中有 9 個日版系列有�
 - 中文名之後依 ADR 0011（台灣官方同卡號，須通過對齊檢查），不在匯入時填。
 - 適用範圍補充（2026-10-03，照建議）：封存中有卡片但因來源異常被列入隔離清單的系列（SV5K ワイルドフォース；同期姊妹包 SV5M サイバージャッジ一併）同樣以本決定匯入，判準相同（系列代碼尚無 `tcgdex-ja` 系列）。
 - 實作（2026-10-03）：系列的日文名與日文發售日取自 Source archive 的系列檔（`data-asia/S/<系列>.ts` 的 `name.ja`、`releaseDate.ja`；卡片層沒有日文名，系列層有），依據記在 series metadata `seriesNameBasis`。卡數以官方系列清單為準；官方清單可能漏列個別卡（先前 SV6a-092 的例子），漏列者不補、不猜。函式 `private.import_pokemon_jp_official_series`（migration `20261003080000`），證據為整個系列的官方頁快取與每系列 evidenceHash。
+- 系列名來源補充（2026-10-04，照建議）：封存沒有系列檔的代碼（SM 牌組類 SMA–SMN、CP3–CP6、特典 S-P），系列日文名取官方卡片搜尋 `resultAPI.php?pg=<商品 ID>` 回傳的 `searchCondition`（官方商品名），代碼由同一回應的卡圖資料夾對應；去掉「ポケモンカードゲーム XY／XY BREAK／サン&ムーン」品牌前綴，多款商品共用一個代碼時取共同名稱（同牌組類先例）。發售日取官方商品清單（`/products/resultAPI.php`）同名商品的日期；同名商品不只一個年份時留空。對照證據 `official-product-ids-20261004.json`、`series-meta-smdecks-20261004.json`。
 
 ## Considered Options
 

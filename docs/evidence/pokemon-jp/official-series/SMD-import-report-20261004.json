@@ -1,0 +1,362 @@
+{
+ "summary": {
+  "code": "SMD",
+  "listed": 32,
+  "cards": 24,
+  "batches": 1,
+  "quarantined": 8,
+  "rarityUnknown": 24,
+  "claimed": 0,
+  "evidenceHash": "5730dde06bfea73a056522c51471b722161ac7e5e9317562eb2351039a47ff9f"
+ },
+ "digests": [
+  {
+   "batch": 1,
+   "cards": 24,
+   "planDigest": "fc6f6a5ab428414d25799089f8a24ae9afc7e02da018aeed7009ee96e1e69263"
+  }
+ ],
+ "quarantined": [
+  {
+   "cardId": "33536",
+   "number": null,
+   "nameJa": "基本闘エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "33535",
+   "number": null,
+   "nameJa": "基本雷エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "33552",
+   "number": null,
+   "nameJa": "基本超エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "33551",
+   "number": null,
+   "nameJa": "基本水エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "33532",
+   "number": "022",
+   "nameJa": "ポケモンいれかえ",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "33547",
+   "number": "022",
+   "nameJa": "ポケモンいれかえ",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "33533",
+   "number": "024",
+   "nameJa": "モンスターボール",
+   "reason": "DUPLICATE_NUMBER"
+  },
+  {
+   "cardId": "33549",
+   "number": "024",
+   "nameJa": "モンスターボール",
+   "reason": "DUPLICATE_NUMBER"
+  }
+ ],
+ "rarityUnknown": [
+  {
+   "number": "001",
+   "cardId": "33521",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "002",
+   "cardId": "33537",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "003",
+   "cardId": "33538",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "004",
+   "cardId": "33539",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "005",
+   "cardId": "33522",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "006",
+   "cardId": "33523",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "007",
+   "cardId": "33524",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "008",
+   "cardId": "33540",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "009",
+   "cardId": "33541",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "010",
+   "cardId": "33542",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "011",
+   "cardId": "33525",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "012",
+   "cardId": "33526",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "013",
+   "cardId": "33543",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "014",
+   "cardId": "33527",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "015",
+   "cardId": "33528",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "016",
+   "cardId": "33529",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "017",
+   "cardId": "33544",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "018",
+   "cardId": "33545",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "019",
+   "cardId": "33530",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "020",
+   "cardId": "33531",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "021",
+   "cardId": "33546",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "023",
+   "cardId": "33548",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "025",
+   "cardId": "33534",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "026",
+   "cardId": "33550",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  }
+ ],
+ "claimed": [],
+ "evidence": [
+  {
+   "cardId": "33521",
+   "setMark": "SMD",
+   "number": "001",
+   "nameJa": "モクロー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33537",
+   "setMark": "SMD",
+   "number": "002",
+   "nameJa": "ヒドイデ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33538",
+   "setMark": "SMD",
+   "number": "003",
+   "nameJa": "ドヒドイデ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33539",
+   "setMark": "SMD",
+   "number": "004",
+   "nameJa": "ハギギシリ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33522",
+   "setMark": "SMD",
+   "number": "005",
+   "nameJa": "サトシのピカチュウGX",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33523",
+   "setMark": "SMD",
+   "number": "006",
+   "nameJa": "トゲデマル",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33524",
+   "setMark": "SMD",
+   "number": "007",
+   "nameJa": "カプ・コケコ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33540",
+   "setMark": "SMD",
+   "number": "008",
+   "nameJa": "ソーナンス",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33541",
+   "setMark": "SMD",
+   "number": "009",
+   "nameJa": "ヤトウモリ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33542",
+   "setMark": "SMD",
+   "number": "010",
+   "nameJa": "ロケット団のミミッキュGX",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33525",
+   "setMark": "SMD",
+   "number": "011",
+   "nameJa": "イワンコ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33526",
+   "setMark": "SMD",
+   "number": "012",
+   "nameJa": "ルガルガン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33543",
+   "setMark": "SMD",
+   "number": "013",
+   "nameJa": "ニャース",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33527",
+   "setMark": "SMD",
+   "number": "014",
+   "nameJa": "ケンタロス",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33528",
+   "setMark": "SMD",
+   "number": "015",
+   "nameJa": "ヤングース",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33529",
+   "setMark": "SMD",
+   "number": "016",
+   "nameJa": "デカグース",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33544",
+   "setMark": "SMD",
+   "number": "017",
+   "nameJa": "ヌイコグマ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33545",
+   "setMark": "SMD",
+   "number": "018",
+   "nameJa": "キテルグマ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33530",
+   "setMark": "SMD",
+   "number": "019",
+   "nameJa": "エネルギー回収",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33531",
+   "setMark": "SMD",
+   "number": "020",
+   "nameJa": "きずぐすり",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33546",
+   "setMark": "SMD",
+   "number": "021",
+   "nameJa": "クラッシュハンマー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33548",
+   "setMark": "SMD",
+   "number": "023",
+   "nameJa": "ポケモンキャッチャー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33534",
+   "setMark": "SMD",
+   "number": "025",
+   "nameJa": "サトシのゆうじょう",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "33550",
+   "setMark": "SMD",
+   "number": "026",
+   "nameJa": "ロケット団のいやがらせ",
+   "rarityIcon": null
+  }
+ ]
+}
