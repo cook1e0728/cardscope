@@ -87,3 +87,14 @@ test('the Seed claim plan needs one official page with the same number and name'
   assert.throws(() => buildOfficialJpSeedClaimPlan({ code: 'S4', cache, seed: { ...seed, nameJa: 'ミュウ' }, evidenceHash: 'a'.repeat(64), sourceObservedAt: 'x' }), /SEED_CLAIM_NAME/);
   assert.throws(() => buildOfficialJpSeedClaimPlan({ code: 'S4', cache, seed: { ...seed, cardNumber: '346/190' }, evidenceHash: 'a'.repeat(64), sourceObservedAt: 'x' }), /SEED_CLAIM_PAGES/);
 });
+
+test('promo series codes keep their hyphen in IDs and leave the rarity unknown (ADR 0017)', () => {
+  const promo = (cardId, number) => ({ cardId, setMark: 'SV-P', number, nameJa: 'ピカチュウ', rarityIcon: null, total: 'SV-P', list: 'SV-P', fetchedAt: '2026-10-04T00:00:00Z' });
+  const cache = { lists: { 'SV-P': { hitCount: 2, cardIds: ['1', '2'], fetchedAt: '2026-10-04T00:00:00Z' } }, details: { 1: promo('1', '259'), 2: promo('2', '001') } };
+  const { plans } = buildOfficialJpSeriesPlans({ code: 'SV-P', seriesMeta: { name_ja: 'プロモカード', release_date: null }, cache });
+  assert.equal(plans[0].series.id, 'pokemon-official-ja-sv-p');
+  assert.deepEqual(plans[0].cards.map(c => [c.id, c.rarity_code, c.search_text]), [
+    ['pokemon-official-ja-sv-p-001', null, 'ピカチュウ 001 SV-P-001 sv-p001'],
+    ['pokemon-official-ja-sv-p-259', null, 'ピカチュウ 259 SV-P-259 sv-p259']
+  ]);
+});
