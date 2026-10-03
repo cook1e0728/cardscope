@@ -35,3 +35,21 @@ test('image health keeps URL, policy, and real-load sampling as separate states'
   assert.equal(health.sampledLoadStatus,'unknown');
   assert.equal(imageSourceOf({imageSource:'preferred',source:'fallback'}),'preferred');
 });
+
+test('a stale-while-revalidate snapshot cache returns the last snapshot at once and refreshes in the background', async () => {
+  let clock = 0, loads = 0, release;
+  const cache = createBoundedSnapshotCache({ ttlMs: 1000, maxStaleMs: 5000, now: () => clock, serveStaleWhileRevalidate: true });
+  assert.equal((await cache.get(async () => { loads++; return 'first'; })).data, 'first');
+  clock = 2000;
+  const slow = () => new Promise(resolve => { loads++; release = () => resolve('second'); });
+  const stale = await cache.get(slow);
+  assert.equal(stale.data, 'first');
+  assert.equal(stale.cache.status, 'stale');
+  assert.equal((await cache.get(slow)).data, 'first', 'a second caller shares the running refresh');
+  assert.equal(loads, 2);
+  release();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal((await cache.get(slow)).data, 'second');
+  clock = 10000;
+  await assert.rejects(cache.get(async () => { throw new Error('down'); }), /down/, 'past the stale window the caller waits and sees the failure');
+});

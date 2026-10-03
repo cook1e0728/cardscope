@@ -226,6 +226,11 @@
 - 第二批（同日）：以 `scripts/fetch-pokemon-tw-official-rarity.mjs` 抓 34 個代碼的清單與詳細頁（3,071 個請求，快取累計 13,652 頁）。系列標記比對允許代碼後接 `OUT`（AS／AC 系列圖檔名如 `SM_expantion_mark_as6aOUT`）；SVOM 官方標記為 `SVO_ex`（缺 M，疑為官方筆誤），依 ADR 0010 規則整系列不匯入。系列名改為「去掉擴充包類前綴、保留其他前綴與「」後文字」（傳說交鋒 SET A／G超起始牌組 傳說交鋒 可區分；第一批的 MF 名稱維持原樣）。匯入 33 個系列 2,779 張（戰術牌組 MT*／SVT*、挑戰牌組 MBD／MBG／SVOD、ex初階牌組 SVQL／SVQP、SVM、SVI、SVPS／SVPN、MJ、SO，以及 SM 時期台版 AS5a／As5b／AS5D／AS6a／AS6b／AS6D／AC1a／AC1b／AC1D／AC2a／AC2b／AC2D），全部重播零異動。日版 SVM／SVI 依 ADR 0011 補 26 名、225 個稀有度並連結 26 張；MBD／MBG／SVOD 日台卡號排列不同被拒。
 - 合計：台版 Printing 12,581（稀有度空值 117），日版 12,062（空值 1,063），美版 20,635；作品層最多 2 張卡。尚未處理：SVOM（標記不符）、特典 M-P／S-P／SM-P。
 
+### 依序執行 27：健康檢查遊戲王顯示 0 張（2026-10-03，已修正）
+
+- 現象：`/api/catalog/health` 的遊戲王 cards 0（資料庫實有 14,634）。原因：卡片總數增至 65,476 後，`catalog_health_snapshot_v2` 需約 14 秒（上限 15 秒），而伺服器所有 fetch 預設 12 秒逾時，v2 失敗後退回舊版快照（舊版不含遊戲王的正確數字）。
+- 修正：健康快照請求單獨 60 秒逾時；`createBoundedSnapshotCache` 新增 `serveStaleWhileRevalidate`，健康與覆蓋率快取過期時先回上一份、背景更新；啟動預熱也載入健康快照；migration `20261003220000` 把函式上限提高到 45 秒。Node 284/284。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（擇一，建議依序）：

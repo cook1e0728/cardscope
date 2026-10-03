@@ -30,7 +30,10 @@ function iso(value) {
 export function createBoundedSnapshotCache({
   ttlMs = DEFAULT_SNAPSHOT_TTL_MS,
   maxStaleMs = DEFAULT_SNAPSHOT_MAX_STALE_MS,
-  now = () => Date.now()
+  now = () => Date.now(),
+  // When true, an expired snapshot still inside the stale window is returned at once while one
+  // background load refreshes it (for snapshots that take many seconds to compute).
+  serveStaleWhileRevalidate = false
 } = {}) {
   const ttl = duration(ttlMs, DEFAULT_SNAPSHOT_TTL_MS);
   const maxStale = duration(maxStaleMs, DEFAULT_SNAPSHOT_MAX_STALE_MS);
@@ -58,7 +61,8 @@ export function createBoundedSnapshotCache({
     if (typeof loader !== 'function') throw new TypeError('snapshot loader must be a function');
     const nowMs = timestamp(now());
     if (lastSuccess && nowMs < lastSuccess.expiresAt) return result(lastSuccess.data, 'fresh', lastSuccess.observedAt);
-    if (pending) return pending;
+    const staleUsable = serveStaleWhileRevalidate && lastSuccess && nowMs - lastSuccess.observedAt <= ttl + maxStale;
+    if (pending) return staleUsable ? result(lastSuccess.data, 'stale', lastSuccess.observedAt) : pending;
 
     pending = Promise.resolve().then(loader).then(data => {
       if (data === undefined) throw new Error('snapshot loader returned undefined');
@@ -74,6 +78,10 @@ export function createBoundedSnapshotCache({
     }).finally(() => {
       pending = null;
     });
+    if (staleUsable) {
+      pending.catch(() => {});
+      return result(lastSuccess.data, 'stale', lastSuccess.observedAt);
+    }
     return pending;
   };
 
