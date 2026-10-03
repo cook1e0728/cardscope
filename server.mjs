@@ -372,6 +372,14 @@ async function browseDatabasePageFast(game,options={}){
 async function browseDatabaseSeriesCards(game,options={}){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),safeSeries=String(options.seriesId||'').replace(/[^a-z0-9:_-]/gi,'');
   if(!safeSeries)return browseDatabasePageFast(game,options);
+  // One round trip through browse_series_cards (same three row sets); otherwise the paged PostgREST queries below.
+  let rpc=null;try{rpc=await supabaseFetch('/rpc/browse_series_cards',{method:'POST',body:JSON.stringify({p_game:safeGame,p_series:safeSeries})})}catch(error){console.error('series browse rpc failed; using PostgREST queries',error.message)}
+  if(rpc&&Array.isArray(rpc.printings)&&Array.isArray(rpc.cards)&&Array.isArray(rpc.images)){
+    if(!rpc.cards.length)return {data:[],total:0,hasMore:false,facets:{rarity:{},region:{},language:{},rarityLabels:{}},facetStatus:'complete',limit:options.limit,offset:options.offset,errors:{printings:null,images:null}};
+    const printingByCard=buildPrintingIndex(rpc.printings),imageByCard=new Map();
+    for(const image of rpc.images){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
+    return {...buildBrowsePage(rpc.cards,{...options,printingByCard,imageByCard,facetStatus:'complete'}),errors:{printings:null,images:null}};
+  }
   const printingParams=new URLSearchParams({select:BROWSE_PRINTING_SELECT,series_id:`eq.${safeSeries}`,order:'local_card_number.asc,id.asc'}),printings=await supabaseFetchAll(`/tcg_printings?${printingParams}`),cardIds=[...new Set((printings||[]).map(printing=>printing.cardId).filter(Boolean))];
   if(!cardIds.length)return {data:[],total:0,hasMore:false,facets:{rarity:{},region:{},language:{},rarityLabels:{}},facetStatus:'complete',limit:options.limit,offset:options.offset,errors:{printings:null,images:null}};
   const cards=[];

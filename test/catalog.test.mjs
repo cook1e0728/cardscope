@@ -592,6 +592,33 @@ test('the default browse page comes from browse_cards_page in one call',async()=
   }
 });
 
+test('a series page comes from browse_series_cards in one call',async()=>{
+  const card=index=>({id:`pokemon-s-${index}`,canonicalId:`pokemon-s-${index}`,game:'pokemon',seriesId:'pokemon-tcgdex-ja-sv8a',officialCardNumber:String(index).padStart(3,'0'),rarity:index===2?'RR':'C',nameZh:`卡${index}`,aliases:[],metadata:{}});
+  const printing=index=>({id:index,cardId:`pokemon-s-${index}`,seriesId:'pokemon-tcgdex-ja-sv8a',region:'JP',language:'ja-JP',localSetCode:'SV8a',localCardNumber:String(index).padStart(3,'0'),rarity:index===2?'RR':'C',imageUrl:null,imageRehostRequired:false,metadata:{}});
+  const requests=[];
+  const mockSupabase=createServer((req,res)=>{
+    const table=new URL(req.url,'http://mock-supabase').pathname.split('/').at(-1);requests.push(table);
+    res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(table==='browse_series_cards'?{printings:[printing(1),printing(2),printing(3)],cards:[card(1),card(2),card(3)],images:[]}:[]));
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`series fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`series fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/cards?game=pokemon&series=pokemon-tcgdex-ja-sv8a&limit=100&offset=0&region=all&rarity=RR&sort=number-asc`)).json();
+    assert.deepEqual(body.data.map(c=>c.id),['pokemon-s-2']);
+    assert.equal(body.meta.total,1);
+    assert.equal(requests.filter(table=>table==='tcg_printings'||table==='card_images').length,0,'no PostgREST relation queries');
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
 async function searchWithMock(handler,q,repeat=1){
   const requests=[];
   const mockSupabase=createServer((req,res)=>{
