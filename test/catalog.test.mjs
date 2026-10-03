@@ -19,9 +19,14 @@ test.after(()=>server?.kill());
 
 async function api(path){const response=await fetch(`http://127.0.0.1:${port}${path}`);assert.equal(response.status,200);return response.json()}
 
+// fetch refuses the Fetch standard's "bad ports" (6000, 6665-6669, 10080, ...), which the OS may hand out; listen again until the port is usable.
+const FETCH_BAD_PORTS=new Set([1,7,9,11,13,15,17,19,20,21,22,23,25,37,42,43,53,69,77,79,87,95,101,102,103,104,109,110,111,113,115,117,119,123,135,137,139,143,161,179,389,427,465,512,513,514,515,526,530,531,532,540,548,554,556,563,587,601,636,989,990,993,995,1719,1720,1723,2049,3659,4045,4190,5060,5061,6000,6566,6665,6666,6667,6668,6669,6679,6697,10080]);
 async function listenOnEphemeralPort(httpServer){
-  await new Promise((resolve,reject)=>{httpServer.once('error',reject);httpServer.listen(0,'127.0.0.1',resolve)});
-  return httpServer.address().port;
+  for(;;){
+    await new Promise((resolve,reject)=>{httpServer.once('error',reject);httpServer.listen(0,'127.0.0.1',resolve)});
+    const {port}=httpServer.address();if(!FETCH_BAD_PORTS.has(port))return port;
+    await closeHttpServer(httpServer);
+  }
 }
 async function closeHttpServer(httpServer){if(httpServer?.listening)await new Promise((resolve,reject)=>httpServer.close(error=>error?reject(error):resolve()))}
 async function freePort(){const probe=createServer();const free=await listenOnEphemeralPort(probe);await closeHttpServer(probe);return free}
@@ -551,6 +556,36 @@ test('the product feed is kept between requests, but not when stored products fa
     });
     for(let index=0;index<3;index++)assert.equal((await fetch(`http://127.0.0.1:${appPort}/api/products`)).status,200);
     assert.equal(productReads,2,'the failed read is retried once, then the feed is cached');
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
+test('the default browse page comes from browse_cards_page in one call',async()=>{
+  const card=index=>({id:`pokemon-x-${index}`,canonicalId:`pokemon-x-${index}`,game:'pokemon',seriesId:'s',officialCardNumber:String(index).padStart(3,'0'),rarity:'C',nameZh:`卡${index}`,aliases:[],metadata:{},printings:[{id:index,cardId:`pokemon-x-${index}`,seriesId:'s',region:'JP',language:'ja-JP',localSetCode:'S',localCardNumber:String(index).padStart(3,'0'),rarity:'C',imageUrl:null,imageRehostRequired:false}],images:[]});
+  const requests=[],bodies=[];
+  const mockSupabase=createServer((req,res)=>{
+    const table=new URL(req.url,'http://mock-supabase').pathname.split('/').at(-1);requests.push(table);
+    const chunks=[];req.on('data',chunk=>chunks.push(chunk));req.on('end',()=>{
+      if(table==='browse_cards_page')bodies.push(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+      res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(table==='browse_cards_page'?{total:5,cards:[card(1),card(2),card(3)]}:[]));
+    });
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`browse fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`browse fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/cards?game=pokemon&limit=2&offset=0&region=all&rarity=all&sort=number-desc`)).json();
+    assert.deepEqual(body.data.map(c=>[c.id,c.printings.length,c.region]),[['pokemon-x-1',1,'JP'],['pokemon-x-2',1,'JP']]);
+    assert.equal(body.meta.total,5);assert.equal(body.meta.hasMore,true);
+    assert.deepEqual(bodies[0],{p_game:'pokemon',p_limit:2,p_offset:0,p_desc:true});
+    assert.equal(requests.filter(table=>table==='card_images').length,0,'no PostgREST relation queries');
   }finally{
     if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
     await closeHttpServer(mockSupabase);

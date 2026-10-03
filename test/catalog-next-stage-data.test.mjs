@@ -16,13 +16,22 @@ test.after(async () => {
 const games = ['pokemon', 'onepiece', 'yugioh', 'weiss-schwarz', 'haikyuu'];
 const token = value => String(value ?? '').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g, '').replace(/[^\p{L}\p{N}+]/gu, '');
 
+// fetch refuses the Fetch standard's "bad ports" (6000, 6665-6669, 10080, ...), which the OS may hand out.
+const FETCH_BAD_PORTS=new Set([1,7,9,11,13,15,17,19,20,21,22,23,25,37,42,43,53,69,77,79,87,95,101,102,103,104,109,110,111,113,115,117,119,123,135,137,139,143,161,179,389,427,465,512,513,514,515,526,530,531,532,540,548,554,556,563,587,601,636,989,990,993,995,1719,1720,1723,2049,3659,4045,4190,5060,5061,6000,6566,6665,6666,6667,6668,6669,6679,6697,10080]);
+async function listenOnUsablePort(httpServer){
+  for(;;){
+    await new Promise((resolve,reject)=>{httpServer.once('error',reject);httpServer.listen(0,'127.0.0.1',resolve)});
+    const {port}=httpServer.address();if(!FETCH_BAD_PORTS.has(port))return port;
+    await new Promise((resolve,reject)=>httpServer.close(error=>error?reject(error):resolve()));
+  }
+}
 async function withCoverageDatabase(name,handleDatabaseRequest,run){
   const mockDatabase=createServer(handleDatabaseRequest);
-  await new Promise((resolve,reject)=>{mockDatabase.once('error',reject);mockDatabase.listen(0,'127.0.0.1',resolve)});
+  await listenOnUsablePort(mockDatabase);
   const envKeys=['PORT','CATALOG_SYNC_ON_START','SUPABASE_URL','SUPABASE_SERVICE_KEY'],previousEnv=Object.fromEntries(envKeys.map(key=>[key,process.env[key]]));
   let coverageServer;
   try{
-    process.env.PORT='0';process.env.CATALOG_SYNC_ON_START='false';process.env.SUPABASE_URL=`http://127.0.0.1:${mockDatabase.address().port}`;process.env.SUPABASE_SERVICE_KEY='test-key';
+    const probe=createServer();process.env.PORT=String(await listenOnUsablePort(probe));await new Promise(resolve=>probe.close(resolve));process.env.CATALOG_SYNC_ON_START='false';process.env.SUPABASE_URL=`http://127.0.0.1:${mockDatabase.address().port}`;process.env.SUPABASE_SERVICE_KEY='test-key';
     ({server:coverageServer}=await import(`../server.mjs?coverage-${name}`));
     if(!coverageServer.listening)await new Promise(resolve=>coverageServer.once('listening',resolve));
     return await run(`http://127.0.0.1:${coverageServer.address().port}`);
@@ -214,7 +223,7 @@ test('aggregate coverage marks images unknown when printing lookup fails',async(
     if(url.pathname==='/rest/v1/tcg_cards')return reply(200,url.searchParams.get('game_id')==='eq.pokemon'?[{id:'card-1',game:'pokemon',nameZh:'測試卡',rarity:'UR'}]:[]);
     return reply(200,[]);
   });
-  await new Promise((resolve,reject)=>{mockDatabase.once('error',reject);mockDatabase.listen(0,'127.0.0.1',resolve)});
+  await listenOnUsablePort(mockDatabase);
   const previousUrl=process.env.SUPABASE_URL,previousKey=process.env.SUPABASE_SERVICE_KEY;
   process.env.SUPABASE_URL=`http://127.0.0.1:${mockDatabase.address().port}`;
   process.env.SUPABASE_SERVICE_KEY='test-key';

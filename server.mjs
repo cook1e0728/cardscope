@@ -352,6 +352,13 @@ async function loadDatabaseCoverageImages(){
 }
 async function browseDatabasePageFast(game,options={}){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc';
+  // One round trip through browse_cards_page when the database has it; otherwise the page, printing and image queries below.
+  let rpc=null;try{rpc=await supabaseFetch('/rpc/browse_cards_page',{method:'POST',body:JSON.stringify({p_game:safeGame,p_limit:take,p_offset:skip,p_desc:direction==='desc'})})}catch(error){console.error('browse rpc failed; using PostgREST queries',error.message)}
+  if(rpc&&Array.isArray(rpc.cards)&&Number.isFinite(Number(rpc.total))){
+    const cards=rpc.cards.slice(0,take),printingByCard=buildPrintingIndex(cards.flatMap(card=>card.printings||[])),imageByCard=new Map(cards.map(card=>[card.id,card.images||[]]));
+    const data=cards.map(({printings,images,...card})=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=Number(rpc.total);
+    return {data,total,hasMore:skip+data.length<total,facets:null,facetStatus:'deferred',limit:take,offset:skip,errors:{printings:null,images:null}};
+  }
   const params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:`official_card_number.${direction},id.${direction}`,limit:String(take+1),offset:String(skip)}),page=await supabaseFetchPage(`/tcg_cards?${params}`),cards=(page.data||[]).slice(0,take),cardIds=cards.map(card=>card.id);
   const fallbackPrintingSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required',legacyImageSelect='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
   const [printingResult,imageResult]=await Promise.all([
