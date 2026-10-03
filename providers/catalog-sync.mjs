@@ -131,6 +131,25 @@ export function auditCatalogLinks({cards=[],printings=[],images=[]}={}){
 }
 
 const SYNC_WRITE_TIMEOUT_MS=60000;
+const stableJson=value=>JSON.stringify(value,(key,inner)=>inner&&typeof inner==='object'&&!Array.isArray(inner)?Object.fromEntries(Object.keys(inner).sort().map(name=>[name,inner[name]])):inner)??'null';
+
+// Full resyncs used to rewrite every row each run (about 70,000 per provider), burning the small
+// database instance's CPU on identical data. Read the batch back by its most selective conflict
+// column and keep only rows whose supplied fields differ; any read problem falls back to writing all.
+export async function onlyChangedRows(db,path,rows,conflictColumns){
+  const lookup=['id','provider_id','card_id'].find(column=>conflictColumns.includes(column))||conflictColumns[0];
+  const values=[...new Set(rows.map(row=>row[lookup]).filter(value=>value!==null&&value!==undefined))];
+  if(!rows.length||!values.length)return rows;
+  const columns=[...new Set([...conflictColumns,...rows.flatMap(row=>Object.keys(row))])].filter(column=>column!=='updated_at');
+  try{
+    const list=values.map(value=>`"${String(value).replace(/\\/g,'\\\\').replace(/"/g,'\\"')}"`).join(',');
+    const existing=await db(`${path}?select=${columns.join(',')}&${lookup}=in.(${encodeURIComponent(list)})`);
+    if(!Array.isArray(existing))return rows;
+    const key=row=>conflictColumns.map(column=>String(row[column]??'')).join('\u001f'),current=new Map(existing.map(row=>[key(row),row]));
+    return rows.filter(row=>{const stored=current.get(key(row));return !stored||Object.keys(row).some(column=>column!=='updated_at'&&stableJson(row[column])!==stableJson(stored[column]))});
+  }catch{return rows}
+}
+
 async function upsert(db,path,rows,onConflict='id'){
   rows=(rows||[]).filter(Boolean);
   if(path==='/tcg_cards')rows=rows.map(protectNullEnrichment);
@@ -140,7 +159,8 @@ async function upsert(db,path,rows,onConflict='id'){
   // PostgREST rejects a bulk JSON payload when objects do not expose the same
   // keys (PGRST102). Grouping by shape keeps omitted card enrichments and
   // printing rarity fields out of their respective request payloads.
-  for(const sameShapeRows of groupRowsByShape(deduped))for(const batch of chunks(sameShapeRows)){
+  for(const sameShapeRows of groupRowsByShape(deduped))for(const planned of chunks(sameShapeRows)){
+    const batch=await onlyChangedRows(db,path,planned,conflictColumns);if(!batch.length)continue;
     // Bulk upserts on a small database instance can exceed the server's 12 s default fetch timeout.
     await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch),signal:AbortSignal.timeout(SYNC_WRITE_TIMEOUT_MS)});
     written+=batch.length;
