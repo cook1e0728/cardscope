@@ -207,12 +207,14 @@ function hydrateBrowseCard(card,printingByCard,imageByCard){
 }
 function browseNumber(card){return String(card?.officialCardNumber||card?.printings?.find(p=>p.localCardNumber)?.localCardNumber||'')}
 function browseRelease(card){return card?.printings?.map(p=>p.releaseDate).filter(Boolean).sort().at(-1)||card?.releaseDate||''}
+// Shared collators: localeCompare with options builds a new ICU collator on every call, which dominated sorting a series.
+const browseNumberCollator=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'}),browseIdCollator=new Intl.Collator(),browseNameCollator=new Intl.Collator(undefined,{sensitivity:'base'});
 function browseCompare(a,b,sort){
-  const number=()=>browseNumber(a).localeCompare(browseNumber(b),undefined,{numeric:true,sensitivity:'base'})||String(a.id).localeCompare(String(b.id));
+  const number=()=>browseNumberCollator.compare(browseNumber(a),browseNumber(b))||browseIdCollator.compare(String(a.id),String(b.id));
   if(sort==='number-desc')return -number();
   if(sort==='release-asc'||sort==='release-desc'){const value=String(browseRelease(a)).localeCompare(String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
   if(sort==='rarity-asc'||sort==='rarity-desc')return compareBrowseRarity(a,b,sort.endsWith('desc')?'desc':'asc')||number();
-  if(sort==='name-asc'||sort==='name-desc'){const value=String(a.nameZh||a.nameEn||a.nameJa||a.id).localeCompare(String(b.nameZh||b.nameEn||b.nameJa||b.id),undefined,{sensitivity:'base'})||number();return sort==='name-desc'?-value:value}
+  if(sort==='name-asc'||sort==='name-desc'){const value=browseNameCollator.compare(String(a.nameZh||a.nameEn||a.nameJa||a.id),String(b.nameZh||b.nameEn||b.nameJa||b.id))||number();return sort==='name-desc'?-value:value}
   if(sort==='price-asc'||sort==='price-desc'){
     const av=Number(a.priceTwd??a.price),bv=Number(b.priceTwd??b.price),aKnown=Number.isFinite(av),bKnown=Number.isFinite(bv);
     if(aKnown||bKnown){const value=(aKnown?av:sort==='price-asc'?Infinity:-Infinity)-(bKnown?bv:sort==='price-asc'?Infinity:-Infinity);if(value)return sort==='price-desc'?-value:value}

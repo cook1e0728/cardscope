@@ -42,12 +42,26 @@ function rarityEntries(definition){
   }).filter(entry=>entry.code);
 }
 
+// RARITY_RANKINGS is read once at load, so each game's token -> entry index is built once; browse pages look rarities up
+// thousands of times per request. The first entry (in ranking order) that lists a token keeps it, as a linear search would.
+const rarityIndexes=new Map();
+function rarityIndex(gameId){
+  const key=String(gameId ?? '').trim();
+  let index=rarityIndexes.get(key);
+  if(!index){
+    index=new Map();
+    for(const entry of rarityEntries(rarityDefinition(key)))for(const candidate of [entry.code,entry.label,...(entry.aliases||[])]){const token=rarityToken(candidate);if(token&&!index.has(token))index.set(token,entry)}
+    rarityIndexes.set(key,index);
+  }
+  return index;
+}
+
 function rarityEntry(gameId,value){
   const token=rarityToken(value);
   if(!token)return null;
   // NONE is No rarity mark (ADR 0010); a source's "None"/"none" means unknown and must not map to it.
-  if(token===rarityToken('NONE')&&String(value).trim()!=='NONE')return null;
-  return rarityEntries(rarityDefinition(gameId)).find(entry=>[entry.code,entry.label,...(entry.aliases||[])].some(candidate=>rarityToken(candidate)===token))||null;
+  if(token==='NONE'&&String(value).trim()!=='NONE')return null;
+  return rarityIndex(gameId).get(token)||null;
 }
 
 export function rarityCanonicalCode(gameId,value){
@@ -61,12 +75,23 @@ export function rarityDisplayLabel(gameId,value){
   return entry?.label || raw;
 }
 
+const rarityRankIndexes=new Map();
+function rarityRankIndex(gameId,definition){
+  const key=String(gameId ?? '').trim();
+  let index=rarityRankIndexes.get(key);
+  if(!index){
+    index=new Map();
+    (Array.isArray(definition.highToLow)?definition.highToLow:[]).forEach((group,position)=>{for(const label of Array.isArray(group)?group:[]){const token=rarityToken(label);if(!index.has(token))index.set(token,position)}});
+    rarityRankIndexes.set(key,index);
+  }
+  return index;
+}
+
 export function rarityRank(gameId,value){
   const raw=String(value ?? '').trim(),definition=rarityDefinition(gameId),canonical=rarityCanonicalCode(gameId,raw);
   if(!raw||!definition)return Number.MAX_SAFE_INTEGER;
-  const groups=Array.isArray(definition.highToLow)?definition.highToLow:[];
-  const index=groups.findIndex(group=>(Array.isArray(group)?group:[]).some(label=>rarityToken(label)===rarityToken(canonical)));
-  return index<0?Number.MAX_SAFE_INTEGER:index;
+  const index=rarityRankIndex(gameId,definition).get(rarityToken(canonical));
+  return index===undefined?Number.MAX_SAFE_INTEGER:index;
 }
 
 export function normalizeRarityValue(gameId,value){
