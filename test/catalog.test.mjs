@@ -479,7 +479,7 @@ async function searchWithMock(handler,q,repeat=1){
   const mockSupabase=createServer((req,res)=>{
     const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1),respond=(body,status=200)=>{res.writeHead(status,{'content-type':'application/json'});res.end(JSON.stringify(body))};
     requests.push([table,url.searchParams]);
-    return handler(table,url.searchParams,respond);
+    const chunks=[];req.on('data',chunk=>chunks.push(chunk));req.on('end',()=>handler(table,url.searchParams,respond,Buffer.concat(chunks).toString('utf8')));
   });
   const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
   let app;
@@ -542,6 +542,23 @@ test('search uses the one-round-trip database function when it is available',asy
   assert.deepEqual(body.data.map(c=>[c.id,c.printings.map(p=>p.region).sort().join('/')]),[[embedCard.id,'JP/TW']]);
   assert.equal(requests.filter(([table,params])=>(table==='tcg_cards'&&(params.has('or')||params.has('canonical_id')))||(table==='tcg_printings'&&String(params.get('card_id')).includes(embedCard.id))).length,0,'no PostgREST search queries');
   assert.match(headers.get('server-timing')||'',/(^|, )rpc;dur=[0-9]+/);
+});
+
+test('search uses the ranked database function first and keeps its order, counts and region',async()=>{
+  const twin={...embedCard,id:'pokemon-tcgdex-ja-sv2a-006',canonicalId:embedCard.canonicalId,nameJa:'テスト獣ex',printings:[{...embedPrinting,id:'p-jp-006',cardId:'pokemon-tcgdex-ja-sv2a-006',region:'JP',language:'ja-JP'}]};
+  const other={...embedCard,id:'pokemon-tcgdex-tw-sv2a-007',canonicalId:'pokemon-tcgdex-tw-sv2a-007',officialCardNumber:'007',nameZh:'測試獸',printings:[{...embedPrinting,id:'p-007',cardId:'pokemon-tcgdex-tw-sv2a-007',localCardNumber:'007'}]};
+  const bodies=[];
+  const {body,requests}=await searchWithMock((table,params,respond,requestBody)=>{
+    if(table==='search_cards_ranked'){bodies.push(requestBody);return respond({matchCount:57,groupCount:41,cards:[{...other,hit:true},{...embedCard,printings:[embedPrinting],hit:true},{...twin,hit:false}]})}
+    return respond([]);
+  },'測試獸');
+  assert.deepEqual(body.data.map(c=>[c.id,c.printings.map(p=>p.region).sort().join('/')]),[[other.id,'TW'],[embedCard.id,'JP/TW']],'SQL order is kept and the group is merged');
+  assert.equal(body.data[0].hit,undefined);
+  assert.equal(body.meta.candidateCount,57);
+  assert.equal(body.meta.mayHaveMore,true);
+  assert.equal(requests.filter(([table,params])=>table==='search_cards_with_siblings'||(table==='tcg_cards'&&(params.has('or')||params.has('canonical_id')))).length,0,'no fallback queries');
+  const sent=JSON.parse(bodies[0]);
+  assert.equal(sent.p_limit,40);assert.equal(sent.p_region,null);assert.deepEqual(sent.p_needles,['測試獸']);assert.deepEqual(sent.p_patterns,['%測試獸%']);
 });
 
 test('a repeated search within a minute is answered from the search cache',async()=>{
