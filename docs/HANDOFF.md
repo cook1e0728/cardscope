@@ -277,12 +277,18 @@
 - 中文名：ADR 0013 推導 1,962 名（20 批，重播零異動，`derived-names/adr-0013-candidates-dptbw-20261004.json`）。
 - 日版合計：262 個系列、18,025 張，中文名 15,010。正式站：`pokemon-official-ja-bw1-bb` 53 張（001 蟲寶包｜クルミル、C）、`-dpt1-b` 96、`-l1-bhg` 68。
 
+### 依序執行 34：大量匯入後的效能複核、韓版來源查證（2026-10-04）
+
+- 健康快照 `/api/catalog/health` 0.3 秒（正常）。對 `tcg_cards`、`tcg_printings`、`tcg_canonical_cards`、`tcg_series` 執行 ANALYZE（大量寫入後有 3,000–7,700 筆未分析的變更）。
+- 搜尋（20 個未快取的詞、伺服器 total）：p50 約 490 ms、p95 約 865–1,173 ms，略超過 800 ms 門檻（先前 582 ms）。資料庫內 `search_cards_ranked` 多為 100–550 ms（兩字中文如「超夢」用不到 trigram 索引且命中多，約 550 ms）；其餘為 Render↔Supabase 往返與小型實例。剛結束大量寫入時曾量到 13.7 s 的單次尖峰，之後未重現。可優化方向：兩字 CJK 查詢（目前不處理，使用者已決定不升級 Supabase）。
+- 韓版：`pokemoncard.co.kr`、`pokemonkorea.co.kr` 對本機皆回 410 Gone（推斷地區限制），依主方案不繞過；Source archive 只有 SV4K、SV4M、SV5K 約 240 個檔案有韓文名。韓版暫無可用來源，暫緩。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-03 收尾時的狀態）：
 - 正式庫（2026-10-04 依序執行 33 後）：寶可夢日版 Printing 18,025（262 系列、中文名 15,010）、台版 12,581、美版 20,637；SV4a、SM0／SMP2、SV-P／M-P、SM 牌組類／CP3–CP6／S-P、XY 世代 30 系列、DPt／LEGEND／BW 82 系列已完成（依序執行 28–33）；遊戲王 14,634（中文名 1）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於最新提交，Render 已部署。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
-- 可自行推進但價值較低：DP 世代（官方無卡號，需另訂身分規則）、MG 與 XY／BW／SM-XY 再錄標記（同號多張）；日版剩約 1,430 張無中文名（SM 世代 GX／TAG TEAM 與台灣未發行訓練家，無官方中文名可沿用）；台版 SVOM（官方標記 `SVO_ex` 缺 M，依規則未匯入）；MBD／MBG／SVOD／SVK 日台卡號排列不同未連結；特典已匯入 SV-P／M-P／S-P；手機 CLS 0.204 的歸因需真實使用者數據。
+- 可自行推進但價值較低：兩字 CJK 搜尋優化（依序執行 34）；DP 世代（官方無卡號，需另訂身分規則）、MG 與 XY／BW／SM-XY 再錄標記（同號多張）；日版剩約 1,430 張無中文名（SM 世代 GX／TAG TEAM 與台灣未發行訓練家，無官方中文名可沿用）；台版 SVOM（官方標記 `SVO_ex` 缺 M，依規則未匯入）；MBD／MBG／SVOD／SVK 日台卡號排列不同未連結；特典已匯入 SV-P／M-P／S-P；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選：M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
