@@ -7,6 +7,8 @@ import { normalizeRarityRecord, rarityCanonicalCode, rarityDisplayLabel } from '
 
 process.env.PORT = '0';
 process.env.CATALOG_SYNC_ON_START = 'false';
+// These tests count and hold the mock database requests; the start-up warm-up would add its own.
+process.env.CATALOG_WARM_ON_START = 'false';
 const { buildCoverageGame, coverageMetric, server } = await import('../server.mjs?catalog-next-stage-data');
 test.after(async () => {
   if (!server.listening) return;
