@@ -474,6 +474,34 @@ test('repeated searches reuse the loaded catalog instead of re-paging every seri
   }
 });
 
+test('a stale catalog is served at once while one background load refreshes it',async()=>{
+  let seriesLoads=0;
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1);
+    const send=()=>{res.writeHead(200,{'content-type':'application/json'});res.end('[]')};
+    if(table==='tcg_series'&&!url.searchParams.has('or')){seriesLoads++;if(seriesLoads>1)return setTimeout(send,2000)}
+    send();
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false',CATALOG_CACHE_TTL_MS:'0'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`stale catalog fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`stale catalog fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    assert.equal((await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent('噴火龍')}`)).status,200);
+    const started=performance.now();
+    for(const q of ['皮卡丘','超夢'])assert.equal((await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`)).status,200);
+    assert.ok(performance.now()-started<1500,'the slow refresh is not awaited');
+    assert.equal(seriesLoads,2,'one background refresh is shared');
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
 async function searchWithMock(handler,q,repeat=1){
   const requests=[];
   const mockSupabase=createServer((req,res)=>{
@@ -574,6 +602,19 @@ test('after the ranked function no PostgREST text query runs, and names removed 
   },'測試獸');
   assert.equal(none.requests.filter(([table,params])=>table==='tcg_cards'&&params.has('or')).length,0,'search_text was already tried in SQL');
   assert.equal(none.requests.filter(([table,params])=>table==='tcg_series'&&params.has('or')).length,1,'series names are still tried');
+});
+
+test('a series listing from the ranked function keeps card-number order and reports the series match',async()=>{
+  const first={...embedCard,id:'pokemon-tcgdex-ja-sv6a-001',canonicalId:'pokemon-tcgdex-ja-sv6a-001',officialCardNumber:'001',nameZh:null,nameJa:'カード一',printings:[{...embedPrinting,id:'p-1',cardId:'pokemon-tcgdex-ja-sv6a-001',region:'JP',localCardNumber:'001'}]};
+  const second={...first,id:'pokemon-tcgdex-ja-sv6a-002',canonicalId:'pokemon-tcgdex-ja-sv6a-002',officialCardNumber:'002',nameJa:'カード二',printings:[{...first.printings[0],id:'p-2',cardId:'pokemon-tcgdex-ja-sv6a-002',localCardNumber:'002'}]};
+  const {body,requests}=await searchWithMock((table,params,respond)=>{
+    if(table==='search_cards_ranked')return respond({matchedBy:'series',matchedSeries:1,matchCount:2,groupCount:2,cards:[{...first,hit:true},{...second,hit:true}]});
+    return respond([]);
+  },'ナイトワンダラー');
+  assert.deepEqual(body.data.map(c=>c.id),[first.id,second.id]);
+  assert.equal(body.meta.match,'database-series');
+  assert.equal(requests.filter(([table,params])=>(table==='tcg_series'||table==='tcg_cards')&&params.has('or')).length,0);
+  assert.equal(requests.filter(([table,params])=>table==='tcg_printings'&&params.has('series_id')).length,0);
 });
 
 test('a repeated search within a minute is answered from the search cache',async()=>{
