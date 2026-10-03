@@ -149,10 +149,18 @@
 - 這些卡不與台版連結（ADR 0012），搜尋會與台版各列一筆；正式網站 `pokemon-official-ja-s4-104` 詳細頁顯示「ピカチュウV、SR、日版 S4 104」，無需改程式或部署。
 - 複核：台版 7,436、美版 20,634（＋source 空值 2）、日版 tcgdex-ja 7,085 不變；日版合計 8,059 張。
 
+### 依序執行 16：搜尋延遲（2026-10-03，已部署，伺服器端暖機 P95 582 ms）
+
+- `public.search_cards_ranked(p_patterns, p_needles, p_limit, p_region)`（migration `20261003090000`→`…100000`→`…110000`→`…120000`，最終 md5 以正式庫為準）：SQL 內評分（完全相同 0／開頭 1／包含 2／其他 3，與伺服器 `normalizeSearch` 同樣的折疊 `public.tcg_search_fold`），依 canonical 分組只取前 40 組並回傳組內所有卡與 printings；metadata 只留 UI 用到的 `nameZhBasis`、`variantKey`、`variantName`、`imageId`、`rarityBeforeOfficial`；`p_region` 在 SQL 內先篩有該版本 Printing 的組；名稱無命中才比對 `search_text`，再無則列出系列（≤5 個系列、前 100 個 printing 依卡號），回傳 `matchedBy`（name／text／series）、`matchedSeries`、`matchCount`、`groupCount`。伺服器先呼叫它，失敗或格式不符才退回 `search_cards_with_siblings`，再退回 PostgREST 查詢（測試涵蓋三層）。
+- `tcg_cards.search_names`（生成欄位：小寫的名稱＋卡號，`chr(1)` 分隔）＋ trigram 索引 `tcg_cards_search_names_trgm_idx`，以 `like` 比對：非 ASCII 的 `ilike` 每列轉小寫，在微型實例 CPU 節流時兩字中文詞會掃到 2.8 秒；現在約 25 ms，三字以上約 1 ms。加欄位時重寫整表、鎖表約 15 秒（已在同一交易中驗證後套用）。舊的表達式索引已移除。
+- 伺服器：目錄快取過期後先回舊資料、由單一背景載入更新（之前每分鐘有一個搜尋要等 2–4 秒重載），TTL 改 10 分鐘以減少與搜尋爭用資料庫；搜尋結果快取 60 秒→10 分鐘（上限 200 筆）。可用環境變數 `CATALOG_CACHE_TTL_MS` 覆寫。Node 276/276。
+- 正式量測（45 個查詢：15 詞 × 全部／日版／韓版，暖機後、快取未命中）：伺服器 total p50 267 ms、p95 582 ms、最大 1,021 ms（魯夫全部，141 KB、93 張卡：海賊王同一 canonical 下卡多）；用戶端（台灣，curl 每次新 TLS）p50 586 ms、p95 1,177 ms。改動前：rpc 370–990 ms、空版本結果多 400–1,000 ms、系列搜尋 1.4–2.0 s、每分鐘一次 2–4 s 目錄重載。Render 回應已有 brotli 壓縮。瀏覽器實測搜尋「桃歹郎」結果正常。
+- 已知：Supabase 實例為小型（shared_buffers 224 MB），其他工作（瀏覽、匯入）平均查詢約 150 ms，負載時仍會偶發尖峰；升級運算規格涉及費用，未處理（如需進一步穩定 P95，這是下一個槓桿）。用戶端 P95 包含台灣到 Ohio 的往返約 300 ms。
+
 下一個安全起點（擇一，建議依序）：
-1. 搜尋延遲：縮小 `search_cards_with_siblings` 回傳（只回前 40 筆所需欄位、評分移入 SQL）與名稱 trigram 索引，以 Server-Timing 驗證暖機 P95 < 800 ms。
-2. 新官方來源系列 246 張無中文名：ADR 0004 跨系列推導目前只限 tcgdex-ja、朱紫世代，若要擴及劍盾世代需新決策。
-其他後續候選：搜尋延遲——Render（Ohio）與 Supabase（ap-northeast-1）跨區不是主因：使用者建立 Singapore 測試服務 `https://cardscope-1.onrender.com`（CATALOG_SYNC_ON_START／CARD_IMAGE_CACHE_ON_START=false），暖機後 10 個不同查詢 rpc 386–1,331 ms，Ohio 456–1,090 ms，無明顯改善；建議保留 Ohio 為正式站、由使用者刪除或停用 Singapore 測試服務。瓶頸在 RPC 本身（常見詞回傳 150–230 KB、PostgREST 端浮動；資料庫內直接執行 45–200 ms）→ 下一步縮小回傳（只回前 40 筆所需欄位，評分移入 SQL）與名稱 trigram 索引，以 Server-Timing 驗證；暖機 P95 < 800 ms 仍未達；M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+1. 新官方來源系列 246 張無中文名：ADR 0004 跨系列推導目前只限 tcgdex-ja、朱紫世代，若要擴及劍盾世代需新決策。
+2. 詳細頁 `/api/cards/:id` 仍是多次 PostgREST 往返（卡片、同作品層、printings、系列、遊戲），可比照搜尋做單一 RPC。
+其他後續候選：Singapore 測試服務 `https://cardscope-1.onrender.com` 已證實區域不是瓶頸，建議由使用者刪除或停用；M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
