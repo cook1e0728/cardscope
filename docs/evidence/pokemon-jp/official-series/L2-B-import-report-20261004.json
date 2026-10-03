@@ -1,0 +1,582 @@
+{
+ "summary": {
+  "code": "L2-B",
+  "listed": 77,
+  "cards": 74,
+  "batches": 1,
+  "quarantined": 3,
+  "rarityUnknown": 4,
+  "claimed": 0,
+  "evidenceHash": "6ef0e98287adfe761134b630d07800f0808b6a1f77e16258fda6820451841086"
+ },
+ "digests": [
+  {
+   "batch": 1,
+   "cards": 74,
+   "planDigest": "9dc777c36790699f1f4d5f9184969d68af0470f416ea5e16871d9747c3fa24aa"
+  }
+ ],
+ "quarantined": [
+  {
+   "cardId": "25693",
+   "number": null,
+   "nameJa": "エンテイ&ライコウLEGEND",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "25697",
+   "number": null,
+   "nameJa": "スイクン&エンテイLEGEND",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "25701",
+   "number": null,
+   "nameJa": "ライコウ&スイクンLEGEND",
+   "reason": "NUMBER_MISSING"
+  }
+ ],
+ "rarityUnknown": [
+  {
+   "number": "015",
+   "cardId": "25599",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "020",
+   "cardId": "25609",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "044",
+   "cardId": "25655",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "047",
+   "cardId": "25662",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  }
+ ],
+ "claimed": [],
+ "evidence": [
+  {
+   "cardId": "25574",
+   "setMark": "L2-B",
+   "number": "001",
+   "nameJa": "ナゾノクサ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25576",
+   "setMark": "L2-B",
+   "number": "002",
+   "nameJa": "クサイハナ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25577",
+   "setMark": "L2-B",
+   "number": "003",
+   "nameJa": "ラフレシア",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25579",
+   "setMark": "L2-B",
+   "number": "004",
+   "nameJa": "キレイハナ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25581",
+   "setMark": "L2-B",
+   "number": "005",
+   "nameJa": "ストライク",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25582",
+   "setMark": "L2-B",
+   "number": "006",
+   "nameJa": "クヌギダマ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25584",
+   "setMark": "L2-B",
+   "number": "007",
+   "nameJa": "ミツハニー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25585",
+   "setMark": "L2-B",
+   "number": "008",
+   "nameJa": "ビークイン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25587",
+   "setMark": "L2-B",
+   "number": "009",
+   "nameJa": "ブースター",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25589",
+   "setMark": "L2-B",
+   "number": "010",
+   "nameJa": "マグマッグ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25591",
+   "setMark": "L2-B",
+   "number": "011",
+   "nameJa": "マグカルゴ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25593",
+   "setMark": "L2-B",
+   "number": "012",
+   "nameJa": "タッツー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25595",
+   "setMark": "L2-B",
+   "number": "013",
+   "nameJa": "シードラ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25597",
+   "setMark": "L2-B",
+   "number": "014",
+   "nameJa": "キングドラ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25599",
+   "setMark": "L2-B",
+   "number": "015",
+   "nameJa": "キングドラ",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "25601",
+   "setMark": "L2-B",
+   "number": "016",
+   "nameJa": "シャワーズ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25603",
+   "setMark": "L2-B",
+   "number": "017",
+   "nameJa": "サンダース",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25605",
+   "setMark": "L2-B",
+   "number": "018",
+   "nameJa": "チョンチー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25607",
+   "setMark": "L2-B",
+   "number": "019",
+   "nameJa": "ランターン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25609",
+   "setMark": "L2-B",
+   "number": "020",
+   "nameJa": "ランターン",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "25611",
+   "setMark": "L2-B",
+   "number": "021",
+   "nameJa": "ロトム",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25613",
+   "setMark": "L2-B",
+   "number": "022",
+   "nameJa": "ベトベター",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25615",
+   "setMark": "L2-B",
+   "number": "023",
+   "nameJa": "ベトベトン",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25617",
+   "setMark": "L2-B",
+   "number": "024",
+   "nameJa": "エーフィ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25619",
+   "setMark": "L2-B",
+   "number": "025",
+   "nameJa": "ムウマ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25621",
+   "setMark": "L2-B",
+   "number": "026",
+   "nameJa": "ムウマージ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25623",
+   "setMark": "L2-B",
+   "number": "027",
+   "nameJa": "アンノーン",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25625",
+   "setMark": "L2-B",
+   "number": "028",
+   "nameJa": "フワンテ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25627",
+   "setMark": "L2-B",
+   "number": "029",
+   "nameJa": "フワライド",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25629",
+   "setMark": "L2-B",
+   "number": "030",
+   "nameJa": "イワーク",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25631",
+   "setMark": "L2-B",
+   "number": "031",
+   "nameJa": "グライガー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25632",
+   "setMark": "L2-B",
+   "number": "032",
+   "nameJa": "グライオン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25634",
+   "setMark": "L2-B",
+   "number": "033",
+   "nameJa": "ヨーギラス",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25636",
+   "setMark": "L2-B",
+   "number": "034",
+   "nameJa": "サナギラス",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25638",
+   "setMark": "L2-B",
+   "number": "035",
+   "nameJa": "マクノシタ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25640",
+   "setMark": "L2-B",
+   "number": "036",
+   "nameJa": "ハリテヤマ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25642",
+   "setMark": "L2-B",
+   "number": "037",
+   "nameJa": "ブラッキー",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25644",
+   "setMark": "L2-B",
+   "number": "038",
+   "nameJa": "ヤミカラス",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25646",
+   "setMark": "L2-B",
+   "number": "039",
+   "nameJa": "ドンカラス",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25648",
+   "setMark": "L2-B",
+   "number": "040",
+   "nameJa": "ニューラ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25650",
+   "setMark": "L2-B",
+   "number": "041",
+   "nameJa": "マニューラ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25652",
+   "setMark": "L2-B",
+   "number": "042",
+   "nameJa": "デルビル",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25653",
+   "setMark": "L2-B",
+   "number": "043",
+   "nameJa": "ヘルガー",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25655",
+   "setMark": "L2-B",
+   "number": "044",
+   "nameJa": "バンギラス",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "25658",
+   "setMark": "L2-B",
+   "number": "045",
+   "nameJa": "ヤミラミ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25660",
+   "setMark": "L2-B",
+   "number": "046",
+   "nameJa": "フォレトス",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25662",
+   "setMark": "L2-B",
+   "number": "047",
+   "nameJa": "ハガネール",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "25665",
+   "setMark": "L2-B",
+   "number": "048",
+   "nameJa": "ハッサム",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25667",
+   "setMark": "L2-B",
+   "number": "049",
+   "nameJa": "エアームド",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25669",
+   "setMark": "L2-B",
+   "number": "050",
+   "nameJa": "クチート",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25671",
+   "setMark": "L2-B",
+   "number": "051",
+   "nameJa": "ダンバル",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25673",
+   "setMark": "L2-B",
+   "number": "052",
+   "nameJa": "メタング",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25675",
+   "setMark": "L2-B",
+   "number": "053",
+   "nameJa": "メタグロス",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25677",
+   "setMark": "L2-B",
+   "number": "054",
+   "nameJa": "コラッタ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25678",
+   "setMark": "L2-B",
+   "number": "055",
+   "nameJa": "ラッタ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25680",
+   "setMark": "L2-B",
+   "number": "056",
+   "nameJa": "ドードー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25682",
+   "setMark": "L2-B",
+   "number": "057",
+   "nameJa": "ドードリオ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25684",
+   "setMark": "L2-B",
+   "number": "058",
+   "nameJa": "イーブイ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25686",
+   "setMark": "L2-B",
+   "number": "059",
+   "nameJa": "トゲピー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "25687",
+   "setMark": "L2-B",
+   "number": "060",
+   "nameJa": "トゲチック",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25689",
+   "setMark": "L2-B",
+   "number": "061",
+   "nameJa": "トゲキッス",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25691",
+   "setMark": "L2-B",
+   "number": "062",
+   "nameJa": "ドーブル",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "25705",
+   "setMark": "L2-B",
+   "number": "069",
+   "nameJa": "エネルギー交換装置",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25707",
+   "setMark": "L2-B",
+   "number": "070",
+   "nameJa": "ディフェンダー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25709",
+   "setMark": "L2-B",
+   "number": "071",
+   "nameJa": "ふしぎなアメ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25711",
+   "setMark": "L2-B",
+   "number": "072",
+   "nameJa": "プラスパワー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25713",
+   "setMark": "L2-B",
+   "number": "073",
+   "nameJa": "レジェンドボックス",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25715",
+   "setMark": "L2-B",
+   "number": "074",
+   "nameJa": "フラワーショップのお姉さん",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25717",
+   "setMark": "L2-B",
+   "number": "075",
+   "nameJa": "ぼうずの修行",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25719",
+   "setMark": "L2-B",
+   "number": "076",
+   "nameJa": "ロケット団の手口",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25721",
+   "setMark": "L2-B",
+   "number": "077",
+   "nameJa": "アルフの遺跡",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25723",
+   "setMark": "L2-B",
+   "number": "078",
+   "nameJa": "焼けた塔",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25725",
+   "setMark": "L2-B",
+   "number": "079",
+   "nameJa": "特殊悪エネルギー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "25726",
+   "setMark": "L2-B",
+   "number": "080",
+   "nameJa": "特殊鋼エネルギー",
+   "rarityIcon": "ic_rare_u"
+  }
+ ]
+}

@@ -1,0 +1,608 @@
+{
+ "summary": {
+  "code": "MDB",
+  "listed": 51,
+  "cards": 46,
+  "batches": 1,
+  "quarantined": 5,
+  "rarityUnknown": 46,
+  "claimed": 0,
+  "evidenceHash": "ca01df317dcb887a17b61730e622cf9c9944410dfa20745bf9c094dc276575f0"
+ },
+ "digests": [
+  {
+   "batch": 1,
+   "cards": 46,
+   "planDigest": "ae3b17654433fd6fdec2ea1fe492aac436b9f2f47e035d0a69229c6b7aadc7f2"
+  }
+ ],
+ "quarantined": [
+  {
+   "cardId": "28360",
+   "number": null,
+   "nameJa": "基本炎エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "28361",
+   "number": null,
+   "nameJa": "基本水エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "28362",
+   "number": null,
+   "nameJa": "基本雷エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "28363",
+   "number": null,
+   "nameJa": "基本超エネルギー",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "cardId": "28364",
+   "number": null,
+   "nameJa": "基本悪エネルギー",
+   "reason": "NUMBER_MISSING"
+  }
+ ],
+ "rarityUnknown": [
+  {
+   "number": "001",
+   "cardId": "28314",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "002",
+   "cardId": "28315",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "003",
+   "cardId": "28316",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "004",
+   "cardId": "28317",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "005",
+   "cardId": "28318",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "006",
+   "cardId": "28319",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "007",
+   "cardId": "28320",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "008",
+   "cardId": "28321",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "009",
+   "cardId": "28322",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "010",
+   "cardId": "28323",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "011",
+   "cardId": "28324",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "012",
+   "cardId": "28325",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "013",
+   "cardId": "28326",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "014",
+   "cardId": "28327",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "015",
+   "cardId": "28328",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "016",
+   "cardId": "28329",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "017",
+   "cardId": "28330",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "018",
+   "cardId": "28331",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "019",
+   "cardId": "28332",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "020",
+   "cardId": "28333",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "021",
+   "cardId": "28334",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "022",
+   "cardId": "28335",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "023",
+   "cardId": "28336",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "024",
+   "cardId": "28337",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "025",
+   "cardId": "28338",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "026",
+   "cardId": "28339",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "027",
+   "cardId": "28340",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "028",
+   "cardId": "28341",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "029",
+   "cardId": "28342",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "030",
+   "cardId": "28343",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "031",
+   "cardId": "28344",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "032",
+   "cardId": "28345",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "033",
+   "cardId": "28346",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "034",
+   "cardId": "28347",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "035",
+   "cardId": "28348",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "036",
+   "cardId": "28349",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "037",
+   "cardId": "28350",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "038",
+   "cardId": "28351",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "039",
+   "cardId": "28352",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "040",
+   "cardId": "28353",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "041",
+   "cardId": "28354",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "042",
+   "cardId": "28355",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "043",
+   "cardId": "28356",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "044",
+   "cardId": "28357",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "045",
+   "cardId": "28358",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  },
+  {
+   "number": "046",
+   "cardId": "28359",
+   "reason": "OFFICIAL_NO_RARITY_ICON"
+  }
+ ],
+ "claimed": [],
+ "evidence": [
+  {
+   "cardId": "28314",
+   "setMark": "MDB",
+   "number": "001",
+   "nameJa": "ビクティニ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28315",
+   "setMark": "MDB",
+   "number": "002",
+   "nameJa": "ポカブ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28316",
+   "setMark": "MDB",
+   "number": "003",
+   "nameJa": "チャオブー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28317",
+   "setMark": "MDB",
+   "number": "004",
+   "nameJa": "エンブオー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28318",
+   "setMark": "MDB",
+   "number": "005",
+   "nameJa": "レシラム",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28319",
+   "setMark": "MDB",
+   "number": "006",
+   "nameJa": "ポッチャマ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28320",
+   "setMark": "MDB",
+   "number": "007",
+   "nameJa": "ポッタイシ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28321",
+   "setMark": "MDB",
+   "number": "008",
+   "nameJa": "エンペルト",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28322",
+   "setMark": "MDB",
+   "number": "009",
+   "nameJa": "キュレム",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28323",
+   "setMark": "MDB",
+   "number": "010",
+   "nameJa": "エモンガ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28324",
+   "setMark": "MDB",
+   "number": "011",
+   "nameJa": "シビシラス",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28325",
+   "setMark": "MDB",
+   "number": "012",
+   "nameJa": "シビビール",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28326",
+   "setMark": "MDB",
+   "number": "013",
+   "nameJa": "ゼクロム",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28327",
+   "setMark": "MDB",
+   "number": "014",
+   "nameJa": "ミュウツーEX",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28328",
+   "setMark": "MDB",
+   "number": "015",
+   "nameJa": "ラルトス",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28329",
+   "setMark": "MDB",
+   "number": "016",
+   "nameJa": "キルリア",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28330",
+   "setMark": "MDB",
+   "number": "017",
+   "nameJa": "サーナイト",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28331",
+   "setMark": "MDB",
+   "number": "018",
+   "nameJa": "ユニラン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28332",
+   "setMark": "MDB",
+   "number": "019",
+   "nameJa": "ダブラン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28333",
+   "setMark": "MDB",
+   "number": "020",
+   "nameJa": "ランクルス",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28334",
+   "setMark": "MDB",
+   "number": "021",
+   "nameJa": "ダークライEX",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28335",
+   "setMark": "MDB",
+   "number": "022",
+   "nameJa": "ゾロア",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28336",
+   "setMark": "MDB",
+   "number": "023",
+   "nameJa": "ゾロアーク",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28337",
+   "setMark": "MDB",
+   "number": "024",
+   "nameJa": "ゾロアーク",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28338",
+   "setMark": "MDB",
+   "number": "025",
+   "nameJa": "レックウザEX",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28339",
+   "setMark": "MDB",
+   "number": "026",
+   "nameJa": "トルネロス",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28340",
+   "setMark": "MDB",
+   "number": "027",
+   "nameJa": "クラッシュハンマー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28341",
+   "setMark": "MDB",
+   "number": "028",
+   "nameJa": "げんきのかけら",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28342",
+   "setMark": "MDB",
+   "number": "029",
+   "nameJa": "ダークパッチ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28343",
+   "setMark": "MDB",
+   "number": "030",
+   "nameJa": "ハイパーボール",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28344",
+   "setMark": "MDB",
+   "number": "031",
+   "nameJa": "ふしぎなアメ",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28345",
+   "setMark": "MDB",
+   "number": "032",
+   "nameJa": "プラスパワー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28346",
+   "setMark": "MDB",
+   "number": "033",
+   "nameJa": "ヘビーボール",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28347",
+   "setMark": "MDB",
+   "number": "034",
+   "nameJa": "ポケモンキャッチャー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28348",
+   "setMark": "MDB",
+   "number": "035",
+   "nameJa": "まんたんのくすり",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28349",
+   "setMark": "MDB",
+   "number": "036",
+   "nameJa": "ランダムレシーバー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28350",
+   "setMark": "MDB",
+   "number": "037",
+   "nameJa": "レベルボール",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28351",
+   "setMark": "MDB",
+   "number": "038",
+   "nameJa": "ゴツゴツメット",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28352",
+   "setMark": "MDB",
+   "number": "039",
+   "nameJa": "しんかのきせき",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28353",
+   "setMark": "MDB",
+   "number": "040",
+   "nameJa": "アララギ博士",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28354",
+   "setMark": "MDB",
+   "number": "041",
+   "nameJa": "N",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28355",
+   "setMark": "MDB",
+   "number": "042",
+   "nameJa": "チェレン",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28356",
+   "setMark": "MDB",
+   "number": "043",
+   "nameJa": "ベル",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28357",
+   "setMark": "MDB",
+   "number": "044",
+   "nameJa": "ダブル無色エネルギー",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28358",
+   "setMark": "MDB",
+   "number": "045",
+   "nameJa": "ブレンドエネルギー 草炎超悪",
+   "rarityIcon": null
+  },
+  {
+   "cardId": "28359",
+   "setMark": "MDB",
+   "number": "046",
+   "nameJa": "ブレンドエネルギー 水雷闘鋼",
+   "rarityIcon": null
+  }
+ ]
+}

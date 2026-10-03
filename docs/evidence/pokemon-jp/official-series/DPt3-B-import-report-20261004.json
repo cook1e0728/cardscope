@@ -1,0 +1,765 @@
+{
+ "summary": {
+  "code": "DPt3-B",
+  "listed": 100,
+  "cards": 100,
+  "batches": 1,
+  "quarantined": 0,
+  "rarityUnknown": 8,
+  "claimed": 0,
+  "evidenceHash": "8bfc134f84b08fc54fdd273f0eaa60a2697da717ff5849b9f02512f1acc517cd"
+ },
+ "digests": [
+  {
+   "batch": 1,
+   "cards": 100,
+   "planDigest": "915e6120ecaa0c6f1b74108a07285cf72bd82a7a30a361bee4f5e7f70c186c23"
+  }
+ ],
+ "quarantined": [],
+ "rarityUnknown": [
+  {
+   "number": "020",
+   "cardId": "23096",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "039",
+   "cardId": "23137",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "065",
+   "cardId": "23189",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "079",
+   "cardId": "23220",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "081",
+   "cardId": "23225",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "098",
+   "cardId": "23256",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "099",
+   "cardId": "23257",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  },
+  {
+   "number": "100",
+   "cardId": "23258",
+   "reason": "ERA_RARITY_NOT_ALLOWED:S"
+  }
+ ],
+ "claimed": [],
+ "evidence": [
+  {
+   "cardId": "23055",
+   "setMark": "DPt3-B",
+   "number": "001",
+   "nameJa": "フシギダネ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23057",
+   "setMark": "DPt3-B",
+   "number": "002",
+   "nameJa": "フシギソウ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23059",
+   "setMark": "DPt3-B",
+   "number": "003",
+   "nameJa": "フシギバナ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23062",
+   "setMark": "DPt3-B",
+   "number": "004",
+   "nameJa": "バタフリーFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23064",
+   "setMark": "DPt3-B",
+   "number": "005",
+   "nameJa": "パラス",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23066",
+   "setMark": "DPt3-B",
+   "number": "006",
+   "nameJa": "パラセクト",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23068",
+   "setMark": "DPt3-B",
+   "number": "007",
+   "nameJa": "カイロス",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23070",
+   "setMark": "DPt3-B",
+   "number": "008",
+   "nameJa": "ヤンヤンマ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23072",
+   "setMark": "DPt3-B",
+   "number": "009",
+   "nameJa": "ヤンヤンマ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23074",
+   "setMark": "DPt3-B",
+   "number": "010",
+   "nameJa": "メガヤンマ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23077",
+   "setMark": "DPt3-B",
+   "number": "011",
+   "nameJa": "アメタマ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23079",
+   "setMark": "DPt3-B",
+   "number": "012",
+   "nameJa": "アメモース",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23081",
+   "setMark": "DPt3-B",
+   "number": "013",
+   "nameJa": "キノココ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23083",
+   "setMark": "DPt3-B",
+   "number": "014",
+   "nameJa": "ツチニン",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23085",
+   "setMark": "DPt3-B",
+   "number": "015",
+   "nameJa": "テッカニン",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23087",
+   "setMark": "DPt3-B",
+   "number": "016",
+   "nameJa": "ヌケニン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23089",
+   "setMark": "DPt3-B",
+   "number": "017",
+   "nameJa": "ブーバー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23091",
+   "setMark": "DPt3-B",
+   "number": "018",
+   "nameJa": "ブーバーン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23094",
+   "setMark": "DPt3-B",
+   "number": "019",
+   "nameJa": "バシャーモFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23096",
+   "setMark": "DPt3-B",
+   "number": "020",
+   "nameJa": "バシャーモFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "23099",
+   "setMark": "DPt3-B",
+   "number": "021",
+   "nameJa": "ドンメル",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23101",
+   "setMark": "DPt3-B",
+   "number": "022",
+   "nameJa": "バクーダ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23103",
+   "setMark": "DPt3-B",
+   "number": "023",
+   "nameJa": "パウワウ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23105",
+   "setMark": "DPt3-B",
+   "number": "024",
+   "nameJa": "ジュゴン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23108",
+   "setMark": "DPt3-B",
+   "number": "025",
+   "nameJa": "トサキント",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23110",
+   "setMark": "DPt3-B",
+   "number": "026",
+   "nameJa": "アズマオウ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23112",
+   "setMark": "DPt3-B",
+   "number": "027",
+   "nameJa": "ミズゴロウ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23114",
+   "setMark": "DPt3-B",
+   "number": "028",
+   "nameJa": "ヌマクロー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23116",
+   "setMark": "DPt3-B",
+   "number": "029",
+   "nameJa": "ラグラージ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23119",
+   "setMark": "DPt3-B",
+   "number": "030",
+   "nameJa": "ホエルコ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23121",
+   "setMark": "DPt3-B",
+   "number": "031",
+   "nameJa": "ホエルオー",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23123",
+   "setMark": "DPt3-B",
+   "number": "032",
+   "nameJa": "ヒンバス",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23125",
+   "setMark": "DPt3-B",
+   "number": "033",
+   "nameJa": "ミロカロス",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23127",
+   "setMark": "DPt3-B",
+   "number": "034",
+   "nameJa": "ミロカロス",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23129",
+   "setMark": "DPt3-B",
+   "number": "035",
+   "nameJa": "エンペルトFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23131",
+   "setMark": "DPt3-B",
+   "number": "036",
+   "nameJa": "プラスル",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23133",
+   "setMark": "DPt3-B",
+   "number": "037",
+   "nameJa": "マイナン",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23135",
+   "setMark": "DPt3-B",
+   "number": "038",
+   "nameJa": "エレキブルFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23137",
+   "setMark": "DPt3-B",
+   "number": "039",
+   "nameJa": "エレキブルFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "23140",
+   "setMark": "DPt3-B",
+   "number": "040",
+   "nameJa": "マネネ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23142",
+   "setMark": "DPt3-B",
+   "number": "041",
+   "nameJa": "バリヤード",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23144",
+   "setMark": "DPt3-B",
+   "number": "042",
+   "nameJa": "アサナン",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23146",
+   "setMark": "DPt3-B",
+   "number": "043",
+   "nameJa": "チャーレム",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23148",
+   "setMark": "DPt3-B",
+   "number": "044",
+   "nameJa": "ルナトーン",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23150",
+   "setMark": "DPt3-B",
+   "number": "045",
+   "nameJa": "ソルロック",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23152",
+   "setMark": "DPt3-B",
+   "number": "046",
+   "nameJa": "ヤジロン",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23154",
+   "setMark": "DPt3-B",
+   "number": "047",
+   "nameJa": "ネンドール",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23156",
+   "setMark": "DPt3-B",
+   "number": "048",
+   "nameJa": "リーシャン",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23158",
+   "setMark": "DPt3-B",
+   "number": "049",
+   "nameJa": "チリーン",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23160",
+   "setMark": "DPt3-B",
+   "number": "050",
+   "nameJa": "フワライドFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23162",
+   "setMark": "DPt3-B",
+   "number": "051",
+   "nameJa": "ヨノワールFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23164",
+   "setMark": "DPt3-B",
+   "number": "052",
+   "nameJa": "サンド",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23166",
+   "setMark": "DPt3-B",
+   "number": "053",
+   "nameJa": "サンドパン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23168",
+   "setMark": "DPt3-B",
+   "number": "054",
+   "nameJa": "マンキー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23169",
+   "setMark": "DPt3-B",
+   "number": "055",
+   "nameJa": "オコリザル",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23171",
+   "setMark": "DPt3-B",
+   "number": "056",
+   "nameJa": "サイホーン",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23173",
+   "setMark": "DPt3-B",
+   "number": "057",
+   "nameJa": "サイドン",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23175",
+   "setMark": "DPt3-B",
+   "number": "058",
+   "nameJa": "ドサイドン",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23177",
+   "setMark": "DPt3-B",
+   "number": "059",
+   "nameJa": "キノガッサ",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23179",
+   "setMark": "DPt3-B",
+   "number": "060",
+   "nameJa": "ジーランス",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23181",
+   "setMark": "DPt3-B",
+   "number": "061",
+   "nameJa": "ジーランス",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23183",
+   "setMark": "DPt3-B",
+   "number": "062",
+   "nameJa": "ヤミカラス",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23185",
+   "setMark": "DPt3-B",
+   "number": "063",
+   "nameJa": "ドンカラス",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23187",
+   "setMark": "DPt3-B",
+   "number": "064",
+   "nameJa": "アブソルG[ギンガ]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23189",
+   "setMark": "DPt3-B",
+   "number": "065",
+   "nameJa": "アブソルG[ギンガ]",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "23192",
+   "setMark": "DPt3-B",
+   "number": "066",
+   "nameJa": "エアームドFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23194",
+   "setMark": "DPt3-B",
+   "number": "067",
+   "nameJa": "クチート",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23197",
+   "setMark": "DPt3-B",
+   "number": "068",
+   "nameJa": "ダンバル",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23199",
+   "setMark": "DPt3-B",
+   "number": "069",
+   "nameJa": "メタング",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23201",
+   "setMark": "DPt3-B",
+   "number": "070",
+   "nameJa": "メタグロス",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23203",
+   "setMark": "DPt3-B",
+   "number": "071",
+   "nameJa": "ドードー",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23205",
+   "setMark": "DPt3-B",
+   "number": "072",
+   "nameJa": "ドードリオ",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23207",
+   "setMark": "DPt3-B",
+   "number": "073",
+   "nameJa": "カイリューFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23209",
+   "setMark": "DPt3-B",
+   "number": "074",
+   "nameJa": "ゴニョニョ",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23211",
+   "setMark": "DPt3-B",
+   "number": "075",
+   "nameJa": "ドゴーム",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23213",
+   "setMark": "DPt3-B",
+   "number": "076",
+   "nameJa": "バクオング",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23216",
+   "setMark": "DPt3-B",
+   "number": "077",
+   "nameJa": "パッチール",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23218",
+   "setMark": "DPt3-B",
+   "number": "078",
+   "nameJa": "レックウザC[チャンピオン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23220",
+   "setMark": "DPt3-B",
+   "number": "079",
+   "nameJa": "レックウザC[チャンピオン]",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "23223",
+   "setMark": "DPt3-B",
+   "number": "080",
+   "nameJa": "ムクホークFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23225",
+   "setMark": "DPt3-B",
+   "number": "081",
+   "nameJa": "ムクホークFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "23228",
+   "setMark": "DPt3-B",
+   "number": "082",
+   "nameJa": "ペラップG[ギンガ]",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23230",
+   "setMark": "DPt3-B",
+   "number": "083",
+   "nameJa": "フカマル",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23232",
+   "setMark": "DPt3-B",
+   "number": "084",
+   "nameJa": "ガバイト",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23234",
+   "setMark": "DPt3-B",
+   "number": "085",
+   "nameJa": "ガブリアス",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23237",
+   "setMark": "DPt3-B",
+   "number": "086",
+   "nameJa": "ベロベルトC[チャンピオン]",
+   "rarityIcon": "ic_rare_c"
+  },
+  {
+   "cardId": "23239",
+   "setMark": "DPt3-B",
+   "number": "087",
+   "nameJa": "レジギガスFB[フロンティアブレーン]",
+   "rarityIcon": "ic_rare_r"
+  },
+  {
+   "cardId": "23241",
+   "setMark": "DPt3-B",
+   "number": "088",
+   "nameJa": "バトルサーチャー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23242",
+   "setMark": "DPt3-B",
+   "number": "089",
+   "nameJa": "夜の転送装置",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23243",
+   "setMark": "DPt3-B",
+   "number": "090",
+   "nameJa": "アカギの先制",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23245",
+   "setMark": "DPt3-B",
+   "number": "091",
+   "nameJa": "クロツグの貢献",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23247",
+   "setMark": "DPt3-B",
+   "number": "092",
+   "nameJa": "シロナの導き",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23249",
+   "setMark": "DPt3-B",
+   "number": "093",
+   "nameJa": "チャンピオンズルーム",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23251",
+   "setMark": "DPt3-B",
+   "number": "094",
+   "nameJa": "バトルタワー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23253",
+   "setMark": "DPt3-B",
+   "number": "095",
+   "nameJa": "SPエネルギー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23254",
+   "setMark": "DPt3-B",
+   "number": "096",
+   "nameJa": "特殊悪エネルギー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23255",
+   "setMark": "DPt3-B",
+   "number": "097",
+   "nameJa": "特殊鋼エネルギー",
+   "rarityIcon": "ic_rare_u"
+  },
+  {
+   "cardId": "23256",
+   "setMark": "DPt3-B",
+   "number": "098",
+   "nameJa": "ファイヤー",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "23257",
+   "setMark": "DPt3-B",
+   "number": "099",
+   "nameJa": "フリーザー",
+   "rarityIcon": "ic_rare_s"
+  },
+  {
+   "cardId": "23258",
+   "setMark": "DPt3-B",
+   "number": "100",
+   "nameJa": "サンダー",
+   "rarityIcon": "ic_rare_s"
+  }
+ ]
+}
