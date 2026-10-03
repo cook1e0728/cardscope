@@ -533,6 +533,30 @@ test('card detail and its market tab share one get_card_detail call',async()=>{
   }
 });
 
+test('the product feed is kept between requests, but not when stored products failed to load',async()=>{
+  let productReads=0,fail=true;
+  const mockSupabase=createServer((req,res)=>{
+    const table=new URL(req.url,'http://mock-supabase').pathname.split('/').at(-1);
+    if(table==='tcg_products'){productReads++;if(fail){fail=false;res.writeHead(500,{'content-type':'application/json'});return res.end('{}')}}
+    res.writeHead(200,{'content-type':'application/json'});res.end('[]');
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`product fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`product fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    for(let index=0;index<3;index++)assert.equal((await fetch(`http://127.0.0.1:${appPort}/api/products`)).status,200);
+    assert.equal(productReads,2,'the failed read is retried once, then the feed is cached');
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
 async function searchWithMock(handler,q,repeat=1){
   const requests=[];
   const mockSupabase=createServer((req,res)=>{
