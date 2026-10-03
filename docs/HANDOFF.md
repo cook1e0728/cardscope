@@ -287,7 +287,7 @@
 
 - 發現：伺服器啟動時，`tcgdex-zh-tw` 超過 72 小時未同步就會自動執行（上次 10-01 10:13 UTC，10-04 10:13 後任何重啟都會觸發）。merge-duplicates 會把 ADR 0014 更正的四個系列名蓋回、把 TCGdex 無稀有度的 Printing 降回 incomplete，並整欄覆寫 metadata（`rarityBasis`、官方詳細頁 ID）。
 - 修正：`catalogProvidersNeedingSync(db, maxAge, {includeTcgdexTw})` 預設不含台版；管理端點 `all` 不含，明確指定 `pokemonZhTw` 回 409；需 `TCGDEX_TW_SYNC=true` 才執行。新增測試，Node 290/290。
-- ygoprodeck 同步（最後完整成功 09-20）：清單抓得到，但 150 筆一批的 upsert 沿用伺服器 12 秒逾時而失敗；被重啟中斷的紀錄停在 `running`（id 94、99）且被視為已同步。修正（照建議）：同步寫入逾時 60 秒；開始超過 6 小時的 `running` 不再算已同步。Node 291/291。部署後啟動時會重跑遊戲王同步，需查 `catalog_sync_runs` 的結果。「只寫有變動的列」以減輕負載，暫緩。
+- ygoprodeck 同步（最後完整成功 09-20）：清單抓得到，但 150 筆一批的 upsert 沿用伺服器 12 秒逾時而失敗；被重啟中斷的紀錄停在 `running`（id 94、99）且被視為已同步。修正（照建議）：同步寫入逾時 60 秒；開始超過 6 小時的 `running` 不再算已同步。Node 291/291。部署後遊戲王同步 #102（22:45–22:51 UTC）完成：14,597 張、寫入 69,698 列，09-20 以來首次成功；之後已 ANALYZE。「只寫有變動的列」以減輕負載，暫緩。
 
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
