@@ -464,7 +464,10 @@ function renderPublicTrends(){
 function installTrendTransparency(){
   if(typeof renderTrends!=='function')return;
   const base=renderTrends;if(base.__cardscopeWrapped)return;
-  const wrapped=function(){base();renderPublicTrends()};wrapped.__cardscopeWrapped=true;renderTrends=wrapped;setTimeout(renderPublicTrends,0);
+  const wrapped=function(){base();renderPublicTrends()};wrapped.__cardscopeWrapped=true;renderTrends=wrapped;
+  // Render now only if the trends request already finished; otherwise the wrapped renderTrends does it when data arrives
+  // (an early 'no data' render was shorter than the real rail and made the page jump).
+  setTimeout(()=>{if(window.trendsLoaded)renderPublicTrends()},0);
 }
 function healthNumber(row,keys){if((keys.includes('displayableImages')&&row?.metricStatus?.images==='unknown')||(keys.includes('rarities')&&row?.metricStatus?.rarities==='unknown'))return null;for(const key of keys){const value=betaNumber(row?.[key]);if(value!==null)return value}return null}
 function verifiedEnhancementCardTotal(data){const total=healthNumber(data,['totalCards']);return Number.isSafeInteger(total)&&total>=0&&((data?.source==='supabase-current-rows'&&data.sample===false&&data.metricStatus?.cards==='complete')||(data?.metricStatus?.cards==='observed-physical-cards'&&data.sample!==true&&!String(data?.source||'').startsWith('catalog.json')))?total:null}

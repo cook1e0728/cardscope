@@ -184,8 +184,14 @@
 - 首頁品牌圖：原本一開頁就下載 3.8 MB（1471 px 標誌縮成 24–42 px 顯示、收合的角色圖庫也全部下載）。`assets/brand/web/` 放依用途縮放的 WebP（共 224 KB，原檔保留），favicon 改 64 px PNG，展示區與圖庫 lazy loading。正式站首屏品牌圖 14 KB，`load` 2.5 s → 1.7 s，CLS 0.06–0.08（< 0.1）。LCP 在隱藏的瀏覽器面板中無法量測，尚未驗證。
 - Node 280/280。
 
+### 依序執行 21：首頁版面穩定（CLS，2026-10-03，已部署）
+
+- 量測工具：scratchpad 的 `cwv.mjs`（headless Edge＋Chrome DevTools Protocol，不需安裝套件；桌機 1440×900、手機 390×844 DPR3、CPU 4x）。隱藏的 App 瀏覽器面板量不到 LCP，CLS 也不準。
+- 原本正式站桌機 CLS 0.25–0.54、手機 0.15–0.48：遊戲選單載入後才填入（+118 px）、趨勢區塊插在最上方（557／627 px）、載入提示在內容流中出現又消失，以及趨勢區在資料回來前先渲染較矮的「無資料」版本。修正：`#channels:empty` 與 HTML 中的 `#trendsSection` 佔位保留最終高度、載入提示改為浮在底部、趨勢區只在請求完成後渲染（`window.trendsLoaded`）。
+- 結果（本機連正式資料）：桌機 CLS 0.005、LCP 0.40–0.53 s；正式站部署前一版桌機 CLS 0.03–0.05、LCP 0.5–1.6 s。手機 LCP 0.5–0.8 s，CLS 多為 0，但有時回報一筆 0.204，歸因於視窗外（y≈1541）的 `#series` 水平捲動列；1.8–3.3 s 逐格截圖像素完全相同，畫面無可見位移。真實使用者是否受影響需看 CrUX／RUM 數據，待觀察。
+
 下一個安全起點（擇一，建議依序）：
-1. LCP／INP 實測：需要可見的瀏覽器或 Lighthouse（PRODUCT_PLAN：LCP < 2.5 s、INP < 200 ms）。
+1. INP 實測（PRODUCT_PLAN：INP < 200 ms）；手機 CLS 的 0.204 歸因需以真實使用者數據確認。
 2. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
 3. Supabase 實例偏小（shared_buffers 224 MB），負載時查詢會偶發尖峰；升級運算規格涉及費用，需使用者決定。
 其他後續候選：Singapore 測試服務 `https://cardscope-1.onrender.com` 已證實區域不是瓶頸，建議由使用者刪除或停用；M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
