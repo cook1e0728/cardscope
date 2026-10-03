@@ -203,6 +203,13 @@
 - 中文名：ADR 0011 對齊通過 11 個系列（SVAL／SVAM／SVAW／SVB／SVC／SVD／SVEL／SVEM／SVF／SVP1）並取得台灣官方「無標記」；SVHK／SVHM 台版同代碼卡號排列不同（18–21 筆名稱不一致）整系列拒絕；其餘台灣官方快取無資料。之後以 ADR 0013 推導 611 張（7 批，重播零異動，候選 `derived-names/adr-0013-candidates-decks-20261003.json`）。官方頁無稀有度圖示且無台版者維持空值（Printing incomplete）。
 - 日版合計：94 個系列、9,266 張卡；中文名 8,945；`pokemon-card-official-jp` 38 系列 2,180 張（稀有度空值 682，多為牌組）。台版 7,436、美版 20,635 不變。正式站 `pokemon-official-ja-svm-059` 顯示「小仙奶 同名推導、日版 SVM 059」；`マホミル` 日版搜尋 8 筆。
 
+### 依序執行 24：SM 世代 30 個擴充包（2026-10-03，匯入與中文名完成；日本官方核對進行中）
+
+- 發現：Source archive 的 data-asia/SM 其實有 SM1S～SM12a 的日文卡名（先前只匯入 SM1p–SM5p），所以走原本的封存流程（`scripts/import-pokemon-jp-series.sh`，`CARDSCOPE_WORK` 必須用 Windows 路徑如 `C:/Users/...`，否則腳本內的 `node require` 失敗）。重新產生既有日版列快照 `sm-era/existing-jp-rows-sm-20261003.json`（9,266 列），observedAt `2026-10-03T06:04:38Z`。
+- 匯入 30 個系列 2,736 張（SM6／SM7／SM8／SM9／SM10／SM11／SM12 各 2 批、SM8b／SM12a 3 批），全部 gated＋重播零異動；無台版，所以無台版連結。ADR 0013 推導中文名 1,601 張（17 批，重播零異動，候選 `derived-names/adr-0013-candidates-sm-20261003.json`）。
+- 日版合計：124 個系列、12,002 張，10,546 張有中文名。SM 世代（含 SM1p–SM5p）3,139 張：中文名 1,820、verified 366。
+- 進行中：日本官方卡片頁核對（ADR 0007／0008／0009）——背景抓取 2,736 筆到 `docs/evidence/pokemon-jp/official-series/official-sm-cache-20261003.json`（scratchpad `sm-needed.json`、`sm-fetch.log`）。完成後以 `scripts/build-pokemon-jp-official-rarity-plan.mjs` 產生 fill／correct／identity 計畫並執行、重播。尚未匯入：SM 特典 SMP（445，比照 SV-P 不匯入）、牌組代碼 SMA／SMH／SMI／SMJ／SMK／SML／SMM／SMN（封存無系列檔）。
+
 下一個安全起點（擇一，建議依序）：
 1. 手機 CLS 的 0.204 歸因需以真實使用者數據確認（可考慮加入 web-vitals RUM 回報）。
 2. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
