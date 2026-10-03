@@ -301,8 +301,11 @@ async function syncOnePiece(db){
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
-export async function catalogProvidersNeedingSync(db,maxAgeHours=72){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,status,metadata&status=in.(completed,running)&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),covered=new Set((rows||[]).filter(row=>row.status==='running'||row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',pokemonZhTw:'tcgdex-zh-tw',onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!covered.has(stored)).map(([runtime])=>runtime);
+// TCGdex zh-tw is only a Source archive now: Taiwanese series names, rarities and statuses are
+// maintained from the Taiwanese official card search (ADR 0010, 0014, 0015), and a TCGdex resync
+// would overwrite them, so it is left out of scheduled syncs unless explicitly opted in.
+export async function catalogProvidersNeedingSync(db,maxAgeHours=72,{includeTcgdexTw=false}={}){
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,status,metadata&status=in.(completed,running)&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),covered=new Set((rows||[]).filter(row=>row.status==='running'||row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',...(includeTcgdexTw?{pokemonZhTw:'tcgdex-zh-tw'}:{}),onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!covered.has(stored)).map(([runtime])=>runtime);
 }
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}

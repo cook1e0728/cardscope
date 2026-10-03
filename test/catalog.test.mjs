@@ -99,6 +99,12 @@ test('catalog cooldown treats an active provider run as covered',async()=>{
   assert.deepEqual(providers,['onepiece']);
 });
 
+test('scheduled sync leaves TCGdex zh-tw out unless explicitly opted in',async()=>{
+  const runs=async()=>[{provider:'pokemontcg',status:'completed',metadata:{}},{provider:'ygoprodeck',status:'completed',metadata:{}},{provider:'onepiece-official-tw',status:'completed',metadata:{twCards:5}}];
+  assert.deepEqual(await catalogProvidersNeedingSync(runs,72),[]);
+  assert.deepEqual(await catalogProvidersNeedingSync(runs,72,{includeTcgdexTw:true}),['pokemonZhTw']);
+});
+
 test('price filters stay honest when no verified database source is configured',async()=>{
   const {data,meta}=await api('/api/buyback-prices?game=pokemon');
   assert.deepEqual(data,[]);
