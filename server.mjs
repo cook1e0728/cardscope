@@ -634,8 +634,9 @@ function canonicalizeCatalog(catalog){
 }
 // Search and card detail call this on every request; it pages through every series plus a card sample (2-4 s), so keep a successful result
 // and share in-flight loads. Once it is older than the TTL, callers still get it at once while one background load refreshes it
-// (a request never waits for a reload after the first). Callers get a clone because they canonicalize/mutate it.
-const CATALOG_CACHE_TTL_MS=Number(process.env.CATALOG_CACHE_TTL_MS??60000);
+// (a request never waits for a reload after the first). Ten minutes keeps those reloads from competing with searches on the small
+// database instance; catalog data only changes in batch imports. Callers get a clone because they canonicalize/mutate it.
+const CATALOG_CACHE_TTL_MS=Number(process.env.CATALOG_CACHE_TTL_MS??600000);
 let catalogCache={value:null,at:0,pending:null};
 async function loadCatalog(){
   const refresh=()=>{if(!catalogCache.pending)catalogCache.pending=loadCatalogUncached().then(value=>{if(!value.fallbackReason)catalogCache={value,at:Date.now(),pending:null};else catalogCache.pending=null;return value},error=>{catalogCache.pending=null;throw error});return catalogCache.pending};
