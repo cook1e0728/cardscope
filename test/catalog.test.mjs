@@ -484,7 +484,7 @@ test('repeated searches reuse the loaded catalog instead of re-paging every seri
       app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`catalog cache fixture exited (${code??signal})`))});
       app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
     });
-    const seriesPages=()=>requests.filter(([table,params])=>table==='tcg_series'&&!params.has('or')&&!params.has('id')).length;
+    const seriesPages=()=>requests.filter(([table,params])=>table==='tcg_series'&&!params.has('or')&&!params.has('id')&&!params.has('region')).length;
     for(const q of ['噴火龍','皮卡丘'])assert.equal((await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent(q)}`)).status,200);
     assert.equal(seriesPages(),1);
   }finally{
@@ -498,7 +498,7 @@ test('a stale catalog is served at once while one background load refreshes it',
   const mockSupabase=createServer((req,res)=>{
     const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1);
     const send=()=>{res.writeHead(200,{'content-type':'application/json'});res.end('[]')};
-    if(table==='tcg_series'&&!url.searchParams.has('or')){seriesLoads++;if(seriesLoads>1)return setTimeout(send,2000)}
+    if(table==='tcg_series'&&!url.searchParams.has('or')&&!url.searchParams.has('region')){seriesLoads++;if(seriesLoads>1)return setTimeout(send,2000)}
     send();
   });
   const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
