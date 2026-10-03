@@ -177,9 +177,17 @@
 - 測試：`node --test` 偶發「fetch failed: bad port」——作業系統會配到 fetch 規格禁止的埠；兩個測試檔的取埠函式已改為避開。Node 280/280。
 - 量測（台灣端、`curl --compressed`）：預設瀏覽頁約 0.6 s（原 0.8–2.6 s）、日版大系列首次 1.0–1.7 s（原 1.5–3.3 s，之後走快取）、詳細頁約 0.5 s。
 
+### 依序執行 20：伺服器處理與首頁載入（2026-10-03，已部署）
+
+- 稀有度查詢索引化：`providers/normalize.mjs` 的 `rarityEntry`／`rarityRank` 原本每次都重建整份定義並對每個別名做 NFKC＋正規表示式；改為每個遊戲建一次 token 索引（與舊程式對 852 組遊戲／值逐一比對無差異）。瀏覽排序改用共用 `Intl.Collator`（`localeCompare` 帶選項每次都建新的 collator）。Render 上系列頁組裝 300–800 ms → 5–8 ms；快取命中的系列頁約 0.33 s（台灣端）。`/api/cards` 的系列路徑回傳 Server-Timing（rpc／clone／page）。
+- 啟動預熱：伺服器 listen 後立即載入目錄、商品與趨勢（`CATALOG_WARM_ON_START=false` 可關閉；會攔截或計數 mock 請求的測試已關閉），部署後第一個搜尋不再等 3.5 s 目錄。買取價查詢走 5 分鐘瀏覽快取。
+- 首頁品牌圖：原本一開頁就下載 3.8 MB（1471 px 標誌縮成 24–42 px 顯示、收合的角色圖庫也全部下載）。`assets/brand/web/` 放依用途縮放的 WebP（共 224 KB，原檔保留），favicon 改 64 px PNG，展示區與圖庫 lazy loading。正式站首屏品牌圖 14 KB，`load` 2.5 s → 1.7 s，CLS 0.06–0.08（< 0.1）。LCP 在隱藏的瀏覽器面板中無法量測，尚未驗證。
+- Node 280/280。
+
 下一個安全起點（擇一，建議依序）：
-1. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
-2. Supabase 實例偏小（shared_buffers 224 MB），負載時查詢會偶發尖峰；升級運算規格涉及費用，需使用者決定。
+1. LCP／INP 實測：需要可見的瀏覽器或 Lighthouse（PRODUCT_PLAN：LCP < 2.5 s、INP < 200 ms）。
+2. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
+3. Supabase 實例偏小（shared_buffers 224 MB），負載時查詢會偶發尖峰；升級運算規格涉及費用，需使用者決定。
 其他後續候選：Singapore 測試服務 `https://cardscope-1.onrender.com` 已證實區域不是瓶頸，建議由使用者刪除或停用；M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）

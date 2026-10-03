@@ -830,7 +830,7 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
     const requestedGame=(url.searchParams.get('game')||'').trim().toLowerCase(),providerGame={pokemon:'poc'}[requestedGame];
     if(!providerGame)return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'此 IP 目前沒有可驗證的買取價格來源，因此不顯示價格。'}});
     try{
-      const rows=await supabaseFetch(`/jp_buyback_prices?select=game,cardNumber:card_number,rarity,cardName:card_name,price,currency,cardUrl:card_url,updatedAt:scraped_at&source=eq.yuyutei&game=eq.${providerGame}&order=scraped_at.desc&limit=500`),seen=new Set(),data=[];
+      const rows=await cachedBrowseRows(`buyback:${providerGame}`,()=>supabaseFetch(`/jp_buyback_prices?select=game,cardNumber:card_number,rarity,cardName:card_name,price,currency,cardUrl:card_url,updatedAt:scraped_at&source=eq.yuyutei&game=eq.${providerGame}&order=scraped_at.desc&limit=500`)),seen=new Set(),data=[];
       for(const row of rows||[]){const key=String(row.cardNumber||'').trim().toUpperCase();if(!key||seen.has(key)||!Number.isFinite(Number(row.price)))continue;seen.add(key);data.push({...row,price:Number(row.price),priceType:'buyback'})}
       return json(res,200,{data,meta:{source:'yuyutei-buyback',label:'遊々亭日版買取價',warning:'只用於篩選與排序有可靠對應的卡片；不是成交價、掛牌價或市場均價。'}});
     }catch(e){return json(res,502,{error:e.message})}
@@ -879,7 +879,7 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
 server.listen(port,()=>{
   console.log(`CardScope is running at http://localhost:${port}`);
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
-  if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message))}
+  if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message))}
   if(process.env.CATALOG_SYNC_ON_START!=='false'&&supabaseConfigured())setTimeout(async()=>{try{const maxAgeHours=Math.max(1,Number(process.env.CATALOG_SYNC_MAX_AGE_HOURS)||72),needed=await catalogProvidersNeedingSync(supabaseFetch,maxAgeHours),providers=filterAllowedCatalogProviders(needed),blocked=needed.filter(provider=>!providers.includes(provider));if(blocked.length)console.warn('source policy blocked scheduled catalog sync',blocked.join(','));if(providers.length){console.log('starting scheduled catalog sync',providers.join(','));const result=await syncCatalog(supabaseFetch,{providers});console.log('scheduled catalog sync complete',JSON.stringify(result))}const cacheSetting=process.env.CARD_IMAGE_CACHE_ON_START,shouldCacheImages=(cacheSetting==='true'||(cacheSetting!=='false'&&providers.includes('yugioh')))&&imageCollectionAllowed('yugioh');if(shouldCacheImages){console.log('starting card image cache');const images=await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)});console.log('card image cache complete',JSON.stringify(images))}}catch(error){console.error('scheduled catalog/image sync failed',error.message)}},3000);
 });
 
