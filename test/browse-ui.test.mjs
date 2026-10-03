@@ -97,7 +97,7 @@ test('verified prices cannot leak across games or non-Japanese editions',()=>{
 });
 test('removed gameFilters is not referenced by homepage scripts',()=>{
   assert.doesNotMatch(source,/\bgameFilters\b/);
-  assert.match(html,/cardscope-rabbit-mark\.png/);
+  assert.match(html,/cardscope-rabbit-mark(?:-\d+)?\.(?:png|webp)/);
 });
 test('IP navigation uses explicitly non-official CardScope artwork',async()=>{
   const switcher=await readFile(new URL('../game-switcher.js',import.meta.url),'utf8');
@@ -110,7 +110,7 @@ test('IP navigation uses explicitly non-official CardScope artwork',async()=>{
 });
 test('all seven rabbit roles are wired to local brand assets',async()=>{
   for(const name of ['hero','hero-mobile','profile','success','explore','silhouette','offline']){
-    assert.match(html+source+await readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8'),new RegExp(`rabbit-${name}\\.(?:jpg|png)`));
+    assert.match(html+source+await readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8'),new RegExp(`rabbit-${name}(?:-\\d+)?\\.(?:jpg|png|webp)`));
   }
   assert.match(html,/mascot-gallery/);
 });

@@ -51,7 +51,7 @@ try{
  await page.locator('[data-favorite-id]').first().click();
  await page.locator('[data-watch-increment]').first().click();
  assert.match(await page.locator('#watchlistSummary').innerText(),/1 張、1 件/);
- assert.match(await page.locator('#brandCollectionToast img').getAttribute('src'),/rabbit-success\.jpg/);
+ assert.match(await page.locator('#brandCollectionToast img').getAttribute('src'),/rabbit-success(?:-160)?\.(?:jpg|webp)/);
  assert.equal(await page.locator('#brandCollectionToast').evaluate(node=>node.classList.contains('show')),true);
  await page.locator('#favoritesOnly').click();
  assert.equal(await page.locator('#cards .card').count(),1);
@@ -62,7 +62,7 @@ try{
  await page.locator('[data-view="grid"]').click();
  await page.setViewportSize({width:390,height:844});
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile overflow');
- assert.match(await page.locator('.brand-showcase img').evaluate(image=>image.currentSrc),/rabbit-hero-mobile\.jpg/);
+ assert.match(await page.locator('.brand-showcase img').evaluate(image=>image.currentSrc),/rabbit-hero-mobile\.(?:jpg|webp)/);
  await page.locator('.mascot-gallery').evaluate(node=>node.open=true);
  assert.equal(await page.locator('.mascot-gallery figure').count(),7);
  assert.deepEqual(errors,[]);

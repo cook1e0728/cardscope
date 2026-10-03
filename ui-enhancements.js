@@ -139,7 +139,7 @@ function activateCardActions(root=$('cards')){
   root.querySelectorAll('[data-watch-decrement]').forEach(button=>{button.onclick=event=>{event.stopPropagation();setWatchQuantity(button.dataset.watchDecrement,watchQuantity(button.dataset.watchDecrement)-1)}});
 }
 
-function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img src="/assets/brand/rabbit-offline.png" alt="奔跑中的 CardScope 兔子" loading="lazy"><div><b>兔子還在尋找卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
+function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img src="/assets/brand/web/rabbit-offline.webp" alt="奔跑中的 CardScope 兔子" loading="lazy"><div><b>兔子還在尋找卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
 
 function renderCardRows(rows){
   if(cardViewMode!=='rarity')return rows.length?rows.map(cardMarkup).join(''):renderCardEmpty();
@@ -171,7 +171,7 @@ function toggleFavorite(id){
 function showCollectionToast(){
   let toast=$('brandCollectionToast');
   if(!toast){toast=document.createElement('div');toast.id='brandCollectionToast';toast.className='brand-collection-toast';toast.setAttribute('role','status');document.body.append(toast)}
-  toast.innerHTML='<img src="/assets/brand/rabbit-success.jpg" alt=""><div><b>已加入追蹤清單</b><span>彩虹寶箱兔幫你收好了</span></div>';
+  toast.innerHTML='<img src="/assets/brand/web/rabbit-success-160.webp" alt=""><div><b>已加入追蹤清單</b><span>彩虹寶箱兔幫你收好了</span></div>';
   toast.classList.add('show');clearTimeout(showCollectionToast.timer);showCollectionToast.timer=setTimeout(()=>toast.classList.remove('show'),2600);
 }
 
@@ -397,7 +397,7 @@ window.openCard=openCard;
 function installFeatureTour(){
   if($('cardscopeFeatureTour'))return;
   const section=document.createElement('details');section.id='cardscopeFeatureTour';section.className='feature-tour section';section.setAttribute('aria-label','CardScope 使用說明');
-  section.innerHTML='<summary><span class="help-summary-copy"><b>快速使用說明</b><small>稀有度分組、收藏與追蹤清單</small></span><img src="/assets/brand/cardscope-rabbit-mark.png" alt="" loading="lazy"><span class="help-summary-chevron" aria-hidden="true">⌄</span></summary><div class="help-grid"><article class="help-item"><b>先選瀏覽方式</b><p>圖鑑模式看卡面，清單模式看欄位；需要依真實稀有度整理時，切換稀有度分組。</p></article><article class="help-item"><b>收藏與追蹤</b><p>卡片上的星號只儲存在此裝置；數量清單可用加減調整，價格只計入已驗證買取資料。</p></article><article class="help-item"><b>資料不足會明確標示</b><p>沒有可靠卡圖、名稱或價格時保留待補提示，不以生成內容補成官方資料。</p></article></div>';
+  section.innerHTML='<summary><span class="help-summary-copy"><b>快速使用說明</b><small>稀有度分組、收藏與追蹤清單</small></span><img src="/assets/brand/web/cardscope-rabbit-mark-96.webp" alt="" loading="lazy"><span class="help-summary-chevron" aria-hidden="true">⌄</span></summary><div class="help-grid"><article class="help-item"><b>先選瀏覽方式</b><p>圖鑑模式看卡面，清單模式看欄位；需要依真實稀有度整理時，切換稀有度分組。</p></article><article class="help-item"><b>收藏與追蹤</b><p>卡片上的星號只儲存在此裝置；數量清單可用加減調整，價格只計入已驗證買取資料。</p></article><article class="help-item"><b>資料不足會明確標示</b><p>沒有可靠卡圖、名稱或價格時保留待補提示，不以生成內容補成官方資料。</p></article></div>';
   const footer=document.querySelector?.('.brand-footer'),notice=$('notice');
   if(footer)footer.insertAdjacentElement('beforebegin',section);else if(notice)notice.insertAdjacentElement('afterend',section);
 }
