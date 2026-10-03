@@ -83,17 +83,16 @@ const sqlText = value => `'${String(value).replace(/'/g, "''")}'`;
  * Gated SQL for one batch: a dry run must report a fresh, collision-free insert of exactly
  * this plan (same digest as computed here) before the real write runs in the same request.
  */
-export function buildOfficialJpSeriesSql(plan, actor) {
+export function buildOfficialJpSeriesSql(plan, actor, fn = 'private.import_pokemon_jp_official_series') {
   if (typeof actor !== 'string' || !actor.trim()) throw new Error('ACTOR_REQUIRED');
   const json = JSON.stringify(plan);
   if (json.includes('$plan$')) throw new Error('PLAN_QUOTE_COLLISION');
   const digest = pokemonJpPlanDigest(plan);
   const n = plan.cards.length;
   const inserted = `{"cards": ${n}, "series": ${plan.batch.index === 1 ? 1 : 0}, "canonical": ${n}, "printings": ${n}}`;
-  const fn = 'private.import_pokemon_jp_official_series';
   const call = dry => `${fn}($plan$${json}$plan$::jsonb, ${sqlText(actor)}, ${dry})`;
   const gated = [
-    `-- ${plan.seriesProviderId} batch ${plan.batch.index}/${plan.batch.count}: ${n} cards (ADR 0012). planDigest ${digest}`,
+    `-- ${plan.seriesProviderId} batch ${plan.batch.index}/${plan.batch.count}: ${n} cards (${fn}). planDigest ${digest}`,
     'create temporary table jp_official_import_result (v jsonb) on commit drop;',
     'do $do$',
     'declare d jsonb; r jsonb;',

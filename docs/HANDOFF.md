@@ -218,6 +218,13 @@
 
 - 台灣官方卡片搜尋頁的系列清單（134 個代碼與官方名稱）與資料庫 98 個台版系列比對：S11、SP5、SVHK、SVHM 名稱錯位，改為官方名稱並保留舊值（`nameZhBeforeOfficial`）；日版 S11 的中文系列名來自台版連結，同步更正為「迷途深淵」。證據 `docs/evidence/pokemon-tw/official-expansion-names-20261003.json`。
 
+### 依序執行 26：台版缺少的 14 個系列以台灣官方卡片搜尋匯入並連結日版（ADR 0015，2026-10-03，已完成）
+
+- 台灣官方系列清單有 134 個代碼，資料庫台版只有 98 個；其中 MEGA 世代（M1L、M1S、M2、M2a、M3、M4、M5、M6、M6a、MC、MF）、SV11B、SV11W、SVK 的官方頁已完整在快取中，不需再連網。
+- 程式：`providers/pokemon-tw-official-series-plan.mjs`、`scripts/build-pokemon-tw-official-series-plan.mjs`（`buildOfficialJpSeriesSql` 增加函式名參數以共用閘門 SQL）。Migration `20261003200000_pokemon_tw_official_series_import`（先以 M1L 在正式庫整批回滾測試）、`20261003210000_pokemon_jp_tw_official_link`。
+- 結果：台版匯入 2,366 張（每批 gated＋重播零異動；隔離 51：同號版本名稱不一致、無卡號），稀有度幾乎全有（M6a 2 張未知）。日版 2,117 張依 ADR 0011 依據的官方詳細頁 ID 連結到台版卡（22 批，重播零異動），作品層最多 2 張卡共用。台版 Printing 7,436 → 9,802。正式站 `pokemon-tcgdex-ja-m3-010` 詳細頁並列「JP M3 010 C」與「TW M3 010 C」。
+- 尚未處理：官方快取沒有的台版代碼（戰術牌組 MT*／SVT*、挑戰牌組 MBD／MBG／SVOD／SVOM、SVM、SVI、SVPS／SVPN、SVQL／SVQP、MJ、SO、AS*／AC* 等，以及特典 M-P／S-P／SM-P）。需先以 `scripts/fetch-pokemon-tw-official-rarity.mjs` 抓清單與詳細頁，再走同一流程。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（擇一，建議依序）：
