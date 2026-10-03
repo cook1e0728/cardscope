@@ -561,6 +561,21 @@ test('search uses the ranked database function first and keeps its order, counts
   assert.equal(sent.p_limit,40);assert.equal(sent.p_region,null);assert.deepEqual(sent.p_needles,['測試獸']);assert.deepEqual(sent.p_patterns,['%測試獸%']);
 });
 
+test('after the ranked function no PostgREST text query runs, and names removed by the region filter end the search',async()=>{
+  const filtered=await searchWithMock((table,params,respond)=>{
+    if(table==='search_cards_ranked')return respond({matchedBy:'name',matchCount:5,groupCount:0,cards:[]});
+    return respond([]);
+  },'測試獸');
+  assert.deepEqual(filtered.body.data,[]);
+  assert.equal(filtered.requests.filter(([table,params])=>((table==='tcg_cards'||table==='tcg_series')&&(params.has('or')||params.has('canonical_id')))||table==='search_cards_with_siblings').length,0);
+  const none=await searchWithMock((table,params,respond)=>{
+    if(table==='search_cards_ranked')return respond({matchedBy:null,matchCount:0,groupCount:0,cards:[]});
+    return respond([]);
+  },'測試獸');
+  assert.equal(none.requests.filter(([table,params])=>table==='tcg_cards'&&params.has('or')).length,0,'search_text was already tried in SQL');
+  assert.equal(none.requests.filter(([table,params])=>table==='tcg_series'&&params.has('or')).length,1,'series names are still tried');
+});
+
 test('a repeated search within a minute is answered from the search cache',async()=>{
   const {requests,responses}=await searchWithMock((table,params,respond)=>{
     if(table==='search_cards_with_siblings')return respond({hits:[{...embedCard,printings:[embedPrinting]}],siblings:[]});
