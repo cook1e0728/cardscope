@@ -203,13 +203,14 @@
 - 中文名：ADR 0011 對齊通過 11 個系列（SVAL／SVAM／SVAW／SVB／SVC／SVD／SVEL／SVEM／SVF／SVP1）並取得台灣官方「無標記」；SVHK／SVHM 台版同代碼卡號排列不同（18–21 筆名稱不一致）整系列拒絕；其餘台灣官方快取無資料。之後以 ADR 0013 推導 611 張（7 批，重播零異動，候選 `derived-names/adr-0013-candidates-decks-20261003.json`）。官方頁無稀有度圖示且無台版者維持空值（Printing incomplete）。
 - 日版合計：94 個系列、9,266 張卡；中文名 8,945；`pokemon-card-official-jp` 38 系列 2,180 張（稀有度空值 682，多為牌組）。台版 7,436、美版 20,635 不變。正式站 `pokemon-official-ja-svm-059` 顯示「小仙奶 同名推導、日版 SVM 059」；`マホミル` 日版搜尋 8 筆。
 
-### 依序執行 24：SM 世代 30 個擴充包（2026-10-03，匯入與中文名完成；日本官方核對進行中）
+### 依序執行 24：SM 世代 30 個擴充包與 XY 的 CP1／CP2（2026-10-03，已完成）
 
 - 發現：Source archive 的 data-asia/SM 其實有 SM1S～SM12a 的日文卡名（先前只匯入 SM1p–SM5p），所以走原本的封存流程（`scripts/import-pokemon-jp-series.sh`，`CARDSCOPE_WORK` 必須用 Windows 路徑如 `C:/Users/...`，否則腳本內的 `node require` 失敗）。重新產生既有日版列快照 `sm-era/existing-jp-rows-sm-20261003.json`（9,266 列），observedAt `2026-10-03T06:04:38Z`。
 - 匯入 30 個系列 2,736 張（SM6／SM7／SM8／SM9／SM10／SM11／SM12 各 2 批、SM8b／SM12a 3 批），全部 gated＋重播零異動；無台版，所以無台版連結。ADR 0013 推導中文名 1,601 張（17 批，重播零異動，候選 `derived-names/adr-0013-candidates-sm-20261003.json`）。
 - 日版合計：124 個系列、12,002 張，10,546 張有中文名。SM 世代（含 SM1p–SM5p）3,139 張：中文名 1,820、verified 366。
 - XY 世代：封存只有 CP1（34）、CP2（27）有日文名（BW 以前沒有），已同流程匯入（重播零異動），ADR 0013 推導 22 名；既有列快照 `xy-era/existing-jp-rows-xy-20261003.json`。其餘 XY 以前的系列只能走 ADR 0012（日本官方卡片搜尋），尚未查證官方是否收錄。
-- 進行中：日本官方卡片頁核對（ADR 0007／0008／0009）——背景抓取 2,736 筆到 `docs/evidence/pokemon-jp/official-series/official-sm-cache-20261003.json`（scratchpad `sm-needed.json`、`sm-fetch.log`）。完成後以 `scripts/build-pokemon-jp-official-rarity-plan.mjs` 產生 fill／correct／identity 計畫並執行、重播。尚未匯入：SM 特典 SMP（445，比照 SV-P 不匯入）、牌組代碼 SMA／SMH／SMI／SMJ／SMK／SML／SMM／SMN（封存無系列檔）。
+- 日本官方核對（2026-10-03 完成）：逐卡找頁模式在 SM 世代太慢（官方清單順序與封存卡號不一致，每卡要多抓數頁），改用 `--whole-series` 抓 32 個系列 2,569 頁，快取 `official-series/official-sm-cache-20261003.json`。計畫（報告 `sm-era/official-rarity-report-20261003.json`）：correct 342（UR→SR 259、UR→S 45、UR→SSR 38，後兩者為 SM8b 色違，ADR 0009）、identity 2,519，共 70 份計畫全部執行、重播零異動。隔離：未知圖示 `ic_rare_tr` 36（未對映，待查證）、名稱不符 50（多為 SM12a 稜鏡之星◇卡，官方標題含圖示而解析不到名稱）、官方頁無圖示 258；官方清單沒有的封存卡 228（每系列約 7 張，多為能量等）。
+- 結果：SM＋CP 3,200 張，Card verified 2,885、Printing verified 2,401、稀有度空值 486、Card／Printing 稀有度不一致 0。日版合計 126 個系列、12,063 張，中文名 10,568、verified 11,603。台版 7,436、美版 20,635 不變。
 
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
