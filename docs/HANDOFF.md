@@ -157,9 +157,20 @@
 - 正式量測（45 個查詢：15 詞 × 全部／日版／韓版，暖機後、快取未命中）：伺服器 total p50 267 ms、p95 582 ms、最大 1,021 ms（魯夫全部，141 KB、93 張卡：海賊王同一 canonical 下卡多）；用戶端（台灣，curl 每次新 TLS）p50 586 ms、p95 1,177 ms。改動前：rpc 370–990 ms、空版本結果多 400–1,000 ms、系列搜尋 1.4–2.0 s、每分鐘一次 2–4 s 目錄重載。Render 回應已有 brotli 壓縮。瀏覽器實測搜尋「桃歹郎」結果正常。
 - 已知：Supabase 實例為小型（shared_buffers 224 MB），其他工作（瀏覽、匯入）平均查詢約 150 ms，負載時仍會偶發尖峰；升級運算規格涉及費用，未處理（如需進一步穩定 P95，這是下一個槓桿）。用戶端 P95 包含台灣到 Ohio 的往返約 300 ms。
 
+### 依序執行 17：詳細頁單次往返（2026-10-03，已部署）
+
+- Migration `20261003130000_get_card_detail`：`public.get_card_detail(p_id)` 一次回傳卡片群組（id 或 canonical_id 為 p_id，及其所屬其他 canonical 的卡）、全部 printings、系列與遊戲（選取規則同 `loadCardFromDatabase`，失敗或格式不符時退回原 PostgREST 查詢）。`getCard` 與目錄載入並行啟動，結果快取 10 分鐘（上限 500）並共用進行中的載入，詳細頁與市場資料分頁只載一次。正式量測（台灣端）：詳細頁 1.1–2.5 s → 約 0.5 s，市場資料 1.4–2.2 s → 約 0.5 s。Node 277/277。
+
+### 依序執行 18：ADR 0013 以資料庫中的官方中文名推導日版名稱（2026-10-03，已完成）
+
+- ADR 0013（使用者授權照建議）：日版卡沒有中文名時，若資料庫中日文名完全相同的日版卡已有官方依據的中文名（`tw-official` 或 `tw-official-same-number`），且該日文名只對應唯一一個中文名，就採用為 Derived name（`derived-cross-series`，`nameZhRule: 'adr-0013'`，記錄 `nameZhSourceCardId`）；不限世代與來源、只填空值、不連結 Canonical card。詞彙表 Derived name 已更新。
+- Migration `20261003140000_pokemon_jp_derived_names_from_official`：`private.derive_pokemon_jp_names_from_official`（每次 ≤100，逐列重驗唯一性，追加式稽核 `private.catalog_jp_derived_name_audit`）。先以全部 6 份計畫在正式庫整批回滾測試，再套用。
+- 結果：508 張（官方來源 235、tcgdex-ja 273），6 批寫入＋6 批重播零異動。日版缺中文名 758 → 250（官方來源剩 11、tcgdex-ja 剩 239，多為 SM 世代台版未收錄的名稱，以及 博士の研究 這類一對多的名稱）。候選清單 `docs/evidence/pokemon-jp/derived-names/adr-0013-candidates-20261003.json`。詳細頁提示文字改為不限同世代。
+- 正式網站：`pokemon-official-ja-s4-105` 顯示「胡地V 同名推導、SR、日版 S4 105」。
+
 下一個安全起點（擇一，建議依序）：
-1. 新官方來源系列 246 張無中文名：ADR 0004 跨系列推導目前只限 tcgdex-ja、朱紫世代，若要擴及劍盾世代需新決策。
-2. 詳細頁 `/api/cards/:id` 仍是多次 PostgREST 往返（卡片、同作品層、printings、系列、遊戲），可比照搜尋做單一 RPC。
+1. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
+2. 瀏覽（`/api/cards?series=...`、系列分頁）仍是多次 PostgREST 往返，可比照搜尋與詳細頁改為單一 RPC 並量測。
 其他後續候選：Singapore 測試服務 `https://cardscope-1.onrender.com` 已證實區域不是瓶頸，建議由使用者刪除或停用；M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
