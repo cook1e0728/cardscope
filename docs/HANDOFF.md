@@ -269,6 +269,12 @@
 - 中文名：ADR 0013 推導 1,081 名（11 批，重播零異動，`derived-names/adr-0013-candidates-xy-20261004.json`）。
 - 日版合計：180 個系列、15,537 張，中文名 13,048。正式站 `/api/cards?series=pokemon-official-ja-xy7-b` 84 張（001 走路草｜ナゾノクサ、C）。Node 288/288。
 
+### 依序執行 33：DPt、LEGEND、BW 世代（ADR 0019，2026-10-04，進行中）
+
+- 掃描官方商品 ID 1–379（`official-product-ids-dptbw-20261004.json`）：官方收錄 DP、DPt、LEGEND、BW 世代。抽查詳細頁：DP 世代無卡號（不匯入），DPt 以後有卡號；DP 頁出現 `ic_rare_s`，可能是「★」而非色違 S。
+- ADR 0019（照建議）：匯入 83 個 DPt／LEGEND／BW 代碼；XY 以前稀有度只對映 C／U／R／RR／SR／UR（計畫產生器 `--rarity-codes`、匯入腳本環境變數 `CARDSCOPE_RARITY_CODES`）；系列名規則同 ADR 0012，同一牌組多種寫法取最小商品 ID 的名稱；發售日 54／83。系列 meta `series-meta-dptbw-20261004.json`。
+- 進行中：背景抓取（自動重試最多 6 次）寫入 `official-series-dptbw-cache-20261004.json`。下一步：抓完後以 `CARDSCOPE_RARITY_CODES=C,U,R,RR,SR,UR` 執行 `scripts/import-pokemon-jp-official-series.sh`（XY migration 已允許這些代碼，不需新 migration），再 ADR 0013 推導中文名。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-03 收尾時的狀態）：

@@ -10,7 +10,7 @@ SP="${CARDSCOPE_WORK:?set CARDSCOPE_WORK to a work folder}"
 D="$SP/official-series/$CODE"; mkdir -p "$D"; ACTOR=${CARDSCOPE_ACTOR:-claude-code-local:aa26488931}
 TW_CACHE=${CARDSCOPE_TW_CACHE:-docs/evidence/pokemon-tw/official-rarity-20261002.json}
 die() { echo "STOP $CODE: $*"; exit 1; }
-node scripts/build-pokemon-jp-official-series-plan.mjs "$CACHE" "$META" "$D" --series "$CODE" --actor "$ACTOR" > "$D/summary.json" || die plan
+node scripts/build-pokemon-jp-official-series-plan.mjs "$CACHE" "$META" "$D" --series "$CODE" --actor "$ACTOR" ${CARDSCOPE_RARITY_CODES:+--rarity-codes "$CARDSCOPE_RARITY_CODES"} > "$D/summary.json" || die plan
 cat "$D/summary.json"
 BATCHES=$(node -e "console.log(require(process.argv[1]).batches)" "$D/summary.json")
 for i in $(seq 1 "$BATCHES"); do

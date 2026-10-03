@@ -18,8 +18,10 @@ const byNumber = (a, b) => a.official_card_number.localeCompare(b.official_card_
  * icon leaves the rarity empty (ADR 0007) and is reported, never guessed.
  * `seedClaim` ({ seriesId, cardNumbers }, ADR 0016): import into a claimed Seed series and
  * leave out the claimed card numbers, which the claim already gave the official identity.
+ * `rarityCodes` (ADR 0019): only these mapped codes are kept; any other icon leaves the
+ * rarity empty, for eras where an icon name may not mean today's code (★ vs S).
  */
-export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim = null }) {
+export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim = null, rarityCodes = null }) {
   const list = cache.lists?.[code];
   if (!list) throw new Error(`OFFICIAL_LIST_MISSING:${code}`);
   if (!seriesMeta?.name_ja) throw new Error(`SERIES_META_MISSING:${code}`);
@@ -37,7 +39,8 @@ export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim 
   const claimedNumbers = new Set(seedClaim?.cardNumbers ?? []);
   for (const page of pages) {
     if (counts.get(page.number) > 1) { quarantined.push({ cardId: page.cardId, number: page.number, nameJa: page.nameJa, reason: 'DUPLICATE_NUMBER' }); continue; }
-    const rarity = officialJpRarity(page.rarityIcon);
+    const mapped = officialJpRarity(page.rarityIcon);
+    const rarity = rarityCodes && mapped.rarity && !rarityCodes.has(mapped.rarity) ? { quarantine: `ERA_RARITY_NOT_ALLOWED:${mapped.rarity}` } : mapped;
     if (rarity.quarantine) rarityUnknown.push({ number: page.number, cardId: page.cardId, reason: rarity.quarantine });
     evidence.push({ cardId: page.cardId, setMark: page.setMark, number: page.number, nameJa: page.nameJa, rarityIcon: page.rarityIcon ?? null });
     if (claimedNumbers.has(page.number)) { claimed.push({ cardId: page.cardId, number: page.number, nameJa: page.nameJa }); continue; }

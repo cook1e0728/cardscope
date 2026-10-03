@@ -106,3 +106,12 @@ test('XY-era set marks keep their hyphenated suffix in IDs (ADR 0018)', () => {
   assert.equal(plans[0].series.id, 'pokemon-official-ja-xy7-b');
   assert.deepEqual([plans[0].cards[0].id, plans[0].cards[0].rarity_code], ['pokemon-official-ja-xy7-b-001', 'C']);
 });
+
+test('rarityCodes keeps only the allowed codes and reports the rest (ADR 0019)', () => {
+  const card = (cardId, number, rarityIcon) => ({ cardId, setMark: 'BW1-Bb', number, nameJa: 'X', rarityIcon, total: '053', list: 'BW1-Bb', fetchedAt: '2026-10-04T00:00:00Z' });
+  const cache = { lists: { 'BW1-Bb': { hitCount: 2, cardIds: ['1', '2'], fetchedAt: '2026-10-04T00:00:00Z' } }, details: { 1: card('1', '001', 'ic_rare_c_c'), 2: card('2', '002', 'ic_rare_s') } };
+  const { plans, rarityUnknown } = buildOfficialJpSeriesPlans({ code: 'BW1-Bb', seriesMeta: { name_ja: 'X' }, cache, rarityCodes: new Set(['C', 'U', 'R', 'RR', 'SR', 'UR']) });
+  assert.deepEqual(plans[0].cards.map(c => c.rarity_code), ['C', null]);
+  assert.equal(plans[0].cards[1].metadata.rarityBasis, undefined);
+  assert.deepEqual(rarityUnknown, [{ number: '002', cardId: '2', reason: 'ERA_RARITY_NOT_ALLOWED:S' }]);
+});
