@@ -168,9 +168,18 @@
 - 結果：508 張（官方來源 235、tcgdex-ja 273），6 批寫入＋6 批重播零異動。日版缺中文名 758 → 250（官方來源剩 11、tcgdex-ja 剩 239，多為 SM 世代台版未收錄的名稱，以及 博士の研究 這類一對多的名稱）。候選清單 `docs/evidence/pokemon-jp/derived-names/adr-0013-candidates-20261003.json`。詳細頁提示文字改為不限同世代。
 - 正式網站：`pokemon-official-ja-s4-105` 顯示「胡地V 同名推導、SR、日版 S4 105」。
 
+### 依序執行 19：瀏覽與商品延遲（2026-10-03，已部署）
+
+- 加 `search_names` 欄位重寫 `tcg_cards` 後，visibility map 被清空，瀏覽總數的 `count(*)` 變成 3.3 s；已對 `tcg_cards`、`tcg_printings`、`card_images`、`tcg_canonical_cards`、`tcg_series` 執行 `VACUUM (ANALYZE)`（45 ms）。**之後若再重寫大表，要記得 VACUUM。**
+- Migration `20261003150000`：索引 `tcg_cards (game_id, official_card_number, id)`，瀏覽首頁排序 115 ms → 7 ms。
+- Migration `20261003160000`／`170000`：`public.browse_cards_page(game, limit, offset, desc)`（預設瀏覽頁、精確總數、printings、圖片一次回傳，DB 18–28 ms）與 `public.browse_series_cards(game, series)`（系列頁三組資料一次回傳，取代分頁＋分批的 PostgREST 查詢，DB 6–30 ms）；兩者 metadata 只留列表會讀的鍵（詳細頁另由 `get_card_detail` 讀完整資料），日版 237 張系列 607 KB → 255 KB。伺服器先用 RPC，失敗時退回原查詢；結果與其他瀏覽資料一樣快取 5 分鐘（瀏覽快取超過 400 鍵時清掉過期與最舊項目）。
+- `/api/products` 改為快取 10 分鐘並在背景更新（讀不到已存商品時不快取），1.5–2.1 s → 快取命中約 0.4 s（台灣端）。
+- 測試：`node --test` 偶發「fetch failed: bad port」——作業系統會配到 fetch 規格禁止的埠；兩個測試檔的取埠函式已改為避開。Node 280/280。
+- 量測（台灣端、`curl --compressed`）：預設瀏覽頁約 0.6 s（原 0.8–2.6 s）、日版大系列首次 1.0–1.7 s（原 1.5–3.3 s，之後走快取）、詳細頁約 0.5 s。
+
 下一個安全起點（擇一，建議依序）：
 1. 日版剩 250 張無中文名：多為 SM 世代（台灣官方未收錄），需要新的官方來源或維持空值。
-2. 瀏覽（`/api/cards?series=...`、系列分頁）仍是多次 PostgREST 往返，可比照搜尋與詳細頁改為單一 RPC 並量測。
+2. Supabase 實例偏小（shared_buffers 224 MB），負載時查詢會偶發尖峰；升級運算規格涉及費用，需使用者決定。
 其他後續候選：Singapore 測試服務 `https://cardscope-1.onrender.com` 已證實區域不是瓶頸，建議由使用者刪除或停用；M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
