@@ -130,6 +130,7 @@ export function auditCatalogLinks({cards=[],printings=[],images=[]}={}){
   };
 }
 
+const SYNC_WRITE_TIMEOUT_MS=60000;
 async function upsert(db,path,rows,onConflict='id'){
   rows=(rows||[]).filter(Boolean);
   if(path==='/tcg_cards')rows=rows.map(protectNullEnrichment);
@@ -140,7 +141,8 @@ async function upsert(db,path,rows,onConflict='id'){
   // keys (PGRST102). Grouping by shape keeps omitted card enrichments and
   // printing rarity fields out of their respective request payloads.
   for(const sameShapeRows of groupRowsByShape(deduped))for(const batch of chunks(sameShapeRows)){
-    await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch)});
+    // Bulk upserts on a small database instance can exceed the server's 12 s default fetch timeout.
+    await db(`${path}?on_conflict=${encodeURIComponent(onConflict)}`,{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(batch),signal:AbortSignal.timeout(SYNC_WRITE_TIMEOUT_MS)});
     written+=batch.length;
   }
   return written;
@@ -304,8 +306,12 @@ async function syncOnePiece(db){
 // TCGdex zh-tw is only a Source archive now: Taiwanese series names, rarities and statuses are
 // maintained from the Taiwanese official card search (ADR 0010, 0014, 0015), and a TCGdex resync
 // would overwrite them, so it is left out of scheduled syncs unless explicitly opted in.
+const STALE_RUN_HOURS=6;
 export async function catalogProvidersNeedingSync(db,maxAgeHours=72,{includeTcgdexTw=false}={}){
-  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,status,metadata&status=in.(completed,running)&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),covered=new Set((rows||[]).filter(row=>row.status==='running'||row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',...(includeTcgdexTw?{pokemonZhTw:'tcgdex-zh-tw'}:{}),onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!covered.has(stored)).map(([runtime])=>runtime);
+  const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,status,metadata,started_at&status=in.(completed,running)&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),
+    // A run interrupted by a restart stays 'running' forever; after STALE_RUN_HOURS it no longer counts as covered.
+    staleBefore=Date.now()-STALE_RUN_HOURS*3600000,live=(rows||[]).filter(row=>row.status!=='running'||!row.started_at||Date.parse(row.started_at)>=staleBefore),
+    covered=new Set(live.filter(row=>row.status==='running'||row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',...(includeTcgdexTw?{pokemonZhTw:'tcgdex-zh-tw'}:{}),onepiece:'onepiece-official-tw',yugioh:'ygoprodeck'};return Object.entries(providerNames).filter(([,stored])=>!covered.has(stored)).map(([runtime])=>runtime);
 }
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}

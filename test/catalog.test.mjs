@@ -99,6 +99,14 @@ test('catalog cooldown treats an active provider run as covered',async()=>{
   assert.deepEqual(providers,['onepiece']);
 });
 
+test('a run left running by a restart stops counting as covered after six hours',async()=>{
+  const at=hours=>new Date(Date.now()-hours*3600000).toISOString();
+  const runs=async()=>[{provider:'pokemontcg',status:'completed',metadata:{},started_at:at(1)},{provider:'onepiece-official-tw',status:'completed',metadata:{twCards:5},started_at:at(1)},{provider:'ygoprodeck',status:'running',metadata:{},started_at:at(30)}];
+  assert.deepEqual(await catalogProvidersNeedingSync(runs,72),['yugioh']);
+  const fresh=async()=>[...(await runs()).slice(0,2),{provider:'ygoprodeck',status:'running',metadata:{},started_at:at(2)}];
+  assert.deepEqual(await catalogProvidersNeedingSync(fresh,72),[]);
+});
+
 test('scheduled sync leaves TCGdex zh-tw out unless explicitly opted in',async()=>{
   const runs=async()=>[{provider:'pokemontcg',status:'completed',metadata:{}},{provider:'ygoprodeck',status:'completed',metadata:{}},{provider:'onepiece-official-tw',status:'completed',metadata:{twCards:5}}];
   assert.deepEqual(await catalogProvidersNeedingSync(runs,72),[]);
