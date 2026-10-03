@@ -502,6 +502,37 @@ test('a stale catalog is served at once while one background load refreshes it',
   }
 });
 
+test('card detail and its market tab share one get_card_detail call',async()=>{
+  const card={id:'pokemon-tcgdex-ja-sv6a-039',canonicalId:'pokemon-tcgdex-tw-sv6a-039',game:'pokemon',seriesId:'pokemon-tcgdex-ja-sv6a',officialCardNumber:'039',rarity:'RR',nameZh:'桃歹郎ex',nameJa:'モモワロウex',nameEn:null,nameKo:null,aliases:[],metadata:{},printings:[{id:1,cardId:'pokemon-tcgdex-ja-sv6a-039',seriesId:'pokemon-tcgdex-ja-sv6a',region:'JP',language:'ja-JP',localSetCode:'SV6a',localCardNumber:'039',rarity:'RR',imageUrl:null,imageRehostRequired:false,metadata:{}}]};
+  const twin={...card,id:'pokemon-tcgdex-tw-sv6a-039',seriesId:'pokemon-tcgdex-tw-sv6a',nameJa:null,printings:[{...card.printings[0],id:2,cardId:'pokemon-tcgdex-tw-sv6a-039',seriesId:'pokemon-tcgdex-tw-sv6a',region:'TW',language:'zh-TW'}]};
+  const requests=[];
+  const mockSupabase=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1);requests.push(table);
+    const body=table==='get_card_detail'?{cards:[card,twin],series:[{id:'pokemon-tcgdex-ja-sv6a',game:'pokemon',officialCode:'SV6a',nameJa:'ナイトワンダラー',region:'JP'}],games:[{id:'pokemon',nameZh:'寶可夢'}]}:[];
+    setTimeout(()=>{res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(body))},table==='get_card_detail'?200:0);
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`card detail fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`card detail fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const [detail,market]=await Promise.all([fetch(`http://127.0.0.1:${appPort}/api/cards/${card.id}`),fetch(`http://127.0.0.1:${appPort}/api/cards/${card.id}/market`)]);
+    assert.equal(detail.status,200);assert.equal(market.status,200);
+    const body=await detail.json();
+    assert.deepEqual(body.data.printings.map(p=>p.region).sort(),['JP','TW']);
+    assert.equal(body.data.game?.nameZh,'寶可夢');
+    assert.equal(requests.filter(table=>table==='get_card_detail').length,1);
+    assert.equal(requests.filter(table=>table==='tcg_printings').length,0,'no PostgREST printing query');
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
 async function searchWithMock(handler,q,repeat=1){
   const requests=[];
   const mockSupabase=createServer((req,res)=>{
