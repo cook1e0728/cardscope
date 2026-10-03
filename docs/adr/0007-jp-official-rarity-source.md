@@ -26,4 +26,5 @@ status: accepted
 - ADR 0006 曾以「需要爬取官方網站，違反不繞過反爬的原則」否決官方核對；實查官方站沒有 robots.txt，卡片搜尋本身提供公開 JSON 端點，低速讀取不涉及繞過或付費，該理由不再成立。0006 的升級規則本身不變；官方卡號證據能否讓待核 Card 升級，另行決定。
 - 主方案中「官方網站只作驗證或外連」仍適用於圖片；本決定只擴大到文字事實。
 - 劍盾世代出現官方圖示 `ic_rare_csr`，新增稀有度代碼 CSR（Character Super Rare，排序在 SR 之後），比照 ACE 的新增方式。MEGA 世代出現 `ic_rare_ma`（台灣官方篩選亦有 MA），新增 MA（Mega Attack Rare）；依 MEGAドリームex 官方卡號區段（SR 214–222 < MA 223–232 < SAR 233–249）排在 SAR 之後。初次誤排在 RR 之後，已以新增 migration 更正。
+- SM 世代（2026-10-03，照建議）：官方圖示 `ic_rare_tr`（SM9 起各系列尾端的訓練家卡，編號在一般卡之後、SR 之前）新增代碼 TR；`ic_prismstar`（稜鏡之星◇）對映資料庫既有的 `Rare Prism Star`（不新增代碼）。兩者排在 RRR 之後、RR 之前（TR 在前），migration `20261003180000`。封存（TCGdex）把兩者都標成 `Rare Holo`，依 ADR 0009 改為官方值。
 - 官方與既有值的差異只記錄、不覆寫。試跑即發現系統性差異：SV6a 080–086 官方為 SR，資料庫沿用 Source archive 的 `Ultra Rare` 存成 UR；日版的 UR 是金卡（如 092–094）。既有日版 UR 是否全面改為 SR，屬於覆寫既有資料的另一個決定。

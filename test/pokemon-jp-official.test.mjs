@@ -16,8 +16,15 @@ test('rarity icons map to existing codes (dropping _c), while missing or unknown
   assert.deepEqual(officialJpRarity('ic_rare_sr_c'), { rarity: 'SR' });
   assert.deepEqual(officialJpRarity('ic_rare_u_c'), { rarity: 'U' });
   assert.deepEqual(officialJpRarity('ic_rare_s_2'), { rarity: 'S' });
+  assert.deepEqual(officialJpRarity('ic_rare_tr'), { rarity: 'TR' });
   assert.deepEqual(officialJpRarity(null), { quarantine: 'OFFICIAL_NO_RARITY_ICON' });
   assert.match(officialJpRarity('ic_rare_new').quarantine, /UNKNOWN_RARITY_ICON/);
+});
+
+test('Prism Star pages keep the title text and map ic_prismstar to the existing Rare Prism Star code', () => {
+  const html = '<h1 class="Heading1 mt20">カプ・コケコ<span class="pcg pcg-prismstar"></span></h1><div class="subtext Text-fjalla"><img src="/assets/images/card/regulation_logo_1/SM8a.gif" class="img-regulation" alt="SM8a" /> &nbsp;014&nbsp;/&nbsp;052&nbsp; <img src="/assets/images/card/rarity/ic_prismstar.gif" width="24" /></div>';
+  assert.deepEqual(parseOfficialJpDetail(html), { nameJa: 'カプ・コケコ', setMark: 'SM8a', number: '014', total: '052', rarityIcon: 'ic_prismstar' });
+  assert.deepEqual(officialJpRarity('ic_prismstar'), { rarity: 'Rare Prism Star' });
 });
 
 test('matching needs the same set, number and NFKC Japanese name', () => {

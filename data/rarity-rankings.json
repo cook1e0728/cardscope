@@ -5,8 +5,8 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "MA", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "NONE"],
-      "canonicalLabels": {"Rare Holo": "Rare Holo", "NONE": "無標記"},
+      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "MA", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "TR", "Rare Prism Star", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "NONE"],
+      "canonicalLabels": {"Rare Holo": "Rare Holo", "Rare Prism Star": "Prism Star", "NONE": "無標記"},
       "aliases": {
         "UR": ["Ultra Rare"],
         "HR": ["Hyper Rare", "Rainbow Rare"],
@@ -42,6 +42,8 @@
         ["Amazing Rare"],
         ["K", "Radiant Rare"],
         ["RRR", "Triple Rare"],
+        ["TR", "Trainer Rare"],
+        ["Rare Prism Star"],
         ["RR", "Double Rare"],
         ["ACE", "ACE SPEC Rare"],
         ["Rare Holo"],
@@ -74,6 +76,8 @@
         ["Rare Holo"],
         ["ACE", "ACE SPEC Rare"],
         ["RR", "Double Rare"],
+        ["Rare Prism Star"],
+        ["TR", "Trainer Rare"],
         ["RRR", "Triple Rare"],
         ["K", "Radiant Rare"],
         ["Amazing Rare"],

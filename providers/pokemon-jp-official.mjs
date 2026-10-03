@@ -5,7 +5,7 @@ export const OFFICIAL_JP_ORIGIN = 'https://www.pokemon-card.com';
 
 // Rarity codes the database already holds for pokemon; the official icon file is
 // ic_rare_<code lower-case>.gif. Anything else is quarantined, never guessed.
-export const OFFICIAL_JP_RARITY_CODES = new Set(['C', 'U', 'R', 'RR', 'RRR', 'AR', 'SR', 'SAR', 'UR', 'HR', 'S', 'SSR', 'K', 'ACE', 'MUR', 'BWR', 'CHR', 'CSR', 'MA']);
+export const OFFICIAL_JP_RARITY_CODES = new Set(['C', 'U', 'R', 'RR', 'RRR', 'AR', 'SR', 'SAR', 'UR', 'HR', 'S', 'SSR', 'K', 'ACE', 'MUR', 'BWR', 'CHR', 'CSR', 'MA', 'TR']);
 
 export function officialJpListUrl(seriesCode, page) {
   const params = new URLSearchParams({ keyword: '', se_ta: '', regulation_sidebar_form: 'all', pg: seriesCode, illust: '', sm_and_keyword: 'true', page: String(page) });
@@ -32,12 +32,13 @@ const decodeText = text => String(text).replace(/&nbsp;/g, ' ').replace(/&amp;/g
  * Deck cards have no rarity image. Returns null fields rather than guessing.
  */
 export function parseOfficialJpDetail(html) {
-  const name = html.match(/<h1 class="Heading1[^"]*">([^<]*)<\/h1>/)?.[1];
+  // Prism Star cards append <span class="pcg pcg-prismstar"></span> to the title; keep the text only.
+  const name = html.match(/<h1 class="Heading1[^"]*">([\s\S]*?)<\/h1>/)?.[1]?.replace(/<[^>]*>/g, '');
   const subtext = html.match(/<div class="subtext[^"]*">([\s\S]*?)<\/div>/)?.[1] ?? null;
   if (!subtext) return { nameJa: name ? decodeText(name) : null, setMark: null, number: null, total: null, rarityIcon: null };
   const setMark = subtext.match(/class="img-regulation"[^>]*alt="([^"]*)"/)?.[1] ?? subtext.match(/regulation_logo_\d+\/([^./"]+)\.gif/)?.[1] ?? null;
   const numbers = decodeText(subtext.replace(/<[^>]*>/g, ' ')).match(/^(\S+)\s*\/\s*(\S+)$/);
-  const rarityIcon = subtext.match(/\/rarity\/(ic_rare_[a-z0-9_]+)\.(?:gif|png|svg)/i)?.[1]?.toLowerCase() ?? null;
+  const rarityIcon = subtext.match(/\/rarity\/(ic_rare_[a-z0-9_]+|ic_prismstar)\.(?:gif|png|svg)/i)?.[1]?.toLowerCase() ?? null;
   return { nameJa: name ? decodeText(name) : null, setMark, number: numbers?.[1] ?? null, total: numbers?.[2] ?? null, rarityIcon };
 }
 
@@ -50,6 +51,8 @@ export function parseOfficialJpDetail(html) {
  */
 export function officialJpRarity(rarityIcon) {
   if (!rarityIcon) return { quarantine: 'OFFICIAL_NO_RARITY_ICON' };
+  // Sun & Moon Prism Star cards (◇) carry ic_prismstar; the database already has this rarity as 'Rare Prism Star'.
+  if (rarityIcon === 'ic_prismstar') return { rarity: 'Rare Prism Star' };
   const code = rarityIcon.replace(/^ic_rare_/, '').replace(/_(c|2)$/, '').toUpperCase();
   return OFFICIAL_JP_RARITY_CODES.has(code) ? { rarity: code } : { quarantine: `UNKNOWN_RARITY_ICON:${rarityIcon}` };
 }
