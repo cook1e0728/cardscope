@@ -89,7 +89,9 @@
   switchButton.setAttribute('aria-haspopup','dialog');
   switchButton.setAttribute('aria-expanded','false');
   switchButton.setAttribute('aria-label','選擇卡牌遊戲');
-  switchButton.textContent='全部遊戲';
+  // Start with the game named in the URL (?game=pokemon) so the header button does not change width after load.
+  const initialGame=new URLSearchParams(location.search).get('game');
+  switchButton.textContent=gameChoices.find(choice=>choice.id===initialGame)?.name||'全部遊戲';
   brand.after(switchButton);
   const picker=document.createElement('div');
   picker.className='game-picker';
