@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildOfficialJpSeriesPlans, buildOfficialJpSeriesSql } from '../providers/pokemon-jp-official-series-plan.mjs';
+import { buildOfficialJpSeedClaimPlan, buildOfficialJpSeedClaimSql, buildOfficialJpSeriesPlans, buildOfficialJpSeriesSql } from '../providers/pokemon-jp-official-series-plan.mjs';
 import { pokemonJpPlanDigest } from '../providers/pokemon-jp-import-sql.mjs';
 
 const page = (cardId, number, nameJa, rarityIcon = 'ic_rare_c_c', setMark = 'S4') => ({ cardId, setMark, number, nameJa, rarityIcon, total: '100', list: 'S4', fetchedAt: `2026-10-03T00:00:${String(Number(cardId) % 60).padStart(2, '0')}Z` });
@@ -53,4 +53,37 @@ test('gated SQL checks the dry run against the locally computed digest before wr
   assert.ok(gated.includes(`'{"cards": 1, "series": 1, "canonical": 1, "printings": 1}'::jsonb`));
   assert.ok(replay.includes("'tester', false"));
   assert.throws(() => buildOfficialJpSeriesSql(plans[0], ''), /ACTOR_REQUIRED/);
+});
+
+test('a claimed Seed series imports into the Seed series without the claimed number (ADR 0016)', () => {
+  const pages = [page('1', '001', 'A'), page('2', '347', 'ミュウex', 'ic_rare_sar'), page('3', '348', 'B')];
+  const seedClaim = { seriesId: 'pokemon-s4-jp', cardNumbers: ['347'] };
+  const { plans, claimed, evidence, summary } = buildOfficialJpSeriesPlans({ code: 'S4', seriesMeta: meta, cache: cacheOf(pages), seedClaim });
+  assert.equal(plans[0].series.id, 'pokemon-s4-jp');
+  assert.deepEqual(plans[0].seedClaim, seedClaim);
+  assert.deepEqual(plans[0].cards.map(c => c.id), ['pokemon-official-ja-s4-001', 'pokemon-official-ja-s4-348']);
+  assert.deepEqual(plans[0].batch, { index: 1, count: 1, seriesCardCount: 2 });
+  assert.deepEqual(claimed, [{ cardId: '2', number: '347', nameJa: 'ミュウex' }]);
+  assert.equal(evidence.length, 3);
+  assert.equal(summary.claimed, 1);
+  assert.ok(buildOfficialJpSeriesSql(plans[0], 'tester').gated.includes(`'{"cards": 2, "series": 0, "canonical": 2, "printings": 2}'::jsonb`));
+  assert.throws(() => buildOfficialJpSeriesPlans({ code: 'S4', seriesMeta: meta, cache: cacheOf(pages), seedClaim: { ...seedClaim, cardNumbers: ['999'] } }), /SEED_CLAIM_NUMBER_MISSING/);
+});
+
+test('the Seed claim plan needs one official page with the same number and name', () => {
+  const cache = cacheOf([page('1', '001', 'A'), page('44513', '347', 'ミュウex', 'ic_rare_sar')]);
+  const seed = { seriesId: 'pokemon-s4-jp', cardId: 'pokemon-mew-ex-s4-347-jp', printingId: 1, cardNumber: '347/190', nameJa: 'ミュウex', cardRarity: 'SSR', printingRarity: null, seriesNameJa: 'X', releaseDate: '2023-12-01' };
+  const plan = buildOfficialJpSeedClaimPlan({ code: 'S4', cache, seed, evidenceHash: 'a'.repeat(64), sourceObservedAt: '2026-10-04T00:00:00Z' });
+  assert.equal(plan.seed.cardNumber, '347/190');
+  assert.deepEqual(plan.card, {
+    provider_id: '44513', official_card_number: '347', name_ja: 'ミュウex', rarity_code: 'SAR',
+    source_url: 'https://www.pokemon-card.com/card-search/details.php/card/44513/regu/all',
+    search_text: 'ミュウex 347 S4-347 s4347',
+    metadata: { officialCardId: '44513', rarityIcon: 'ic_rare_sar', rarityBasis: 'pokemon-card-official-jp' }
+  });
+  const { digest, gated } = buildOfficialJpSeedClaimSql(plan, 'tester');
+  assert.equal(digest, pokemonJpPlanDigest(plan));
+  assert.ok(gated.indexOf(', true);') < gated.indexOf(', false);'));
+  assert.throws(() => buildOfficialJpSeedClaimPlan({ code: 'S4', cache, seed: { ...seed, nameJa: 'ミュウ' }, evidenceHash: 'a'.repeat(64), sourceObservedAt: 'x' }), /SEED_CLAIM_NAME/);
+  assert.throws(() => buildOfficialJpSeedClaimPlan({ code: 'S4', cache, seed: { ...seed, cardNumber: '346/190' }, evidenceHash: 'a'.repeat(64), sourceObservedAt: 'x' }), /SEED_CLAIM_PAGES/);
 });

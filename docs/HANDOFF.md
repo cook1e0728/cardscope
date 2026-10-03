@@ -231,10 +231,19 @@
 - 現象：`/api/catalog/health` 的遊戲王 cards 0（資料庫實有 14,634）。原因：卡片總數增至 65,476 後，`catalog_health_snapshot_v2` 需約 14 秒（上限 15 秒），而伺服器所有 fetch 預設 12 秒逾時，v2 失敗後退回舊版快照（舊版不含遊戲王的正確數字）。
 - 修正：健康快照請求單獨 60 秒逾時；`createBoundedSnapshotCache` 新增 `serveStaleWhileRevalidate`，健康與覆蓋率快取過期時先回上一份、背景更新；啟動預熱也載入健康快照；migration `20261003220000` 把函式上限提高到 45 秒。Node 284/284。
 
+### 依序執行 28：日版 SV4a 認領手寫 Seed 後以官方卡片搜尋匯入（ADR 0016，2026-10-04，已完成）
+
+- SV4a（シャイニートレジャーex）在封存中被隔離，資料庫只有手寫 Seed（系列 `pokemon-sv4a-jp`、卡 `pokemon-mew-ex-sv4a-347-jp`，來源皆空）；系列代碼唯一鍵使 ADR 0012 無法建立新系列，且 fallback `data/catalog.json` 引用 Seed ID。ADR 0016：原地認領，不刪列、不改 ID。
+- Migration `20261004000000_pokemon_jp_sv4a_seed_claim`：追加式稽核 `private.catalog_jp_seed_claim_audit`、一次性 `private.claim_pokemon_jp_seed_series`（md5 `41ca4d02…`，dry-run 錯誤碼 CJ017）；`private.import_pokemon_jp_official_series` 改為支援已認領系列（md5 `5cc30021…`；未認領系列行為不變）。套用前在正式庫以「migration＋認領＋4 批＋重播後拋例外」整批回滾測試（360 張、全 verified、零殘留），並測過未認領先匯入被拒、Seed 值不符被拒。程式：`buildOfficialJpSeriesPlans` 的 `seedClaim` 選項、`buildOfficialJpSeedClaimPlan`／`buildOfficialJpSeedClaimSql`、`scripts/build-pokemon-jp-official-series-plan.mjs --seed-claim`。Node 286/286。
+- 官方抓取 360 頁（零隔離）。認領：Seed 卡取得官方 card ID 45133、卡號 `347/190` → `347`、稀有度 SSR → 官方 SAR（`rarityBeforeOfficial`），原值存 `seedClaim.before`；重播零異動。匯入 359 張（4 批，重播零異動）。ADR 0011 對齊 194 筆全一致 → 中文名 359、稀有度 166（001–190 官方頁無圖示者取台灣官方），重播零異動。
+- 結果：SV4a 日版 360 張全部有中文名、Card／Printing verified、稀有度無空值（S 129、C 65、U 59、R 42、RR 24、SSR 18、SAR 8、UR 6、SR 5、AR 4）。不與台版連結（同 ADR 0012；台版 SV4a 為 tcgdex-zh-tw，搜尋各列一筆）。寶可夢 Printing：日版 12,422、台版 12,581、美版 20,637（含 source 空值 2）。
+- 正式站（無需部署）：`/api/cards/pokemon-mew-ex-sv4a-347-jp` 顯示「夢幻ex、SAR、347」；`/api/cards?series=pokemon-sv4a-jp` 共 360 張；搜尋 `ミュウex`／`夢幻ex` 含 JP SV4a-347／076／327。
+- 證據 `docs/evidence/pokemon-jp/official-series/`：`official-series-sv4a-cache-20261004.json`、`series-meta-sv4a-20261004.json`、`sv4a-seed-20261004.json`、`SV4a-seed-claim-plan-20261004.json`、`SV4a-import-report-20261004.json`、`SV4a-zh-alignment-20261004.json`。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-03 收尾時的狀態）：
-- 正式庫：寶可夢 45,280 張（日版 Printing 12,062、台版 12,581、美版 20,635），中文名 38,256；遊戲王 14,634（中文名 1）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於最新提交，Render 已部署。
+- 正式庫（2026-10-04 SV4a 後）：寶可夢日版 Printing 12,422、台版 12,581、美版 20,637；SV4a 已完成（依序執行 28）；遊戲王 14,634（中文名 1）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於最新提交，Render 已部署。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
 - 可自行推進但價值較低：日版剩約 1,430 張無中文名（SM 世代 GX／TAG TEAM 與台灣未發行訓練家，無官方中文名可沿用）；台版 SVOM（官方標記 `SVO_ex` 缺 M，依規則未匯入）；MBD／MBG／SVOD／SVK 日台卡號排列不同未連結；特典 SV-P／M-P／S-P／SM-P／SMP 未匯入；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選：M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。

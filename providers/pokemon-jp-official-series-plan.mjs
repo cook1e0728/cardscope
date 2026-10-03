@@ -16,8 +16,10 @@ const byNumber = (a, b) => a.official_card_number.localeCompare(b.official_card_
  * filed under the series list must show this set mark and a card number; a number that
  * appears on more than one page is quarantined as a whole. A missing or unknown rarity
  * icon leaves the rarity empty (ADR 0007) and is reported, never guessed.
+ * `seedClaim` ({ seriesId, cardNumbers }, ADR 0016): import into a claimed Seed series and
+ * leave out the claimed card numbers, which the claim already gave the official identity.
  */
-export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache }) {
+export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim = null }) {
   const list = cache.lists?.[code];
   if (!list) throw new Error(`OFFICIAL_LIST_MISSING:${code}`);
   if (!seriesMeta?.name_ja) throw new Error(`SERIES_META_MISSING:${code}`);
@@ -31,12 +33,14 @@ export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache }) {
     else pages.push(detail);
   }
   const counts = pages.reduce((tally, page) => tally.set(page.number, (tally.get(page.number) || 0) + 1), new Map());
-  const cards = [], evidence = [];
+  const cards = [], evidence = [], claimed = [];
+  const claimedNumbers = new Set(seedClaim?.cardNumbers ?? []);
   for (const page of pages) {
     if (counts.get(page.number) > 1) { quarantined.push({ cardId: page.cardId, number: page.number, nameJa: page.nameJa, reason: 'DUPLICATE_NUMBER' }); continue; }
     const rarity = officialJpRarity(page.rarityIcon);
     if (rarity.quarantine) rarityUnknown.push({ number: page.number, cardId: page.cardId, reason: rarity.quarantine });
     evidence.push({ cardId: page.cardId, setMark: page.setMark, number: page.number, nameJa: page.nameJa, rarityIcon: page.rarityIcon ?? null });
+    if (claimedNumbers.has(page.number)) { claimed.push({ cardId: page.cardId, number: page.number, nameJa: page.nameJa }); continue; }
     cards.push({
       id: `pokemon-official-ja-${code.toLowerCase()}-${page.number.toLowerCase()}`,
       provider_id: page.cardId,
@@ -52,8 +56,9 @@ export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache }) {
   evidence.sort((a, b) => a.number.localeCompare(b.number, 'en', { numeric: true }));
   const evidenceHash = createHash('sha256').update(postgresJsonbText({ series: code, cards: evidence }), 'utf8').digest('hex');
   const sourceObservedAt = [list.fetchedAt, ...pages.map(page => page.fetchedAt)].filter(Boolean).sort().at(-1);
+  if (claimed.length !== claimedNumbers.size) throw new Error(`SEED_CLAIM_NUMBER_MISSING:${code}`);
   const series = {
-    id: `pokemon-official-ja-${code.toLowerCase()}`,
+    id: seedClaim?.seriesId ?? `pokemon-official-ja-${code.toLowerCase()}`,
     provider_id: code,
     name_ja: seriesMeta.name_ja,
     release_date: seriesMeta.release_date ?? null,
@@ -71,10 +76,11 @@ export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache }) {
       sourceObservedAt,
       batch: { index, count, seriesCardCount: cards.length },
       series,
+      ...(seedClaim ? { seedClaim: { seriesId: seedClaim.seriesId, cardNumbers: [...claimedNumbers] } } : {}),
       cards: cards.slice((index - 1) * BATCH_SIZE, index * BATCH_SIZE)
     });
   }
-  return { plans, evidence, quarantined, rarityUnknown, summary: { code, listed: list.cardIds.length, cards: cards.length, batches: count, quarantined: quarantined.length, rarityUnknown: rarityUnknown.length, evidenceHash } };
+  return { plans, evidence, quarantined, rarityUnknown, claimed, summary: { code, listed: list.cardIds.length, cards: cards.length, batches: count, quarantined: quarantined.length, rarityUnknown: rarityUnknown.length, claimed: claimed.length, evidenceHash } };
 }
 
 const sqlText = value => `'${String(value).replace(/'/g, "''")}'`;
@@ -89,7 +95,8 @@ export function buildOfficialJpSeriesSql(plan, actor, fn = 'private.import_pokem
   if (json.includes('$plan$')) throw new Error('PLAN_QUOTE_COLLISION');
   const digest = pokemonJpPlanDigest(plan);
   const n = plan.cards.length;
-  const inserted = `{"cards": ${n}, "series": ${plan.batch.index === 1 ? 1 : 0}, "canonical": ${n}, "printings": ${n}}`;
+  // A claimed Seed series already exists, so batch 1 inserts no series (ADR 0016).
+  const inserted = `{"cards": ${n}, "series": ${plan.batch.index === 1 && !plan.seedClaim ? 1 : 0}, "canonical": ${n}, "printings": ${n}}`;
   const call = dry => `${fn}($plan$${json}$plan$::jsonb, ${sqlText(actor)}, ${dry})`;
   const gated = [
     `-- ${plan.seriesProviderId} batch ${plan.batch.index}/${plan.batch.count}: ${n} cards (${fn}). planDigest ${digest}`,
@@ -110,5 +117,71 @@ export function buildOfficialJpSeriesSql(plan, actor, fn = 'private.import_pokem
     ''
   ].join('\n');
   const replay = `-- ${plan.seriesProviderId} batch ${plan.batch.index} replay: must change nothing.\nselect ${call(false)} v;\n`;
+  return { digest, gated, replay };
+}
+
+/**
+ * ADR 0016: plan for private.claim_pokemon_jp_seed_series. `seed` is the hand-written row as
+ * read from the database ({ seriesId, cardId, printingId, cardNumber, nameJa, cardRarity,
+ * printingRarity, seriesNameJa, releaseDate }); the official page filed under the series list
+ * must show the same set mark, the number before the slash and the same Japanese name.
+ */
+export function buildOfficialJpSeedClaimPlan({ code, cache, seed, evidenceHash, sourceObservedAt }) {
+  const number = String(seed.cardNumber).split('/')[0];
+  const pages = (cache.lists?.[code]?.cardIds ?? []).map(cardId => cache.details[cardId]).filter(page => page?.setMark === code && page.number === number);
+  if (pages.length !== 1) throw new Error(`SEED_CLAIM_PAGES:${code}:${number}:${pages.length}`);
+  const [page] = pages;
+  if (page.nameJa !== seed.nameJa) throw new Error(`SEED_CLAIM_NAME:${page.nameJa}`);
+  const rarity = officialJpRarity(page.rarityIcon);
+  return {
+    planVersion: 1,
+    source: OFFICIAL_JP_SOURCE,
+    seriesProviderId: code,
+    evidenceHash,
+    sourceObservedAt,
+    seed: { seriesId: seed.seriesId, cardId: seed.cardId, printingId: seed.printingId, cardNumber: seed.cardNumber, nameJa: seed.nameJa, cardRarity: seed.cardRarity ?? null, printingRarity: seed.printingRarity ?? null },
+    series: {
+      name_ja: seed.seriesNameJa,
+      release_date: seed.releaseDate,
+      source_url: `https://www.pokemon-card.com/card-search/index.php?mode=statuslist&pg=${encodeURIComponent(code)}`,
+      metadata: { officialListCount: cache.lists[code].hitCount, evidenceHash }
+    },
+    card: {
+      provider_id: page.cardId,
+      official_card_number: number,
+      name_ja: page.nameJa,
+      rarity_code: rarity.rarity ?? null,
+      source_url: officialJpDetailUrl(page.cardId),
+      search_text: [page.nameJa, number, `${code}-${number}`, `${code}${number}`.toLowerCase()].join(' '),
+      metadata: { officialCardId: page.cardId, rarityIcon: page.rarityIcon ?? null, ...(rarity.rarity ? { rarityBasis: OFFICIAL_JP_SOURCE } : {}) }
+    }
+  };
+}
+
+/** Gated SQL for the Seed claim: the dry run must report a fresh claim of this digest first. */
+export function buildOfficialJpSeedClaimSql(plan, actor) {
+  if (typeof actor !== 'string' || !actor.trim()) throw new Error('ACTOR_REQUIRED');
+  const json = JSON.stringify(plan);
+  if (json.includes('$plan$')) throw new Error('PLAN_QUOTE_COLLISION');
+  const digest = pokemonJpPlanDigest(plan);
+  const call = dry => `private.claim_pokemon_jp_seed_series($plan$${json}$plan$::jsonb, ${sqlText(actor)}, ${dry})`;
+  const gated = [
+    `-- ${plan.seriesProviderId} Seed claim (ADR 0016): ${plan.seed.cardId}. planDigest ${digest}`,
+    'create temporary table jp_seed_claim_result (v jsonb) on commit drop;',
+    'do $do$',
+    'declare d jsonb; r jsonb;',
+    'begin',
+    `  d := ${call(true)};`,
+    `  if (d->>'replay')::boolean or d->>'planDigest' <> ${sqlText(digest)}`,
+    `    or d->'updated' <> '{"cards": 1, "series": 1, "printings": 1}'::jsonb then raise exception 'unexpected dry run %', d; end if;`,
+    `  r := ${call(false)};`,
+    `  if (r->>'replay')::boolean or r->>'planDigest' <> ${sqlText(digest)} then raise exception 'unexpected claim %', r; end if;`,
+    '  insert into jp_seed_claim_result values (r);',
+    'end',
+    '$do$;',
+    'select v from jp_seed_claim_result;',
+    ''
+  ].join('\n');
+  const replay = `-- ${plan.seriesProviderId} Seed claim replay: must change nothing.\nselect ${call(false)} v;\n`;
   return { digest, gated, replay };
 }

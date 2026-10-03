@@ -1,15 +1,18 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildOfficialJpSeriesPlans, buildOfficialJpSeriesSql } from '../providers/pokemon-jp-official-series-plan.mjs';
+import { buildOfficialJpSeedClaimPlan, buildOfficialJpSeedClaimSql, buildOfficialJpSeriesPlans, buildOfficialJpSeriesSql } from '../providers/pokemon-jp-official-series-plan.mjs';
 
 const usage = [
-  'Usage: node scripts/build-pokemon-jp-official-series-plan.mjs <cache.json> <series-meta.json> <out-dir> [--series CODE,CODE] [--actor NAME]',
+  'Usage: node scripts/build-pokemon-jp-official-series-plan.mjs <cache.json> <series-meta.json> <out-dir> [--series CODE,CODE] [--actor NAME] [--seed-claim seed.json]',
   '',
   'ADR 0012: turns a whole-series official card search cache (fetch-pokemon-jp-official-rarity.mjs',
   '--whole-series) into import plans of at most 100 cards for private.import_pokemon_jp_official_series.',
   'series-meta.json: { CODE: { name_ja, release_date, basis } }. Writes per batch <CODE>-<n>.json,',
   '<CODE>-<n>.sql (gated: dry run must match before the write) and <CODE>-<n>-replay.sql, plus',
-  '<CODE>-report.json with quarantined pages and unknown rarities. No network or database calls.'
+  '<CODE>-report.json with quarantined pages and unknown rarities. No network or database calls.',
+  '--seed-claim (ADR 0016, one series): seed.json is the hand-written Seed row read from the database',
+  '({ seriesId, cardId, printingId, cardNumber, nameJa, cardRarity, printingRarity, seriesNameJa, releaseDate });',
+  'writes <CODE>-claim.json/.sql/-replay.sql and plans that import into the Seed series without that card.'
 ].join('\n');
 
 try {
@@ -21,9 +24,20 @@ try {
   const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
   const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
   const codes = flag('--series')?.split(',') ?? Object.keys(meta);
+  const seed = flag('--seed-claim') ? JSON.parse(readFileSync(flag('--seed-claim'), 'utf8')) : null;
+  if (seed && codes.length !== 1) throw new Error('SEED_CLAIM_NEEDS_ONE_SERIES');
   mkdirSync(outDir, { recursive: true });
   for (const code of codes) {
-    const { plans, evidence, quarantined, rarityUnknown, summary } = buildOfficialJpSeriesPlans({ code, seriesMeta: meta[code], cache });
+    const seedClaim = seed ? { seriesId: seed.seriesId, cardNumbers: [String(seed.cardNumber).split('/')[0]] } : null;
+    const { plans, evidence, quarantined, rarityUnknown, claimed, summary } = buildOfficialJpSeriesPlans({ code, seriesMeta: meta[code], cache, seedClaim });
+    if (seed) {
+      const claim = buildOfficialJpSeedClaimPlan({ code, cache, seed, evidenceHash: summary.evidenceHash, sourceObservedAt: plans[0].sourceObservedAt });
+      const { digest, gated, replay } = buildOfficialJpSeedClaimSql(claim, actor);
+      writeFileSync(join(outDir, `${code}-claim.json`), `${JSON.stringify(claim, null, 1)}\n`);
+      writeFileSync(join(outDir, `${code}-claim.sql`), gated);
+      writeFileSync(join(outDir, `${code}-claim-replay.sql`), replay);
+      console.log(JSON.stringify({ code, claim: claim.seed.cardId, officialCardId: claim.card.provider_id, rarity: claim.card.rarity_code, planDigest: digest }));
+    }
     const digests = [];
     for (const plan of plans) {
       const name = `${code}-${plan.batch.index}`;
@@ -33,7 +47,7 @@ try {
       writeFileSync(join(outDir, `${name}-replay.sql`), replay);
       digests.push({ batch: plan.batch.index, cards: plan.cards.length, planDigest: digest });
     }
-    writeFileSync(join(outDir, `${code}-report.json`), `${JSON.stringify({ summary, digests, quarantined, rarityUnknown, evidence }, null, 1)}\n`);
+    writeFileSync(join(outDir, `${code}-report.json`), `${JSON.stringify({ summary, digests, quarantined, rarityUnknown, claimed, evidence }, null, 1)}\n`);
     console.log(JSON.stringify({ ...summary, digests }));
   }
 } catch (error) {
