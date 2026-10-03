@@ -214,6 +214,10 @@
 - ADR 0013 補充：日文名比對改為 NFKC＋去空白（`private.jp_name_key`，migration `20261003190000`），SM 世代「アローラロコン」等可對上後來的「アローラ ロコン」；再推導 37 張（重播零異動）。剩下的 1,458 張多為 SM 世代 GX／TAG TEAM 卡與台灣未發行的訓練家，沒有官方中文名可沿用，不自行組合譯名。
 - 結果：SM＋CP 3,200 張，Card verified 2,885、Printing verified 2,401、稀有度空值 486、Card／Printing 稀有度不一致 0。日版合計 126 個系列、12,063 張，中文名 10,568、verified 11,603。台版 7,436、美版 20,635 不變。
 
+### 依序執行 25：台版系列名稱更正（ADR 0014，2026-10-03，已完成）
+
+- 台灣官方卡片搜尋頁的系列清單（134 個代碼與官方名稱）與資料庫 98 個台版系列比對：S11、SP5、SVHK、SVHM 名稱錯位，改為官方名稱並保留舊值（`nameZhBeforeOfficial`）；日版 S11 的中文系列名來自台版連結，同步更正為「迷途深淵」。證據 `docs/evidence/pokemon-tw/official-expansion-names-20261003.json`。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（擇一，建議依序）：
