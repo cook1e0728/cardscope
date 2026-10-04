@@ -20,7 +20,9 @@
 - 尚未執行的唯一下一步，以及開始前必須重新核對的外部狀態。
 - 未追蹤或屬於使用者的本機檔案，避免下一台電腦誤刪。
 
-## 目前里程碑（2026-10-03，日版中文化、分批匯入、官方來源匯入；優先於下方所有段落）
+## 目前里程碑（2026-10-03～10-04，日版中文化、分批匯入、官方來源匯入；優先於下方所有段落）
+
+> 快速接手：直接看本段末尾的「下一個安全起點」（2026-10-04 晚更新）與「依序執行 39–42」。
 
 - 分支 `claude/jp-zh-names`（依主方案第 0 節每主題一條；完成後快轉 main）。決策經 grill-with-docs 三輪定案：日版連結台版既有 Canonical card（ADR 0003）、同系列 Derived name、新增稀有度 `ACE`（ACE SPEC，排序在 RR 與 Rare Holo 之間）、SV6a 092–094 金卡維持空值、沒有台版的系列不猜譯。詞彙表新增 Source archive、Derived name。
 - Migration `20261001114348_pokemon_jp_enrichment`：新增 `ACE`（`tcg_rarities` tier 14，原 ≥14 者 +1，比照 K 的先例）、追加式稽核表 `private.catalog_jp_enrich_audit`、只填空值的 `private.enrich_pokemon_jp_metadata(jsonb, text, boolean)`（dry-run、digest 重播、連結四項檢查、同名推導檢查、系列名須等於同代碼台版名）。套用前先在正式庫以「整批執行後拋例外」的交易完整測過 SV6a 寫入與重播，並確認全數回滾。
@@ -346,12 +348,16 @@
 
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
-下一個安全起點（2026-10-04 收尾時的狀態）：
-- 正式庫：寶可夢日版 Printing 18,025（262 系列、中文名 15,010）、台版 12,669（10-04 加 SVOM、SV9／SV10 補號）、美版 20,637；日版實體商品 1,963（ADR 0021）；遊戲王 14,655（09-20 以來首次同步成功）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於 `a413db3` 之後的最新提交，Render 已部署。
+下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
+- Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–42 皆已合併），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
+- 工作方式（使用者 2026-10-04 指示，記憶只存在筆電，換機以本段為準）：決策以 grill-with-docs 形式列出設計樹與建議，**不等回覆、直接照建議執行**，寫成 ADR／詞彙表；每個段落完成即 commit、push、快轉合併 `main` 並驗正式站。啟用新資料來源、花錢的設定仍需先問。
+- 新機器準備見 `docs/CROSS_DEVICE_SETUP.md`；本機直連資料庫需 `.env.local` 的 `SUPABASE_ACCESS_TOKEN`（各機自建）。大批寫入注意：Management API 約 100 秒被 Cloudflare 切斷（524）但伺服器端交易仍會跑完並持有鎖，單一請求控制在約 60 秒內（見依序執行 42）。
+- 筆電本機產物（不在 repo、可刪）：`C:\Users\99wye\Documents\CardScope\.claude\launch.json`（App 瀏覽器預覽用）；暫存檔皆在 Claude scratchpad。
+- 正式庫：寶可夢日版 Printing 18,025（262 系列、中文名 15,010；ADR 0024 後 1,980 張與台版同作品層）、台版 12,669（10-04 加 SVOM、SV9／SV10 補號）、美版 20,637；日版實體商品 1,963（ADR 0021）；遊戲王 14,655（09-20 以來首次同步成功）、航海王 4,284、芙莉蓮 751、排球少年 527。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
 - 待驗收（外部時間點）：10-04 10:13 UTC 之後的重啟不應再出現 `tcgdex-zh-tw` 同步（ADR 0020）；約 10-06 的 pokemontcg／ygoprodeck 同步 `rows_written` 應大幅下降且 completed（依序執行 38）。
 - 需使用者決定：航海王、排球少年、芙莉蓮的資料更新被來源政策擋住（`data/source-registry.json` 皆為 permission-pending、自動收集關閉，最後更新 8 月底～9 月初），啟用屬於接受新的授權風險，依自主決策邊界不自行處理。
-- 可自行推進但價值較低：DP 世代（官方無卡號，需另訂身分規則）、MG 與 XY／BW／SM-XY 再錄標記（同號多張）；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK 日台卡號排列不同未連結；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
+- 可自行推進但價值較低：DP 世代（官方無卡號，需另訂身分規則）、MG 與 XY／BW／SM-XY 再錄標記（同號多張）；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK／SVHK／SVHM／SV-P 日台卡號錯位未連結（ADR 0024 排除，名稱不能當身分證據）；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選（M-P 特典已於依序執行 30 完成；台版 UR 對映已於依序執行 41 查證無影響）：SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；Render log 抽查（需使用者指定 Render 工作區） `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
