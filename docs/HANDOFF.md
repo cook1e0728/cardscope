@@ -308,6 +308,14 @@
 - 修正（照建議）：`upsert` 每批送出前以 `onlyChangedRows` 讀回既有列（依 id → provider_id → card_id 選最有選擇性的衝突欄位，鍵仍以完整衝突欄位比對），逐欄比較本次提供的欄位（不含 `updated_at`，jsonb 依鍵排序），相同就略過；讀取失敗或格式不符時照舊全寫。新增測試，Node 292/292。
 - 驗收點：下一次 pokemontcg（約 10-06 08:36 UTC 後的重啟）與 ygoprodeck（約 10-06 22:45 UTC 後）的 `catalog_sync_runs.rows_written` 應遠小於先前的 77,340／69,698，且 `status=completed`。
 
+### 依序執行 39：首頁無障礙與對比（2026-10-04，筆電，分支 `claude/ui-a11y-polish`，尚未合併、未部署）
+
+- 範圍只有 `index.html`、`catalog-layout.css`、`ui-enhancements.js`，不動版面尺寸（CLS 不應變化，未重量）。分支 `55bdcf2`、`204bd8a`；使用者暫不考慮合併 `main`、新資料來源與花錢設定。
+- 加入 meta description、theme-color、Open Graph 文字標籤（沒有 `og:image`：缺正式網站完整網址）；「跳到主要內容」連結與 `main#main`；卡片與系列按鈕 `:active` 回饋；`prefers-reduced-motion` 關閉過場與 hover 位移。
+- 次要文字加深：`--muted` `#777`→`#666`、`#777181`→`#686475`、`#8a8592`→`#6e6a7a`（對比由 3.6–4.5 提升到約 5.2 以上，依公式估算，未在畫面實測）；字型清單明列 PingFang TC／Microsoft JhengHei／Noto Sans TC。
+- 驗證：Node 292/292；本機 `npm start` 確認 meta 與跳過連結會把焦點移到 `main`。App 瀏覽器面板沒有焦點，無法目視確認跳過連結聚焦時的顯示，需用鍵盤 Tab 驗一次。
+- 未做：骨架載入畫面（有重新引入位移的風險）、`z-index` 尺度整理。
+- 筆電環境：Git 2.55、Node 24.19 已安裝，`.env.local` 已建立（權杖由使用者填入）；此專案的 git 作者設為既有的 `cookie`。
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-04 收尾時的狀態）：
