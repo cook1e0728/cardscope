@@ -19,6 +19,20 @@
 5. 重新啟動 Codex，讓新安裝的技能載入。
 6. 在專案內要求「讀取 `docs/PRODUCT_PLAN.md` 與 `docs/HANDOFF.md`，從下一個未完成階段接續」，不要另建一份本機方案。
 
+## Claude Code 筆電準備
+
+Claude Code（桌面 App 的 Code 分頁或 CLI）不讀 `.codex/`，但同樣以 `AGENTS.md`、`docs/PRODUCT_PLAN.md`、`docs/HANDOFF.md` 為準。
+
+1. 取得程式碼並切到工作分支：`git clone https://github.com/cook1e0728/cardscope.git`（已 clone 則 `git pull`），再 `git checkout <HANDOFF 記載的工作分支>`。
+2. 安裝 Node.js（桌電使用 v24），執行 `npm test` 確認全數通過。
+3. 在 repo 根目錄建立 `.env.local`，內容一行 `SUPABASE_ACCESS_TOKEN=sbp_…`。這是 Supabase 個人存取權杖，每台電腦在 Supabase 後台各自產生，不從另一台複製、不提交（已被 .gitignore 排除）。沒有它仍可改程式與跑測試，但 `scripts/run-sql.mjs` 無法讀寫正式庫。
+4. 對話偏好不在 repo：Claude 的記憶存在每台電腦的 `~/.claude/projects/<專案路徑>/memory/`（目前有「回覆用繁中」「決策照建議自動執行」兩則）。可把桌電該資料夾的 `.md` 複製到筆電對應專案的 memory 資料夾，或在第一次對話時直接說明。
+5. 只有要從 Source archive 匯入新系列時，才需另外 clone `https://github.com/tcgdex/cards-database` 並切到 ADR 0002 記載的固定 commit（`c5c0a8a`），以 `CARDSCOPE_WORK` 指向含該 checkout 的工作夾（Windows 需用 `C:/Users/...` 形式路徑）。官方卡片搜尋的抓取快取與證據已提交在 `docs/evidence/`，暫存資料夾的檔案不需搬移。
+6. `.claude/settings.local.json` 的指令許可不在 repo，筆電第一次執行 git、node 等指令時會重新詢問。
+7. 開始時在專案內說「讀 docs/HANDOFF.md 繼續」。
+
+注意：兩台電腦不要同時對正式庫寫入（匯入、同步、migration）；推送到 `main` 會觸發 Render 部署，筆電上同樣適用。
+
 ## 每次換裝置
 
 開始工作前先拉取 GitHub 最新 `main`；結束前完成測試、提交並推送。若桌電或筆電存在未提交變更，不可強制拉取、重設或覆蓋，應先保留變更並在獨立分支整合。
