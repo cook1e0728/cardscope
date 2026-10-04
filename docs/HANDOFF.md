@@ -325,15 +325,24 @@
 - 正式庫：台版 SVOM 22 張匯入（系列名「挑戰牌組 瑪俐的莫魯貝可&長毛巨魔ex」，全為官方「無標記」`NONE`，與 SVOD 一致），基本【惡】能量無卡號隔離；planDigest `0175755e…`，重播零異動。證據 `docs/evidence/pokemon-tw/official-series/SVOM-import-report-20261004.json`。台版 Printing 12,581 → 12,603。
 - 日版 SVOM（20 張）卡號排列與台版不同，不連結（同 SVOD）。
 
+### 依序執行 41：台版 UR 對映查證與 SV9／SV10 補號（ADR 0023，2026-10-04，筆電，分支 `claude/ui-a11y-polish`，尚未合併）
+
+- 查證（結案）：台版 Source archive 有稀有度但非官方依據的 802 筆，全是 C／U／R／RR／RRR／K，原始值等於代碼，沒有 `Ultra Rare` 對映；補抓後與台灣官方逐筆比對全部一致（`docs/evidence/pokemon-tw/tcgdex-rarity-vs-official-20261004.json`）。
+- 補抓台灣官方 S10a、S10P、S11、S11a、SV9、SV10 清單與詳細頁（601 個請求，快取累計 14,222 頁，仍是 `official-rarity-20261002.json`）。S 世代四個系列張數與資料庫相同；SV9、SV10 官方各 132 張，資料庫 100／98 張。
+- 不做的判斷：卡號排列不同的牌組（MBD／MBG／SVOD／SVOM／SVK）不以名稱連結，詞彙表規定名稱只能當搜尋別名，且牌組內有同名不同卡；Render log 抽查需使用者指定 Render 工作區。
+- ADR 0023（照建議）：缺號補進既有 Source archive 系列，卡片比照 ADR 0015；已有卡號須全部與官方同名，否則整系列不補。Migration `20261004120000_pokemon_tw_official_supplement`（`private.supplement_pokemon_tw_official_series` md5 `5e3c479c…`、稽核表 `private.catalog_tw_official_supplement_audit`），套用前在正式庫以 migration＋兩系列寫入＋重播整批回滾測試（交易內 132／132，回滾後零殘留），已套用並寫入 schema_migrations。產生器 `scripts/build-pokemon-tw-official-supplement-plan.mjs`；Node 295/295。
+- 正式庫：SV9 +32（101–132，AR 12／SR 11／SAR 6／UR 3）、SV10 +34（099–132，AR 12／SR 13／SAR 6／UR 3），重播零異動；證據 `official-series/SV9|SV10-supplement-report-20261004.json`。台版 Printing 12,603 → 12,669。
+- 日版 SV9／SV10 祕密稀有卡中文名為同名推導，不據以連結。後續候選：以「同代碼同卡號且系列已對齊」作為日台連結證據（需新 ADR，會延伸 ADR 0011／0015 的連結範圍）。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-04 收尾時的狀態）：
-- 正式庫：寶可夢日版 Printing 18,025（262 系列、中文名 15,010）、台版 12,603（10-04 加 SVOM）、美版 20,637；日版實體商品 1,963（ADR 0021）；遊戲王 14,655（09-20 以來首次同步成功）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於 `a413db3` 之後的最新提交，Render 已部署。
+- 正式庫：寶可夢日版 Printing 18,025（262 系列、中文名 15,010）、台版 12,669（10-04 加 SVOM、SV9／SV10 補號）、美版 20,637；日版實體商品 1,963（ADR 0021）；遊戲王 14,655（09-20 以來首次同步成功）、航海王 4,284、芙莉蓮 751、排球少年 527。main 與工作分支同步於 `a413db3` 之後的最新提交，Render 已部署。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
 - 待驗收（外部時間點）：10-04 10:13 UTC 之後的重啟不應再出現 `tcgdex-zh-tw` 同步（ADR 0020）；約 10-06 的 pokemontcg／ygoprodeck 同步 `rows_written` 應大幅下降且 completed（依序執行 38）。
 - 需使用者決定：航海王、排球少年、芙莉蓮的資料更新被來源政策擋住（`data/source-registry.json` 皆為 permission-pending、自動收集關閉，最後更新 8 月底～9 月初），啟用屬於接受新的授權風險，依自主決策邊界不自行處理。
 - 可自行推進但價值較低：DP 世代（官方無卡號，需另訂身分規則）、MG 與 XY／BW／SM-XY 再錄標記（同號多張）；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK 日台卡號排列不同未連結；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
-其他後續候選：M-P 特典（ADR 0012 的流程可沿用，但特典卡號格式需另訂）；SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；台版 UR 是否同樣受 TCGdex `Ultra Rare` 對映影響（台版官方站另行查證）；Render log 抽查 `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
+其他後續候選（M-P 特典已於依序執行 30 完成；台版 UR 對映已於依序執行 41 查證無影響）：SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；Render log 抽查（需使用者指定 Render 工作區） `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
