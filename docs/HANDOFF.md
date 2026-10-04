@@ -6,7 +6,7 @@
 
 在下列任一節點更新本文件：PR 合併、正式 migration、正式資料批次、Render 發布驗收。每次覆寫已過期的「目前里程碑」，不要累積聊天逐字稿。
 
-每完成一個段落（上述節點，或一組可獨立驗證的程式／文件修改），立即把本文件與相關修改 commit 並 push 到目前工作分支，不必再等使用者指示，確保另一台電腦 `git pull` 即可接手。不 push 密鑰或本機產物；合併到 `main`（會觸發 Render 部署）仍需使用者確認。
+每完成一個段落（上述節點，或一組可獨立驗證的程式／文件修改），立即把本文件與相關修改 commit 並 push 到目前工作分支，不必再等使用者指示，確保另一台電腦 `git pull` 即可接手。不 push 密鑰或本機產物。使用者授權（2026-10-04）：每個段落完成後也直接合併到 `main`（快轉優先；會觸發 Render 部署，合併後驗正式站與 API）；仍在執行中的工作（例如寫入中的資料批次）等完成再合併。啟用新資料來源與花錢的設定仍需使用者確認。
 
 用量檢查點：5 小時用量剩餘 5% 以下時，不再開始新步驟，立即在本文件「目前里程碑」記下進行中的動作（已完成步驟、下一個確切步驟、未提交狀態、暫存檔位置），commit 並 push 到工作分支，以便切換裝置接續。
 
@@ -334,14 +334,15 @@
 - 正式庫：SV9 +32（101–132，AR 12／SR 11／SAR 6／UR 3）、SV10 +34（099–132，AR 12／SR 13／SAR 6／UR 3），重播零異動；證據 `official-series/SV9|SV10-supplement-report-20261004.json`。台版 Printing 12,603 → 12,669。
 - 日版 SV9／SV10 祕密稀有卡中文名為同名推導，不據以連結。後續候選：以「同代碼同卡號且系列已對齊」作為日台連結證據（需新 ADR，會延伸 ADR 0011／0015 的連結範圍）。→ 已由依序執行 42 處理。
 
-### 依序執行 42：日台以同系列同卡號連結（ADR 0024，2026-10-04，筆電，分支 `claude/ui-a11y-polish`，**寫入進行中**）
+### 依序執行 42：日台以同系列同卡號連結（ADR 0024，2026-10-04，筆電，分支 `claude/ui-a11y-polish`，已完成並合併 main）
 
 - 盤點：36 個系列約 2,500 張日版卡未連結，但有同代碼同卡號台版卡（日版多為日本官方匯入、無 Source archive Provider ID；或台版是 Source archive，ADR 0015 函式不收）。
 - ADR 0024（照建議）：身分證據＝同系列代碼＋同官方卡號；中文名須一致（ADR 0010 名稱規則）只作一致性檢查；整系列把關：日版有中文名的同號配對須全部一致、已連結卡不得連到不同卡號，否則整系列不連結。錯位排除 SV-P、SVK、MBD、MBG、SVHK、SVHM、SVOM、SVOD；日版無中文名不連結；SV4A-347（ADR 0016 範例卡）跳過。
 - Migration `20261004140000_pokemon_jp_tw_link_same_number`（`private.link_pokemon_jp_tw_same_number` md5 `018281a8…`、`private.same_tw_name`／`private.tw_name_key`，稽核沿用 `private.catalog_jp_tw_link_audit`，rule 加 `adr-0024`）已套用並寫入 schema_migrations。回滾測試（migration＋批次 1＋重播，交易內 100 筆／稽核 2 筆，回滾後零殘留）與反向測試（SVOD 逐列 name 拒絕、SVHK 系列未對齊拒絕）通過。Node 297/297。
 - 計畫：28 個系列 1,980 筆、20 批（`docs/evidence/pokemon-jp/jp-tw-same-number-links-20261004.json`，產生器 `scripts/build-pokemon-jp-tw-same-number-link-plan.mjs`）。每批一個請求（gated：dry-run 的 links 須等於批次列數才寫入），之後 20 批重播須全為 replay。
 - 執行注意：Supabase Management API 經 Cloudflare，約 100 秒切斷請求（524），但伺服器端交易仍會跑完並持有 advisory lock 與列鎖，期間下一個請求會卡住；單批 gated 約 30 秒，不可把多批放進同一請求。
-- **進行中狀態（推送時）**：批次 1 已寫入，其餘在背景依序執行。接手時先查 `select count(*) from tcg_cards where metadata->>'linkRule'='adr-0024'`（完成應為 1,980）與稽核 `rule='adr-0024'` 的寫入／重播筆數；未完成的批次以同一產生器重新產生後依序重送（已寫入的批次重送只會是 replay）。
+- 結果：1,980 張連結（`linkRule='adr-0024'`），稽核寫入 20、重播 20（全為 replay）；抽查 SVB-011 夢幻、SV11W-078 龍捲雲、S4-001 橡實果皆為日台 2 張同一作品層。
+- 正式站網址：https://cardscope.onrender.com（之前只出現在測試檔，交接未記）。
 
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
