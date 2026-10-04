@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { OFFICIAL_TW_RARITY_FILTERS, officialTwDetailUrl, officialTwRarityCode, twSetMarkMatches } from './pokemon-tw-official.mjs';
+import { OFFICIAL_TW_RARITY_FILTERS, TW_SET_MARK_ALIASES, officialTwDetailUrl, officialTwRarityCode, twSetMarkMatches } from './pokemon-tw-official.mjs';
 import { postgresJsonbText } from './pokemon-jp-import-sql.mjs';
 
 // ADR 0015: Taiwanese series the Source archive lacks are imported from the Taiwanese official
@@ -21,6 +21,12 @@ export function buildOfficialTwSeriesPlans({ code, seriesNameZh, cache, observed
   if (!Object.keys(OFFICIAL_TW_RARITY_FILTERS).every(value => cache.rarityLists?.[value]?.complete)) throw new Error('TW_RARITY_LISTS_INCOMPLETE');
   const labelsById = new Map();
   for (const [value, rarityList] of Object.entries(cache.rarityLists)) for (const id of Object.values(rarityList.pages).flat()) labelsById.set(id, [...(labelsById.get(id) || []), OFFICIAL_TW_RARITY_FILTERS[value]]);
+  // ADR 0022: an aliased mark must be the only mark in the series and appear in no other series list.
+  if (TW_SET_MARK_ALIASES[code]) {
+    const ownMarks = new Set(Object.values(list.pages).flat().map(id => cache.details[id]?.setMark));
+    const elsewhere = Object.entries(cache.seriesLists).some(([other, otherList]) => other !== code && Object.values(otherList.pages || {}).flat().some(id => ownMarks.has(cache.details[id]?.setMark)));
+    if (ownMarks.size !== 1 || elsewhere) throw new Error(`TW_SET_MARK_ALIAS_NOT_EXCLUSIVE:${code}`);
+  }
   const quarantined = [], rarityUnknown = [], byNumber = new Map();
   for (const id of Object.values(list.pages).flat()) {
     const detail = cache.details[id];

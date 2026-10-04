@@ -55,10 +55,17 @@ export function parseOfficialTwDetail(html) {
 // (SV6a_F, sv1a_f, "SV2a F@4x", exp_sv4K, twhk_sv4a_exp, SV9aF_exp): it must contain the
 // series code as its own token (an F suffix glued to it is allowed), case-insensitively, so
 // SV4 never matches SV4a.
+// ADR 0022: a series whose every listed card carries one mark named differently from its code
+// (SVOM is marked SVO_ex) is accepted through this explicit alias list, never a prefix rule.
+export const TW_SET_MARK_ALIASES = { SVOM: ['SVO'] };
+
 export function twSetMarkMatches(mark, code) {
-  const escaped = String(code ?? '').replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
-  // File names may append F (SV9aF_exp) or OUT (SM_expantion_mark_as6aOUT) to the code.
-  return Boolean(code) && new RegExp(`(?:^|[^a-z0-9])${escaped}(?:f|out)?(?:[^a-z0-9]|$)`, 'i').test(String(mark ?? ''));
+  if (!code) return false;
+  return [code, ...(TW_SET_MARK_ALIASES[code] || [])].some(token => {
+    const escaped = String(token).replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+    // File names may append F (SV9aF_exp) or OUT (SM_expantion_mark_as6aOUT) to the code.
+    return new RegExp(`(?:^|[^a-z0-9])${escaped}(?:f|out)?(?:[^a-z0-9]|$)`, 'i').test(String(mark ?? ''));
+  });
 }
 
 // Compare names after dropping Source name markup (<火箭隊的>, trailing [支援者], zero-width

@@ -54,7 +54,12 @@ test('TW set marks must contain the series code as a token, whatever the image n
   assert.equal(twSetMarkMatches('sv6a_f', 'SV6'), false);
   assert.equal(twSetMarkMatches('SM_expantion_mark_as6aOUT', 'AS6a'), true);
   assert.equal(twSetMarkMatches('SM_expantion_mark_as6aOUT', 'AS6'), false);
-  assert.equal(twSetMarkMatches('SVO_ex', 'SVOM'), false);
+  // ADR 0022: SVOM is marked SVO_ex; the alias is per series and does not loosen other codes.
+  assert.equal(twSetMarkMatches('SVO_ex', 'SVOM'), true);
+  assert.equal(twSetMarkMatches('SVOD_ex', 'SVOM'), false);
+  assert.equal(twSetMarkMatches('SVO_ex', 'SVOD'), false);
+  assert.equal(twSetMarkMatches('SVO_ex', 'SVO'), true);
+  assert.equal(twSetMarkMatches('SVO_ex', null), false);
   assert.equal(twSetMarkMatches('PROMO.MARK', 'SV-P'), false);
   const entry = { detailId: '1', listCode: 'SV1a', setMark: 'sv1a_f', number: '001', nameZh: '熱帶龍', rarityLabels: ['C'] };
   assert.equal(matchOfficialTwRarity({ code: 'SV1a', num: '001', name_zh: '熱帶龍' }, [entry]).rarity, 'C');
