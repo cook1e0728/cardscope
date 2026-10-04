@@ -188,3 +188,9 @@ body{background:linear-gradient(180deg,#fbfbff 0,#fff 44%,#fff 100%)}
 #trendsSection:empty{display:block;min-height:557px}
 .notice[data-state="loading"]{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);z-index:40;margin:0;width:max-content;max-width:min(92vw,520px);box-shadow:0 10px 28px rgba(17,17,17,.16)}
 @media(max-width:760px){.channels:empty{min-height:114px}#trendsSection:empty{min-height:627px}}
+.skip-link{position:absolute;left:12px;top:-64px;z-index:100;padding:10px 16px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;text-decoration:none}
+.skip-link:focus,.skip-link:focus-visible{top:12px;outline:3px solid var(--y);outline-offset:2px}
+main:focus{outline:none}
+.channel:active,.card:active,.game-entry:active,.series-card-rail .series-card:active,#trendsSection .trend-card:active{transform:scale(.98)}
+.series-sort button:active,.series-group:active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.channel:hover,.channel:focus-visible,.card:hover,.card:focus-within,.game-entry:hover,.game-entry:focus-visible,.series-card-rail .series-card:hover,.series-card-rail .series-card:focus-visible,#trendsSection .trend-card:hover,#trendsSection .trend-card:focus-visible,.channel:active,.card:active,.game-entry:active,.series-card-rail .series-card:active,#trendsSection .trend-card:active{transform:none}}
