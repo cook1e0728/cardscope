@@ -22,7 +22,7 @@
 
 ## 目前里程碑（2026-10-03～10-04，日版中文化、分批匯入、官方來源匯入；優先於下方所有段落）
 
-> 快速接手：直接看本段末尾的「下一個安全起點」與「依序執行 39–43」。
+> 快速接手：直接看本段末尾的「下一個安全起點」與「依序執行 39–44」。
 
 - 分支 `claude/jp-zh-names`（依主方案第 0 節每主題一條；完成後快轉 main）。決策經 grill-with-docs 三輪定案：日版連結台版既有 Canonical card（ADR 0003）、同系列 Derived name、新增稀有度 `ACE`（ACE SPEC，排序在 RR 與 Rare Holo 之間）、SV6a 092–094 金卡維持空值、沒有台版的系列不猜譯。詞彙表新增 Source archive、Derived name。
 - Migration `20261001114348_pokemon_jp_enrichment`：新增 `ACE`（`tcg_rarities` tier 14，原 ≥14 者 +1，比照 K 的先例）、追加式稽核表 `private.catalog_jp_enrich_audit`、只填空值的 `private.enrich_pokemon_jp_metadata(jsonb, text, boolean)`（dry-run、digest 重播、連結四項檢查、同名推導檢查、系列名須等於同代碼台版名）。套用前先在正式庫以「整批執行後拋例外」的交易完整測過 SV6a 寫入與重播，並確認全數回滾。
@@ -354,10 +354,16 @@
 - ADR 0025（照建議）：同系列同卡號且各頁日文名相同 → 一張卡，Provider ID 取最小官方頁 ID、全部頁 ID 存 `officialCardIds`；系列中有同號不同名者整系列不套用（MG 排除）；稀有度須各頁一致（XY 以前套 ADR 0019 代碼）。Migration `20261005010000_pokemon_jp_official_same_name_supplement`（`private.supplement_pokemon_jp_official_series` md5 `1c160f0f…`、稽核 `private.catalog_jp_official_supplement_audit`），回滾測試（交易內 74 張、稽核 25／25，零殘留）後套用並寫入 schema_migrations。產生器 `scripts/build-pokemon-jp-official-same-name-plan.mjs`；證據 `docs/evidence/pokemon-jp/official-series/same-name-report-20261005.json`。
 - 正式庫：25 個系列補 74 張（SVI 16、SML 7、WAK 7、XYE 6、HXY／SVAL／SVAM／SVAW／SVC 各 3，其餘 1–2），重播零異動；稀有度未知（官方頁無圖示）。接著依既有規則：ADR 0011 對 7 個 SV 牌組系列對齊通過，32 張取得台灣官方中文名與 `NONE`（7 批，重播零異動）；ADR 0024 連結這 32 張（連結總數 2,012）；ADR 0013 推導 29 張中文名（重播零異動）。74 張中 61 張有中文名；未補 13 張：ポケモンキャッチャー 一對多 3、資料庫無官方名 10（ティエルノ、イリマ、シロナ、ハウ、むしとりしょうねん、プラスパワー、オーキド博士の出むかえ、マコモのお手伝い、ダブル無色エネルギー）。
 
+### 依序執行 44：剩餘身分問題查證（2026-10-05，筆電，只有證據、無資料異動）
+
+- DP 世代：官方有「（DPx の全てのカード）」總清單（商品 ID 55–59：DP1 132、DP2 153、DP3 154、DP4 171、DP5 162，共 772 頁），日版 DP 卡本來就沒有印卡號；身分只能用官方詳細頁 ID。但 `tcg_cards.official_card_number` 是 NOT NULL，網站沒有卡號時顯示「卡號待補」（對 DP 是錯誤訊息）。匯入需要全站 schema 與顯示決策，**待使用者決定**；建議：卡號可為空＋網站顯示「此世代未印卡號」＋以官方詳細頁 ID 為身分。
+- MG：只有一個商品（ID 379「ミュウツーVSゲノセクト」，34 頁），兩副牌組裝同一盒各自編號，官方不按牌組分清單，沒有可區分身分的官方證據，維持不匯入。
+- 共用標記（抓取 411 頁，快取 `docs/evidence/pokemon-jp/official-series/official-series-reprint-marks-cache-20261005.json`）：XY 387 頁／186 號，其中 42 號同號不同名（例 003 ボルケニオンEX／ラフレシア）→ 卡號不能辨識卡片，整標記不匯入（同 ADR 0025 系列把關）。BW 12、SM-XY 12 卡號唯一，但官方搜尋 `searchCondition` 只回「レギュレーション：すべてのカード」，沒有商品名；比照 S-P 前例，沒有官方日文系列名就暫不匯入。
+
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
-- Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–43 皆已合併），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
+- Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 工作方式（使用者 2026-10-04 指示，記憶只存在筆電，換機以本段為準）：決策以 grill-with-docs 形式列出設計樹與建議，**不等回覆、直接照建議執行**，寫成 ADR／詞彙表；每個段落完成即 commit、push、快轉合併 `main` 並驗正式站。啟用新資料來源、花錢的設定仍需先問。
 - 新機器準備見 `docs/CROSS_DEVICE_SETUP.md`；本機直連資料庫需 `.env.local` 的 `SUPABASE_ACCESS_TOKEN`（各機自建）。大批寫入注意：Management API 約 100 秒被 Cloudflare 切斷（524）但伺服器端交易仍會跑完並持有鎖，單一請求控制在約 60 秒內（見依序執行 42）。
 - 筆電本機產物（不在 repo、可刪）：`C:\Users\99wye\Documents\CardScope\.claude\launch.json`（App 瀏覽器預覽用）；暫存檔皆在 Claude scratchpad。
@@ -365,7 +371,7 @@
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
 - 待驗收（外部時間點）：10-04 10:13 UTC 之後的重啟不應再出現 `tcgdex-zh-tw` 同步（ADR 0020）；約 10-06 的 pokemontcg／ygoprodeck 同步 `rows_written` 應大幅下降且 completed（依序執行 38）。
 - 需使用者決定：航海王、排球少年、芙莉蓮的資料更新被來源政策擋住（`data/source-registry.json` 皆為 permission-pending、自動收集關閉，最後更新 8 月底～9 月初），啟用屬於接受新的授權風險，依自主決策邊界不自行處理。
-- 可自行推進但價值較低：DP 世代（官方無卡號，需另訂身分規則）、MG（兩副牌組各自編號，需以商品區分身分）與 XY／BW／SM-XY 再錄標記（跨商品再錄）；同號同名已由 ADR 0025 處理；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK／SVHK／SVHM／SV-P 日台卡號錯位未連結（ADR 0024 排除，名稱不能當身分證據）；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
+- 可自行推進但價值較低：（DP 世代需 schema 決策、MG／XY 無可辨識身分、BW／SM-XY 缺官方系列名，見依序執行 44）；同號同名已由 ADR 0025 處理；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK／SVHK／SVHM／SV-P 日台卡號錯位未連結（ADR 0024 排除，名稱不能當身分證據）；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選（M-P 特典已於依序執行 30 完成；台版 UR 對映已於依序執行 41 查證無影響）：SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；Render log 抽查（需使用者指定 Render 工作區） `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
