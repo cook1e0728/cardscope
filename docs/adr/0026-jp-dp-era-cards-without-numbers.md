@@ -1,10 +1,10 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # 日版 DP 世代卡片沒有印卡號：以官方詳細頁 ID 為身分，卡號可為空
 
-**狀態：提案（2026-10-05 研究；2026-10-06 依審查修改並在正式庫整批回滾測試通過，分支 `claude/dp-unnumbered`）。migration 已移到 `supabase/migrations/` 但尚未套用、尚未合併 `main`；正式套用需使用者決定。**
+**狀態：已採用（2026-10-05 研究；2026-10-06 依審查修改、正式庫回滾測試通過，使用者決定正式套用）。**
 
 日版 DP 世代（DP1～DP5）的卡面沒有印卡號，官方卡片搜尋的詳細頁也沒有卡號。官方另有「（DPx の全てのカード）」總清單（商品 ID 55～59），列出每個系列的全部卡片頁。目前 `tcg_cards.official_card_number` 是 NOT NULL，所有日版匯入函式也都以卡號組成卡片 ID，所以 DP 世代一直沒有收錄（依序執行 33、44）。
 
@@ -27,3 +27,7 @@ status: proposed
 ## 正式庫回滾測試（2026-10-06）
 
 一個請求內：兩個 migration、5 個系列 10 批 gated 寫入、10 批重播、反向測試，最後拋例外回滾（約 29 秒）。結果：DP1 124、DP2 145、DP3 146、DP4 163、DP5 154，共 732 張無卡號；稽核 import 10／replay 10；沒有標記的空卡號被 CHECK 拒絕；VALIDATE 後約束為有效；`browse_series_cards` 第一張為ドダイトス（官方清單順序）且帶 `numberStatus: not-printed`；排序搜尋「ドダイトス」含 3 張 DP 卡。測試後正式庫零殘留（約束、函式、系列皆不存在，欄位仍為 NOT NULL）。審查另確認：三個公開函式與正式庫現行版只差 `numberStatus` 與系列卡表排序；`search_names` 以 COALESCE 處理空卡號；14 個讀卡號的資料庫函式中，匯入函式要求卡號格式、日台同號連結以卡號比對，空卡號不會誤入或誤連；伺服器與網站讀卡號處都有空值保護。
+
+## 正式套用（2026-10-06）
+
+兩個 migration 分兩個請求套用並寫入 schema_migrations（VALIDATE 後約束有效，欄位改為可為空）；10 批 gated 匯入、10 批重播（稽核 import 10／replay 10），DP1–DP5 共 732 張；ADR 0013 推導中文名 603 張（7 批，重播零異動，`docs/evidence/pokemon-jp/derived-names/adr-0013-candidates-dp-20261006.json`）。

@@ -370,6 +370,11 @@
 
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
+### 依序執行 46：日版 DP 世代（未印卡號，ADR 0026，2026-10-06，已套用）
+
+- 審查研究分支後照建議修改：卡號 CHECK 改為 `NOT VALID`＋另一個 migration `VALIDATE`（避免獨佔鎖掃全表）；系列名依 ADR 0019 以「／」並列成對擴充包官方商品名；發售日取官方商品清單（成對同日）。三個公開函式與正式庫現行版逐字比對，只差 `numberStatus` 與系列卡表排序。
+- 正式庫整批回滾測試通過後，使用者決定套用：migration `20261006000000_pokemon_jp_official_unnumbered_series`、`20261006000100_tcg_cards_number_check_validate`；DP1 124、DP2 145、DP3 146、DP4 163、DP5 154，共 732 張（無卡號、`numberStatus: not-printed`、Provider ID 為官方詳細頁 ID）；中文名推導 603。分支 `claude/dp-unnumbered` 合併 `main`。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 工作方式（使用者 2026-10-04 指示，記憶只存在筆電，換機以本段為準）：決策以 grill-with-docs 形式列出設計樹與建議，**不等回覆、直接照建議執行**，寫成 ADR／詞彙表；每個段落完成即 commit、push、快轉合併 `main` 並驗正式站。啟用新資料來源、花錢的設定仍需先問。
@@ -379,7 +384,7 @@
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
 - 待驗收（外部時間點）：10-04 10:13 UTC 之後的重啟不應再出現 `tcgdex-zh-tw` 同步（ADR 0020）；約 10-06 的 pokemontcg／ygoprodeck 同步 `rows_written` 應大幅下降且 completed（依序執行 38）。
 - 需使用者決定：航海王、排球少年、芙莉蓮的資料更新被來源政策擋住（`data/source-registry.json` 皆為 permission-pending、自動收集關閉，最後更新 8 月底～9 月初），啟用屬於接受新的授權風險，依自主決策邊界不自行處理。
-- 可自行推進但價值較低：（DP 世代需 schema 決策、MG／XY 無可辨識身分、BW／SM-XY 缺官方系列名，見依序執行 44）；同號同名已由 ADR 0025 處理；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK／SVHK／SVHM／SV-P 日台卡號錯位未連結（ADR 0024 排除，名稱不能當身分證據）；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
+- 可自行推進但價值較低：（DP 世代已於依序執行 46 匯入；MG／XY 無可辨識身分、BW／SM-XY 缺官方系列名，見依序執行 44）；同號同名已由 ADR 0025 處理；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK／SVHK／SVHM／SV-P 日台卡號錯位未連結（ADR 0024 排除，名稱不能當身分證據）；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選（M-P 特典已於依序執行 30 完成；台版 UR 對映已於依序執行 41 查證無影響）：SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；Render log 抽查（需使用者指定 Render 工作區） `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
