@@ -22,7 +22,7 @@
 
 ## 目前里程碑（2026-10-03～10-04，日版中文化、分批匯入、官方來源匯入；優先於下方所有段落）
 
-> 快速接手：直接看本段末尾的「下一個安全起點」與「依序執行 39–44」。
+> 快速接手：直接看本段末尾的「下一個安全起點」與「依序執行 39–45」。
 
 - 分支 `claude/jp-zh-names`（依主方案第 0 節每主題一條；完成後快轉 main）。決策經 grill-with-docs 三輪定案：日版連結台版既有 Canonical card（ADR 0003）、同系列 Derived name、新增稀有度 `ACE`（ACE SPEC，排序在 RR 與 Rare Holo 之間）、SV6a 092–094 金卡維持空值、沒有台版的系列不猜譯。詞彙表新增 Source archive、Derived name。
 - Migration `20261001114348_pokemon_jp_enrichment`：新增 `ACE`（`tcg_rarities` tier 14，原 ≥14 者 +1，比照 K 的先例）、追加式稽核表 `private.catalog_jp_enrich_audit`、只填空值的 `private.enrich_pokemon_jp_metadata(jsonb, text, boolean)`（dry-run、digest 重播、連結四項檢查、同名推導檢查、系列名須等於同代碼台版名）。套用前先在正式庫以「整批執行後拋例外」的交易完整測過 SV6a 寫入與重播，並確認全數回滾。
@@ -356,14 +356,22 @@
 
 ### 依序執行 44：剩餘身分問題查證（2026-10-05，筆電，只有證據、無資料異動）
 
-- DP 世代：官方有「（DPx の全てのカード）」總清單（商品 ID 55–59：DP1 132、DP2 153、DP3 154、DP4 171、DP5 162，共 772 頁），日版 DP 卡本來就沒有印卡號；身分只能用官方詳細頁 ID。但 `tcg_cards.official_card_number` 是 NOT NULL，網站沒有卡號時顯示「卡號待補」（對 DP 是錯誤訊息）。匯入需要全站 schema 與顯示決策，**待使用者決定**；建議：卡號可為空＋網站顯示「此世代未印卡號」＋以官方詳細頁 ID 為身分。
+- DP 世代：官方有「（DPx の全てのカード）」總清單（商品 ID 55–59：DP1 132、DP2 153、DP3 154、DP4 171、DP5 162，共 772 頁），日版 DP 卡本來就沒有印卡號；身分只能用官方詳細頁 ID。但 `tcg_cards.official_card_number` 是 NOT NULL，網站沒有卡號時顯示「卡號待補」（對 DP 是錯誤訊息）。匯入需要全站 schema 與顯示決策；使用者選「只做研究不上線」→ 見依序執行 45。
 - MG：只有一個商品（ID 379「ミュウツーVSゲノセクト」，34 頁），兩副牌組裝同一盒各自編號，官方不按牌組分清單，沒有可區分身分的官方證據，維持不匯入。
 - 共用標記（抓取 411 頁，快取 `docs/evidence/pokemon-jp/official-series/official-series-reprint-marks-cache-20261005.json`）：XY 387 頁／186 號，其中 42 號同號不同名（例 003 ボルケニオンEX／ラフレシア）→ 卡號不能辨識卡片，整標記不匯入（同 ADR 0025 系列把關）。BW 12、SM-XY 12 卡號唯一，但官方搜尋 `searchCondition` 只回「レギュレーション：すべてのカード」，沒有商品名；比照 S-P 前例，沒有官方日文系列名就暫不匯入。
+
+### 依序執行 45：DP 世代未印卡號研究（ADR 0026 proposed，2026-10-05，**只在研究分支、未上線、未合併**）
+
+- 使用者決定：DP 世代「只做研究不上線」。全部內容在分支 `claude/dp-unnumbered-research`（`5171f3a`，已推送；從 main 分出，不含本段之後的 main 變更）。正式庫沒有任何異動，草稿 migration 放在 `docs/research/dp-unnumbered/`（不在 `supabase/migrations/`，避免被誤套用）。
+- 官方資料：DP1–DP5 總清單去重 740 頁，排除 8 張基本能量後 732 張（DP1 124、DP2 145、DP3 146、DP4 163、DP5 154）；全部沒有卡號；稀有度 C 192／U 183／R 202，`ic_rare_s` 21 與無圖示 134 依 ADR 0019 留空。
+- 提案（ADR 0026）：卡號可為空但限 metadata `numberStatus='not-printed'`（CHECK 用 coalesce）、卡片 ID `pokemon-official-ja-<系列>-c<詳細頁 ID>`、網站顯示「未印卡號」、系列卡表以官方清單位置排序（全遊戲瀏覽不改排序以保留索引）、三個公開函式帶出 `numberStatus`。
+- 驗證：本機 PGlite（正式 schema 唯讀快照）匯入 732 張、10 批＋重播全為 replay、反向測試通過；過程中發現並修正 3 個上線才會出現的問題（CHECK 遇 NULL 通過、系列排序、metadata 被濾掉）。研究分支 Node 303/303。細節與重跑方式：研究分支的 `docs/research/dp-unnumbered/README.md`。
+- 上線前待決：成對擴充包的系列名寫法與發售日、正式庫回滾測試（需分請求）。使用者同意後：把研究分支 rebase 到 main、把草稿移到 `supabase/migrations/`、回滾測試、套用、匯入、ADR 0013 推導中文名。
 
 待使用者決定（2026-10-03 查證）：遊戲王 14,634 張中只有 1 張有中文名。PRODUCT_PLAN 指定的官方 Neuron（db.yugioh-card.com）只有簡體中文 `request_locale=cn`、沒有繁體，且站台有 Imperva（Incapsula）防爬；robots.txt 回 404。簡轉繁不是台灣官方譯名，啟用此來源涉及授權與防爬政策，依自主決策邊界未自行處理。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
-- Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
+- Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 工作方式（使用者 2026-10-04 指示，記憶只存在筆電，換機以本段為準）：決策以 grill-with-docs 形式列出設計樹與建議，**不等回覆、直接照建議執行**，寫成 ADR／詞彙表；每個段落完成即 commit、push、快轉合併 `main` 並驗正式站。啟用新資料來源、花錢的設定仍需先問。
 - 新機器準備見 `docs/CROSS_DEVICE_SETUP.md`；本機直連資料庫需 `.env.local` 的 `SUPABASE_ACCESS_TOKEN`（各機自建）。大批寫入注意：Management API 約 100 秒被 Cloudflare 切斷（524）但伺服器端交易仍會跑完並持有鎖，單一請求控制在約 60 秒內（見依序執行 42）。
 - 筆電本機產物（不在 repo、可刪）：`C:\Users\99wye\Documents\CardScope\.claude\launch.json`（App 瀏覽器預覽用）；暫存檔皆在 Claude scratchpad。
