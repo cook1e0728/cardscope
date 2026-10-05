@@ -13,7 +13,7 @@
 
 - 網站：`ui-enhancements.js` 的 `cardNumberLabel` 對 `metadata.numberStatus = 'not-printed'` 顯示「未印卡號」，否則仍是「卡號待補」；詳細頁改用同一函式；`index.html` 兩處卡號顯示同步；`server.mjs` 日版價格查詢遇到沒有卡號直接跳過。測試 `test/browse-contract.test.mjs`。
 - 計畫產生器：`providers/pokemon-jp-official-unnumbered-plan.mjs`（測試 `test/pokemon-jp-official-unnumbered-plan.test.mjs`）。
-- 草稿 migration：`20261005020000_pokemon_jp_official_unnumbered_series.sql`（刻意不放在 `supabase/migrations/`）。內容：卡號可為空＋CHECK、DP 匯入函式與稽核表、三個公開函式帶出 `numberStatus`、系列卡表以官方清單順序排序。
+- Migration：`supabase/migrations/20261006000000_pokemon_jp_official_unnumbered_series.sql`＋`20261006000100_tcg_cards_number_check_validate.sql`（2026-10-06 自研究草稿移入，CHECK 改為 NOT VALID 再 VALIDATE；尚未套用）。內容：卡號可為空＋CHECK、DP 匯入函式與稽核表、三個公開函式帶出 `numberStatus`、系列卡表以官方清單順序排序。
 
 ## 本機測試（PGlite，未連正式庫）
 
@@ -36,6 +36,5 @@ CARDSCOPE_REPO=<repo 路徑> node local-check.mjs official-dp-cache-20261005.jso
 
 ## 上線前仍需決定或補做
 
-- 系列名（成對擴充包的寫法）與發售日來源。
-- 正式庫回滾測試（整份 migration＋五個系列＋重播）後才能套用；Management API 約 100 秒切斷，需分請求。
+- 系列名與發售日已定案（ADR 0026、`series-meta-dp-20261006.json`）；正式庫回滾測試已通過（ADR 0026 末段，單一請求約 29 秒）。剩下：使用者決定是否正式套用。套用時兩個 migration 分兩個請求，再逐批執行 10 份計畫與重播。
 - 中文名只能依 ADR 0013 推導；DP 沒有台版對應，不建立日台連結。

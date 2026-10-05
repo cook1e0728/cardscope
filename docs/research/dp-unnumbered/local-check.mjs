@@ -47,7 +47,7 @@ await db.exec(`insert into public.tcg_series (id, game_id, official_code, region
 insert into public.tcg_cards (id, canonical_id, game_id, series_id, official_card_number, name_ja) values ('pokemon-official-ja-dpt1-001', 'pokemon-official-ja-dpt1-001', 'pokemon', 'pokemon-official-ja-dpt1', '001', 'ナエトル');`);
 
 const result = {};
-await db.exec(readFileSync(`${repo}docs/research/dp-unnumbered/20261005020000_pokemon_jp_official_unnumbered_series.sql`, 'utf8'));
+await db.exec(readFileSync(`${repo}supabase/migrations/20261006000000_pokemon_jp_official_unnumbered_series.sql`, 'utf8'));
 result.migration = 'applied';
 
 const cache = JSON.parse(readFileSync(process.argv[2], 'utf8'));

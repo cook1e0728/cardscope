@@ -1,4 +1,4 @@
--- CardScope (DRAFT, ADR 0026 proposed; not applied to production): Japanese DP-era cards print no
+-- CardScope (ADR 0026): Japanese DP-era cards print no
 -- card number. A card may now have no official number, but only when its metadata says the number
 -- was never printed, so a number that is merely missing still fails. The DP sets are imported from
 -- the official "（DPx の全てのカード）" lists with the official detail page ID as identity
@@ -6,8 +6,10 @@
 
 alter table public.tcg_cards alter column official_card_number drop not null;
 alter table public.tcg_cards drop constraint if exists tcg_cards_number_or_not_printed;
+-- NOT VALID: checks new and updated rows at once without scanning the existing ~71,000 cards under
+-- an exclusive lock; 20261006000100 validates them separately with a lighter lock.
 alter table public.tcg_cards add constraint tcg_cards_number_or_not_printed
-  check (official_card_number is not null or coalesce(metadata->>'numberStatus', '') = 'not-printed');
+  check (official_card_number is not null or coalesce(metadata->>'numberStatus', '') = 'not-printed') not valid;
 
 create table if not exists private.catalog_jp_official_unnumbered_audit (
   audit_id bigint generated always as identity primary key,
