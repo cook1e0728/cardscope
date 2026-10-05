@@ -61,3 +61,12 @@ test('sorting peers are not merged unless explicitly declared as aliases', () =>
   assert.equal(rarityCanonicalCode('yugioh', 'Platinum Secret Rare'), 'Platinum Secret Rare');
   assert.equal(rarityCanonicalCode('yugioh', 'Gold Secret Rare'), 'Gold Secret Rare');
 });
+
+test('cards that print no number keep the official list order they arrive in (ADR 0026)', () => {
+  const card = (id, extra = {}) => ({ id, game: 'pokemon', seriesId: 'pokemon-official-ja-dp1', officialCardNumber: null, rarity: 'C', metadata: { numberStatus: 'not-printed' }, printings: [], ...extra });
+  const rows = [card('pokemon-official-ja-dp1-c1013'), card('pokemon-official-ja-dp1-c1000'), card('pokemon-official-ja-dp1-c1005')];
+  const page = buildBrowsePage(rows, { limit: 10 });
+  assert.deepEqual(page.data.map(row => row.id), ['pokemon-official-ja-dp1-c1013', 'pokemon-official-ja-dp1-c1000', 'pokemon-official-ja-dp1-c1005']);
+  const desc = buildBrowsePage(rows, { limit: 10, sort: 'number-desc' });
+  assert.deepEqual(desc.data.map(row => row.id), ['pokemon-official-ja-dp1-c1005', 'pokemon-official-ja-dp1-c1000', 'pokemon-official-ja-dp1-c1013']);
+});

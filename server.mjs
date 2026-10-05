@@ -210,8 +210,10 @@ function browseNumber(card){return String(card?.officialCardNumber||card?.printi
 function browseRelease(card){return card?.printings?.map(p=>p.releaseDate).filter(Boolean).sort().at(-1)||card?.releaseDate||''}
 // Shared collators: localeCompare with options builds a new ICU collator on every call, which dominated sorting a series.
 const browseNumberCollator=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'}),browseIdCollator=new Intl.Collator(),browseNameCollator=new Intl.Collator(undefined,{sensitivity:'base'});
-function browseCompare(a,b,sort){
-  const number=()=>browseNumberCollator.compare(browseNumber(a),browseNumber(b))||browseIdCollator.compare(String(a.id),String(b.id));
+// Cards that print no number (ADR 0026) arrive in official list order from browse_series_cards; keep that order among them.
+const notPrinted=card=>card?.metadata?.numberStatus==='not-printed';
+function browseCompare(a,b,sort,order=null){
+  const number=()=>browseNumberCollator.compare(browseNumber(a),browseNumber(b))||(order&&notPrinted(a)&&notPrinted(b)?order.get(a)-order.get(b):0)||browseIdCollator.compare(String(a.id),String(b.id));
   if(sort==='number-desc')return -number();
   if(sort==='release-asc'||sort==='release-desc'){const value=String(browseRelease(a)).localeCompare(String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
   if(sort==='rarity-asc'||sort==='rarity-desc')return compareBrowseRarity(a,b,sort.endsWith('desc')?'desc':'asc')||number();
@@ -249,7 +251,7 @@ function buildBrowsePage(rows,{region=null,rarity=null,seriesId=null,sort='numbe
   const regionToken=region?String(region).toUpperCase():null;
   const baseMatching=rows.filter(card=>{const printings=printingByCard.get(card.id)||[];if(seriesId&&card.seriesId!==seriesId&&!printings.some(printing=>printing.seriesId===seriesId))return false;if(regionToken&&!browseValues(card,printings,'region').some(value=>String(value).toUpperCase()===regionToken))return false;return true});
   const matching=baseMatching.filter(card=>{const printings=printingByCard.get(card.id)||[];const cardRarityToken=rarity?rarityCanonicalToken(card?.game,rarity):null;return !cardRarityToken||browseValues(card,printings,'rarity').some(value=>rarityCanonicalToken(card?.game,value)===cardRarityToken)}).map(card=>hydrateBrowseCard(card,printingByCard,imageByCard));
-  matching.sort((a,b)=>browseCompare(a,b,sort));
+  const order=new Map(matching.map((row,index)=>[row,index]));matching.sort((a,b)=>browseCompare(a,b,sort,order));
   const take=Math.min(Math.max(Number(limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(offset)||0,0),page=matching.slice(skip,skip+take);
   return {data:page,total:matching.length,hasMore:skip+page.length<matching.length,facets:buildBrowseFacets(baseMatching,printingByCard),facetStatus,limit:take,offset:skip};
 }
