@@ -377,7 +377,8 @@
 - 筆電本機產物（不在 repo、可刪）：`C:\Users\99wye\Documents\CardScope\.claude\launch.json`（App 瀏覽器預覽用）；暫存檔皆在 Claude scratchpad。
 - 正式庫：寶可夢日版 Printing 18,025（262 系列、中文名 15,010；ADR 0024 後 1,980 張與台版同作品層）、台版 12,669（10-04 加 SVOM、SV9／SV10 補號）、美版 20,637；日版實體商品 1,963（ADR 0021）；遊戲王 14,655（09-20 以來首次同步成功）、航海王 4,284、芙莉蓮 751、排球少年 527。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
-- 待驗收（外部時間點）：10-04 10:13 UTC 之後的重啟不應再出現 `tcgdex-zh-tw` 同步（ADR 0020）；約 10-06 的 pokemontcg／ygoprodeck 同步 `rows_written` 應大幅下降且 completed（依序執行 38）。
+- ADR 0020 已驗收（2026-10-05 18:00 UTC 查）：10-04 10:13 UTC 到期後，正式站至少於 10-05 05:36 UTC 起多次部署重啟，`catalog_sync_runs` 沒有新的 `tcgdex-zh-tw` 紀錄（最後一筆仍是 10-01）。
+- 待驗收（外部時間點）：pokemontcg 約 10-06 08:36 UTC、ygoprodeck 約 10-06 22:45 UTC 之後的第一次重啟，`rows_written` 應遠小於 77,340／69,698 且 completed（依序執行 38）；10-05 18:00 UTC 時兩者都還沒到期。
 - 需使用者決定：航海王、排球少年、芙莉蓮的資料更新被來源政策擋住（`data/source-registry.json` 皆為 permission-pending、自動收集關閉，最後更新 8 月底～9 月初），啟用屬於接受新的授權風險，依自主決策邊界不自行處理。
 - 可自行推進但價值較低：（DP 世代需 schema 決策、MG／XY 無可辨識身分、BW／SM-XY 缺官方系列名，見依序執行 44）；同號同名已由 ADR 0025 處理；日版剩約 3,000 張無中文名（早期世代與 GX 等，無官方中文名可沿用）；MBD／MBG／SVOD／SVOM／SVK／SVHK／SVHM／SV-P 日台卡號錯位未連結（ADR 0024 排除，名稱不能當身分證據）；搜尋 p95 約 0.9–1.2 s（實例 CPU 節流，見依序執行 34）；手機 CLS 0.204 的歸因需真實使用者數據。
 其他後續候選（M-P 特典已於依序執行 30 完成；台版 UR 對映已於依序執行 41 查證無影響）：SM 世代中文名（台灣官方未收錄 SM）；SV-P 特典與基本能量的對應規則；牌組商品 88 筆的日版稀有度；SV8a 與牌組商品的稀有度需要官方頁以外的證據（ADR 0007：無圖示不等於無記號）；Render log 抽查（需使用者指定 Render 工作區） `search printing embed failed`；SVLN／SVLS／SVK 與 SV11B／W 的中文名來源、日版缺稀有度的 328 筆。日版修改一律走既有函式（enrich 只填空值、status 只升不降）。
