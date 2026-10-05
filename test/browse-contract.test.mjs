@@ -176,3 +176,10 @@ test('cross-IP rarity mode creates one group for each IP and rarity pair',()=>{
     assert.doesNotMatch(group,new RegExp(`data-card-open="${otherId}"`));
   }
 });
+
+test('a card whose era prints no number says so instead of asking for one', () => {
+  const h=createHarness(undefined,true);
+  assert.equal(h.run("cardNumberLabel({metadata:{numberStatus:'not-printed'}})"),'未印卡號');
+  assert.equal(h.run("cardNumberLabel({metadata:{}})"),'卡號待補');
+  assert.equal(h.run("cardNumberLabel({officialCardNumber:'001',metadata:{numberStatus:'not-printed'}})"),'001');
+});
