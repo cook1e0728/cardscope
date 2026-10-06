@@ -195,7 +195,8 @@ main:focus{outline:none}
 .series-sort button:active,.series-group:active{transform:translateY(1px)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}.channel:hover,.channel:focus-visible,.card:hover,.card:focus-within,.game-entry:hover,.game-entry:focus-visible,.series-card-rail .series-card:hover,.series-card-rail .series-card:focus-visible,#trendsSection .trend-card:hover,#trendsSection .trend-card:focus-visible,.channel:active,.card:active,.game-entry:active,.series-card-rail .series-card:active,#trendsSection .trend-card:active{transform:none}}/* PRODUCT_PLAN section 5: controls are at least 44×44px. min-* only grows, so fixed sizes set elsewhere act as floors. Links inside running text are exempt (WCAG 2.5.8 inline). */
 button,select,summary,input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),.brand{min-height:44px}
-button{min-width:44px}
+/* Width only for icon-sized buttons: a global min-width replaces flex items' min-width:auto and lets text buttons be squeezed until their labels overlap. */
+.close,.detail-nav,.bottom button,.favorite-toggle,.watchlist-inline button,.filter-sheet-close,.product-category{min-width:44px}
 summary{box-sizing:border-box;align-content:center}
 /* Bottom-bar jumps land below the sticky header on phones. */
 @media(max-width:760px){#cardTools,#cards,#coverageStatus,#watchlistSummary{scroll-margin-top:130px}}

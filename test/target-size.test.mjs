@@ -6,7 +6,8 @@ const css=await readFile(new URL('../catalog-layout.css',import.meta.url),'utf8'
 
 test('controls have a 44px minimum target size',()=>{
   assert.match(css,/button,select,summary,input:not\(\[type="checkbox"\]\):not\(\[type="radio"\]\):not\(\[type="range"\]\),\.brand\{min-height:44px\}/);
-  assert.match(css,/button\{min-width:44px\}/);
+  assert.match(css,/\.close,\.detail-nav,\.bottom button,\.favorite-toggle,\.watchlist-inline button,\.filter-sheet-close,\.product-category\{min-width:44px\}/);
+  assert.doesNotMatch(css,/(^|\})button\{min-width:/m,'a global button min-width lets flex rows squeeze labels until they overlap');
   assert.doesNotMatch(css,/min-height:(3\d|[12]?\d)px\}/,'no rule lowers a control below 44px');
 });
 
