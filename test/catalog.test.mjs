@@ -40,7 +40,7 @@ test('catalog exposes canonical cards and risk-accepted source images without ma
 
 test('source policy gates collectors and image display independently',()=>{
   assert.equal(catalogCollectionAllowed('pokemon'),true);
-  assert.equal(catalogCollectionAllowed('onepiece'),false);
+  assert.equal(catalogCollectionAllowed('onepiece'),true,'ADR 0027: the owner accepted the One Piece list risk');
   assert.equal(catalogCollectionAllowed('yuyutei'),false);
   assert.equal(imageCollectionAllowed('yugioh'),false);
   assert.equal(imageRightsAllowDisplay('not-provided',null,'pokemontcg'),true);
@@ -67,7 +67,7 @@ test('database detail, search, and series paths retain image policy fields',asyn
 test('public health and source policy endpoints are available without database secrets',async()=>{
   const health=await api('/api/catalog/health'),sources=await api('/api/catalog/sources');
   assert.equal(health.data.policy.version,3);
-  assert.ok(sources.data.some(source=>source.runtimeProvider==='onepiece'&&source.status==='blocked'));
+  assert.ok(sources.data.some(source=>source.runtimeProvider==='yuyutei'&&source.status==='blocked'));
   const response=await fetch(`http://127.0.0.1:${port}/api/admin/catalog/health?token=leaked`);
   assert.equal(response.status,401);
 });
