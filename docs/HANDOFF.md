@@ -448,6 +448,14 @@
 - 驗證：部署 `a768cf2` 後正式站手機 375 寬：系列 648 px（第一個畫面）、卡片 1,273 px（原 1,559 px 以後）、CLS 0、無橫向溢出。本機：抽屜開啟焦點到稀有度、改選單 0 次載入、取消還原並回焦、套用 1 次載入且網址同步。
 - 喚醒排程：`keep-warm.yml` 推上後 77 分鐘仍 0 次執行（工作流程狀態 active）。若下次接手仍為 0，改用外部監測服務（如 UptimeRobot 免費方案，需使用者自行註冊）或確認 repo 的 Actions 排程設定。
 
+### 依序執行 56：視覺方向討論與卡冊主題預覽（2026-10-06，桌電，進行中）
+
+- 使用者覺得介面「太簡陋、白底」、不想要「像 AI 生出來的介面」。以 redesign-existing-projects 技能審查：只有系統字體、800–950 粗字重混用、`999px` 膠囊 13 處與 12 種圓角、紫綠漸層與紫色調灰／陰影、「探索你的卡牌宇宙」類文案、⌕▣◌ 文字圖示。
+- 示意圖三輪：A 米色＋膠囊＋IP 色（被指出仍像 AI）→ 印刷圖鑑編輯風（使用者：「太像文件」）→ **卡冊風**：遊戲切換為索引分頁籤、IP 主色色帶標頭、卡套雙層框、價格貼紙形稀有度（三級）、Noto Sans TC＋Space Grotesk。使用者要求先在本機看。
+- 預覽分支 `claude/binder-theme-preview`（`7ac4e17`，未合併、未部署）：`theme-binder.css` 最後載入（拿掉該 link 即還原）、`body[data-game]`、卡片 meta 拆成 `.card-no`／`.card-rarity[data-tier]`、Google Fonts。`scripts/preview-proxy.mjs`（launch 名稱 `design-preview`，port 4300）提供本機前端並把 `/api/*` GET 轉到正式站，用真實資料看樣式。教訓：無圖卡以主色填滿會讓寶可夢頁變紅牆，改為紙色底＋主色細帶。
+- 正式站修正（`3940b33`，已部署）：依序執行 49 的全域 `button{min-width:44px}` 取代了 flex 子項的 `min-width:auto`，系列分組按鈕被擠到 44px 文字重疊；改為只對圖示類按鈕（關閉、上下張、底部導覽、收藏、數量、抽屜關閉、商品分類）設最小寬度，全部控制項仍保有 44px 最小高度。冒煙測試與 Node 320/320 通過。
+- 下一步：等使用者看完預覽的回饋再調整；方向確定後才處理其餘膠囊按鈕、字重與文案，並在合併前更新主方案第 5 節的風格規定。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
