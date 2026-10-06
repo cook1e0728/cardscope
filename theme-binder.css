@@ -46,3 +46,18 @@ body[data-view="game"] .cards .card .ip-badge{display:none}
 
 /* Fewer pills: square-ish controls in the binder look. */
 .view-switch button,.tabs .tab,.filter-sheet-toggle,.chip,.badge{border-radius:6px}
+
+/* Remaining pills in the binder look: squared buttons whose selected state uses the IP colour like the index
+   tabs, square status labels, and the buyback rise as a price sticker. The body prefix outranks the
+   styles series-navigator.js injects at runtime, which come after this file. */
+body .series-group,body .series-sort button,body .load-more,body .brand-showcase-copy button{border-radius:6px}
+body .series-group,body .series-sort button{background:var(--paper-2)!important;border:1px solid var(--rule)!important;color:var(--ink-2)!important;box-shadow:none}
+body .series-group:hover,body .series-sort button:hover{background:#E6E0D2!important;color:var(--ink)!important}
+/* The original chip rules use !important, so the IP colour has to as well. */
+body .series-group.on,body .series-sort button.on,body .view-switch button.on{background:var(--ip)!important;border-color:var(--ip)!important;color:var(--ip-on)!important}
+.load-more{background:var(--paper-2);border:1px solid var(--ink);color:var(--ink);font-weight:700}
+.search{border-radius:8px}
+.search input{border-radius:8px 0 0 8px}
+.search button{border-radius:0 7px 7px 0}
+.hero-trust span,.beta-chip,.coverage-baseline-status,.coverage-status-source,.health-head-status{border-radius:3px}
+body .trend-rise{border-radius:0;padding-left:10px;clip-path:polygon(6px 0,100% 0,100% 100%,6px 100%,0 50%);font-family:'Space Grotesk',sans-serif}
