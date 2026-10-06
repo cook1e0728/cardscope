@@ -315,7 +315,7 @@
 - 範圍只有 `index.html`、`catalog-layout.css`、`ui-enhancements.js`，不動版面尺寸（CLS 不應變化，未重量）。分支 `55bdcf2`、`204bd8a`；使用者暫不考慮合併 `main`、新資料來源與花錢設定。
 - 加入 meta description、theme-color、Open Graph 文字標籤（沒有 `og:image`：缺正式網站完整網址）；「跳到主要內容」連結與 `main#main`；卡片與系列按鈕 `:active` 回饋；`prefers-reduced-motion` 關閉過場與 hover 位移。
 - 次要文字加深：`--muted` `#777`→`#666`、`#777181`→`#686475`、`#8a8592`→`#6e6a7a`（對比由 3.6–4.5 提升到約 5.2 以上，依公式估算，未在畫面實測）；字型清單明列 PingFang TC／Microsoft JhengHei／Noto Sans TC。
-- 驗證：Node 292/292；本機 `npm start` 確認 meta 與跳過連結會把焦點移到 `main`。App 瀏覽器面板沒有焦點，無法目視確認跳過連結聚焦時的顯示，需用鍵盤 Tab 驗一次。
+- 驗證：Node 292/292；本機 `npm start` 確認 meta 與跳過連結會把焦點移到 `main`。App 瀏覽器面板沒有焦點，無法目視確認跳過連結聚焦時的顯示，需用鍵盤 Tab 驗一次。→ 已驗（2026-10-06，正式站、面板可見）：第一次 Tab 在左上角顯示「跳到主要內容」（有聚焦外框，暫時蓋住標誌左半），Enter 後焦點為 `main#main`、網址 `#main`，下一個 Tab 到「全部遊戲」按鈕。
 - 未做：骨架載入畫面（有重新引入位移的風險）、`z-index` 尺度整理。
 - 筆電環境：Git 2.55、Node 24.19 已安裝，`.env.local` 已建立（權杖由使用者填入）；此專案的 git 作者設為既有的 `cookie`。
 
