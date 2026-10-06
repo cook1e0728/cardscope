@@ -430,6 +430,16 @@
 - 部署 `5782089` 後啟動檢查自動觸發 #105（17:15–17:21 UTC）completed：讀 8,699、寫 25,829。沒有新卡（卡 4,284、printing 8,566 不變，9/7 後官方沒有新系列進卡表），但卡片與 printing 全部被改寫：printing 是官方圖片網址的版本參數（`?260929`）更新，屬正常；卡片則是英文站與繁中站共用卡片 ID，同一次同步先寫英文版再寫繁中版，兩版欄位不同（series_id、aliases、search_text），每次互相覆蓋（最終資料與 9 月相同，無損壞）。修正：英文版卡片延後到繁中版之後，只寫繁中站沒有的卡；英文 printing 跟著延後以確保卡片存在。新增測試，Node 317/317。下一次同步（約 10-09 17:15 UTC 後）`rows_written` 應遠小於 25,829。
 - 其他：`scripts/beta-browser-smoke.mjs` 加入鍵盤焦點、44px、底部導覽、200% 縮放檢查（`2ce4d32`），再加入分享（剪貼簿網址含 `card=`）、最近瀏覽（開系列後重新整理仍在）、慢網路（2.5 秒回應時顯示 `#notice[data-state="loading"]`，完成後解除）、減少動態（轉場 ≤1 ms；一般為 0.18 s，反向確認檢查有效）（`54218c1`）。主方案發布門檻的 Playwright 清單除「篩選／搜尋零結果／缺圖／返回」原本就有外，至此全部涵蓋；本機與 CI 皆通過；`[skip render]` 實測有效（`ce7d854` 未部署）。
 
+### 依序執行 54：資料庫容量回收（2026-10-06 約 17:50–18:05 UTC，桌電，無資料異動）
+
+- 使用者回報 Supabase 後台資料庫 0.428 / 0.5 GB（86%）；免費方案超過上限會轉為唯讀，同步與匯入將失敗。實測 `pg_database_size` 416 MB；`tcg_cards` 138 MB（索引 82 MB）、`tcg_printings` 114 MB。
+- 處理（皆不刪資料、逐一請求、台灣凌晨離峰）：
+  - Migration `20261006180000_drop_unused_search_text_tsvector_index`：移除 `tcg_cards_search_text_idx`（`to_tsvector` 全文索引 19 MB，統計開始 08-25 以來 0 次使用；程式與資料庫函式都沒有 `to_tsvector`），已寫入 schema_migrations。
+  - `VACUUM (FULL, ANALYZE)`：card_images 22→9 MB、tcg_canonical_cards 33→15、tcg_card_names 38→25（各鎖 4–6 秒）。
+  - 大表先逐一 `REINDEX INDEX`（各 2–12 秒，GIN／btree 普遍縮小 35–60%），空間足夠後再 `VACUUM FULL`：tcg_printings 93→83 MB（10 秒）、tcg_cards 93→84 MB（26 秒）。**大表不可在空間緊時直接 VACUUM FULL**：暫存空間等於整表大小，會短暫超過 500 MB。
+- 結果：416 MB → **282 MB**（約 56%）。卡片 72,353 張不變；正式站搜尋、詳細頁、瀏覽皆 200（剛重寫完第一次查詢較慢，例 luffy 23.7 s，之後正常）。後台數字最多約 1 小時後更新。
+- 成因：大量匯入與每次同步的更新留下死列與索引膨脹；自動 vacuum 只讓空間可重用，不會縮小檔案。之後同步已只寫變動列，膨脹會慢很多；若再接近 450 MB，可依同樣順序處理。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
