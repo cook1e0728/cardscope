@@ -454,7 +454,9 @@
 - 示意圖三輪：A 米色＋膠囊＋IP 色（被指出仍像 AI）→ 印刷圖鑑編輯風（使用者：「太像文件」）→ **卡冊風**：遊戲切換為索引分頁籤、IP 主色色帶標頭、卡套雙層框、價格貼紙形稀有度（三級）、Noto Sans TC＋Space Grotesk。使用者要求先在本機看。
 - 預覽分支 `claude/binder-theme-preview`（`7ac4e17`，未合併、未部署）：`theme-binder.css` 最後載入（拿掉該 link 即還原）、`body[data-game]`、卡片 meta 拆成 `.card-no`／`.card-rarity[data-tier]`、Google Fonts。`scripts/preview-proxy.mjs`（launch 名稱 `design-preview`，port 4300）提供本機前端並把 `/api/*` GET 轉到正式站，用真實資料看樣式。教訓：無圖卡以主色填滿會讓寶可夢頁變紅牆，改為紙色底＋主色細帶。
 - 正式站修正（`3940b33`，已部署）：依序執行 49 的全域 `button{min-width:44px}` 取代了 flex 子項的 `min-width:auto`，系列分組按鈕被擠到 44px 文字重疊；改為只對圖示類按鈕（關閉、上下張、底部導覽、收藏、數量、抽屜關閉、商品分類）設最小寬度，全部控制項仍保有 44px 最小高度。冒煙測試與 Node 320/320 通過。
-- 下一步：等使用者看完預覽的回饋再調整；方向確定後才處理其餘膠囊按鈕、字重與文案，並在合併前更新主方案第 5 節的風格規定。
+- 2026-10-06 晚，使用者要求其餘膠囊也改成卡冊風：系列分組、排序、載入更多、搜尋框、狀態標籤改方角，選中狀態用 IP 主色（原規則有 `!important`，主題同樣使用），漲幅數字改價格貼紙形（`a612ab4`）。遊戲頁 999px 膠囊清為 0。
+- **筆電接手看預覽（使用者明天要再觀察）**：`git fetch && git checkout claude/binder-theme-preview && git pull`，再執行 `node scripts/preview-proxy.mjs`，瀏覽器開 http://localhost:4300/?game=pokemon （或 onepiece、yugioh、frieren、haikyuu）。不需要 `.env.local`；資料以唯讀方式取自正式站（正式站若在休眠，第一次要等 30–60 秒）。看完回到 `main`：`git checkout main`。
+- 下一步：依使用者觀察的回饋調整；確定後再處理字重與文案（例如「探索你的卡牌宇宙」），合併前更新主方案第 5 節的風格規定，合併後部署。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
