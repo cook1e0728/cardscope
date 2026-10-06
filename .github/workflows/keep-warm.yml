@@ -1,0 +1,24 @@
+name: Keep production warm
+
+# Render's free plan sleeps after 15 idle minutes and the next visitor waits 30-60 s for a cold start.
+# A light request every 10 minutes keeps the instance (and its catalog caches) awake; one service
+# running all month stays inside the free plan's 750 instance hours. GitHub may delay scheduled runs.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Request the health snapshot
+        run: |
+          for attempt in 1 2 3; do
+            code=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 90 https://cardscope.onrender.com/api/catalog/health) || code=000
+            echo "attempt $attempt: HTTP $code"
+            [ "$code" = 200 ] && exit 0
+            sleep 20
+          done
+          exit 1
