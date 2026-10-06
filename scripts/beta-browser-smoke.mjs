@@ -324,6 +324,56 @@ async function runViewport(browser,viewport){
   }
 }
 
+// Release-gate items the viewport pass does not reach: share, recently viewed series, a slow network and reduced motion.
+async function runPhaseTwoChecks(browser){
+  const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+  const state=makeFixtureState(fixtureCatalog()),pageErrors=[];
+  page.on('pageerror',error=>pageErrors.push(error.message));
+  await installFixtures(page,state);
+  try{
+    // Share copies the permanent card URL.
+    await page.context().grantPermissions(['clipboard-read','clipboard-write'],{origin:baseUrl});
+    const cardId=state.catalog.cards.find(card=>card.game==='onepiece').id;
+    await page.goto(`${baseUrl}/?game=onepiece&card=${encodeURIComponent(cardId)}`,{waitUntil:'domcontentloaded'});
+    const share=page.locator('#modal.open [data-share-card]');
+    await waitForVisible(share,'share button missing on a permanent card URL');
+    await share.click();
+    await page.waitForFunction(()=>document.querySelector('[data-share-card]')?.textContent==='已複製分享網址',undefined,{timeout:5000});
+    const copied=new URL(await page.evaluate(()=>navigator.clipboard.readText()));
+    assert.equal(copied.searchParams.get('card'),cardId,'shared URL should point at the open card');
+    await page.keyboard.press('Escape');
+
+    // Recently viewed: opening a series is remembered across a reload.
+    await clickIp(page,'pokemon');
+    await retryBrowse(page);
+    await waitForGame(page,'pokemon');
+    const seriesCard=page.locator('#series .series-card').first();
+    await waitForVisible(seriesCard,'series navigation did not render a series card');
+    await seriesCard.click();
+    await page.reload({waitUntil:'domcontentloaded'});
+    await waitForVisible(page.locator('#series .recent-series-details'),'recently viewed series did not survive a reload');
+
+    // Slow network: a 2.5 s browse response shows a loading state, then the cards.
+    await page.route('**/api/cards?*',async route=>{await sleep(2500);await route.fallback()});
+    await clickIp(page,'onepiece');
+    await waitForVisible(page.locator('#notice[data-state="loading"]'),'slow browse showed no loading state');
+    await waitForGame(page,'onepiece');
+    await page.waitForFunction(()=>document.querySelector('#notice')?.dataset.state!=='loading',undefined,{timeout:5000});
+    assert.equal(pageErrors.length,0,`phase-two page errors: ${pageErrors.join('; ')}`);
+  }finally{await page.close()}
+
+  // Reduced motion removes transitions.
+  const calm=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
+  try{
+    await installFixtures(calm,makeFixtureState(fixtureCatalog()));
+    await calm.goto(baseUrl,{waitUntil:'domcontentloaded'});
+    await waitForVisible(calm.locator('#channels .channel').first(),'reduced motion: IP navigation did not render');
+    const durations=await calm.locator('#channels .channel').first().evaluate(item=>getComputedStyle(item).transitionDuration.split(',').map(value=>parseFloat(value)*(value.trim().endsWith('ms')?1:1000)));
+    assert.ok(durations.every(ms=>ms<=1),`reduced motion: channel transitions still run (${durations.join(', ')} ms)`);
+  }finally{await calm.close()}
+  return {viewport:'phase-two',checks:['share','recent','slow-network','reduced-motion']};
+}
+
 const launchOptions={headless:true};
 if(requestedChannel)launchOptions.channel=requestedChannel;
 let browser;
@@ -338,6 +388,7 @@ try{
 try{
   const results=[];
   for(const viewport of viewports)results.push(await runViewport(browser,viewport));
+  results.push(await runPhaseTwoChecks(browser));
   // 200% zoom on a 1280x800 screen: the header scrolls away and nothing overflows sideways.
   const zoomed=await browser.newPage({viewport:{width:640,height:400},deviceScaleFactor:1});
   try{
