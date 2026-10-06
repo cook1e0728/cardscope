@@ -1,0 +1,48 @@
+/* Binder theme (preview): warm paper, one colour per IP, game switch as binder index tabs, cards in sleeves,
+   rarity as sticker labels. Loaded last so removing this file restores the previous look. */
+:root{--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff}
+body[data-game="pokemon"]{--ip:#C8321A;--ip-2:#F2C230}
+body[data-game="onepiece"]{--ip:#1D3F8C;--ip-2:#E0B84C}
+body[data-game="yugioh"]{--ip:#4B2E83;--ip-2:#C9A227}
+body[data-game="frieren"],body[data-game="weiss-schwarz"]{--ip:#2F6B5F;--ip-2:#E9D9A6}
+body[data-game="haikyuu"]{--ip:#D85F1C;--ip-2:#2B2620}
+
+body{background:var(--paper);color:var(--ink);font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif}
+.top{background:var(--paper-2);border-bottom:1px solid var(--rule)}
+main .section,main .hero{background:transparent}
+.card-tools{background:#F3EEE3f2;border:1px solid var(--rule)}
+main .section{border-color:var(--rule)}
+h1,h2,.title h2,.title b{letter-spacing:-0.02em}
+
+/* Game pages: IP pills become binder index tabs sitting on the coloured band below them. */
+body[data-view="game"] .channels{gap:3px;padding:6px 0 0;overflow-x:auto}
+body[data-view="game"] .channel{border-radius:7px 7px 0 0;border:1px solid var(--rule);border-bottom:0;background:#E6E0D2;color:var(--ink-2);padding:0 16px;min-height:44px}
+body[data-view="game"] .channel b{font-weight:500}
+body[data-view="game"] .channel.on{background:var(--ip);border-color:var(--ip);color:var(--ip-on)}
+body[data-view="game"] .channel.on b{font-weight:700}
+body[data-view="game"] #gameContext{position:relative;overflow:hidden;margin:0;padding:18px 18px 16px;border:0;border-radius:0 10px 10px 10px;background:var(--ip);color:var(--ip-on)}
+body[data-view="game"] #gameContext:after{content:"";position:absolute;right:-40px;top:-60px;width:200px;height:200px;border-radius:50%;background:var(--ip-2);opacity:.9;pointer-events:none}
+body[data-view="game"] #gameContext .game-context-kicker{color:inherit;opacity:.85;font-family:'Space Grotesk',sans-serif;letter-spacing:.08em;position:relative;z-index:1}
+body[data-view="game"] #gameContext b{position:relative;z-index:1;color:inherit;font-size:26px;font-weight:900;letter-spacing:-0.02em}
+
+/* Cards in sleeves: a white outer sleeve and an inner frame around the art. */
+.cards .card{background:#fff;border:1px solid #DDD5C4;border-radius:6px;padding:6px 6px 8px;box-shadow:none}
+.cards .card .art{border:1px solid #E9E3D6;border-radius:3px;padding:3px;background:#fff}
+.cards .card .art img{border-radius:2px}
+.cards .card h3{font-weight:700;letter-spacing:-0.01em}
+body[data-view="game"] .cards .card .ip-badge{display:none}
+/* Most cards still have no public image, so the stand-in stays quiet: paper with a thin IP-colour band. */
+.unified-image-fallback{background:#F3EEE3!important;color:var(--ink-2)!important;border:0!important;background-image:none!important;box-shadow:inset 0 6px 0 var(--ip)}
+.unified-image-fallback b{font-weight:700;color:var(--ink)!important}
+.unified-image-fallback small{color:var(--ink-2)!important}
+
+/* Card number in a geometric face; rarity as a price-sticker label in three tiers. */
+.card-no{font-family:'Space Grotesk',sans-serif;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.card .meta{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.card-sep{display:none}
+.card-rarity{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;padding:1px 7px 1px 9px;clip-path:polygon(5px 0,100% 0,100% 100%,5px 100%,0 50%);background:#E6E0D2;color:#4A443A;white-space:nowrap}
+.card-rarity[data-tier="top"]{background:#C9A227;color:#2B2105}
+.card-rarity[data-tier="high"]{background:#B8BCC4;color:#22252A}
+
+/* Fewer pills: square-ish controls in the binder look. */
+.view-switch button,.tabs .tab,.filter-sheet-toggle,.chip,.badge{border-radius:6px}

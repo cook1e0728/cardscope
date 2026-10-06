@@ -6,7 +6,7 @@ const [html,css,ui]=await Promise.all(['../index.html','../catalog-layout.css','
 
 test('game pages are marked before first paint and kept in sync by render',()=>{
   assert.ok(html.indexOf("document.body.dataset.view=")<html.indexOf('class="skip-link"'),'the view is set before any content paints');
-  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)document\.body\.dataset\.view=gameView\?'game':'landing';placeTrends\(gameView\);/);
+  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)\{document\.body\.dataset\.view=gameView\?'game':'landing';document\.body\.dataset\.game=game\}placeTrends\(gameView\);/);
 });
 
 test('game pages open on series and cards; the landing keeps its introduction',()=>{

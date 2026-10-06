@@ -124,12 +124,14 @@ function cardActionsMarkup(card){
   return `<div class="card-actions" data-action="card-actions"><button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="${id}" aria-pressed="${favorite}" aria-label="${favorite?'取消收藏':'加入收藏'}" title="${favorite?'取消收藏':'加入收藏'}">${favorite?'★':'☆'}</button><div class="watchlist-inline" data-action="watchlist" aria-label="追蹤清單數量"><button type="button" data-watch-decrement="${id}" aria-label="減少數量"${quantity?'':' disabled'}>−</button><span data-watch-quantity="${id}">${quantity}</span><button type="button" data-watch-increment="${id}" aria-label="增加數量">＋</button></div></div>`;
 }
 
+// Three sticker tiers for the binder theme: top (SAR/UR/SEC…), high (SR/AR/RRR…), and everything else.
+function rarityTier(label){const code=String(label||'').trim().toUpperCase();if(/^(SAR|UR|SEC|HR|SSR|MA|CSR|SP|SSP|OFR|BSR|MUR|ACE)/.test(code))return 'top';if(/^(SR|AR|RRR|CHR|K|L|PR|S)/.test(code))return 'high';return 'base'}
 function cardMarkup(card){
   const source=image(card),price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),region=rn(card.region||card.printings?.[0]?.region),gameLabel=cardGameLabel(card),picture=resilientImage(source,name(card),'這張卡尚未收錄可公開顯示的圖片',cardWatermarkOptions(card,source)),id=e(card.id),priceMarkup=cardPriceLabel(price);
   const openLabel=`開啟${name(card)}的卡片詳細資料`;
   const openControl=`<button type="button" class="card-open-hit" data-card-open="${id}" aria-label="${e(openLabel)}"></button>`;
   if(cardViewMode==='list')return `<article class="card card-list">${openControl}<div class="art">${picture}</div><div class="card-list-main"><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${e(rarity)}</span><span class="badge">${e(region)}</span>${priceMarkup?`<strong>${priceMarkup}</strong>`:'<span class="meta">可靠價格待補</span>'}</div>${cardActionsMarkup(card)}</article>`;
-  return `<article class="card">${openControl}<div class="art">${picture}</div><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta">${e(number)} · ${e(rarity)}</div>${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}<span class="badge">${e(region)}</span>${cardActionsMarkup(card)}</article>`;
+  return `<article class="card">${openControl}<div class="art">${picture}</div><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3><div class="meta"><span class="card-no">${e(number)}</span><span class="card-sep"> · </span><span class="card-rarity" data-tier="${rarityTier(rarity)}">${e(rarity)}</span></div>${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}<span class="badge">${e(region)}</span>${cardActionsMarkup(card)}</article>`;
 }
 
 function activateCardActions(root=$('cards')){
