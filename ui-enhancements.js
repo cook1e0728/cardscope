@@ -492,6 +492,16 @@ installDetailModalAccessibility();
 installViewToggle();
 installCardUtilities();
 if(currentCardRows.length)cards(currentCardRows,true);
+// Phone bottom bar: jump to sections that already exist on the page (探索 also focuses the search box).
+document.querySelectorAll('nav.bottom [data-jump]').forEach(button=>{button.onclick=()=>{
+  const behavior=matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
+  if(button.dataset.jump==='q'){scrollTo({top:0,behavior});$('q')?.focus({preventScroll:true});return}
+  const target=$(button.dataset.jump)?.getClientRects().length?$(button.dataset.jump):button.dataset.jump==='cardTools'?$('cards'):null;
+  target?.scrollIntoView({block:'start',behavior});
+}});
+// The watchlist only exists inside a game's card view; hide 我的 while there is nothing to jump to.
+const bottomWatchlist=document.querySelector('nav.bottom [data-jump="watchlistSummary"]');
+if(bottomWatchlist&&$('cardTools')&&typeof ResizeObserver==='function')new ResizeObserver(()=>{bottomWatchlist.hidden=!$('watchlistSummary')?.getClientRects().length}).observe($('cardTools'));
 // Return focus to the tile of the card last shown (arrow keys can move past the one that was opened).
 window.installDialogFocus?.($('modal'),{initialFocus:()=>$('close'),returnTarget:()=>detailReturnCardId&&[...document.querySelectorAll('[data-card-open]')].find(item=>item.dataset.cardOpen===String(detailReturnCardId))});
 

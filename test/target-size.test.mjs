@@ -14,3 +14,17 @@ test('the tall card filter bar does not stick over cards on phones',()=>{
   const phone=css.match(/@media\(max-width:760px\)\{\.game-context[^\n]*/)[0];
   assert.match(phone,/\.card-tools\{position:static\}/);
 });
+
+test('phone bottom bar buttons jump to existing sections instead of doing nothing',async()=>{
+  const [html,ui]=await Promise.all(['../index.html','../ui-enhancements.js'].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
+  const bar=html.match(/<nav class="bottom"[^]*?<\/nav>/)[0];
+  assert.match(bar,/aria-label="快速跳轉"/);
+  assert.deepEqual([...bar.matchAll(/data-jump="([^"]+)"/g)].map(match=>match[1]),['q','cardTools','coverageStatus','watchlistSummary']);
+  assert.equal((bar.match(/<button/g)||[]).length,4,'every bar button has a destination');
+  for(const id of ['q','cardTools','coverageStatus','watchlistSummary'])assert.ok(html.includes(`id="${id}"`)||ui.includes(`id='${id}'`)||ui.includes(`id="${id}"`)||ui.includes(`.id='${id}'`),`${id} exists`);
+  assert.match(ui,/nav\.bottom \[data-jump\]/);
+});
+
+test('short viewports (200% zoom, landscape phones) do not pin the header',()=>{
+  assert.match(css,/@media\(max-height:500px\)\{\.top\{position:static\}/);
+});

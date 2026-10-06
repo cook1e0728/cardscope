@@ -197,3 +197,7 @@ main:focus{outline:none}
 button,select,summary,input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),.brand{min-height:44px}
 button{min-width:44px}
 summary{box-sizing:border-box;align-content:center}
+/* Bottom-bar jumps land below the sticky header on phones. */
+@media(max-width:760px){#cardTools,#cards,#coverageStatus,#watchlistSummary{scroll-margin-top:130px}}
+/* At 200% zoom or on a landscape phone the sticky header plus the fixed bottom bar hid about half the screen. */
+@media(max-height:500px){.top{position:static}#cardTools,#cards,#coverageStatus,#watchlistSummary{scroll-margin-top:8px}}
