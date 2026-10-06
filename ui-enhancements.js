@@ -395,6 +395,38 @@ openCard=async function(id){
 };
 window.openCard=openCard;
 
+// Phones: the filter selects move into a bottom sheet (BottleNeko pattern). Choices wait for 套用; ×, the
+// backdrop and Escape put back what was there. On wider screens the wrapper is display:contents, so nothing moves.
+function installFilterSheet(){
+  const tools=$('cardTools');if(!tools||$('filterSheet'))return;
+  const selects=['rarityFilter','priceFilter','cardSort'].map(id=>$(id)).filter(Boolean),fields=selects.map(select=>select.closest('.filter-field')).filter(Boolean);if(!fields.length)return;
+  const sheet=document.createElement('div');sheet.id='filterSheet';sheet.className='filter-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-labelledby','filterSheetTitle');
+  sheet.innerHTML='<div class="filter-sheet-head"><b id="filterSheetTitle">篩選與排序</b><button type="button" class="filter-sheet-close" aria-label="取消篩選變更">×</button></div><div class="filter-sheet-body"></div><button type="button" class="filter-sheet-apply">套用</button>';
+  const body=sheet.querySelector('.filter-sheet-body'),backdrop=document.createElement('div');backdrop.className='filter-sheet-backdrop';
+  fields[0].before(sheet);fields.forEach(field=>body.append(field));const favorites=$('favoritesOnly');if(favorites)body.append(favorites);sheet.after(backdrop);
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='filter-sheet-toggle';toggle.setAttribute('aria-haspopup','dialog');sheet.before(toggle);
+  const optionText=select=>select.selectedOptions?.[0]?.textContent?.trim()||'';
+  const summarize=()=>{toggle.innerHTML=`<b>篩選與排序</b><span>${selects.map(optionText).filter(Boolean).map(e).join('・')}</span>`};
+  let snapshot=null,applying=false;
+  const isOpen=()=>sheet.classList.contains('open'),phone=()=>matchMedia('(max-width:760px)').matches;
+  const open=()=>{snapshot=selects.map(select=>select.value);sheet.classList.add('open');backdrop.classList.add('open');document.body.classList.add('filter-sheet-open')};
+  const close=revert=>{if(revert&&snapshot)selects.forEach((select,index)=>{select.value=snapshot[index]});snapshot=null;sheet.classList.remove('open');backdrop.classList.remove('open');document.body.classList.remove('filter-sheet-open');summarize()};
+  // While the sheet is open, hold each change at the sheet so the grid does not reload per select.
+  sheet.addEventListener('change',event=>{if(applying||!isOpen()||!selects.includes(event.target))return;event.stopPropagation();summarize()},true);
+  const apply=()=>{const before=snapshot||[];close(false);applying=true;try{selects.forEach((select,index)=>{if(select.value!==before[index])select.dispatchEvent(new Event('change',{bubbles:true}))})}finally{applying=false}summarize()};
+  toggle.onclick=()=>{if(phone())open()};
+  sheet.querySelector('.filter-sheet-close').onclick=()=>close(true);
+  sheet.querySelector('.filter-sheet-apply').onclick=apply;
+  backdrop.onclick=()=>close(true);
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&isOpen()){event.preventDefault();close(true)}});
+  // Filters can also change from the URL, a game switch or a reset; keep the summary current.
+  // (Observe only the selects' options; the toggle lives inside the tools, so observing them would loop.)
+  const optionsChanged=new MutationObserver(summarize);selects.forEach(select=>{select.addEventListener('change',summarize);optionsChanged.observe(select,{childList:true,subtree:true})});
+  window.refreshFilterSummary=summarize;
+  window.installDialogFocus?.(sheet,{initialFocus:()=>selects[0],returnTarget:()=>toggle});
+  summarize();
+}
+
 function installFeatureTour(){
   if($('cardscopeFeatureTour'))return;
   const section=document.createElement('details');section.id='cardscopeFeatureTour';section.className='feature-tour section';section.setAttribute('aria-label','CardScope 使用說明');
@@ -491,6 +523,7 @@ installRarityOptionMemory();
 installDetailModalAccessibility();
 installViewToggle();
 installCardUtilities();
+installFilterSheet();
 if(currentCardRows.length)cards(currentCardRows,true);
 // Phone bottom bar: jump to sections that already exist on the page (探索 also focuses the search box).
 document.querySelectorAll('nav.bottom [data-jump]').forEach(button=>{button.onclick=()=>{

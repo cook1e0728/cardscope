@@ -201,3 +201,32 @@ summary{box-sizing:border-box;align-content:center}
 @media(max-width:760px){#cardTools,#cards,#coverageStatus,#watchlistSummary{scroll-margin-top:130px}}
 /* At 200% zoom or on a landscape phone the sticky header plus the fixed bottom bar hid about half the screen. */
 @media(max-height:500px){.top{position:static}#cardTools,#cards,#coverageStatus,#watchlistSummary{scroll-margin-top:8px}}
+/* Game pages open on series and cards (the kapaipai / BottleNeko pattern); the all-games landing keeps the introduction.
+   data-view is set from the URL before first paint and kept in sync by render(), so nothing jumps. */
+body[data-view="game"] .hero-intro,body[data-view="game"] .hero-trust,body[data-view="game"] #gameContext small,body[data-view="game"] .browse-regions>span{display:none}
+body[data-view="game"] .channels{gap:8px;padding:4px 0 6px}
+body[data-view="game"] .channels:empty{min-height:54px}
+body[data-view="game"] .channel{min-width:0;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:#fff;white-space:nowrap}
+body[data-view="game"] .channel-art{display:none}
+body[data-view="game"] .channel b{margin:0;font-size:13px}
+body[data-view="game"] .channel.on{border:2px solid #6555a1;background:#f4f0ff;color:#3d3270}
+body[data-view="game"] #trendsSection:empty{display:none}
+/* Filter sheet: invisible wrapper on wide screens; a bottom sheet with a summary toggle on phones. */
+.filter-sheet{display:contents}.filter-sheet-head,.filter-sheet-apply,.filter-sheet-toggle,.filter-sheet-backdrop{display:none}
+.filter-sheet-body{display:contents}
+@media(max-width:760px){
+  .filter-sheet-toggle{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:8px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;text-align:left}
+  .filter-sheet-toggle b{font-size:14px}.filter-sheet-toggle span{font-size:12px;color:#666;overflow-wrap:anywhere}
+  .filter-sheet{display:none}
+  .filter-sheet.open{display:flex;flex-direction:column;position:fixed;left:0;right:0;bottom:0;z-index:9;max-height:85dvh;padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-radius:18px 18px 0 0;background:#fff;box-shadow:0 -8px 30px #0003}
+  .filter-sheet.open .filter-sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .filter-sheet.open .filter-sheet-head b{font-size:16px}
+  .filter-sheet-close{border:0;background:#f2f2f2;border-radius:50%;font-size:20px}
+  .filter-sheet.open .filter-sheet-body{display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+  .filter-sheet.open .filter-sheet-body .filter-field{min-width:0;width:100%}
+  .filter-sheet.open .filter-sheet-apply{display:block;margin-top:14px;border:0;border-radius:12px;background:var(--ink);color:#fff;font-weight:800}
+  .filter-sheet-backdrop.open{display:block;position:fixed;inset:0;z-index:8;background:#0006}
+  body.filter-sheet-open{overflow:hidden}
+  /* backdrop-filter would make the tools the containing block of the fixed sheet. */
+  .card-tools{backdrop-filter:none}
+}

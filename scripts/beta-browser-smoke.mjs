@@ -226,10 +226,18 @@ async function runViewport(browser,viewport){
     await waitForGame(page,'pokemon');
 
     const rarityFilter=page.locator('#rarityFilter');
-    await waitForVisible(rarityFilter,`${viewport.name} rarity filter missing`);
+    // Phones keep the selects in a bottom sheet: open it, choose, then 套用.
+    const phone=viewport.width<=760;
+    const chooseRarity=async value=>{
+      if(phone){await page.locator('.filter-sheet-toggle').click();await waitForVisible(page.locator('#filterSheet.open'),`${viewport.name} filter sheet did not open`)}
+      await rarityFilter.selectOption(String(value));
+      if(phone)await page.locator('#filterSheet .filter-sheet-apply').click();
+    };
+    if(phone){await page.locator('.filter-sheet-toggle').click();await waitForVisible(rarityFilter,`${viewport.name} rarity filter missing`);await page.locator('#filterSheet .filter-sheet-close').click()}
+    else await waitForVisible(rarityFilter,`${viewport.name} rarity filter missing`);
     const srValue=await rarityFilter.locator('option').evaluateAll(options=>options.find(option=>option.value==='SR'||/^SR(?:\b|（)/.test(option.textContent||''))?.value);
     assert.ok(srValue,`${viewport.name} fixture should expose an SR rarity option`);
-    await rarityFilter.selectOption(String(srValue));
+    await chooseRarity(srValue);
     try{
       await page.waitForFunction(()=>{const text=document.querySelector('#cards')?.textContent||'';return /SR 測試卡/.test(text)&&!/C 測試卡/.test(text)},undefined,{timeout:8000});
     }catch(error){
@@ -239,7 +247,7 @@ async function runViewport(browser,viewport){
     assert.equal(await page.locator('#cards .card').count(),1,`${viewport.name} rarity filter should leave one card`);
     await page.waitForFunction(()=>new URL(location.href).searchParams.get('rarity')==='SR');
     assert.equal(new URL(page.url()).searchParams.get('game'),'pokemon');
-    await rarityFilter.selectOption('all');
+    await chooseRarity('all');
     await waitForGame(page,'pokemon');
 
     // Open the deliberately broken-image card. Market and reports are both
