@@ -390,6 +390,13 @@
 - 驗證：本機以真實按鍵測開啟→焦點在關閉鈕、Shift+Tab 到最後一個控制項再 Tab 回關閉鈕、方向鍵換卡→放大→Escape 只關放大→Escape 關詳細並回到該卡。部署 `564a4ec` 後正式站搜尋「噴火龍」開第一張卡：焦點在關閉鈕、Escape 後焦點回到 `pokemon-official-ja-dp3-c3021` 卡片、網址移除 `card`。
 - 桌電本機產物：`.claude/launch.json`（App 瀏覽器預覽用，未追蹤）。
 
+### 依序執行 49：44px 觸控區與手機篩選列（2026-10-06，桌電，已部署）
+
+- 主方案第 5 節要求操作區至少 44×44px。正式站量測（桌機 1024、手機 375）不足者：搜尋框／搜尋鈕／遊戲選單 42、版本選單 35、詳細視窗關閉鈕 36×36、上一張／下一張 38×38、詳細分頁鈕 41、「我的」36 寬、首頁按鈕 31–40、`summary` 展開列 22、「複製勘誤模板」38（有一條 `min-height:36px`）、跳過連結 42。段落中的文字連結屬 WCAG 2.5.8 例外，不動。
+- 修正（`catalog-layout.css` 末尾）：`button,select,summary,input(非核取／單選／滑桿),.brand` 最小高 44、`button` 最小寬 44（min-* 只放大，既有固定尺寸當下限）；`summary` 文字垂直置中；`.beta-report button` 36→44；跳過連結 padding 10→12。
+- 既有問題：手機上 `.card-tools`（篩選工具列）sticky 在 `top:108px`、高約 270px，蓋住半個畫面，關閉詳細視窗後焦點回到的卡片被遮住（WCAG 2.2 的 2.4.11）。手機寬度改為 `position:static`；桌機仍 sticky（173px，約畫面 19%）。新增 `test/target-size.test.mjs`，Node 311/311。
+- 部署 `98ccd7a` 後正式站首頁：手機與桌機可見的按鈕／輸入框／選單／summary 全部 ≥44px、無橫向溢出、CLS 0（App 面板內量測，交接先前提過面板內 CLS 不一定準）。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
