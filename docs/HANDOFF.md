@@ -376,6 +376,11 @@
 - 正式庫整批回滾測試通過後，使用者決定套用：migration `20261006000000_pokemon_jp_official_unnumbered_series`、`20261006000100_tcg_cards_number_check_validate`；DP1 124、DP2 145、DP3 146、DP4 163、DP5 154，共 732 張（無卡號、`numberStatus: not-printed`、Provider ID 為官方詳細頁 ID）；中文名推導 603。分支 `claude/dp-unnumbered` 合併 `main`。
 - 正式站（部署 `d5a0866`）：`/api/cards?series=pokemon-official-ja-dp1` 124 張、帶 `numberStatus: not-printed`；詳細頁 `pokemon-official-ja-dp1-c1013`「土台龜｜ドダイトス」。發現伺服器排序在卡號皆空時退回以 ID 排序（第一張變ヘラクロス）；修正為未印卡號的卡同序時保留 RPC 傳回的官方清單順序（分支 `claude/dp-list-order`，新增測試，Node 304/304；部署 `229c3b0` 後確認 DP1 依序為ドダイトス、ゴウカザル、エンペルト）。
 
+### 依序執行 47：搜尋逾時不再連鎖退回（2026-10-06）
+
+- Render 日誌（工作區 My Workspace、服務 `cardscope` srv-da8eanrtqb8s739vcosg，唯讀查詢）：10-03、10-04、10-05 各有一次 `search_cards_ranked` 逾時（57014 或 12 s fetch 逾時），伺服器接著退回 `search_cards_with_siblings`、PostgREST 名稱查詢與 printing 嵌入，各自又逾時，單次搜尋拖到 30 s 以上並加重資料庫負擔；`search printing embed failed` 只出現在這種連鎖中。另：`cardscope-1`（Singapore）已由使用者停用；正式服務最後一次重啟為 10-05 19:38 UTC，之後未重啟，所以 pokemontcg 雖已到期仍未同步。
+- 修正（照建議）：退回只用於舊資料庫（函式不存在、格式不符）；逾時（57014、statement timeout、TimeoutError）直接放棄資料庫搜尋，`/api/search` 改用已載入的目錄並標示 `databaseSearch: unavailable`。新增測試（逾時不呼叫其他路徑、函式不存在仍退回），Node 305/305。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 工作方式（使用者 2026-10-04 指示，記憶只存在筆電，換機以本段為準）：決策以 grill-with-docs 形式列出設計樹與建議，**不等回覆、直接照建議執行**，寫成 ADR／詞彙表；每個段落完成即 commit、push、快轉合併 `main` 並驗正式站。啟用新資料來源、花錢的設定仍需先問。

@@ -757,3 +757,18 @@ test('a repeated search within a minute is answered from the search cache',async
   assert.match(responses[1].headers.get('server-timing')||'',/cache;desc="hit"/);
   assert.equal(requests.filter(([table])=>table==='search_cards_with_siblings').length,1);
 });
+
+test('a timed-out ranked search does not chain into the heavier fallback queries',async()=>{
+  const timedOut=await searchWithMock((table,params,respond)=>{
+    if(table==='search_cards_ranked')return respond({code:'57014',details:null,hint:null,message:'canceling statement due to statement timeout'},500);
+    return respond([]);
+  },'測試獸');
+  assert.equal(timedOut.requests.filter(([table,params])=>table==='search_cards_with_siblings'||(table==='tcg_cards'&&params.has('or'))).length,0);
+  assert.equal(timedOut.body.meta.databaseSearch,'unavailable');
+  const missing=await searchWithMock((table,params,respond)=>{
+    if(table==='search_cards_ranked')return respond({code:'PGRST202',message:'Could not find the function'},404);
+    if(table==='search_cards_with_siblings')return respond({hits:[],siblings:[]});
+    return respond([]);
+  },'測試獸');
+  assert.equal(missing.requests.filter(([table])=>table==='search_cards_with_siblings').length,1,'a missing function still falls back');
+});

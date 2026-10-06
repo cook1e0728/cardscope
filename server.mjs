@@ -729,21 +729,25 @@ function recallSearch(key){const hit=searchCache.get(key);if(!hit)return null;se
 function rememberSearch(key,body){searchCache.delete(key);searchCache.set(key,{at:Date.now(),body});while(searchCache.size>SEARCH_CACHE_MAX)searchCache.delete(searchCache.keys().next().value)}
 const SEARCH_CANDIDATE_LIMIT=100;
 const SEARCH_RESULT_LIMIT=40;
+// The fallbacks below exist for older databases (function missing, unexpected shape). A timeout means the
+// database is busy, and the heavier fallback queries would only time out in turn (seen chaining to 30 s+
+// in the Render logs); give up so /api/search answers from the loaded catalog with databaseSearch 'unavailable'.
+const searchTimedOut=error=>/57014|statement timeout|aborted due to timeout|TimeoutError/i.test(`${error?.name||''} ${error?.message||error||''}`);
 async function searchCatalogDatabase(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT){
   if(!supabaseConfigured())return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
   const mapped=externalAliasIndex.get(normalizeSearch(rawQuery))?.query,terms=[rawQuery,mapped].filter(Boolean).map(postgrestLike).filter(Boolean).flatMap(term=>[term,...sourceMarkupTerms(term)]);if(!terms.length)return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
   // Card queries embed their printings to save a round trip; if the embed is rejected, fall back to the plain select and a separate printing fetch.
   const plainSelect='id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,searchText:search_text';let select=`${plainSelect},printings:tcg_printings!tcg_printings_card_id_fkey(${BROWSE_PRINTING_SELECT})`;
-  const cardsFetch=async params=>{try{return await supabaseFetch(`/tcg_cards?${new URLSearchParams({select,...params})}`)}catch(error){if(select===plainSelect)throw error;console.error('search printing embed failed; retrying without it',error.message);select=plainSelect;return supabaseFetch(`/tcg_cards?${new URLSearchParams({select,...params})}`)}};
+  const cardsFetch=async params=>{try{return await supabaseFetch(`/tcg_cards?${new URLSearchParams({select,...params})}`)}catch(error){if(select===plainSelect||searchTimedOut(error))throw error;console.error('search printing embed failed; retrying without it',error.message);select=plainSelect;return supabaseFetch(`/tcg_cards?${new URLSearchParams({select,...params})}`)}};
   // Per-step durations for the Server-Timing header (search latency budget, PRODUCT_PLAN release gate).
   const timings={},timed=async(name,work)=>{const started=performance.now();try{return await work}finally{timings[name]=Math.round((timings[name]||0)+performance.now()-started)}};
   const query=columns=>{const filters=[];for(const term of terms)for(const column of columns)filters.push(`${column}.ilike.*${term}*`);return cardsFetch({or:`(${filters.join(',')})`,limit:String(SEARCH_CANDIDATE_LIMIT)})};
   // One round trip: search_cards_ranked ranks in SQL and returns only the best `limit` canonical groups with trimmed fields;
   // older databases fall back to search_cards_with_siblings (100 unranked hits + siblings), then to two PostgREST queries.
   const patterns=terms.map(term=>`%${term}%`);
-  let ranked=null;try{ranked=await timed('rpc',supabaseFetch('/rpc/search_cards_ranked',{method:'POST',body:JSON.stringify({p_patterns:patterns,p_needles:terms,p_limit:limit,p_region:region==='ALL'?null:region})}))}catch(error){console.error('search ranked rpc failed; trying search_cards_with_siblings',error.message)}
+  let ranked=null;try{ranked=await timed('rpc',supabaseFetch('/rpc/search_cards_ranked',{method:'POST',body:JSON.stringify({p_patterns:patterns,p_needles:terms,p_limit:limit,p_region:region==='ALL'?null:region})}))}catch(error){if(searchTimedOut(error))throw error;console.error('search ranked rpc failed; trying search_cards_with_siblings',error.message)}
   const viaRanked=Boolean(ranked&&Array.isArray(ranked.cards)&&Number.isFinite(Number(ranked.matchCount))),rankedHits=viaRanked&&ranked.cards.length>0;
-  let rpc=null;if(!viaRanked){try{rpc=await timed('rpc',supabaseFetch('/rpc/search_cards_with_siblings',{method:'POST',body:JSON.stringify({p_patterns:patterns,p_limit:SEARCH_CANDIDATE_LIMIT})}))}catch(error){console.error('search rpc failed; using PostgREST queries',error.message)}}
+  let rpc=null;if(!viaRanked){try{rpc=await timed('rpc',supabaseFetch('/rpc/search_cards_with_siblings',{method:'POST',body:JSON.stringify({p_patterns:patterns,p_limit:SEARCH_CANDIDATE_LIMIT})}))}catch(error){if(searchTimedOut(error))throw error;console.error('search rpc failed; using PostgREST queries',error.message)}}
   const viaRpc=Boolean(rpc&&Array.isArray(rpc.hits)&&Array.isArray(rpc.siblings));
   let cards=rankedHits?ranked.cards.map(({hit,...card})=>card):viaRanked?[]:viaRpc&&rpc.hits.length?rpc.hits:viaRpc?[]:await timed('names',query(['name_zh','name_ja','name_en','name_ko','official_card_number'])),matchedSeries=rankedHits&&ranked.matchedBy==='series'?Number(ranked.matchedSeries)||1:0;
   // search_cards_ranked already tried search_text (when it reports matchedBy) and series names (matchedSeries); cards it matched but the region filter removed end the search.
