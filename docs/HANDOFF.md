@@ -380,9 +380,11 @@
 
 - Render 日誌（工作區 My Workspace、服務 `cardscope` srv-da8eanrtqb8s739vcosg，唯讀查詢）：10-03、10-04、10-05 各有一次 `search_cards_ranked` 逾時（57014 或 12 s fetch 逾時），伺服器接著退回 `search_cards_with_siblings`、PostgREST 名稱查詢與 printing 嵌入，各自又逾時，單次搜尋拖到 30 s 以上並加重資料庫負擔；`search printing embed failed` 只出現在這種連鎖中。另：`cardscope-1`（Singapore）已由使用者停用；正式服務最後一次重啟為 10-05 19:38 UTC，之後未重啟，所以 pokemontcg 雖已到期仍未同步。
 - 修正（照建議）：退回只用於舊資料庫（函式不存在、格式不符）；逾時（57014、statement timeout、TimeoutError）直接放棄資料庫搜尋，`/api/search` 改用已載入的目錄並標示 `databaseSearch: unavailable`。新增測試（逾時不呼叫其他路徑、函式不存在仍退回），Node 305/305。
+- 部署 `7bdcaf0` 重啟後觸發已到期的 pokemontcg 同步 #103（13:55–14:03 UTC）：completed，`rows_written` 77,340 → 16,058（約少 79%，依序執行 38 驗收通過）。仍有約 1.6 萬列每次被判定有變動，可能是某些欄位的型別或格式比較不一致（例如數值、日期、jsonb 內容），可查哪些欄位造成差異以再降低。ygoprodeck 約 10-06 22:45 UTC 後的第一次重啟才會到期。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
+- 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
 - 工作方式（使用者 2026-10-04 指示，記憶只存在筆電，換機以本段為準）：決策以 grill-with-docs 形式列出設計樹與建議，**不等回覆、直接照建議執行**，寫成 ADR／詞彙表；每個段落完成即 commit、push、快轉合併 `main` 並驗正式站。啟用新資料來源、花錢的設定仍需先問。
 - 新機器準備見 `docs/CROSS_DEVICE_SETUP.md`；本機直連資料庫需 `.env.local` 的 `SUPABASE_ACCESS_TOKEN`（各機自建）。大批寫入注意：Management API 約 100 秒被 Cloudflare 切斷（524）但伺服器端交易仍會跑完並持有鎖，單一請求控制在約 60 秒內（見依序執行 42）。
 - 筆電本機產物（不在 repo、可刪）：`C:\Users\99wye\Documents\CardScope\.claude\launch.json`（App 瀏覽器預覽用）；暫存檔皆在 Claude scratchpad。
