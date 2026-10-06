@@ -1,6 +1,6 @@
 const uiLocal={get(key,fallback){try{return localStorage.getItem(key)||fallback}catch{return fallback}},set(key,value){try{localStorage.setItem(key,value)}catch{}}};
 let cardViewMode='grid';
-let activeDetailCardId=null;
+let activeDetailCardId=null,detailReturnCardId=null;
 let favoritesOnly=uiLocal.get('cardscope-favorites-only','0')==='1';
 const favoriteIds=new Set(readUiArray('cardscope-favorites'));
 const watchlist=readUiObject('cardscope-watchlist');
@@ -382,7 +382,7 @@ function detailRows(){const rows=filteredCards(currentCardRows||[]);return rows.
 function openAdjacentCard(step){const rows=detailRows(),index=rows.findIndex(card=>String(card.id)===String(activeDetailCardId));if(index<0||rows.length<2)return;openCard(rows[(index+step+rows.length)%rows.length].id)}
 
 openCard=async function(id){
-  activeDetailCardId=id;$('modal').classList.add('open');$('detail').textContent='正在載入…';
+  activeDetailCardId=id;detailReturnCardId=id;$('modal').classList.add('open');$('detail').textContent='正在載入…';
   try{
     const cr=await fetch('/api/cards/'+encodeURIComponent(id)),cb=await cr.json();
     if(!cr.ok)throw Error(cb.error);
@@ -492,5 +492,8 @@ installDetailModalAccessibility();
 installViewToggle();
 installCardUtilities();
 if(currentCardRows.length)cards(currentCardRows,true);
+// Return focus to the tile of the card last shown (arrow keys can move past the one that was opened).
+window.installDialogFocus?.($('modal'),{initialFocus:()=>$('close'),returnTarget:()=>detailReturnCardId&&[...document.querySelectorAll('[data-card-open]')].find(item=>item.dataset.cardOpen===String(detailReturnCardId))});
 
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('cardZoom')?.classList.contains('open')){closeCardZoom();return}if(!$('modal')?.classList.contains('open'))return;if(event.key==='ArrowLeft')openAdjacentCard(-1);if(event.key==='ArrowRight')openAdjacentCard(1);if(event.key==='Escape')$('modal').classList.remove('open')});
+// An Escape already handled (the zoom view closes itself first) must not also close the detail dialog.
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&event.defaultPrevented)return;if(event.key==='Escape'&&$('cardZoom')?.classList.contains('open')){closeCardZoom();return}if(!$('modal')?.classList.contains('open'))return;if(event.key==='ArrowLeft')openAdjacentCard(-1);if(event.key==='ArrowRight')openAdjacentCard(1);if(event.key==='Escape')$('modal').classList.remove('open')});
