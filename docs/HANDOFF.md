@@ -424,6 +424,12 @@
 - **新規則：只改 `docs/`、`test/`、`.github/`、`scripts/`、證據檔等不影響執行的 commit，訊息要含 `[skip render]`**，避免重啟與全套預熱。（本段 commit 即以此標記實測。）可選：使用者在 Render 後台 Settings → Build Filters 設忽略路徑，效果相同且不靠訊息。
 - 待辦：CPU 額度恢復後（建議隔數小時、期間少部署）重量搜尋 P95；若平時仍超過 800 ms，再評估。
 
+### 依序執行 53：航海王恢復同步（ADR 0027，2026-10-06，桌電，已部署）
+
+- 使用者明確同意（「同意開航海王」）承擔條款未確認的風險。`onepiece-official-runtime` 改為 `risk-accepted`、`collectionEnabled: true`、`refreshHours: 72`；三個網域 robots.txt 皆 404。卡表頁改為一次一個、間隔 ≥1 秒（原 4 並行、150 ms）。圖片顯示政策不變；排球少年、芙莉蓮仍封鎖。ADR `docs/adr/0027-onepiece-official-list-risk-accepted.md`。測試裡「被封鎖來源」範例改用遊々亭。
+- 部署 `5782089` 後啟動檢查自動觸發 #105（17:15–17:21 UTC）completed：讀 8,699、寫 25,829。沒有新卡（卡 4,284、printing 8,566 不變，9/7 後官方沒有新系列進卡表），但卡片與 printing 全部被改寫：printing 是官方圖片網址的版本參數（`?260929`）更新，屬正常；卡片則是英文站與繁中站共用卡片 ID，同一次同步先寫英文版再寫繁中版，兩版欄位不同（series_id、aliases、search_text），每次互相覆蓋（最終資料與 9 月相同，無損壞）。修正：英文版卡片延後到繁中版之後，只寫繁中站沒有的卡；英文 printing 跟著延後以確保卡片存在。新增測試，Node 317/317。下一次同步（約 10-09 17:15 UTC 後）`rows_written` 應遠小於 25,829。
+- 其他：`scripts/beta-browser-smoke.mjs` 加入鍵盤焦點、44px、底部導覽、200% 縮放檢查（本機三種寬度＋200% 通過，`2ce4d32`）；`[skip render]` 實測有效（`ce7d854` 未部署）。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。

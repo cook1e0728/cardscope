@@ -20,3 +20,12 @@ test('production is pinged often enough to stay inside the 15-minute sleep windo
   assert.match(workflow,/https:\/\/cardscope\.onrender\.com\/\)/);
   assert.doesNotMatch(workflow.match(/^.*curl .*$/m)[0],/\/api\//,'the ping must not trigger database work');
 });
+
+test('One Piece writes each shared card once, Traditional Chinese row first',async()=>{
+  const sync=await readFile(new URL('../providers/catalog-sync.mjs',import.meta.url),'utf8');
+  const body=sync.slice(sync.indexOf('async function syncOnePiece'),sync.indexOf('\n}',sync.indexOf('async function syncOnePiece')));
+  const tw=body.indexOf("upsert(db,'/tcg_cards',twCardRows)"),english=body.indexOf("upsert(db,'/tcg_cards',cardRows.filter(card=>!twCardIds.has(card.id)))"),printings=body.indexOf("upsert(db,'/tcg_printings',printingRows");
+  assert.ok(tw>0&&english>tw&&printings>english,'English-only cards and their printings are written after the Traditional Chinese cards');
+  assert.equal(body.split("upsert(db,'/tcg_cards',").length-1,2,'no unfiltered English card upsert remains');
+  assert.match(body,/ONEPIECE_PAGE_DELAY_MS|politePause\(\)/);
+});
