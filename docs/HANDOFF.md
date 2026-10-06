@@ -395,7 +395,15 @@
 - 主方案第 5 節要求操作區至少 44×44px。正式站量測（桌機 1024、手機 375）不足者：搜尋框／搜尋鈕／遊戲選單 42、版本選單 35、詳細視窗關閉鈕 36×36、上一張／下一張 38×38、詳細分頁鈕 41、「我的」36 寬、首頁按鈕 31–40、`summary` 展開列 22、「複製勘誤模板」38（有一條 `min-height:36px`）、跳過連結 42。段落中的文字連結屬 WCAG 2.5.8 例外，不動。
 - 修正（`catalog-layout.css` 末尾）：`button,select,summary,input(非核取／單選／滑桿),.brand` 最小高 44、`button` 最小寬 44（min-* 只放大，既有固定尺寸當下限）；`summary` 文字垂直置中；`.beta-report button` 36→44；跳過連結 padding 10→12。
 - 既有問題：手機上 `.card-tools`（篩選工具列）sticky 在 `top:108px`、高約 270px，蓋住半個畫面，關閉詳細視窗後焦點回到的卡片被遮住（WCAG 2.2 的 2.4.11）。手機寬度改為 `position:static`；桌機仍 sticky（173px，約畫面 19%）。新增 `test/target-size.test.mjs`，Node 311/311。
-- 部署 `98ccd7a` 後正式站首頁：手機與桌機可見的按鈕／輸入框／選單／summary 全部 ≥44px、無橫向溢出、CLS 0（App 面板內量測，交接先前提過面板內 CLS 不一定準）。
+- 部署 `98ccd7a` 後正式站首頁（續見依序執行 50）：手機與桌機可見的按鈕／輸入框／選單／summary 全部 ≥44px、無橫向溢出、CLS 0（App 面板內量測，交接先前提過面板內 CLS 不一定準）。
+
+### 依序執行 50：200% 縮放與手機底部導覽（2026-10-06，桌電，已部署）
+
+- 200% 縮放以 640×400 CSS px（1280×800 螢幕）模擬：無橫向溢出，但頂欄 sticky 119px＋底部導覽 fixed 62px 佔 45% 畫面高度。
+- 同時發現手機底部導覽（探索／卡片／＋／資料／我的）5 個按鈕完全沒有綁定功能（點了無反應，卻佔 62px 並成為 Tab 停留點）。照建議：探索→回頁首並聚焦搜尋框、卡片→`#cardTools`（全部遊戲頁沒有時改 `#cards`）、資料→`#coverageStatus`、我的→`#watchlistSummary`（追蹤清單不顯示時以 ResizeObserver 隱藏此鈕）；沒有對應功能的「＋」移除；`nav` 加 `aria-label="快速跳轉"`，圖示字元 `aria-hidden`。手機跳轉目標 `scroll-margin-top:130px`（頂欄 119px）。
+- 高度 ≤500px（200% 縮放、橫向手機）時頂欄改為不固定。新增測試，Node 313/313。
+- 驗證：部署 `e55331d` 後正式站手機寬度四個按鈕落點都在頂欄下方 130px、探索聚焦 `#q`；首頁（全部遊戲）「我的」隱藏；640×400 捲動後只剩底部導覽 62px（15%），無橫向溢出；詳細視窗在 640×400 可捲動、關閉鈕可見。
+- 量測注意：App 瀏覽器面板中若有其他分頁在前景（例如 Edit hook 自動開的 file:// 分頁），背景分頁不繪製，平滑捲動與 ResizeObserver 不會執行，量測會誤判；先 `tabs_select` 到要量的分頁。正式站資料載入期間版面會變高，要等載入完成再量捲動落點。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
