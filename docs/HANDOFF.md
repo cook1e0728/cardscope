@@ -415,6 +415,15 @@
 /
 /'` 還原。
 
+### 依序執行 52：冷啟動、定時同步與資料庫 CPU（2026-10-06，桌電，已部署）
+
+- 冷啟動：Render 免費方案閒置 15 分鐘休眠，下一位訪客等 30–60 秒（今天遇到兩次）。新增 `.github/workflows/keep-warm.yml`，每 10 分鐘 GET 首頁（靜態檔，不碰資料庫）；單一服務整月在免費方案 750 小時內。**不可改成打 `/api/catalog/health`**：其快照快取只有 5 分鐘，每次過期都在背景重跑約 14–24 秒的全表掃描（第一版曾這樣寫，排程尚未執行就改掉了，`67bfeb0`）。
+- 定時同步：原本 72 小時新鮮度檢查只在啟動時跑；保持喚醒後可能數天不重啟，改為啟動 3 秒後跑一次、之後每 60 分鐘（`CATALOG_SYNC_INTERVAL_MINUTES`，0 關閉），不會重疊；`CARD_IMAGE_CACHE_ON_START=true` 的強制圖片快取只在啟動那次。`test/scheduled-sync.test.mjs`，Node 316/316。
+- 搜尋 P95（17:00 UTC 量 20 個新詞）：伺服器 p50 約 1.0 s、p95 約 8–13 s（兩字中文最慢，例：胡地 12.8 s）。同一句 `search_names like '%超夢%'`（7.2 萬列循序掃描）連續三次 4.3 s／3.0 s／47 ms → 是小型實例 CPU 額度耗盡造成的間歇節流，不是查詢本身。資料庫 393 MB（免費上限 500 MB），不適合再加大型 bigram 索引。
+- 負載來源（pg_stat_statements 前後快照差值）：部署重啟後的覆蓋率預熱約 68 次 `tcg_printings` 分頁讀取、約 8 秒 DB 時間；今天共 15 次部署（`autoDeployTrigger: commit`，連只改文件的 commit 也部署），加上遊戲王同步與比對腳本，額度被耗盡。
+- **新規則：只改 `docs/`、`test/`、`.github/`、`scripts/`、證據檔等不影響執行的 commit，訊息要含 `[skip render]`**，避免重啟與全套預熱。（本段 commit 即以此標記實測。）可選：使用者在 Render 後台 Settings → Build Filters 設忽略路徑，效果相同且不靠訊息。
+- 待辦：CPU 額度恢復後（建議隔數小時、期間少部署）重量搜尋 P95；若平時仍超過 800 ms，再評估。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
