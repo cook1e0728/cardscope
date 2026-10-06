@@ -383,6 +383,13 @@
 - 部署 `7bdcaf0` 重啟後觸發已到期的 pokemontcg 同步 #103（13:55–14:03 UTC）：completed，`rows_written` 77,340 → 16,058（約少 79%，依序執行 38 驗收通過）。仍有約 1.6 萬列每次被判定有變動，可能是某些欄位的型別或格式比較不一致（例如數值、日期、jsonb 內容），可查哪些欄位造成差異以再降低。ygoprodeck 約 10-06 22:45 UTC 後的第一次重啟才會到期。
 - 查證（10-06 14:30 UTC，只讀，無程式修改）：#103 期間被改寫的是 `tcg_cards` 15,880 列（`tcg_canonical_cards` 由 trigger 連帶）與 `tcg_printings` 177 列，名稱、稀有度、系列、商品皆 0。本機以模擬 db（讀取走 Management API 唯讀查正式庫、寫入只記錄不送出）跑完整 176 個系列：卡片與 printing 需寫入皆 **0 列**。所以 1.6 萬列是先前累積的一次性差異（寫入後已一致），不是比較邏輯的問題；下一次 pokemontcg 同步的 `rows_written` 預期接近 0（系列、商品、名稱、稀有度在 #103 已是 0）。腳本在 scratchpad `diff-sync.mjs`（Git Bash 下需 `MSYS_NO_PATHCONV=1`，否則 `/tcg_cards` 參數會被轉成 Windows 路徑）。
 
+### 依序執行 48：卡片詳細視窗的鍵盤焦點（2026-10-06，桌電，已部署）
+
+- 主方案第 4 節要求 modal 有焦點鎖定、Escape 與焦點返回；放大檢視已有，卡片詳細視窗沒有：無 `role="dialog"`／`aria-modal`、關閉鈕「×」無名稱、開啟時焦點留在頁面、Tab 會跑到背後、關閉後焦點掉到頁首。
+- 修正：新檔 `dialog-focus.js`（`installDialogFocus`）以 MutationObserver 監看 `#modal` 的 `open` class，所以按鈕、遮罩、Escape、上一頁等既有關閉途徑都涵蓋；開啟時焦點到關閉鈕、Tab／Shift+Tab 在視窗內循環（焦點因重新渲染掉到 body 時拉回；放大檢視疊在上面時不干涉）、關閉後回到最後顯示那張卡的卡片按鈕（方向鍵換卡後也正確）。順帶修既有問題：在放大檢視按 Escape 會連詳細視窗一起關掉且網址仍帶 `card=`（`ui-enhancements.js` 冒泡階段的處理改為略過已 `defaultPrevented` 的 Escape）。新增 `test/dialog-focus.test.mjs`，Node 309/309。
+- 驗證：本機以真實按鍵測開啟→焦點在關閉鈕、Shift+Tab 到最後一個控制項再 Tab 回關閉鈕、方向鍵換卡→放大→Escape 只關放大→Escape 關詳細並回到該卡。部署 `564a4ec` 後正式站搜尋「噴火龍」開第一張卡：焦點在關閉鈕、Escape 後焦點回到 `pokemon-official-ja-dp3-c3021` 卡片、網址移除 `card`。
+- 桌電本機產物：`.claude/launch.json`（App 瀏覽器預覽用，未追蹤）。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
