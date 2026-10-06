@@ -263,6 +263,27 @@ async function runViewport(browser,viewport){
     await page.locator('#close').click();
     await page.waitForFunction(()=>!new URL(location.href).searchParams.has('card'));
 
+    // Keyboard: the detail dialog takes focus, keeps Tab inside, and Escape hands focus back to the card.
+    const opener=page.locator('#cards .card-open-hit[data-card-open]').first();
+    const openerId=await opener.getAttribute('data-card-open');
+    await opener.focus();
+    await page.keyboard.press('Enter');
+    await waitForVisible(page.locator('#modal.open .detail'),`${viewport.name} keyboard Enter did not open the detail`);
+    await page.waitForFunction(()=>document.activeElement?.id==='close',undefined,{timeout:5000});
+    await page.keyboard.press('Shift+Tab');
+    assert.ok(await page.evaluate(()=>document.getElementById('modal').contains(document.activeElement)),`${viewport.name} Shift+Tab left the detail dialog`);
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(id=>!document.getElementById('modal').classList.contains('open')&&document.activeElement?.dataset?.cardOpen===id,openerId,{timeout:5000});
+
+    // Every visible control is at least 44x44 CSS px (links inside running text are exempt).
+    const smallTargets=await page.evaluate(()=>[...document.querySelectorAll('button,select,input,summary')].filter(item=>item.getClientRects().length&&getComputedStyle(item).visibility!=='hidden'&&!item.closest('details:not([open])')).filter(item=>{const box=item.getBoundingClientRect();return box.width<43.5||box.height<43.5}).map(item=>item.id||String(item.className)||item.textContent.trim().slice(0,12)));
+    assert.deepEqual(smallTargets,[],`${viewport.name} controls under 44px`);
+
+    if(viewport.width<=760){
+      await page.locator('nav.bottom [data-jump="q"]').click();
+      await page.waitForFunction(()=>document.activeElement?.id==='q',undefined,{timeout:5000});
+    }
+
     // Nineteen more real clicks make twenty IP switches in this viewport.
     // Every fourth fixture response is held back so an older selection returns
     // after a newer one; the final screen must still belong to the last click.
@@ -317,6 +338,17 @@ try{
 try{
   const results=[];
   for(const viewport of viewports)results.push(await runViewport(browser,viewport));
+  // 200% zoom on a 1280x800 screen: the header scrolls away and nothing overflows sideways.
+  const zoomed=await browser.newPage({viewport:{width:640,height:400},deviceScaleFactor:1});
+  try{
+    await installFixtures(zoomed,makeFixtureState(fixtureCatalog()));
+    await zoomed.goto(baseUrl,{waitUntil:'domcontentloaded'});
+    await waitForVisible(zoomed.locator('#channels .channel').first(),'200% zoom: IP navigation did not render');
+    const layout=await zoomed.evaluate(()=>({header:getComputedStyle(document.querySelector('.top')).position,overflow:document.documentElement.scrollWidth-innerWidth}));
+    assert.equal(layout.header,'static','200% zoom: the header should not stay pinned');
+    assert.ok(layout.overflow<=0,`200% zoom: page overflows sideways by ${layout.overflow}px`);
+    results.push({viewport:'zoom-200',header:layout.header});
+  }finally{await zoomed.close()}
   console.log(`Beta browser smoke passed: ${JSON.stringify(results)}`);
 }finally{
   await browser.close();
