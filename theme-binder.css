@@ -1,14 +1,17 @@
 /* Binder theme (preview): warm paper, one colour per IP, game switch as binder index tabs, cards in sleeves,
    rarity as sticker labels. Loaded last so removing this file restores the previous look. */
-:root{--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff;--ip-2-on:#2B2105;--ip-ink:#3B3A36}
-/* --ip: band and selected states; --ip-2: second colour (top rarity sticker); --ip-ink: --ip darkened for small
-   text on light paper so every IP stays at or above 4.5:1. The same values sit on [data-ip] so each index tab can
-   show its own IP colour. */
-body[data-game="pokemon"],[data-ip="pokemon"]{--ip:#C8321A;--ip-2:#F2C230;--ip-ink:#A02812}
-body[data-game="onepiece"],[data-ip="onepiece"]{--ip:#1D3F8C;--ip-2:#E0B84C;--ip-ink:#1D3F8C}
-body[data-game="yugioh"],[data-ip="yugioh"]{--ip:#4B2E83;--ip-2:#C9A227;--ip-ink:#4B2E83}
-body[data-game="frieren"],body[data-game="weiss-schwarz"],[data-ip="frieren"],[data-ip="weiss-schwarz"]{--ip:#2F6B5F;--ip-2:#E9D9A6;--ip-ink:#2A5F54}
-body[data-game="haikyuu"],[data-ip="haikyuu"]{--ip:#B9500F;--ip-2:#2B2620;--ip-2-on:#fff;--ip-ink:#A3440F}
+:root{--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff;--ip-2-on:#2B2105;--ip-ink:#3B3A36;--tint:var(--ip);--band:linear-gradient(135deg,#3B3A36,#5A5348);--band-on:#fff;--motif:none}
+/* --band: gradient taken from the colours of each IP's logo (colours only; no logo lettering or official marks);
+   --band-on: text on it; --motif: a CardScope-drawn silhouette of a generic object (same subjects as the
+   unofficial category art in assets/ip-*.svg), used as a mask so it takes --band-on.
+   --ip: buttons and selected states; --ip-2: top rarity sticker; --ip-ink: small text on light paper; --tint:
+   page paper tint. Every text pair here measures at or above 4.5:1. The same values sit on [data-ip] so each
+   index tab and landing tile can show its own IP. */
+body[data-game="pokemon"],[data-ip="pokemon"]{--ip:#2B5CAB;--ip-2:#FFCB05;--ip-ink:#24509A;--tint:#FFCB05;--band:linear-gradient(135deg,#FFE04A 0%,#FFCB05 55%,#F5A800 100%);--band-on:#1F3F8F;--motif:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M34 4h34L54 40h24L28 96l12-44H20z'/%3E%3C/svg%3E")}
+body[data-game="onepiece"],[data-ip="onepiece"]{--ip:#1D3F8C;--ip-2:#E0B84C;--ip-ink:#1D3F8C;--band:linear-gradient(135deg,#0F2A63 0%,#1D3F8C 55%,#2550A8 100%);--band-on:#fff;--motif:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='%23000' stroke-width='6'/%3E%3Cpath d='M50 6 58 42 94 50 58 58 50 94 42 58 6 50 42 42z'/%3E%3C/svg%3E")}
+body[data-game="yugioh"],[data-ip="yugioh"]{--ip:#A3121F;--ip-2:#D9A62E;--ip-ink:#A3121F;--band:linear-gradient(135deg,#6E0A14 0%,#A3121F 55%,#C8102E 100%);--band-on:#fff;--motif:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='6'%3E%3Crect x='30' y='12' width='40' height='62' rx='4' transform='rotate(-20 50 86)'/%3E%3Crect x='30' y='12' width='40' height='62' rx='4' transform='rotate(20 50 86)'/%3E%3Crect x='30' y='12' width='40' height='62' rx='4'/%3E%3C/g%3E%3Cpath d='M50 28 55 40 67 43 55 47 50 60 45 47 33 43 45 40z'/%3E%3C/svg%3E")}
+body[data-game="frieren"],body[data-game="weiss-schwarz"],[data-ip="frieren"],[data-ip="weiss-schwarz"]{--ip:#2F6B5F;--ip-2:#E9D9A6;--ip-ink:#2A5F54;--band:linear-gradient(135deg,#1E4A41 0%,#24574D 50%,#2F7A6A 100%);--band-on:#fff;--motif:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M6 34q21-9 41 3v54q-20-12-41-3zM94 34q-21-9-41 3v54q20-12 41-3z'/%3E%3Cpath d='M50 2l3 9 9 3-9 3-3 9-3-9-9-3 9-3z'/%3E%3C/svg%3E")}
+body[data-game="haikyuu"],[data-ip="haikyuu"]{--ip:#B9500F;--ip-2:#2B2620;--ip-2-on:#fff;--ip-ink:#A3440F;--band:linear-gradient(135deg,#F7A84A 0%,#F08A2C 50%,#E8701A 100%);--band-on:#1A1410;--motif:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23000' stroke-width='6'%3E%3Ccircle cx='50' cy='50' r='42'/%3E%3Cpath d='M50 8c14 16 18 32 12 48M12 36c22 0 40 9 52 28M22 82c4-22 18-38 40-44'/%3E%3C/g%3E%3C/svg%3E")}
 
 body{background:var(--paper);color:var(--ink);font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif}
 .top{background:var(--paper-2);border-bottom:1px solid var(--rule)}
@@ -21,10 +24,20 @@ h1,h2,.title h2,.title b{letter-spacing:-0.02em}
 body[data-view="game"] .channels{gap:3px;padding:6px 0 0;overflow-x:auto}
 body[data-view="game"] .channel{border-radius:7px 7px 0 0;border:1px solid var(--rule);border-bottom:0;background:#E6E0D2;color:var(--ink-2);padding:0 16px;min-height:44px}
 body[data-view="game"] .channel b{font-weight:500}
-body[data-view="game"] .channel.on{background:var(--ip);border-color:var(--ip);color:var(--ip-on)}
 body[data-view="game"] .channel.on b{font-weight:700}
-body[data-view="game"] #gameContext{position:relative;overflow:hidden;margin:0;padding:18px 18px 16px;border:0;border-radius:0 10px 10px 10px;background:var(--ip);color:var(--ip-on)}
-body[data-view="game"] #gameContext:after{content:"";position:absolute;right:-40px;top:-60px;width:200px;height:200px;border-radius:50%;background:var(--ip-2);opacity:.9;pointer-events:none}
+/* Every tab wears its own IP's logo gradient with the motif in front of the name; the selected one is taller and
+   joins the band below it. */
+body[data-view="game"] .channel[data-ip]{position:relative;background:var(--band);border-color:transparent;color:var(--band-on);margin-top:6px;transition:margin-top .15s,min-height .15s}
+body[data-view="game"] .channel[data-ip]:not([data-ip="all"]){padding-left:34px}
+body[data-view="game"] .channel[data-ip]:not([data-ip="all"]):before{content:"";position:absolute;left:11px;top:50%;width:17px;height:17px;transform:translateY(-50%);background:currentColor;-webkit-mask:var(--motif) center/contain no-repeat;mask:var(--motif) center/contain no-repeat}
+body[data-view="game"] .channel[data-ip]:not(.on):hover{margin-top:2px}
+body[data-view="game"] .channel[data-ip].on{margin-top:0;min-height:50px}
+body[data-view="game"] #gameContext{position:relative;overflow:hidden;margin:0;padding:24px 18px 22px;min-height:96px;border:0;border-radius:0 10px 10px 10px;background:var(--band);color:var(--band-on)}
+body[data-view="game"] #gameContext:after{content:"";position:absolute;right:28px;top:50%;width:132px;height:132px;transform:translateY(-50%) rotate(-10deg);background:var(--band-on);opacity:.2;-webkit-mask:var(--motif) center/contain no-repeat;mask:var(--motif) center/contain no-repeat;pointer-events:none}
+/* Landing tiles: the same gradient and motif replace the old unofficial category pictures. */
+body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art{background:var(--band)}
+body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art img{display:none}
+body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art:after{content:"";position:absolute;inset:14% 30%;background:var(--band-on);-webkit-mask:var(--motif) center/contain no-repeat;mask:var(--motif) center/contain no-repeat}
 body[data-view="game"] #gameContext .game-context-kicker{color:inherit;opacity:.85;font-family:'Space Grotesk',sans-serif;letter-spacing:.08em;position:relative;z-index:1}
 body[data-view="game"] #gameContext b{position:relative;z-index:1;color:inherit;font-size:26px;font-weight:900;letter-spacing:-0.02em}
 
@@ -68,7 +81,7 @@ body .trend-rise{border-radius:0;padding-left:10px;clip-path:polygon(6px 0,100% 
 /* The whole game page carries its IP colour, not only the band: tinted paper, a coloured rule under the header,
    IP-coloured section marks, buttons, hover sleeves, top-tier stickers and the detail dialog. The landing page
    ("全部遊戲") stays neutral paper. */
-body[data-view="game"]{background:color-mix(in srgb,var(--ip) 7%,#F6F2EA)}
+body[data-view="game"]{background:color-mix(in srgb,var(--tint) 7%,#F6F2EA)}
 body[data-view="game"] .top{border-bottom:4px solid var(--ip);background:color-mix(in srgb,var(--ip) 3%,#FBF9F4)}
 body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
 body[data-view="game"] .nav b.on{border-bottom-color:var(--ip)}
@@ -89,8 +102,5 @@ body[data-view="game"] .dialog{border-top:8px solid var(--ip)}
 body[data-view="game"] :focus-visible{outline-color:var(--ip-ink)}
 body[data-view="game"] .bottom{border-top:3px solid var(--ip)}
 body[data-view="game"] .bottom b{color:var(--ip-ink)}
-/* Every index tab shows its own IP colour as a strip, so the binder reads as one colour per IP at a glance. */
-.channel[data-ip]:not(.on){box-shadow:inset 0 3px 0 var(--ip)}
-body[data-view="game"] .channel[data-ip]:not(.on):hover{background:color-mix(in srgb,var(--ip) 12%,#fff);color:var(--ip-ink)}
 body[data-view="game"] .product-category.on{color:var(--ip-ink);border-color:var(--ip)}
 body[data-view="game"] .product-category:hover{color:var(--ip-ink)}
