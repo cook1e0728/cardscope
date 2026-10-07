@@ -169,3 +169,12 @@ body[data-view="game"] #gameContext:after{z-index:1;box-shadow:0 1px 2px #000000
 .cards .card:hover{border-color:#8D9299;box-shadow:inset 0 1px 0 #ffffff4d,0 4px 10px #00000059}
 /* The action controls keep light fills, so they need dark text back (the card frame sets white). */
 .cards .card .card-actions,.cards .card .card-actions button,.cards .card .watchlist-inline span{color:var(--ink)}
+
+/* Band comparison (?band=plain|art|metal|pattern). Text sits on the left over the darkest part of each variant. */
+body[data-band="art"][data-view="game"] #gameContext{background:var(--ip)}
+body[data-band="art"][data-view="game"] #gameContext:before{z-index:1}body[data-band="art"][data-view="game"] #gameContext:after{z-index:2}
+body[data-band="art"] #gameContext .band-art{position:absolute;inset:-30px;z-index:0;pointer-events:none;background:center 30%/cover no-repeat;filter:blur(14px) saturate(1.2) brightness(.75);transform:scale(1.1)}
+body[data-band="art"] #gameContext .band-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--ip) 0%,color-mix(in srgb,var(--ip) 80%,transparent) 35%,color-mix(in srgb,var(--ip) 15%,transparent) 75%,transparent 100%)}
+body[data-band="metal"][data-view="game"] #gameContext{background:repeating-linear-gradient(90deg,#ffffff12 0 1px,#00000012 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,color-mix(in srgb,var(--ip) 78%,transparent),color-mix(in srgb,var(--ip) 55%,transparent) 45%,color-mix(in srgb,var(--ip) 72%,transparent)),linear-gradient(115deg,#24282D 0%,#4B5159 18%,#8D9299 30%,#2E3238 45%,#6B727B 60%,#24282D 75%,#565C64 90%,#24282D 100%);background-size:auto,300% 100%,250% 100%;animation:cs-iris 10s ease-in-out infinite;box-shadow:inset 0 1px 0 #ffffff40,inset 0 -1px 0 #00000059}
+body[data-band="pattern"][data-view="game"] #gameContext{background:linear-gradient(90deg,var(--ip) 0%,var(--ip) 28%,color-mix(in srgb,var(--ip) 0%,transparent) 70%),radial-gradient(circle,#ffffff38 1.3px,#ffffff00 1.8px) 0 0/9px 9px,repeating-linear-gradient(-45deg,#ffffff12 0 2px,#ffffff00 2px 11px),var(--band)}
+@media(prefers-reduced-motion:reduce){body[data-band="metal"][data-view="game"] #gameContext{animation:none}}
