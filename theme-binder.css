@@ -32,8 +32,12 @@ body[data-view="game"] #gameContext{position:relative;overflow:hidden;margin:0;p
 /* The official logo sits unaltered on a white plate at the band's right edge. */
 body[data-view="game"] #gameContext:after{content:"";position:absolute;right:18px;top:50%;width:min(190px,38%);height:64px;transform:translateY(-50%);background:#fff var(--logo) center/auto 46px no-repeat;border-radius:8px;pointer-events:none}
 /* Landing tiles: the official logo on white replaces the unofficial category pictures. */
-body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art{background:#fff}
-body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art img{max-width:86%;max-height:70%;padding:0}
+/* Big enough for two-line logos to stay legible, and centred both ways (the base layout pinned them to the top). */
+body[data-view="landing"] .channel[data-ip]{min-width:176px}
+body[data-view="landing"] .channel[data-ip] .channel-art{display:flex;align-items:center;justify-content:center;height:84px;padding:10px 8px;box-sizing:border-box;background:#fff}
+body[data-view="landing"] .channel[data-ip] .channel-art img{display:block;width:auto;height:auto;max-width:100%;max-height:60px;padding:0;object-fit:contain}
+@media(max-width:760px){body[data-view="landing"] .channel[data-ip]{min-width:128px}body[data-view="landing"] .channel[data-ip] .channel-art{height:70px;padding:8px 10px}body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:50px}}
+body[data-view="landing"] .channels:empty{min-height:120px}
 body[data-view="game"] #gameContext .game-context-kicker{color:inherit;opacity:.85;font-family:'Space Grotesk',sans-serif;letter-spacing:.08em;position:relative;z-index:1}
 body[data-view="game"] #gameContext b{position:relative;z-index:1;color:inherit;font-size:26px;font-weight:900;letter-spacing:-0.02em}
 
