@@ -105,12 +105,15 @@ body[data-view="game"] .bottom b{color:var(--ip-ink)}
 body[data-view="game"] .product-category.on{color:var(--ip-ink);border-color:var(--ip)}
 body[data-view="game"] .product-category:hover{color:var(--ip-ink)}
 
-/* 全部遊戲: a slowly flowing gradient of the five IP colours with ripples spreading from the centre. The body[data-view] prefix outranks the white landing-tile rule above. The layers sit
-   behind the rabbit mark; motion runs on transform/background-position only and stops under reduced motion. */
-body[data-view] .channel[data-ip="all"] .channel-art{position:relative;overflow:hidden;isolation:isolate;border:0;background:linear-gradient(120deg,#E50012,#DF600E,#FFCB05,#2E4170,#1A1A1A,#E50012);background-size:300% 300%;animation:cs-flow 12s ease-in-out infinite}
-body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{content:"";position:absolute;left:50%;top:50%;width:180%;aspect-ratio:1;border-radius:50%;z-index:-1;pointer-events:none;background:repeating-radial-gradient(circle,#ffffff00 0 9%,#ffffff40 10% 11%,#ffffff00 12% 18%);transform:translate(-50%,-50%) scale(.35);opacity:0;animation:cs-ripple 4.8s ease-out infinite}
-body[data-view] .channel[data-ip="all"] .channel-art:after{animation-delay:2.4s}
-body[data-view] .channel[data-ip="all"] .channel-art img{position:relative;z-index:1;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff)}
-@keyframes cs-flow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+/* 全部遊戲: brushed metal. A multi-stop silver gradient drifts slowly, a fine vertical grain gives the brushed
+   finish, a light band sweeps across like metal turning under a lamp, and embossed rings ripple from the centre.
+   The body[data-view] prefix outranks the white landing-tile rule above. Motion uses background-position and
+   transform only, and stops under reduced motion. */
+body[data-view] .channel[data-ip="all"] .channel-art{position:relative;overflow:hidden;isolation:isolate;border:1px solid #8B9097;background:repeating-linear-gradient(90deg,#ffffff12 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#7E838B 0%,#C9CDD2 14%,#F4F5F7 24%,#A3A8AF 36%,#E2E5E8 50%,#8D9299 63%,#DADDE1 76%,#F7F8F9 86%,#80858C 100%);background-size:auto,250% 100%;animation:cs-metal 9s ease-in-out infinite;box-shadow:inset 0 1px 0 #ffffffb0,inset 0 -1px 0 #00000030}
+body[data-view] .channel[data-ip="all"] .channel-art:before{content:"";position:absolute;inset:-20% auto -20% 0;width:45%;z-index:0;pointer-events:none;background:linear-gradient(90deg,#ffffff00,#ffffffd9 50%,#ffffff00);transform:translateX(-160%) skewX(-18deg);animation:cs-sheen 4.2s ease-in-out infinite}
+body[data-view] .channel[data-ip="all"] .channel-art:after{content:"";position:absolute;left:50%;top:50%;width:180%;aspect-ratio:1;border-radius:50%;z-index:0;pointer-events:none;background:repeating-radial-gradient(circle,#ffffff00 0 9%,#ffffff70 9.6% 10.4%,#00000026 10.8% 11.6%,#ffffff00 12.2% 18%);transform:translate(-50%,-50%) scale(.35);opacity:0;animation:cs-ripple 5.2s ease-out infinite}
+body[data-view] .channel[data-ip="all"] .channel-art img{position:relative;z-index:1;filter:drop-shadow(0 1px 0 #ffffffcc) drop-shadow(0 -1px 0 #00000040)}
+@keyframes cs-metal{0%,100%{background-position:0 0,0% 50%}50%{background-position:0 0,100% 50%}}
+@keyframes cs-sheen{0%,35%{transform:translateX(-160%) skewX(-18deg)}75%,100%{transform:translateX(320%) skewX(-18deg)}}
 @keyframes cs-ripple{0%{transform:translate(-50%,-50%) scale(.35);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.15);opacity:0}}
 @media(prefers-reduced-motion:reduce){body[data-view] .channel[data-ip="all"] .channel-art,body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{animation:none}body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{opacity:0}}
