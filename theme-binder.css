@@ -178,3 +178,15 @@ body[data-band="art"] #gameContext .band-art:after{content:"";position:absolute;
 body[data-band="metal"][data-view="game"] #gameContext{background:repeating-linear-gradient(90deg,#ffffff12 0 1px,#00000012 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,color-mix(in srgb,var(--ip) 78%,transparent),color-mix(in srgb,var(--ip) 55%,transparent) 45%,color-mix(in srgb,var(--ip) 72%,transparent)),linear-gradient(115deg,#24282D 0%,#4B5159 18%,#8D9299 30%,#2E3238 45%,#6B727B 60%,#24282D 75%,#565C64 90%,#24282D 100%);background-size:auto,300% 100%,250% 100%;animation:cs-iris 10s ease-in-out infinite;box-shadow:inset 0 1px 0 #ffffff40,inset 0 -1px 0 #00000059}
 body[data-band="pattern"][data-view="game"] #gameContext{background:linear-gradient(90deg,var(--ip) 0%,var(--ip) 28%,color-mix(in srgb,var(--ip) 0%,transparent) 70%),radial-gradient(circle,#ffffff38 1.3px,#ffffff00 1.8px) 0 0/9px 9px,repeating-linear-gradient(-45deg,#ffffff12 0 2px,#ffffff00 2px 11px),var(--band)}
 @media(prefers-reduced-motion:reduce){body[data-band="metal"][data-view="game"] #gameContext{animation:none}}
+
+/* Band layout: the logo plate and the text read as one group on the left (the old layout put the name at the far
+   left and the logo at the far right, so the eye had to cross an empty band). The plate's gunmetal frame is its own
+   border (padding-box white + logo, border-box metal), so the old ::before bezel and ::after plate are retired. */
+body[data-view="game"] #gameContext{display:flex;align-items:center;gap:18px;padding:14px 18px;min-height:0}
+body[data-view="game"] #gameContext:before,body[data-view="game"] #gameContext:after{content:none}
+body[data-view="game"] #gameContext .game-context-logo{position:relative;z-index:1;flex:0 0 auto;width:172px;height:74px;box-sizing:border-box;padding:7px 9px;border:6px solid transparent;border-radius:12px;background:var(--logo) center/contain no-repeat content-box,linear-gradient(#fff,#fff) padding-box,repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px) border-box,linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%) border-box;box-shadow:0 2px 6px #00000059}
+body[data-view="game"] #gameContext .game-context-text{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+body[data-view="game"] #gameContext .game-context-kicker{font-size:13px;opacity:.9}
+body[data-view="game"] #gameContext b{font-size:30px;line-height:1.15}
+body[data-view="game"] #gameContext .game-context-facts{font-size:14px;font-weight:500;color:inherit;opacity:.92}
+@media(max-width:760px){body[data-view="game"] #gameContext{gap:12px;padding:12px}body[data-view="game"] #gameContext .game-context-logo{width:124px;height:58px;border-width:5px;padding:5px 6px}body[data-view="game"] #gameContext b{font-size:22px}body[data-view="game"] #gameContext .game-context-facts{font-size:12px}}
