@@ -34,10 +34,11 @@
       "languages": ["日文", "繁體中文", "英文"],
       "regions": ["JP", "TW", "US", "CN", "KR", "ASIA"],
       "categoryVisual": {
-        "path": "/assets/ip-pokemon.svg",
-        "kind": "cardscope-category-visual",
-        "official": false,
-        "usage": "game-navigation"
+        "path": "/assets/ip-logos/pokemon.svg",
+        "kind": "official-logo",
+        "official": true,
+        "usage": "game-navigation",
+        "source": "https://www.pokemon-card.com/assets/images/logo_b.svg"
       },
       "franchises": [
         {
@@ -60,10 +61,11 @@
       "languages": ["日文", "亞洲英文"],
       "regions": ["JP", "TW", "ASIA"],
       "categoryVisual": {
-        "path": "/assets/ip-onepiece.svg",
-        "kind": "cardscope-category-visual",
-        "official": false,
-        "usage": "game-navigation"
+        "path": "/assets/ip-logos/onepiece.png",
+        "kind": "official-logo",
+        "official": true,
+        "usage": "game-navigation",
+        "source": "https://www.onepiece-cardgame.com/renewal/images/common/logo_op.png"
       },
       "franchises": [
         {
@@ -86,10 +88,11 @@
       "languages": ["日文", "繁體中文", "英文"],
       "regions": ["JP", "TW", "US", "CN", "KR"],
       "categoryVisual": {
-        "path": "/assets/ip-yugioh.svg",
-        "kind": "cardscope-category-visual",
-        "official": false,
-        "usage": "game-navigation"
+        "path": "/assets/ip-logos/yugioh.png",
+        "kind": "official-logo",
+        "official": true,
+        "usage": "game-navigation",
+        "source": "https://www.yugioh-card.com/japan/assets/images/logo-ocg.png"
       },
       "franchises": [
         {
@@ -122,10 +125,11 @@
           "status": "active",
           "seriesCodes": ["S108", "S108-TD", "S128", "S136"],
           "categoryVisual": {
-            "path": "/assets/ip-frieren.svg",
-            "kind": "cardscope-category-visual",
-            "official": false,
-            "usage": "franchise-navigation"
+            "path": "/assets/ip-logos/weiss-schwarz.png",
+            "kind": "official-logo",
+            "official": true,
+            "usage": "franchise-navigation",
+            "source": "https://ws-tcg.com/wordpress/wp-content/themes/ws-tcg_re/assets/img/common/logo.png"
           },
           "scope": {
             "mode": "series",
@@ -161,10 +165,11 @@
       "languages": ["日文"],
       "regions": ["JP"],
       "categoryVisual": {
-        "path": "/assets/ip-haikyuu.svg",
-        "kind": "cardscope-category-visual",
-        "official": false,
-        "usage": "game-navigation"
+        "path": "/assets/ip-logos/haikyuu.svg",
+        "kind": "official-logo",
+        "official": true,
+        "usage": "game-navigation",
+        "source": "https://www.takaratomy.co.jp/products/haikyuvobacabreak/assets/img/logo.svg"
       },
       "franchises": [
         {
