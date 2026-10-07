@@ -1,11 +1,14 @@
 /* Binder theme (preview): warm paper, one colour per IP, game switch as binder index tabs, cards in sleeves,
    rarity as sticker labels. Loaded last so removing this file restores the previous look. */
-:root{--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff}
-body[data-game="pokemon"]{--ip:#C8321A;--ip-2:#F2C230}
-body[data-game="onepiece"]{--ip:#1D3F8C;--ip-2:#E0B84C}
-body[data-game="yugioh"]{--ip:#4B2E83;--ip-2:#C9A227}
-body[data-game="frieren"],body[data-game="weiss-schwarz"]{--ip:#2F6B5F;--ip-2:#E9D9A6}
-body[data-game="haikyuu"]{--ip:#D85F1C;--ip-2:#2B2620}
+:root{--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff;--ip-2-on:#2B2105;--ip-ink:#3B3A36}
+/* --ip: band and selected states; --ip-2: second colour (top rarity sticker); --ip-ink: --ip darkened for small
+   text on light paper so every IP stays at or above 4.5:1. The same values sit on [data-ip] so each index tab can
+   show its own IP colour. */
+body[data-game="pokemon"],[data-ip="pokemon"]{--ip:#C8321A;--ip-2:#F2C230;--ip-ink:#A02812}
+body[data-game="onepiece"],[data-ip="onepiece"]{--ip:#1D3F8C;--ip-2:#E0B84C;--ip-ink:#1D3F8C}
+body[data-game="yugioh"],[data-ip="yugioh"]{--ip:#4B2E83;--ip-2:#C9A227;--ip-ink:#4B2E83}
+body[data-game="frieren"],body[data-game="weiss-schwarz"],[data-ip="frieren"],[data-ip="weiss-schwarz"]{--ip:#2F6B5F;--ip-2:#E9D9A6;--ip-ink:#2A5F54}
+body[data-game="haikyuu"],[data-ip="haikyuu"]{--ip:#B9500F;--ip-2:#2B2620;--ip-2-on:#fff;--ip-ink:#A3440F}
 
 body{background:var(--paper);color:var(--ink);font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif}
 .top{background:var(--paper-2);border-bottom:1px solid var(--rule)}
@@ -61,3 +64,33 @@ body .series-group.on,body .series-sort button.on,body .view-switch button.on{ba
 .search button{border-radius:0 7px 7px 0}
 .hero-trust span,.beta-chip,.coverage-baseline-status,.coverage-status-source,.health-head-status{border-radius:3px}
 body .trend-rise{border-radius:0;padding-left:10px;clip-path:polygon(6px 0,100% 0,100% 100%,6px 100%,0 50%);font-family:'Space Grotesk',sans-serif}
+
+/* The whole game page carries its IP colour, not only the band: tinted paper, a coloured rule under the header,
+   IP-coloured section marks, buttons, hover sleeves, top-tier stickers and the detail dialog. The landing page
+   ("全部遊戲") stays neutral paper. */
+body[data-view="game"]{background:color-mix(in srgb,var(--ip) 7%,#F6F2EA)}
+body[data-view="game"] .top{border-bottom:4px solid var(--ip);background:color-mix(in srgb,var(--ip) 3%,#FBF9F4)}
+body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
+body[data-view="game"] .nav b.on{border-bottom-color:var(--ip)}
+body[data-view="game"] .card-tools{background:color-mix(in srgb,var(--ip) 5%,#FBF9F4);border-color:color-mix(in srgb,var(--ip) 22%,var(--rule))}
+body[data-view="game"] .section h2{border-left:5px solid var(--ip);padding-left:10px}
+body[data-view="game"] .section-kicker{color:var(--ip-ink)}
+body[data-view="game"] .title h2:before{background:color-mix(in srgb,var(--ip) 14%,#fff);color:var(--ip-ink)}
+body[data-view="game"] .series-group,body[data-view="game"] .series-sort button{border-color:color-mix(in srgb,var(--ip) 20%,var(--rule))!important}
+body[data-view="game"] .series-group:hover,body[data-view="game"] .series-sort button:hover{background:color-mix(in srgb,var(--ip) 12%,#fff)!important;color:var(--ip-ink)!important}
+body[data-view="game"] .cards .card{border-color:color-mix(in srgb,var(--ip) 18%,#DDD5C4);transition:border-color .15s,box-shadow .15s}
+body[data-view="game"] .cards .card:hover{border-color:var(--ip);box-shadow:0 0 0 1px var(--ip)}
+body[data-view="game"] .card-rarity[data-tier="top"]{background:var(--ip-2);color:var(--ip-2-on)}
+body[data-view="game"] .load-more{border-color:var(--ip);color:var(--ip-ink)}
+body[data-view="game"] .load-more:hover{background:var(--ip);color:var(--ip-on)}
+body[data-view="game"] .source-link{background:var(--ip);color:var(--ip-on)}
+body[data-view="game"] .tab.on{border-bottom-color:var(--ip)}
+body[data-view="game"] .dialog{border-top:8px solid var(--ip)}
+body[data-view="game"] :focus-visible{outline-color:var(--ip-ink)}
+body[data-view="game"] .bottom{border-top:3px solid var(--ip)}
+body[data-view="game"] .bottom b{color:var(--ip-ink)}
+/* Every index tab shows its own IP colour as a strip, so the binder reads as one colour per IP at a glance. */
+.channel[data-ip]:not(.on){box-shadow:inset 0 3px 0 var(--ip)}
+body[data-view="game"] .channel[data-ip]:not(.on):hover{background:color-mix(in srgb,var(--ip) 12%,#fff);color:var(--ip-ink)}
+body[data-view="game"] .product-category.on{color:var(--ip-ink);border-color:var(--ip)}
+body[data-view="game"] .product-category:hover{color:var(--ip-ink)}
