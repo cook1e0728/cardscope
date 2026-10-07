@@ -463,6 +463,14 @@
   - 預覽啟動：桌電 App 用上層 `C:\Users\99wye\Documents\CardScope\.claude\launch.json` 的 `design-preview`（`cardscope/scripts/preview-proxy.mjs 4300`，本機檔、不在 repo）；或照上一點指令手動跑。注意：此電腦的 `python` 是 Windows Store 空殼，不能用來改檔。
 - 下一步：依使用者觀察的回饋調整；確定後再處理字重與文案（例如「探索你的卡牌宇宙」），合併前更新主方案第 5 節的風格規定，合併後部署。
 
+### 依序執行 57：遊戲導覽改用官方 Logo（ADR 0028，2026-10-08，桌電，預覽分支）
+
+- 使用者看了 `07afc44`（Logo 配色漸層＋自繪剪影）的首頁截圖，認為「非常不直覺、圖案很陽春、顏色完全沒有對應到」，一直希望直接使用官方圖片。說明授權風險後，使用者明確同意五個 IP 都用官方 Logo（ADR 0028）。
+- 來源（皆取自官方網站，存 `assets/ip-logos/`，SVG 已確認無腳本）：寶可夢 pokemon-card.com `logo_b.svg`（日本官網網站 Logo，含「トレーナーズウェブサイト」字樣；台灣與英文官網找不到獨立的卡牌遊戲 Logo）、航海王 `logo_op.png`、遊戲王 OCG `logo-ocg.png`、芙莉蓮用 Weiß Schwarz 遊戲 Logo（商品頁沒有作品標題 Logo）、排球少年 TAKARA TOMY 商品頁 `logo.svg`。
+- 預覽分支 `a6b163a`（`[skip render]`，未合併）：`data/game-taxonomy.json` 與 `game-switcher.js` 的 `categoryVisual` 改為官方 Logo（`kind:'official-logo'`、記錄 `source`）——**注意前端啟動後會讀 `data/game-taxonomy.json` 覆蓋內建設定，兩處都要改**。主題移除 `--motif`，改 `--logo`：首頁分類格白底放 Logo；遊戲頁分頁籤放小 Logo＋名稱，選中者白底加主色上緣；色帶右側白色底板放 Logo。色帶配色改取 Logo 實際顏色：寶可夢紅 `#E50012`（先前的黃藍與日本卡牌 Logo 不符）、航海王黑、遊戲王紅、Weiß Schwarz 深藍、排球少年橘。頁尾商標聲明補「官方 Logo 僅用於辨識遊戲，權利人要求時將立即移除」。新增 `test/official-logos.test.mjs`，Node 322/322。已截圖確認首頁、寶可夢、航海王、遊戲王、排球少年。
+- 待使用者決定：寶可夢 Logo 是否接受含網站名的版本（替代：另找或裁切，但裁切屬修改 Logo）；其餘卡冊主題是否可以合併上線。
+- 預覽伺服器的瀏覽器快取會保留舊的 `game-switcher.js`／taxonomy，看不到變更時用 `?v=時間戳` 重新載入。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
