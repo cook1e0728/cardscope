@@ -156,3 +156,16 @@ body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img{background:#f
 body[data-view="game"] #gameContext:before{content:"";position:absolute;right:11px;top:50%;width:calc(min(190px,38%) + 14px);height:78px;transform:translateY(-50%);border-radius:12px;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%);background-size:auto,250% 100%;box-shadow:0 2px 6px #00000059,inset 0 1px 0 #ffffff66;animation:cs-metal 9s ease-in-out infinite}
 body[data-view="game"] #gameContext:after{z-index:1;box-shadow:0 1px 2px #00000066}
 @media(prefers-reduced-motion:reduce){body[data-view="game"] .channel[data-ip],body[data-view="game"] #gameContext:before{animation:none}}
+
+/* Card grid in gunmetal: each card sits in a dark brushed-metal frame (the darkest stops keep white names and the
+   light-grey numbers at or above 4.5:1), its art inside a thin light bezel. Stickers and action buttons keep their
+   own light fills. The frame sheen is static here so a full grid of cards stays calm. */
+.cards .card{border-color:#1E2126;background:repeating-linear-gradient(90deg,#ffffff0d 0 1px,#0000000d 1px 2px,#ffffff00 2px 3px),linear-gradient(160deg,#3A3F46 0%,#24282D 30%,#2E3238 60%,#41464E 85%,#24282D 100%);box-shadow:inset 0 1px 0 #ffffff33,0 1px 3px #0000004d;color:#fff}
+.cards .card .art{border:1px solid #B9BFC6;background:#F3F4F5;box-shadow:0 0 0 1px #1E2126}
+.cards .card h3,.cards .card .card-list-main h3{color:#fff}
+.cards .card .meta,.cards .card .card-no,.cards .card .card-list-main .meta{color:#C9CDD2}
+.cards .card .badge:not(.ip-badge){background:#ffffff1f;color:#E9ECEF;border-color:#ffffff33}
+.cards .card .card-price{color:#F7F8F9}
+.cards .card:hover{border-color:#8D9299;box-shadow:inset 0 1px 0 #ffffff4d,0 4px 10px #00000059}
+/* The action controls keep light fills, so they need dark text back (the card frame sets white). */
+.cards .card .card-actions,.cards .card .card-actions button,.cards .card .watchlist-inline span{color:var(--ink)}
