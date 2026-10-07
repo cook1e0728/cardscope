@@ -104,3 +104,13 @@ body[data-view="game"] .bottom{border-top:3px solid var(--ip)}
 body[data-view="game"] .bottom b{color:var(--ip-ink)}
 body[data-view="game"] .product-category.on{color:var(--ip-ink);border-color:var(--ip)}
 body[data-view="game"] .product-category:hover{color:var(--ip-ink)}
+
+/* 全部遊戲: a slowly flowing gradient of the five IP colours with ripples spreading from the centre. The body[data-view] prefix outranks the white landing-tile rule above. The layers sit
+   behind the rabbit mark; motion runs on transform/background-position only and stops under reduced motion. */
+body[data-view] .channel[data-ip="all"] .channel-art{position:relative;overflow:hidden;isolation:isolate;border:0;background:linear-gradient(120deg,#E50012,#DF600E,#FFCB05,#2E4170,#1A1A1A,#E50012);background-size:300% 300%;animation:cs-flow 12s ease-in-out infinite}
+body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{content:"";position:absolute;left:50%;top:50%;width:180%;aspect-ratio:1;border-radius:50%;z-index:-1;pointer-events:none;background:repeating-radial-gradient(circle,#ffffff00 0 9%,#ffffff40 10% 11%,#ffffff00 12% 18%);transform:translate(-50%,-50%) scale(.35);opacity:0;animation:cs-ripple 4.8s ease-out infinite}
+body[data-view] .channel[data-ip="all"] .channel-art:after{animation-delay:2.4s}
+body[data-view] .channel[data-ip="all"] .channel-art img{position:relative;z-index:1;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff)}
+@keyframes cs-flow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes cs-ripple{0%{transform:translate(-50%,-50%) scale(.35);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.15);opacity:0}}
+@media(prefers-reduced-motion:reduce){body[data-view] .channel[data-ip="all"] .channel-art,body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{animation:none}body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{opacity:0}}
