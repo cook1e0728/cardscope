@@ -146,3 +146,13 @@ body[data-view="landing"] .channel[data-ip]:nth-child(5) .channel-art:before{ani
 body[data-view="landing"] .channel[data-ip]:nth-child(6) .channel-art:before{animation-delay:1.75s}
 body[data-view="landing"] .channel[data-ip]:nth-child(1) .channel-art:before{animation-delay:0s}
 @media(prefers-reduced-motion:reduce){body[data-view="landing"] .channel[data-ip] .channel-art,body[data-view="landing"] .channel[data-ip] .channel-art:before{animation:none}body[data-view="landing"] .channel[data-ip] .channel-art:before{opacity:0}}
+
+/* Game pages in gunmetal. Unselected tabs are dark brushed metal with white names (the darkest stops keep white
+   text at or above 4.5:1) and their logo on a small white plate; the selected tab stays white so the current game
+   reads at a glance. The band's logo plate sits in a gunmetal bezel whose sheen drifts like the landing tiles. */
+body[data-view="game"] .channel[data-ip]:not(.on){color:#fff;border-color:#1E2126;background:repeating-linear-gradient(90deg,#ffffff0d 0 1px,#0000000d 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#24282D 0%,#3A3F46 22%,#4B5159 38%,#2C3036 55%,#41464E 78%,#24282D 100%);background-size:auto,250% 100%;box-shadow:inset 0 1px 0 #ffffff33;animation:cs-metal 9s ease-in-out infinite}
+body[data-view="game"] .channel[data-ip]:not(.on):hover{background:repeating-linear-gradient(90deg,#ffffff0d 0 1px,#0000000d 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2E3238 0%,#454A52 22%,#565C64 38%,#363A41 55%,#4B5159 78%,#2E3238 100%);background-size:auto,250% 100%}
+body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img{background:#fff;border-radius:3px;padding:2px 4px;box-sizing:content-box}
+body[data-view="game"] #gameContext:before{content:"";position:absolute;right:11px;top:50%;width:calc(min(190px,38%) + 14px);height:78px;transform:translateY(-50%);border-radius:12px;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%);background-size:auto,250% 100%;box-shadow:0 2px 6px #00000059,inset 0 1px 0 #ffffff66;animation:cs-metal 9s ease-in-out infinite}
+body[data-view="game"] #gameContext:after{z-index:1;box-shadow:0 1px 2px #00000066}
+@media(prefers-reduced-motion:reduce){body[data-view="game"] .channel[data-ip],body[data-view="game"] #gameContext:before{animation:none}}
