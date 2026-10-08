@@ -13,7 +13,7 @@ ADR 0021 匯入日版寶可夢官方商品清單時只收文字事實，不收�
 - **範圍**：只用於 `tcg_products` 中既有的日版寶可夢商品（ADR 0021 匯入的 1,963 筆），圖片網址取自同一份官方清單 `https://www.pokemon-card.com/products/resultAPI.php` 的縮圖欄位 `tumbsImg`。不收卡圖、不收其他頁面的圖。
 - **外連不轉存**：`image_url` 存官方網址，瀏覽器直接向官方網站載入；不下載、不重新託管、不改圖。
 - **對應方式**：以日文商品名＋發售日對應既有商品（兩者都相同才寫入；同一組合對到不同縮圖的不寫）。2026-10-09 對應 1,962 筆；1 筆（2019 年的 Oceanic Operetta 卡套）已不在官方清單，維持無圖。
-- **標記**：`metadata.imageRightsStatus` 改為 `risk-accepted`、`metadata.imageBasis` 為 `ADR 0029`。來源註記 `data/source-registry.json` 的 `pokemon-card-official-jp` 圖片顯示政策原本就是 `risk-accepted`，不需修改。
+- **標記**：單筆 `metadata.imageRightsStatus` 維持 `not-provided`（確實沒有取得授權），`metadata.imageBasis` 記 `ADR 0029`。接受風險是來源層級的決定：`data/source-registry.json` 的 `pokemon-card-official-jp` 圖片顯示政策原本就是 `risk-accepted`，伺服器只在「來源 risk-accepted＋單筆 not-provided」時顯示，不需修改。（第一次寫入時誤把單筆狀態寫成 `risk-accepted`，這個值不在允許清單，圖片全被濾掉；已改回。）
 - **系列磚**：系列沒有自己的圖時，借用連結到該系列的密封商品圖（目前 83 件商品有 `series_id`）。
 - **撤回**：把這些商品的 `image_url` 清空即恢復文字佔位；權利人要求時立即執行。頁尾既有聲明（官方素材僅用於辨識，權利人要求時移除）適用。
 
