@@ -519,6 +519,13 @@
 - 圖片一開始沒出現：伺服器只在「來源政策 risk-accepted＋單筆 `imageRightsStatus` 為 not-provided」時顯示（`providers/source-policy.mjs` 的 `imageRightsAllowDisplay`），我把單筆狀態寫成 `risk-accepted` 而被濾掉。已把 1,962 筆改回 `not-provided`（只改資料，ADR 0029 已補註）。正式站 `/api/products` 寶可夢有圖 1,925 件（重複商品合併後）；寶可夢日版系列磚 M6a、M6、M5、M4、M3 等顯示官方卡盒圖；MF、MC 沒有連結商品，仍為紅底代碼。
 - 補連結（ADR 0021 補充）：官方商品頁網址代碼（`/ex/<代碼>`、`/product/<代碼>`）與發售日都和日版系列相同才連；13 件（MF、MC、M3、SV2a×2、S4、S4a、S8b、S9、S10b、S11、S12、S12a），有卡盒圖的日版系列 65→75。
 
+### 依序執行 63：其餘系列的卡盒圖（2026-10-09，桌電，已部署）
+
+- 日版：官方卡片搜尋 pg 對照表沒有劍盾世代（pg 700–876），補掃 32 個 pg 的第一頁（卡片縮圖路徑的系列資料夾），證據 `docs/evidence/pokemon-jp/official-series/official-product-ids-swsh-20261009.json`；第一頁全部屬同一系列且發售日相同者連結 15 件（S5I～S11a 的補充包）。SM 以前的世代：官方商品清單從 2019 年底才開始，舊系列專題頁 99 個只剩 8 個，且圖說不精準（只有 4 個完全符合，其中 2 個是標題字），**不補**，維持代碼磚。另有 15 件劍盾早期商品對到資料庫還沒有的系列（S1W、S1H、S2、S3 等）。
+- 台版（ADR 0030，使用者同意接受風險）：台灣官方商品頁單頁含全部商品；匯入擴充包、構築牌組、其他商品 185 件（`source: pokemon-tw-official`，周邊 310 件不收），以商品資訊連結或縮圖檔名中的系列代碼連 118 件到 85 個台版系列（衝突 1 件不連）。來源註記新增 `pokemon-tw-official: risk-accepted`（`fa5fee1`，已部署）。重播 0。早期中文版系列（AC、AS、CS 等）沒有對應商品。
+- 結果（有圖系列／總數）：日版 90／267、台版 85／146、美版 176／177（系列 Logo）。正式站台版頁系列磚顯示中文版卡盒圖。
+- 注意：部署重啟後約 1 分鐘內目錄會暫時退回備用資料（系列只有 4 筆），重新整理即可。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
