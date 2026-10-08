@@ -1,4 +1,4 @@
-// Game-page series band (preview), in the shape of trade.kapaipai.tw/trade: a region switch, a text tab row
+// Game-page series band, in the shape of trade.kapaipai.tw/trade: a region switch, a text tab row
 // (最新 / 最近瀏覽 / product categories / eras) and a rail of square tiles. Only the layout is borrowed. Series tiles
 // are the catalog's own series (each opens its card table); product tiles are the 商品圖鑑 products, which this band
 // replaces. Each IP is browsed one region at a time (JP first, per the data priority); a tile without an image shows

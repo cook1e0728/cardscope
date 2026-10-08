@@ -1,4 +1,4 @@
-/* Binder theme (preview): warm paper, one colour per IP, game switch as binder index tabs, cards in sleeves,
+/* Binder theme: warm paper, one colour per IP, game switch as binder index tabs, cards in sleeves,
    rarity as sticker labels. Loaded last so removing this file restores the previous look. */
 :root{--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff;--ip-2-on:#2B2105;--ip-ink:#3B3A36;--tint:var(--ip);--band:linear-gradient(135deg,#3B3A36,#5A5348);--band-on:#fff;--logo:none}
 /* ADR 0028: the official logos (assets/ip-logos/, used unaltered on a white plate) identify each game; the band
@@ -25,7 +25,8 @@ body[data-view="game"] .channel.on b{font-weight:700}
 /* Each tab shows its game's official logo (small, on paper); the selected tab is white, taller, and joins the band. */
 body[data-view="game"] .channel[data-ip]{position:relative;display:flex;align-items:center;gap:8px;background:#E6E0D2;margin-top:6px;transition:margin-top .15s,min-height .15s}
 body[data-view="game"] .channel[data-ip] .channel-art{display:block;height:22px;width:auto;border:0;border-radius:0;background:none;padding:0;box-shadow:none}
-body[data-view="game"] .channel[data-ip] .channel-art img{height:22px;width:auto;max-width:72px;max-height:22px;object-fit:contain;padding:0}
+/* Fixed logo box so the tabs do not shift sideways when the logos finish loading. */
+body[data-view="game"] .channel[data-ip] .channel-art img{height:22px;width:72px;max-width:72px;max-height:22px;object-fit:contain;padding:0}
 body[data-view="game"] .channel[data-ip]:not(.on):hover{margin-top:2px;background:#F1ECE1}
 body[data-view="game"] .channel[data-ip].on{margin-top:0;min-height:50px;background:#fff;color:var(--ink);border-color:var(--rule);box-shadow:inset 0 3px 0 var(--ip)}
 body[data-view="game"] #gameContext{position:relative;overflow:hidden;margin:0;padding:24px 18px 22px;min-height:96px;border:0;border-radius:0 10px 10px 10px;background:var(--band);color:var(--band-on)}
@@ -118,23 +119,10 @@ body[data-view] .channel[data-ip="all"] .channel-art img{position:relative;z-ind
 @keyframes cs-ripple{0%{transform:translate(-50%,-50%) scale(.35);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.15);opacity:0}}
 @media(prefers-reduced-motion:reduce){body[data-view] .channel[data-ip="all"] .channel-art,body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{animation:none}body[data-view] .channel[data-ip="all"] .channel-art:before,body[data-view] .channel[data-ip="all"] .channel-art:after{opacity:0}}
 
-/* Preview-only finish comparison, chosen with ?metal=silver|gold|rose|iris (silver is the default above). Each
-   variant swaps only the metal gradient and its border; the grain, sheen, ripples and reduced-motion rule are shared. */
-body[data-metal="gold"] .channel[data-ip="all"] .channel-art{border-color:#8A6A1F;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#7C5E1A 0%,#C9A24A 14%,#FFF0BF 24%,#B08428 36%,#EFD083 50%,#94701F 63%,#E3C16D 76%,#FFF5D6 86%,#7C5E1A 100%);background-size:auto,250% 100%}
-body[data-metal="rose"] .channel[data-ip="all"] .channel-art{border-color:#9C6B60;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#94655A 0%,#D9A698 14%,#FFE6DD 24%,#B78275 36%,#EFC6BA 50%,#A07064 63%,#E4B5A8 76%,#FFF0EA 86%,#94655A 100%);background-size:auto,250% 100%}
-body[data-metal="iris"] .channel[data-ip="all"] .channel-art{background:repeating-linear-gradient(90deg,#ffffff12 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(110deg,#E5001247,#FFCB0547,#2E417047,#DF600E47,#1A1A1A33,#E5001247),linear-gradient(115deg,#7E838B 0%,#C9CDD2 14%,#F4F5F7 24%,#A3A8AF 36%,#E2E5E8 50%,#8D9299 63%,#DADDE1 76%,#F7F8F9 86%,#80858C 100%);background-size:auto,300% 100%,250% 100%;animation-name:cs-iris}
-@keyframes cs-iris{0%,100%{background-position:0 0,0% 50%,0% 50%}50%{background-position:0 0,100% 50%,100% 50%}}
-/* More finishes for the comparison: gunmetal, holographic foil (this tile only, never on card art), copper,
-   anodised titanium and pearl. */
-body[data-metal="gunmetal"] .channel[data-ip="all"] .channel-art{border-color:#2B2F35;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%);background-size:auto,250% 100%}
-body[data-metal="gunmetal"] .channel[data-ip="all"] .channel-art img{filter:invert(1) drop-shadow(0 1px 0 #00000080)}
-body[data-metal="holo"] .channel[data-ip="all"] .channel-art{border-color:#9AA3B2;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#ff9ad566,#ffe08a66,#a5f0b066,#8fd3ff66,#c9a5ff66,#ff9ad566),linear-gradient(115deg,#C9CDD2 0%,#F4F5F7 24%,#D5D9DE 50%,#F7F8F9 86%,#C9CDD2 100%);background-size:auto,300% 100%,250% 100%;animation-name:cs-iris}
-body[data-metal="copper"] .channel[data-ip="all"] .channel-art{border-color:#7A3F22;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#6E3519 0%,#B8693E 14%,#F6C3A0 24%,#8E4A27 36%,#DD9466 50%,#7A3D1E 63%,#C9805A 76%,#FAD4B9 86%,#6E3519 100%);background-size:auto,250% 100%}
-body[data-metal="titanium"] .channel[data-ip="all"] .channel-art{border-color:#3E3F6E;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#33356A 0%,#5966A8 14%,#C7B8F0 24%,#4A4F8F 36%,#8C7BD0 50%,#3B3F7A 63%,#6D8BC9 76%,#D9CCF7 86%,#33356A 100%);background-size:auto,250% 100%}
-body[data-metal="titanium"] .channel[data-ip="all"] .channel-art img{filter:invert(1) drop-shadow(0 1px 0 #00000080)}
-body[data-metal="pearl"] .channel[data-ip="all"] .channel-art{border-color:#C8C2CC;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#E9E4EA 0%,#FBF8FA 14%,#FFFFFF 24%,#EDE4F1 36%,#FDF6F3 50%,#E3ECF4 63%,#FAF5FB 76%,#FFFFFF 86%,#E9E4EA 100%);background-size:auto,250% 100%}
+body[data-view] .channel[data-ip="all"] .channel-art{border-color:#2B2F35;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%);background-size:auto,250% 100%}
+body[data-view] .channel[data-ip="all"] .channel-art img{filter:invert(1) drop-shadow(0 1px 0 #00000080)}
 
-/* Chosen finish: gunmetal (default ?metal). The game tiles share it as a bezel: each official logo stays unaltered
+/* Finish: gunmetal. The game tiles share it as a bezel: each official logo stays unaltered
    on a white plate set into a gunmetal frame, and the sheen passes across the six tiles one after another. */
 body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art{position:relative;overflow:hidden;isolation:isolate;padding:7px;border:1px solid #2B2F35;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%);background-size:auto,250% 100%;box-shadow:inset 0 1px 0 #ffffff55,inset 0 -1px 0 #00000055;animation:cs-metal 9s ease-in-out infinite}
 body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art img{position:relative;z-index:1;box-sizing:border-box;width:100%;height:100%;max-width:none;max-height:none;padding:6px 8px;border-radius:5px;background:#fff;object-fit:contain;box-shadow:0 1px 2px #00000066}
@@ -170,14 +158,6 @@ body[data-view="game"] #gameContext:after{z-index:1;box-shadow:0 1px 2px #000000
 /* The action controls keep light fills, so they need dark text back (the card frame sets white). */
 .cards .card .card-actions,.cards .card .card-actions button,.cards .card .watchlist-inline span{color:var(--ink)}
 
-/* Band comparison (?band=plain|art|metal|pattern). Text sits on the left over the darkest part of each variant. */
-body[data-band="art"][data-view="game"] #gameContext{background:var(--ip)}
-body[data-band="art"][data-view="game"] #gameContext:before{z-index:1}body[data-band="art"][data-view="game"] #gameContext:after{z-index:2}
-body[data-band="art"] #gameContext .band-art{position:absolute;inset:-30px;z-index:0;pointer-events:none;background:center 30%/cover no-repeat;filter:blur(14px) saturate(1.2) brightness(.75);transform:scale(1.1)}
-body[data-band="art"] #gameContext .band-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--ip) 0%,color-mix(in srgb,var(--ip) 80%,transparent) 35%,color-mix(in srgb,var(--ip) 15%,transparent) 75%,transparent 100%)}
-body[data-band="metal"][data-view="game"] #gameContext{background:repeating-linear-gradient(90deg,#ffffff12 0 1px,#00000012 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,color-mix(in srgb,var(--ip) 78%,transparent),color-mix(in srgb,var(--ip) 55%,transparent) 45%,color-mix(in srgb,var(--ip) 72%,transparent)),linear-gradient(115deg,#24282D 0%,#4B5159 18%,#8D9299 30%,#2E3238 45%,#6B727B 60%,#24282D 75%,#565C64 90%,#24282D 100%);background-size:auto,300% 100%,250% 100%;animation:cs-iris 10s ease-in-out infinite;box-shadow:inset 0 1px 0 #ffffff40,inset 0 -1px 0 #00000059}
-body[data-band="pattern"][data-view="game"] #gameContext{background:linear-gradient(90deg,var(--ip) 0%,var(--ip) 28%,color-mix(in srgb,var(--ip) 0%,transparent) 70%),radial-gradient(circle,#ffffff38 1.3px,#ffffff00 1.8px) 0 0/9px 9px,repeating-linear-gradient(-45deg,#ffffff12 0 2px,#ffffff00 2px 11px),var(--band)}
-@media(prefers-reduced-motion:reduce){body[data-band="metal"][data-view="game"] #gameContext{animation:none}}
 
 /* Band layout: the logo plate and the text read as one group on the left (the old layout put the name at the far
    left and the logo at the far right, so the eye had to cross an empty band). The plate's gunmetal frame is its own
@@ -200,7 +180,7 @@ body[data-view="game"] #gameContext .game-context-latest b{font-size:18px;line-h
 body[data-view="game"] #gameContext .game-context-latest-meta{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;opacity:.95}
 @media(max-width:760px){body[data-view="game"] #gameContext{flex-wrap:wrap}body[data-view="game"] #gameContext .game-context-latest{margin-left:0;max-width:none;width:100%}}
 
-/* Series band (preview, series-band.js): replaces the coloured title band with the kapaipai-style entry row — text
+/* Series band (series-band.js): replaces the coloured title band with the kapaipai-style entry row — text
    tabs over square series tiles. The selected IP tab joins the white band. */
 body[data-view="game"] #gameContext{display:none}
 .series-band{margin:0;padding:6px 14px 14px;background:#fff;border:1px solid var(--rule);border-radius:0 10px 10px 10px}
