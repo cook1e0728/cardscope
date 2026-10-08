@@ -504,6 +504,14 @@
 - 後續候選：航海王系列補發售日（「最新」排序）、寶可夢日版商品缺代碼與圖、遊戲頁已隱藏的 `#gameContext`／舊商品圖鑑樣式可清理、喚醒排程改外部監測（需使用者註冊）。
 - 清理（2026-10-09）：移除遊戲頁已隱藏的舊色帶樣式（`#gameContext` 的漸層、Logo 底板、金屬框、「最新系列」按鈕，theme-binder.css 226→193 行）與僅遊戲頁用的舊商品圖鑑樣式（`.series-group`／`.product-category` 的 IP 色）；刪除 `latestSeriesEntry`／`renderLatestSeries`，`#gameContext` 在遊戲頁改為空元素，只當橫幅的插入點（首頁仍顯示「目前瀏覽 跨 IP 搜尋」）。首頁的 `series-navigator.js` 商品區塊與共用樣式保留。冒煙測試的遊戲切換檢查改看選中的分頁籤；單元測試改為驗證橫幅取代舊色帶。Node 323/323、冒煙測試通過。
 
+### 依序執行 61：航海王發售日與卡盒圖（2026-10-09，桌電，已部署）
+
+- 原因：同步只讀官方商品頁首頁（12 件），且以網址檔名（`op18-html`）對商品 ID（`op-18`），永遠對不上；系列的 `release_date` 寫死 null。所以 59＋59 個系列沒有日期、對應商品沒有圖（只有首頁那 11 件有）。
+- 修正 `providers/catalog-sync.mjs`（`f96a470`）：`fetchOnePieceProducts` 讀三個分類（boosters、decks、others）的所有分頁（亞洲英文與繁中各約 17 頁，一次一個、間隔 ≥1 秒，ADR 0027 範圍內）；`parseOnePieceProducts` 改為逐格解析（沒有日期的周邊也保留）、從標題取代碼（`[OP-13]`、`【OP-18】`、`[ST36]` 正規化為 `ST-36`）；以 `onePieceSetKey` 代碼對應系列（發售日）與商品（圖片、日期）。新增測試，Node 324/324，冒煙測試通過。
+- 回填（先部署新程式再寫，避免舊同步把日期寫回 null）：系列 118、商品 118（release_date、image_url、image_kind `sealed-product`、source_url），重播 0。證據 `docs/evidence/onepiece/official-products-20261008.json`（122 筆，文字事實＋官方圖片網址；圖片外連不轉存）。周邊等其他商品（約 100 件）由下一次同步（約 10-09 17:15 UTC 後）加入。
+- 前端：系列磚沒有系列圖時，借用同系列的密封商品圖（`series-band.js` 的 `cover`）。正式站航海王台版：「最新」為 OP-17（2026-08-22），之後 ST-36…；系列磚顯示官方卡盒圖；`/api/products` 航海王有圖 129 件。OP-18、EB-05 尚未進官方卡表，只出現在「密封商品」。
+- 寶可夢卡盒圖未處理：ADR 0021 因官方網站政策限制轉載而不收圖，需使用者決定是否接受風險。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
