@@ -186,7 +186,7 @@ async function clickIp(page,id){
 
 async function waitForGame(page,id){
   await page.waitForFunction(expected=>{
-    const context=document.querySelector('#gameContext')?.textContent||'';
+    const context=document.querySelector('#channels .channel.on')?.textContent||'';
     const cards=[...document.querySelectorAll('#cards .card')];
     return context.includes(expected.label)&&cards.length>0;
   },{label:gameLabels[id]},{timeout:8000});

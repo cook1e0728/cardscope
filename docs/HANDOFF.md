@@ -502,6 +502,7 @@
 - 分支 `claude/binder-theme-preview` 先合併 `main`，再快轉 `main`。
 - 部署：`main` 快轉 `e69eb72..d41fdc5`，約 40 秒後正式站提供 `series-band.js`、首頁不再載入 `theme-binder-preview.js`。正式站 `?game=pokemon`：預設日版、版本按鈕 日版／台版／美版、15 個分頁、31 張磚（NEW＋30）、無橫向溢出、分頁籤官方 Logo 正常；`/api/catalog/health` 200。
 - 後續候選：航海王系列補發售日（「最新」排序）、寶可夢日版商品缺代碼與圖、遊戲頁已隱藏的 `#gameContext`／舊商品圖鑑樣式可清理、喚醒排程改外部監測（需使用者註冊）。
+- 清理（2026-10-09）：移除遊戲頁已隱藏的舊色帶樣式（`#gameContext` 的漸層、Logo 底板、金屬框、「最新系列」按鈕，theme-binder.css 226→193 行）與僅遊戲頁用的舊商品圖鑑樣式（`.series-group`／`.product-category` 的 IP 色）；刪除 `latestSeriesEntry`／`renderLatestSeries`，`#gameContext` 在遊戲頁改為空元素，只當橫幅的插入點（首頁仍顯示「目前瀏覽 跨 IP 搜尋」）。首頁的 `series-navigator.js` 商品區塊與共用樣式保留。冒煙測試的遊戲切換檢查改看選中的分頁籤；單元測試改為驗證橫幅取代舊色帶。Node 323/323、冒煙測試通過。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。

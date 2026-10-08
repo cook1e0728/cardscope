@@ -25,11 +25,12 @@ test('phone filters live in a bottom sheet that waits for 套用',()=>{
   assert.match(css,/\.card-tools\{backdrop-filter:none\}/,'the fixed sheet is positioned against the viewport');
 });
 
-test('the game band offers the newest set, never a stale one',()=>{
-  assert.match(html,/function latestSeriesEntry\(g\)\{/);
-  assert.match(html,/i\.catalogCategory==='原盒'/,'Japanese sealed products come first');
-  assert.match(html,/365\*864e5/,'sets older than a year are hidden instead of labelled newest');
-  assert.match(html,/entry\.upcoming\?'即將發售':'最新系列'/);
-  assert.match(html,/openProduct\(entry\.id\);else if\(typeof openSeriesIndex==='function'\)openSeriesIndex\(entry\.id\)/);
-  assert.match(ui.length?html:html,/搜尋不會要求先指定 IP。<\/small>`;renderLatestSeries\(\)\}/,'the shortcut is redrawn whenever the band is rebuilt');
+test('the series band replaces the old title band and the game-page 商品圖鑑',async()=>{
+  const [band,theme]=await Promise.all(['../series-band.js','../theme-binder.css'].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
+  assert.ok(html.includes('<script src="/series-navigator.js"></script><script src="/series-band.js"></script>'),'the band wraps series() after the navigator defines it');
+  assert.ok(theme.includes('body[data-view="game"] #gameContext{display:none}'));
+  assert.ok(theme.includes('body[data-view="game"] section.section:has(> #series)'));
+  assert.doesNotMatch(html,/renderLatestSeries|latestSeriesEntry/,'the retired 最新系列 button is gone');
+  assert.ok(band.includes("regionOrder=['JP','TW','US'"),'Japanese first, per the data priority');
+  assert.ok(band.includes('if(!regions.includes(select.value))select.value=regions[0]'),'a game page always browses one region');
 });

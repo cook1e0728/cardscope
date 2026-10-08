@@ -204,7 +204,7 @@ summary{box-sizing:border-box;align-content:center}
 @media(max-height:500px){.top{position:static}#cardTools,#cards,#coverageStatus,#watchlistSummary{scroll-margin-top:8px}}
 /* Game pages open on series and cards (the kapaipai / BottleNeko pattern); the all-games landing keeps the introduction.
    data-view is set from the URL before first paint and kept in sync by render(), so nothing jumps. */
-body[data-view="game"] .hero-intro,body[data-view="game"] .hero-trust,body[data-view="game"] #gameContext small,body[data-view="game"] .browse-regions>span{display:none}
+body[data-view="game"] .hero-intro,body[data-view="game"] .hero-trust,body[data-view="game"] .browse-regions>span{display:none}
 body[data-view="game"] .channels{gap:8px;padding:4px 0 6px}
 body[data-view="game"] .channels:empty{min-height:54px}
 body[data-view="game"] .channel{min-width:0;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:#fff;white-space:nowrap}

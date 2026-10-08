@@ -29,9 +29,6 @@ body[data-view="game"] .channel[data-ip] .channel-art{display:block;height:22px;
 body[data-view="game"] .channel[data-ip] .channel-art img{height:22px;width:72px;max-width:72px;max-height:22px;object-fit:contain;padding:0}
 body[data-view="game"] .channel[data-ip]:not(.on):hover{margin-top:2px;background:#F1ECE1}
 body[data-view="game"] .channel[data-ip].on{margin-top:0;min-height:50px;background:#fff;color:var(--ink);border-color:var(--rule);box-shadow:inset 0 3px 0 var(--ip)}
-body[data-view="game"] #gameContext{position:relative;overflow:hidden;margin:0;padding:24px 18px 22px;min-height:96px;border:0;border-radius:0 10px 10px 10px;background:var(--band);color:var(--band-on)}
-/* The official logo sits unaltered on a white plate at the band's right edge. */
-body[data-view="game"] #gameContext:after{content:"";position:absolute;right:18px;top:50%;width:min(190px,38%);height:64px;transform:translateY(-50%);background:#fff var(--logo) center/auto 46px no-repeat;border-radius:8px;pointer-events:none}
 /* Landing tiles: the official logo on white replaces the unofficial category pictures. */
 /* Big enough for two-line logos to stay legible, and centred both ways (the base layout pinned them to the top). */
 body[data-view="landing"] .channel[data-ip]{min-width:176px}
@@ -39,8 +36,6 @@ body[data-view="landing"] .channel[data-ip] .channel-art{display:flex;align-item
 body[data-view="landing"] .channel[data-ip] .channel-art img{display:block;width:auto;height:auto;max-width:100%;max-height:60px;padding:0;object-fit:contain}
 @media(max-width:760px){body[data-view="landing"] .channel[data-ip]{min-width:128px}body[data-view="landing"] .channel[data-ip] .channel-art{height:70px;padding:8px 10px}body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:50px}}
 body[data-view="landing"] .channels:empty{min-height:120px}
-body[data-view="game"] #gameContext .game-context-kicker{color:inherit;opacity:.85;font-family:'Space Grotesk',sans-serif;letter-spacing:.08em;position:relative;z-index:1}
-body[data-view="game"] #gameContext b{position:relative;z-index:1;color:inherit;font-size:26px;font-weight:900;letter-spacing:-0.02em}
 
 /* Cards in sleeves: a white outer sleeve and an inner frame around the art. */
 .cards .card{background:#fff;border:1px solid #DDD5C4;border-radius:6px;padding:6px 6px 8px;box-shadow:none}
@@ -90,8 +85,6 @@ body[data-view="game"] .card-tools{background:color-mix(in srgb,var(--ip) 5%,#FB
 body[data-view="game"] .section h2{border-left:5px solid var(--ip);padding-left:10px}
 body[data-view="game"] .section-kicker{color:var(--ip-ink)}
 body[data-view="game"] .title h2:before{background:color-mix(in srgb,var(--ip) 14%,#fff);color:var(--ip-ink)}
-body[data-view="game"] .series-group,body[data-view="game"] .series-sort button{border-color:color-mix(in srgb,var(--ip) 20%,var(--rule))!important}
-body[data-view="game"] .series-group:hover,body[data-view="game"] .series-sort button:hover{background:color-mix(in srgb,var(--ip) 12%,#fff)!important;color:var(--ip-ink)!important}
 body[data-view="game"] .cards .card{border-color:color-mix(in srgb,var(--ip) 18%,#DDD5C4);transition:border-color .15s,box-shadow .15s}
 body[data-view="game"] .cards .card:hover{border-color:var(--ip);box-shadow:0 0 0 1px var(--ip)}
 body[data-view="game"] .card-rarity[data-tier="top"]{background:var(--ip-2);color:var(--ip-2-on)}
@@ -103,8 +96,6 @@ body[data-view="game"] .dialog{border-top:8px solid var(--ip)}
 body[data-view="game"] :focus-visible{outline-color:var(--ip-ink)}
 body[data-view="game"] .bottom{border-top:3px solid var(--ip)}
 body[data-view="game"] .bottom b{color:var(--ip-ink)}
-body[data-view="game"] .product-category.on{color:var(--ip-ink);border-color:var(--ip)}
-body[data-view="game"] .product-category:hover{color:var(--ip-ink)}
 
 /* 全部遊戲: brushed metal. A multi-stop silver gradient drifts slowly, a fine vertical grain gives the brushed
    finish, a light band sweeps across like metal turning under a lamp, and embossed rings ripple from the centre.
@@ -137,13 +128,11 @@ body[data-view="landing"] .channel[data-ip]:nth-child(1) .channel-art:before{ani
 
 /* Game pages in gunmetal. Unselected tabs are dark brushed metal with white names (the darkest stops keep white
    text at or above 4.5:1) and their logo on a small white plate; the selected tab stays white so the current game
-   reads at a glance. The band's logo plate sits in a gunmetal bezel whose sheen drifts like the landing tiles. */
+   reads at a glance. */
 body[data-view="game"] .channel[data-ip]:not(.on){color:#fff;border-color:#1E2126;background:repeating-linear-gradient(90deg,#ffffff0d 0 1px,#0000000d 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#24282D 0%,#3A3F46 22%,#4B5159 38%,#2C3036 55%,#41464E 78%,#24282D 100%);background-size:auto,250% 100%;box-shadow:inset 0 1px 0 #ffffff33;animation:cs-metal 9s ease-in-out infinite}
 body[data-view="game"] .channel[data-ip]:not(.on):hover{background:repeating-linear-gradient(90deg,#ffffff0d 0 1px,#0000000d 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2E3238 0%,#454A52 22%,#565C64 38%,#363A41 55%,#4B5159 78%,#2E3238 100%);background-size:auto,250% 100%}
 body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img{background:#fff;border-radius:3px;padding:2px 4px;box-sizing:content-box}
-body[data-view="game"] #gameContext:before{content:"";position:absolute;right:11px;top:50%;width:calc(min(190px,38%) + 14px);height:78px;transform:translateY(-50%);border-radius:12px;z-index:0;pointer-events:none;background:repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px),linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%);background-size:auto,250% 100%;box-shadow:0 2px 6px #00000059,inset 0 1px 0 #ffffff66;animation:cs-metal 9s ease-in-out infinite}
-body[data-view="game"] #gameContext:after{z-index:1;box-shadow:0 1px 2px #00000066}
-@media(prefers-reduced-motion:reduce){body[data-view="game"] .channel[data-ip],body[data-view="game"] #gameContext:before{animation:none}}
+@media(prefers-reduced-motion:reduce){body[data-view="game"] .channel[data-ip]{animation:none}}
 
 /* Card grid in gunmetal: each card sits in a dark brushed-metal frame (the darkest stops keep white names and the
    light-grey numbers at or above 4.5:1), its art inside a thin light bezel. Stickers and action buttons keep their
@@ -157,28 +146,6 @@ body[data-view="game"] #gameContext:after{z-index:1;box-shadow:0 1px 2px #000000
 .cards .card:hover{border-color:#8D9299;box-shadow:inset 0 1px 0 #ffffff4d,0 4px 10px #00000059}
 /* The action controls keep light fills, so they need dark text back (the card frame sets white). */
 .cards .card .card-actions,.cards .card .card-actions button,.cards .card .watchlist-inline span{color:var(--ink)}
-
-
-/* Band layout: the logo plate and the text read as one group on the left (the old layout put the name at the far
-   left and the logo at the far right, so the eye had to cross an empty band). The plate's gunmetal frame is its own
-   border (padding-box white + logo, border-box metal), so the old ::before bezel and ::after plate are retired. */
-body[data-view="game"] #gameContext{display:flex;align-items:center;gap:18px;padding:14px 18px;min-height:0}
-body[data-view="game"] #gameContext:before,body[data-view="game"] #gameContext:after{content:none}
-body[data-view="game"] #gameContext .game-context-logo{position:relative;z-index:1;flex:0 0 auto;width:172px;height:74px;box-sizing:border-box;padding:7px 9px;border:6px solid transparent;border-radius:12px;background:var(--logo) center/contain no-repeat content-box,linear-gradient(#fff,#fff) padding-box,repeating-linear-gradient(90deg,#ffffff14 0 1px,#00000010 1px 2px,#ffffff00 2px 3px) border-box,linear-gradient(115deg,#2A2E34 0%,#565C64 14%,#A9AFB7 24%,#3B4048 36%,#7D848D 50%,#2F343A 63%,#6B727B 76%,#B9BFC6 86%,#2A2E34 100%) border-box;box-shadow:0 2px 6px #00000059}
-body[data-view="game"] #gameContext .game-context-text{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-body[data-view="game"] #gameContext .game-context-kicker{font-size:13px;opacity:.9}
-body[data-view="game"] #gameContext b{font-size:30px;line-height:1.15}
-body[data-view="game"] #gameContext .game-context-facts{font-size:14px;font-weight:500;color:inherit;opacity:.92}
-@media(max-width:760px){body[data-view="game"] #gameContext{gap:12px;padding:12px}body[data-view="game"] #gameContext .game-context-logo{width:124px;height:58px;border-width:5px;padding:5px 6px}body[data-view="game"] #gameContext b{font-size:22px}body[data-view="game"] #gameContext .game-context-facts{font-size:12px}}
-
-/* 最新系列 sits at the band's right as a framed shortcut into the newest set; it wraps under the title on phones. */
-body[data-view="game"] #gameContext .game-context-latest{position:relative;z-index:1;margin-left:auto;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;max-width:44%;padding:9px 16px;border:1px solid #ffffff80;border-radius:8px;background:#00000026;color:inherit;text-align:left;cursor:pointer;transition:background .15s,border-color .15s}
-body[data-view="game"] #gameContext .game-context-latest:hover{background:#00000040;border-color:#fff}
-body[data-view="game"] #gameContext .game-context-latest:focus-visible{outline:3px solid #fff;outline-offset:2px}
-body[data-view="game"] #gameContext .game-context-latest-kicker{font-size:12px;font-weight:700;letter-spacing:.06em;opacity:.95}
-body[data-view="game"] #gameContext .game-context-latest b{font-size:18px;line-height:1.25;font-weight:700;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body[data-view="game"] #gameContext .game-context-latest-meta{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500;opacity:.95}
-@media(max-width:760px){body[data-view="game"] #gameContext{flex-wrap:wrap}body[data-view="game"] #gameContext .game-context-latest{margin-left:0;max-width:none;width:100%}}
 
 /* Series band (series-band.js): replaces the coloured title band with the kapaipai-style entry row — text
    tabs over square series tiles. The selected IP tab joins the white band. */
