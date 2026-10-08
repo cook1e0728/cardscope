@@ -495,6 +495,12 @@
   - 冒煙測試的「最近瀏覽」改為點橫幅的系列磚、檢查「最近瀏覽」分頁；地區按鈕改為 44px 高。冒煙測試（本機 4202）與 Node 323/323 通過。
 - 喚醒排程查證（10-08）：`keep-warm.yml` 有執行且成功，但 GitHub 實際約每 5–7 小時才跑一次（10-07 01:00、07:10、14:33、20:07 UTC），擋不住 Render 15 分鐘休眠；要有效需外部監測服務（如 UptimeRobot，需使用者註冊）。
 
+### 依序執行 60：卡冊主題與系列橫幅上線（2026-10-09，桌電）
+
+- 使用者指示「合併上線」（等於接受依序執行 58 的待決事項：寶可夢用含「トレーナーズウェブサイト」的官方 Logo、色帶不再使用——已由系列橫幅取代）。
+- 合併前處理：移除 `?metal=`／`?band=` 預覽切換與 `theme-binder-preview.js`，只留槍鐵灰（選擇器保留 `body[data-view]` 的權重，否則會被銀色底層蓋過）；遊戲頁分頁籤 Logo 固定 72×22 避免載入時橫向跳動；主方案第 5 節改為卡冊風格規定（IP 主色、系列橫幅、金屬質感只用在 CardScope 自己的框、緩慢反光是唯一持續動畫且 reduced motion 停止）。Node 323/323、`npm run check`、冒煙測試（本機 4202）、`git diff --check` 通過。
+- 分支 `claude/binder-theme-preview` 先合併 `main`，再快轉 `main`。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
