@@ -517,6 +517,7 @@
 - 使用者選擇「接受風險，外連官方圖」。ADR 0029 已寫。官方清單 `resultAPI.php` 四類共 1,968 筆（間隔 1.2 秒抓取，暫存 `%TEMP%/claude/pkprobe/products.json`），以日文商品名＋發售日對應既有商品（日期格式要允許 `2026年 6月 6日` 的空白）。
 - 資料庫已寫入：1,962 筆 `tcg_products.image_url`（`metadata.imageRightsStatus=risk-accepted`、`imageBasis=ADR 0029`），重播 0；1 筆不在官方清單。65 個日版系列（朱紫、MEGA 全部）有連結商品可借圖。`series-band.js` 改為優先借原盒圖（`6fa5f83`，已部署）。
 - 圖片一開始沒出現：伺服器只在「來源政策 risk-accepted＋單筆 `imageRightsStatus` 為 not-provided」時顯示（`providers/source-policy.mjs` 的 `imageRightsAllowDisplay`），我把單筆狀態寫成 `risk-accepted` 而被濾掉。已把 1,962 筆改回 `not-provided`（只改資料，ADR 0029 已補註）。正式站 `/api/products` 寶可夢有圖 1,925 件（重複商品合併後）；寶可夢日版系列磚 M6a、M6、M5、M4、M3 等顯示官方卡盒圖；MF、MC 沒有連結商品，仍為紅底代碼。
+- 補連結（ADR 0021 補充）：官方商品頁網址代碼（`/ex/<代碼>`、`/product/<代碼>`）與發售日都和日版系列相同才連；13 件（MF、MC、M3、SV2a×2、S4、S4a、S8b、S9、S10b、S11、S12、S12a），有卡盒圖的日版系列 65→75。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
