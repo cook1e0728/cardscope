@@ -482,6 +482,14 @@
 - 待使用者決定：色帶效果選哪種（或混搭）；寶可夢 Logo 是否接受含「トレーナーズウェブサイト」的版本；整體是否合併上線（合併前要：移除 `?metal=`／`?band=` 預覽切換與 `theme-binder-preview.js`、保留分頁籤 Logo 尺寸避免載入跳動、更新主方案第 5 節風格規定（持續動畫、金屬質感超出原「極淡紙張質感、120–180 ms」規定）、跑冒煙測試）。
 - 本機：預覽伺服器 `design-preview`（port 4300）由 Claude 啟動；換對話後若停了，用 `node scripts/preview-proxy.mjs` 重開。看不到更新時網址加 `?v=數字`。
 
+### 依序執行 59：卡拍拍式系列橫幅（2026-10-08，桌電，預覽分支 `3559902`）
+
+- 使用者給卡拍拍（trade.kapaipai.tw/trade）首屏截圖，要「橫幅像這樣」：文字分頁列（最新、各世代）＋大方圖系列磚（名稱粗體、代碼灰字），第一格黑底「最新商品 NEW」。
+- 新檔 `series-band.js`（包住 `series()`，在 `#gameContext` 後插入 `#seriesBand`）；遊戲頁隱藏原本的 IP 色帶（含「最新系列」按鈕，由 NEW 格取代）。磚的資料用完整系列目錄 `C.series`（寶可夢日版 267 個，含 M6a、MF、M6、M5），不用商品清單——寶可夢日版商品沒有代碼也沒有圖（`imageRightsStatus: not-provided`），試做時整排都是「日版」。分頁：最新（依發售日前 30 個）、最近瀏覽（`cardscope-band-recent`，有才顯示）、`seriesGroupBuckets` 的世代分組；跟隨「版本」選單；多版本並列時代碼後加版本。有系列圖（美版寶可夢 Logo 176、遊戲王 564）就顯示圖，沒有則 IP 色底＋大字代碼，不放「圖片待補」灰框。點磚開該系列卡表（`/api/cards?series=`，M6a 176 張已實測），選中的磚加 IP 色外框。下方「商品圖鑑」（實體商品）保留不動。
+- 驗證：寶可夢、遊戲王、航海王桌機截圖；手機 375 寬無橫向溢出、橫幅高 225 px。Node 323/323。
+- 待使用者回饋：橫幅是否符合期待；合併前另需處理依序執行 58 列的事項，以及冒煙測試補上橫幅。
+- 喚醒排程查證（10-08）：`keep-warm.yml` 有執行且成功，但 GitHub 實際約每 5–7 小時才跑一次（10-07 01:00、07:10、14:33、20:07 UTC），擋不住 Render 15 分鐘休眠；要有效需外部監測服務（如 UptimeRobot，需使用者註冊）。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
