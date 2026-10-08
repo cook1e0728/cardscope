@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
+import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, onePieceSetKey, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 import { catalogCollectionAllowed, imageCollectionAllowed, imageRightsAllowDisplay, sourcePolicySummary } from '../providers/source-policy.mjs';
 
@@ -160,6 +160,15 @@ test('official product parser keeps sealed products separate from cards',()=>{
   assert.equal(cards.length,1);assert.equal(cards[0].number,'OP01-001');assert.ok(!('image_kind' in cards[0]));
   const series=parseOnePieceSeries('<option value="556101">BOOSTER PACK &lt;br class=&quot;spInline&quot;&gt;-ROMANCE DAWN- [OP-01]</option>');assert.equal(series[0].code,'OP-01');assert.equal(series[0].name,'BOOSTER PACK -ROMANCE DAWN- [OP-01]');
   const twSeries=parseOnePieceSeries('<option value="554117">補充包 世界最強的戰士【OP-17】</option>');assert.equal(twSeries[0].code,'OP-17');assert.equal(twSeries[0].name,'補充包 世界最強的戰士【OP-17】');assert.equal(twSeries[0].productType,'補充包');
+});
+
+test('One Piece product boxes carry their set code, and a box without a date is kept',()=>{
+  const html='<li class="linkListColBox" data-cat="boosters"><a href="https://asia-tc.onepiece-cardgame.com/products/op18.html" class="linkListColItem"><img data-src="/images/op18.webp"><h4 class="linkListColTitle">補充包 神的支配【OP-18】</h4><time datetime="2026-11-21"></time></a></li>'
+    +'<li class="linkListColBox" data-cat="decks"><a href="/products/st36.html" class="linkListColItem"><img data-src="/images/st36.webp"><h4 class="linkListColTitle">STARTER DECK -Yellow Kid- [ST36]</h4></a></li>';
+  const [booster,deck]=parseOnePieceProducts(html,'https://asia-tc.onepiece-cardgame.com/');
+  assert.equal(booster.official_code,'OP-18');assert.equal(booster.release_date,'2026-11-21');assert.equal(booster.image_url,'https://asia-tc.onepiece-cardgame.com/images/op18.webp');
+  assert.equal(deck.official_code,'ST-36','codes are normalised to the card-list form');assert.equal(deck.release_date,null);
+  assert.equal(onePieceSetKey('OP-18'),onePieceSetKey('op18'),'products and card-list series match on the same key');
 });
 
 test('product taxonomy exposes seven accepted feed values',()=>{

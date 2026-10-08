@@ -38,9 +38,14 @@
   const compare=(a,b)=>String(b.releaseDate||'').localeCompare(String(a.releaseDate||''))||eraRank(a)-eraRank(b)||String(b.officialCode||'').localeCompare(String(a.officialCode||''),undefined,{numeric:true});
   // Pokémon eras already come newest first; other IPs' groups are often undated, so order them by their newest series.
   function orderBuckets(buckets){return game==='pokemon'?buckets:[...buckets].sort((a,b)=>compare(byDate(a.items)[0],byDate(b.items)[0]))}
+  // A series has no picture of its own, so it borrows the box art of the sealed product linked to it (same region).
+  function cover(item){
+    if(item.imageUrl)return item.imageUrl;
+    return (P||[]).find(row=>row.seriesId===item.id&&row.imageUrl&&row.imageKind==='sealed-product')?.imageUrl||null;
+  }
   function tile(kind,item){
-    const name=kind==='product'?productName(item):seriesName(item),code=item.officialCode||'',upcoming=item.releaseDate&&item.releaseDate>today();
-    const art=item.imageUrl?`<img src="${esc(item.imageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('is-type');this.remove()">`:'';
+    const imageUrl=kind==='series'?cover(item):item.imageUrl,name=kind==='product'?productName(item):seriesName(item),code=item.officialCode||'',upcoming=item.releaseDate&&item.releaseDate>today();
+    const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('is-type');this.remove()">`:'';
     const sub=code||(kind==='product'?item.productSubtype||item.productType||item.releaseDate||'':'代碼待補');
     return`<button type="button" class="band-tile" data-kind="${kind}" data-id="${esc(item.id)}" title="${esc([name,code,item.releaseDate].filter(Boolean).join('・'))}">`
       +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':''}</span>`
@@ -56,7 +61,7 @@
     remember(item.id);resetRarityFilter();clearProduct();
     browse.product={...item,seriesId:item.id,versionLabel:regionLabel[item.region]};browse.seriesId=item.id;
     const box=document.getElementById('selectedProduct');box.classList.add('open');
-    box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${item.imageUrl?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${item.imageUrl?`<img src="${esc(item.imageUrl)}" alt="">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionLabel[item.region]||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
+    const art=cover(item);box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionLabel[item.region]||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
     box.scrollIntoView({behavior:reduce()?'auto':'smooth',block:'start'});
     await loadCardsPage(true);render();
   }
