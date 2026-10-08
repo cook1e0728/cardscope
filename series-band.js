@@ -41,7 +41,9 @@
   // A series has no picture of its own, so it borrows the box art of the sealed product linked to it (same region).
   function cover(item){
     if(item.imageUrl)return item.imageUrl;
-    return (P||[]).find(row=>row.seriesId===item.id&&row.imageUrl&&row.imageKind==='sealed-product')?.imageUrl||null;
+    // Prefer the booster box over a deck, and either over sleeves or playmats that share the series link.
+    const rank=row=>productMatchesCategory(row,'sealed')?0:productMatchesCategory(row,'decks')?1:2;
+    return (P||[]).filter(row=>row.seriesId===item.id&&row.imageUrl&&row.imageKind==='sealed-product').sort((a,b)=>rank(a)-rank(b))[0]?.imageUrl||null;
   }
   function tile(kind,item){
     const imageUrl=kind==='series'?cover(item):item.imageUrl,name=kind==='product'?productName(item):seriesName(item),code=item.officialCode||'',upcoming=item.releaseDate&&item.releaseDate>today();
