@@ -526,6 +526,13 @@
 - 結果（有圖系列／總數）：日版 90／267、台版 85／146、美版 176／177（系列 Logo）。正式站台版頁系列磚顯示中文版卡盒圖。
 - 注意：部署重啟後約 1 分鐘內目錄會暫時退回備用資料（系列只有 4 筆），重新整理即可。
 
+### 依序執行 64：劍盾早期系列、官方卡圖、版本瀏覽（2026-10-09，桌電）
+
+- 劍盾日版 32 個缺漏系列以 ADR 0012 匯入（快取 `official-series-swsh-cache-20261009.json` 1,906 頁；系列名／發售日 `series-meta-swsh-20261009.json`，取自 pg 掃描、官方商品頁網址代碼、卡片詳細頁「收錄商品」；SF、SN 無日期）。匯入 1,421 張，皆 gated＋重播零異動。隔離：沒有卡號（基本能量、V-UNION）與**同一代碼多盒共用卡號**（SA 全部 122、SI 268、SCS 40、SH 29 等 DUPLICATE_NUMBER）——多盒商品要先決定資料模型（例如每盒一個子系列），未處理。SC 代碼與 2013 年 SC 衝突，未匯入。中文名：ADR 0013 推導 1,161 張（12 批＋重播零異動，候選 `derived-names/adr-0013-candidates-swsh-20261009.json`）；台版代碼不同所以 ADR 0011 對不上。商品連結再補 34 件（網址規則 26、pg 規則 8）。
+- 官方卡圖（ADR 0031，使用者同意接受風險）：寫入 `card_images`（`rights_note = 'ADR 0031'`，`not-provided`，主圖）。台版 9,591 張（`officialDetailIds` 恰好一個 → `tw/card-img/tw<ID 補零 8 位>.png`）；日版 19,604 張（官方卡片 ID 來自官方 printing、`officialCardId` 或快取中系列標記＋卡號＋日文名唯一相符；路徑取自官方清單 `cardThumbFile`，293 個清單＋732 個詳細頁，證據 `official-card-images-20261009.json`）。結果：日版有圖 19,605／20,252（97%）、台版 11,737／12,669（93%）。
+- 詳細頁與搜尋原本不讀 `card_images`：migration `20261009120000_card_images_in_detail_and_search`（`get_card_detail`、`search_cards_ranked` 每張卡多帶最多 3 筆 card_images）；伺服器 `cardImageFields` 在 printing 沒圖時用政策允許的 card_images，並帶出來源與授權狀態（否則 `canonicalizeCatalog` 會再次濾掉）。新增測試。
+- **效能問題（本段發現）**：系列橫幅讓遊戲頁一律帶版本，而有版本的瀏覽原本會讀整個遊戲的卡、printing、圖片（4～6 秒，大量寫入後更慢）。migration `20261009130000`（`browse_cards_page` 加 `p_region`，舊的 4 參數版本已刪除）與 `20261009140000`（`tcg_printings_region_card_idx`，先從版本索引取卡片 ID 再排序分頁）；伺服器只指定版本也走快速路徑，RPC 失敗時改走完整篩選路徑（不回傳未篩選資料）。新增測試。大量寫入後資料庫 CPU 被節流，量測不穩（同一查詢 0.2～5 秒），**待恢復後重量**；需要時對 `card_images` 等表 `ANALYZE`（已做）。資料庫 307 MB。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
