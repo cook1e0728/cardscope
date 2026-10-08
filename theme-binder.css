@@ -232,3 +232,14 @@ body[data-view="game"] #gameContext{display:none}
 .band-tile-new .band-tile-code{color:var(--ink);font-weight:700}
 .series-band-empty{margin:8px 0;color:#666}
 @media(max-width:760px){.series-band{padding:4px 10px 10px}.band-tile{flex-basis:104px;width:104px}.band-tile-art{width:104px;height:104px}.band-tile-name{font-size:15px}.band-tile-code{font-size:13px}.band-tile-art.is-type:before{font-size:21px}}
+/* The band now carries the 商品圖鑑 categories and the region switch, so the old section and select step aside. */
+body[data-view="game"] section.section:has(> #series),body[data-view="game"] .browse-regions{display:none}
+.series-band-head{display:flex;align-items:center;gap:10px;padding:6px 0 2px}
+.series-band-regions{display:flex;gap:6px;overflow-x:auto}
+.series-band-regions button{flex:0 0 auto;min-width:0;min-height:44px;padding:0 14px;border:1px solid var(--rule);border-radius:6px;background:#fff;color:var(--ink-2);font:700 14px/1 'Noto Sans TC',sans-serif;cursor:pointer}
+.series-band-regions button:hover{border-color:var(--ip);color:var(--ink)}
+.series-band-regions button.on{background:var(--ip);border-color:var(--ip);color:var(--ip-on)}
+.series-band-tabs button.starts-eras{margin-left:10px;position:relative}
+.series-band-tabs button.starts-eras:before{content:"";position:absolute;left:-7px;top:11px;bottom:12px;width:1px;background:var(--rule)}
+/* Products without a code show their name instead (wrapped, smaller). */
+.band-tile-art.is-text:before{font:700 15px/1.3 'Noto Sans TC',sans-serif;padding:0 10px;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}

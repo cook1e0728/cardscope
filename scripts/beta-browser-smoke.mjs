@@ -355,11 +355,11 @@ async function runPhaseTwoChecks(browser){
     await clickIp(page,'pokemon');
     await retryBrowse(page);
     await waitForGame(page,'pokemon');
-    const seriesCard=page.locator('#series .series-card').first();
+    const seriesCard=page.locator('#seriesBand .band-tile:not(.band-tile-new)').first();
     await waitForVisible(seriesCard,'series navigation did not render a series card');
     await seriesCard.click();
     await page.reload({waitUntil:'domcontentloaded'});
-    await waitForVisible(page.locator('#series .recent-series-details'),'recently viewed series did not survive a reload');
+    await waitForVisible(page.locator('#seriesBand [data-band-tab="recent"]'),'recently viewed series did not survive a reload');
 
     // Slow network: a 2.5 s browse response shows a loading state, then the cards.
     await page.route('**/api/cards?*',async route=>{await sleep(2500);await route.fallback()});
