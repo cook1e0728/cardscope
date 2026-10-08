@@ -532,7 +532,9 @@ test('a stale catalog is served at once while one background load refreshes it',
 
 test('card detail and its market tab share one get_card_detail call',async()=>{
   const card={id:'pokemon-tcgdex-ja-sv6a-039',canonicalId:'pokemon-tcgdex-tw-sv6a-039',game:'pokemon',seriesId:'pokemon-tcgdex-ja-sv6a',officialCardNumber:'039',rarity:'RR',nameZh:'桃歹郎ex',nameJa:'モモワロウex',nameEn:null,nameKo:null,aliases:[],metadata:{},printings:[{id:1,cardId:'pokemon-tcgdex-ja-sv6a-039',seriesId:'pokemon-tcgdex-ja-sv6a',region:'JP',language:'ja-JP',localSetCode:'SV6a',localCardNumber:'039',rarity:'RR',imageUrl:null,imageRehostRequired:false,metadata:{}}]};
-  const twin={...card,id:'pokemon-tcgdex-tw-sv6a-039',seriesId:'pokemon-tcgdex-tw-sv6a',nameJa:null,printings:[{...card.printings[0],id:2,cardId:'pokemon-tcgdex-tw-sv6a-039',seriesId:'pokemon-tcgdex-tw-sv6a',region:'TW',language:'zh-TW'}]};
+  // ADR 0031: neither printing has an image, so the card_images row whose source policy allows display is used; an unknown source is not.
+  card.images=[{source:'pokemon-card-official-jp',imageUrl:'https://www.pokemon-card.com/assets/images/card_images/large/SV6a/045914_P_MOMOWAROUEX.jpg',imageRightsStatus:'not-provided',isPrimary:true}];
+  const twin={...card,id:'pokemon-tcgdex-tw-sv6a-039',seriesId:'pokemon-tcgdex-tw-sv6a',nameJa:null,printings:[{...card.printings[0],id:2,cardId:'pokemon-tcgdex-tw-sv6a-039',seriesId:'pokemon-tcgdex-tw-sv6a',region:'TW',language:'zh-TW'}],images:[{source:'unlisted-source',imageUrl:'https://example.com/tw.png',imageRightsStatus:'not-provided',isPrimary:true}]};
   const requests=[];
   const mockSupabase=createServer((req,res)=>{
     const url=new URL(req.url,'http://mock-supabase'),table=url.pathname.split('/').at(-1);requests.push(table);
@@ -553,6 +555,7 @@ test('card detail and its market tab share one get_card_detail call',async()=>{
     const body=await detail.json();
     assert.deepEqual(body.data.printings.map(p=>p.region).sort(),['JP','TW']);
     assert.equal(body.data.game?.nameZh,'寶可夢');
+    assert.equal(body.data.imageUrl,'https://www.pokemon-card.com/assets/images/card_images/large/SV6a/045914_P_MOMOWAROUEX.jpg','the displayable official card image fills in for a printing without one');
     assert.equal(requests.filter(table=>table==='get_card_detail').length,1);
     assert.equal(requests.filter(table=>table==='tcg_printings').length,0,'no PostgREST printing query');
   }finally{

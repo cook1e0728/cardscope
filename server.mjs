@@ -199,6 +199,8 @@ function browseValues(card,printings,key){
   if(key==='language')values.push(card?.language,...(printings||[]).map(p=>p.language));
   return uniqueValues(values);
 }
+// A printing image wins; otherwise the card's own card_images row (ADR 0031: official card images), if its source policy allows display.
+function cardImageFields(card,printings){const printing=(printings||[]).find(p=>p.imageUrl&&!p.imageRehostRequired);if(printing)return {imageUrl:printing.imageUrl};const image=(card?.images||[]).find(browseHasUsableImage);return image?{imageUrl:image.imageUrl,imageSource:image.source,imageRightsStatus:image.imageRightsStatus,imageLicenseExpiresAt:image.imageLicenseExpiresAt||null}:{imageUrl:null}}
 function browseHasUsableImage(row){return Boolean(row?.imageUrl&&row.imageRehostRequired!==true&&imageRightsAllowDisplay(row.imageRightsStatus,row.imageLicenseExpiresAt,imageSourceOf(row)))}
 function buildPrintingIndex(rows=[]){const byCard=new Map();for(const printing of rows){const list=byCard.get(printing.cardId)||[];list.push(printing);byCard.set(printing.cardId,list)}for(const list of byCard.values())list.sort(comparePrintings);return byCard}
 function hydrateBrowseCard(card,printingByCard,imageByCard){
@@ -763,7 +765,7 @@ async function searchCatalogDatabase(rawQuery,region='ALL',limit=SEARCH_RESULT_L
   // Card queries embed their printings, saving a round trip; rows that come back without the embed still get a separate printing fetch.
   const unembedded=cards.filter(c=>!Array.isArray(c.printings)),ids=unembedded.map(c=>`"${String(c.id).replaceAll('"','')}"`).join(','),printings=[...cards.flatMap(c=>Array.isArray(c.printings)?c.printings:[]),...(ids?await timed('printings',supabaseFetch(`/tcg_printings?${new URLSearchParams({select:BROWSE_PRINTING_SELECT,card_id:`in.(${ids})`,limit:'1000'})}`))||[]:[])],byCard=new Map();
   for(const p of printings){if(region!=='ALL'&&p.region!==region)continue;const list=byCard.get(p.cardId)||[];list.push(p);byCard.set(p.cardId,list)}
-  const canonicalCards=canonicalizeCatalog({cards:cards.filter(c=>region==='ALL'||byCard.has(c.id)).map(c=>({...c,printings:byCard.get(c.id)||[],region:byCard.get(c.id)?.[0]?.region||null,language:byCard.get(c.id)?.[0]?.language||null,imageUrl:byCard.get(c.id)?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||null}))}).cards;
+  const canonicalCards=canonicalizeCatalog({cards:cards.filter(c=>region==='ALL'||byCard.has(c.id)).map(c=>({...c,printings:byCard.get(c.id)||[],region:byCard.get(c.id)?.[0]?.region||null,language:byCard.get(c.id)?.[0]?.language||null,...cardImageFields(c,byCard.get(c.id))}))}).cards;
   return {cards:canonicalCards.slice(0,limit),candidateCount,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:rankedHits?Number(ranked.groupCount)>limit:candidateCount>=SEARCH_CANDIDATE_LIMIT||canonicalCards.length>limit,searched:true,matchedSeries,timings};
 }
 
@@ -789,7 +791,7 @@ async function loadCardDetailRpc(cardId){
   let detail=null;try{detail=await supabaseFetch('/rpc/get_card_detail',{method:'POST',body:JSON.stringify({p_id:String(cardId)})})}catch(error){console.error('card detail rpc failed; using PostgREST queries',error.message);return undefined}
   if(!detail||!Array.isArray(detail.cards)||!Array.isArray(detail.series)||!Array.isArray(detail.games))return undefined;
   if(!detail.cards.length)return null;
-  const hydrated=detail.cards.map(c=>({...c,printings:c.printings||[],region:c.printings?.[0]?.region||null,language:c.printings?.[0]?.language||null,imageUrl:c.printings?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||null})),cards=canonicalizeCatalog({cards:hydrated}).cards,canonical=cards.find(c=>c.id===cardId)||cards[0];
+  const hydrated=detail.cards.map(c=>({...c,printings:c.printings||[],region:c.printings?.[0]?.region||null,language:c.printings?.[0]?.language||null,...cardImageFields(c,c.printings)})),cards=canonicalizeCatalog({cards:hydrated}).cards,canonical=cards.find(c=>c.id===cardId)||cards[0];
   return {catalog:{source:'supabase-full-catalog',cards:[canonical],series:detail.series,games:detail.games.filter(g=>g.id===canonical.game)},card:canonical};
 }
 async function loadCardFromDatabase(cardId){
