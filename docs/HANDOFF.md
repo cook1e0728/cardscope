@@ -500,6 +500,8 @@
 - 使用者指示「合併上線」（等於接受依序執行 58 的待決事項：寶可夢用含「トレーナーズウェブサイト」的官方 Logo、色帶不再使用——已由系列橫幅取代）。
 - 合併前處理：移除 `?metal=`／`?band=` 預覽切換與 `theme-binder-preview.js`，只留槍鐵灰（選擇器保留 `body[data-view]` 的權重，否則會被銀色底層蓋過）；遊戲頁分頁籤 Logo 固定 72×22 避免載入時橫向跳動；主方案第 5 節改為卡冊風格規定（IP 主色、系列橫幅、金屬質感只用在 CardScope 自己的框、緩慢反光是唯一持續動畫且 reduced motion 停止）。Node 323/323、`npm run check`、冒煙測試（本機 4202）、`git diff --check` 通過。
 - 分支 `claude/binder-theme-preview` 先合併 `main`，再快轉 `main`。
+- 部署：`main` 快轉 `e69eb72..d41fdc5`，約 40 秒後正式站提供 `series-band.js`、首頁不再載入 `theme-binder-preview.js`。正式站 `?game=pokemon`：預設日版、版本按鈕 日版／台版／美版、15 個分頁、31 張磚（NEW＋30）、無橫向溢出、分頁籤官方 Logo 正常；`/api/catalog/health` 200。
+- 後續候選：航海王系列補發售日（「最新」排序）、寶可夢日版商品缺代碼與圖、遊戲頁已隱藏的 `#gameContext`／舊商品圖鑑樣式可清理、喚醒排程改外部監測（需使用者註冊）。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
