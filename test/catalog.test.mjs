@@ -601,7 +601,7 @@ test('the default browse page comes from browse_cards_page in one call',async()=
   const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
   let app;
   try{
-    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false',CATALOG_WARM_ON_START:'false'},stdio:['ignore','pipe','pipe']});
     await new Promise((resolve,reject)=>{
       let output='';const timer=setTimeout(()=>reject(new Error(`browse fixture start timeout: ${output}`)),5000);
       app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`browse fixture exited (${code??signal})`))});
@@ -612,6 +612,11 @@ test('the default browse page comes from browse_cards_page in one call',async()=
     assert.equal(body.meta.total,5);assert.equal(body.meta.hasMore,true);
     assert.deepEqual(bodies[0],{p_game:'pokemon',p_limit:2,p_offset:0,p_desc:true});
     assert.equal(requests.filter(table=>table==='card_images').length,0,'no PostgREST relation queries');
+    // Game pages always browse one region: it is filtered inside browse_cards_page, not by loading the whole game.
+    const wholeGame=()=>requests.filter(table=>table==='tcg_cards'||table==='tcg_printings').length,before=wholeGame();
+    await (await fetch(`http://127.0.0.1:${appPort}/api/cards?game=pokemon&limit=2&offset=0&region=JP&rarity=all&sort=number-asc`)).json();
+    assert.deepEqual(bodies[1],{p_game:'pokemon',p_limit:2,p_offset:0,p_desc:false,p_region:'JP'});
+    assert.equal(wholeGame()-before,0,'a region page loads no whole-game rows');
   }finally{
     if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
     await closeHttpServer(mockSupabase);

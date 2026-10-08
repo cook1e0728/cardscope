@@ -277,8 +277,9 @@ async function loadDatabaseImages(cardIds=[]){
     return loadDatabaseRelationsForCards('card_images',BROWSE_IMAGE_SELECT,cardIds,{legacySelect:legacy});
   });
 }
+// A region alone is filtered inside browse_cards_page (game pages always browse one region); rarity and series are not.
 function databaseFastBrowseEligible({region=null,rarity=null,seriesId=null,sort='number-asc'}={}){
-  return !region&&!rarity&&!seriesId&&(sort==='number-asc'||sort==='number-desc');
+  return !rarity&&!seriesId&&(sort==='number-asc'||sort==='number-desc');
 }
 async function loadDatabasePageRelations(table,select,cardIds,{legacySelect=null}={}){
   if(!cardIds.length)return [];
@@ -360,15 +361,17 @@ async function loadDatabaseCoverageImages(){
   return loadDatabaseAllRelations('card_images',BROWSE_IMAGE_SELECT,{legacySelect});
 }
 async function browseDatabasePageFast(game,options={}){
-  const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc';
+  const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc',region=normalizeBrowseRegion(options.region);
   // One round trip through browse_cards_page when the database has it; otherwise the page, printing and image queries below.
   // Kept for BROWSE_CACHE_MS like other browse rows (catalog data only changes in batch imports); callers get a copy.
-  let rpc=null;try{rpc=structuredClone(await cachedBrowseRows(`rpc:browse_cards_page:${safeGame}|${take}|${skip}|${direction}`,()=>supabaseFetch('/rpc/browse_cards_page',{method:'POST',body:JSON.stringify({p_game:safeGame,p_limit:take,p_offset:skip,p_desc:direction==='desc'})})))}catch(error){console.error('browse rpc failed; using PostgREST queries',error.message)}
+  let rpc=null;try{rpc=structuredClone(await cachedBrowseRows(`rpc:browse_cards_page:${safeGame}|${take}|${skip}|${direction}|${region||''}`,()=>supabaseFetch('/rpc/browse_cards_page',{method:'POST',body:JSON.stringify({p_game:safeGame,p_limit:take,p_offset:skip,p_desc:direction==='desc',...(region?{p_region:region}:{})})})))}catch(error){console.error('browse rpc failed; using PostgREST queries',error.message)}
   if(rpc&&Array.isArray(rpc.cards)&&Number.isFinite(Number(rpc.total))){
     const cards=rpc.cards.slice(0,take),printingByCard=buildPrintingIndex(cards.flatMap(card=>card.printings||[])),imageByCard=new Map(cards.map(card=>[card.id,card.images||[]]));
     const data=cards.map(({printings,images,...card})=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=Number(rpc.total);
     return {data,total,hasMore:skip+data.length<total,facets:null,facetStatus:'deferred',limit:take,offset:skip,errors:{printings:null,images:null}};
   }
+  // The paged PostgREST fallback below cannot filter by region; a region request takes the full filtered path instead.
+  if(region)return browseDatabaseCardsFull(game,options);
   const params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:`official_card_number.${direction},id.${direction}`,limit:String(take+1),offset:String(skip)}),page=await supabaseFetchPage(`/tcg_cards?${params}`),cards=(page.data||[]).slice(0,take),cardIds=cards.map(card=>card.id);
   const fallbackPrintingSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required',legacyImageSelect='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
   const [printingResult,imageResult]=await Promise.all([
@@ -407,6 +410,9 @@ async function browseDatabaseSeriesCards(game,options={}){
 async function browseDatabaseCards(game,options){
   if(options.seriesId)return browseDatabaseSeriesCards(game,options);
   if(databaseFastBrowseEligible(options))return browseDatabasePageFast(game,options);
+  return browseDatabaseCardsFull(game,options);
+}
+async function browseDatabaseCardsFull(game,options){
   const cards=await loadDatabaseBrowseRows(game),cardIds=cards.map(card=>card.id),printingResult=await loadDatabasePrintings(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),imageResult=await loadDatabaseImages(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error}));
   const selectedCardIds=new Set(cards.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedCardIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedCardIds.has(image.cardId));
   const printingByCard=buildPrintingIndex(printings),imageByCard=new Map();for(const image of images){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
