@@ -561,6 +561,16 @@
 - 預覽驗證（API 轉正式站）：日版 30th → 卡 40、分頁 23 項、按鈕「台版 6 項」「美版 2 項」；點台版 → TW 重搜、仍在搜尋分頁、按鈕變「日版 23 項」「美版 2 項」；美版搜 FUTURISTIC → 卡 0、提示與空白說明正確、點台版 → 1 件 FUTURISTIC BOX；鍵盤 Tab 焦點外框 3px。帶 `q=` 的網址開啟會自動搜尋。
 - 部署：`main` 快轉到 `aa7394c`。正式站驗收（2026-10-10，App 瀏覽器）：`?game=pokemon&q=30th` 自動以日版搜尋，橫幅出現「搜尋：30th」分頁與「台版 6 項」「美版 2 項」按鈕，`catalogPartial` 為 false。
 
+### 依序執行 69：版本瀏覽慢是可見性對照表被清空（2026-10-10，桌電，無資料異動）
+
+- 重量依序執行 64／66 待辦（伺服器 Server-Timing，未命中快取）：遊戲王美版第一頁 8.1 s、寶可夢日版 4.1 s；`browse_cards_page` 在資料庫內 3.3–5.5 s，全部是記憶體命中，同一個循序掃描一次 1,066 ms、下一次 33 ms（CPU 節流）。
+- 原因：`tcg_cards`、`tcg_printings` 的 `relallvisible` 為 0（10-08／09 大量匯入與卡圖寫入後，自動 VACUUM 門檻 20% 未達，最後一次 VACUUM 是 10-03），無法用 index-only scan。依序執行 19 的「重寫大表後要 VACUUM」這次漏了。
+- 處理：`VACUUM (ANALYZE)` 四張表；RPC 降到約 100–190 ms（index-only scan）。正式站（隨機 offset 避開快取）伺服器 0.5–1.1 s（遊戲王美版 727 ms、寶可夢日版 808、台版 508、航海王台版 563）；寶可夢美版曾有一次 10.7 s，重測 0.35–1.1 s，未重現。搜尋抽查伺服器 233–1,094 ms。
+- 防再發：migration `20261010120000_catalog_autovacuum_thresholds`（已套用並寫入 schema_migrations）把 `tcg_cards`、`tcg_printings`、`tcg_canonical_cards`、`card_images` 的 autovacuum vacuum／insert／analyze 門檻改為 2%。之後大批寫入後仍可用 `select relname, relpages, relallvisible from pg_class where relname in ('tcg_cards','tcg_printings')` 確認，偏低就手動 VACUUM。
+- 剩餘：伺服器時間扣掉資料庫約 0.3–0.6 s（Render 與東京 Supabase 往返＋JSON 處理），屬基礎設施，未處理。
+
+下一個安全起點（2026-10-10 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，以及依序執行 64 未處理的多盒共用卡號系列（SA、SI、SCS、SH 需先決定資料模型）。以下為 2026-10-04 的舊狀態，仍可參考：
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
