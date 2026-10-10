@@ -577,9 +577,11 @@
 - 程式：`providers/pokemon-jp-official-decks.mjs`（解析収録商品、分盒）、`scripts/fetch-pokemon-jp-official-products.mjs`（間隔 1.5 秒，163 頁全 200）、`scripts/build-pokemon-jp-official-deck-plans.mjs`；`buildOfficialJpSeriesPlans` 加 `printedSetMark`；同名補卡腳本超過 100 張時自動切份。Node 330/330、`npm run check` 通過。
 - 寫入（gated＋重播零異動）：SI 補 126（2 份）、SH 補 10；SA 23／SA-2 23／SA-3 23／SA-4 24／SA-5 24、SCS 補 20（共 21）、SCS-2 20。ADR 0013 中文名 119＋112（候選 `derived-names/adr-0013-candidates-si-sh-20261010.json`、`-sa-scs-20261010.json`），ADR 0031 官方主圖 136＋157（SA 卡圖路徑由官方清單 API 4 頁補進 `official-card-images-20261009.json`）。
 - 結果：SI 419（中文名 393）、SH 53（44）、SA 五盒 117（89）、SCS 21（12）、SCS-2 20（11），全部有主圖；稀有度官方無圖示，留空。正式站 `/api/cards?series=pokemon-official-ja-sa-2` 等皆可讀，目錄已含新系列。
-- 未處理：既有 SCS 系列名仍為通稱「スターターセットVMAX」（只新增不修改）；各盒無卡號的基本能量仍隔離；MG 可用同一流程但未抓収録商品；新系列尚未連結卡盒商品（橫幅磚為代碼底色）。
+- 卡盒商品：SA 五盒各連一件商品，オーロンゲ 由 SCS 改連 SCS-2（`seriesLinkBefore` 記舊值），重跑 0 筆。
+- MG 查證後不處理：一個商品裝兩副牌，官方詳細頁沒有「収録商品」，只能靠 ID 連號推斷（ADR 0032 已記）。
+- 未處理：既有 SCS 系列名仍為通稱「スターターセットVMAX」（只新增不修改）；各盒無卡號的基本能量仍隔離。
 
-下一個安全起點（2026-10-10 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，以及 MG 依 ADR 0032 分盒。以下為 2026-10-04 的舊狀態，仍可參考：
+下一個安全起點（2026-10-10 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
