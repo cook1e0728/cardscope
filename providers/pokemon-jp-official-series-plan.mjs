@@ -21,7 +21,8 @@ const byNumber = (a, b) => a.official_card_number.localeCompare(b.official_card_
  * `rarityCodes` (ADR 0019): only these mapped codes are kept; any other icon leaves the
  * rarity empty, for eras where an icon name may not mean today's code (★ vs S).
  */
-export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim = null, rarityCodes = null }) {
+// `printedSetMark`（ADR 0032）：分盒系列（如 SA-2）的卡面記號仍是原代碼（SA），以此核對詳細頁。
+export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim = null, rarityCodes = null, printedSetMark = code }) {
   const list = cache.lists?.[code];
   if (!list) throw new Error(`OFFICIAL_LIST_MISSING:${code}`);
   if (!seriesMeta?.name_ja) throw new Error(`SERIES_META_MISSING:${code}`);
@@ -29,7 +30,7 @@ export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim 
   for (const cardId of list.cardIds) {
     const detail = cache.details[cardId];
     if (!detail) throw new Error(`OFFICIAL_DETAIL_MISSING:${code}:${cardId}`);
-    if (detail.setMark !== code) quarantined.push({ cardId, number: detail.number, nameJa: detail.nameJa, reason: `SET_MISMATCH:${detail.setMark}` });
+    if (detail.setMark !== printedSetMark) quarantined.push({ cardId, number: detail.number, nameJa: detail.nameJa, reason: `SET_MISMATCH:${detail.setMark}` });
     else if (!detail.number || !/^[A-Za-z0-9]+$/.test(detail.number)) quarantined.push({ cardId, number: detail.number, nameJa: detail.nameJa, reason: 'NUMBER_MISSING' });
     else if (!detail.nameJa) quarantined.push({ cardId, number: detail.number, nameJa: null, reason: 'NAME_MISSING' });
     else pages.push(detail);
@@ -51,8 +52,8 @@ export function buildOfficialJpSeriesPlans({ code, seriesMeta, cache, seedClaim 
       name_ja: page.nameJa,
       rarity_code: rarity.rarity ?? null,
       source_url: officialJpDetailUrl(page.cardId),
-      search_text: [page.nameJa, page.number, `${code}-${page.number}`, `${code}${page.number}`.toLowerCase()].join(' '),
-      metadata: { officialCardId: page.cardId, rarityIcon: page.rarityIcon ?? null, ...(rarity.rarity ? { rarityBasis: OFFICIAL_JP_SOURCE } : {}) }
+      search_text: [page.nameJa, page.number, `${code}-${page.number}`, `${code}${page.number}`.toLowerCase(), ...(printedSetMark !== code ? [`${printedSetMark}-${page.number}`] : [])].join(' '),
+      metadata: { officialCardId: page.cardId, rarityIcon: page.rarityIcon ?? null, ...(printedSetMark !== code ? { printedSetMark } : {}), ...(rarity.rarity ? { rarityBasis: OFFICIAL_JP_SOURCE } : {}) }
     });
   }
   cards.sort(byNumber);

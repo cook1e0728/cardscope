@@ -1,0 +1,22 @@
+---
+status: accepted
+---
+
+# 日版同一代碼多盒各自編號時，依官方「収録商品」每盒一個系列
+
+ADR 0025 把同號同名的多個詳細頁合併成一張卡，但同號不同名的系列整個排除（「需要以商品區分身分，另案處理」）。劍盾世代匯入（依序執行 64）後仍有兩個這樣的系列：SA（スターターセットV，5 盒，草／炎／水 001–023、雷／闘 001–024）與 SCS（スターターセットVMAX，リザードン 001–021、オーロンゲ 001–020）。卡號在這兩個代碼裡無法辨識卡片，但日本官方詳細頁的「収録商品」會寫出每張卡屬於哪一盒（例如「スターターセットV　草」）。
+
+決定（2026-10-10，使用者授權照建議執行）：
+
+- 適用：同代碼內有同號不同名（ADR 0025 的系列把關不通過），而且每個詳細頁恰好列出一個収録商品、同一盒內卡號不重複。任何一項不成立就停止，不猜。
+- 每個商品一個系列。各盒依其最小官方卡片 ID 排序：第 1 盒沿用原代碼（`pokemon-official-ja-<代碼>`），第 k 盒為 `<代碼>-<k>`（如 `SA-2`）。系列名為官方商品名原字串，發售日沿用原系列；卡片 ID 規則同 ADR 0012（`pokemon-official-ja-sa-2-001`）。卡面記號仍是原代碼，記在 metadata `printedSetMark`，搜尋文字同時含 `SA-001`；每張卡記 `officialProduct`。
+- 寫入走既有函式：系列不存在用 `private.import_pokemon_jp_official_series`；第 1 盒的系列已存在（SCS 已有 021）時，只把缺的卡以 `private.supplement_pokemon_jp_official_series` 補入。補卡函式改為帶 `officialProduct` 的卡可以只有一個官方 ID（migration `20261010140000`），並允許同一系列多份計畫（`20261010130000`，每份 ≤100，同 digest 視為重播，其他由碰撞檢查把關）。
+- 中文名、卡圖沿用既有規則（ADR 0013、ADR 0031）；稀有度官方頁無圖示時留空（ADR 0007）。
+- 證據：`docs/evidence/pokemon-jp/official-series/official-products-sa-scs-20261010.json`（只含官方卡片 ID、商品名與商品頁路徑），由 `scripts/fetch-pokemon-jp-official-products.mjs` 抓取；計畫由 `scripts/build-pokemon-jp-official-deck-plans.mjs` 產生。
+
+## Consequences
+
+- 2026-10-10：SA 117 張（SA 23、SA-2 23、SA-3 23、SA-4 24、SA-5 24；每盒 1 張無卡號基本能量仍隔離）、SCS 補 20 張（共 21）、SCS-2 20 張，皆 gated＋重播零異動；ADR 0013 推導中文名 112 張，官方主圖 157 張。
+- 既有的 SCS 系列名仍是通稱「スターターセットVMAX」（只新增不修改），實際只含リザードン那一盒；SA 第 1 盒的系列名則是「スターターセットV　草」。
+- MG（XY 世代，兩副牌組各自從 001 編號）可用同一流程，但需先抓其収録商品，未處理。
+- 系列 `SA-2` 等不是官方代碼，只是 CardScope 為了區分盒別的系列代碼；卡面上都是 SA。

@@ -34,11 +34,19 @@ try {
     const result = buildOfficialJpSameNamePlan({ code, cache, seriesId: `pokemon-official-ja-${code.toLowerCase()}`, existingNumbers: existing.filter(row => row.code === code).map(row => row.num), rarityCodes: era ? eraCodes : null });
     let digest = null;
     if (result.plan) {
-      const sql = buildOfficialJpSameNameSql(result.plan, actor);
-      digest = sql.digest;
-      writeFileSync(join(outDir, `${code}-same-name.json`), `${JSON.stringify(result.plan, null, 1)}\n`);
-      writeFileSync(join(outDir, `${code}-same-name.sql`), sql.gated);
-      writeFileSync(join(outDir, `${code}-same-name-replay.sql`), sql.replay);
+      // 補卡函式每份計畫最多 100 張；超過時平均切成多份（檔名加 -1、-2…，migration 20261010130000）。
+      const parts = Math.ceil(result.plan.cards.length / 100), size = Math.ceil(result.plan.cards.length / parts);
+      const digests = [];
+      for (let part = 0; part < parts; part++) {
+        const plan = parts === 1 ? result.plan : { ...result.plan, cards: result.plan.cards.slice(part * size, (part + 1) * size) };
+        const name = parts === 1 ? `${code}-same-name` : `${code}-same-name-${part + 1}`;
+        const sql = buildOfficialJpSameNameSql(plan, actor);
+        digests.push(sql.digest);
+        writeFileSync(join(outDir, `${name}.json`), `${JSON.stringify(plan, null, 1)}\n`);
+        writeFileSync(join(outDir, `${name}.sql`), sql.gated);
+        writeFileSync(join(outDir, `${name}-replay.sql`), sql.replay);
+      }
+      digest = parts === 1 ? digests[0] : digests;
     }
     report.push({ ...result.summary, cache: path.split(/[\\/]/).at(-1), eraRarity: era, planDigest: digest, conflicts: result.conflicts, rarityUnknown: result.rarityUnknown.length, added: result.plan?.cards.map(card => ({ number: card.official_card_number, name: card.name_ja, rarity: card.rarity_code, ids: card.metadata.officialCardIds })) ?? [] });
     console.log(JSON.stringify({ ...result.summary, planDigest: digest }));

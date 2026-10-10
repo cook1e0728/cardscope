@@ -569,7 +569,17 @@
 - 防再發：migration `20261010120000_catalog_autovacuum_thresholds`（已套用並寫入 schema_migrations）把 `tcg_cards`、`tcg_printings`、`tcg_canonical_cards`、`card_images` 的 autovacuum vacuum／insert／analyze 門檻改為 2%。之後大批寫入後仍可用 `select relname, relpages, relallvisible from pg_class where relname in ('tcg_cards','tcg_printings')` 確認，偏低就手動 VACUUM。
 - 剩餘：伺服器時間扣掉資料庫約 0.3–0.6 s（Render 與東京 Supabase 往返＋JSON 處理），屬基礎設施，未處理。
 
-下一個安全起點（2026-10-10 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，以及依序執行 64 未處理的多盒共用卡號系列（SA、SI、SCS、SH 需先決定資料模型）。以下為 2026-10-04 的舊狀態，仍可參考：
+### 依序執行 70：多盒共用卡號的劍盾系列（ADR 0032，2026-10-10，桌電，已完成）
+
+- 查證：依序執行 64 隔離的「重複卡號」分兩類。SI、SH 是同號同名（官方列了多頁）；看官方卡圖發現多頁實體上不同（SH 牌組標記火球鼠／皮卡丘、SI 背景紋路不同），仍依 ADR 0025 合併為一張卡，所有版本的官方 ID 記在 `officialCardIds`（ADR 0025 已補記）。SA、SCS 是同號不同名，每盒各自從 001 編號。
+- 決策：ADR 0032——依官方詳細頁「収録商品」每盒一個系列，第 1 盒沿用原代碼，其餘 `<代碼>-<k>`（依最小官方卡片 ID 排序）；卡面記號記在 `printedSetMark`，每張卡記 `officialProduct`。
+- Migration（皆先在正式庫整批回滾測試，已套用並寫入 schema_migrations）：`20261010130000_pokemon_jp_official_supplement_multi_plan`（補卡函式允許同系列多份計畫，唯一索引改為每份計畫一筆）、`20261010140000_pokemon_jp_official_supplement_deck_cards`（帶 `officialProduct` 的卡可只有一個官方 ID），最終函式 md5 `6a18d576…`。
+- 程式：`providers/pokemon-jp-official-decks.mjs`（解析収録商品、分盒）、`scripts/fetch-pokemon-jp-official-products.mjs`（間隔 1.5 秒，163 頁全 200）、`scripts/build-pokemon-jp-official-deck-plans.mjs`；`buildOfficialJpSeriesPlans` 加 `printedSetMark`；同名補卡腳本超過 100 張時自動切份。Node 330/330、`npm run check` 通過。
+- 寫入（gated＋重播零異動）：SI 補 126（2 份）、SH 補 10；SA 23／SA-2 23／SA-3 23／SA-4 24／SA-5 24、SCS 補 20（共 21）、SCS-2 20。ADR 0013 中文名 119＋112（候選 `derived-names/adr-0013-candidates-si-sh-20261010.json`、`-sa-scs-20261010.json`），ADR 0031 官方主圖 136＋157（SA 卡圖路徑由官方清單 API 4 頁補進 `official-card-images-20261009.json`）。
+- 結果：SI 419（中文名 393）、SH 53（44）、SA 五盒 117（89）、SCS 21（12）、SCS-2 20（11），全部有主圖；稀有度官方無圖示，留空。正式站 `/api/cards?series=pokemon-official-ja-sa-2` 等皆可讀，目錄已含新系列。
+- 未處理：既有 SCS 系列名仍為通稱「スターターセットVMAX」（只新增不修改）；各盒無卡號的基本能量仍隔離；MG 可用同一流程但未抓収録商品；新系列尚未連結卡盒商品（橫幅磚為代碼底色）。
+
+下一個安全起點（2026-10-10 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，以及 MG 依 ADR 0032 分盒。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
