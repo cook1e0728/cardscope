@@ -552,7 +552,13 @@
 - Migration `20261010090000_search_series_by_region`（已套用並寫入 schema_migrations，函式 md5 `4c653d67…`，anon 仍無權）：有 `p_region` 時 search_text 只計該版本有 printing 的卡；系列比對只挑該版本系列、依發售日新到舊，printing 依此排序。套用前以臨時複本函式在正式庫比較：日版 30th 0→80 張（M6a 日＋台連結）、台版 0→80，美版不變；噴火龍、SV6a 結果不變；30th 日版 46→26 ms，其他相近。
 - 伺服器：`searchQueryTerms` 統一產生查詢詞（原查詢、別名、Source name markup 變體＋新的週年變體：`30th`／`30周年`／`30週年` 互相展開，中文數字一～九十九），回應 `meta.queryTerms`。前端：`series-band.js` 新增 `setBandSearch`，搜尋時橫幅第一個分頁「搜尋：<查詢>」列出名稱相符的系列與商品（同 IP、目前版本，最多 60），卡片沒命中時提示並捲到橫幅。預覽（API 轉正式站）：日版 30th → 系列 2＋商品 19。新增測試，Node 326/326。
 - 驗收（部署 `a09f08b` 後）：Cloudflare 曾對 cardscope.onrender.com 出「請稍候…」人機驗證（短時間大量 curl 觸發，由使用者在 App 瀏覽器自行通過；之後驗收改用瀏覽器內 fetch，少用 curl）。正式站日版／台版搜 30th、30周年、三十周年 皆 40 張（`database-series`，日版 M6a／台版 M6a），`meta.queryTerms` 正確；頁面上搜「三十周年」：卡片 40 張、橫幅「搜尋：三十周年」分頁 23 項（系列 2＋商品），提示文字正確。
-- 工作方式（使用者 2026-10-10 指示）：Opus 5.5（medium）主導規劃與整合，Sonnet 5.5（high）子代理並行執行。專案代理定義 `.claude/agents/sonnet-worker.md`（model sonnet、effort high）；commit／合併／部署／migration／正式寫入由主導者負責。主導 session 的 effort 需使用者在 App 模型選單設定（session 不能改自己的 effort）。
+- 工作方式（使用者 2026-10-10 指示）：Opus 5.5（medium）主導規劃與整合，Sonnet 5.5（high）子代理並行執行。專案代理定義 `.claude/agents/sonnet-worker.md`（model sonnet、effort high）；commit／合併／部署／migration／正式寫入由主導者負責。主導 session 的 effort 需使用者在 App 模型選單設定（session 不能改自己的 effort）。注意：新建的代理定義要下一個 session 才載入；本 session 以 `general-purpose`＋`model: sonnet` 代替（effort 用預設）。
+
+### 依序執行 68：搜尋提示其他版本（2026-10-10，桌電）
+
+- 使用者：日版頁搜 30th 時看不到台版／美版，問是否缺資料（不是：台版 M6a 159 張＋5 件商品、美版 me55／me55c 191 張，只是搜尋限定目前版本）。依 grill-with-docs 決定（自動採用建議）：Q1 先列目前版本、再提示其他版本並可一鍵切換（不混在一起）；Q2 橫幅「搜尋」分頁的按鈕列＋卡片 0 筆時的提示文字；Q3 只算系列＋商品（前端資料，不多打 API）；Q4 切換版本會用同一查詢重搜並停在搜尋分頁；Q5 跨 IP 不在範圍；Q6 不寫 ADR（介面規則、易撤回），改寫入主方案第 4 節。
+- 實作（Sonnet 子代理，主導者審查 diff 後補兩處）：`series-band.js` 依版本計數、「其他版本也有符合：台版 6 項／美版 2 項」按鈕（`data-search-region`，同版本按鈕的 44px 樣式）、目前版本無相符時分頁仍在並寫「日版沒有符合的系列或商品」、`setBandSearch` 回傳 `{here,others,label}`；`index.html` 的 `activeSearch`，搜尋中切換版本會重搜（`loadCardsPage(true)` 時清除），提示「美版沒有符合的卡；日版 1 項、台版 1 項列在上方「搜尋」分頁。」。主導者補：搜尋分頁只對發起搜尋的 IP 生效（換 IP 不殘留）；橫幅版本按鈕與分頁原本沒有焦點樣式，補 3px IP 主色外框。只列 `regionsFor(game)` 提供的版本（<3 筆的版本不列，否則會被 `ensureRegion` 拉回）。Node 327/327。
+- 預覽驗證（API 轉正式站）：日版 30th → 卡 40、分頁 23 項、按鈕「台版 6 項」「美版 2 項」；點台版 → TW 重搜、仍在搜尋分頁、按鈕變「日版 23 項」「美版 2 項」；美版搜 FUTURISTIC → 卡 0、提示與空白說明正確、點台版 → 1 件 FUTURISTIC BOX；鍵盤 Tab 焦點外框 3px。帶 `q=` 的網址開啟會自動搜尋。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。

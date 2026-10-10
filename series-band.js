@@ -6,7 +6,7 @@
 (function(){
   // A search adds a first tab with the series and products whose names match (the server's expanded terms, e.g. 30th / 30周年),
   // so box and series pages are found even when no card name matches.
-  let bandSearch=null;
+  let bandSearch=null,searchSummary={here:0,others:[],label:''};
   const fold=value=>String(value||'').toLowerCase().normalize('NFKC').replace(/[\s・·._:：'’"\-<>\[\]「」｜|]/g,'');
   const bandTab={},recentKey='cardscope-band-recent',regionOrder=['JP','TW','US','ASIA','KR','CN'];
   const regionLabel={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲英文版'};
@@ -75,9 +75,13 @@
     const series=(C.series||[]).filter(inRegion),products=(P||[]).filter(inRegion),buckets=orderBuckets(seriesGroupBuckets(series));
     const seen=recent().map(id=>series.find(item=>item.id===id)).filter(Boolean);
     const categories=PRODUCT_CATEGORY_DEFINITIONS.filter(item=>item.id!=='singles').map(item=>({...item,rows:products.filter(row=>productMatchesCategory(row,item.id))})).filter(item=>item.rows.length);
-    const needles=(bandSearch?.terms||[]).map(fold).filter(Boolean),matches=item=>needles.length&&[item.nameZh,item.nameJa,item.nameEn,item.officialCode,...(item.aliases||[])].some(value=>{const name=fold(value);return name&&needles.some(needle=>name.includes(needle))});
+    const needles=(bandSearch?.game===game?bandSearch.terms:[]).map(fold).filter(Boolean),matches=item=>needles.length&&[item.nameZh,item.nameJa,item.nameEn,item.officialCode,...(item.aliases||[])].some(value=>{const name=fold(value);return name&&needles.some(needle=>name.includes(needle))});
     const found=needles.length?[...byDate(series.filter(matches)).map(item=>['series',item]),...byDate(products.filter(matches)).map(item=>['product',item])].slice(0,60):[];
-    const tabs=[...(found.length?[['search',`搜尋：${bandSearch.query}`]]:[]),['latest','全部系列'],...(seen.length?[['recent','最近瀏覽']]:[]),...categories.map(item=>[`product:${item.id}`,label(item),item.description]),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label])];
+    // The same names in this IP's other regions: offered as one-click switches so a region-limited search is never a dead end.
+    const perRegion={};if(needles.length)for(const item of [...(C.series||[]),...(P||[])])if(item.game===game&&item.region&&matches(item))perRegion[item.region]=(perRegion[item.region]||0)+1;
+    const elsewhere=needles.length?regions.filter(id=>id!==region&&perRegion[id]).map(id=>[id,perRegion[id]]):[];
+    searchSummary={here:found.length,others:elsewhere,label:regionLabel[region]||''};
+    const tabs=[...(found.length||elsewhere.length?[['search',`搜尋：${bandSearch.query}`]]:[]),['latest','全部系列'],...(seen.length?[['recent','最近瀏覽']]:[]),...categories.map(item=>[`product:${item.id}`,label(item),item.description]),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label])];
     let active=bandTab[game]||'latest';if(!tabs.some(([id])=>id===active))active='latest';bandTab[game]=active;
     const dated=byDate(series),firstEraTab=categories.length?tabs.findIndex(([id])=>id.startsWith('group:')):-1;
     let kind='series',list;
@@ -90,12 +94,13 @@
     band.dataset.key=key;
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionLabel[id]||id)}</button>`).join('')}</div></div>`
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''}>${esc(text)}</button>`).join('')}</div>`
-      +`<div class="series-band-rail" role="tabpanel">${list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join('')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
+      +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionLabel[id]||id)} ${count} 項</button>`).join('')}</div>`:'')
+      +`<div class="series-band-rail" role="tabpanel">${list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join('')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionLabel[region]||'')}沒有符合的系列或商品。`:`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
     band.querySelector('.series-band-rail').scrollLeft=keep;
     const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     band.onclick=event=>{
-      const regionButton=event.target.closest('[data-region]');
-      if(regionButton){const select=regionSelect();if(select&&select.value!==regionButton.dataset.region){select.value=regionButton.dataset.region;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
+      const regionButton=event.target.closest('[data-region],[data-search-region]'),target=regionButton?.dataset.region||regionButton?.dataset.searchRegion;
+      if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
       const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;render();return}
       const card=event.target.closest('.band-tile');if(!card)return;
       if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);document.getElementById('selectedProduct')?.scrollIntoView({behavior:reduce()?'auto':'smooth',block:'start'});return}
@@ -105,7 +110,7 @@
   const previous=series;
   series=function(){if(game!=='all')ensureRegion();previous();render()};
   window.renderSeriesBand=render;
-  // Called by search(): opens the search tab when something matches and returns how many series and products did.
-  window.setBandSearch=(query,terms)=>{bandSearch=query?{query,terms:terms?.length?terms:[query]}:null;if(bandSearch)bandTab[game]='search';render();return document.querySelectorAll('#seriesBand [data-band-tab="search"]').length?document.querySelectorAll('#seriesBand .series-band-rail .band-tile').length:0};
+  // Called by search(): opens the search tab when something matches and returns {here, others:[[region,count]], label}: matches in this region and in the IP's other regions.
+  window.setBandSearch=(query,terms)=>{bandSearch=query?{query,game,terms:terms?.length?terms:[query]}:null;if(bandSearch)bandTab[game]='search';render();return bandSearch?searchSummary:{here:0,others:[],label:''}};
   if(typeof game!=='undefined'&&typeof C!=='undefined')render();
 })();

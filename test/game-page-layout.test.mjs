@@ -34,3 +34,14 @@ test('the series band replaces the old title band and the game-page 商品圖鑑
   assert.ok(band.includes("regionOrder=['JP','TW','US'"),'Japanese first, per the data priority');
   assert.ok(band.includes('if(!regions.includes(select.value))select.value=regions[0]'),'a game page always browses one region');
 });
+
+test('a region-limited search offers the IP\'s other regions and survives a region switch',async()=>{
+  const [band,theme]=await Promise.all(['../series-band.js','../theme-binder.css'].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
+  assert.match(band,/<button type="button" data-search-region="\$\{id\}">/,'other regions are real buttons');
+  assert.ok(band.includes('沒有符合的系列或商品'),'an empty region still explains itself inside the search tab');
+  assert.ok(band.includes('found.length||elsewhere.length'),'the search tab stays when only other regions match');
+  assert.ok(band.includes("closest('[data-region],[data-search-region]')"),'both button kinds switch region the same way');
+  assert.ok(html.includes("else if(activeSearch?.game===game&&activeSearch.state===browse)search(activeSearch.q)"),'a region change re-runs the active search');
+  assert.ok(html.includes('沒有符合的卡；'),'the notice names the other regions');
+  assert.match(theme,/\.series-band-regions button\{[^}]*min-height:44px/,'the switch buttons share the 44px region button style');
+});
