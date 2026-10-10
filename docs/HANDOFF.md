@@ -551,7 +551,7 @@
 - 原因：`search_cards_ranked` 的 `search_text` 步驟先命中（美版卡的 search_text 帶系列名「30th Celebration」），100 筆名額全被美版占走，`p_region=JP` 篩完變 0，且因已有文字命中而不走系列比對；系列比對本身也不分版本、不排序（limit 5）。商品從來不在搜尋範圍。「30周年」「三十周年」沒有同義詞。
 - Migration `20261010090000_search_series_by_region`（已套用並寫入 schema_migrations，函式 md5 `4c653d67…`，anon 仍無權）：有 `p_region` 時 search_text 只計該版本有 printing 的卡；系列比對只挑該版本系列、依發售日新到舊，printing 依此排序。套用前以臨時複本函式在正式庫比較：日版 30th 0→80 張（M6a 日＋台連結）、台版 0→80，美版不變；噴火龍、SV6a 結果不變；30th 日版 46→26 ms，其他相近。
 - 伺服器：`searchQueryTerms` 統一產生查詢詞（原查詢、別名、Source name markup 變體＋新的週年變體：`30th`／`30周年`／`30週年` 互相展開，中文數字一～九十九），回應 `meta.queryTerms`。前端：`series-band.js` 新增 `setBandSearch`，搜尋時橫幅第一個分頁「搜尋：<查詢>」列出名稱相符的系列與商品（同 IP、目前版本，最多 60），卡片沒命中時提示並捲到橫幅。預覽（API 轉正式站）：日版 30th → 系列 2＋商品 19。新增測試，Node 326/326。
-- 驗收受阻：Cloudflare 對 cardscope.onrender.com 出「請稍候…」人機驗證（curl 與 App 瀏覽器皆是，疑為短時間大量請求觸發）；解除後需在正式站驗：日版／台版搜 30th、30周年、三十周年 有卡片＋橫幅「搜尋」分頁。
+- 驗收（部署 `a09f08b` 後）：Cloudflare 曾對 cardscope.onrender.com 出「請稍候…」人機驗證（短時間大量 curl 觸發，由使用者在 App 瀏覽器自行通過；之後驗收改用瀏覽器內 fetch，少用 curl）。正式站日版／台版搜 30th、30周年、三十周年 皆 40 張（`database-series`，日版 M6a／台版 M6a），`meta.queryTerms` 正確；頁面上搜「三十周年」：卡片 40 張、橫幅「搜尋：三十周年」分頁 23 項（系列 2＋商品），提示文字正確。
 - 工作方式（使用者 2026-10-10 指示）：Opus 5.5（medium）主導規劃與整合，Sonnet 5.5（high）子代理並行執行。專案代理定義 `.claude/agents/sonnet-worker.md`（model sonnet、effort high）；commit／合併／部署／migration／正式寫入由主導者負責。主導 session 的 effort 需使用者在 App 模型選單設定（session 不能改自己的 effort）。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
