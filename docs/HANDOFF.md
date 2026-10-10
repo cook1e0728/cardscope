@@ -577,9 +577,16 @@
 - 程式：`providers/pokemon-jp-official-decks.mjs`（解析収録商品、分盒）、`scripts/fetch-pokemon-jp-official-products.mjs`（間隔 1.5 秒，163 頁全 200）、`scripts/build-pokemon-jp-official-deck-plans.mjs`；`buildOfficialJpSeriesPlans` 加 `printedSetMark`；同名補卡腳本超過 100 張時自動切份。Node 330/330、`npm run check` 通過。
 - 寫入（gated＋重播零異動）：SI 補 126（2 份）、SH 補 10；SA 23／SA-2 23／SA-3 23／SA-4 24／SA-5 24、SCS 補 20（共 21）、SCS-2 20。ADR 0013 中文名 119＋112（候選 `derived-names/adr-0013-candidates-si-sh-20261010.json`、`-sa-scs-20261010.json`），ADR 0031 官方主圖 136＋157（SA 卡圖路徑由官方清單 API 4 頁補進 `official-card-images-20261009.json`）。
 - 結果：SI 419（中文名 393）、SH 53（44）、SA 五盒 117（89）、SCS 21（12）、SCS-2 20（11），全部有主圖；稀有度官方無圖示，留空。正式站 `/api/cards?series=pokemon-official-ja-sa-2` 等皆可讀，目錄已含新系列。
-- 卡盒商品：SA 五盒各連一件商品，オーロンゲ 由 SCS 改連 SCS-2（`seriesLinkBefore` 記舊值），重跑 0 筆。
+- 卡盒商品：SA 五盒各連一件商品，オーロンゲ 由 SCS 改連 SCS-2（`seriesLinkBefore` 記舊值），重跑 0 筆。 オーロンゲ 的 `official_code` 也由 SCS 改為 SCS-2（`officialCodeBefore`）：伺服器 `/api/products` 依「遊戲＋版本＋officialCode」只留一件，兩件同為 SCS 時會藏掉一件。正式站確認 SA 五盒、SCS-2 商品皆出現。
+- **既有問題（未處理）**：同上合併規則讓同代碼的多件商品只顯示一件——日版 SVD 10 件、SD 9、SVM 9、SP5 3、SV2a 3、SH 2、SVI 2、M3 2（`server.mjs` `loadProductSetsUncached` 的 `identity`）。改為代碼＋名稱需確認原本要合併的重複來源。
 - MG 查證後不處理：一個商品裝兩副牌，官方詳細頁沒有「収録商品」，只能靠 ID 連號推斷（ADR 0032 已記）。
 - 未處理：既有 SCS 系列名仍為通稱「スターターセットVMAX」（只新增不修改）；各盒無卡號的基本能量仍隔離。
+
+### 依序執行 71：詳細頁顯示被點開那張卡的卡圖（2026-10-10，桌電，已部署）
+
+- 使用者回報：排球少年 宮兄弟 HV-P02-077 在列表顯示極P 卡圖，打開詳細頁卻是 S 的卡圖。原因：S／極／極P 是三張卡（haikyuu-504／505／506）同一作品層，API 合併成一筆並以 S 為 `referencePrintingId`，前端主圖一律用比對基準。
+- 修正（`ui-enhancements.js`）：主圖優先用被點開那張卡的版本；「收錄版本」每列加稀有度與「目前顯示」，其他卡的版本可點擊切換卡圖（`openCard(id,{keepPosition:true})`，不改上一張／下一張位置）；樣式在 `theme-binder.css`（44px 高、焦點外框）。寶可夢日台合併卡同樣受益：點台版卡顯示台版卡圖。新增 `test/detail-version-image.test.mjs`，Node 332/332。
+- 部署 `71bc287`，正式站 `openCard('haikyuu-506')` 主圖為 `HV-P02-077-KP.webp`。
 
 下一個安全起點（2026-10-10 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
