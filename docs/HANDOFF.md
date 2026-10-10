@@ -559,6 +559,7 @@
 - 使用者：日版頁搜 30th 時看不到台版／美版，問是否缺資料（不是：台版 M6a 159 張＋5 件商品、美版 me55／me55c 191 張，只是搜尋限定目前版本）。依 grill-with-docs 決定（自動採用建議）：Q1 先列目前版本、再提示其他版本並可一鍵切換（不混在一起）；Q2 橫幅「搜尋」分頁的按鈕列＋卡片 0 筆時的提示文字；Q3 只算系列＋商品（前端資料，不多打 API）；Q4 切換版本會用同一查詢重搜並停在搜尋分頁；Q5 跨 IP 不在範圍；Q6 不寫 ADR（介面規則、易撤回），改寫入主方案第 4 節。
 - 實作（Sonnet 子代理，主導者審查 diff 後補兩處）：`series-band.js` 依版本計數、「其他版本也有符合：台版 6 項／美版 2 項」按鈕（`data-search-region`，同版本按鈕的 44px 樣式）、目前版本無相符時分頁仍在並寫「日版沒有符合的系列或商品」、`setBandSearch` 回傳 `{here,others,label}`；`index.html` 的 `activeSearch`，搜尋中切換版本會重搜（`loadCardsPage(true)` 時清除），提示「美版沒有符合的卡；日版 1 項、台版 1 項列在上方「搜尋」分頁。」。主導者補：搜尋分頁只對發起搜尋的 IP 生效（換 IP 不殘留）；橫幅版本按鈕與分頁原本沒有焦點樣式，補 3px IP 主色外框。只列 `regionsFor(game)` 提供的版本（<3 筆的版本不列，否則會被 `ensureRegion` 拉回）。Node 327/327。
 - 預覽驗證（API 轉正式站）：日版 30th → 卡 40、分頁 23 項、按鈕「台版 6 項」「美版 2 項」；點台版 → TW 重搜、仍在搜尋分頁、按鈕變「日版 23 項」「美版 2 項」；美版搜 FUTURISTIC → 卡 0、提示與空白說明正確、點台版 → 1 件 FUTURISTIC BOX；鍵盤 Tab 焦點外框 3px。帶 `q=` 的網址開啟會自動搜尋。
+- 部署：`main` 快轉到 `aa7394c`。正式站驗收（2026-10-10，App 瀏覽器）：`?game=pokemon&q=30th` 自動以日版搜尋，橫幅出現「搜尋：30th」分頁與「台版 6 項」「美版 2 項」按鈕，`catalogPartial` 為 false。
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
