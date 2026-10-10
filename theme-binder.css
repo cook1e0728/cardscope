@@ -23,8 +23,8 @@ body[data-view="game"] .channel{border-radius:7px 7px 0 0;border:1px solid var(-
 body[data-view="game"] .channel b{font-weight:500}
 body[data-view="game"] .channel.on b{font-weight:700}
 /* Each tab shows its game's official logo (small, on paper); the selected tab is white, taller, and joins the band. */
-body[data-view="game"] .channel[data-ip]{position:relative;display:flex;align-items:center;gap:8px;background:#E6E0D2;margin-top:6px;transition:margin-top .15s,min-height .15s}
-body[data-view="game"] .channel[data-ip] .channel-art{display:block;height:22px;width:auto;border:0;border-radius:0;background:none;padding:0;box-shadow:none}
+body[data-view="game"] .channel[data-ip]{position:relative;display:flex;flex:none;align-items:center;gap:8px;background:#E6E0D2;margin-top:6px;transition:margin-top .15s,min-height .15s}
+body[data-view="game"] .channel[data-ip] .channel-art{display:block;flex:none;height:22px;width:auto;border:0;border-radius:0;background:none;padding:0;box-shadow:none}
 /* Fixed logo box so the tabs do not shift sideways when the logos finish loading. */
 body[data-view="game"] .channel[data-ip] .channel-art img{height:22px;width:72px;max-width:72px;max-height:22px;object-fit:contain;padding:0}
 body[data-view="game"] .channel[data-ip]:not(.on):hover{margin-top:2px;background:#F1ECE1}

@@ -21,3 +21,10 @@ test('official SVG logos carry no script and the footer states how logos are use
   for(const name of ['pokemon.svg','haikyuu.svg'])assert.doesNotMatch(await readFile(new URL(`../assets/ip-logos/${name}`,import.meta.url),'utf8'),/<script|javascript:|\son[a-z]+=/i,name);
   assert.match(await readFile(new URL('../index.html',import.meta.url),'utf8'),/官方 Logo 僅用於辨識遊戲，權利人要求時將立即移除/);
 });
+
+// Below 760px the tabs overflow the row; without flex:none the logo box shrank to 0–3px and showed as a white line.
+test('game-page tab logos keep their box when the tab row overflows',async()=>{
+  const css=await readFile(new URL('../theme-binder.css',import.meta.url),'utf8');
+  assert.match(css,/body\[data-view="game"\] \.channel\[data-ip\]\{[^}]*flex:none/);
+  assert.match(css,/body\[data-view="game"\] \.channel\[data-ip\] \.channel-art\{[^}]*flex:none/);
+});

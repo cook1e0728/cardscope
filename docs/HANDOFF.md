@@ -540,6 +540,11 @@
 - 本機預覽確認寶可夢日版：日版／台版／美版、全部系列 298 個、NEW 3 個（M6a、MF、M6）。航海王、遊戲王未在本機重看（使用者中斷），部署後需確認。Node 324/324、`npm run check` 通過。
 - **筆電接續**：`git fetch && git checkout claude/binder-theme-preview && git pull`（`main` 同步）。先開正式站確認航海王（台版／亞洲英文版、全部系列）與遊戲王（美版）橫幅；若剛部署完看到空白，應自動在數秒內補齊。
 
+### 依序執行 66：部署後橫幅驗收與手機分頁籤 Logo（2026-10-10，桌電）
+
+- 正式站驗收（`8a2796f`）：航海王台版與亞洲英文版皆有「全部系列」與商品分類分頁，系列磚有官方卡盒圖（50／51 張），OP-17 標 NEW；遊戲王只有美版，564 張系列圖，最新幾個系列標 NEW、MAMS 標「即將發售」；三頁都沒有 `catalogPartial`、無橫向溢出。遊戲王美版第一頁 `/api/cards?...&region=US` 6.35 s（依序執行 64 的版本瀏覽效能，仍待資料庫 CPU 恢復後重量）。
+- 發現：寬度 < 760px 時遊戲頁分頁籤擠不下，flex 把 `.channel-art` 壓到 0–3px，官方 Logo 只剩一條白線（桌機寬度不受影響）。修正：分頁籤與 Logo 框 `flex:none`，分頁列照原本橫向捲動；`index.html` 渲染分頁籤後把選中的分頁捲進畫面（手機上原本會被推到畫面外）。新增 `test/official-logos.test.mjs` 回歸測試，Node 325/325、`npm run check` 通過。預覽量測：375 寬 Logo 72–81px、選中的「遊戲王」在畫面左側、無橫向溢出、主控台無錯誤；1280 寬分頁列不捲動。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
