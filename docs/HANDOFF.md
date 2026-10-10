@@ -545,6 +545,15 @@
 - 正式站驗收（`8a2796f`）：航海王台版與亞洲英文版皆有「全部系列」與商品分類分頁，系列磚有官方卡盒圖（50／51 張），OP-17 標 NEW；遊戲王只有美版，564 張系列圖，最新幾個系列標 NEW、MAMS 標「即將發售」；三頁都沒有 `catalogPartial`、無橫向溢出。遊戲王美版第一頁 `/api/cards?...&region=US` 6.35 s（依序執行 64 的版本瀏覽效能，仍待資料庫 CPU 恢復後重量）。
 - 發現：寬度 < 760px 時遊戲頁分頁籤擠不下，flex 把 `.channel-art` 壓到 0–3px，官方 Logo 只剩一條白線（桌機寬度不受影響）。修正：分頁籤與 Logo 框 `flex:none`，分頁列照原本橫向捲動；`index.html` 渲染分頁籤後把選中的分頁捲進畫面（手機上原本會被推到畫面外）。新增 `test/official-logos.test.mjs` 回歸測試，Node 325/325、`npm run check` 通過。預覽量測：375 寬 Logo 72–81px、選中的「遊戲王」在畫面左側、無橫向溢出、主控台無錯誤；1280 寬分頁列不捲動。
 
+### 依序執行 67：搜尋 30th／30周年 找不到日版卡與卡盒（2026-10-10，桌電）
+
+- 使用者回報：寶可夢頁（日版）搜「30th」0 筆，「30周年」「三十周年」也應找得到卡或卡盒。正式庫其實有日版 M6a「30th CELEBRATION」176 張、MF 49 張、台版 M6a 159 張與 30 多件商品。
+- 原因：`search_cards_ranked` 的 `search_text` 步驟先命中（美版卡的 search_text 帶系列名「30th Celebration」），100 筆名額全被美版占走，`p_region=JP` 篩完變 0，且因已有文字命中而不走系列比對；系列比對本身也不分版本、不排序（limit 5）。商品從來不在搜尋範圍。「30周年」「三十周年」沒有同義詞。
+- Migration `20261010090000_search_series_by_region`（已套用並寫入 schema_migrations，函式 md5 `4c653d67…`，anon 仍無權）：有 `p_region` 時 search_text 只計該版本有 printing 的卡；系列比對只挑該版本系列、依發售日新到舊，printing 依此排序。套用前以臨時複本函式在正式庫比較：日版 30th 0→80 張（M6a 日＋台連結）、台版 0→80，美版不變；噴火龍、SV6a 結果不變；30th 日版 46→26 ms，其他相近。
+- 伺服器：`searchQueryTerms` 統一產生查詢詞（原查詢、別名、Source name markup 變體＋新的週年變體：`30th`／`30周年`／`30週年` 互相展開，中文數字一～九十九），回應 `meta.queryTerms`。前端：`series-band.js` 新增 `setBandSearch`，搜尋時橫幅第一個分頁「搜尋：<查詢>」列出名稱相符的系列與商品（同 IP、目前版本，最多 60），卡片沒命中時提示並捲到橫幅。預覽（API 轉正式站）：日版 30th → 系列 2＋商品 19。新增測試，Node 326/326。
+- 驗收受阻：Cloudflare 對 cardscope.onrender.com 出「請稍候…」人機驗證（curl 與 App 瀏覽器皆是，疑為短時間大量請求觸發）；解除後需在正式站驗：日版／台版搜 30th、30周年、三十周年 有卡片＋橫幅「搜尋」分頁。
+- 工作方式（使用者 2026-10-10 指示）：Opus 5.5（medium）主導規劃與整合，Sonnet 5.5（high）子代理並行執行。專案代理定義 `.claude/agents/sonnet-worker.md`（model sonnet、effort high）；commit／合併／部署／migration／正式寫入由主導者負責。主導 session 的 effort 需使用者在 App 模型選單設定（session 不能改自己的 effort）。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。

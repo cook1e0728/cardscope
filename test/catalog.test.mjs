@@ -789,3 +789,15 @@ test('a timed-out ranked search does not chain into the heavier fallback queries
   },'測試獸');
   assert.equal(missing.requests.filter(([table])=>table==='search_cards_with_siblings').length,1,'a missing function still falls back');
 });
+
+test('anniversary queries also search the other ways the anniversary is written (30th, 30周年, 30週年)',async()=>{
+  const bodies=[];
+  const {body}=await searchWithMock((table,params,respond,requestBody)=>{
+    if(table==='search_cards_ranked'){bodies.push(JSON.parse(requestBody));return respond({matchedBy:null,matchCount:0,groupCount:0,cards:[]})}
+    return respond([]);
+  },'三十周年');
+  assert.deepEqual(bodies[0].p_patterns,['%三十周年%','%30th%','%30周年%','%30週年%']);
+  assert.deepEqual(body.meta.queryTerms,['三十周年','30th','30周年','30週年']);
+  const {body:plain}=await searchWithMock((table,params,respond)=>respond(table==='search_cards_ranked'?{matchedBy:null,matchCount:0,groupCount:0,cards:[]}:[]),'30th');
+  assert.deepEqual(plain.meta.queryTerms,['30th','30周年','30週年']);
+});
