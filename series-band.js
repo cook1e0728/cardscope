@@ -1,5 +1,5 @@
 // Game-page series band, in the shape of trade.kapaipai.tw/trade: a region switch, a text tab row
-// (最新 / 最近瀏覽 / product categories / eras) and a rail of square tiles. Only the layout is borrowed. Series tiles
+// (全部系列 / 最近瀏覽 / product categories / eras) and a rail of square tiles. Only the layout is borrowed. Series tiles
 // are the catalog's own series (each opens its card table); product tiles are the 商品圖鑑 products, which this band
 // replaces. Each IP is browsed one region at a time (JP first, per the data priority); a tile without an image shows
 // its code or name on the IP colour instead of an empty placeholder.
@@ -46,19 +46,15 @@
     return (P||[]).filter(row=>row.seriesId===item.id&&row.imageUrl&&row.imageKind==='sealed-product').sort((a,b)=>rank(a)-rank(b))[0]?.imageUrl||null;
   }
   function tile(kind,item){
-    const imageUrl=kind==='series'?cover(item):item.imageUrl,name=kind==='product'?productName(item):seriesName(item),code=item.officialCode||'',upcoming=item.releaseDate&&item.releaseDate>today();
+    const imageUrl=kind==='series'?cover(item):item.imageUrl,name=kind==='product'?productName(item):seriesName(item),code=item.officialCode||'',upcoming=item.releaseDate&&item.releaseDate>today(),fresh=!upcoming&&item.releaseDate&&item.releaseDate>=recentSince();
     const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('is-type');this.remove()">`:'';
     const sub=code||(kind==='product'?item.productSubtype||item.productType||item.releaseDate||'':'代碼待補');
     return`<button type="button" class="band-tile" data-kind="${kind}" data-id="${esc(item.id)}" title="${esc([name,code,item.releaseDate].filter(Boolean).join('・'))}">`
-      +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':''}</span>`
+      +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>`
       +`<b class="band-tile-name">${esc(name)}</b><span class="band-tile-code">${esc(sub)}</span></button>`;
   }
-  function newTile(newest){
-    if(!newest)return'';const kicker=newest.releaseDate>today()?'即將發售':'最新商品';
-    return`<button type="button" class="band-tile band-tile-new" data-kind="series" data-id="${esc(newest.id)}" aria-label="${esc(`${kicker}：${seriesName(newest)}`)}">`
-      +`<span class="band-tile-art"><span class="band-new-kicker">${kicker}</span><span class="band-new-name">${esc(seriesName(newest))}</span></span>`
-      +`<b class="band-tile-name">${kicker}</b><span class="band-tile-code">NEW</span></button>`;
-  }
+  // Released in the last 90 days: shown as a NEW badge on the series' own tile.
+  const recentSince=()=>new Date(Date.now()-90*864e5).toISOString().slice(0,10);
   async function openSeries(item){
     remember(item.id);resetRarityFilter();clearProduct();
     browse.product={...item,seriesId:item.id,versionLabel:regionLabel[item.region]};browse.seriesId=item.id;
@@ -75,11 +71,11 @@
     const series=(C.series||[]).filter(inRegion),products=(P||[]).filter(inRegion),buckets=orderBuckets(seriesGroupBuckets(series));
     const seen=recent().map(id=>series.find(item=>item.id===id)).filter(Boolean);
     const categories=PRODUCT_CATEGORY_DEFINITIONS.filter(item=>item.id!=='singles').map(item=>({...item,rows:products.filter(row=>productMatchesCategory(row,item.id))})).filter(item=>item.rows.length);
-    const tabs=[['latest','最新'],...(seen.length?[['recent','最近瀏覽']]:[]),...categories.map(item=>[`product:${item.id}`,label(item),item.description]),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label])];
+    const tabs=[['latest','全部系列'],...(seen.length?[['recent','最近瀏覽']]:[]),...categories.map(item=>[`product:${item.id}`,label(item),item.description]),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label])];
     let active=bandTab[game]||'latest';if(!tabs.some(([id])=>id===active))active='latest';bandTab[game]=active;
     const dated=byDate(series),firstEraTab=categories.length?tabs.findIndex(([id])=>id.startsWith('group:')):-1;
     let kind='series',list;
-    if(active==='latest')list=dated.slice(0,30);
+    if(active==='latest')list=dated;
     else if(active==='recent')list=seen;
     else if(active.startsWith('product:')){kind='product';list=byDate(categories.find(item=>`product:${item.id}`===active)?.rows||[]).slice(0,60)}
     else list=byDate(buckets.find(bucket=>`group:${bucket.label}`===active)?.items||[]);
@@ -87,9 +83,9 @@
     band.dataset.key=key;
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionLabel[id]||id)}</button>`).join('')}</div></div>`
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''}>${esc(text)}</button>`).join('')}</div>`
-      +`<div class="series-band-rail" role="tabpanel">${active==='latest'?newTile(dated[0]):''}${list.map(item=>tile(kind,item)).join('')||`<p class="series-band-empty">${esc(regionLabel[region]||'')}目前沒有收錄這一類。</p>`}</div>`;
+      +`<div class="series-band-rail" role="tabpanel">${list.map(item=>tile(kind,item)).join('')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
     band.querySelector('.series-band-rail').scrollLeft=keep;
-    const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile:not(.band-tile-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
+    const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     band.onclick=event=>{
       const regionButton=event.target.closest('[data-region]');
       if(regionButton){const select=regionSelect();if(select&&select.value!==regionButton.dataset.region){select.value=regionButton.dataset.region;select.dispatchEvent(new Event('change',{bubbles:true}))}return}

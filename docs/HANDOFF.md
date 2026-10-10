@@ -533,6 +533,13 @@
 - 詳細頁與搜尋原本不讀 `card_images`：migration `20261009120000_card_images_in_detail_and_search`（`get_card_detail`、`search_cards_ranked` 每張卡多帶最多 3 筆 card_images）；伺服器 `cardImageFields` 在 printing 沒圖時用政策允許的 card_images，並帶出來源與授權狀態（否則 `canonicalizeCatalog` 會再次濾掉）。新增測試。
 - **效能問題（本段發現）**：系列橫幅讓遊戲頁一律帶版本，而有版本的瀏覽原本會讀整個遊戲的卡、printing、圖片（4～6 秒，大量寫入後更慢）。migration `20261009130000`（`browse_cards_page` 加 `p_region`，舊的 4 參數版本已刪除）與 `20261009140000`（`tcg_printings_region_card_idx`，先從版本索引取卡片 ID 再排序分頁）；伺服器只指定版本也走快速路徑，RPC 失敗時改走完整篩選路徑（不回傳未篩選資料）。新增測試。大量寫入後資料庫 CPU 被節流，量測不穩（同一查詢 0.2～5 秒），**待恢復後重量**；需要時對 `card_images` 等表 `ANALYZE`（已做）。資料庫 307 MB。
 
+### 依序執行 65：系列橫幅修正（2026-10-10，桌電，已部署）
+
+- 使用者回報：寶可夢只剩 SV4a、美版消失、遊戲王只剩日版 QCCU、航海王台版空白。原因：部署重啟後資料庫還沒就緒，`/api/catalog` 回傳內建的小型備用目錄（`fallbackReason`），前端只載一次不重試。修正：前端偵測 `meta.fallbackReason` 時設 `window.catalogPartial`、橫幅空白時顯示「系列資料載入中…」，並以 2～15 秒間隔重試最多 8 次，拿到完整目錄後整頁 `render()`（版本可能要從備用資料的錯誤選擇改回）。
+- 「最新」分頁改為「全部系列」：依發售日列出該版本所有系列（原本只列 30 個）。移除純文字的「最新商品 NEW」格；改為近 90 天發售的系列磚圖上標「NEW」（IP 主色），即將發售維持「即將發售」。
+- 本機預覽確認寶可夢日版：日版／台版／美版、全部系列 298 個、NEW 3 個（M6a、MF、M6）。航海王、遊戲王未在本機重看（使用者中斷），部署後需確認。Node 324/324、`npm run check` 通過。
+- **筆電接續**：`git fetch && git checkout claude/binder-theme-preview && git pull`（`main` 同步）。先開正式站確認航海王（台版／亞洲英文版、全部系列）與遊戲王（美版）橫幅；若剛部署完看到空白，應自動在數秒內補齊。
+
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
