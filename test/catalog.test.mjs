@@ -588,6 +588,33 @@ test('the product feed is kept between requests, but not when stored products fa
   }
 });
 
+test('同代碼的多件卡盒商品與同名重發商品都保留，系列列不會吃掉同代碼的商品',async()=>{
+  const product=(id,officialCode,nameJa,releaseDate,imageKind='sealed-product',region='JP')=>({id,game:'pokemon',seriesId:null,officialCode,productType:'構築デッキ',nameZh:null,nameJa,name:null,nameKo:null,region,language:region==='JP'?'ja-JP':'zh-Hant-TW',releaseDate,imageUrl:null,imageKind,source:'fixture',sourceUrl:null,metadata:{}});
+  const rows=[product('svd-1','SVD','exスタートデッキ 炎 リザードン','2023-08-04'),product('svd-2','SVD','exスタートデッキ 水 ゲッコウガ','2023-08-04'),product('svd-3','SVD','exスタートデッキ 草 マスカーニャ','2023-08-04'),
+    product('hajime-2010','','「はじめてセット」','2010-10-29'),product('hajime-2013','','「はじめてセット」','2013-11-08'),
+    product('tw-svb-series','SVB','頂級訓練家收藏箱ex',null,'series-logo','TW'),product('tw-svb-box','SVB','頂級訓練家收藏箱ex',null,'sealed-product','TW')].map(row=>row.officialCode===''?{...row,officialCode:null}:row);
+  const mockSupabase=createServer((req,res)=>{
+    const table=new URL(req.url,'http://mock-supabase').pathname.split('/').at(-1);
+    res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(table==='tcg_products'?rows:[]));
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false',CATALOG_WARM_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`product fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`product fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    const body=await (await fetch(`http://127.0.0.1:${appPort}/api/products`)).json(),ids=new Set(body.data.map(row=>row.id));
+    for(const id of ['svd-1','svd-2','svd-3','hajime-2010','hajime-2013','tw-svb-box'])assert.ok(ids.has(id),`${id} 應出現在商品清單`);
+    assert.ok(body.series.some(row=>row.id==='tw-svb-series'),'同代碼的系列列仍在系列清單');
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+});
+
 test('the default browse page comes from browse_cards_page in one call',async()=>{
   const card=index=>({id:`pokemon-x-${index}`,canonicalId:`pokemon-x-${index}`,game:'pokemon',seriesId:'s',officialCardNumber:String(index).padStart(3,'0'),rarity:'C',nameZh:`卡${index}`,aliases:[],metadata:{},printings:[{id:index,cardId:`pokemon-x-${index}`,seriesId:'s',region:'JP',language:'ja-JP',localSetCode:'S',localCardNumber:String(index).padStart(3,'0'),rarity:'C',imageUrl:null,imageRehostRequired:false}],images:[]});
   const requests=[],bodies=[];
