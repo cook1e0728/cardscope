@@ -604,7 +604,7 @@
 
 ### 依序執行 74：排球少年、芙莉蓮自動同步（ADR 0034）與同號多版本拆卡（ADR 0035）（2026-10-11，桌電）
 
-- ADR 0034（使用者接受風險）：`providers/official-ip-sync.mjs` 讀 TAKARA TOMY（master.php／itemsearch.php）與 Weiß Schwarz（filter-options／searchJson，作品 147）官方 JSON，只新增資料庫沒有的系列／卡／版本，既有列不改，差異記在 `catalog_sync_runs.metadata.differences`；接進每 72 小時定時同步與管理端點（`provider=haikyuu`／`weissfrieren`）。登記檔兩個來源改 risk-accepted、collectionEnabled。部署 `49e6301` 後：排球少年完成（官方 533，新增 HV-PR-074～079 共 6 張）；**芙莉蓮在 Render（Ohio）逾時失敗**（台灣本機 0.5–0.8 秒正常，推測 ws-tcg.com 限制海外資料中心），每小時會重試，待確認是否持續；目前資料與官方一致（751）。芙莉蓮 S136 有 88 張既有稀有度為 SR1／SR2／SR3，官方只給 SR，未改。
+- ADR 0034（使用者接受風險）：`providers/official-ip-sync.mjs` 讀 TAKARA TOMY（master.php／itemsearch.php）與 Weiß Schwarz（filter-options／searchJson，作品 147）官方 JSON，只新增資料庫沒有的系列／卡／版本，既有列不改，差異記在 `catalog_sync_runs.metadata.differences`；接進每 72 小時定時同步與管理端點（`provider=haikyuu`／`weissfrieren`）。登記檔兩個來源改 risk-accepted、collectionEnabled。部署 `49e6301` 後：排球少年完成（官方 533，新增 HV-PR-074～079 共 6 張）；芙莉蓮第一次在 Render 逾時（06:14 UTC），06:30 UTC 重試成功（讀 751、新增 0，與官方一致），屬偶發，不是海外連線被擋。芙莉蓮 S136 有 88 張既有稀有度為 SR1／SR2／SR3，官方只給 SR，未改。
 - ADR 0035（使用者選中性編號）：ADR 0025 合併的 210 張卡拆出 249 張版本卡（`<原卡>-v<k>`，同作品層），`variantName` 為「版本 k」，各自有官方卡圖；migration `20261011080000`（`private.split_pokemon_jp_official_variants`，先整批回滾測試含兩個反例），6 份寫入＋重播零異動，稽核 12 筆。前端卡片格子顯示「版本 k」標籤、收錄版本列出版本名稱。
 
 下一個安全起點（2026-10-11 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
