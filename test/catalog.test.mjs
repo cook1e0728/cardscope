@@ -64,6 +64,13 @@ test('database detail, search, and series paths retain image policy fields',asyn
   }
 });
 
+test('外部監測的 HEAD 健康檢查回 200 且不帶內容（UptimeRobot 預設 HEAD）',async()=>{
+  const response=await fetch(`http://127.0.0.1:${port}/api/catalog/health`,{method:'HEAD'});
+  assert.equal(response.status,200);
+  assert.equal(response.headers.get('cache-control'),'no-store');
+  assert.equal(await response.text(),'');
+});
+
 test('public health and source policy endpoints are available without database secrets',async()=>{
   const health=await api('/api/catalog/health'),sources=await api('/api/catalog/sources');
   assert.equal(health.data.policy.version,3);
