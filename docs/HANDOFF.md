@@ -613,7 +613,16 @@
 - 附帶發現：pokemontcg.io API 已宣告停用（金鑰到 2027-03-01），美版系列同步的 `/v2/sets` 今天回 500；遊戲王 YGOPRODeck 參考價是跨版本最低價，找不到同名時會取第一筆。
 - 工作方式備註：`sonnet-worker` 定義在 `cardscope/.claude/agents/`，工作階段要從 `cardscope/` 開啟才找得到；從上層開啟時改用 general-purpose＋`model: sonnet`、`effort: high`，並把同樣的規則寫進 prompt。
 
-下一個安全起點（2026-10-11 更新）：等使用者決定價格候選 A／B（見 `docs/research/price-sources/README.md`），再做最小一條；不需使用者決定、可直接做的是：美版系列同步改用不依賴 pokemontcg API 的來源，以及遊戲王參考價找不到同名時不顯示。10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
+### 依序執行 76：寶可夢日版新台幣參考價（ADR 0036）、匯率修正、系列同步脫離 pokemontcg API（2026-10-11，桌電，已部署）
+
+- 使用者同意候選 A，並要求以台幣為主。`providers/tcgdex-pricing.mjs`：只對 `tcgdex-ja` 的 printing（以 `providerId` 查 TCGdex），Cardmarket `trend`→平台參考價、`low`→最低掛牌價，各 variant 分開，超過 7 天不顯示，記憶體快取 24 小時。詳細頁「跨市場比價」分頁以 NT$ 為主數字。**注意**：詳細頁實際由 `ui-enhancements.js` 的 `openCard` 渲染（覆蓋 `index.html` 的同名函式），`marketBlock` 定義在 `index.html`，兩邊都用它。
+- **匯率**：Frankfurter（歐洲央行）沒有新台幣，正式站之前一直用寫死的預設值（JPY 0.22，實際約 0.202，遊々亭換算高估約 9%）。台灣銀行網站有機器人驗證，不繞過；使用者選 ExchangeRate-API（`open.er-api.com/v6/latest/TWD`，頁面附歸屬連結），註冊表 `frankfurter` 改為 `exchangerate-api`。
+- 遊戲王參考價：找不到完全同名（不分大小寫）就不顯示，標示「跨版本最低參考價」。
+- 美版系列清單改讀 `PokemonTCG/pokemon-tcg-data` 的 `sets/en.json`（176 個系列與正式庫一致）；靜態檔總數比卡片檔少時（svp：75 對 165 張）總數改記未知（`totalsStale`）。`server.mjs` 仍有兩處打 `api.pokemontcg.io`：162 行搜尋（失敗只顯示來源不可用）、590 行 `loadPokemonSets()`，2027-03 前要改。
+- 部署 `5391ccd`、`e3b0133`、`39f3e8f`；Node 351/351。正式站 SV6a-090（SAR）顯示 NT$365（EUR 10.20）／NT$300（EUR 8.39），匯率 2026-10-11。
+- 遊々亭：已向使用者說明直接開啟的風險（規約禁止無斷轉載、資料庫權利、封鎖、同號多版本誤配），建議先寄信詢問，使用者尚未決定。
+
+下一個安全起點（2026-10-11 更新）：使用者決定遊々亭（寄信或接受風險；要的話先擬日文信稿）。可自行推進：`server.mjs` 剩下兩處 pokemontcg API 依賴；官方來源匯入的日版卡（`pokemon-official-ja-*`）目前沒有價格，若要對應 TCGdex 需另立身分規則。10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
