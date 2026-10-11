@@ -597,7 +597,7 @@
 
 ### 依序執行 73：冷啟動監測、日版中文名補推導（2026-10-11，桌電）
 
-- 使用者註冊 UptimeRobot（HTTP、每 5 分鐘）。原本 `HEAD /api/catalog/health` 回 404（只接受 GET），會被判當機；改為 HEAD 直接回 200（不查資料庫），部署 `a269588`。Render 紀錄可看「Running 'yarn start'」前是否有「Running build command」來分辨部署重啟與休眠喚醒（10-11 04:59 UTC 為休眠喚醒）。**監測效果待確認**：最後部署 05:38 UTC，需觀察 20 分鐘以上無部署期間沒有休眠喚醒。Render 工作區 `tea-da7tt7dg1s2s73fd8tfg`，服務 `srv-da8eanrtqb8s739vcosg`（Ohio，free）；另有已停用的 `cardscope-1`（Singapore）。免費方案沒有請求紀錄。
+- 使用者註冊 UptimeRobot（HTTP、每 5 分鐘）。原本 `HEAD /api/catalog/health` 回 404（只接受 GET），會被判當機；改為 HEAD 直接回 200（不查資料庫），部署 `a269588`。Render 紀錄可看「Running 'yarn start'」前是否有「Running build command」來分辨部署重啟與休眠喚醒（10-11 04:59 UTC 為休眠喚醒）。**監測已確認有效**：05:38 UTC 部署後到 05:58 共 20 分鐘無人使用（只連資料庫），Render 沒有任何重新啟動；UptimeRobot（監測 ID 804235519，網址為首頁 `https://cardscope.onrender.com`、300 秒）平均回應 116 ms，05:58 實測首頁 0.7 秒。GitHub `keep-warm.yml` 可保留或停用，已不是主要喚醒來源。Render 工作區 `tea-da7tt7dg1s2s73fd8tfg`，服務 `srv-da8eanrtqb8s739vcosg`（Ohio，free）；另有已停用的 `cardscope-1`（Singapore）。免費方案沒有請求紀錄。
 - SCS 系列名改為「スターターセットVMAX　リザードン」（舊值 `nameJaBefore`）。
 - 日版 M6 098／099 日文名對調（TCGdex 封存錯誤）已依日本官方更正；全面比對 6,907 張只有這一對。
 - ADR 0013 補充：只差寫法的官方中文名視為唯一（migration `20261011060000`）。中文名補 54＋92 張，日版缺中文名 3,479 → 3,333（多為台灣官方沒有收錄的早期世代，無來源可用）。
