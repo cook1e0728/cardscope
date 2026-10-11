@@ -1,6 +1,6 @@
 /* Binder theme: warm paper, one colour per IP, game switch as binder index tabs, cards in sleeves,
    rarity as sticker labels. Loaded last so removing this file restores the previous look. */
-:root{--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff;--ip-2-on:#2B2105;--ip-ink:#3B3A36;--tint:var(--ip);--band:linear-gradient(135deg,#3B3A36,#5A5348);--band-on:#fff;--logo:none}
+:root{--new:#D7261E;--new-on:#fff;--paper:#EFEAE0;--paper-2:#F8F5EE;--ink:#1F1B16;--ink-2:#5A5348;--rule:#D9D1C0;--ip:#3B3A36;--ip-2:#C9A227;--ip-on:#fff;--ip-2-on:#2B2105;--ip-ink:#3B3A36;--tint:var(--ip);--band:linear-gradient(135deg,#3B3A36,#5A5348);--band-on:#fff;--logo:none}
 /* ADR 0028: the official logos (assets/ip-logos/, used unaltered on a white plate) identify each game; the band
    colours are sampled from those logos. --ip: buttons and selected states; --ip-ink: small text on paper.
    Every text pair here measures at or above 4.5:1 (band titles are large text, at or above 3:1). */
@@ -166,7 +166,7 @@ body[data-view="game"] #gameContext{display:none}
 .band-tile-art.is-type:before{content:attr(data-code);max-width:90%;color:var(--band-on);font:700 26px/1.1 'Space Grotesk','Noto Sans TC',sans-serif;letter-spacing:.01em;overflow-wrap:anywhere}
 .band-tile-flag{position:absolute;left:6px;top:6px;padding:2px 6px;border-radius:4px;background:#1F1B16;color:#fff;font-size:11px;font-weight:700}
 /* NEW marks a set released in the last 90 days, on its own tile (the separate text-only NEW tile is gone). */
-.band-tile-flag.is-new{background:var(--ip);color:var(--ip-on);letter-spacing:.06em}
+.band-tile-flag.is-new{background:var(--new);color:var(--new-on);letter-spacing:.06em}
 .band-tile-name{width:100%;margin-top:6px;font-size:17px;font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .band-tile-code{width:100%;color:#666;font:500 15px/1.2 'Space Grotesk',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .band-tile[aria-current] .band-tile-art{box-shadow:0 0 0 3px var(--ip)}
