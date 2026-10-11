@@ -128,9 +128,10 @@ async function getTwdRates(){
   if(supabaseConfigured()){const stored=await loadStoredTwdRates();if(stored){fxCache.data=stored;fxCache.expiresAt=Date.now()+Math.max(60000,FX_CACHE_MS-(Date.now()-new Date(stored.fetchedAt).getTime()));return stored}}
   const fallback={rates:{TWD:1,JPY:jpyToTwdFallback,USD:usdToTwdFallback,EUR:35},updatedAt:null,fetchedAt:new Date().toISOString(),source:'fallback'};
   try{
-    const response=await fetch('https://api.frankfurter.dev/v1/latest?base=TWD&symbols=JPY,USD,EUR'); if(!response.ok)throw new Error(`FX_${response.status}`);
-    const body=await response.json(),rates={TWD:1}; for(const [currency,perTwd] of Object.entries(body.rates||{})){const value=Number(perTwd);if(Number.isFinite(value)&&value>0)rates[currency]=1/value}
-    const data={rates,updatedAt:body.date||null,fetchedAt:new Date().toISOString(),source:'Frankfurter'};fxCache.data=data;fxCache.expiresAt=Date.now()+FX_CACHE_MS;saveTwdRates(data).catch(()=>{});return data;
+    // Frankfurter（歐洲央行）沒有新台幣；改用 ExchangeRate-API 的免金鑰端點，條款要求標示來源（前端附連結）。
+    const response=await fetch('https://open.er-api.com/v6/latest/TWD'); if(!response.ok)throw new Error(`FX_${response.status}`);
+    const body=await response.json(),rates={TWD:1}; if(body.result!=='success')throw new Error('FX_RESULT'); for(const currency of ['JPY','USD','EUR','KRW','HKD']){const value=Number(body.rates?.[currency]);if(Number.isFinite(value)&&value>0)rates[currency]=1/value} if(!['JPY','USD','EUR'].every(c=>rates[c]))throw new Error('FX_INCOMPLETE');
+    const data={rates,updatedAt:body.time_last_update_utc?new Date(body.time_last_update_utc).toISOString().slice(0,10):null,fetchedAt:new Date().toISOString(),source:'ExchangeRate-API'};fxCache.data=data;fxCache.expiresAt=Date.now()+FX_CACHE_MS;saveTwdRates(data).catch(()=>{});return data;
   }catch{fxCache.data=fallback;fxCache.expiresAt=Date.now()+60*60*1000;return fallback}
 }
 function amountToTwd(amount,currency,fx){const value=Number(amount),rate=Number(fx?.rates?.[currency]);return Number.isFinite(value)&&Number.isFinite(rate)?Math.round(value*rate):null}

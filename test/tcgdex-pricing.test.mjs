@@ -156,7 +156,7 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     ['api.tcgdex.net/v2/ja/cards/SV6a-039', 200, sv6a039({ updated: new Date(Date.now() - DAY).toISOString() })],
     ['db.ygoprodeck.com/api/v7/cardinfo.php?fname=Dark+Magician&', 200, ygoprodeckBody(['Dark Magician Girl', 'Dark Magician of Chaos'])],
     ['db.ygoprodeck.com/api/v7/cardinfo.php?fname=blue-eyes+white+dragon&', 200, ygoprodeckBody(['Blue-Eyes Ultimate Dragon', 'Blue-Eyes White Dragon'])],
-    ['api.frankfurter.dev', 200, { date: '2026-10-09', rates: { JPY: 4.8, USD: 0.031, EUR: 0.0275 } }]
+    ['open.er-api.com', 200, { result: 'success', time_last_update_utc: 'Fri, 09 Oct 2026 00:02:31 +0000', rates: { TWD: 1, JPY: 4.8, USD: 0.031, EUR: 0.0275 } }]
   ];
   await writeFile(preload, `const real=globalThis.fetch,fixtures=${JSON.stringify(fixtures)};globalThis.fetch=async(input,options)=>{const url=String(input?.url||input);for(const [key,status,body] of fixtures)if(url.includes(key))return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json'}});if(/^https?:\\/\\/(?!127\\.0\\.0\\.1)/.test(url))return new Response('{}',{status:599});return real(input,options)};`);
   let app;
@@ -175,10 +175,10 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     assert.deepEqual(pokemon.sources.map(s => [s.source, s.status]).sort(), [['tcgdex', 'ok'], ['yuyutei', 'ok']]);
     const tcgdex = pokemon.records.filter(r => r.provider === 'tcgdex');
     assert.deepEqual(tcgdex.map(r => [r.priceType, r.amount, r.currency, r.variant, r.market]), [['market', 0.2, 'EUR', 'holo', 'Cardmarket'], ['listing', 0.03, 'EUR', 'holo', 'Cardmarket']]);
-    assert.equal(tcgdex[0].priceTwd, Math.round(0.2 / 0.0275), 'EUR converted with the Frankfurter rate');
+    assert.equal(tcgdex[0].priceTwd, Math.round(0.2 / 0.0275), 'EUR converted with the ExchangeRate-API rate');
     assert.equal(tcgdex[0].sourceUrl, 'https://api.tcgdex.net/v2/ja/cards/SV6a-039');
     assert.equal(tcgdex[0].idProduct, 773788);
-    assert.equal(pokemon.meta.exchangeRates.source, 'Frankfurter');
+    assert.equal(pokemon.meta.exchangeRates.source, 'ExchangeRate-API');
     assert.equal(pokemon.meta.exchangeRates.updatedAt, '2026-10-09');
     assert.equal(pokemon.meta.priceTypes.market, '平台參考價');
 
