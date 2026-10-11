@@ -607,7 +607,7 @@
 - ADR 0034（使用者接受風險）：`providers/official-ip-sync.mjs` 讀 TAKARA TOMY（master.php／itemsearch.php）與 Weiß Schwarz（filter-options／searchJson，作品 147）官方 JSON，只新增資料庫沒有的系列／卡／版本，既有列不改，差異記在 `catalog_sync_runs.metadata.differences`；接進每 72 小時定時同步與管理端點（`provider=haikyuu`／`weissfrieren`）。登記檔兩個來源改 risk-accepted、collectionEnabled。部署 `49e6301` 後：排球少年完成（官方 533，新增 HV-PR-074～079 共 6 張）；芙莉蓮第一次在 Render 逾時（06:14 UTC），06:30 UTC 重試成功（讀 751、新增 0，與官方一致），屬偶發，不是海外連線被擋。芙莉蓮 S136 有 88 張既有稀有度為 SR1／SR2／SR3，官方只給 SR，未改。
 - ADR 0035（使用者選中性編號）：ADR 0025 合併的 210 張卡拆出 249 張版本卡（`<原卡>-v<k>`，同作品層），`variantName` 為「版本 k」，各自有官方卡圖；migration `20261011080000`（`private.split_pokemon_jp_official_variants`，先整批回滾測試含兩個反例），6 份寫入＋重播零異動，稽核 12 筆。前端卡片格子顯示「版本 k」標籤、收錄版本列出版本名稱。
 
-下一個安全起點（2026-10-11 更新）：沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
+下一個安全起點（2026-10-11 更新）：下一輪先做**市場資料（主方案第 6 階段）的價格來源盤點**：候選來源的條款、robots.txt、價格性質（買取／掛牌／成交）與涵蓋範圍，交使用者決定接受哪些風險，再做最小一條。10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
