@@ -704,6 +704,12 @@
 - **事故與處理**：套用後正式站寶可夢日版瀏覽首頁一度逾時（>60 s，SUPABASE_500 57014）。函式定義確認未變；原因是今天大量寫入與回滾測試把小型實例的快取擠掉（同一查詢第一次 6 s、第二次 134 ms）。已 `ANALYZE` 六張目錄表，約 1 分鐘內暖回（正式站日版首頁 0.9 s、其他頁 1.3–1.5 s）。**之後大批寫入後要先 ANALYZE 並暖一下常用頁**。
 - 已處理（同日）：內建備用目錄 `data/catalog.json` 的示範卡與示範系列，資料庫在線時只用來補資料庫已有列的空欄位，不再新增只存在備用目錄的列（`mergeCatalogRows` 的 `keepFallbackOnly:false`），所以刪掉的 OP05-119 種子與 `onepiece-op05-jp` 不會再從合併回來；離線時照舊整份使用。新增回歸測試（修正前失敗）；Node 365/365。部署 `8b45fa1` 後正式站：目錄無 `onepiece-op05-jp`；「魯夫」全版本／台版、「噴火龍」、「luffy」各 40 筆，首筆皆為資料庫卡；日版「魯夫」0 筆（航海王無日版資料，正確）。
 
+### 依序執行 91：日版 TCGdex 待核卡官方抽查（2026-10-14，桌電，唯讀）
+
+- 範圍：M6a 以外 42 個 `tcgdex-ja` 系列的 pending 卡，資料庫實數 348 張（稽核的 377 含 M6a 35 張並有計數差）。只用 pokemon-card.com 一般請求（228 次、間隔 ≥1.6 s、無 stealth、不存圖）。報告 `docs/evidence/audit-20261014/pokemon-jp-pending-spotcheck.{md,json}`。
+- 結果：OFFICIAL_UNDER_OTHER_MARK 0；OFFICIAL_OMITS_REAL_CARD 7（S5I 084／085、S6H 084／085、S6K 084–086，官方商品頁圖檔名證實 SA 版 VMAX 卡號）；LIKELY_TCGDEX_ERROR 2（SM12a 184 官方為メルメタルGX SR、197 為ホミカ SR）；OFFICIAL_SAME_MARK_MATCH_ISSUE 16（官方同標記有，只是名稱寫法或缺卡號：S12a 基本能量 4、S8b モルペコV-UNION 7、SM5p 037／048、SM6a 050、SM6 094、SM8b 150）；UNRESOLVED 323（322 張結構上像官方資料庫漏收 S9 以前的 HR／UR，1 張 SM6 110 無法判斷）。
+- 待使用者決定：UNRESOLVED＋OMITS 是否比照 M6a 標示（不刪）；SM12a 184／197 以官方覆蓋；16 張用官方卡片 ID 對卡；M6 098／099 SR 可直接升級。TCGdex 稀有度標籤（道具／能量標 SR、「Rare Holo」）不可當定論。
+
 下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
