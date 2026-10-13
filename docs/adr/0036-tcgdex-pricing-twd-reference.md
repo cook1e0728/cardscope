@@ -10,7 +10,7 @@ status: accepted
 
 決定：
 
-- **範圍**：只用在 `source = tcgdex-ja` 的日版寶可夢卡，以 `provider_id` 即時查詢，伺服器記憶體快取 24 小時，不存資料庫。官方來源匯入的日版卡（`pokemon-official-ja-*`）、台版、美版都不推測對應，不顯示。
+- **範圍**：只用在 `source = tcgdex-ja` 的日版寶可夢卡，以 `provider_id` 即時查詢，伺服器記憶體快取 24 小時，不存資料庫。官方來源匯入的日版卡（`pokemon-official-ja-*`）、台版、美版都不推測對應，不顯示。（官方來源日版卡已由 ADR 0037 補充：限已盤點的系列，且 TCGdex 日文名須相同。）
 - **價格性質分開**：Cardmarket `trend` 記為 `market`（平台參考價），`low` 記為 `listing`（最低掛牌價）；`avg` 系列不顯示（Cardmarket 未公開它是否只算成交）。每個 variant（holo、normal、reverse 等）分開列出，不合併。
 - **台幣為主**：介面主數字是換算後的新台幣（ExchangeRate-API 每日匯率，`withTwd`；使用者 2026-10-11 選定），原幣金額、匯率日期與來源列在小字。匯率退回預設值（`source = fallback`）時要標示「匯率為預設估計」。標籤寫「Cardmarket 歐洲市場參考價（換算新台幣）」，不能寫成台灣行情。
 - **歸屬**：每筆附 TCGdex 卡片頁與 Cardmarket 更新時間（`updated`）；超過 7 天未更新就不顯示。

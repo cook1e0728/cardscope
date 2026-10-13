@@ -93,6 +93,15 @@ test('concurrent requests for one card share a single upstream call', async () =
   assert.equal(calls, 1);
 });
 
+test('expectedName keeps a derived ID only when TCGdex has the same Japanese name (ADR 0037)', async () => {
+  let calls = 0;
+  const fetchPricing = createTcgdexPricing({ now: () => NOW, fetch: async () => { calls++; return jsonResponse(sv6a039()); } });
+  assert.equal((await fetchPricing('SV6a-039', { expectedName: 'モモワロウ ex' })).length, 2, 'NFKC and spaces are ignored');
+  assert.deepEqual(await fetchPricing('SV6a-039', { expectedName: 'モモワロウ' }), []);
+  assert.equal((await fetchPricing('SV6a-039')).length, 2, 'no expected name: tcgdex-ja provider IDs are trusted as before');
+  assert.equal(calls, 1, 'the name is cached with the prices');
+});
+
 test('ids that could escape the endpoint path are refused without a request', async () => {
   let calls = 0;
   const fetchPricing = createTcgdexPricing({ now: () => NOW, fetch: async () => { calls++; return jsonResponse(sv6a039()); } });
@@ -126,11 +135,15 @@ function ygoprodeckBody(names) {
 }
 
 test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket prices; other cards and non-exact Yu-Gi-Oh! names get none', async () => {
-  const printing = (cardId, source, providerId) => ({ id: cardId, cardId, seriesId: 's', region: 'JP', language: 'ja-JP', localSetCode: 'SV6a', localCardNumber: '039', rarity: 'RR', imageUrl: null, imageRehostRequired: false, source, providerId, metadata: {} });
+  const printing = (cardId, source, providerId, over = {}) => ({ id: cardId, cardId, seriesId: 's', region: 'JP', language: 'ja-JP', localSetCode: 'SV6a', localCardNumber: '039', rarity: 'RR', imageUrl: null, imageRehostRequired: false, source, providerId, metadata: {}, ...over });
   const base = { canonicalId: null, seriesId: 's', officialCardNumber: '039', rarity: 'RR', nameEn: null, nameKo: null, aliases: [], metadata: {} };
   const cards = {
     'pokemon-tcgdex-ja-sv6a-039': { ...base, id: 'pokemon-tcgdex-ja-sv6a-039', game: 'pokemon', nameZh: '桃歹郎ex', nameJa: 'モモワロウex', printings: [printing('pokemon-tcgdex-ja-sv6a-039', 'tcgdex-ja', 'SV6a-039')] },
     'pokemon-official-ja-x': { ...base, id: 'pokemon-official-ja-x', game: 'pokemon', nameZh: null, nameJa: '官方匯入', printings: [printing('pokemon-official-ja-x', 'pokemon-card-official-jp', 'abc123')] },
+    // ADR 0037: official-import JP cards in a checked series, looked up as <set>-<number> and kept only when TCGdex's Japanese name matches.
+    'pokemon-official-ja-sv5k-080': { ...base, id: 'pokemon-official-ja-sv5k-080', game: 'pokemon', nameZh: '鬼斯', nameJa: 'ゴース', printings: [printing('pokemon-official-ja-sv5k-080', 'pokemon-card-official-jp', '45523', { localSetCode: 'SV5K', localCardNumber: '080', nameJa: 'ゴース' })] },
+    'pokemon-official-ja-sv5m-050': { ...base, id: 'pokemon-official-ja-sv5m-050', game: 'pokemon', nameZh: null, nameJa: 'ゴース', printings: [printing('pokemon-official-ja-sv5m-050', 'pokemon-card-official-jp', '1', { localSetCode: 'SV5M', localCardNumber: '050', nameJa: 'ゴース' })] },
+    'pokemon-official-ja-sv5k-080-v2': { ...base, id: 'pokemon-official-ja-sv5k-080-v2', game: 'pokemon', nameZh: null, nameJa: 'ゴース', printings: [printing('pokemon-official-ja-sv5k-080-v2', 'pokemon-card-official-jp', '2', { localSetCode: 'SV5K', localCardNumber: '080', nameJa: 'ゴース' })] },
     'yugioh-dm': { ...base, id: 'yugioh-dm', game: 'yugioh', nameZh: '黑魔導', nameJa: null, nameEn: 'Dark Magician', printings: [] },
     'yugioh-bewd': { ...base, id: 'yugioh-bewd', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [] }
   };
@@ -156,6 +169,8 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     ['api.tcgdex.net/v2/ja/cards/SV6a-039', 200, sv6a039({ updated: new Date(Date.now() - DAY).toISOString() })],
     ['db.ygoprodeck.com/api/v7/cardinfo.php?fname=Dark+Magician&', 200, ygoprodeckBody(['Dark Magician Girl', 'Dark Magician of Chaos'])],
     ['db.ygoprodeck.com/api/v7/cardinfo.php?fname=blue-eyes+white+dragon&', 200, ygoprodeckBody(['Blue-Eyes Ultimate Dragon', 'Blue-Eyes White Dragon'])],
+    ['api.tcgdex.net/v2/ja/cards/SV5K-080', 200, { ...sv6a039({ updated: new Date(Date.now() - DAY).toISOString() }), id: 'SV5K-080', localId: '080', name: 'ゴース' }],
+    ['api.tcgdex.net/v2/ja/cards/SV5M-050', 200, { ...sv6a039({ updated: new Date(Date.now() - DAY).toISOString() }), id: 'SV5M-050', localId: '050', name: 'メルメタル' }],
     ['open.er-api.com', 200, { result: 'success', time_last_update_utc: 'Fri, 09 Oct 2026 00:02:31 +0000', rates: { TWD: 1, JPY: 4.8, USD: 0.031, EUR: 0.0275 } }]
   ];
   await writeFile(preload, `const real=globalThis.fetch,fixtures=${JSON.stringify(fixtures)};globalThis.fetch=async(input,options)=>{const url=String(input?.url||input);for(const [key,status,body] of fixtures)if(url.includes(key))return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json'}});if(/^https?:\\/\\/(?!127\\.0\\.0\\.1)/.test(url))return new Response('{}',{status:599});return real(input,options)};`);
@@ -185,6 +200,14 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     const official = await market('pokemon-official-ja-x');
     assert.deepEqual(official.sources.map(s => s.source), [], 'no TCGdex lookup without a tcgdex-ja printing');
     assert.deepEqual(official.records, []);
+
+    const checked = await market('pokemon-official-ja-sv5k-080');
+    assert.deepEqual(checked.records.filter(r => r.provider === 'tcgdex').map(r => [r.priceType, r.providerCardId]), [['market', 'SV5K-080'], ['listing', 'SV5K-080']]);
+    const otherName = await market('pokemon-official-ja-sv5m-050');
+    assert.deepEqual(otherName.sources.map(s => [s.source, s.status]), [['tcgdex', 'ok']]);
+    assert.deepEqual(otherName.records, [], 'TCGdex SV5M-050 is a different card: no price');
+    const variant = await market('pokemon-official-ja-sv5k-080-v2');
+    assert.deepEqual(variant.sources, [], 'split variants are never looked up');
 
     const noExact = await market('yugioh-dm');
     assert.deepEqual(noExact.records, [], 'no exact-name match: no price, and never the first search result');

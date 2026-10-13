@@ -7,6 +7,7 @@ export const TCGDEX_REQUEST_TIMEOUT_MS = 8000;
 const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$/;
 const positive = value => { const n = Number(value); return value != null && Number.isFinite(n) && n > 0 ? n : null; };
 const clean = value => value == null ? null : String(value).trim() || null;
+const sameName = (a, b) => String(a ?? '').normalize('NFKC').replace(/\s+/g, '') === String(b ?? '').normalize('NFKC').replace(/\s+/g, '');
 
 export function tcgdexCardUrl(providerCardId) {
   return `${TCGDEX_CARD_ENDPOINT}/${encodeURIComponent(providerCardId)}`;
@@ -53,22 +54,24 @@ export function createTcgdexPricing({ fetch: fetchImpl = globalThis.fetch, now =
   async function load(id) {
     const response = await fetchImpl(tcgdexCardUrl(id), { headers: { Accept: 'application/json', 'User-Agent': 'CardScope/1.0' }, signal: AbortSignal.timeout(timeoutMs) });
     // A card TCGdex does not know is a stable answer (cached as empty); any other failure is not, so the next request retries.
-    if (response.status === 404) return [];
+    if (response.status === 404) return { name: null, records: [] };
     if (!response.ok) throw new Error(`TCGDEX_PRICING_${response.status}`);
     const body = await response.json();
-    return parseTcgdexPricing(body, clean(body?.id) || id);
+    return { name: clean(body?.name), records: parseTcgdexPricing(body, clean(body?.id) || id) };
   }
-  return async function fetchTcgdexPricing(providerCardId) {
+  // expectedName (ADR 0037): the ID was derived from series code + card number, so TCGdex's Japanese name must match before any price is used.
+  return async function fetchTcgdexPricing(providerCardId, { expectedName = null } = {}) {
     const id = clean(providerCardId);
     if (!id || !ID_PATTERN.test(id)) return [];
+    const use = entry => expectedName != null && !sameName(entry.name, expectedName) ? [] : dropStaleTcgdexPricing(entry.records, { now: now(), maxAgeMs });
     const hit = cache.get(id);
-    if (hit && hit.expiresAt > now()) return dropStaleTcgdexPricing(hit.records, { now: now(), maxAgeMs });
+    if (hit && hit.expiresAt > now()) return use(hit);
     let promise = pending.get(id);
     if (!promise) {
-      promise = load(id).then(records => { cache.set(id, { records, expiresAt: now() + ttlMs }); return records; }).finally(() => pending.delete(id));
+      promise = load(id).then(entry => { cache.set(id, { ...entry, expiresAt: now() + ttlMs }); return entry; }).finally(() => pending.delete(id));
       pending.set(id, promise);
     }
-    return dropStaleTcgdexPricing(await promise, { now: now(), maxAgeMs });
+    return use(await promise);
   };
 }
 
