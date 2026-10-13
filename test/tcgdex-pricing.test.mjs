@@ -172,7 +172,7 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     const market = async id => { const response = await fetch(`http://127.0.0.1:${appPort}/api/cards/${id}/market`); assert.equal(response.status, 200); return (await response.json()).data; };
 
     const pokemon = await market('pokemon-tcgdex-ja-sv6a-039');
-    assert.deepEqual(pokemon.sources.map(s => [s.source, s.status]).sort(), [['tcgdex', 'ok'], ['yuyutei', 'ok']]);
+    assert.deepEqual(pokemon.sources.map(s => [s.source, s.status]).sort(), [['tcgdex', 'ok']], 'Yuyu-tei declined reuse (registry: denied), so its stored rows are not queried');
     const tcgdex = pokemon.records.filter(r => r.provider === 'tcgdex');
     assert.deepEqual(tcgdex.map(r => [r.priceType, r.amount, r.currency, r.variant, r.market]), [['market', 0.2, 'EUR', 'holo', 'Cardmarket'], ['listing', 0.03, 'EUR', 'holo', 'Cardmarket']]);
     assert.equal(tcgdex[0].priceTwd, Math.round(0.2 / 0.0275), 'EUR converted with the ExchangeRate-API rate');
@@ -183,7 +183,7 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     assert.equal(pokemon.meta.priceTypes.market, '平台參考價');
 
     const official = await market('pokemon-official-ja-x');
-    assert.deepEqual(official.sources.map(s => s.source), ['yuyutei'], 'no TCGdex lookup without a tcgdex-ja printing');
+    assert.deepEqual(official.sources.map(s => s.source), [], 'no TCGdex lookup without a tcgdex-ja printing');
     assert.deepEqual(official.records, []);
 
     const noExact = await market('yugioh-dm');

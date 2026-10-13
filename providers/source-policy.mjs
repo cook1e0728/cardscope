@@ -6,6 +6,8 @@ const DISPLAYABLE_IMAGE_RIGHTS=new Set(['licensed','partner-provided','user-prov
 
 export function sourcePolicyForProvider(provider){return byRuntimeProvider.get(provider)||null}
 export function catalogCollectionAllowed(provider){return sourcePolicyForProvider(provider)?.collectionEnabled===true}
+// A source that refused reuse: stored rows from it are not shown either.
+export function sourceDisplayDenied(provider){return sourcePolicyForProvider(provider)?.metadataCollection==='denied'}
 export function filterAllowedCatalogProviders(providers=[]){return providers.filter(catalogCollectionAllowed)}
 export function imageCollectionAllowed(provider){return sourcePolicyForProvider(provider)?.imagePolicy==='rehost-permitted'}
 export function imageDisplayPolicies(){return {...registry.imageDisplayPolicies}}

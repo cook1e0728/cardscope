@@ -622,7 +622,12 @@
 - 部署 `5391ccd`、`e3b0133`、`39f3e8f`；Node 351/351。正式站 SV6a-090（SAR）顯示 NT$365（EUR 10.20）／NT$300（EUR 8.39），匯率 2026-10-11。
 - 遊々亭：使用者選擇先詢問。2026-10-11 以使用者 Gmail（aa26488931@gmail.com）寄給 info@yuyu-tei.jp，主旨「買取価格情報の掲載に関するご相談（CardScope）」：說明個人、非營利、無廣告；只取買取價、卡號、卡名、稀有度、時間，一天一次；標示「遊々亭 買取価格」並連回原頁；不轉發、不商用；要求時立即停止並刪除。**回覆前不開啟收集**（`collectionEnabled` 維持 false）。
 
-下一個安全起點（2026-10-11 更新）：等遊々亭回信（查使用者 Gmail 同一討論串）；同意就照信中條件開啟並把回信記入註冊表 `evidenceUrl`／`notes` 與新 ADR，拒絕或兩週無回覆就問使用者是否接受風險。可自行推進：`server.mjs` 剩下兩處 pokemontcg API 依賴；官方來源匯入的日版卡（`pokemon-official-ja-*`）目前沒有價格，若要對應 TCGdex 需另立身分規則。10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
+### 依序執行 77：遊々亭婉拒（2026-10-13，桌電）
+
+- 遊々亭 2026-10-12 回信（工單 12847475-2）：網站圖片、文字、價格等所有內容一律不同意再利用（轉載、引用、散布）。註冊表 `yuyutei` 改 `metadataCollection: "denied"`、`notes` 記錄回覆；新增 `sourceDisplayDenied()`（`providers/source-policy.mjs`），詳細頁市場資料不再查 `jp_buyback_prices`、`/api/buyback-prices` 回空。資料庫仍有 8 月抓的 46 筆遊々亭買取價（未刪，刪除需使用者確認）。Node 351/351。
+- 對方已明確拒絕，不建議以「接受風險」方式收集；買取價候選改看晴れる屋2（C）或皇巢（D）。
+
+下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。可自行推進：`server.mjs` 剩下兩處 pokemontcg API 依賴；官方來源匯入的日版卡（`pokemon-official-ja-*`）目前沒有價格，若要對應 TCGdex 需另立身分規則。10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。

@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, onePieceSetKey, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
-import { catalogCollectionAllowed, imageCollectionAllowed, imageRightsAllowDisplay, sourcePolicySummary } from '../providers/source-policy.mjs';
+import { catalogCollectionAllowed, imageCollectionAllowed, imageRightsAllowDisplay, sourceDisplayDenied, sourcePolicySummary } from '../providers/source-policy.mjs';
 
 const port=4197;
 let server;
@@ -42,6 +42,8 @@ test('source policy gates collectors and image display independently',()=>{
   assert.equal(catalogCollectionAllowed('pokemon'),true);
   assert.equal(catalogCollectionAllowed('onepiece'),true,'ADR 0027: the owner accepted the One Piece list risk');
   assert.equal(catalogCollectionAllowed('yuyutei'),false);
+  assert.equal(sourceDisplayDenied('yuyutei'),true);
+  assert.equal(sourceDisplayDenied('tcgdexPricing'),false);
   assert.equal(imageCollectionAllowed('yugioh'),false);
   assert.equal(imageRightsAllowDisplay('not-provided',null,'pokemontcg'),true);
   assert.equal(imageRightsAllowDisplay(null,null,'ygoprodeck'),true);

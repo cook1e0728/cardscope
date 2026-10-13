@@ -9,7 +9,7 @@ import { normalizeMarketRecord, withTwd, RARITY_RANKINGS, rarityCanonicalCode as
 import { auditCatalogLinks, catalogProvidersNeedingSync, localizeProductName, syncCatalog } from './providers/catalog-sync.mjs';
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
 import { normalizeProduct } from './providers/products.mjs';
-import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourcePolicySummary } from './providers/source-policy.mjs';
+import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
 
@@ -823,7 +823,7 @@ async function getCard(cardId){const fromDatabase=supabaseConfigured()?loadCardC
 async function yuyuteiMarket(card,fx){if(!supabaseConfigured()||!card.officialCardNumber)return [];const esc=v=>String(v).replace(/[\\%_*(),.]/g,'\\$&'),params=new URLSearchParams({select:'cardName:card_name,cardNumber:card_number,rarity,price,currency,cardUrl:card_url,imageUrl:image_url,setCode:set_code,setName:set_name,scrapedAt:scraped_at',card_number:`eq.${esc(card.officialCardNumber)}`,order:'scraped_at.desc',limit:'10'}),rows=await supabaseFetch(`/jp_buyback_prices?${params}`);return (rows||[]).map(r=>withTwd(normalizeMarketRecord({provider:'yuyutei',market:'JP',cardId:card.id,cardName:r.cardName,cardNumber:r.cardNumber,setCode:r.setCode,rarity:r.rarity,language:'ja-JP',priceType:'buyback',amount:r.price,currency:r.currency,imageUrl:r.imageUrl,sourceUrl:r.cardUrl,observedAt:r.scrapedAt}),fx))}
 function tcgdexJaProviderIds(card){return [...new Set([card,...(card.printings||[])].filter(x=>x?.source==='tcgdex-ja').map(x=>x.providerId||x.provider_id).filter(id=>typeof id==='string'&&id))].slice(0,3)}
 async function unifiedMarket(card){
-  const fx=await getTwdRates(),tasks=[['yuyutei',()=>yuyuteiMarket(card,fx)]];
+  const fx=await getTwdRates(),tasks=sourceDisplayDenied('yuyutei')?[]:[['yuyutei',()=>yuyuteiMarket(card,fx)]];
   if(card.game==='yugioh')tasks.push(['ygoprodeck',async()=>{const wanted=String(card.nameEn||'').trim().toLowerCase();if(!wanted)return [];const found=await searchYgoProDeck(card.nameEn,{limit:20}),match=found.find(x=>String(x.name).trim().toLowerCase()===wanted);if(!match)return [];return [['Cardmarket',match.referencePrices.cardmarketEur,'EUR'],['TCGplayer',match.referencePrices.tcgplayerUsd,'USD']].filter(([,amount])=>amount!=null).map(([market,amount,currency])=>withTwd(normalizeMarketRecord({provider:'ygoprodeck',market,cardId:card.id,providerCardId:match.providerCardId,cardName:match.name,cardNumber:card.officialCardNumber,priceType:'market',amount,currency,observedAt:match.observedAt}),fx)).map(r=>({...r,scope:'cross-printing-lowest'}))}]);
   // ADR 0036: only exact tcgdex-ja printings (provider_id is the TCGdex ID); no guessed mapping for official-import JP, TW or US cards. The registry switch stops it.
   if(card.game==='pokemon'&&catalogCollectionAllowed('tcgdexPricing')){const tcgdexIds=tcgdexJaProviderIds(card);if(tcgdexIds.length)tasks.push(['tcgdex',async()=>(await Promise.all(tcgdexIds.map(id=>fetchTcgdexPricing(id)))).flat().map(r=>({...withTwd(normalizeMarketRecord({provider:r.provider,market:r.market,cardId:card.id,providerCardId:r.providerCardId,cardName:card.nameJa||card.nameZh,cardNumber:card.officialCardNumber,language:'ja-JP',priceType:r.priceType,amount:r.amount,currency:r.currency,sourceUrl:r.sourceUrl,observedAt:r.observedAt}),fx),variant:r.variant,idProduct:r.idProduct}))])}
@@ -858,7 +858,7 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   }
   if(url.pathname==='/api/buyback-prices'&&req.method==='GET'){
     if(!supabaseConfigured())return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'沒有資料庫時不建立示範價格'}});
-    const requestedGame=(url.searchParams.get('game')||'').trim().toLowerCase(),providerGame={pokemon:'poc'}[requestedGame];
+    const requestedGame=(url.searchParams.get('game')||'').trim().toLowerCase(),providerGame=sourceDisplayDenied('yuyutei')?null:{pokemon:'poc'}[requestedGame];
     if(!providerGame)return json(res,200,{data:[],meta:{source:'yuyutei-buyback',warning:'此 IP 目前沒有可驗證的買取價格來源，因此不顯示價格。'}});
     try{
       const rows=await cachedBrowseRows(`buyback:${providerGame}`,()=>supabaseFetch(`/jp_buyback_prices?select=game,cardNumber:card_number,rarity,cardName:card_name,price,currency,cardUrl:card_url,updatedAt:scraped_at&source=eq.yuyutei&game=eq.${providerGame}&order=scraped_at.desc&limit=500`)),seen=new Set(),data=[];
