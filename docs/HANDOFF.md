@@ -635,6 +635,7 @@
 
 - 盤點：官方來源匯入的日版 printing 約 1.1 萬、217 個系列；TCGdex 日文只有 31 個代碼存在，其中 26 個是空殼。有卡有價的只有 SV4a、SV-P、M-P、SV5K、SV5M：日文名完全相同 904 張、不同 1（SV-P 136 括號附註）、TCGdex 沒有 63。證據 `docs/evidence/pokemon-jp/tcgdex-pricing-official-match-20261013.json`。
 - ADR 0037：核准清單內的系列，以 `<localSetCode>-<localCardNumber>` 查 TCGdex，**每次查詢核對日文名**（NFKC、去空白）相同才顯示；版本卡（`-v<k>`）不查；不寫資料庫。`fetchTcgdexPricing(id,{expectedName})`、`server.mjs` 的 `tcgdexJaLookups`。Node 352/352。
+- 部署 `25d62be` 後正式站：SV5K-080（AR）顯示 NT$1,097（EUR 30.69）／NT$711（EUR 19.90）；SV-P-001 有價；SV-P-136（名稱不同）查了但不顯示；S4-104（不在清單）不查。
 
 下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
