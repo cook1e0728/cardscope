@@ -6,7 +6,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { createTcgdexPricing, dropStaleTcgdexPricing, parseTcgdexPricing, tcgdexCardUrl } from '../providers/tcgdex-pricing.mjs';
+import { createTcgdexPricing, dropStaleTcgdexPricing, parseTcgdexPricing, sameTcgdexName, tcgdexCardUrl, tcgdexEnCardId } from '../providers/tcgdex-pricing.mjs';
 import { catalogCollectionAllowed, sourcePolicyForProvider } from '../providers/source-policy.mjs';
 
 const NOW = Date.parse('2026-10-11T00:00:00.000Z');
@@ -32,6 +32,35 @@ test('trend becomes the market price and low the listing price, per variant, wit
   assert.equal(records.some(r => 'avg' in r || r.amount === 0.28), false, 'avg fields are never exposed');
 });
 
+// Shape taken from a live call to https://api.tcgdex.net/v2/en/cards/sv03.5-006 (2026-10-13).
+const tcgplayer = (over = {}) => ({ unit: 'USD', updated: iso(NOW - DAY), holofoil: { productId: 502558, lowPrice: 5.75, midPrice: 9, highPrice: 213, marketPrice: 7.92, directLowPrice: 19.95 }, ...over });
+const mew006 = (tp = tcgplayer()) => ({ id: 'sv03.5-006', localId: '006', name: 'Charizard ex', variants_detailed: [{ type: 'holo', thirdParty: { cardmarket: 733601, tcgplayer: 502558 }, pricing: { cardmarket: cardmarket({ idProduct: 733601, trend: 7.69, low: 4.4 }), tcgplayer: tp } }, { type: 'holo', size: 'jumbo', pricing: { cardmarket: null, tcgplayer: tp } }] });
+
+test('ADR 0038: TCGplayer marketPrice and lowPrice become market and listing in USD per finish, from the English endpoint, without repeats', () => {
+  const records = parseTcgdexPricing(mew006(), 'sv03.5-006', { language: 'en' });
+  assert.deepEqual(records.map(r => [r.market, r.variant, r.priceType, r.amount, r.currency, r.idProduct]), [['Cardmarket', 'holo', 'market', 7.69, 'EUR', 733601], ['Cardmarket', 'holo', 'listing', 4.4, 'EUR', 733601], ['TCGplayer', 'holofoil', 'market', 7.92, 'USD', 502558], ['TCGplayer', 'holofoil', 'listing', 5.75, 'USD', 502558]]);
+  assert.equal(records[2].sourceUrl, 'https://api.tcgdex.net/v2/en/cards/sv03.5-006');
+  assert.equal(records.some(r => [9, 213, 19.95].includes(r.amount)), false, 'mid, high and direct-low prices are never exposed');
+  assert.deepEqual(parseTcgdexPricing(mew006(tcgplayer({ unit: 'EUR' })), 'x', { language: 'en' }).map(r => r.market), ['Cardmarket', 'Cardmarket']);
+  assert.deepEqual(parseTcgdexPricing(mew006(tcgplayer({ updated: null })), 'x', { language: 'en' }).map(r => r.market), ['Cardmarket', 'Cardmarket']);
+  assert.equal(tcgdexCardUrl('sv03.5-006', 'en'), 'https://api.tcgdex.net/v2/en/cards/sv03.5-006');
+});
+test('ADR 0038: English card IDs follow the set map number format, and English names fold case, hyphens, accents and LV.X', () => {
+  assert.equal(tcgdexEnCardId({ tcgdex: 'sv03.5', numberFormat: 'pad3' }, '6'), 'sv03.5-006');
+  assert.equal(tcgdexEnCardId({ tcgdex: 'swsh9tg', numberFormat: 'pad3' }, 'TG1'), 'swsh9tg-TG001');
+  assert.equal(tcgdexEnCardId({ tcgdex: 'xy3', numberFormat: 'none' }, '55a'), 'xy3-55a');
+  assert.equal(tcgdexEnCardId({ tcgdex: 'x', numberFormat: 'unknown' }, '1'), null);
+  assert.equal(tcgdexEnCardId(undefined, '1'), null);
+  assert.equal(sameTcgdexName('Shuckle-GX', 'Shuckle GX', 'en'), true);
+  assert.equal(sameTcgdexName('Flabébé', 'flabebe', 'en'), true);
+  assert.equal(sameTcgdexName('Garchomp LV.X', 'Garchomp', 'en'), true);
+  assert.equal(sameTcgdexName('Charizard ex', 'Charmander', 'en'), false);
+  assert.equal(sameTcgdexName('Shuckle-GX', 'Shuckle GX', 'ja'), false, 'Japanese names stay strict');
+});
+test('prices given only on the card (no per-variant pricing) are still read, Cardmarket without a finish', () => {
+  const card = { id: 'xy3-91', name: 'Focus Sash', variants_detailed: [{ type: 'normal', size: 'standard' }], thirdParty: { cardmarket: 281755, tcgplayer: 92272 }, pricing: { cardmarket: cardmarket({ idProduct: 281755, trend: 0.92, low: 0.02 }), tcgplayer: tcgplayer({ holofoil: undefined, normal: { productId: 92272, lowPrice: 0.1, marketPrice: 0.57 }, 'reverse-holofoil': { productId: 92272, lowPrice: 0.39, marketPrice: 2.15 } }) } };
+  assert.deepEqual(parseTcgdexPricing(card, 'xy3-91', { language: 'en' }).map(r => [r.market, r.variant, r.priceType, r.amount]), [['Cardmarket', null, 'market', 0.92], ['Cardmarket', null, 'listing', 0.02], ['TCGplayer', 'normal', 'market', 0.57], ['TCGplayer', 'normal', 'listing', 0.1], ['TCGplayer', 'reverse-holofoil', 'market', 2.15], ['TCGplayer', 'reverse-holofoil', 'listing', 0.39]]);
+});
 test('missing, zero, non-EUR and undated prices produce no record', () => {
   assert.deepEqual(parseTcgdexPricing({ id: 'X-1' }), []);
   assert.deepEqual(parseTcgdexPricing({ id: 'X-1', variants_detailed: [{ type: 'normal', pricing: { cardmarket: null, tcgplayer: null } }] }), []);
@@ -144,6 +173,7 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     'pokemon-official-ja-sv5k-080': { ...base, id: 'pokemon-official-ja-sv5k-080', game: 'pokemon', nameZh: '鬼斯', nameJa: 'ゴース', printings: [printing('pokemon-official-ja-sv5k-080', 'pokemon-card-official-jp', '45523', { localSetCode: 'SV5K', localCardNumber: '080', nameJa: 'ゴース' })] },
     'pokemon-official-ja-sv5m-050': { ...base, id: 'pokemon-official-ja-sv5m-050', game: 'pokemon', nameZh: null, nameJa: 'ゴース', printings: [printing('pokemon-official-ja-sv5m-050', 'pokemon-card-official-jp', '1', { localSetCode: 'SV5M', localCardNumber: '050', nameJa: 'ゴース' })] },
     'pokemon-official-ja-sv5k-080-v2': { ...base, id: 'pokemon-official-ja-sv5k-080-v2', game: 'pokemon', nameZh: null, nameJa: 'ゴース', printings: [printing('pokemon-official-ja-sv5k-080-v2', 'pokemon-card-official-jp', '2', { localSetCode: 'SV5K', localCardNumber: '080', nameJa: 'ゴース' })] },
+    'pokemon-pokemontcg-sv3pt5-6': { ...base, id: 'pokemon-pokemontcg-sv3pt5-6', game: 'pokemon', nameZh: null, nameJa: null, nameEn: 'Charizard ex', officialCardNumber: '6', printings: [printing('pokemon-pokemontcg-sv3pt5-6', 'pokemontcg', 'sv3pt5-6', { region: 'US', language: 'en-US', localSetCode: 'sv3pt5', localCardNumber: '6' })] },
     'yugioh-dm': { ...base, id: 'yugioh-dm', game: 'yugioh', nameZh: '黑魔導', nameJa: null, nameEn: 'Dark Magician', printings: [] },
     'yugioh-bewd': { ...base, id: 'yugioh-bewd', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [] }
   };
@@ -171,6 +201,7 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     ['db.ygoprodeck.com/api/v7/cardinfo.php?fname=blue-eyes+white+dragon&', 200, ygoprodeckBody(['Blue-Eyes Ultimate Dragon', 'Blue-Eyes White Dragon'])],
     ['api.tcgdex.net/v2/ja/cards/SV5K-080', 200, { ...sv6a039({ updated: new Date(Date.now() - DAY).toISOString() }), id: 'SV5K-080', localId: '080', name: 'ゴース' }],
     ['api.tcgdex.net/v2/ja/cards/SV5M-050', 200, { ...sv6a039({ updated: new Date(Date.now() - DAY).toISOString() }), id: 'SV5M-050', localId: '050', name: 'メルメタル' }],
+    ['api.tcgdex.net/v2/en/cards/sv03.5-006', 200, { ...mew006(tcgplayer({ updated: new Date(Date.now() - DAY).toISOString() })), variants_detailed: [{ type: 'holo', pricing: { cardmarket: null, tcgplayer: tcgplayer({ updated: new Date(Date.now() - DAY).toISOString() }) } }] }],
     ['open.er-api.com', 200, { result: 'success', time_last_update_utc: 'Fri, 09 Oct 2026 00:02:31 +0000', rates: { TWD: 1, JPY: 4.8, USD: 0.031, EUR: 0.0275 } }]
   ];
   await writeFile(preload, `const real=globalThis.fetch,fixtures=${JSON.stringify(fixtures)};globalThis.fetch=async(input,options)=>{const url=String(input?.url||input);for(const [key,status,body] of fixtures)if(url.includes(key))return new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json'}});if(/^https?:\\/\\/(?!127\\.0\\.0\\.1)/.test(url))return new Response('{}',{status:599});return real(input,options)};`);
@@ -208,6 +239,10 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     assert.deepEqual(otherName.records, [], 'TCGdex SV5M-050 is a different card: no price');
     const variant = await market('pokemon-official-ja-sv5k-080-v2');
     assert.deepEqual(variant.sources, [], 'split variants are never looked up');
+
+    const us = await market('pokemon-pokemontcg-sv3pt5-6');
+    assert.deepEqual(us.records.map(r => [r.market, r.variant, r.priceType, r.amount, r.currency, r.providerCardId, r.language]), [['TCGplayer', 'holofoil', 'market', 7.92, 'USD', 'sv03.5-006', 'en-US'], ['TCGplayer', 'holofoil', 'listing', 5.75, 'USD', 'sv03.5-006', 'en-US']]);
+    assert.equal(us.records[0].cardName, 'Charizard ex');
 
     const noExact = await market('yugioh-dm');
     assert.deepEqual(noExact.records, [], 'no exact-name match: no price, and never the first search result');

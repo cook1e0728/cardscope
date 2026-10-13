@@ -637,6 +637,11 @@
 - ADR 0037：核准清單內的系列，以 `<localSetCode>-<localCardNumber>` 查 TCGdex，**每次查詢核對日文名**（NFKC、去空白）相同才顯示；版本卡（`-v<k>`）不查；不寫資料庫。`fetchTcgdexPricing(id,{expectedName})`、`server.mjs` 的 `tcgdexJaLookups`。Node 352/352。
 - 部署 `25d62be` 後正式站：SV5K-080（AR）顯示 NT$1,097（EUR 30.69）／NT$711（EUR 19.90）；SV-P-001 有價；SV-P-136（名稱不同）查了但不顯示；S4-104（不在清單）不查。
 
+### 依序執行 79：美版寶可夢的 TCGplayer／Cardmarket 參考價（ADR 0038，2026-10-13，桌電）
+
+- Sonnet worker 產生系列對照表 `data/tcgdex-en-set-map.json`（171／176 系列，20,145 張卡號與英文名相同）與證據 `docs/evidence/pokemon-us/tcgdex-en-match-20261013.json`；未對應 5 個與原因見 ADR 0038。附帶發現：`zsv10pt5` 的 Antique Cover Fossil（id 尾碼 -80）`official_card_number` 寫成 60，與 Escavalier 重複，未修。
+- `providers/tcgdex-pricing.mjs`：英文端點（`fetchTcgdexPricingEn`）、TCGplayer `marketPrice`／`lowPrice`（依 finish）、卡片層級價格退回、`tcgdexEnCardId`、`sameTcgdexName`（英文放寬）。`server.mjs` 的 `tcgdexLookups` 加入 `pokemontcg` US printing。前端 finish 標籤補 holofoil／reverse-holofoil 等。Node 355/355。本機以真實 API 抽查 10 張（base1、xy3、sm115、svp、ex5）全部有價。
+
 下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

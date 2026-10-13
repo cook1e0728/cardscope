@@ -7,39 +7,68 @@ export const TCGDEX_REQUEST_TIMEOUT_MS = 8000;
 const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,39}$/;
 const positive = value => { const n = Number(value); return value != null && Number.isFinite(n) && n > 0 ? n : null; };
 const clean = value => value == null ? null : String(value).trim() || null;
-const sameName = (a, b) => String(a ?? '').normalize('NFKC').replace(/\s+/g, '') === String(b ?? '').normalize('NFKC').replace(/\s+/g, '');
+const jaName = value => String(value ?? '').normalize('NFKC').replace(/\s+/g, '');
+// ADR 0038: English names also fold case, accents, curly apostrophes, hyphens (Shuckle-GX / Shuckle GX) and a trailing LV.X, as in the set-map evidence.
+const enName = value => String(value ?? '').normalize('NFKC').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[‘’]/g, "'").replace(/-/g, ' ').replace(/\s*lv\.\s*x$/, '').replace(/\s+/g, '');
+export const sameTcgdexName = (a, b, language = 'ja') => { const f = language === 'en' ? enName : jaName; return f(a) === f(b); };
 
-export function tcgdexCardUrl(providerCardId) {
-  return `${TCGDEX_CARD_ENDPOINT}/${encodeURIComponent(providerCardId)}`;
+// ADR 0038: US cards use the English endpoint; the path differs only by language.
+export function tcgdexCardUrl(providerCardId, language = 'ja') {
+  return `https://api.tcgdex.net/v2/${language === 'en' ? 'en' : 'ja'}/cards/${encodeURIComponent(providerCardId)}`;
+}
+const TCGPLAYER_META = new Set(['unit', 'updated']);
+
+// ADR 0038: TCGdex English card ID from a data/tcgdex-en-set-map.json entry. none = number as is; padN = first run of digits left-padded to N.
+export function tcgdexEnCardId(entry, number) {
+  const value = clean(number);
+  if (!entry?.tcgdex || !value) return null;
+  if (entry.numberFormat === 'none') return `${entry.tcgdex}-${value}`;
+  const pad = /^pad(\d)$/.exec(entry.numberFormat || '');
+  return pad ? `${entry.tcgdex}-${value.replace(/\d+/, digits => digits.padStart(Number(pad[1]), '0'))}` : null;
 }
 
 // Cardmarket trend -> market (platform reference price), low -> listing (lowest asking price). The avg* fields are never read (ADR 0036).
 // The 7-day freshness rule is not applied here: it runs on every read (dropStaleTcgdexPricing), so a cached record cannot outlive it.
-export function parseTcgdexPricing(card, providerCardId = card?.id) {
-  const records = [];
-  for (const variant of Array.isArray(card?.variants_detailed) ? card.variants_detailed : []) {
+// ADR 0038: TCGplayer (USD) marketPrice -> market, lowPrice -> listing, per finish (normal, holofoil, reverseHolofoil, ...); mid/high/directLow are never read.
+const observedAtOf = updated => { const value = clean(updated); return value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null; };
+export function parseTcgdexPricing(card, providerCardId = card?.id, { language = 'ja' } = {}) {
+  const records = [], sourceUrl = tcgdexCardUrl(providerCardId, language);
+  // Some cards (e.g. en xy3-91) carry prices only on the card itself; their finish is then unknown for Cardmarket (holo columns are not read).
+  const variants = Array.isArray(card?.variants_detailed) ? card.variants_detailed : [];
+  const priced = variants.some(v => v?.pricing?.cardmarket || v?.pricing?.tcgplayer) ? variants : (card?.pricing ? [{ type: null, pricing: card.pricing, thirdParty: card.thirdParty }] : []);
+  for (const variant of priced) {
     const pricing = variant?.pricing?.cardmarket;
-    if (!pricing || typeof pricing !== 'object') continue;
-    const currency = clean(pricing.unit)?.toUpperCase();
-    if (currency !== 'EUR') continue;
-    const updated = clean(pricing.updated), observedAt = updated && Number.isFinite(Date.parse(updated)) ? new Date(updated).toISOString() : null;
-    if (!observedAt) continue;
-    const common = {
-      provider: 'tcgdex',
-      market: 'Cardmarket',
-      providerCardId: clean(providerCardId),
-      variant: clean(variant.type),
-      idProduct: pricing.idProduct ?? variant.thirdParty?.cardmarket ?? null,
-      currency,
-      observedAt,
-      sourceUrl: tcgdexCardUrl(providerCardId)
-    };
-    for (const [field, priceType] of [['trend', 'market'], ['low', 'listing']]) {
-      const amount = positive(pricing[field]);
-      if (amount != null) records.push({ ...common, priceType, amount });
+    const observedAt = pricing && typeof pricing === 'object' && clean(pricing.unit)?.toUpperCase() === 'EUR' ? observedAtOf(pricing.updated) : null;
+    if (observedAt) {
+      const common = {
+        provider: 'tcgdex',
+        market: 'Cardmarket',
+        providerCardId: clean(providerCardId),
+        variant: clean(variant.type),
+        idProduct: pricing.idProduct ?? variant.thirdParty?.cardmarket ?? null,
+        currency: 'EUR',
+        observedAt,
+        sourceUrl
+      };
+      for (const [field, priceType] of [['trend', 'market'], ['low', 'listing']]) {
+        const amount = positive(pricing[field]);
+        if (amount != null) records.push({ ...common, priceType, amount });
+      }
+    }
+    const tcgplayer = variant?.pricing?.tcgplayer, tpObservedAt = tcgplayer && typeof tcgplayer === 'object' && clean(tcgplayer.unit)?.toUpperCase() === 'USD' ? observedAtOf(tcgplayer.updated) : null;
+    if (!tpObservedAt) continue;
+    for (const [finish, prices] of Object.entries(tcgplayer)) {
+      if (TCGPLAYER_META.has(finish) || !prices || typeof prices !== 'object') continue;
+      const common = { provider: 'tcgdex', market: 'TCGplayer', providerCardId: clean(providerCardId), variant: clean(finish), idProduct: prices.productId ?? variant.thirdParty?.tcgplayer ?? null, currency: 'USD', observedAt: tpObservedAt, sourceUrl };
+      for (const [field, priceType] of [['marketPrice', 'market'], ['lowPrice', 'listing']]) {
+        const amount = positive(prices[field]);
+        if (amount != null) records.push({ ...common, priceType, amount });
+      }
     }
   }
-  return records;
+  // A finish can be repeated on several variants; keep the first.
+  const seen = new Set();
+  return records.filter(r => { const key = [r.market, r.variant, r.priceType].join('|'); if (seen.has(key)) return false; seen.add(key); return true; });
 }
 
 export function dropStaleTcgdexPricing(records, { now = Date.now(), maxAgeMs = TCGDEX_PRICING_MAX_AGE_MS } = {}) {
@@ -49,21 +78,21 @@ export function dropStaleTcgdexPricing(records, { now = Date.now(), maxAgeMs = T
   });
 }
 
-export function createTcgdexPricing({ fetch: fetchImpl = globalThis.fetch, now = Date.now, ttlMs = TCGDEX_PRICING_TTL_MS, maxAgeMs = TCGDEX_PRICING_MAX_AGE_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS } = {}) {
+export function createTcgdexPricing({ language = 'ja', fetch: fetchImpl = globalThis.fetch, now = Date.now, ttlMs = TCGDEX_PRICING_TTL_MS, maxAgeMs = TCGDEX_PRICING_MAX_AGE_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS } = {}) {
   const cache = new Map(), pending = new Map();
   async function load(id) {
-    const response = await fetchImpl(tcgdexCardUrl(id), { headers: { Accept: 'application/json', 'User-Agent': 'CardScope/1.0' }, signal: AbortSignal.timeout(timeoutMs) });
+    const response = await fetchImpl(tcgdexCardUrl(id, language), { headers: { Accept: 'application/json', 'User-Agent': 'CardScope/1.0' }, signal: AbortSignal.timeout(timeoutMs) });
     // A card TCGdex does not know is a stable answer (cached as empty); any other failure is not, so the next request retries.
     if (response.status === 404) return { name: null, records: [] };
     if (!response.ok) throw new Error(`TCGDEX_PRICING_${response.status}`);
     const body = await response.json();
-    return { name: clean(body?.name), records: parseTcgdexPricing(body, clean(body?.id) || id) };
+    return { name: clean(body?.name), records: parseTcgdexPricing(body, clean(body?.id) || id, { language }) };
   }
   // expectedName (ADR 0037): the ID was derived from series code + card number, so TCGdex's Japanese name must match before any price is used.
   return async function fetchTcgdexPricing(providerCardId, { expectedName = null } = {}) {
     const id = clean(providerCardId);
     if (!id || !ID_PATTERN.test(id)) return [];
-    const use = entry => expectedName != null && !sameName(entry.name, expectedName) ? [] : dropStaleTcgdexPricing(entry.records, { now: now(), maxAgeMs });
+    const use = entry => expectedName != null && !sameTcgdexName(entry.name, expectedName, language) ? [] : dropStaleTcgdexPricing(entry.records, { now: now(), maxAgeMs });
     const hit = cache.get(id);
     if (hit && hit.expiresAt > now()) return use(hit);
     let promise = pending.get(id);
@@ -76,3 +105,4 @@ export function createTcgdexPricing({ fetch: fetchImpl = globalThis.fetch, now =
 }
 
 export const fetchTcgdexPricing = createTcgdexPricing();
+export const fetchTcgdexPricingEn = createTcgdexPricing({ language: 'en' });

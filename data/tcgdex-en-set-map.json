@@ -1,0 +1,1374 @@
+{
+  "generatedAt": "2026-10-13T12:18:17.954Z",
+  "rule": "Key = our US series provider_id (tcg_series.provider_id where source=pokemontcg, game_id=pokemon, region=US). Value.tcgdex = TCGdex English set id. TCGdex price card id = <tcgdex>-<localId>, where localId = f(our tcg_cards.official_card_number) and f is value.numberFormat: none = use our number unchanged (examples: 4 -> base1-4; 55a -> xy3-55a; XY17 -> xyp-XY17; DP45 -> dpp-DP45; TG01 -> swsh9tg-TG01). pad3 = left-pad the first run of digits to 3 with zeros and keep any alphabetic prefix/suffix unchanged (examples: 6 -> sv03.5-006; 152 -> sv01-152; 82 -> me01-082). pad2, pad4 and pad3num exist in the vocabulary (same padding rules; pad3num pads only all-digit numbers) but no set needed them. Mapped = exactly one TCGdex set, at least 90% of our cards matched there by number AND name, our numbers unique within the series, runner-up candidate below 50% of the best, and no other series maps to the same TCGdex set. matched = our card number exists in the TCGdex set and the English names are equal after NFKC, case-folding, whitespace collapse, curly/straight apostrophes and diacritics folding, plus a punctuation-insensitive fallback (hyphen vs space such as \"Shuckle-GX\" vs \"Shuckle GX\", \"LV.X\" suffix dropped). strictMatched counts only the stricter comparison. missing = TCGdex has no card with that localId (for example numbers with an \"a\" suffix such as 125a, or promo numbers BW004). different = number exists but the names differ even after the fallback (mostly Trainer name suffixes such as \"Boss's Orders (Giovanni)\", or \"Groudon ★\" vs \"Groudon Star\"); the card is almost certainly the same, but callers may want to verify the name before showing a price. Callers should look up the card, treat a 404 as no price, and only use the pricing block (tcgplayer USD / cardmarket EUR) of the returned card.",
+  "sets": {
+    "base1": {
+      "tcgdex": "base1",
+      "numberFormat": "none",
+      "matched": 102,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 101
+    },
+    "base2": {
+      "tcgdex": "base2",
+      "numberFormat": "none",
+      "matched": 64,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 63
+    },
+    "basep": {
+      "tcgdex": "basep",
+      "numberFormat": "none",
+      "matched": 53,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 52
+    },
+    "base3": {
+      "tcgdex": "base3",
+      "numberFormat": "none",
+      "matched": 62,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 62
+    },
+    "base4": {
+      "tcgdex": "base4",
+      "numberFormat": "none",
+      "matched": 129,
+      "missing": 0,
+      "different": 1,
+      "strictMatched": 127
+    },
+    "base5": {
+      "tcgdex": "base5",
+      "numberFormat": "none",
+      "matched": 83,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 83
+    },
+    "gym1": {
+      "tcgdex": "gym1",
+      "numberFormat": "none",
+      "matched": 132,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 132
+    },
+    "gym2": {
+      "tcgdex": "gym2",
+      "numberFormat": "none",
+      "matched": 132,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 132
+    },
+    "neo1": {
+      "tcgdex": "neo1",
+      "numberFormat": "none",
+      "matched": 111,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 111
+    },
+    "neo2": {
+      "tcgdex": "neo2",
+      "numberFormat": "none",
+      "matched": 75,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 75
+    },
+    "si1": {
+      "tcgdex": "si1",
+      "numberFormat": "none",
+      "matched": 18,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 18
+    },
+    "neo3": {
+      "tcgdex": "neo3",
+      "numberFormat": "none",
+      "matched": 66,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 66
+    },
+    "neo4": {
+      "tcgdex": "neo4",
+      "numberFormat": "none",
+      "matched": 112,
+      "missing": 0,
+      "different": 1,
+      "strictMatched": 112
+    },
+    "base6": {
+      "tcgdex": "lc",
+      "numberFormat": "none",
+      "matched": 110,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 110
+    },
+    "ecard1": {
+      "tcgdex": "ecard1",
+      "numberFormat": "none",
+      "matched": 165,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 165
+    },
+    "bp": {
+      "tcgdex": "bog",
+      "numberFormat": "none",
+      "matched": 9,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 9
+    },
+    "ecard2": {
+      "tcgdex": "ecard2",
+      "numberFormat": "none",
+      "matched": 169,
+      "missing": 13,
+      "different": 0,
+      "strictMatched": 169
+    },
+    "ecard3": {
+      "tcgdex": "ecard3",
+      "numberFormat": "none",
+      "matched": 173,
+      "missing": 9,
+      "different": 0,
+      "strictMatched": 173
+    },
+    "ex1": {
+      "tcgdex": "ex1",
+      "numberFormat": "none",
+      "matched": 109,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 109
+    },
+    "ex2": {
+      "tcgdex": "ex2",
+      "numberFormat": "none",
+      "matched": 100,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 100
+    },
+    "np": {
+      "tcgdex": "np",
+      "numberFormat": "none",
+      "matched": 40,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 40
+    },
+    "ex3": {
+      "tcgdex": "ex3",
+      "numberFormat": "none",
+      "matched": 100,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 100
+    },
+    "ex4": {
+      "tcgdex": "ex4",
+      "numberFormat": "none",
+      "matched": 97,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 97
+    },
+    "ex5": {
+      "tcgdex": "ex5",
+      "numberFormat": "none",
+      "matched": 102,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 102
+    },
+    "tk1a": {
+      "tcgdex": "tk-ex-latia",
+      "numberFormat": "none",
+      "matched": 10,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 10
+    },
+    "tk1b": {
+      "tcgdex": "tk-ex-latio",
+      "numberFormat": "none",
+      "matched": 10,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 10
+    },
+    "ex6": {
+      "tcgdex": "ex6",
+      "numberFormat": "none",
+      "matched": 116,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 112
+    },
+    "pop1": {
+      "tcgdex": "pop1",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "ex7": {
+      "tcgdex": "ex7",
+      "numberFormat": "none",
+      "matched": 111,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 108
+    },
+    "ex8": {
+      "tcgdex": "ex8",
+      "numberFormat": "none",
+      "matched": 108,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 105
+    },
+    "ex9": {
+      "tcgdex": "ex9",
+      "numberFormat": "none",
+      "matched": 107,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 107
+    },
+    "pop2": {
+      "tcgdex": "pop2",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "ex11": {
+      "tcgdex": "ex11",
+      "numberFormat": "none",
+      "matched": 111,
+      "missing": 0,
+      "different": 3,
+      "strictMatched": 111
+    },
+    "ex12": {
+      "tcgdex": "ex12",
+      "numberFormat": "none",
+      "matched": 93,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 90
+    },
+    "tk2b": {
+      "tcgdex": "tk-ex-m",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "tk2a": {
+      "tcgdex": "tk-ex-p",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "pop3": {
+      "tcgdex": "pop3",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "ex13": {
+      "tcgdex": "ex13",
+      "numberFormat": "none",
+      "matched": 109,
+      "missing": 0,
+      "different": 2,
+      "strictMatched": 108
+    },
+    "pop4": {
+      "tcgdex": "pop4",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "ex14": {
+      "tcgdex": "ex14",
+      "numberFormat": "none",
+      "matched": 100,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 98
+    },
+    "ex15": {
+      "tcgdex": "ex15",
+      "numberFormat": "none",
+      "matched": 101,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 97
+    },
+    "ex16": {
+      "tcgdex": "ex16",
+      "numberFormat": "none",
+      "matched": 108,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 105
+    },
+    "pop5": {
+      "tcgdex": "pop5",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "dp1": {
+      "tcgdex": "dp1",
+      "numberFormat": "none",
+      "matched": 130,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 123
+    },
+    "dpp": {
+      "tcgdex": "dpp",
+      "numberFormat": "none",
+      "matched": 56,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 37
+    },
+    "dp2": {
+      "tcgdex": "dp2",
+      "numberFormat": "none",
+      "matched": 124,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 116
+    },
+    "pop6": {
+      "tcgdex": "pop6",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "dp3": {
+      "tcgdex": "dp3",
+      "numberFormat": "none",
+      "matched": 132,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 123
+    },
+    "dp4": {
+      "tcgdex": "dp4",
+      "numberFormat": "none",
+      "matched": 106,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 98
+    },
+    "pop7": {
+      "tcgdex": "pop7",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "dp5": {
+      "tcgdex": "dp5",
+      "numberFormat": "none",
+      "matched": 100,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 94
+    },
+    "dp6": {
+      "tcgdex": "dp6",
+      "numberFormat": "none",
+      "matched": 146,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 131
+    },
+    "pop8": {
+      "tcgdex": "pop8",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "dp7": {
+      "tcgdex": "dp7",
+      "numberFormat": "none",
+      "matched": 106,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 101
+    },
+    "pl1": {
+      "tcgdex": "pl1",
+      "numberFormat": "none",
+      "matched": 133,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 133
+    },
+    "pop9": {
+      "tcgdex": "pop9",
+      "numberFormat": "none",
+      "matched": 17,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 17
+    },
+    "pl2": {
+      "tcgdex": "pl2",
+      "numberFormat": "none",
+      "matched": 120,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 120
+    },
+    "pl3": {
+      "tcgdex": "pl3",
+      "numberFormat": "none",
+      "matched": 153,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 153
+    },
+    "pl4": {
+      "tcgdex": "pl4",
+      "numberFormat": "none",
+      "matched": 111,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 111
+    },
+    "ru1": {
+      "tcgdex": "ru1",
+      "numberFormat": "none",
+      "matched": 16,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 16
+    },
+    "hsp": {
+      "tcgdex": "hgssp",
+      "numberFormat": "none",
+      "matched": 25,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 25
+    },
+    "hgss1": {
+      "tcgdex": "hgss1",
+      "numberFormat": "none",
+      "matched": 124,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 124
+    },
+    "hgss2": {
+      "tcgdex": "hgss2",
+      "numberFormat": "none",
+      "matched": 96,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 96
+    },
+    "hgss3": {
+      "tcgdex": "hgss3",
+      "numberFormat": "none",
+      "matched": 91,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 91
+    },
+    "hgss4": {
+      "tcgdex": "hgss4",
+      "numberFormat": "none",
+      "matched": 103,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 103
+    },
+    "col1": {
+      "tcgdex": "col1",
+      "numberFormat": "none",
+      "matched": 106,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 106
+    },
+    "bwp": {
+      "tcgdex": "bwp",
+      "numberFormat": "none",
+      "matched": 99,
+      "missing": 2,
+      "different": 0,
+      "strictMatched": 99
+    },
+    "bw1": {
+      "tcgdex": "bw1",
+      "numberFormat": "none",
+      "matched": 115,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 115
+    },
+    "mcd11": {
+      "tcgdex": "2011bw",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "bw2": {
+      "tcgdex": "bw2",
+      "numberFormat": "none",
+      "matched": 98,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 98
+    },
+    "bw3": {
+      "tcgdex": "bw3",
+      "numberFormat": "none",
+      "matched": 102,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 102
+    },
+    "bw4": {
+      "tcgdex": "bw4",
+      "numberFormat": "none",
+      "matched": 103,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 103
+    },
+    "bw5": {
+      "tcgdex": "bw5",
+      "numberFormat": "none",
+      "matched": 111,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 111
+    },
+    "mcd12": {
+      "tcgdex": "2012bw",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "bw6": {
+      "tcgdex": "bw6",
+      "numberFormat": "none",
+      "matched": 128,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 126
+    },
+    "dv1": {
+      "tcgdex": "dv1",
+      "numberFormat": "none",
+      "matched": 21,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 21
+    },
+    "bw7": {
+      "tcgdex": "bw7",
+      "numberFormat": "none",
+      "matched": 153,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 153
+    },
+    "bw8": {
+      "tcgdex": "bw8",
+      "numberFormat": "none",
+      "matched": 138,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 138
+    },
+    "bw9": {
+      "tcgdex": "bw9",
+      "numberFormat": "none",
+      "matched": 122,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 120
+    },
+    "bw10": {
+      "tcgdex": "bw10",
+      "numberFormat": "none",
+      "matched": 105,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 105
+    },
+    "xyp": {
+      "tcgdex": "xyp",
+      "numberFormat": "none",
+      "matched": 216,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 159
+    },
+    "bw11": {
+      "tcgdex": "bw11",
+      "numberFormat": "none",
+      "matched": 140,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 140
+    },
+    "xy0": {
+      "tcgdex": "xy0",
+      "numberFormat": "none",
+      "matched": 39,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 39
+    },
+    "xy1": {
+      "tcgdex": "xy1",
+      "numberFormat": "none",
+      "matched": 146,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 132
+    },
+    "xy2": {
+      "tcgdex": "xy2",
+      "numberFormat": "none",
+      "matched": 110,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 95
+    },
+    "mcd14": {
+      "tcgdex": "2014xy",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "xy3": {
+      "tcgdex": "xy3",
+      "numberFormat": "none",
+      "matched": 114,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 100
+    },
+    "xy4": {
+      "tcgdex": "xy4",
+      "numberFormat": "none",
+      "matched": 124,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 107
+    },
+    "xy5": {
+      "tcgdex": "xy5",
+      "numberFormat": "none",
+      "matched": 164,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 139
+    },
+    "dc1": {
+      "tcgdex": "dc1",
+      "numberFormat": "none",
+      "matched": 34,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 32
+    },
+    "xy6": {
+      "tcgdex": "xy6",
+      "numberFormat": "none",
+      "matched": 112,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 91
+    },
+    "xy7": {
+      "tcgdex": "xy7",
+      "numberFormat": "none",
+      "matched": 101,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 76
+    },
+    "xy8": {
+      "tcgdex": "xy8",
+      "numberFormat": "none",
+      "matched": 165,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 147
+    },
+    "mcd15": {
+      "tcgdex": "2015xy",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "xy9": {
+      "tcgdex": "xy9",
+      "numberFormat": "none",
+      "matched": 126,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 106
+    },
+    "g1": {
+      "tcgdex": "g1",
+      "numberFormat": "none",
+      "matched": 117,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 99
+    },
+    "xy10": {
+      "tcgdex": "xy10",
+      "numberFormat": "none",
+      "matched": 129,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 105
+    },
+    "xy11": {
+      "tcgdex": "xy11",
+      "numberFormat": "none",
+      "matched": 116,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 101
+    },
+    "mcd16": {
+      "tcgdex": "2016xy",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "xy12": {
+      "tcgdex": "xy12",
+      "numberFormat": "none",
+      "matched": 113,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 93
+    },
+    "sm1": {
+      "tcgdex": "sm1",
+      "numberFormat": "none",
+      "matched": 172,
+      "missing": 1,
+      "different": 0,
+      "strictMatched": 145
+    },
+    "smp": {
+      "tcgdex": "smp",
+      "numberFormat": "none",
+      "matched": 248,
+      "missing": 3,
+      "different": 0,
+      "strictMatched": 162
+    },
+    "sm2": {
+      "tcgdex": "sm2",
+      "numberFormat": "none",
+      "matched": 169,
+      "missing": 11,
+      "different": 0,
+      "strictMatched": 130
+    },
+    "sm3": {
+      "tcgdex": "sm3",
+      "numberFormat": "none",
+      "matched": 169,
+      "missing": 8,
+      "different": 0,
+      "strictMatched": 130
+    },
+    "sm35": {
+      "tcgdex": "sm3.5",
+      "numberFormat": "none",
+      "matched": 78,
+      "missing": 3,
+      "different": 0,
+      "strictMatched": 67
+    },
+    "sm4": {
+      "tcgdex": "sm4",
+      "numberFormat": "none",
+      "matched": 125,
+      "missing": 1,
+      "different": 0,
+      "strictMatched": 101
+    },
+    "mcd17": {
+      "tcgdex": "2017sm",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "sm5": {
+      "tcgdex": "sm5",
+      "numberFormat": "none",
+      "matched": 173,
+      "missing": 5,
+      "different": 0,
+      "strictMatched": 146
+    },
+    "sm6": {
+      "tcgdex": "sm6",
+      "numberFormat": "none",
+      "matched": 146,
+      "missing": 4,
+      "different": 0,
+      "strictMatched": 120
+    },
+    "sm7": {
+      "tcgdex": "sm7",
+      "numberFormat": "none",
+      "matched": 183,
+      "missing": 4,
+      "different": 0,
+      "strictMatched": 154
+    },
+    "sm75": {
+      "tcgdex": "sm7.5",
+      "numberFormat": "none",
+      "matched": 78,
+      "missing": 2,
+      "different": 0,
+      "strictMatched": 63
+    },
+    "mcd18": {
+      "tcgdex": "2018sm",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "sm8": {
+      "tcgdex": "sm8",
+      "numberFormat": "none",
+      "matched": 236,
+      "missing": 4,
+      "different": 0,
+      "strictMatched": 197
+    },
+    "sm9": {
+      "tcgdex": "sm9",
+      "numberFormat": "none",
+      "matched": 196,
+      "missing": 2,
+      "different": 0,
+      "strictMatched": 160
+    },
+    "det1": {
+      "tcgdex": "det1",
+      "numberFormat": "none",
+      "matched": 18,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 18
+    },
+    "sm10": {
+      "tcgdex": "sm10",
+      "numberFormat": "none",
+      "matched": 234,
+      "missing": 4,
+      "different": 0,
+      "strictMatched": 188
+    },
+    "sm11": {
+      "tcgdex": "sm11",
+      "numberFormat": "none",
+      "matched": 258,
+      "missing": 3,
+      "different": 0,
+      "strictMatched": 211
+    },
+    "sma": {
+      "tcgdex": "sma",
+      "numberFormat": "none",
+      "matched": 94,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 94
+    },
+    "sm115": {
+      "tcgdex": "sm115",
+      "numberFormat": "none",
+      "matched": 69,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 58
+    },
+    "mcd19": {
+      "tcgdex": "2019sm",
+      "numberFormat": "none",
+      "matched": 12,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 12
+    },
+    "sm12": {
+      "tcgdex": "sm12",
+      "numberFormat": "none",
+      "matched": 271,
+      "missing": 1,
+      "different": 0,
+      "strictMatched": 223
+    },
+    "swshp": {
+      "tcgdex": "swshp",
+      "numberFormat": "none",
+      "matched": 304,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 301
+    },
+    "swsh1": {
+      "tcgdex": "swsh1",
+      "numberFormat": "none",
+      "matched": 216,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 216
+    },
+    "swsh2": {
+      "tcgdex": "swsh2",
+      "numberFormat": "none",
+      "matched": 206,
+      "missing": 0,
+      "different": 3,
+      "strictMatched": 206
+    },
+    "swsh3": {
+      "tcgdex": "swsh3",
+      "numberFormat": "none",
+      "matched": 201,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 201
+    },
+    "fut20": {
+      "tcgdex": "fut2020",
+      "numberFormat": "none",
+      "matched": 5,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 5
+    },
+    "swsh35": {
+      "tcgdex": "swsh3.5",
+      "numberFormat": "none",
+      "matched": 80,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 80
+    },
+    "swsh4": {
+      "tcgdex": "swsh4",
+      "numberFormat": "none",
+      "matched": 203,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 203
+    },
+    "mcd21": {
+      "tcgdex": "2021swsh",
+      "numberFormat": "none",
+      "matched": 25,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 25
+    },
+    "swsh45sv": {
+      "tcgdex": "swsh4.5sv",
+      "numberFormat": "none",
+      "matched": 122,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 122
+    },
+    "swsh45": {
+      "tcgdex": "swsh4.5",
+      "numberFormat": "none",
+      "matched": 71,
+      "missing": 0,
+      "different": 2,
+      "strictMatched": 71
+    },
+    "swsh5": {
+      "tcgdex": "swsh5",
+      "numberFormat": "none",
+      "matched": 183,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 183
+    },
+    "swsh6": {
+      "tcgdex": "swsh6",
+      "numberFormat": "none",
+      "matched": 233,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 233
+    },
+    "swsh7": {
+      "tcgdex": "swsh7",
+      "numberFormat": "none",
+      "matched": 237,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 237
+    },
+    "cel25": {
+      "tcgdex": "cel25",
+      "numberFormat": "none",
+      "matched": 25,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 25
+    },
+    "swsh8": {
+      "tcgdex": "swsh8",
+      "numberFormat": "none",
+      "matched": 284,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 284
+    },
+    "swsh9tg": {
+      "tcgdex": "swsh9tg",
+      "numberFormat": "none",
+      "matched": 30,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 30
+    },
+    "swsh9": {
+      "tcgdex": "swsh9",
+      "numberFormat": "pad3",
+      "matched": 186,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 186
+    },
+    "swsh10": {
+      "tcgdex": "swsh10",
+      "numberFormat": "pad3",
+      "matched": 216,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 216
+    },
+    "swsh10tg": {
+      "tcgdex": "swsh10tg",
+      "numberFormat": "none",
+      "matched": 30,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 30
+    },
+    "pgo": {
+      "tcgdex": "swsh10.5",
+      "numberFormat": "pad3",
+      "matched": 88,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 88
+    },
+    "mcd22": {
+      "tcgdex": "2022swsh",
+      "numberFormat": "none",
+      "matched": 15,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 15
+    },
+    "swsh11": {
+      "tcgdex": "swsh11",
+      "numberFormat": "pad3",
+      "matched": 217,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 217
+    },
+    "swsh11tg": {
+      "tcgdex": "swsh11tg",
+      "numberFormat": "none",
+      "matched": 30,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 30
+    },
+    "swsh12": {
+      "tcgdex": "swsh12",
+      "numberFormat": "pad3",
+      "matched": 215,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 215
+    },
+    "swsh12tg": {
+      "tcgdex": "swsh12tg",
+      "numberFormat": "none",
+      "matched": 30,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 30
+    },
+    "svp": {
+      "tcgdex": "svp",
+      "numberFormat": "pad3",
+      "matched": 165,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 165
+    },
+    "swsh12pt5gg": {
+      "tcgdex": "swsh12.5gg",
+      "numberFormat": "none",
+      "matched": 70,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 70
+    },
+    "swsh12pt5": {
+      "tcgdex": "swsh12.5",
+      "numberFormat": "pad3",
+      "matched": 160,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 160
+    },
+    "sv1": {
+      "tcgdex": "sv01",
+      "numberFormat": "pad3",
+      "matched": 254,
+      "missing": 0,
+      "different": 4,
+      "strictMatched": 254
+    },
+    "sv2": {
+      "tcgdex": "sv02",
+      "numberFormat": "pad3",
+      "matched": 276,
+      "missing": 0,
+      "different": 3,
+      "strictMatched": 276
+    },
+    "sv3": {
+      "tcgdex": "sv03",
+      "numberFormat": "pad3",
+      "matched": 230,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 230
+    },
+    "sv3pt5": {
+      "tcgdex": "sv03.5",
+      "numberFormat": "pad3",
+      "matched": 207,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 205
+    },
+    "sv4": {
+      "tcgdex": "sv04",
+      "numberFormat": "pad3",
+      "matched": 266,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 266
+    },
+    "sv4pt5": {
+      "tcgdex": "sv04.5",
+      "numberFormat": "pad3",
+      "matched": 245,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 245
+    },
+    "sv5": {
+      "tcgdex": "sv05",
+      "numberFormat": "pad3",
+      "matched": 218,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 218
+    },
+    "sv6": {
+      "tcgdex": "sv06",
+      "numberFormat": "pad3",
+      "matched": 226,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 226
+    },
+    "sv6pt5": {
+      "tcgdex": "sv06.5",
+      "numberFormat": "pad3",
+      "matched": 99,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 99
+    },
+    "sv7": {
+      "tcgdex": "sv07",
+      "numberFormat": "pad3",
+      "matched": 175,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 175
+    },
+    "sv8": {
+      "tcgdex": "sv08",
+      "numberFormat": "pad3",
+      "matched": 252,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 252
+    },
+    "sv8pt5": {
+      "tcgdex": "sv08.5",
+      "numberFormat": "pad3",
+      "matched": 180,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 180
+    },
+    "sv9": {
+      "tcgdex": "sv09",
+      "numberFormat": "pad3",
+      "matched": 190,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 190
+    },
+    "sv10": {
+      "tcgdex": "sv10",
+      "numberFormat": "pad3",
+      "matched": 244,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 244
+    },
+    "rsv10pt5": {
+      "tcgdex": "sv10.5w",
+      "numberFormat": "pad3",
+      "matched": 173,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 173
+    },
+    "me1": {
+      "tcgdex": "me01",
+      "numberFormat": "pad3",
+      "matched": 188,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 188
+    },
+    "me2": {
+      "tcgdex": "me02",
+      "numberFormat": "pad3",
+      "matched": 130,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 130
+    },
+    "me2pt5": {
+      "tcgdex": "me02.5",
+      "numberFormat": "pad3",
+      "matched": 295,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 295
+    },
+    "me3": {
+      "tcgdex": "me03",
+      "numberFormat": "pad3",
+      "matched": 124,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 124
+    },
+    "me4": {
+      "tcgdex": "me04",
+      "numberFormat": "pad3",
+      "matched": 122,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 122
+    },
+    "me5": {
+      "tcgdex": "me05",
+      "numberFormat": "pad3",
+      "matched": 120,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 120
+    },
+    "me55": {
+      "tcgdex": "30th",
+      "numberFormat": "pad3",
+      "matched": 158,
+      "missing": 3,
+      "different": 0,
+      "strictMatched": 157
+    }
+  }
+}
