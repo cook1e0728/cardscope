@@ -1,0 +1,1968 @@
+{
+ "generatedAt": "2026-10-14",
+ "note": "修改前快照：項目 2、3、4 共 20 張卡（含 V-UNION 7 張）（卡、日版 Printing、canonical、卡圖筆數）。項目 1 的 330 張只新增 metadata 鍵 officialListing／officialListingCheckedAt／officialListingEvidence，還原時移除這三個鍵即可。",
+ "rows": [
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-m6-098",
+    "rarity": "SR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "M6-098"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ポケモンキャッチャー",
+    "name_ko": null,
+    "name_zh": "寶可夢捕捉器",
+    "metadata": {
+     "linkRule": "adr-0015",
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "M6-098",
+     "linkBasis": "tw-official-detail-id",
+     "sourceHash": "a1af9fbb308dcb5df65fa75b3a7e861224e781a7bcfed1c5a73745fe4ba7c2c3",
+     "nameJaBasis": "pokemon-card.com 官方詳細頁 50539（TCGdex 封存 098／099 名稱對調）",
+     "nameZhBasis": "tw-official-same-number",
+     "linkedCardId": "pokemon-official-tw-m6-098",
+     "manifestHash": "c15cd9c4de71d35ac0fc409dd5af2be31a88348aa171654eeddba7b97d285361",
+     "nameJaBefore": "とくちゅうチョッキ",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/M6-098",
+      "archive": {
+       "path": "data-asia/M/M6/098.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhOfficialDetailIds": [
+      "19652"
+     ]
+    },
+    "series_id": "pokemon-tcgdex-ja-m6",
+    "updated_at": "2026-10-11T05:42:22.775107+00:00",
+    "data_status": "pending",
+    "provider_id": "M6-098",
+    "rarity_tier": null,
+    "search_text": "ポケモンキャッチャー 098 M6-098 m6098",
+    "canonical_id": "pokemon-official-tw-m6-098",
+    "official_card_number": "098"
+   },
+   "images": 0,
+   "printing": {
+    "id": 837853,
+    "rarity": "SR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-m6-098",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "M6-098",
+     "sourceHash": "a1af9fbb308dcb5df65fa75b3a7e861224e781a7bcfed1c5a73745fe4ba7c2c3",
+     "rarityBasis": "asia-pokemon-card-official-tw-same-number",
+     "manifestHash": "c15cd9c4de71d35ac0fc409dd5af2be31a88348aa171654eeddba7b97d285361",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/M6-098",
+      "archive": {
+       "path": "data-asia/M/M6/098.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "officialDetailIds": [
+      "19652"
+     ]
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-m6",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/M6-098",
+    "updated_at": "2026-10-02T18:13:12.958112+00:00",
+    "data_status": "pending",
+    "provider_id": "M6-098",
+    "rarity_code": "SR",
+    "rights_note": null,
+    "rarity_label": "SR",
+    "release_date": "2026-07-31",
+    "source_locale": "ja-JP",
+    "local_set_code": "M6",
+    "local_card_number": "098",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-official-tw-m6-098",
+    "aliases": [
+     "M6-098",
+     "とくちゅうチョッキ",
+     "ポケモンキャッチャー",
+     "寶可夢捕捉器"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ポケモンキャッチャー",
+    "name_ko": null,
+    "name_zh": "寶可夢捕捉器",
+    "updated_at": "2026-10-11T05:42:22.775107+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-m6-099",
+    "rarity": "SR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "M6-099"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "とくちゅうチョッキ",
+    "name_ko": null,
+    "name_zh": "訂製背心",
+    "metadata": {
+     "linkRule": "adr-0015",
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "M6-099",
+     "linkBasis": "tw-official-detail-id",
+     "sourceHash": "a1af9fbb308dcb5df65fa75b3a7e861224e781a7bcfed1c5a73745fe4ba7c2c3",
+     "nameJaBasis": "pokemon-card.com 官方詳細頁 50540（TCGdex 封存 098／099 名稱對調）",
+     "nameZhBasis": "tw-official-same-number",
+     "linkedCardId": "pokemon-official-tw-m6-099",
+     "manifestHash": "c15cd9c4de71d35ac0fc409dd5af2be31a88348aa171654eeddba7b97d285361",
+     "nameJaBefore": "ポケモンキャッチャー",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/M6-099",
+      "archive": {
+       "path": "data-asia/M/M6/099.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhOfficialDetailIds": [
+      "19653"
+     ]
+    },
+    "series_id": "pokemon-tcgdex-ja-m6",
+    "updated_at": "2026-10-11T05:42:22.775107+00:00",
+    "data_status": "pending",
+    "provider_id": "M6-099",
+    "rarity_tier": null,
+    "search_text": "とくちゅうチョッキ 099 M6-099 m6099",
+    "canonical_id": "pokemon-official-tw-m6-099",
+    "official_card_number": "099"
+   },
+   "images": 0,
+   "printing": {
+    "id": 837854,
+    "rarity": "SR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-m6-099",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "M6-099",
+     "sourceHash": "a1af9fbb308dcb5df65fa75b3a7e861224e781a7bcfed1c5a73745fe4ba7c2c3",
+     "rarityBasis": "asia-pokemon-card-official-tw-same-number",
+     "manifestHash": "c15cd9c4de71d35ac0fc409dd5af2be31a88348aa171654eeddba7b97d285361",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/M6-099",
+      "archive": {
+       "path": "data-asia/M/M6/099.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "officialDetailIds": [
+      "19653"
+     ]
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-m6",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/M6-099",
+    "updated_at": "2026-10-02T18:13:12.958112+00:00",
+    "data_status": "pending",
+    "provider_id": "M6-099",
+    "rarity_code": "SR",
+    "rights_note": null,
+    "rarity_label": "SR",
+    "release_date": "2026-07-31",
+    "source_locale": "ja-JP",
+    "local_set_code": "M6",
+    "local_card_number": "099",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-official-tw-m6-099",
+    "aliases": [
+     "M6-099",
+     "とくちゅうチョッキ",
+     "ポケモンキャッチャー",
+     "訂製背心"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "とくちゅうチョッキ",
+    "name_ko": null,
+    "name_zh": "訂製背心",
+    "updated_at": "2026-10-11T05:42:22.775107+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s12a-255",
+    "rarity": "UR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S12a-255"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本超エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-255",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-255",
+      "archive": {
+       "path": "data-asia/S/S12a/255.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-255",
+    "rarity_tier": 2,
+    "search_text": "基本超エネルギー 255 S12a-255 s12a255",
+    "canonical_id": "pokemon-tcgdex-ja-s12a-255",
+    "official_card_number": "255"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835838,
+    "rarity": "UR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s12a-255",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-255",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-255",
+      "archive": {
+       "path": "data-asia/S/S12a/255.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S12a-255",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-255",
+    "rarity_code": "UR",
+    "rights_note": null,
+    "rarity_label": "UR",
+    "release_date": "2022-12-02",
+    "source_locale": "ja-JP",
+    "local_set_code": "S12a",
+    "local_card_number": "255",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s12a-255",
+    "aliases": [
+     "S12a-255",
+     "基本超エネルギー"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本超エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-02T16:10:13.986473+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s12a-256",
+    "rarity": "UR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S12a-256"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本闘エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-256",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-256",
+      "archive": {
+       "path": "data-asia/S/S12a/256.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-256",
+    "rarity_tier": 2,
+    "search_text": "基本闘エネルギー 256 S12a-256 s12a256",
+    "canonical_id": "pokemon-tcgdex-ja-s12a-256",
+    "official_card_number": "256"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835839,
+    "rarity": "UR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s12a-256",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-256",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-256",
+      "archive": {
+       "path": "data-asia/S/S12a/256.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S12a-256",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-256",
+    "rarity_code": "UR",
+    "rights_note": null,
+    "rarity_label": "UR",
+    "release_date": "2022-12-02",
+    "source_locale": "ja-JP",
+    "local_set_code": "S12a",
+    "local_card_number": "256",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s12a-256",
+    "aliases": [
+     "S12a-256",
+     "基本闘エネルギー"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本闘エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-02T16:10:13.986473+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s12a-257",
+    "rarity": "UR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S12a-257"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本悪エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-257",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-257",
+      "archive": {
+       "path": "data-asia/S/S12a/257.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-257",
+    "rarity_tier": 2,
+    "search_text": "基本悪エネルギー 257 S12a-257 s12a257",
+    "canonical_id": "pokemon-tcgdex-ja-s12a-257",
+    "official_card_number": "257"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835840,
+    "rarity": "UR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s12a-257",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-257",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-257",
+      "archive": {
+       "path": "data-asia/S/S12a/257.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S12a-257",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-257",
+    "rarity_code": "UR",
+    "rights_note": null,
+    "rarity_label": "UR",
+    "release_date": "2022-12-02",
+    "source_locale": "ja-JP",
+    "local_set_code": "S12a",
+    "local_card_number": "257",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s12a-257",
+    "aliases": [
+     "S12a-257",
+     "基本悪エネルギー"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本悪エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-02T16:10:13.986473+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s12a-258",
+    "rarity": "UR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S12a-258"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本鋼エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-258",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-258",
+      "archive": {
+       "path": "data-asia/S/S12a/258.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-258",
+    "rarity_tier": 2,
+    "search_text": "基本鋼エネルギー 258 S12a-258 s12a258",
+    "canonical_id": "pokemon-tcgdex-ja-s12a-258",
+    "official_card_number": "258"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835841,
+    "rarity": "UR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s12a-258",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S12a-258",
+     "sourceHash": "b8b29bb9d5774a6a7f7f5a19ae0adf6292d734412ac15c564631e2062f0c1cd8",
+     "manifestHash": "6adbd8b17020ed9ccf437be122fe0fe6d3ba2662f3be7997e4560dddd5474453",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S12a-258",
+      "archive": {
+       "path": "data-asia/S/S12a/258.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s12a",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S12a-258",
+    "updated_at": "2026-10-02T16:10:13.986473+00:00",
+    "data_status": "pending",
+    "provider_id": "S12a-258",
+    "rarity_code": "UR",
+    "rights_note": null,
+    "rarity_label": "UR",
+    "release_date": "2022-12-02",
+    "source_locale": "ja-JP",
+    "local_set_code": "S12a",
+    "local_card_number": "258",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s12a-258",
+    "aliases": [
+     "S12a-258",
+     "基本鋼エネルギー"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "基本鋼エネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-02T16:10:13.986473+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s8b-057",
+    "rarity": "RRR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S8b-057"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-057",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "nameZhBasis": "derived-same-name",
+     "manifestHash": "2222e6ca7468aabd8869d2160505e17be3955201c52fce0a7605fc0afa23edd8",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-057",
+      "archive": {
+       "path": "data-asia/S/S8b/057.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhEvidenceHash": "62bd88efe4d4ffc9f6db54293fddb4035e78b6cc6e82c26dd016e8409e879323",
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-s8b-056"
+    },
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-057",
+    "rarity_tier": 12,
+    "search_text": "モルペコV-UNION 057 S8b-057 s8b057",
+    "canonical_id": "pokemon-tcgdex-ja-s8b-057",
+    "official_card_number": "057"
+   },
+   "images": 0,
+   "printing": {
+    "id": 834916,
+    "rarity": "RRR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s8b-057",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-057",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "manifestHash": "2222e6ca7468aabd8869d2160505e17be3955201c52fce0a7605fc0afa23edd8",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-057",
+      "archive": {
+       "path": "data-asia/S/S8b/057.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S8b-057",
+    "updated_at": "2026-10-02T16:09:24.496239+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-057",
+    "rarity_code": "RRR",
+    "rights_note": null,
+    "rarity_label": "RRR",
+    "release_date": "2021-12-03",
+    "source_locale": "ja-JP",
+    "local_set_code": "S8b",
+    "local_card_number": "057",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s8b-057",
+    "aliases": [
+     "S8b-057",
+     "モルペコV-UNION",
+     "莫魯貝可V-UNION"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s8b-058",
+    "rarity": "RRR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S8b-058"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-058",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "nameZhBasis": "derived-same-name",
+     "manifestHash": "2222e6ca7468aabd8869d2160505e17be3955201c52fce0a7605fc0afa23edd8",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-058",
+      "archive": {
+       "path": "data-asia/S/S8b/058.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhEvidenceHash": "62bd88efe4d4ffc9f6db54293fddb4035e78b6cc6e82c26dd016e8409e879323",
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-s8b-056"
+    },
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-058",
+    "rarity_tier": 12,
+    "search_text": "モルペコV-UNION 058 S8b-058 s8b058",
+    "canonical_id": "pokemon-tcgdex-ja-s8b-058",
+    "official_card_number": "058"
+   },
+   "images": 0,
+   "printing": {
+    "id": 834917,
+    "rarity": "RRR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s8b-058",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-058",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "manifestHash": "2222e6ca7468aabd8869d2160505e17be3955201c52fce0a7605fc0afa23edd8",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-058",
+      "archive": {
+       "path": "data-asia/S/S8b/058.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S8b-058",
+    "updated_at": "2026-10-02T16:09:24.496239+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-058",
+    "rarity_code": "RRR",
+    "rights_note": null,
+    "rarity_label": "RRR",
+    "release_date": "2021-12-03",
+    "source_locale": "ja-JP",
+    "local_set_code": "S8b",
+    "local_card_number": "058",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s8b-058",
+    "aliases": [
+     "S8b-058",
+     "モルペコV-UNION",
+     "莫魯貝可V-UNION"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s8b-059",
+    "rarity": "RRR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S8b-059"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-059",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "nameZhBasis": "derived-same-name",
+     "manifestHash": "2222e6ca7468aabd8869d2160505e17be3955201c52fce0a7605fc0afa23edd8",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-059",
+      "archive": {
+       "path": "data-asia/S/S8b/059.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhEvidenceHash": "62bd88efe4d4ffc9f6db54293fddb4035e78b6cc6e82c26dd016e8409e879323",
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-s8b-056"
+    },
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-059",
+    "rarity_tier": 12,
+    "search_text": "モルペコV-UNION 059 S8b-059 s8b059",
+    "canonical_id": "pokemon-tcgdex-ja-s8b-059",
+    "official_card_number": "059"
+   },
+   "images": 0,
+   "printing": {
+    "id": 834918,
+    "rarity": "RRR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s8b-059",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-059",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "manifestHash": "2222e6ca7468aabd8869d2160505e17be3955201c52fce0a7605fc0afa23edd8",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-059",
+      "archive": {
+       "path": "data-asia/S/S8b/059.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S8b-059",
+    "updated_at": "2026-10-02T16:09:24.496239+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-059",
+    "rarity_code": "RRR",
+    "rights_note": null,
+    "rarity_label": "RRR",
+    "release_date": "2021-12-03",
+    "source_locale": "ja-JP",
+    "local_set_code": "S8b",
+    "local_card_number": "059",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s8b-059",
+    "aliases": [
+     "S8b-059",
+     "モルペコV-UNION",
+     "莫魯貝可V-UNION"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s8b-226",
+    "rarity": null,
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S8b-226"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-226",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "nameZhBasis": "derived-same-name",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-226",
+      "archive": {
+       "path": "data-asia/S/S8b/226.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhEvidenceHash": "62bd88efe4d4ffc9f6db54293fddb4035e78b6cc6e82c26dd016e8409e879323",
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-s8b-056"
+    },
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-226",
+    "rarity_tier": null,
+    "search_text": "モルペコV-UNION 226 S8b-226 s8b226",
+    "canonical_id": "pokemon-tcgdex-ja-s8b-226",
+    "official_card_number": "226"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835270,
+    "rarity": null,
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s8b-226",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-226",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-226",
+      "archive": {
+       "path": "data-asia/S/S8b/226.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S8b-226",
+    "updated_at": "2026-10-02T16:09:34.203794+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-226",
+    "rarity_code": null,
+    "rights_note": null,
+    "rarity_label": null,
+    "release_date": "2021-12-03",
+    "source_locale": "ja-JP",
+    "local_set_code": "S8b",
+    "local_card_number": "226",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s8b-226",
+    "aliases": [
+     "S8b-226",
+     "モルペコV-UNION",
+     "莫魯貝可V-UNION"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s8b-227",
+    "rarity": null,
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S8b-227"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-227",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "nameZhBasis": "derived-same-name",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-227",
+      "archive": {
+       "path": "data-asia/S/S8b/227.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhEvidenceHash": "62bd88efe4d4ffc9f6db54293fddb4035e78b6cc6e82c26dd016e8409e879323",
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-s8b-056"
+    },
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-227",
+    "rarity_tier": null,
+    "search_text": "モルペコV-UNION 227 S8b-227 s8b227",
+    "canonical_id": "pokemon-tcgdex-ja-s8b-227",
+    "official_card_number": "227"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835271,
+    "rarity": null,
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s8b-227",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-227",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-227",
+      "archive": {
+       "path": "data-asia/S/S8b/227.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S8b-227",
+    "updated_at": "2026-10-02T16:09:34.203794+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-227",
+    "rarity_code": null,
+    "rights_note": null,
+    "rarity_label": null,
+    "release_date": "2021-12-03",
+    "source_locale": "ja-JP",
+    "local_set_code": "S8b",
+    "local_card_number": "227",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s8b-227",
+    "aliases": [
+     "S8b-227",
+     "モルペコV-UNION",
+     "莫魯貝可V-UNION"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s8b-228",
+    "rarity": null,
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S8b-228"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-228",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "nameZhBasis": "derived-same-name",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-228",
+      "archive": {
+       "path": "data-asia/S/S8b/228.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhEvidenceHash": "62bd88efe4d4ffc9f6db54293fddb4035e78b6cc6e82c26dd016e8409e879323",
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-s8b-056"
+    },
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-228",
+    "rarity_tier": null,
+    "search_text": "モルペコV-UNION 228 S8b-228 s8b228",
+    "canonical_id": "pokemon-tcgdex-ja-s8b-228",
+    "official_card_number": "228"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835272,
+    "rarity": null,
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s8b-228",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-228",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-228",
+      "archive": {
+       "path": "data-asia/S/S8b/228.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S8b-228",
+    "updated_at": "2026-10-02T16:09:34.203794+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-228",
+    "rarity_code": null,
+    "rights_note": null,
+    "rarity_label": null,
+    "release_date": "2021-12-03",
+    "source_locale": "ja-JP",
+    "local_set_code": "S8b",
+    "local_card_number": "228",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s8b-228",
+    "aliases": [
+     "S8b-228",
+     "モルペコV-UNION",
+     "莫魯貝可V-UNION"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-s8b-229",
+    "rarity": null,
+    "source": "tcgdex-ja",
+    "aliases": [
+     "S8b-229"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-229",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "nameZhBasis": "derived-same-name",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-229",
+      "archive": {
+       "path": "data-asia/S/S8b/229.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhEvidenceHash": "62bd88efe4d4ffc9f6db54293fddb4035e78b6cc6e82c26dd016e8409e879323",
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-s8b-056"
+    },
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-229",
+    "rarity_tier": null,
+    "search_text": "モルペコV-UNION 229 S8b-229 s8b229",
+    "canonical_id": "pokemon-tcgdex-ja-s8b-229",
+    "official_card_number": "229"
+   },
+   "images": 0,
+   "printing": {
+    "id": 835273,
+    "rarity": null,
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-s8b-229",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "S8b-229",
+     "sourceHash": "f8d13df0d7533038d58c30758122558c1ca35683d84a26d1ad9ef539d8c387fe",
+     "manifestHash": "1e4680d9a7f698cad7ab7682a28b54ac206681ce8328bbb959b29e2561e30613",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/S8b-229",
+      "archive": {
+       "path": "data-asia/S/S8b/229.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-s8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/S8b-229",
+    "updated_at": "2026-10-02T16:09:34.203794+00:00",
+    "data_status": "pending",
+    "provider_id": "S8b-229",
+    "rarity_code": null,
+    "rights_note": null,
+    "rarity_label": null,
+    "release_date": "2021-12-03",
+    "source_locale": "ja-JP",
+    "local_set_code": "S8b",
+    "local_card_number": "229",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-s8b-229",
+    "aliases": [
+     "S8b-229",
+     "モルペコV-UNION",
+     "莫魯貝可V-UNION"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "モルペコV-UNION",
+    "name_ko": null,
+    "name_zh": "莫魯貝可V-UNION",
+    "updated_at": "2026-10-02T16:09:47.889182+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-sm12a-184",
+    "rarity": "UR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "SM12a-184"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ルカリオ&メルメタルGX",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM12a-184",
+     "sourceHash": "d947b849412f42836377b992a215ed9f68899afad38eddc554b11df3baada6bd",
+     "manifestHash": "599f20c8531b799c45aecf34cbc2d263921f05663d839e06ec7c9e9da6c7778b",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM12a-184",
+      "archive": {
+       "path": "data-asia/SM/SM12a/184.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-sm12a",
+    "updated_at": "2026-10-03T06:09:31.312642+00:00",
+    "data_status": "pending",
+    "provider_id": "SM12a-184",
+    "rarity_tier": 2,
+    "search_text": "ルカリオ&メルメタルGX 184 SM12a-184 sm12a184",
+    "canonical_id": "pokemon-tcgdex-ja-sm12a-184",
+    "official_card_number": "184"
+   },
+   "images": 0,
+   "printing": {
+    "id": 850660,
+    "rarity": "UR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-sm12a-184",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM12a-184",
+     "sourceHash": "d947b849412f42836377b992a215ed9f68899afad38eddc554b11df3baada6bd",
+     "manifestHash": "599f20c8531b799c45aecf34cbc2d263921f05663d839e06ec7c9e9da6c7778b",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM12a-184",
+      "archive": {
+       "path": "data-asia/SM/SM12a/184.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-sm12a",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/SM12a-184",
+    "updated_at": "2026-10-03T06:09:31.312642+00:00",
+    "data_status": "pending",
+    "provider_id": "SM12a-184",
+    "rarity_code": "UR",
+    "rights_note": null,
+    "rarity_label": "UR",
+    "release_date": "2019-10-04",
+    "source_locale": "ja-JP",
+    "local_set_code": "SM12a",
+    "local_card_number": "184",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-sm12a-184",
+    "aliases": [
+     "SM12a-184",
+     "ルカリオ&メルメタルGX"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ルカリオ&メルメタルGX",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-03T06:09:31.312642+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-sm12a-197",
+    "rarity": "UR",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "SM12a-197"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ホミカの演奏",
+    "name_ko": null,
+    "name_zh": "霍米加的演奏",
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM12a-197",
+     "nameZhRule": "adr-0013",
+     "sourceHash": "d947b849412f42836377b992a215ed9f68899afad38eddc554b11df3baada6bd",
+     "nameZhBasis": "derived-cross-series",
+     "manifestHash": "599f20c8531b799c45aecf34cbc2d263921f05663d839e06ec7c9e9da6c7778b",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM12a-197",
+      "archive": {
+       "path": "data-asia/SM/SM12a/197.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     },
+     "nameZhSourceCardId": "pokemon-tcgdex-ja-m4-077"
+    },
+    "series_id": "pokemon-tcgdex-ja-sm12a",
+    "updated_at": "2026-10-03T06:10:32.130787+00:00",
+    "data_status": "pending",
+    "provider_id": "SM12a-197",
+    "rarity_tier": 2,
+    "search_text": "ホミカの演奏 197 SM12a-197 sm12a197",
+    "canonical_id": "pokemon-tcgdex-ja-sm12a-197",
+    "official_card_number": "197"
+   },
+   "images": 0,
+   "printing": {
+    "id": 850673,
+    "rarity": "UR",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-sm12a-197",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM12a-197",
+     "sourceHash": "d947b849412f42836377b992a215ed9f68899afad38eddc554b11df3baada6bd",
+     "manifestHash": "599f20c8531b799c45aecf34cbc2d263921f05663d839e06ec7c9e9da6c7778b",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM12a-197",
+      "archive": {
+       "path": "data-asia/SM/SM12a/197.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-sm12a",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/SM12a-197",
+    "updated_at": "2026-10-03T06:09:31.312642+00:00",
+    "data_status": "pending",
+    "provider_id": "SM12a-197",
+    "rarity_code": "UR",
+    "rights_note": null,
+    "rarity_label": "UR",
+    "release_date": "2019-10-04",
+    "source_locale": "ja-JP",
+    "local_set_code": "SM12a",
+    "local_card_number": "197",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-sm12a-197",
+    "aliases": [
+     "SM12a-197",
+     "ホミカの演奏",
+     "霍米加的演奏"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ホミカの演奏",
+    "name_ko": null,
+    "name_zh": "霍米加的演奏",
+    "updated_at": "2026-10-03T06:10:32.130787+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-sm5p-037",
+    "rarity": "Rare Holo",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "SM5p-037"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "アルセウス",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "SM5p-037",
+     "sourceHash": "33a3b48745223052e25a697dcbd3cd59e2fb280a32d45a2e1ebf5bf7cd0484d7",
+     "manifestHash": "59fdbe9da898fdca7e5436fcaf2ae2da8c8ee345ef765df34103f276827dd2fd",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM5p-037",
+      "archive": {
+       "path": "data-asia/SM/SM5p/037.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-sm5p",
+    "updated_at": "2026-10-02T18:18:27.605313+00:00",
+    "data_status": "pending",
+    "provider_id": "SM5p-037",
+    "rarity_tier": 17,
+    "search_text": "アルセウス 037 SM5p-037 sm5p037",
+    "canonical_id": "pokemon-tcgdex-ja-sm5p-037",
+    "official_card_number": "037"
+   },
+   "images": 0,
+   "printing": {
+    "id": 839013,
+    "rarity": "Rare Holo",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-sm5p-037",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "SM5p-037",
+     "sourceHash": "33a3b48745223052e25a697dcbd3cd59e2fb280a32d45a2e1ebf5bf7cd0484d7",
+     "manifestHash": "59fdbe9da898fdca7e5436fcaf2ae2da8c8ee345ef765df34103f276827dd2fd",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM5p-037",
+      "archive": {
+       "path": "data-asia/SM/SM5p/037.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-sm5p",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/SM5p-037",
+    "updated_at": "2026-10-02T18:18:27.605313+00:00",
+    "data_status": "pending",
+    "provider_id": "SM5p-037",
+    "rarity_code": "Rare Holo",
+    "rights_note": null,
+    "rarity_label": "Rare Holo",
+    "release_date": "2018-01-19",
+    "source_locale": "ja-JP",
+    "local_set_code": "SM5p",
+    "local_card_number": "037",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-sm5p-037",
+    "aliases": [
+     "SM5p-037",
+     "アルセウス"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "アルセウス",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-02T18:18:27.605313+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-sm5p-048",
+    "rarity": "Rare Holo",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "SM5p-048"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ビーストエネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "SM5p-048",
+     "sourceHash": "33a3b48745223052e25a697dcbd3cd59e2fb280a32d45a2e1ebf5bf7cd0484d7",
+     "manifestHash": "59fdbe9da898fdca7e5436fcaf2ae2da8c8ee345ef765df34103f276827dd2fd",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM5p-048",
+      "archive": {
+       "path": "data-asia/SM/SM5p/048.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-sm5p",
+    "updated_at": "2026-10-02T18:18:27.605313+00:00",
+    "data_status": "pending",
+    "provider_id": "SM5p-048",
+    "rarity_tier": 17,
+    "search_text": "ビーストエネルギー 048 SM5p-048 sm5p048",
+    "canonical_id": "pokemon-tcgdex-ja-sm5p-048",
+    "official_card_number": "048"
+   },
+   "images": 0,
+   "printing": {
+    "id": 839024,
+    "rarity": "Rare Holo",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-sm5p-048",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "ff36c6df1e8cfe30dfd303e27ffb6a1788166208221f6b9df8825bf2925bcc58",
+     "tcgdexId": "SM5p-048",
+     "sourceHash": "33a3b48745223052e25a697dcbd3cd59e2fb280a32d45a2e1ebf5bf7cd0484d7",
+     "manifestHash": "59fdbe9da898fdca7e5436fcaf2ae2da8c8ee345ef765df34103f276827dd2fd",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM5p-048",
+      "archive": {
+       "path": "data-asia/SM/SM5p/048.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-02T15:59:00.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-sm5p",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/SM5p-048",
+    "updated_at": "2026-10-02T18:18:27.605313+00:00",
+    "data_status": "pending",
+    "provider_id": "SM5p-048",
+    "rarity_code": "Rare Holo",
+    "rights_note": null,
+    "rarity_label": "Rare Holo",
+    "release_date": "2018-01-19",
+    "source_locale": "ja-JP",
+    "local_set_code": "SM5p",
+    "local_card_number": "048",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-sm5p-048",
+    "aliases": [
+     "SM5p-048",
+     "ビーストエネルギー"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ビーストエネルギー",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-02T18:18:27.605313+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-sm6-094",
+    "rarity": "U",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "SM6-094"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ユニットエネルギー闘悪妖",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM6-094",
+     "sourceHash": "a9fa0faf24aa47fd58045414fea12c3d514ce83661f3a4fd96c803e3b1f4f856",
+     "manifestHash": "ec1c451b10809f7a0de89556cd98306749b9948308ba178e05807a9d1f6978bc",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM6-094",
+      "archive": {
+       "path": "data-asia/SM/SM6/094.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-sm6",
+    "updated_at": "2026-10-03T06:06:32.879147+00:00",
+    "data_status": "pending",
+    "provider_id": "SM6-094",
+    "rarity_tier": 27,
+    "search_text": "ユニットエネルギー闘悪妖 094 SM6-094 sm6094",
+    "canonical_id": "pokemon-tcgdex-ja-sm6-094",
+    "official_card_number": "094"
+   },
+   "images": 0,
+   "printing": {
+    "id": 846802,
+    "rarity": "U",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-sm6-094",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM6-094",
+     "sourceHash": "a9fa0faf24aa47fd58045414fea12c3d514ce83661f3a4fd96c803e3b1f4f856",
+     "manifestHash": "ec1c451b10809f7a0de89556cd98306749b9948308ba178e05807a9d1f6978bc",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM6-094",
+      "archive": {
+       "path": "data-asia/SM/SM6/094.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-sm6",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/SM6-094",
+    "updated_at": "2026-10-03T06:06:32.879147+00:00",
+    "data_status": "pending",
+    "provider_id": "SM6-094",
+    "rarity_code": "U",
+    "rights_note": null,
+    "rarity_label": "U",
+    "release_date": "2018-03-02",
+    "source_locale": "ja-JP",
+    "local_set_code": "SM6",
+    "local_card_number": "094",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-sm6-094",
+    "aliases": [
+     "SM6-094",
+     "ユニットエネルギー闘悪妖"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ユニットエネルギー闘悪妖",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-03T06:06:32.879147+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-sm6a-050",
+    "rarity": "Rare Holo",
+    "source": "tcgdex-ja",
+    "aliases": [
+     "SM6a-050"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ワタル♢",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM6a-050",
+     "sourceHash": "3c634e526cde8f99c80d5a4ed33c68e4ea28ab6d19f32dd942afb9d935142df5",
+     "manifestHash": "2c62073445127d3fe9e169a6368c925508d6c7f8e9f312bd9541c37abc6f9b51",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM6a-050",
+      "archive": {
+       "path": "data-asia/SM/SM6a/050.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-sm6a",
+    "updated_at": "2026-10-03T06:06:42.826112+00:00",
+    "data_status": "pending",
+    "provider_id": "SM6a-050",
+    "rarity_tier": 17,
+    "search_text": "ワタル♢ 050 SM6a-050 sm6a050",
+    "canonical_id": "pokemon-tcgdex-ja-sm6a-050",
+    "official_card_number": "050"
+   },
+   "images": 0,
+   "printing": {
+    "id": 846944,
+    "rarity": "Rare Holo",
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-sm6a-050",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM6a-050",
+     "sourceHash": "3c634e526cde8f99c80d5a4ed33c68e4ea28ab6d19f32dd942afb9d935142df5",
+     "manifestHash": "2c62073445127d3fe9e169a6368c925508d6c7f8e9f312bd9541c37abc6f9b51",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM6a-050",
+      "archive": {
+       "path": "data-asia/SM/SM6a/050.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-sm6a",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/SM6a-050",
+    "updated_at": "2026-10-03T06:06:42.826112+00:00",
+    "data_status": "pending",
+    "provider_id": "SM6a-050",
+    "rarity_code": "Rare Holo",
+    "rights_note": null,
+    "rarity_label": "Rare Holo",
+    "release_date": "2018-04-06",
+    "source_locale": "ja-JP",
+    "local_set_code": "SM6a",
+    "local_card_number": "050",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-sm6a-050",
+    "aliases": [
+     "SM6a-050",
+     "ワタル♢"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ワタル♢",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-03T06:06:42.826112+00:00"
+   }
+  },
+  {
+   "card": {
+    "id": "pokemon-tcgdex-ja-sm8b-150",
+    "rarity": null,
+    "source": "tcgdex-ja",
+    "aliases": [
+     "SM8b-150"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ユニットエネルギー闘悪妖",
+    "name_ko": null,
+    "name_zh": null,
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM8b-150",
+     "sourceHash": "f4235cfe660541243febec20ba77680b28dfcaf7a2c61c5347409ae1393ba5b2",
+     "manifestHash": "c051fd08e9ede9d8e6badbdc49259e5c47eeb8ff25ae12513712422d0a7bf5fa",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM8b-150",
+      "archive": {
+       "path": "data-asia/SM/SM8b/150.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "series_id": "pokemon-tcgdex-ja-sm8b",
+    "updated_at": "2026-10-03T06:07:46.520655+00:00",
+    "data_status": "pending",
+    "provider_id": "SM8b-150",
+    "rarity_tier": null,
+    "search_text": "ユニットエネルギー闘悪妖 150 SM8b-150 sm8b150",
+    "canonical_id": "pokemon-tcgdex-ja-sm8b-150",
+    "official_card_number": "150"
+   },
+   "images": 0,
+   "printing": {
+    "id": 848330,
+    "rarity": null,
+    "region": "JP",
+    "source": "tcgdex-ja",
+    "card_id": "pokemon-tcgdex-ja-sm8b-150",
+    "language": "ja-JP",
+    "metadata": {
+     "seedHash": "68d222e4ee36d9d50486088b6d54956123e8f5971adcba385c88a4cd293b73f9",
+     "tcgdexId": "SM8b-150",
+     "sourceHash": "f4235cfe660541243febec20ba77680b28dfcaf7a2c61c5347409ae1393ba5b2",
+     "manifestHash": "c051fd08e9ede9d8e6badbdc49259e5c47eeb8ff25ae12513712422d0a7bf5fa",
+     "sourceEvidence": {
+      "url": "https://api.tcgdex.net/v2/ja/cards/SM8b-150",
+      "archive": {
+       "path": "data-asia/SM/SM8b/150.ts",
+       "commit": "c5c0a8a63fe81746d05b9c95e8f51ed6931f7e78",
+       "repository": "tcgdex/cards-database"
+      },
+      "urlType": "derived-provider-endpoint",
+      "observedAt": "2026-10-03T06:04:38.000Z",
+      "retrievedVia": "github-archive"
+     }
+    },
+    "image_url": null,
+    "series_id": "pokemon-tcgdex-ja-sm8b",
+    "source_url": "https://api.tcgdex.net/v2/ja/cards/SM8b-150",
+    "updated_at": "2026-10-03T06:07:46.520655+00:00",
+    "data_status": "pending",
+    "provider_id": "SM8b-150",
+    "rarity_code": null,
+    "rights_note": null,
+    "rarity_label": null,
+    "release_date": "2018-10-05",
+    "source_locale": "ja-JP",
+    "local_set_code": "SM8b",
+    "local_card_number": "150",
+    "image_rights_status": "not-provided",
+    "image_rehost_required": false,
+    "image_license_expires_at": null
+   },
+   "canonical": {
+    "id": "pokemon-tcgdex-ja-sm8b-150",
+    "aliases": [
+     "SM8b-150",
+     "ユニットエネルギー闘悪妖"
+    ],
+    "game_id": "pokemon",
+    "name_en": null,
+    "name_ja": "ユニットエネルギー闘悪妖",
+    "name_ko": null,
+    "name_zh": null,
+    "updated_at": "2026-10-03T06:07:46.520655+00:00"
+   }
+  }
+ ]
+}

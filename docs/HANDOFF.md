@@ -710,6 +710,15 @@
 - 結果：OFFICIAL_UNDER_OTHER_MARK 0；OFFICIAL_OMITS_REAL_CARD 7（S5I 084／085、S6H 084／085、S6K 084–086，官方商品頁圖檔名證實 SA 版 VMAX 卡號）；LIKELY_TCGDEX_ERROR 2（SM12a 184 官方為メルメタルGX SR、197 為ホミカ SR）；OFFICIAL_SAME_MARK_MATCH_ISSUE 16（官方同標記有，只是名稱寫法或缺卡號：S12a 基本能量 4、S8b モルペコV-UNION 7、SM5p 037／048、SM6a 050、SM6 094、SM8b 150）；UNRESOLVED 323（322 張結構上像官方資料庫漏收 S9 以前的 HR／UR，1 張 SM6 110 無法判斷）。
 - 待使用者決定：UNRESOLVED＋OMITS 是否比照 M6a 標示（不刪）；SM12a 184／197 以官方覆蓋；16 張用官方卡片 ID 對卡；M6 098／099 SR 可直接升級。TCGdex 稀有度標籤（道具／能量標 SR、「Rare Holo」）不可當定論。
 
+### 依序執行 92：日版 TCGdex 待核卡依官方抽查標示、覆蓋與對卡（ADR 0040，2026-10-14，桌電，已完成）
+
+- 使用者同意依序執行 91 的四項建議，全部以 gated SQL 寫入正式庫（`docs/evidence/audit-20261014/jp-pending-review-20261014.sql`，修改前快照 `…-before.json`，計數報告 `…-report.json`）：先整批回滾測試（寫入＋重播＋強制回滾）、再寫入、重播零異動，每個陳述式核對列數，沒有刪除任何列。
+- 項目 1：UNRESOLVED 323 張標 `officialListing: 'jp-not-listed'`（待日本官方確認），OMITS 7 張標 `'jp-search-omitted'`（新綠色標籤「官方商品頁已證實」，`listingBadge`／`listingNote`、`.listing-badge-confirmed`）；Printing 與卡片各 323／7，記檢查日期與證據路徑。無新 migration。
+- 項目 2：SM12a 184（メルメタルGX SR）、197（ホミカ SR）以官方資料覆蓋，舊名稱存 `nameJaBefore`、舊稀有度存 `rarityBeforeOfficial`；197 的推導中文名「霍米加的演奏」依據不成立，清為待補（舊值 `nameZhBefore`）；同步 aliases、search_text、canonical；升 verified、補官方卡圖。TCGdex 價格對這兩張會消失（`sameTcgdexName` 名稱不符），符合預期。
+- 項目 3：16 張記 `officialCardIds`；Prism Star 3 張（SM5p 037／048、SM6a 050）稀有度 Rare Holo → Rare Prism Star；一對一的 9 張升 verified（SM8b 150 官方無稀有度，Printing 為 incomplete）並補官方卡圖；莫魯貝可 V-UNION 7 張無法一對一，兩個官方 ID 都記上、標 `jp-matched-unnumbered`、維持 pending、不補圖。
+- 項目 4：M6 098／099 重抓官方頁 50539／50540 核對後升 verified。
+- 寫入後 ANALYZE `tcg_cards`／`tcg_printings`／`card_images`／`tcg_canonical_cards`。`tcgdex-ja` pending 卡 415 → 402。Node 364/364（先前記的 365 為誤記，8b45fa1 只在既有測試加斷言）。
+
 下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

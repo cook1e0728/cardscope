@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-14",
+  "adr": "docs/adr/0040-jp-tcgdex-pending-official-review.md",
+  "sql": "docs/evidence/audit-20261014/jp-pending-review-20261014.sql",
+  "before": "docs/evidence/audit-20261014/jp-pending-review-20261014-before.json",
+  "procedure": "read-only dry-run counts; whole-batch rollback test (writes + replay + raise ROLLBACK_TEST_OK); real write with per-statement row-count assertions; replay of the same statements; ANALYZE tcg_cards/tcg_printings/card_images/tcg_canonical_cards",
+  "items": {
+    "1a_unresolved_jp_not_listed": { "dryRun": { "cards": 323, "printings": 323 }, "transaction": { "printings": 323, "cards": 323 }, "replay": 0 },
+    "1b_omits_jp_search_omitted": { "dryRun": { "cards": 7, "printings": 7 }, "transaction": { "printings": 7, "cards": 7 }, "replay": 0 },
+    "2_sm12a_184_197_official_overwrite": { "dryRun": { "cards": 2 }, "transaction": { "cards": 2, "printings": 2, "canonical": 2, "images": 2 }, "replay": 0 },
+    "3a_prism_star_rarity": { "dryRun": { "cards": 3 }, "transaction": { "printings": 3, "cards": 3 }, "replay": 0 },
+    "3b_one_to_one_match": { "dryRun": { "cards": 9, "images": 0 }, "transaction": { "cards": 9, "printings": 9, "images": 9, "printingsVerified": 8, "printingsIncomplete": 1 }, "replay": 0 },
+    "3c_v_union_pending": { "dryRun": { "cards": 7 }, "transaction": { "printings": 7, "cards": 7 }, "replay": 0 },
+    "4_m6_098_099_verified": { "dryRun": { "cards": 2 }, "transaction": { "cards": 2, "printings": 2 }, "replay": 0 }
+  },
+  "after": { "flaggedNotListed": 323, "flaggedSearchOmitted": 7, "vUnionPending": 7, "m6aNotListedUntouched": 35, "newCardImagesAdr0031": 11, "tcgdexJaPendingCards": "415 -> 402" },
+  "deleted": 0
+}

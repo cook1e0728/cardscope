@@ -198,3 +198,6 @@ body[data-view="game"] section.section:has(> #series),body[data-view="game"] .br
 /* 日本官方卡表未列、保留待確認的卡（M6a 104–135 等） */
 .badge.listing-badge,.cards .card .badge.listing-badge{background:#FFF4D6;color:#6B4A00;border:1px solid #E8C770}
 .listing-note{color:#6B4A00}
+/* 官方商品頁已證實、但官方卡片搜尋沒收的卡（S5I／S6H／S6K 的 SA 版 VMAX） */
+.badge.listing-badge.listing-badge-confirmed,.cards .card .badge.listing-badge.listing-badge-confirmed{background:#E4F2E7;color:#1F4D2B;border:1px solid #9CC8A6}
+.listing-note.listing-note-confirmed{color:#1F4D2B}
