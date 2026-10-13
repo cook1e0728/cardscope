@@ -51,6 +51,8 @@ test('ADR 0038: English card IDs follow the set map number format, and English n
   assert.equal(tcgdexEnCardId({ tcgdex: 'xy3', numberFormat: 'none' }, '55a'), 'xy3-55a');
   assert.equal(tcgdexEnCardId({ tcgdex: 'x', numberFormat: 'unknown' }, '1'), null);
   assert.equal(tcgdexEnCardId(undefined, '1'), null);
+  assert.equal(tcgdexEnCardId({ tcgdex: 'sv10.5b', numberFormat: 'pad3', numberSource: 'providerId' }, '60', 'zsv10pt5-80'), 'sv10.5b-080', 'the provider ID wins where the printed number is wrong');
+  assert.equal(tcgdexEnCardId({ tcgdex: 'sv10.5b', numberFormat: 'pad3', numberSource: 'providerId' }, '60', null), null);
   assert.equal(sameTcgdexName('Shuckle-GX', 'Shuckle GX', 'en'), true);
   assert.equal(sameTcgdexName('Flabébé', 'flabebe', 'en'), true);
   assert.equal(sameTcgdexName('Garchomp LV.X', 'Garchomp', 'en'), true);

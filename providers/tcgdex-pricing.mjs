@@ -19,8 +19,9 @@ export function tcgdexCardUrl(providerCardId, language = 'ja') {
 const TCGPLAYER_META = new Set(['unit', 'updated']);
 
 // ADR 0038: TCGdex English card ID from a data/tcgdex-en-set-map.json entry. none = number as is; padN = first run of digits left-padded to N.
-export function tcgdexEnCardId(entry, number) {
-  const value = clean(number);
+// numberSource 'providerId': the source's printed number is wrong for that set, so the number after the provider ID's last hyphen is used.
+export function tcgdexEnCardId(entry, number, providerId = null) {
+  const value = entry?.numberSource === 'providerId' ? clean(String(providerId ?? '').split('-').pop()) : clean(number);
   if (!entry?.tcgdex || !value) return null;
   if (entry.numberFormat === 'none') return `${entry.tcgdex}-${value}`;
   const pad = /^pad(\d)$/.exec(entry.numberFormat || '');

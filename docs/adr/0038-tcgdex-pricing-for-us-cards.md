@@ -19,7 +19,8 @@ status: accepted
 ## 盤點結果（2026-10-13）
 
 - 美版 176 個系列、20,634 張；對應 171 個系列，其中 20,145 張卡號與英文名相同（全體 97.6%）。卡號格式只有兩種：`none`（142 系列，卡號原樣）、`pad3`（29 系列，swsh9 以後與 svp，數字補到 3 位）。
-- 未對應 5 個：`zsv10pt5`（我們的 60 號重複，疑似 Antique Cover Fossil 卡號寫錯）、`cel25c`／`me55c`（重印沿用原卡號）、`ex10`（27 張 Unown 在 TCGdex 另一個系列 `exu`）、`sve`（基本能量名稱寫法不同）。
+- `zsv10pt5`（黑色閃電）：上游 PokemonTCG 資料把 Antique Cover Fossil（`zsv10pt5-80`）標成 60 號，與 Escavalier 重複；資料庫照來源存，不另改（下次同步會寫回）。對照表以 `numberSource: "providerId"` 改用 provider ID 尾碼，172 張全部對上 TCGdex `sv10.5b`，已加入（共 172 個系列）。
+- 未對應 4 個：`cel25c`／`me55c`（重印沿用原卡號）、`ex10`（27 張 Unown 在 TCGdex 另一個系列 `exu`）、`sve`（基本能量名稱寫法不同）。
 
 ## Consequences
 

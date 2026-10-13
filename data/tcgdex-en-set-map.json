@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-10-13T12:18:17.954Z",
-  "rule": "Key = our US series provider_id (tcg_series.provider_id where source=pokemontcg, game_id=pokemon, region=US). Value.tcgdex = TCGdex English set id. TCGdex price card id = <tcgdex>-<localId>, where localId = f(our tcg_cards.official_card_number) and f is value.numberFormat: none = use our number unchanged (examples: 4 -> base1-4; 55a -> xy3-55a; XY17 -> xyp-XY17; DP45 -> dpp-DP45; TG01 -> swsh9tg-TG01). pad3 = left-pad the first run of digits to 3 with zeros and keep any alphabetic prefix/suffix unchanged (examples: 6 -> sv03.5-006; 152 -> sv01-152; 82 -> me01-082). pad2, pad4 and pad3num exist in the vocabulary (same padding rules; pad3num pads only all-digit numbers) but no set needed them. Mapped = exactly one TCGdex set, at least 90% of our cards matched there by number AND name, our numbers unique within the series, runner-up candidate below 50% of the best, and no other series maps to the same TCGdex set. matched = our card number exists in the TCGdex set and the English names are equal after NFKC, case-folding, whitespace collapse, curly/straight apostrophes and diacritics folding, plus a punctuation-insensitive fallback (hyphen vs space such as \"Shuckle-GX\" vs \"Shuckle GX\", \"LV.X\" suffix dropped). strictMatched counts only the stricter comparison. missing = TCGdex has no card with that localId (for example numbers with an \"a\" suffix such as 125a, or promo numbers BW004). different = number exists but the names differ even after the fallback (mostly Trainer name suffixes such as \"Boss's Orders (Giovanni)\", or \"Groudon ★\" vs \"Groudon Star\"); the card is almost certainly the same, but callers may want to verify the name before showing a price. Callers should look up the card, treat a 404 as no price, and only use the pricing block (tcgplayer USD / cardmarket EUR) of the returned card.",
+  "rule": "Key = our US series provider_id (tcg_series.provider_id where source=pokemontcg, game_id=pokemon, region=US). Value.tcgdex = TCGdex English set id. TCGdex price card id = <tcgdex>-<localId>, where localId = f(our tcg_cards.official_card_number) and f is value.numberFormat: none = use our number unchanged (examples: 4 -> base1-4; 55a -> xy3-55a; XY17 -> xyp-XY17; DP45 -> dpp-DP45; TG01 -> swsh9tg-TG01). pad3 = left-pad the first run of digits to 3 with zeros and keep any alphabetic prefix/suffix unchanged (examples: 6 -> sv03.5-006; 152 -> sv01-152; 82 -> me01-082). pad2, pad4 and pad3num exist in the vocabulary (same padding rules; pad3num pads only all-digit numbers) but no set needed them. Mapped = exactly one TCGdex set, at least 90% of our cards matched there by number AND name, our numbers unique within the series, runner-up candidate below 50% of the best, and no other series maps to the same TCGdex set. matched = our card number exists in the TCGdex set and the English names are equal after NFKC, case-folding, whitespace collapse, curly/straight apostrophes and diacritics folding, plus a punctuation-insensitive fallback (hyphen vs space such as \"Shuckle-GX\" vs \"Shuckle GX\", \"LV.X\" suffix dropped). strictMatched counts only the stricter comparison. missing = TCGdex has no card with that localId (for example numbers with an \"a\" suffix such as 125a, or promo numbers BW004). different = number exists but the names differ even after the fallback (mostly Trainer name suffixes such as \"Boss's Orders (Giovanni)\", or \"Groudon ★\" vs \"Groudon Star\"); the card is almost certainly the same, but callers may want to verify the name before showing a price. Callers should look up the card, treat a 404 as no price, and only use the pricing block (tcgplayer USD / cardmarket EUR) of the returned card. numberSource providerId = take the number from our printing provider_id after the last hyphen instead of official_card_number (used where the source number is wrong).",
   "sets": {
     "base1": {
       "tcgdex": "base1",
@@ -1369,6 +1369,16 @@
       "missing": 3,
       "different": 0,
       "strictMatched": 157
+    },
+    "zsv10pt5": {
+      "tcgdex": "sv10.5b",
+      "numberFormat": "pad3",
+      "numberSource": "providerId",
+      "matched": 172,
+      "missing": 0,
+      "different": 0,
+      "strictMatched": 172,
+      "note": "Added 2026-10-13 by the lead: the PokemonTCG source numbers Antique Cover Fossil (zsv10pt5-80) as 60, duplicating Escavalier; the number is taken from the provider ID suffix instead (all 172 match sv10.5b)."
     }
   }
 }
