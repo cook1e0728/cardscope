@@ -1,0 +1,3687 @@
+{
+ "generatedAt": "2026-10-14",
+ "scope": "public.tcg_series/tcg_cards game_id=pokemon region=JP vs pokemon-card.com card search (text facts only)",
+ "method": {
+  "counts": "resultAPI.php?pg=<official code> page 1 hitCnt for every DB official code and every code seen in product scans",
+  "discovery": "product ids 701-975 plus sidebar ids scanned fresh (page 1); ids 1-700 taken from earlier committed scans (2026-10-04/09 evidence files)",
+  "ids": "full list pages fetched for every code whose count differs or is not in DB; card numbers for official ids taken from earlier committed detail caches (fetched 2026-10-02..10-09) plus 3 fresh detail pages",
+  "recentFieldCheck": "fresh list and detail pages for MF, M6a, M6, M5, M4 (537 detail pages)"
+ },
+ "totals": {
+  "dbSeries": 304,
+  "dbOfficialCodes": 299,
+  "dbCards": 20794,
+  "officialCodesCounted": 318,
+  "countMatched": 182,
+  "countMismatched": 117,
+  "missingCodesWithCards": 17,
+  "missingCodesZeroHit": 2
+ },
+ "note": "DB series SA-2..SA-5 and SCS-2 are grouped under official codes SA and SCS (ADR 0032); the count compares all cards incl. -v<k> version cards against official detail pages.",
+ "missingSeries": [
+  {
+   "code": "ENE",
+   "officialCount": 85,
+   "officialProducts": [
+    "ポケモンカードゲームDP エントリーパック",
+    "ポケモンカードゲームDP 構築ハーフデッキ「守りのトリデプス」",
+    "ポケモンカードゲームDP 構築ハーフデッキ「攻めのラムパルド」",
+    "ポケモンカードゲームDP 構築スタンダードデッキ「パルキアLV.X」"
+   ],
+   "releaseDate": null,
+   "note": "Basic energy pages with no card number, shared by about 120 deck/starter products; not a series."
+  },
+  {
+   "code": "WCP",
+   "officialCount": 108,
+   "officialProducts": [
+    "ポケモンカードゲーム　ワールドチャンピオンズパック"
+   ],
+   "releaseDate": "2007-07-05",
+   "note": "World Champions Pack (energy and special energy, 108 pages); not imported."
+  },
+  {
+   "code": "DPP",
+   "officialCount": 164,
+   "officialProducts": [
+    "ポケモンカードゲームDP　映画10周年記念　プレミアムシート",
+    "「ギンガの覇道」発売記念大会"
+   ],
+   "releaseDate": null,
+   "note": "DP promo cards (movie premium sheet, tournament prizes); not imported."
+  },
+  {
+   "code": "DP",
+   "officialCount": 0,
+   "officialProducts": [
+    "ポケモンカードゲームDP エントリーパック’08",
+    "ポケモンカードゲームDP エントリーパック’08 DX",
+    "ポケモンカードゲームDP　エントリーパック’08：ドダイトスデッキ",
+    "ポケモンカードゲームDP　エントリーパック’08：ゴウカザルデッキ"
+   ],
+   "releaseDate": null,
+   "note": "pg=DP returns 0 results (not a card list)."
+  },
+  {
+   "code": "EP08",
+   "officialCount": 43,
+   "officialProducts": [
+    "ポケモンカードゲームDP エントリーパック’08 DX",
+    "ポケモンカードゲームDP エントリーパック’08DX：ライチュウデッキ"
+   ],
+   "releaseDate": "2007-11-30",
+   "note": "Entry Pack 08 DX; DB has DPt-EP* entry packs but no EP08."
+  },
+  {
+   "code": "DPs-B",
+   "officialCount": 92,
+   "officialProducts": [
+    "ポケモンカードゲームDP 拡張パック「破空の激闘」",
+    "（破空の激闘、ギラティナVSディアルガ）",
+    "どうぐつき",
+    "ポケモンバトルツアー09 チャレンジデッキ"
+   ],
+   "releaseDate": "2008-07-10",
+   "note": "Folder of DP expansion pack Kuuhaku no Gekito (product 28, 2008-07-10) plus decks; DB has no series with that name; needs verification."
+  },
+  {
+   "code": "DPs-S",
+   "officialCount": 0,
+   "officialProducts": [
+    "ポケモンカードゲームDP 対戦スターターパック「ギラティナVSディアルガ」",
+    "ポケモンカードゲームDP 対戦スターターパック「ギラティナVSディアルガ」(ギラティナデッキ)",
+    "ポケモンカードゲームDP 対戦スターターパック「ギラティナVSディアルガ」(ディアルガデッキ)",
+    "（破空の激闘、ギラティナVSディアルガ）"
+   ],
+   "releaseDate": null,
+   "note": "pg=DPs-S returns 0 results."
+  },
+  {
+   "code": "PPP",
+   "officialCount": 7,
+   "officialProducts": [
+    "どうぐつき"
+   ],
+   "releaseDate": null,
+   "note": "Promo (7 pages, product dougutsuki); not imported."
+  },
+  {
+   "code": "DPtP",
+   "officialCount": 65,
+   "officialProducts": [
+    "ポケモンバトルツアー09 チャレンジデッキ",
+    "「ギンガの覇道」発売記念大会"
+   ],
+   "releaseDate": null,
+   "note": "DPt promo cards (Battle Tour 09 challenge deck, tournament commemoratives); not imported."
+  },
+  {
+   "code": "PW",
+   "officialCount": 2,
+   "officialProducts": [
+    "ポケモンカードゲーム ピカチュウ ワールド",
+    "ポケモンカードゲーム ピカチュウ ワールド セブン-イレブン・ポケモンセンター オリジナルバージョン"
+   ],
+   "releaseDate": "2010-07-08",
+   "note": "Pikachu World (2 pages); not imported."
+  },
+  {
+   "code": "MG",
+   "officialCount": 34,
+   "officialProducts": [
+    "ポケモンカードゲームBW 30枚デッキ対戦set「ミュウツーVSゲノセクト」"
+   ],
+   "releaseDate": "2013-07-13",
+   "note": "Deliberately excluded: two decks share numbers 001-016 (ADR 0032 verification, HANDOFF 44)."
+  },
+  {
+   "code": "SM-XY",
+   "officialCount": 12,
+   "officialProducts": [
+    "「プレミアムトレーナーボックス」",
+    "XYフォーマット"
+   ],
+   "releaseDate": null,
+   "note": "Deliberately excluded: no official series name (HANDOFF 44)."
+  },
+  {
+   "code": "XY",
+   "officialCount": 387,
+   "officialProducts": [
+    "ハイクラスパック「THE BEST OF XY」",
+    "ポケモンカードゲーム サン&ムーン  プレミアムトレーナーボックス ウルトラサン・ウルトラムーン",
+    "ポケモンカードゲーム サン&ムーン デッキビルドBOX「ウルトラムーン」",
+    "ポケモンカードゲーム サン&ムーン デッキビルドBOX「ウルトラサン」"
+   ],
+   "releaseDate": "2017-04-21 (THE BEST OF XY; 4 other products too)",
+   "note": "Deliberately excluded: shared reprint mark, 42 same-number different-name numbers (HANDOFF 44)."
+  },
+  {
+   "code": "BW",
+   "officialCount": 12,
+   "officialProducts": [
+    "「エクストラレギュレーションBOX」"
+   ],
+   "releaseDate": "2019-10-04",
+   "note": "Deliberately excluded: no official series name (HANDOFF 44)."
+  },
+  {
+   "code": "SC2",
+   "officialCount": 21,
+   "officialProducts": [
+    "スターターセットVMAX リザードン"
+   ],
+   "releaseDate": null,
+   "note": "Product 726 Starter Set VMAX Charizard with folder SC2 (21 pages); DB has SCS (Charizard, 21) from product 708. Possibly a second mark of the same deck; needs verification."
+  },
+  {
+   "code": "S8a-G",
+   "officialCount": 16,
+   "officialProducts": [
+    "25th ANNIVERSARY GOLDEN BOX"
+   ],
+   "releaseDate": null,
+   "note": "25th ANNIVERSARY GOLDEN BOX (product 860, 16 pages); not imported; release date not verified."
+  },
+  {
+   "code": "CLF",
+   "officialCount": 2,
+   "officialProducts": [
+    "ポケモンカードゲーム Classic"
+   ],
+   "releaseDate": "2023-03-25",
+   "note": "Classic (basic energy, 2 pages); not imported."
+  },
+  {
+   "code": "CLL",
+   "officialCount": 2,
+   "officialProducts": [
+    "ポケモンカードゲーム Classic"
+   ],
+   "releaseDate": "2023-03-25",
+   "note": "Classic (basic energy, 2 pages); not imported."
+  },
+  {
+   "code": "CLK",
+   "officialCount": 2,
+   "officialProducts": [
+    "ポケモンカードゲーム Classic"
+   ],
+   "releaseDate": "2023-03-25",
+   "note": "Classic (basic energy, 2 pages); not imported."
+  }
+ ],
+ "countMismatches": [
+  {
+   "code": "20th",
+   "dbSeriesCodes": [
+    "20th"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 84,
+   "dbCount": 77,
+   "diff": -7,
+   "officialMaxNumber": "077",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 7
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BGSt",
+   "dbSeriesCodes": [
+    "BGSt"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 13,
+   "diff": -3,
+   "officialMaxNumber": "020",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BGSv",
+   "dbSeriesCodes": [
+    "BGSv"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 13,
+   "diff": -3,
+   "officialMaxNumber": "020",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BKB",
+   "dbSeriesCodes": [
+    "BKB"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 20,
+   "dbCount": 18,
+   "diff": -2,
+   "officialMaxNumber": "018",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BKR",
+   "dbSeriesCodes": [
+    "BKR"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 20,
+   "dbCount": 18,
+   "diff": -2,
+   "officialMaxNumber": "018",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BKW",
+   "dbSeriesCodes": [
+    "BKW"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 20,
+   "dbCount": 18,
+   "diff": -2,
+   "officialMaxNumber": "018",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BKZ",
+   "dbSeriesCodes": [
+    "BKZ"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 20,
+   "dbCount": 18,
+   "diff": -2,
+   "officialMaxNumber": "018",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BTV",
+   "dbSeriesCodes": [
+    "BTV"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 26,
+   "dbCount": 23,
+   "diff": -3,
+   "officialMaxNumber": "021",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "BW10-B",
+   "dbSeriesCodes": [
+    "BW10-B"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 97,
+   "dbCount": 93,
+   "diff": -4,
+   "officialMaxNumber": "093",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 4
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "CP4",
+   "dbSeriesCodes": [
+    "CP4"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 140,
+   "dbCount": 131,
+   "diff": -9,
+   "officialMaxNumber": "131",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 9
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "GBR",
+   "dbSeriesCodes": [
+    "GBR"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 18,
+   "dbCount": 15,
+   "diff": -3,
+   "officialMaxNumber": "015",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSm",
+   "dbSeriesCodes": [
+    "HSm"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 19,
+   "dbCount": 17,
+   "diff": -2,
+   "officialMaxNumber": "037",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSp",
+   "dbSeriesCodes": [
+    "HSp"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 19,
+   "dbCount": 17,
+   "diff": -2,
+   "officialMaxNumber": "037",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSPm",
+   "dbSeriesCodes": [
+    "HSPm"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 14,
+   "diff": -2,
+   "officialMaxNumber": "034",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSPp",
+   "dbSeriesCodes": [
+    "HSPp"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 14,
+   "diff": -2,
+   "officialMaxNumber": "034",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSPt",
+   "dbSeriesCodes": [
+    "HSPt"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 14,
+   "diff": -2,
+   "officialMaxNumber": "034",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSt",
+   "dbSeriesCodes": [
+    "HSt"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 19,
+   "dbCount": 17,
+   "diff": -2,
+   "officialMaxNumber": "037",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSZm",
+   "dbSeriesCodes": [
+    "HSZm"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 14,
+   "diff": -2,
+   "officialMaxNumber": "034",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSZp",
+   "dbSeriesCodes": [
+    "HSZp"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 14,
+   "diff": -2,
+   "officialMaxNumber": "034",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HSZt",
+   "dbSeriesCodes": [
+    "HSZt"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 16,
+   "dbCount": 14,
+   "diff": -2,
+   "officialMaxNumber": "034",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "HXY",
+   "dbSeriesCodes": [
+    "HXY"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 51,
+   "dbCount": 45,
+   "diff": -6,
+   "officialMaxNumber": "039",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 6
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "KK",
+   "dbSeriesCodes": [
+    "KK"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 19,
+   "dbCount": 18,
+   "diff": -1,
+   "officialMaxNumber": "018",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "KLD",
+   "dbSeriesCodes": [
+    "KLD"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 18,
+   "dbCount": 15,
+   "diff": -3,
+   "officialMaxNumber": "015",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "L1-Bhg",
+   "dbSeriesCodes": [
+    "L1-Bhg"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 69,
+   "dbCount": 68,
+   "diff": -1,
+   "officialMaxNumber": "070",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "L1-Bss",
+   "dbSeriesCodes": [
+    "L1-Bss"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 69,
+   "dbCount": 68,
+   "diff": -1,
+   "officialMaxNumber": "070",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "L2-B",
+   "dbSeriesCodes": [
+    "L2-B"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 77,
+   "dbCount": 74,
+   "diff": -3,
+   "officialMaxNumber": "080",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "L3-B",
+   "dbSeriesCodes": [
+    "L3-B"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 77,
+   "dbCount": 74,
+   "diff": -3,
+   "officialMaxNumber": "080",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "LL",
+   "dbSeriesCodes": [
+    "LL"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 39,
+   "dbCount": 38,
+   "diff": -1,
+   "officialMaxNumber": "040",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "M-P",
+   "dbSeriesCodes": [
+    "M-P"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 156,
+   "dbCount": 126,
+   "diff": -30,
+   "officialMaxNumber": "165",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 30
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "M6",
+   "dbSeriesCodes": [
+    "M6"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 110,
+   "dbCount": 113,
+   "diff": 3,
+   "officialMaxNumber": "113",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGE_WITHOUT_PARSEABLE_NUMBER (dual-number page or numberless energy; DB holds them as separate rows)",
+     "pages": 3
+    },
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 6,
+     "numbers": [
+      "071",
+      "072",
+      "073",
+      "074",
+      "075",
+      "076"
+     ],
+     "statuses": {
+      "pending": 6
+     },
+     "rarities": {
+      "U": 6
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "M6a",
+   "dbSeriesCodes": [
+    "M6a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 140,
+   "dbCount": 176,
+   "diff": 36,
+   "officialMaxNumber": "165",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGE_WITHOUT_PARSEABLE_NUMBER (dual-number page or numberless energy; DB holds them as separate rows)",
+     "pages": 9
+    },
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 45,
+     "numbers": [
+      "104",
+      "105",
+      "106",
+      "107",
+      "108",
+      "109",
+      "110",
+      "111",
+      "112",
+      "113",
+      "114",
+      "115",
+      "116",
+      "117",
+      "118",
+      "119",
+      "120",
+      "121",
+      "122",
+      "123",
+      "124",
+      "125",
+      "126",
+      "127",
+      "128",
+      "129",
+      "130",
+      "131",
+      "132",
+      "133",
+      "134",
+      "135",
+      "151",
+      "152",
+      "B",
+      "DAR",
+      "FIG",
+      "FIR",
+      "G",
+      "GRA",
+      "LIG",
+      "MET",
+      "PSY",
+      "R",
+      "WAT"
+     ],
+     "statuses": {
+      "pending": 45
+     },
+     "rarities": {
+      "AR": 20,
+      "SAR": 10,
+      "null": 15
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "MDB",
+   "dbSeriesCodes": [
+    "MDB"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 51,
+   "dbCount": 46,
+   "diff": -5,
+   "officialMaxNumber": "046",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 5
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "MMB-P",
+   "dbSeriesCodes": [
+    "MMB-P"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 58,
+   "dbCount": 49,
+   "diff": -9,
+   "officialMaxNumber": "049",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 9
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "MMB-S",
+   "dbSeriesCodes": [
+    "MMB-S"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 58,
+   "dbCount": 49,
+   "diff": -9,
+   "officialMaxNumber": "049",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 9
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "PBG",
+   "dbSeriesCodes": [
+    "PBG"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 18,
+   "dbCount": 16,
+   "diff": -2,
+   "officialMaxNumber": "016",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "PPD",
+   "dbSeriesCodes": [
+    "PPD"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 19,
+   "dbCount": 17,
+   "diff": -2,
+   "officialMaxNumber": "017",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S-P",
+   "dbSeriesCodes": [
+    "S-P"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 334,
+   "dbCount": 316,
+   "diff": -18,
+   "officialMaxNumber": "350",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 18
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S10a",
+   "dbSeriesCodes": [
+    "S10a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 148,
+   "dbCount": 99,
+   "diff": -49,
+   "officialMaxNumber": "099",
+   "causes": [
+    {
+     "cause": "OFFICIAL_SAME_NUMBER_SAME_NAME_PAGES_NOT_SPLIT_IN_TCGDEX_SERIES (ADR 0035 not applied)",
+     "pages": 49
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S10b",
+   "dbSeriesCodes": [
+    "S10b"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 101,
+   "dbCount": 93,
+   "diff": -8,
+   "officialMaxNumber": "093",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 8
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S11a",
+   "dbSeriesCodes": [
+    "S11a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 140,
+   "dbCount": 94,
+   "diff": -46,
+   "officialMaxNumber": "094",
+   "causes": [
+    {
+     "cause": "OFFICIAL_SAME_NUMBER_SAME_NAME_PAGES_NOT_SPLIT_IN_TCGDEX_SERIES (ADR 0035 not applied)",
+     "pages": 46
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S12a",
+   "dbSeriesCodes": [
+    "S12a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 351,
+   "dbCount": 258,
+   "diff": -93,
+   "officialMaxNumber": "262",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 8
+    },
+    {
+     "cause": "OFFICIAL_SAME_NUMBER_SAME_NAME_PAGES_NOT_SPLIT_IN_TCGDEX_SERIES (ADR 0035 not applied)",
+     "pages": 89
+    },
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 4,
+     "numbers": [
+      "255",
+      "256",
+      "257",
+      "258"
+     ],
+     "statuses": {
+      "pending": 4
+     },
+     "rarities": {
+      "UR": 4
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S5I",
+   "dbSeriesCodes": [
+    "S5I"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 81,
+   "dbCount": 91,
+   "diff": 10,
+   "officialMaxNumber": "081",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 10,
+     "numbers": [
+      "082",
+      "083",
+      "084",
+      "085",
+      "086",
+      "087",
+      "088",
+      "089",
+      "090",
+      "091"
+     ],
+     "statuses": {
+      "pending": 10
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 4
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S6H",
+   "dbSeriesCodes": [
+    "S6H"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 83,
+   "dbCount": 95,
+   "diff": 12,
+   "officialMaxNumber": "083",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 12,
+     "numbers": [
+      "084",
+      "085",
+      "086",
+      "087",
+      "088",
+      "089",
+      "090",
+      "091",
+      "092",
+      "093",
+      "094",
+      "095"
+     ],
+     "statuses": {
+      "pending": 12
+     },
+     "rarities": {
+      "HR": 7,
+      "SR": 5
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S6K",
+   "dbSeriesCodes": [
+    "S6K"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 83,
+   "dbCount": 95,
+   "diff": 12,
+   "officialMaxNumber": "083",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 12,
+     "numbers": [
+      "084",
+      "085",
+      "086",
+      "087",
+      "088",
+      "089",
+      "090",
+      "091",
+      "092",
+      "093",
+      "094",
+      "095"
+     ],
+     "statuses": {
+      "pending": 12
+     },
+     "rarities": {
+      "HR": 7,
+      "SR": 5
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S7D",
+   "dbSeriesCodes": [
+    "S7D"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 79,
+   "dbCount": 90,
+   "diff": 11,
+   "officialMaxNumber": "079",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 11,
+     "numbers": [
+      "080",
+      "081",
+      "082",
+      "083",
+      "084",
+      "085",
+      "086",
+      "087",
+      "088",
+      "089",
+      "090"
+     ],
+     "statuses": {
+      "pending": 11
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 5
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S8",
+   "dbSeriesCodes": [
+    "S8"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 115,
+   "dbCount": 129,
+   "diff": 14,
+   "officialMaxNumber": "115",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 14,
+     "numbers": [
+      "116",
+      "117",
+      "118",
+      "119",
+      "120",
+      "121",
+      "122",
+      "123",
+      "124",
+      "125",
+      "126",
+      "127",
+      "128",
+      "129"
+     ],
+     "statuses": {
+      "pending": 14
+     },
+     "rarities": {
+      "HR": 8,
+      "SR": 6
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S8a",
+   "dbSeriesCodes": [
+    "S8a"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 34,
+   "dbCount": 25,
+   "diff": -9,
+   "officialMaxNumber": "029",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 9
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S8b",
+   "dbSeriesCodes": [
+    "S8b"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 279,
+   "dbCount": 285,
+   "diff": 6,
+   "officialMaxNumber": "277",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 10
+    },
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 16,
+     "numbers": [
+      "056",
+      "057",
+      "058",
+      "059",
+      "226",
+      "227",
+      "228",
+      "229",
+      "278",
+      "279",
+      "280",
+      "281",
+      "282",
+      "283",
+      "284",
+      "285"
+     ],
+     "statuses": {
+      "verified": 1,
+      "pending": 15
+     },
+     "rarities": {
+      "RRR": 4,
+      "null": 4,
+      "SR": 8
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "S9a",
+   "dbSeriesCodes": [
+    "S9a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 138,
+   "dbCount": 93,
+   "diff": -45,
+   "officialMaxNumber": "093",
+   "causes": [
+    {
+     "cause": "OFFICIAL_SAME_NUMBER_SAME_NAME_PAGES_NOT_SPLIT_IN_TCGDEX_SERIES (ADR 0035 not applied)",
+     "pages": 45
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SA",
+   "dbSeriesCodes": [
+    "SA",
+    "SA-2",
+    "SA-3",
+    "SA-4",
+    "SA-5"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 122,
+   "dbCount": 117,
+   "diff": -5,
+   "officialMaxNumber": "024",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 5
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SGG",
+   "dbSeriesCodes": [
+    "SGG"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 21,
+   "dbCount": 20,
+   "diff": -1,
+   "officialMaxNumber": "020",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SGI",
+   "dbSeriesCodes": [
+    "SGI"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 24,
+   "dbCount": 23,
+   "diff": -1,
+   "officialMaxNumber": "023",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SH",
+   "dbSeriesCodes": [
+    "SH"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 78,
+   "dbCount": 72,
+   "diff": -6,
+   "officialMaxNumber": "053",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 6
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SI",
+   "dbSeriesCodes": [
+    "SI"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 561,
+   "dbCount": 545,
+   "diff": -16,
+   "officialMaxNumber": "419",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 16
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SLD",
+   "dbSeriesCodes": [
+    "SLD"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 21,
+   "dbCount": 20,
+   "diff": -1,
+   "officialMaxNumber": "020",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SLL",
+   "dbSeriesCodes": [
+    "SLL"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 22,
+   "dbCount": 21,
+   "diff": -1,
+   "officialMaxNumber": "021",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM10",
+   "dbSeriesCodes": [
+    "SM10"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 107,
+   "dbCount": 116,
+   "diff": 9,
+   "officialMaxNumber": "107",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 9,
+     "numbers": [
+      "108",
+      "109",
+      "110",
+      "111",
+      "112",
+      "113",
+      "114",
+      "115",
+      "116"
+     ],
+     "statuses": {
+      "pending": 9
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM10a",
+   "dbSeriesCodes": [
+    "SM10a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 62,
+   "dbCount": 69,
+   "diff": 7,
+   "officialMaxNumber": "062",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "063",
+      "064",
+      "065",
+      "066",
+      "067",
+      "068",
+      "069"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM10b",
+   "dbSeriesCodes": [
+    "SM10b"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 62,
+   "dbCount": 69,
+   "diff": 7,
+   "officialMaxNumber": "062",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "063",
+      "064",
+      "065",
+      "066",
+      "067",
+      "068",
+      "069"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM11",
+   "dbSeriesCodes": [
+    "SM11"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 106,
+   "dbCount": 115,
+   "diff": 9,
+   "officialMaxNumber": "106",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 9,
+     "numbers": [
+      "107",
+      "108",
+      "109",
+      "110",
+      "111",
+      "112",
+      "113",
+      "114",
+      "115"
+     ],
+     "statuses": {
+      "pending": 9
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM11a",
+   "dbSeriesCodes": [
+    "SM11a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 73,
+   "dbCount": 80,
+   "diff": 7,
+   "officialMaxNumber": "073",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "074",
+      "075",
+      "076",
+      "077",
+      "078",
+      "079",
+      "080"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM11b",
+   "dbSeriesCodes": [
+    "SM11b"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 68,
+   "dbCount": 75,
+   "diff": 7,
+   "officialMaxNumber": "068",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "069",
+      "070",
+      "071",
+      "072",
+      "073",
+      "074",
+      "075"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM12",
+   "dbSeriesCodes": [
+    "SM12"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 108,
+   "dbCount": 117,
+   "diff": 9,
+   "officialMaxNumber": "108",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 9,
+     "numbers": [
+      "109",
+      "110",
+      "111",
+      "112",
+      "113",
+      "114",
+      "115",
+      "116",
+      "117"
+     ],
+     "statuses": {
+      "pending": 9
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM12a",
+   "dbSeriesCodes": [
+    "SM12a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 210,
+   "dbCount": 226,
+   "diff": 16,
+   "officialMaxNumber": "210",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 16,
+     "numbers": [
+      "211",
+      "212",
+      "213",
+      "214",
+      "215",
+      "216",
+      "217",
+      "218",
+      "219",
+      "220",
+      "221",
+      "222",
+      "223",
+      "224",
+      "225",
+      "226"
+     ],
+     "statuses": {
+      "pending": 16
+     },
+     "rarities": {
+      "HR": 9,
+      "SR": 7
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM1M",
+   "dbSeriesCodes": [
+    "SM1M"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 66,
+   "dbCount": 73,
+   "diff": 7,
+   "officialMaxNumber": "066",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "067",
+      "068",
+      "069",
+      "070",
+      "071",
+      "072",
+      "073"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM1p",
+   "dbSeriesCodes": [
+    "SM1p"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 63,
+   "dbCount": 68,
+   "diff": 5,
+   "officialMaxNumber": "058",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 5
+    },
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 10,
+     "numbers": [
+      "059",
+      "060",
+      "061",
+      "062",
+      "063",
+      "064",
+      "065",
+      "066",
+      "067",
+      "068"
+     ],
+     "statuses": {
+      "pending": 10
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 4
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM1S",
+   "dbSeriesCodes": [
+    "SM1S"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 66,
+   "dbCount": 73,
+   "diff": 7,
+   "officialMaxNumber": "066",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "067",
+      "068",
+      "069",
+      "070",
+      "071",
+      "072",
+      "073"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM2K",
+   "dbSeriesCodes": [
+    "SM2K"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 55,
+   "dbCount": 61,
+   "diff": 6,
+   "officialMaxNumber": "055",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 6,
+     "numbers": [
+      "056",
+      "057",
+      "058",
+      "059",
+      "060",
+      "061"
+     ],
+     "statuses": {
+      "pending": 6
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 2
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM2L",
+   "dbSeriesCodes": [
+    "SM2L"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 55,
+   "dbCount": 62,
+   "diff": 7,
+   "officialMaxNumber": "055",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "056",
+      "057",
+      "058",
+      "059",
+      "060",
+      "061",
+      "062"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM2p",
+   "dbSeriesCodes": [
+    "SM2p"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 61,
+   "dbCount": 65,
+   "diff": 4,
+   "officialMaxNumber": "057",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 4
+    },
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 8,
+     "numbers": [
+      "058",
+      "059",
+      "060",
+      "061",
+      "062",
+      "063",
+      "064",
+      "065"
+     ],
+     "statuses": {
+      "pending": 8
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 2
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM3H",
+   "dbSeriesCodes": [
+    "SM3H"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 57,
+   "dbCount": 64,
+   "diff": 7,
+   "officialMaxNumber": "057",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "058",
+      "059",
+      "060",
+      "061",
+      "062",
+      "063",
+      "064"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 3,
+      "SR": 4
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM3N",
+   "dbSeriesCodes": [
+    "SM3N"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 57,
+   "dbCount": 64,
+   "diff": 7,
+   "officialMaxNumber": "057",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "058",
+      "059",
+      "060",
+      "061",
+      "062",
+      "063",
+      "064"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM3p",
+   "dbSeriesCodes": [
+    "SM3p"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 77,
+   "dbCount": 82,
+   "diff": 5,
+   "officialMaxNumber": "077",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 5,
+     "numbers": [
+      "078",
+      "079",
+      "080",
+      "081",
+      "082"
+     ],
+     "statuses": {
+      "pending": 5
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 1
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM4A",
+   "dbSeriesCodes": [
+    "SM4A"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 55,
+   "dbCount": 61,
+   "diff": 6,
+   "officialMaxNumber": "055",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 6,
+     "numbers": [
+      "056",
+      "057",
+      "058",
+      "059",
+      "060",
+      "061"
+     ],
+     "statuses": {
+      "pending": 6
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 2
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM4p",
+   "dbSeriesCodes": [
+    "SM4p"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 120,
+   "dbCount": 125,
+   "diff": 5,
+   "officialMaxNumber": "120",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 5,
+     "numbers": [
+      "121",
+      "122",
+      "123",
+      "124",
+      "125"
+     ],
+     "statuses": {
+      "pending": 5
+     },
+     "rarities": {
+      "HR": 3,
+      "SR": 2
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM4S",
+   "dbSeriesCodes": [
+    "SM4S"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 55,
+   "dbCount": 62,
+   "diff": 7,
+   "officialMaxNumber": "055",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "056",
+      "057",
+      "058",
+      "059",
+      "060",
+      "061",
+      "062"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM5M",
+   "dbSeriesCodes": [
+    "SM5M"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 72,
+   "dbCount": 78,
+   "diff": 6,
+   "officialMaxNumber": "072",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 6,
+     "numbers": [
+      "073",
+      "074",
+      "075",
+      "076",
+      "077",
+      "078"
+     ],
+     "statuses": {
+      "pending": 6
+     },
+     "rarities": {
+      "HR": 3,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM5p",
+   "dbSeriesCodes": [
+    "SM5p"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 56,
+   "dbCount": 63,
+   "diff": 7,
+   "officialMaxNumber": "056",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "057",
+      "058",
+      "059",
+      "060",
+      "061",
+      "062",
+      "063"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM5S",
+   "dbSeriesCodes": [
+    "SM5S"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 72,
+   "dbCount": 78,
+   "diff": 6,
+   "officialMaxNumber": "072",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 6,
+     "numbers": [
+      "073",
+      "074",
+      "075",
+      "076",
+      "077",
+      "078"
+     ],
+     "statuses": {
+      "pending": 6
+     },
+     "rarities": {
+      "HR": 3,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM6",
+   "dbSeriesCodes": [
+    "SM6"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 102,
+   "dbCount": 110,
+   "diff": 8,
+   "officialMaxNumber": "102",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 8,
+     "numbers": [
+      "103",
+      "104",
+      "105",
+      "106",
+      "107",
+      "108",
+      "109",
+      "110"
+     ],
+     "statuses": {
+      "pending": 8
+     },
+     "rarities": {
+      "HR": 5,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM6a",
+   "dbSeriesCodes": [
+    "SM6a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 59,
+   "dbCount": 66,
+   "diff": 7,
+   "officialMaxNumber": "059",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "060",
+      "061",
+      "062",
+      "063",
+      "064",
+      "065",
+      "066"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM6b",
+   "dbSeriesCodes": [
+    "SM6b"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 77,
+   "dbCount": 86,
+   "diff": 9,
+   "officialMaxNumber": "077",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 9,
+     "numbers": [
+      "078",
+      "079",
+      "080",
+      "081",
+      "082",
+      "083",
+      "084",
+      "085",
+      "086"
+     ],
+     "statuses": {
+      "pending": 9
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM7",
+   "dbSeriesCodes": [
+    "SM7"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 104,
+   "dbCount": 112,
+   "diff": 8,
+   "officialMaxNumber": "104",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 8,
+     "numbers": [
+      "105",
+      "106",
+      "107",
+      "108",
+      "109",
+      "110",
+      "111",
+      "112"
+     ],
+     "statuses": {
+      "pending": 8
+     },
+     "rarities": {
+      "HR": 5,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM7a",
+   "dbSeriesCodes": [
+    "SM7a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 66,
+   "dbCount": 73,
+   "diff": 7,
+   "officialMaxNumber": "066",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "067",
+      "068",
+      "069",
+      "070",
+      "071",
+      "072",
+      "073"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM7b",
+   "dbSeriesCodes": [
+    "SM7b"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 56,
+   "dbCount": 63,
+   "diff": 7,
+   "officialMaxNumber": "056",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "057",
+      "058",
+      "059",
+      "060",
+      "061",
+      "062",
+      "063"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM8",
+   "dbSeriesCodes": [
+    "SM8"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 103,
+   "dbCount": 111,
+   "diff": 8,
+   "officialMaxNumber": "103",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 8,
+     "numbers": [
+      "104",
+      "105",
+      "106",
+      "107",
+      "108",
+      "109",
+      "110",
+      "111"
+     ],
+     "statuses": {
+      "pending": 8
+     },
+     "rarities": {
+      "HR": 5,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM8a",
+   "dbSeriesCodes": [
+    "SM8a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 58,
+   "dbCount": 65,
+   "diff": 7,
+   "officialMaxNumber": "058",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "059",
+      "060",
+      "061",
+      "062",
+      "063",
+      "064",
+      "065"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM8b",
+   "dbSeriesCodes": [
+    "SM8b"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 243,
+   "dbCount": 250,
+   "diff": 7,
+   "officialMaxNumber": "243",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "244",
+      "245",
+      "246",
+      "247",
+      "248",
+      "249",
+      "250"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "SR": 7
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM9",
+   "dbSeriesCodes": [
+    "SM9"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 109,
+   "dbCount": 118,
+   "diff": 9,
+   "officialMaxNumber": "109",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 9,
+     "numbers": [
+      "110",
+      "111",
+      "112",
+      "113",
+      "114",
+      "115",
+      "116",
+      "117",
+      "118"
+     ],
+     "statuses": {
+      "pending": 9
+     },
+     "rarities": {
+      "HR": 6,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM9a",
+   "dbSeriesCodes": [
+    "SM9a"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 63,
+   "dbCount": 70,
+   "diff": 7,
+   "officialMaxNumber": "063",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "064",
+      "065",
+      "066",
+      "067",
+      "068",
+      "069",
+      "070"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SM9b",
+   "dbSeriesCodes": [
+    "SM9b"
+   ],
+   "source": "tcgdex-ja",
+   "officialCount": 62,
+   "dbCount": 69,
+   "diff": 7,
+   "officialMaxNumber": "062",
+   "causes": [
+    {
+     "cause": "DB_ONLY_PENDING_TCGDEX_CARDS_NOT_LISTED_BY_OFFICIAL_SEARCH",
+     "cards": 7,
+     "numbers": [
+      "063",
+      "064",
+      "065",
+      "066",
+      "067",
+      "068",
+      "069"
+     ],
+     "statuses": {
+      "pending": 7
+     },
+     "rarities": {
+      "HR": 4,
+      "SR": 3
+     }
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SMA",
+   "dbSeriesCodes": [
+    "SMA"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 68,
+   "dbCount": 59,
+   "diff": -9,
+   "officialMaxNumber": "059",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 9
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SMB",
+   "dbSeriesCodes": [
+    "SMB"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 15,
+   "dbCount": 6,
+   "diff": -9,
+   "officialMaxNumber": "006",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 9
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SMD",
+   "dbSeriesCodes": [
+    "SMD"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 32,
+   "dbCount": 28,
+   "diff": -4,
+   "officialMaxNumber": "026",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 4
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SML",
+   "dbSeriesCodes": [
+    "SML"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 69,
+   "dbCount": 63,
+   "diff": -6,
+   "officialMaxNumber": "051",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 6
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SN",
+   "dbSeriesCodes": [
+    "SN"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 25,
+   "dbCount": 24,
+   "diff": -1,
+   "officialMaxNumber": "024",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SO",
+   "dbSeriesCodes": [
+    "SO"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 32,
+   "dbCount": 30,
+   "diff": -2,
+   "officialMaxNumber": "030",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SP2",
+   "dbSeriesCodes": [
+    "SP2"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 8,
+   "dbCount": 4,
+   "diff": -4,
+   "officialMaxNumber": "004",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 4
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SP4",
+   "dbSeriesCodes": [
+    "SP4"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 8,
+   "dbCount": 4,
+   "diff": -4,
+   "officialMaxNumber": "004",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 4
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SP5",
+   "dbSeriesCodes": [
+    "SP5"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 4,
+   "dbCount": 1,
+   "diff": -3,
+   "officialMaxNumber": "013",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SPD",
+   "dbSeriesCodes": [
+    "SPD"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 21,
+   "dbCount": 20,
+   "diff": -1,
+   "officialMaxNumber": "020",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SPZ",
+   "dbSeriesCodes": [
+    "SPZ"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 21,
+   "dbCount": 20,
+   "diff": -1,
+   "officialMaxNumber": "020",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SV-P",
+   "dbSeriesCodes": [
+    "SV-P"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 332,
+   "dbCount": 282,
+   "diff": -50,
+   "officialMaxNumber": "290",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 50
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SVI",
+   "dbSeriesCodes": [
+    "SVI"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 102,
+   "dbCount": 94,
+   "diff": -8,
+   "officialMaxNumber": "066",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 8
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "SZD",
+   "dbSeriesCodes": [
+    "SZD"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 18,
+   "dbCount": 15,
+   "diff": -3,
+   "officialMaxNumber": "015",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 3
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "WAK",
+   "dbSeriesCodes": [
+    "WAK"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 72,
+   "dbCount": 64,
+   "diff": -8,
+   "officialMaxNumber": "047",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 8
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "WCS23",
+   "dbSeriesCodes": [
+    "WCS23"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 32,
+   "dbCount": 30,
+   "diff": -2,
+   "officialMaxNumber": "030",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "X30",
+   "dbSeriesCodes": [
+    "X30"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 15,
+   "dbCount": 14,
+   "diff": -1,
+   "officialMaxNumber": "014",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYA",
+   "dbSeriesCodes": [
+    "XYA"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 23,
+   "dbCount": 21,
+   "diff": -2,
+   "officialMaxNumber": "021",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYB",
+   "dbSeriesCodes": [
+    "XYB"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 19,
+   "dbCount": 18,
+   "diff": -1,
+   "officialMaxNumber": "018",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYC",
+   "dbSeriesCodes": [
+    "XYC"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 25,
+   "dbCount": 23,
+   "diff": -2,
+   "officialMaxNumber": "023",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYD",
+   "dbSeriesCodes": [
+    "XYD"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 20,
+   "dbCount": 18,
+   "diff": -2,
+   "officialMaxNumber": "018",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 2
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYE",
+   "dbSeriesCodes": [
+    "XYE"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 32,
+   "dbCount": 28,
+   "diff": -4,
+   "officialMaxNumber": "022",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 4
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYF",
+   "dbSeriesCodes": [
+    "XYF"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 17,
+   "dbCount": 16,
+   "diff": -1,
+   "officialMaxNumber": "016",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYG",
+   "dbSeriesCodes": [
+    "XYG"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 20,
+   "dbCount": 19,
+   "diff": -1,
+   "officialMaxNumber": "019",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "XYH",
+   "dbSeriesCodes": [
+    "XYH"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 27,
+   "dbCount": 26,
+   "diff": -1,
+   "officialMaxNumber": "026",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  },
+  {
+   "code": "Y30",
+   "dbSeriesCodes": [
+    "Y30"
+   ],
+   "source": "pokemon-card-official-jp",
+   "officialCount": 15,
+   "dbCount": 14,
+   "diff": -1,
+   "officialMaxNumber": "014",
+   "causes": [
+    {
+     "cause": "OFFICIAL_PAGES_WITHOUT_CARD_NUMBER (quarantined, ADR 0012)",
+     "pages": 1
+    }
+   ],
+   "accountingResidual": 0
+  }
+ ],
+ "recentSeriesFieldCheck": {
+  "MF": {
+   "dbNameJa": "30th CELEBRATION プレミアムデッキセット エーフィ・ブラッキー",
+   "releaseDate": "2026-09-16",
+   "officialCount": 49,
+   "officialPagesFetched": 49,
+   "officialPagesWithNumber": 44,
+   "dbCount": 49,
+   "numberDiffs": [],
+   "nameDiffs": [],
+   "rarityDiffs": [],
+   "officialPagesWithoutRarityIcon": 49,
+   "officialOnly": [
+    {
+     "id": "50608",
+     "num": null,
+     "name": "基本草エネルギー",
+     "icon": null,
+     "mark": "MF"
+    },
+    {
+     "id": "50609",
+     "num": null,
+     "name": "基本炎エネルギー",
+     "icon": null,
+     "mark": "MF"
+    },
+    {
+     "id": "50610",
+     "num": null,
+     "name": "基本雷エネルギー",
+     "icon": null,
+     "mark": "MF"
+    },
+    {
+     "id": "50611",
+     "num": null,
+     "name": "基本超エネルギー",
+     "icon": null,
+     "mark": "MF"
+    },
+    {
+     "id": "50612",
+     "num": null,
+     "name": "基本悪エネルギー",
+     "icon": null,
+     "mark": "MF"
+    }
+   ],
+   "dbOnly": [
+    {
+     "cardId": "pokemon-tcgdex-ja-mf-dar",
+     "number": "DAR",
+     "nameJa": "基本悪エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-mf-fir",
+     "number": "FIR",
+     "nameJa": "基本炎エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-mf-gra",
+     "number": "GRA",
+     "nameJa": "基本草エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-mf-lig",
+     "number": "LIG",
+     "nameJa": "基本雷エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-mf-psy",
+     "number": "PSY",
+     "nameJa": "基本超エネルギー",
+     "rarity": null
+    }
+   ],
+   "interpretation": "Official has 5 numberless basic energy pages; DB holds them as DAR/FIR/GRA/LIG/PSY. Consistent."
+  },
+  "M6a": {
+   "dbNameJa": "30th CELEBRATION",
+   "releaseDate": "2026-09-16",
+   "officialCount": 140,
+   "officialPagesFetched": 140,
+   "officialPagesWithNumber": 131,
+   "dbCount": 176,
+   "numberDiffs": [],
+   "nameDiffs": [],
+   "rarityDiffs": [],
+   "officialPagesWithoutRarityIcon": 130,
+   "officialOnly": [
+    {
+     "id": "50728",
+     "num": null,
+     "name": "ダークライ＆クレセリアLEGEND",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50745",
+     "num": null,
+     "name": "基本草エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50746",
+     "num": null,
+     "name": "基本炎エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50747",
+     "num": null,
+     "name": "基本水エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50748",
+     "num": null,
+     "name": "基本雷エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50749",
+     "num": null,
+     "name": "基本超エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50750",
+     "num": null,
+     "name": "基本闘エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50751",
+     "num": null,
+     "name": "基本悪エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    },
+    {
+     "id": "50752",
+     "num": null,
+     "name": "基本鋼エネルギー",
+     "icon": null,
+     "mark": "M6a"
+    }
+   ],
+   "dbOnly": [
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-104",
+     "number": "104",
+     "nameJa": "アローラ ナッシー",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-105",
+     "number": "105",
+     "nameJa": "ファイヤー",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-106",
+     "number": "106",
+     "nameJa": "ラプラス",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-107",
+     "number": "107",
+     "nameJa": "フリーザー",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-108",
+     "number": "108",
+     "nameJa": "サンダー",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-109",
+     "number": "109",
+     "nameJa": "ストリンダー",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-110",
+     "number": "110",
+     "nameJa": "モルペコ",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-111",
+     "number": "111",
+     "nameJa": "フワンテ",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-112",
+     "number": "112",
+     "nameJa": "シャンデラ",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-113",
+     "number": "113",
+     "nameJa": "ルガルガン",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-114",
+     "number": "114",
+     "nameJa": "ニドリーナ",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-115",
+     "number": "115",
+     "nameJa": "アローラ ニャース",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-116",
+     "number": "116",
+     "nameJa": "ズルッグ",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-117",
+     "number": "117",
+     "nameJa": "ガラル ニャース",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-118",
+     "number": "118",
+     "nameJa": "サーフゴー",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-119",
+     "number": "119",
+     "nameJa": "ジャラランガ",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-120",
+     "number": "120",
+     "nameJa": "ニャース",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-121",
+     "number": "121",
+     "nameJa": "メタモン",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-122",
+     "number": "122",
+     "nameJa": "ヒスイ ゾロア",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-123",
+     "number": "123",
+     "nameJa": "イッカネズミ",
+     "rarity": "AR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-124",
+     "number": "124",
+     "nameJa": "ホゲータex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-125",
+     "number": "125",
+     "nameJa": "ゲッコウガex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-126",
+     "number": "126",
+     "nameJa": "ピカチュウex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-127",
+     "number": "127",
+     "nameJa": "ピカチュウex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-128",
+     "number": "128",
+     "nameJa": "ミュウツーex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-129",
+     "number": "129",
+     "nameJa": "ミュウex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-130",
+     "number": "130",
+     "nameJa": "ニンフィアex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-131",
+     "number": "131",
+     "nameJa": "ゲンガーex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-132",
+     "number": "132",
+     "nameJa": "ジラーチex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-133",
+     "number": "133",
+     "nameJa": "ボーマンダex",
+     "rarity": "SAR"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-134",
+     "number": "134",
+     "nameJa": "ミュウツーex",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-135",
+     "number": "135",
+     "nameJa": "ミュウex",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-151",
+     "number": "151",
+     "nameJa": "ダークライ＆クレセリアLEGEND",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-152",
+     "number": "152",
+     "nameJa": "ダークライ＆クレセリアLEGEND",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-b",
+     "number": "B",
+     "nameJa": "ミュウ",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-dar",
+     "number": "DAR",
+     "nameJa": "基本悪エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-fig",
+     "number": "FIG",
+     "nameJa": "基本闘エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-fir",
+     "number": "FIR",
+     "nameJa": "基本炎エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-g",
+     "number": "G",
+     "nameJa": "ミュウ",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-gra",
+     "number": "GRA",
+     "nameJa": "基本草エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-lig",
+     "number": "LIG",
+     "nameJa": "基本雷エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-met",
+     "number": "MET",
+     "nameJa": "基本鋼エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-psy",
+     "number": "PSY",
+     "nameJa": "基本超エネルギー",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-r",
+     "number": "R",
+     "nameJa": "ミュウ",
+     "rarity": null
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6a-wat",
+     "number": "WAT",
+     "nameJa": "基本水エネルギー",
+     "rarity": null
+    }
+   ],
+   "interpretation": "Official lists numbers 001-103 and 136-165 only (plus a LEGEND two-number page and 8 numberless basic energies). DB additionally holds 104-135 (AR 20, SAR 10, 134/135 rarity empty) and B/G/R Mew: 35 cards, all tcgdex-ja and pending, not in the official search list. 151/152 = the one official LEGEND page with two numbers; DAR/FIG/FIR/GRA/LIG/MET/PSY/WAT = official numberless energies."
+  },
+  "M6": {
+   "dbNameJa": "ストームエメラルダ",
+   "releaseDate": "2026-07-31",
+   "officialCount": 110,
+   "officialPagesFetched": 110,
+   "officialPagesWithNumber": 107,
+   "dbCount": 113,
+   "numberDiffs": [],
+   "nameDiffs": [],
+   "rarityDiffs": [],
+   "officialPagesWithoutRarityIcon": 0,
+   "officialOnly": [
+    {
+     "id": "50409",
+     "num": null,
+     "name": "伝説の海溝",
+     "icon": "ic_rare_u_c",
+     "mark": "M6"
+    },
+    {
+     "id": "50410",
+     "num": null,
+     "name": "伝説の山頂",
+     "icon": "ic_rare_u_c",
+     "mark": "M6"
+    },
+    {
+     "id": "50411",
+     "num": null,
+     "name": "伝説の溶岩洞",
+     "icon": "ic_rare_u_c",
+     "mark": "M6"
+    }
+   ],
+   "dbOnly": [
+    {
+     "cardId": "pokemon-tcgdex-ja-m6-071",
+     "number": "071",
+     "nameJa": "伝説の海溝",
+     "rarity": "U"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6-072",
+     "number": "072",
+     "nameJa": "伝説の海溝",
+     "rarity": "U"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6-073",
+     "number": "073",
+     "nameJa": "伝説の山頂",
+     "rarity": "U"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6-074",
+     "number": "074",
+     "nameJa": "伝説の山頂",
+     "rarity": "U"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6-075",
+     "number": "075",
+     "nameJa": "伝説の溶岩洞",
+     "rarity": "U"
+    },
+    {
+     "cardId": "pokemon-tcgdex-ja-m6-076",
+     "number": "076",
+     "nameJa": "伝説の溶岩洞",
+     "rarity": "U"
+    }
+   ],
+   "interpretation": "Official has 3 stadium pages that print two numbers each (071/076 left, 072/076 right; verified on page 50409); DB holds 071-076 as six cards. Consistent, no real difference."
+  },
+  "M5": {
+   "dbNameJa": "アビスアイ",
+   "releaseDate": "2026-05-22",
+   "officialCount": 118,
+   "officialPagesFetched": 118,
+   "officialPagesWithNumber": 118,
+   "dbCount": 118,
+   "numberDiffs": [],
+   "nameDiffs": [],
+   "rarityDiffs": [],
+   "officialPagesWithoutRarityIcon": 0,
+   "officialOnly": [],
+   "dbOnly": []
+  },
+  "M4": {
+   "dbNameJa": "ニンジャスピナー",
+   "releaseDate": "2026-03-13",
+   "officialCount": 120,
+   "officialPagesFetched": 120,
+   "officialPagesWithNumber": 120,
+   "dbCount": 120,
+   "numberDiffs": [],
+   "nameDiffs": [],
+   "rarityDiffs": [],
+   "officialPagesWithoutRarityIcon": 0,
+   "officialOnly": [],
+   "dbOnly": []
+  }
+ },
+ "unresolved": [
+  {
+   "id": "TCGDEX_PENDING_EXTRAS",
+   "text": "DB-only tcgdex-ja cards numbered above the official highest number (HR/SR/UR secret cards and basic energy), all pending, in S5I S6H S6K S7D S8 S8b S12a SM* M6 M6a series. The official search does not list them. Some look suspicious (SM1M 067-073 HR GX cards while the official SM1M range ends at 066).",
+   "cards": 377,
+   "note": "raw DB-only count is 393; 16 are explained (M6 stadium numbers 071-076 = 6, M6a 151/152 and 8 numberless energies = 10)"
+  }
+ ]
+}

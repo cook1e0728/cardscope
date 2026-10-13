@@ -1,0 +1,3537 @@
+{
+ "auditDate": "2026-10-14",
+ "scope": "Pokemon TCG Traditional Chinese (Taiwan): official card search asia.pokemon-card.com/tw vs CardScope DB (region TW), read-only. Text facts only, no images stored.",
+ "requests": {
+  "asia.pokemon-card.com": {
+   "total": 1386,
+   "searchPage": 1,
+   "firstMfListPageByCurl": 1,
+   "seriesListPages": 796,
+   "rarityFilteredListPagesRecent7": 167,
+   "detailPagesRecent7": 421,
+   "non200": 0,
+   "minGapMs": 1600,
+   "concurrency": 1,
+   "stealthOrAntiBotFeaturesUsed": false
+  },
+  "blocked": false,
+  "note": "The search page and one MF list page were fetched with curl; the rest with a Node script that reuses the URL builders and parsers of providers/pokemon-tw-official.mjs. The 796 series list pages count the MF page 1 a second time inside the script."
+ },
+ "officialListFormat": {
+  "expansionList": "GET /tw/card-search/ : 136 checkbox rows (class expansionCode, value = code) with labels; 134 unique codes (SP5 appears 3 times with three V-UNION labels). Only the newest 20 expansions also appear as expansionLink tiles with release dates.",
+  "cardLists": "GET /tw/card-search/list/?expansionCodes=<code>&pageNo=N, 20 cards per page, page count in resultTotalPages; rarity via &rarity[]=<1..22>. Unchanged vs what providers/pokemon-tw-official.mjs parses."
+ },
+ "totals": {
+  "officialExpansionCodes": 134,
+  "dbTwSeries": 146,
+  "dbTwCards": 12669,
+  "officialListedCards": 14582,
+  "officialWithoutNumber": 214,
+  "officialSameNumberExtraVersions": 844,
+  "officialDistinctNumbersInReadSeries": 13164,
+  "seriesInDbMatchingOfficial": 89,
+  "seriesInDbMatchingExceptKnownExclusions": 109,
+  "seriesWithMissingNumbers": 21,
+  "missingNumberedCardsInExistingSeries": 582,
+  "missingNumberedCardsExcludingSvP": 449,
+  "officialSeriesNotInDb": 3,
+  "officialSeriesNotInDbListedCards": 360
+ },
+ "newExpansionsSince20261003": [],
+ "newExpansionsNote": "The official expansion code list (134) is identical to docs/evidence/pokemon-tw/official-expansion-names-20261003.json, and the card id sets of the 131 series in the 2026-10-02 cache are identical today. Newest release dates on the search page: MF and M6a 2026-09-16; nothing released after early October 2026 is listed.",
+ "officialSeriesNotInDb": [
+  {
+   "code": "M-P",
+   "officialName": "特典卡 超級進化",
+   "officialListedCards": 208,
+   "officialReleaseDate": "2025-08-07",
+   "detailsRead": false,
+   "note": "HANDOFF 26 lists TW special cards M-P/S-P/SM-P as unprocessed; the JP side imported M-P (ADR 0017) and S-P"
+  },
+  {
+   "code": "S-P",
+   "officialName": "特典卡 劍&盾",
+   "officialListedCards": 151,
+   "officialReleaseDate": null,
+   "detailsRead": false,
+   "note": "HANDOFF 26 lists TW special cards M-P/S-P/SM-P as unprocessed; the JP side imported M-P (ADR 0017) and S-P"
+  },
+  {
+   "code": "SM-P",
+   "officialName": "特典卡 太陽&月亮",
+   "officialListedCards": 1,
+   "officialReleaseDate": null,
+   "detailsRead": false,
+   "note": "HANDOFF 26 lists TW special cards M-P/S-P/SM-P as unprocessed; the JP side imported M-P (ADR 0017) and S-P"
+  }
+ ],
+ "dbSeriesNotOnOfficial": [
+  {
+   "code": "CS1.5",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS1a",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS1b",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS2.5",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS2a",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS2b",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS3.5",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS3a",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS3b",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS3D",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS4",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS4a",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS4b",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CS4Da",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  },
+  {
+   "code": "CSA",
+   "dbName": "三連音爆",
+   "dbSource": "tcgdex-zh-tw",
+   "dbCards": 0,
+   "note": "empty TCGdex series shell; the official TW site has no such expansion"
+  }
+ ],
+ "seriesNameCheck": "All 131 DB series names are contained in the official expansion labels after removing quotes and spaces (0 differences).",
+ "knownExclusionsNotCounted": {
+  "basicEnergyWithoutNumber": "official entries without a collector number (basic energy, SV-P 勝利之證 x12 and 樂園度假地 x3); DB energy rows carry type codes DAR/FIG/FIR/GRA/LIG/MET/PSY/WAT",
+  "vUnion": "S8a 025, S8b 056, SP5 001/005/009 (official detail has no number; DB uses piece numbers)",
+  "svPSpecialNumbering": "DB SV-P rows 56, no0-no3",
+  "legendPiece": "M6a LEGEND card 達克萊伊＆克雷色利亞LEGEND is listed as 151/103,152; DB has no 151/152",
+  "officialSameNumberVersions": "ADR 0010: several official versions of one number are one DB card"
+ },
+ "seriesDifferences": [
+  {
+   "code": "M6a",
+   "officialName": "擴充包「30th CELEBRATION」",
+   "officialReleaseDate": "2026-09-16",
+   "dbSource": "asia-pokemon-card-official-tw",
+   "officialListedCards": 168,
+   "officialDistinctNumbers": 160,
+   "officialWithoutNumber": 8,
+   "ourCards": 159,
+   "printedTotal": 103,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [
+    "151/103,152"
+   ],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_SPECIAL_MISSING"
+   ],
+   "likelyCause": "LEGEND two-piece card listed as 151/103,152 (same class as V-UNION)"
+  },
+  {
+   "code": "MC",
+   "officialName": "初階牌組 100對戰收藏",
+   "officialReleaseDate": "2026-01-16",
+   "dbSource": "asia-pokemon-card-official-tw",
+   "officialListedCards": 902,
+   "officialDistinctNumbers": 766,
+   "officialWithoutNumber": 16,
+   "ourCards": 761,
+   "printedTotal": 742,
+   "missingNumbersInDb": [
+    "273",
+    "274",
+    "278",
+    "279",
+    "287"
+   ],
+   "missingInsidePrintedTotal": 5,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_5_NUMBERS"
+   ],
+   "likelyCause": "import quarantine VERSION_NAME_CONFLICT (two official versions of the same number differ only by the name markup <奇樹的>/<莉莉艾的>, which twNameKey would normalise; see MC-import-report-20261003.json)"
+  },
+  {
+   "code": "M-P",
+   "officialName": "特典卡 超級進化",
+   "officialReleaseDate": "2025-08-07",
+   "dbSource": null,
+   "officialListedCards": 208,
+   "officialDistinctNumbers": 0,
+   "officialWithoutNumber": 0,
+   "ourCards": 0,
+   "printedTotal": null,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "SERIES_NOT_IN_DB",
+    "DETAIL_NOT_READ"
+   ],
+   "likelyCause": "official series not imported (special card series, HANDOFF 26 lists it as unprocessed)"
+  },
+  {
+   "code": "SV8",
+   "officialName": "擴充包「超電突圍」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 138,
+   "officialDistinctNumbers": 138,
+   "officialWithoutNumber": 0,
+   "ourCards": 106,
+   "printedTotal": 106,
+   "missingNumbersInDb": [
+    "107",
+    "108",
+    "109",
+    "110",
+    "111",
+    "112",
+    "113",
+    "114",
+    "115",
+    "116",
+    "117",
+    "118",
+    "119",
+    "120",
+    "121",
+    "122",
+    "123",
+    "124",
+    "125",
+    "126",
+    "127",
+    "128",
+    "129",
+    "130",
+    "131",
+    "132",
+    "133",
+    "134",
+    "135",
+    "136",
+    "137",
+    "138"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 32,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_32_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV7a",
+   "officialName": "強化擴充包「樂園騰龍」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 94,
+   "officialDistinctNumbers": 94,
+   "officialWithoutNumber": 0,
+   "ourCards": 64,
+   "printedTotal": 64,
+   "missingNumbersInDb": [
+    "065",
+    "066",
+    "067",
+    "068",
+    "069",
+    "070",
+    "071",
+    "072",
+    "073",
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 30,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_30_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV7",
+   "officialName": "擴充包「星晶奇跡」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 135,
+   "officialDistinctNumbers": 135,
+   "officialWithoutNumber": 0,
+   "ourCards": 132,
+   "printedTotal": 102,
+   "missingNumbersInDb": [
+    "133",
+    "134",
+    "135"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 3,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_3_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV6a",
+   "officialName": "強化擴充包「黑夜漫遊者」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 94,
+   "officialDistinctNumbers": 94,
+   "officialWithoutNumber": 0,
+   "ourCards": 64,
+   "printedTotal": 64,
+   "missingNumbersInDb": [
+    "065",
+    "066",
+    "067",
+    "068",
+    "069",
+    "070",
+    "071",
+    "072",
+    "073",
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 30,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_30_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV6",
+   "officialName": "擴充包「變幻假面」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 133,
+   "officialDistinctNumbers": 133,
+   "officialWithoutNumber": 0,
+   "ourCards": 130,
+   "printedTotal": 101,
+   "missingNumbersInDb": [
+    "131",
+    "132",
+    "133"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 3,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_3_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV5a",
+   "officialName": "強化擴充包「緋紅薄霧」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 96,
+   "officialDistinctNumbers": 96,
+   "officialWithoutNumber": 0,
+   "ourCards": 66,
+   "printedTotal": 66,
+   "missingNumbersInDb": [
+    "067",
+    "068",
+    "069",
+    "070",
+    "071",
+    "072",
+    "073",
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095",
+    "096"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 30,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_30_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SVHM",
+   "officialName": "起始組合「未來密勒頓ex」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 22,
+   "officialWithoutNumber": 2,
+   "ourCards": 24,
+   "printedTotal": 22,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "LIG",
+    "PSY"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SVHK",
+   "officialName": "起始組合「古代故勒頓ex」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 22,
+   "officialWithoutNumber": 2,
+   "ourCards": 24,
+   "printedTotal": 22,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "FIG",
+    "FIR"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SV5M",
+   "officialName": "擴充包「異度審判」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "officialWithoutNumber": 0,
+   "ourCards": 97,
+   "printedTotal": 71,
+   "missingNumbersInDb": [
+    "098",
+    "099",
+    "100"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 3,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_3_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV5K",
+   "officialName": "擴充包「狂野之力」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "officialWithoutNumber": 0,
+   "ourCards": 46,
+   "printedTotal": 71,
+   "missingNumbersInDb": [
+    "022",
+    "023",
+    "024",
+    "025",
+    "026",
+    "027",
+    "028",
+    "029",
+    "030",
+    "031",
+    "032",
+    "033",
+    "034",
+    "035",
+    "036",
+    "037",
+    "038",
+    "039",
+    "040",
+    "041",
+    "042",
+    "043",
+    "044",
+    "045",
+    "046",
+    "047",
+    "048",
+    "049",
+    "050",
+    "051",
+    "052",
+    "053",
+    "054",
+    "055",
+    "056",
+    "057",
+    "058",
+    "059",
+    "060",
+    "061",
+    "062",
+    "064",
+    "065",
+    "066",
+    "067",
+    "068",
+    "069",
+    "070",
+    "071",
+    "072",
+    "073",
+    "098",
+    "099",
+    "100"
+   ],
+   "missingInsidePrintedTotal": 49,
+   "missingAbovePrintedTotal": 5,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_54_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex with holes inside the printed range plus secret-rare numbers above it"
+  },
+  {
+   "code": "SV4a",
+   "officialName": "高級擴充包「閃色寶藏ex」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 360,
+   "officialDistinctNumbers": 360,
+   "officialWithoutNumber": 0,
+   "ourCards": 314,
+   "printedTotal": 190,
+   "missingNumbersInDb": [
+    "127",
+    "128",
+    "129",
+    "130",
+    "131",
+    "132",
+    "133",
+    "134",
+    "135",
+    "136",
+    "137",
+    "138",
+    "139",
+    "140",
+    "141",
+    "142",
+    "143",
+    "144",
+    "145",
+    "146",
+    "148",
+    "149",
+    "150",
+    "151",
+    "152",
+    "153",
+    "154",
+    "155",
+    "156",
+    "157",
+    "158",
+    "159",
+    "160",
+    "161",
+    "162",
+    "163",
+    "164",
+    "165",
+    "166",
+    "167",
+    "355",
+    "356",
+    "357",
+    "358",
+    "359",
+    "360"
+   ],
+   "missingInsidePrintedTotal": 40,
+   "missingAbovePrintedTotal": 6,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_46_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex with holes inside the printed range plus secret-rare numbers above it"
+  },
+  {
+   "code": "SV4K",
+   "officialName": "擴充包「古代咆哮」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 95,
+   "officialDistinctNumbers": 95,
+   "officialWithoutNumber": 0,
+   "ourCards": 66,
+   "printedTotal": 66,
+   "missingNumbersInDb": [
+    "067",
+    "068",
+    "069",
+    "070",
+    "071",
+    "072",
+    "073",
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 29,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_29_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV4M",
+   "officialName": "擴充包「未來閃光」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 95,
+   "officialDistinctNumbers": 95,
+   "officialWithoutNumber": 0,
+   "ourCards": 66,
+   "printedTotal": 66,
+   "missingNumbersInDb": [
+    "067",
+    "068",
+    "069",
+    "070",
+    "071",
+    "072",
+    "073",
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 29,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_29_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV3a",
+   "officialName": "強化擴充包「激狂駭浪」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 92,
+   "officialDistinctNumbers": 92,
+   "officialWithoutNumber": 0,
+   "ourCards": 89,
+   "printedTotal": 62,
+   "missingNumbersInDb": [
+    "090",
+    "091",
+    "092"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 3,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_3_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SVEM",
+   "officialName": "起始組合 太晶 超夢ex",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 20,
+   "officialWithoutNumber": 1,
+   "ourCards": 21,
+   "printedTotal": 20,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "PSY"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SVEL",
+   "officialName": "起始組合 太晶 骨紋巨聲鱷ex",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 20,
+   "officialWithoutNumber": 1,
+   "ourCards": 21,
+   "printedTotal": 20,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "FIR"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SVF",
+   "officialName": "牌組構築BOX黯焰支配者",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 46,
+   "officialDistinctNumbers": 38,
+   "officialWithoutNumber": 8,
+   "ourCards": 46,
+   "printedTotal": 38,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "MET",
+    "PSY",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SV3",
+   "officialName": "擴充包「黯焰支配者」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 141,
+   "officialDistinctNumbers": 141,
+   "officialWithoutNumber": 0,
+   "ourCards": 138,
+   "printedTotal": 108,
+   "missingNumbersInDb": [
+    "139",
+    "140",
+    "141"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 3,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_3_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SVD",
+   "officialName": "ex初階牌組",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 147,
+   "officialDistinctNumbers": 139,
+   "officialWithoutNumber": 8,
+   "ourCards": 147,
+   "printedTotal": 139,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "MET",
+    "PSY",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SV2a",
+   "officialName": "強化擴充包「寶可夢卡牌151」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 363,
+   "officialDistinctNumbers": 210,
+   "officialWithoutNumber": 0,
+   "ourCards": 207,
+   "printedTotal": 165,
+   "missingNumbersInDb": [
+    "208",
+    "209",
+    "210"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 3,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_3_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SVC",
+   "officialName": "起始組合ex 皮卡丘特別組合",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 21,
+   "officialWithoutNumber": 1,
+   "ourCards": 22,
+   "printedTotal": 21,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "LIG"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SV2P",
+   "officialName": "擴充包「冰雪險境」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 99,
+   "officialDistinctNumbers": 99,
+   "officialWithoutNumber": 0,
+   "ourCards": 71,
+   "printedTotal": 71,
+   "missingNumbersInDb": [
+    "072",
+    "073",
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095",
+    "096",
+    "097",
+    "098",
+    "099"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 28,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_28_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV2D",
+   "officialName": "擴充包「碟旋暴擊」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 99,
+   "officialDistinctNumbers": 99,
+   "officialWithoutNumber": 0,
+   "ourCards": 71,
+   "printedTotal": 71,
+   "missingNumbersInDb": [
+    "072",
+    "073",
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095",
+    "096",
+    "097",
+    "098",
+    "099"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 28,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_28_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV1a",
+   "officialName": "強化擴充包「三連音爆」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 103,
+   "officialDistinctNumbers": 103,
+   "officialWithoutNumber": 0,
+   "ourCards": 73,
+   "printedTotal": 73,
+   "missingNumbersInDb": [
+    "074",
+    "075",
+    "076",
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095",
+    "096",
+    "097",
+    "098",
+    "099",
+    "100",
+    "101",
+    "102",
+    "103"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 30,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_30_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SVB",
+   "officialName": "頂級訓練家收藏箱ex",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 36,
+   "officialDistinctNumbers": 28,
+   "officialWithoutNumber": 8,
+   "ourCards": 36,
+   "printedTotal": 28,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "MET",
+    "PSY",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SVAW",
+   "officialName": "起始組合ex 潤水鴨&謎擬Ｑ ex",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 25,
+   "officialDistinctNumbers": 23,
+   "officialWithoutNumber": 2,
+   "ourCards": 25,
+   "printedTotal": 23,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "PSY",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SVAM",
+   "officialName": "起始組合ex 新葉喵&路卡利歐 ex",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 25,
+   "officialDistinctNumbers": 23,
+   "officialWithoutNumber": 2,
+   "ourCards": 25,
+   "printedTotal": 23,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "FIG",
+    "GRA"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SVAL",
+   "officialName": "起始組合ex 呆火鱷&電龍 ex",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 23,
+   "officialDistinctNumbers": 21,
+   "officialWithoutNumber": 2,
+   "ourCards": 23,
+   "printedTotal": 21,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "FIR",
+    "LIG"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SV1V",
+   "officialName": "擴充包「紫ex」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 108,
+   "officialDistinctNumbers": 108,
+   "officialWithoutNumber": 0,
+   "ourCards": 78,
+   "printedTotal": 78,
+   "missingNumbersInDb": [
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095",
+    "096",
+    "097",
+    "098",
+    "099",
+    "100",
+    "101",
+    "102",
+    "103",
+    "104",
+    "105",
+    "106",
+    "107",
+    "108"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 30,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_30_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV1S",
+   "officialName": "擴充包「朱ex」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 108,
+   "officialDistinctNumbers": 108,
+   "officialWithoutNumber": 0,
+   "ourCards": 78,
+   "printedTotal": 78,
+   "missingNumbersInDb": [
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088",
+    "089",
+    "090",
+    "091",
+    "092",
+    "093",
+    "094",
+    "095",
+    "096",
+    "097",
+    "098",
+    "099",
+    "100",
+    "101",
+    "102",
+    "103",
+    "104",
+    "105",
+    "106",
+    "107",
+    "108"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 30,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_30_NUMBERS"
+   ],
+   "likelyCause": "DB series came from TCGdex and stops at the printed total; official has secret-rare numbers above it (ADR 0023 only supplemented SV9/SV10)"
+  },
+  {
+   "code": "SV-P",
+   "officialName": "特典卡 朱&紫",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 238,
+   "officialDistinctNumbers": 214,
+   "officialWithoutNumber": 23,
+   "ourCards": 94,
+   "printedTotal": null,
+   "missingNumbersInDb": [
+    "056",
+    "058",
+    "099",
+    "100",
+    "101",
+    "102",
+    "103",
+    "104",
+    "105",
+    "106",
+    "107",
+    "108",
+    "109",
+    "110",
+    "111",
+    "112",
+    "113",
+    "114",
+    "115",
+    "116",
+    "117",
+    "133",
+    "134",
+    "135",
+    "136",
+    "137",
+    "138",
+    "139",
+    "140",
+    "141",
+    "142",
+    "143",
+    "144",
+    "145",
+    "146",
+    "147",
+    "148",
+    "149",
+    "150",
+    "151",
+    "152",
+    "153",
+    "154",
+    "155",
+    "156",
+    "157",
+    "158",
+    "159",
+    "160",
+    "161",
+    "162",
+    "163",
+    "164",
+    "165",
+    "166",
+    "167",
+    "168",
+    "169",
+    "170",
+    "171",
+    "174",
+    "175",
+    "176",
+    "177",
+    "178",
+    "179",
+    "180",
+    "181",
+    "182",
+    "183",
+    "184",
+    "185",
+    "186",
+    "187",
+    "188",
+    "189",
+    "190",
+    "191",
+    "192",
+    "204",
+    "208",
+    "209",
+    "210",
+    "211",
+    "212",
+    "213",
+    "214",
+    "215",
+    "218",
+    "220",
+    "221",
+    "222",
+    "223",
+    "224",
+    "225",
+    "226",
+    "227",
+    "228",
+    "229",
+    "230",
+    "231",
+    "232",
+    "233",
+    "234",
+    "235",
+    "236",
+    "237",
+    "238",
+    "239",
+    "240",
+    "242",
+    "243",
+    "244",
+    "245",
+    "246",
+    "247",
+    "249",
+    "250",
+    "251",
+    "252",
+    "253",
+    "254",
+    "255",
+    "256",
+    "257",
+    "258",
+    "259",
+    "260",
+    "261",
+    "262",
+    "263",
+    "264",
+    "265"
+   ],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 133,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "56",
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "MET",
+    "PSY",
+    "WAT",
+    "no0",
+    "no1",
+    "no2",
+    "no3"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "MISSING_133_NUMBERS",
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "DB series came from TCGdex (94 rows); official SV-P has 214 numbered cards (3-digit numbers up to 265) plus 23 unnumbered; DB also has \"56\" against official \"056\" (probable padding duplicate) and no0-no3"
+  },
+  {
+   "code": "S-P",
+   "officialName": "特典卡 劍&盾",
+   "officialReleaseDate": null,
+   "dbSource": null,
+   "officialListedCards": 151,
+   "officialDistinctNumbers": 0,
+   "officialWithoutNumber": 0,
+   "ourCards": 0,
+   "printedTotal": null,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "SERIES_NOT_IN_DB",
+    "DETAIL_NOT_READ"
+   ],
+   "likelyCause": "official series not imported (special card series, HANDOFF 26 lists it as unprocessed)"
+  },
+  {
+   "code": "SN",
+   "officialName": "初階牌組100 特別版",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 25,
+   "officialDistinctNumbers": 24,
+   "officialWithoutNumber": 1,
+   "ourCards": 25,
+   "printedTotal": 24,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "LIG"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "S10b",
+   "officialName": "強化擴充包「Pokémon GO」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 79,
+   "officialDistinctNumbers": 71,
+   "officialWithoutNumber": 8,
+   "ourCards": 79,
+   "printedTotal": 71,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "MET",
+    "PSY",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SLD",
+   "officialName": "起始組合VSTAR 達克萊伊",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 20,
+   "officialWithoutNumber": 1,
+   "ourCards": 21,
+   "printedTotal": 20,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "DAR"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SLL",
+   "officialName": "起始組合VSTAR 路卡利歐",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 21,
+   "officialWithoutNumber": 1,
+   "ourCards": 22,
+   "printedTotal": 21,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "FIG"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SI",
+   "officialName": "初階牌組100",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 422,
+   "officialDistinctNumbers": 414,
+   "officialWithoutNumber": 8,
+   "ourCards": 422,
+   "printedTotal": 414,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "MET",
+    "PSY",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "S8b",
+   "officialName": "高級擴充包「VMAX絕群壓軸」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 181,
+   "officialDistinctNumbers": 180,
+   "officialWithoutNumber": 1,
+   "ourCards": 181,
+   "printedTotal": 184,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "056"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "S8a",
+   "officialName": "擴充包「25週年收藏款」",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 33,
+   "officialDistinctNumbers": 24,
+   "officialWithoutNumber": 9,
+   "ourCards": 33,
+   "printedTotal": 28,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "025",
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "MET",
+    "PSY",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SP5",
+   "officialName": "蒼響V-UNION / 超夢V-UNION / 甲賀忍蛙V-UNION",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 4,
+   "officialDistinctNumbers": 1,
+   "officialWithoutNumber": 3,
+   "ourCards": 4,
+   "printedTotal": 13,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "001",
+    "005",
+    "009"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SH",
+   "officialName": "寶可夢卡牌家庭組合",
+   "officialReleaseDate": null,
+   "dbSource": "tcgdex-zh-tw",
+   "officialListedCards": 59,
+   "officialDistinctNumbers": 53,
+   "officialWithoutNumber": 6,
+   "ourCards": 59,
+   "printedTotal": 53,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [
+    "DAR",
+    "FIG",
+    "FIR",
+    "GRA",
+    "LIG",
+    "WAT"
+   ],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "KNOWN_EXTRA_IN_DB"
+   ],
+   "likelyCause": "known exclusion only (basic energy type codes / V-UNION pieces)"
+  },
+  {
+   "code": "SM-P",
+   "officialName": "特典卡 太陽&月亮",
+   "officialReleaseDate": null,
+   "dbSource": null,
+   "officialListedCards": 1,
+   "officialDistinctNumbers": 0,
+   "officialWithoutNumber": 0,
+   "ourCards": 0,
+   "printedTotal": null,
+   "missingNumbersInDb": [],
+   "missingInsidePrintedTotal": 0,
+   "missingAbovePrintedTotal": 0,
+   "missingKnownSpecial": [],
+   "extraNumbersInDbKnownExclusion": [],
+   "extraNumbersInDbUnexplained": [],
+   "differences": [
+    "SERIES_NOT_IN_DB",
+    "DETAIL_NOT_READ"
+   ],
+   "likelyCause": "official series not imported (special card series, HANDOFF 26 lists it as unprocessed)"
+  }
+ ],
+ "allSeries": [
+  {
+   "code": "M6a",
+   "officialName": "擴充包「30th CELEBRATION」",
+   "officialListedCards": 168,
+   "officialDistinctNumbers": 160,
+   "ourCards": 159,
+   "inDb": true
+  },
+  {
+   "code": "MF",
+   "officialName": "頂級牌組組合 「太陽伊布・月亮伊布」",
+   "officialListedCards": 49,
+   "officialDistinctNumbers": 44,
+   "ourCards": 44,
+   "inDb": true
+  },
+  {
+   "code": "M6",
+   "officialName": "擴充包「綠寶石風暴」",
+   "officialListedCards": 110,
+   "officialDistinctNumbers": 107,
+   "ourCards": 107,
+   "inDb": true
+  },
+  {
+   "code": "MTK",
+   "officialName": "戰術牌組「超級快龍ex」",
+   "officialListedCards": 25,
+   "officialDistinctNumbers": 23,
+   "ourCards": 23,
+   "inDb": true
+  },
+  {
+   "code": "MTH",
+   "officialName": "戰術牌組「超級巨牙鯊ex」",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 20,
+   "ourCards": 20,
+   "inDb": true
+  },
+  {
+   "code": "MTS",
+   "officialName": "戰術牌組「超級沙奈朵ex」",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 23,
+   "ourCards": 23,
+   "inDb": true
+  },
+  {
+   "code": "MTL",
+   "officialName": "戰術牌組「超級噴火龍Xex」",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 23,
+   "ourCards": 23,
+   "inDb": true
+  },
+  {
+   "code": "M5",
+   "officialName": "擴充包「深淵之瞳」",
+   "officialListedCards": 118,
+   "officialDistinctNumbers": 118,
+   "ourCards": 118,
+   "inDb": true
+  },
+  {
+   "code": "M4",
+   "officialName": "擴充包「忍者飛旋」",
+   "officialListedCards": 120,
+   "officialDistinctNumbers": 120,
+   "ourCards": 120,
+   "inDb": true
+  },
+  {
+   "code": "MJ",
+   "officialName": "New Trainer Journey",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 22,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "M3",
+   "officialName": "擴充包「虛無歸零」",
+   "officialListedCards": 117,
+   "officialDistinctNumbers": 117,
+   "ourCards": 117,
+   "inDb": true
+  },
+  {
+   "code": "MC",
+   "officialName": "初階牌組 100對戰收藏",
+   "officialListedCards": 902,
+   "officialDistinctNumbers": 766,
+   "ourCards": 761,
+   "inDb": true
+  },
+  {
+   "code": "M2a",
+   "officialName": "高級擴充包「超級進化夢想ex」",
+   "officialListedCards": 486,
+   "officialDistinctNumbers": 250,
+   "ourCards": 250,
+   "inDb": true
+  },
+  {
+   "code": "M2",
+   "officialName": "擴充包「烈獄狂火X」",
+   "officialListedCards": 116,
+   "officialDistinctNumbers": 116,
+   "ourCards": 116,
+   "inDb": true
+  },
+  {
+   "code": "MBD",
+   "officialName": "挑戰牌組 「超級蒂安希ex」",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 23,
+   "ourCards": 23,
+   "inDb": true
+  },
+  {
+   "code": "MBG",
+   "officialName": "挑戰牌組「超級耿鬼ex」",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 23,
+   "ourCards": 23,
+   "inDb": true
+  },
+  {
+   "code": "M1S",
+   "officialName": "擴充包「超級交響樂」",
+   "officialListedCards": 92,
+   "officialDistinctNumbers": 92,
+   "ourCards": 92,
+   "inDb": true
+  },
+  {
+   "code": "M1L",
+   "officialName": "擴充包「超級勇氣」",
+   "officialListedCards": 92,
+   "officialDistinctNumbers": 92,
+   "ourCards": 92,
+   "inDb": true
+  },
+  {
+   "code": "M-P",
+   "officialName": "特典卡 超級進化",
+   "officialListedCards": 208,
+   "officialDistinctNumbers": 0,
+   "ourCards": 0,
+   "inDb": false
+  },
+  {
+   "code": "SVQL",
+   "officialName": "ex初階牌組 噴火龍",
+   "officialListedCards": 23,
+   "officialDistinctNumbers": 22,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "SVQP",
+   "officialName": "ex初階牌組 皮卡丘",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 23,
+   "ourCards": 23,
+   "inDb": true
+  },
+  {
+   "code": "SV11B",
+   "officialName": "擴充包「漆黑伏特」",
+   "officialListedCards": 254,
+   "officialDistinctNumbers": 174,
+   "ourCards": 174,
+   "inDb": true
+  },
+  {
+   "code": "SV11W",
+   "officialName": "擴充包 「純白閃焰」",
+   "officialListedCards": 254,
+   "officialDistinctNumbers": 174,
+   "ourCards": 174,
+   "inDb": true
+  },
+  {
+   "code": "SV10",
+   "officialName": "擴充包「火箭隊的榮耀」",
+   "officialListedCards": 132,
+   "officialDistinctNumbers": 132,
+   "ourCards": 132,
+   "inDb": true
+  },
+  {
+   "code": "SV9a",
+   "officialName": "強化擴充包「熱風競技場」",
+   "officialListedCards": 92,
+   "officialDistinctNumbers": 92,
+   "ourCards": 92,
+   "inDb": true
+  },
+  {
+   "code": "SVOD",
+   "officialName": "挑戰牌組 大吾的鐵啞鈴&巨金怪ex",
+   "officialListedCards": 23,
+   "officialDistinctNumbers": 21,
+   "ourCards": 21,
+   "inDb": true
+  },
+  {
+   "code": "SVOM",
+   "officialName": "挑戰牌組 瑪俐的莫魯貝可&長毛巨魔ex",
+   "officialListedCards": 23,
+   "officialDistinctNumbers": 22,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "SV9",
+   "officialName": "擴充包「對戰搭檔」",
+   "officialListedCards": 132,
+   "officialDistinctNumbers": 132,
+   "ourCards": 132,
+   "inDb": true
+  },
+  {
+   "code": "SVM",
+   "officialName": "雙ex初階牌組 Generations",
+   "officialListedCards": 183,
+   "officialDistinctNumbers": 175,
+   "ourCards": 175,
+   "inDb": true
+  },
+  {
+   "code": "SV8a",
+   "officialName": "高級擴充包「太晶慶典ex」",
+   "officialListedCards": 381,
+   "officialDistinctNumbers": 237,
+   "ourCards": 237,
+   "inDb": true
+  },
+  {
+   "code": "SV8",
+   "officialName": "擴充包「超電突圍」",
+   "officialListedCards": 138,
+   "officialDistinctNumbers": 138,
+   "ourCards": 106,
+   "inDb": true
+  },
+  {
+   "code": "SVK",
+   "officialName": "牌組構築BOX 樂園騰龍",
+   "officialListedCards": 50,
+   "officialDistinctNumbers": 42,
+   "ourCards": 42,
+   "inDb": true
+  },
+  {
+   "code": "SVPS",
+   "officialName": "ex特別組合 太晶屬性：星晶 蒼炎刃鬼ex",
+   "officialListedCards": 8,
+   "officialDistinctNumbers": 8,
+   "ourCards": 8,
+   "inDb": true
+  },
+  {
+   "code": "SVPN",
+   "officialName": "ex特別組合 太晶屬性：星晶 仙子伊布ex",
+   "officialListedCards": 8,
+   "officialDistinctNumbers": 8,
+   "ourCards": 8,
+   "inDb": true
+  },
+  {
+   "code": "SV7a",
+   "officialName": "強化擴充包「樂園騰龍」",
+   "officialListedCards": 94,
+   "officialDistinctNumbers": 94,
+   "ourCards": 64,
+   "inDb": true
+  },
+  {
+   "code": "SVI",
+   "officialName": "Trianers Camp",
+   "officialListedCards": 133,
+   "officialDistinctNumbers": 66,
+   "ourCards": 66,
+   "inDb": true
+  },
+  {
+   "code": "SV7",
+   "officialName": "擴充包「星晶奇跡」",
+   "officialListedCards": 135,
+   "officialDistinctNumbers": 135,
+   "ourCards": 132,
+   "inDb": true
+  },
+  {
+   "code": "SVTH",
+   "officialName": "戰術牌組「巨鉗螳螂ex」",
+   "officialListedCards": 19,
+   "officialDistinctNumbers": 18,
+   "ourCards": 18,
+   "inDb": true
+  },
+  {
+   "code": "SVTG",
+   "officialName": "戰術牌組「太晶烈咬陸鯊ex」",
+   "officialListedCards": 20,
+   "officialDistinctNumbers": 19,
+   "ourCards": 19,
+   "inDb": true
+  },
+  {
+   "code": "SVTS",
+   "officialName": "戰術牌組「沙奈朵ex」",
+   "officialListedCards": 23,
+   "officialDistinctNumbers": 22,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "SVTR",
+   "officialName": "戰術牌組「密勒頓ex」",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 21,
+   "ourCards": 21,
+   "inDb": true
+  },
+  {
+   "code": "SVTL",
+   "officialName": "戰術牌組「太晶噴火龍ex」",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 21,
+   "ourCards": 21,
+   "inDb": true
+  },
+  {
+   "code": "SVTM",
+   "officialName": "戰術牌組「魔幻假面喵ex」",
+   "officialListedCards": 23,
+   "officialDistinctNumbers": 22,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "SV6a",
+   "officialName": "強化擴充包「黑夜漫遊者」",
+   "officialListedCards": 94,
+   "officialDistinctNumbers": 94,
+   "ourCards": 64,
+   "inDb": true
+  },
+  {
+   "code": "SV6",
+   "officialName": "擴充包「變幻假面」",
+   "officialListedCards": 133,
+   "officialDistinctNumbers": 133,
+   "ourCards": 130,
+   "inDb": true
+  },
+  {
+   "code": "SV5a",
+   "officialName": "強化擴充包「緋紅薄霧」",
+   "officialListedCards": 96,
+   "officialDistinctNumbers": 96,
+   "ourCards": 66,
+   "inDb": true
+  },
+  {
+   "code": "SVHM",
+   "officialName": "起始組合「未來密勒頓ex」",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 22,
+   "ourCards": 24,
+   "inDb": true
+  },
+  {
+   "code": "SVHK",
+   "officialName": "起始組合「古代故勒頓ex」",
+   "officialListedCards": 24,
+   "officialDistinctNumbers": 22,
+   "ourCards": 24,
+   "inDb": true
+  },
+  {
+   "code": "SV5M",
+   "officialName": "擴充包「異度審判」",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "ourCards": 97,
+   "inDb": true
+  },
+  {
+   "code": "SV5K",
+   "officialName": "擴充包「狂野之力」",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "ourCards": 46,
+   "inDb": true
+  },
+  {
+   "code": "SV4a",
+   "officialName": "高級擴充包「閃色寶藏ex」",
+   "officialListedCards": 360,
+   "officialDistinctNumbers": 360,
+   "ourCards": 314,
+   "inDb": true
+  },
+  {
+   "code": "SV4K",
+   "officialName": "擴充包「古代咆哮」",
+   "officialListedCards": 95,
+   "officialDistinctNumbers": 95,
+   "ourCards": 66,
+   "inDb": true
+  },
+  {
+   "code": "SV4M",
+   "officialName": "擴充包「未來閃光」",
+   "officialListedCards": 95,
+   "officialDistinctNumbers": 95,
+   "ourCards": 66,
+   "inDb": true
+  },
+  {
+   "code": "SV3a",
+   "officialName": "強化擴充包「激狂駭浪」",
+   "officialListedCards": 92,
+   "officialDistinctNumbers": 92,
+   "ourCards": 89,
+   "inDb": true
+  },
+  {
+   "code": "SVEM",
+   "officialName": "起始組合 太晶 超夢ex",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 20,
+   "ourCards": 21,
+   "inDb": true
+  },
+  {
+   "code": "SVEL",
+   "officialName": "起始組合 太晶 骨紋巨聲鱷ex",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 20,
+   "ourCards": 21,
+   "inDb": true
+  },
+  {
+   "code": "SVF",
+   "officialName": "牌組構築BOX黯焰支配者",
+   "officialListedCards": 46,
+   "officialDistinctNumbers": 38,
+   "ourCards": 46,
+   "inDb": true
+  },
+  {
+   "code": "SV3",
+   "officialName": "擴充包「黯焰支配者」",
+   "officialListedCards": 141,
+   "officialDistinctNumbers": 141,
+   "ourCards": 138,
+   "inDb": true
+  },
+  {
+   "code": "SVD",
+   "officialName": "ex初階牌組",
+   "officialListedCards": 147,
+   "officialDistinctNumbers": 139,
+   "ourCards": 147,
+   "inDb": true
+  },
+  {
+   "code": "SV2a",
+   "officialName": "強化擴充包「寶可夢卡牌151」",
+   "officialListedCards": 363,
+   "officialDistinctNumbers": 210,
+   "ourCards": 207,
+   "inDb": true
+  },
+  {
+   "code": "SVP1",
+   "officialName": "ex特別組合",
+   "officialListedCards": 7,
+   "officialDistinctNumbers": 7,
+   "ourCards": 7,
+   "inDb": true
+  },
+  {
+   "code": "SVC",
+   "officialName": "起始組合ex 皮卡丘特別組合",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 21,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "SV2P",
+   "officialName": "擴充包「冰雪險境」",
+   "officialListedCards": 99,
+   "officialDistinctNumbers": 99,
+   "ourCards": 71,
+   "inDb": true
+  },
+  {
+   "code": "SV2D",
+   "officialName": "擴充包「碟旋暴擊」",
+   "officialListedCards": 99,
+   "officialDistinctNumbers": 99,
+   "ourCards": 71,
+   "inDb": true
+  },
+  {
+   "code": "SV1a",
+   "officialName": "強化擴充包「三連音爆」",
+   "officialListedCards": 103,
+   "officialDistinctNumbers": 103,
+   "ourCards": 73,
+   "inDb": true
+  },
+  {
+   "code": "SVB",
+   "officialName": "頂級訓練家收藏箱ex",
+   "officialListedCards": 36,
+   "officialDistinctNumbers": 28,
+   "ourCards": 36,
+   "inDb": true
+  },
+  {
+   "code": "SVAW",
+   "officialName": "起始組合ex 潤水鴨&謎擬Ｑ ex",
+   "officialListedCards": 25,
+   "officialDistinctNumbers": 23,
+   "ourCards": 25,
+   "inDb": true
+  },
+  {
+   "code": "SVAM",
+   "officialName": "起始組合ex 新葉喵&路卡利歐 ex",
+   "officialListedCards": 25,
+   "officialDistinctNumbers": 23,
+   "ourCards": 25,
+   "inDb": true
+  },
+  {
+   "code": "SVAL",
+   "officialName": "起始組合ex 呆火鱷&電龍 ex",
+   "officialListedCards": 23,
+   "officialDistinctNumbers": 21,
+   "ourCards": 23,
+   "inDb": true
+  },
+  {
+   "code": "SV1V",
+   "officialName": "擴充包「紫ex」",
+   "officialListedCards": 108,
+   "officialDistinctNumbers": 108,
+   "ourCards": 78,
+   "inDb": true
+  },
+  {
+   "code": "SV1S",
+   "officialName": "擴充包「朱ex」",
+   "officialListedCards": 108,
+   "officialDistinctNumbers": 108,
+   "ourCards": 78,
+   "inDb": true
+  },
+  {
+   "code": "SV-P",
+   "officialName": "特典卡 朱&紫",
+   "officialListedCards": 238,
+   "officialDistinctNumbers": 214,
+   "ourCards": 94,
+   "inDb": true
+  },
+  {
+   "code": "SO",
+   "officialName": "特別牌組組合 「噴火龍VSTAR vs 烈空坐VMAX」",
+   "officialListedCards": 32,
+   "officialDistinctNumbers": 30,
+   "ourCards": 30,
+   "inDb": true
+  },
+  {
+   "code": "S12a",
+   "officialName": "高級擴充包「天地萬物VSTAR」",
+   "officialListedCards": 250,
+   "officialDistinctNumbers": 250,
+   "ourCards": 250,
+   "inDb": true
+  },
+  {
+   "code": "S-P",
+   "officialName": "特典卡 劍&盾",
+   "officialListedCards": 151,
+   "officialDistinctNumbers": 0,
+   "ourCards": 0,
+   "inDb": false
+  },
+  {
+   "code": "SDM",
+   "officialName": "V初階牌組 「超夢」",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 22,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "SDP",
+   "officialName": "V初階牌組 「皮卡丘」",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 22,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "SDL",
+   "officialName": "V初階牌組 「噴火龍」",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 21,
+   "ourCards": 21,
+   "inDb": true
+  },
+  {
+   "code": "S12",
+   "officialName": "擴充包「思維激盪」",
+   "officialListedCards": 114,
+   "officialDistinctNumbers": 114,
+   "ourCards": 114,
+   "inDb": true
+  },
+  {
+   "code": "SN",
+   "officialName": "初階牌組100 特別版",
+   "officialListedCards": 25,
+   "officialDistinctNumbers": 24,
+   "ourCards": 25,
+   "inDb": true
+  },
+  {
+   "code": "S11a",
+   "officialName": "強化擴充包「白熱奧祕」",
+   "officialListedCards": 68,
+   "officialDistinctNumbers": 68,
+   "ourCards": 68,
+   "inDb": true
+  },
+  {
+   "code": "SP6",
+   "officialName": "VSTAR特別組合",
+   "officialListedCards": 6,
+   "officialDistinctNumbers": 6,
+   "ourCards": 6,
+   "inDb": true
+  },
+  {
+   "code": "SPD",
+   "officialName": "VSTAR&VMAX 高級牌組 代歐奇希斯",
+   "officialListedCards": 20,
+   "officialDistinctNumbers": 20,
+   "ourCards": 20,
+   "inDb": true
+  },
+  {
+   "code": "SPZ",
+   "officialName": "VSTAR&VMAX 高級牌組 捷拉奧拉",
+   "officialListedCards": 20,
+   "officialDistinctNumbers": 20,
+   "ourCards": 20,
+   "inDb": true
+  },
+  {
+   "code": "S11",
+   "officialName": "擴充包 「迷途深淵」",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "ourCards": 100,
+   "inDb": true
+  },
+  {
+   "code": "S10b",
+   "officialName": "強化擴充包「Pokémon GO」",
+   "officialListedCards": 79,
+   "officialDistinctNumbers": 71,
+   "ourCards": 79,
+   "inDb": true
+  },
+  {
+   "code": "S10a",
+   "officialName": "強化擴充包「黑暗亡靈」",
+   "officialListedCards": 71,
+   "officialDistinctNumbers": 71,
+   "ourCards": 71,
+   "inDb": true
+  },
+  {
+   "code": "S10P",
+   "officialName": "擴充包「空間魔術師」",
+   "officialListedCards": 67,
+   "officialDistinctNumbers": 67,
+   "ourCards": 67,
+   "inDb": true
+  },
+  {
+   "code": "S10D",
+   "officialName": "擴充包「時間觀察者」",
+   "officialListedCards": 67,
+   "officialDistinctNumbers": 67,
+   "ourCards": 67,
+   "inDb": true
+  },
+  {
+   "code": "SLD",
+   "officialName": "起始組合VSTAR 達克萊伊",
+   "officialListedCards": 21,
+   "officialDistinctNumbers": 20,
+   "ourCards": 21,
+   "inDb": true
+  },
+  {
+   "code": "SLL",
+   "officialName": "起始組合VSTAR 路卡利歐",
+   "officialListedCards": 22,
+   "officialDistinctNumbers": 21,
+   "ourCards": 22,
+   "inDb": true
+  },
+  {
+   "code": "S9a",
+   "officialName": "強化擴充包「對戰地區」",
+   "officialListedCards": 67,
+   "officialDistinctNumbers": 67,
+   "ourCards": 67,
+   "inDb": true
+  },
+  {
+   "code": "SI",
+   "officialName": "初階牌組100",
+   "officialListedCards": 422,
+   "officialDistinctNumbers": 414,
+   "ourCards": 422,
+   "inDb": true
+  },
+  {
+   "code": "SK",
+   "officialName": "頂級訓練家收藏箱 VSTAR",
+   "officialListedCards": 30,
+   "officialDistinctNumbers": 30,
+   "ourCards": 30,
+   "inDb": true
+  },
+  {
+   "code": "SJ",
+   "officialName": "特別牌組組合 蒼響・藏瑪然特VS無極汰那",
+   "officialListedCards": 30,
+   "officialDistinctNumbers": 30,
+   "ourCards": 30,
+   "inDb": true
+  },
+  {
+   "code": "S9",
+   "officialName": "擴充包「星星誕生」",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "ourCards": 100,
+   "inDb": true
+  },
+  {
+   "code": "S8b",
+   "officialName": "高級擴充包「VMAX絕群壓軸」",
+   "officialListedCards": 181,
+   "officialDistinctNumbers": 180,
+   "ourCards": 181,
+   "inDb": true
+  },
+  {
+   "code": "S8a",
+   "officialName": "擴充包「25週年收藏款」",
+   "officialListedCards": 33,
+   "officialDistinctNumbers": 24,
+   "ourCards": 33,
+   "inDb": true
+  },
+  {
+   "code": "SCD",
+   "officialName": "V起始牌組 「強大」",
+   "officialListedCards": 159,
+   "officialDistinctNumbers": 159,
+   "ourCards": 159,
+   "inDb": true
+  },
+  {
+   "code": "S8",
+   "officialName": "擴充包「匯流藝術」",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "ourCards": 100,
+   "inDb": true
+  },
+  {
+   "code": "SP5",
+   "officialName": "蒼響V-UNION / 超夢V-UNION / 甲賀忍蛙V-UNION",
+   "officialListedCards": 4,
+   "officialDistinctNumbers": 1,
+   "ourCards": 4,
+   "inDb": true
+  },
+  {
+   "code": "SH",
+   "officialName": "寶可夢卡牌家庭組合",
+   "officialListedCards": 59,
+   "officialDistinctNumbers": 53,
+   "ourCards": 59,
+   "inDb": true
+  },
+  {
+   "code": "S7R",
+   "officialName": "擴充包「蒼空烈流」",
+   "officialListedCards": 67,
+   "officialDistinctNumbers": 67,
+   "ourCards": 67,
+   "inDb": true
+  },
+  {
+   "code": "S7D",
+   "officialName": "擴充包「摩天巔峰」",
+   "officialListedCards": 67,
+   "officialDistinctNumbers": 67,
+   "ourCards": 67,
+   "inDb": true
+  },
+  {
+   "code": "SCC",
+   "officialName": "V起始牌組 「進化」",
+   "officialListedCards": 171,
+   "officialDistinctNumbers": 171,
+   "ourCards": 171,
+   "inDb": true
+  },
+  {
+   "code": "S6a",
+   "officialName": "強化擴充包「伊布英雄」",
+   "officialListedCards": 69,
+   "officialDistinctNumbers": 69,
+   "ourCards": 69,
+   "inDb": true
+  },
+  {
+   "code": "S6H",
+   "officialName": "擴充包「銀白戰槍」",
+   "officialListedCards": 70,
+   "officialDistinctNumbers": 70,
+   "ourCards": 70,
+   "inDb": true
+  },
+  {
+   "code": "S6K",
+   "officialName": "擴充包「漆黑幽魂」",
+   "officialListedCards": 70,
+   "officialDistinctNumbers": 70,
+   "ourCards": 70,
+   "inDb": true
+  },
+  {
+   "code": "S5a",
+   "officialName": "強化擴充包「雙璧戰士」",
+   "officialListedCards": 70,
+   "officialDistinctNumbers": 70,
+   "ourCards": 70,
+   "inDb": true
+  },
+  {
+   "code": "SCB",
+   "officialName": "V起始牌組 「挑戰」",
+   "officialListedCards": 156,
+   "officialDistinctNumbers": 156,
+   "ourCards": 156,
+   "inDb": true
+  },
+  {
+   "code": "S5R",
+   "officialName": "擴充包「連撃大師」",
+   "officialListedCards": 70,
+   "officialDistinctNumbers": 70,
+   "ourCards": 70,
+   "inDb": true
+  },
+  {
+   "code": "S5I",
+   "officialName": "擴充包「一撃大師」",
+   "officialListedCards": 70,
+   "officialDistinctNumbers": 70,
+   "ourCards": 70,
+   "inDb": true
+  },
+  {
+   "code": "SCA",
+   "officialName": "V起始牌組 「搭檔」",
+   "officialListedCards": 135,
+   "officialDistinctNumbers": 135,
+   "ourCards": 135,
+   "inDb": true
+  },
+  {
+   "code": "S4a",
+   "officialName": "高級擴充包「閃色明星V」",
+   "officialListedCards": 190,
+   "officialDistinctNumbers": 190,
+   "ourCards": 190,
+   "inDb": true
+  },
+  {
+   "code": "S4",
+   "officialName": "擴充包『驚天伏特攻擊』",
+   "officialListedCards": 100,
+   "officialDistinctNumbers": 100,
+   "ourCards": 100,
+   "inDb": true
+  },
+  {
+   "code": "SC2D",
+   "officialName": "V起始牌組「無極力量」",
+   "officialListedCards": 157,
+   "officialDistinctNumbers": 157,
+   "ourCards": 157,
+   "inDb": true
+  },
+  {
+   "code": "SC2b",
+   "officialName": "擴充包「無極力量」SET B",
+   "officialListedCards": 144,
+   "officialDistinctNumbers": 144,
+   "ourCards": 144,
+   "inDb": true
+  },
+  {
+   "code": "SC2a",
+   "officialName": "擴充包「無極力量」SET A",
+   "officialListedCards": 145,
+   "officialDistinctNumbers": 145,
+   "ourCards": 145,
+   "inDb": true
+  },
+  {
+   "code": "SC1D",
+   "officialName": "V起始牌組「劍&盾」",
+   "officialListedCards": 164,
+   "officialDistinctNumbers": 164,
+   "ourCards": 164,
+   "inDb": true
+  },
+  {
+   "code": "SC1a",
+   "officialName": "擴充包「劍&盾」SET A",
+   "officialListedCards": 172,
+   "officialDistinctNumbers": 172,
+   "ourCards": 172,
+   "inDb": true
+  },
+  {
+   "code": "SC1b",
+   "officialName": "擴充包「劍&盾」SET B",
+   "officialListedCards": 171,
+   "officialDistinctNumbers": 171,
+   "ourCards": 171,
+   "inDb": true
+  },
+  {
+   "code": "AS6a",
+   "officialName": "擴充包「傳說交鋒」SET A",
+   "officialListedCards": 196,
+   "officialDistinctNumbers": 196,
+   "ourCards": 196,
+   "inDb": true
+  },
+  {
+   "code": "AS6b",
+   "officialName": "擴充包「傳說交鋒」SET B",
+   "officialListedCards": 194,
+   "officialDistinctNumbers": 194,
+   "ourCards": 194,
+   "inDb": true
+  },
+  {
+   "code": "AS6D",
+   "officialName": "G超起始牌組「傳說交鋒」",
+   "officialListedCards": 177,
+   "officialDistinctNumbers": 168,
+   "ourCards": 168,
+   "inDb": true
+  },
+  {
+   "code": "AS5a",
+   "officialName": "擴充包「雙倍爆擊」SET A",
+   "officialListedCards": 184,
+   "officialDistinctNumbers": 184,
+   "ourCards": 184,
+   "inDb": true
+  },
+  {
+   "code": "As5b",
+   "officialName": "擴充包「雙倍爆擊」SET B",
+   "officialListedCards": 186,
+   "officialDistinctNumbers": 186,
+   "ourCards": 186,
+   "inDb": true
+  },
+  {
+   "code": "AS5D",
+   "officialName": "G超起始牌組「雙倍爆擊」",
+   "officialListedCards": 169,
+   "officialDistinctNumbers": 169,
+   "ourCards": 169,
+   "inDb": true
+  },
+  {
+   "code": "AC2a",
+   "officialName": "擴充包「美夢成真組合篇」SET A",
+   "officialListedCards": 200,
+   "officialDistinctNumbers": 200,
+   "ourCards": 200,
+   "inDb": true
+  },
+  {
+   "code": "AC2b",
+   "officialName": "擴充包「美夢成真組合篇」SET B",
+   "officialListedCards": 200,
+   "officialDistinctNumbers": 200,
+   "ourCards": 200,
+   "inDb": true
+  },
+  {
+   "code": "AC2D",
+   "officialName": "G超起始牌組「美夢成真組合篇」",
+   "officialListedCards": 176,
+   "officialDistinctNumbers": 176,
+   "ourCards": 176,
+   "inDb": true
+  },
+  {
+   "code": "AC1a",
+   "officialName": "擴充包「眾星雲集組合篇」SET A",
+   "officialListedCards": 158,
+   "officialDistinctNumbers": 158,
+   "ourCards": 158,
+   "inDb": true
+  },
+  {
+   "code": "AC1b",
+   "officialName": "擴充包「眾星雲集組合篇」SET B",
+   "officialListedCards": 158,
+   "officialDistinctNumbers": 158,
+   "ourCards": 158,
+   "inDb": true
+  },
+  {
+   "code": "AC1D",
+   "officialName": "G超起始牌組「眾星雲集組合篇」",
+   "officialListedCards": 157,
+   "officialDistinctNumbers": 157,
+   "ourCards": 157,
+   "inDb": true
+  },
+  {
+   "code": "SM-P",
+   "officialName": "特典卡 太陽&月亮",
+   "officialListedCards": 1,
+   "officialDistinctNumbers": 0,
+   "ourCards": 0,
+   "inDb": false
+  }
+ ],
+ "fieldCheck": {
+  "recent7Fresh": {
+   "series": [
+    "MF",
+    "M6a",
+    "M6",
+    "MTL",
+    "MTS",
+    "MTH",
+    "MTK"
+   ],
+   "basis": "fresh 2026-10-14 detail pages and rarity-filtered lists",
+   "cardsCompared": 399,
+   "nameMismatches": 0,
+   "numberMismatches": 0,
+   "rarityMismatches": 2,
+   "mismatches": [
+    {
+     "series": "M6a",
+     "number": "134",
+     "nameZh": "超夢ex",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "FUR",
+       "expectedCode": "UNMAPPED:FUR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "FUR",
+       "expectedCode": "UNMAPPED:FUR"
+      }
+     ]
+    },
+    {
+     "series": "M6a",
+     "number": "135",
+     "nameZh": "夢幻ex",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "FUR",
+       "expectedCode": "UNMAPPED:FUR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "FUR",
+       "expectedCode": "UNMAPPED:FUR"
+      }
+     ]
+    }
+   ],
+   "note": "FUR (rarity filter 22) has no database code; M6a 134 and 135 have NULL rarity (printing data_status incomplete). Every other card in MF, M6a, M6, MTL, MTS, MTH, MTK matches in number, Chinese name and rarity (無標記 = NONE)."
+  },
+  "allOtherSeriesFromCache": {
+   "basis": "docs/evidence/pokemon-tw/official-rarity-20261002.json (details and rarity lists from 2026-10-02; the official id sets are unchanged today)",
+   "cardsCompared": 12182,
+   "nameMismatches": 0,
+   "numberMismatches": 0,
+   "rarityMismatches": 27,
+   "mismatchSummary": {
+    "AC2a PR vs NULL": 14,
+    "AC2b PR vs NULL": 13
+   },
+   "mismatches": [
+    {
+     "series": "AC2a",
+     "number": "013",
+     "nameZh": "時拉比◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "031",
+     "nameZh": "謝米◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "059",
+     "nameZh": "騎拉帝納◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "069",
+     "nameZh": "露奈雅拉◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "097",
+     "nameZh": "蒂安希◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "113",
+     "nameZh": "達克萊伊◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "131",
+     "nameZh": "拉帝歐斯◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "145",
+     "nameZh": "百變怪◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "155",
+     "nameZh": "阿爾宙斯◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "18",
+     "nameZh": "異獸能量◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "188",
+     "nameZh": "露莎米奈◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "189",
+     "nameZh": "渡◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "196",
+     "nameZh": "黑市◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2a",
+     "number": "197",
+     "nameZh": "生命之森◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "023",
+     "nameZh": "比克提尼◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "056",
+     "nameZh": "波爾凱尼恩◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "084",
+     "nameZh": "卡璞・鳴鳴◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "103",
+     "nameZh": "基拉祈◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "115",
+     "nameZh": "索爾迦雷歐◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "126",
+     "nameZh": "哲爾尼亞斯◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "135",
+     "nameZh": "拉帝亞斯◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "173",
+     "nameZh": "赤日◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "186",
+     "nameZh": "弗拉達利◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "193",
+     "nameZh": "雷霆山◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "195",
+     "nameZh": "火力工廠◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "197",
+     "nameZh": "奇蹟迷宮◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    },
+    {
+     "series": "AC2b",
+     "number": "198",
+     "nameZh": "超提昇能量◇",
+     "stale": "2026-10-02 cache",
+     "differences": [
+      {
+       "field": "card.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      },
+      {
+       "field": "printing.rarity",
+       "ours": null,
+       "official": "PR",
+       "expectedCode": "UNMAPPED:PR"
+      }
+     ]
+    }
+   ],
+   "note": "PR (rarity filter 6) has no database code; the 27 AC2a/AC2b cards marked with a diamond have NULL rarity in DB."
+  },
+  "dbRarityNullTotal": 117,
+  "dbRarityNullExplained": "117 = 88 known (basic energy, V-UNION, SV-P special) + 27 PR (AC2a/AC2b) + 2 FUR (M6a 134/135)"
+ }
+}
