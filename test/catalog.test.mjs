@@ -338,6 +338,10 @@ test('configured search merges local exact cards with bounded database matches a
     assert.match(searchQueries[0].get('or'),/name_en\.ilike\.\*Luffy\*/,'mapped English alias should also be queried');
     assert.equal(searchQueries[0].get('limit'),'100','database candidate reads must remain bounded');
 
+    // catalog.json demo cards the database does not hold are not merged in while the database is online.
+    const demo=await (await fetch(`http://127.0.0.1:${appPort}/api/search?q=${encodeURIComponent('噴火龍')}`)).json();
+    assert.ok(!demo.data.some(card=>/charizard/i.test(card.id)),'catalog.json-only demo cards stay out of online results');
+
     const regional=await call('US');
     assert.ok(regional.data.every(card=>card.printings.some(printing=>printing.region==='US')));
     assert.ok(!regional.data.some(card=>card.id==='onepiece-monkey-d-luffy-op05-119'),'region filtering must exclude JP-only exact sample');

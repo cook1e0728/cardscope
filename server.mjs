@@ -662,9 +662,12 @@ function comparePrintings(a,b){return (REGION_PRIORITY[a?.region]??9)-(REGION_PR
 let fallbackCatalogCache=null;
 async function loadFallbackCatalog(){if(!fallbackCatalogCache)fallbackCatalogCache=JSON.parse(await readFile(join(root,'data','catalog.json'),'utf8'));return structuredClone(fallbackCatalogCache)}
 const uniqueValues=(...groups)=>[...new Set(groups.flat().filter(Boolean).map(String))];
-function mergeCatalogRows(fallbackRows=[],databaseRows=[]){
+// With the database online, catalog.json only fills empty fields of rows the database has (keepFallbackOnly false): a demo row the
+// database no longer holds (the OP05-119 seed, deleted 2026-10-14) must not come back through the merge. Offline, catalog.json is the catalog.
+function mergeCatalogRows(fallbackRows=[],databaseRows=[],{keepFallbackOnly=true}={}){
   const rows=new Map(fallbackRows.map(row=>[row.id,structuredClone(row)]));
   for(const row of databaseRows){const fallback=rows.get(row.id)||{},merged={...fallback,...row};for(const key of ['nameZh','nameJa','nameEn','nameKo','imageSource','sourceUrl'])if(!merged[key])merged[key]=fallback[key]||null;if(!Object.hasOwn(row,'imageUrl'))merged.imageUrl=fallback.imageUrl||null;merged.aliases=uniqueValues(fallback.aliases||[],row.aliases||[]);merged.printings=[...(fallback.printings||[]),...(row.printings||[])];rows.set(row.id,merged)}
+  if(!keepFallbackOnly){const ids=new Set(databaseRows.map(row=>row.id));return [...rows.values()].filter(row=>ids.has(row.id))}
   return [...rows.values()];
 }
 function canonicalizeCatalog(catalog){
@@ -704,7 +707,7 @@ async function loadCatalogUncached(){
     const printingByCard=new Map(),imageByCard=new Map();
     for(const p of printings||[]){const list=printingByCard.get(p.cardId)||[];list.push(p);printingByCard.set(p.cardId,list)}
     for(const i of images||[]){const list=imageByCard.get(i.cardId)||[];list.push(i);imageByCard.set(i.cardId,list)}
-    const databaseCards=(cards||[]).map(c=>{const ps=printingByCard.get(c.id)||[],imgs=imageByCard.get(c.id)||[],primary=imgs.find(browseHasUsableImage)||ps.find(browseHasUsableImage);return {...c,region:ps[0]?.region||null,language:ps[0]?.language||null,imageUrl:primary?.imageUrl||null,imageSource:primary?.source||null,imageRightsStatus:primary?.imageRightsStatus||null,printings:ps,images:imgs}}),merged={version:3,updatedAt:new Date().toISOString(),source:'supabase+catalog.json',games:mergeCatalogRows(fallback.games,games||[]),series:mergeCatalogRows(fallback.series,series||[]),cards:mergeCatalogRows(fallback.cards,databaseCards)};
+    const databaseCards=(cards||[]).map(c=>{const ps=printingByCard.get(c.id)||[],imgs=imageByCard.get(c.id)||[],primary=imgs.find(browseHasUsableImage)||ps.find(browseHasUsableImage);return {...c,region:ps[0]?.region||null,language:ps[0]?.language||null,imageUrl:primary?.imageUrl||null,imageSource:primary?.source||null,imageRightsStatus:primary?.imageRightsStatus||null,printings:ps,images:imgs}}),merged={version:3,updatedAt:new Date().toISOString(),source:'supabase+catalog.json',games:mergeCatalogRows(fallback.games,games||[]),series:mergeCatalogRows(fallback.series,series||[],{keepFallbackOnly:false}),cards:mergeCatalogRows(fallback.cards,databaseCards,{keepFallbackOnly:false})};
     return canonicalizeCatalog(merged);
   }catch(error){return canonicalizeCatalog({...fallback,source:'catalog.json',fallbackReason:error.message})}
 }
