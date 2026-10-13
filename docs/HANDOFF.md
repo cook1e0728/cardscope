@@ -686,6 +686,11 @@
 - 稽核第 3 項：官方同號同名同稀有度的兩頁共 226 組；S9a 第二頁卡圖檔名帶 `_m`（ミラー），其餘三系列官方未標差異。ADR 0039 延伸 ADR 0035 到 `tcgdex-ja` 系列：版本 1＝原卡，版本 2 為新卡 `<原卡>-v2`（來源 `pokemon-card-official-jp`），S9a 命名「版本 2（ミラー）」。Sonnet worker 寫 migration、`providers/pokemon-jp-archive-variant-plan.mjs`、`scripts/build-pokemon-jp-archive-variant-plan.mjs`、測試；主導者把新 Printing 的 image_url 改為 null（同 ADR 0035）。
 - 正式庫：回滾測試後套用並寫入 schema_migrations；新增 226 張版本卡與卡圖、原卡補官方卡圖 226 張，重播零異動。正式站 S9a 93→137 張，S9a-001 詳細頁列出版本 1／版本 2（ミラー）／台版。Node 364/364。
 
+### 依序執行 88：稀有度 FUR、PR（2026-10-14，桌電，已完成）
+
+- 稽核第 5 項：台灣官方篩選的 FUR（M6a 134 超夢ex、135 夢幻ex，30 週年收錄）與 PR（AC2a 14、AC2b 13 的特典標記）資料庫沒有代碼。Migration `20261014120000_pokemon_rarity_fur_pr`：FUR tier 1（MUR 之後）、PR 在 C 之後、NONE 之前；`data/rarity-rankings.json` 與 `providers/pokemon-tw-official.mjs` 同步。Migration `20261014130000_pokemon_tw_rarity_fill_official_series`：`private.fill_pokemon_official_rarity_tw` 的 tw-official 也接受官方匯入系列（md5 `fa3d90ef…` 已換）。兩者與 3 份填補＋重播整批回滾測試後套用、寫入 schema_migrations。
+- 填補 29 張（AC2a 14、AC2b 13 PR；M6a 2 FUR），重播零異動；台版空值剩 88（基本能量等已知項目）。Node 364/364。
+
 下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

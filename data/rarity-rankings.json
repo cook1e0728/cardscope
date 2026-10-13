@@ -5,7 +5,7 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "BWR", "UR", "HR", "SAR", "MA", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "TR", "Rare Prism Star", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "NONE"],
+      "canonicalCodes": ["MUR", "FUR", "BWR", "UR", "HR", "SAR", "MA", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "TR", "Rare Prism Star", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "PR", "NONE"],
       "canonicalLabels": {"Rare Holo": "Rare Holo", "Rare Prism Star": "Prism Star", "NONE": "無標記"},
       "aliases": {
         "UR": ["Ultra Rare"],
@@ -28,6 +28,7 @@
       },
       "highToLow": [
         ["MUR"],
+        ["FUR"],
         ["BWR"],
         ["UR", "Ultra Rare"],
         ["HR", "Hyper Rare", "Rainbow Rare"],
@@ -58,10 +59,12 @@
         ["R", "Rare"],
         ["U", "Uncommon"],
         ["C", "Common"],
+        ["PR"],
         ["NONE"]
       ],
       "lowToHigh": [
         ["NONE"],
+        ["PR"],
         ["C", "Common"],
         ["U", "Uncommon"],
         ["R", "Rare"],
@@ -92,6 +95,7 @@
         ["HR", "Hyper Rare", "Rainbow Rare"],
         ["UR", "Ultra Rare"],
         ["BWR"],
+        ["FUR"],
         ["MUR"]
       ]
     },

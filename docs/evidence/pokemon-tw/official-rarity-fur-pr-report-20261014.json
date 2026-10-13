@@ -1,0 +1,644 @@
+{
+ "tw-official": 29,
+ "jp-via-tw": 0,
+ "quarantined": [
+  {
+   "kind": "tw-official",
+   "code": "SP5",
+   "num": "001",
+   "name": "甲賀忍蛙V-UNION",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SLD",
+   "num": "DAR",
+   "name": "基本惡能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "DAR",
+   "name": "基本【惡】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "FIG",
+   "name": "基本【鬥】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "FIR",
+   "name": "基本火能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "PSY",
+   "name": "基本超能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "DAR",
+   "name": "基本【惡】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SH",
+   "num": "DAR",
+   "name": "基本惡能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "DAR",
+   "name": "基本惡能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVHK",
+   "num": "FIG",
+   "name": "基本【鬥】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVAM",
+   "num": "FIG",
+   "name": "基本【鬥】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SLL",
+   "num": "FIG",
+   "name": "基本鬥能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "FIG",
+   "name": "基本【鬥】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "FIR",
+   "name": "基本火能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVEL",
+   "num": "FIR",
+   "name": "基本【火】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "FIR",
+   "name": "基本【火】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "FIR",
+   "name": "基本【火】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "FIR",
+   "name": "基本【炎】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "GRA",
+   "name": "基本【草】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "GRA",
+   "name": "基本草能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "GRA",
+   "name": "基本【草】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVAM",
+   "num": "GRA",
+   "name": "基本【草】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "GRA",
+   "name": "基本【草】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SH",
+   "num": "GRA",
+   "name": "基本草能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "GRA",
+   "name": "基本【草】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "LIG",
+   "name": "基本【雷】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "LIG",
+   "name": "基本雷能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVHM",
+   "num": "LIG",
+   "name": "基本【雷】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SN",
+   "num": "LIG",
+   "name": "基本雷能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVC",
+   "num": "LIG",
+   "name": "基本【雷】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "LIG",
+   "name": "基本【雷】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "LIG",
+   "name": "基本【雷】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "MET",
+   "name": "基本【鋼】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "PSY",
+   "name": "基本【超】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "WAT",
+   "name": "基本水能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "WAT",
+   "name": "基本【水】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "WAT",
+   "name": "基本水能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "WAT",
+   "name": "基本【水】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "WAT",
+   "name": "基本【水】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SH",
+   "num": "WAT",
+   "name": "基本水能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "WAT",
+   "name": "基本水能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "WAT",
+   "name": "基本【水】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "no3",
+   "name": "勝利之證(季軍)",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "025",
+   "name": "皮卡丘V-UNION",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "FIG",
+   "name": "基本鬥能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "FIG",
+   "name": "基本【鬥】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVAL",
+   "num": "LIG",
+   "name": "基本【雷】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "LIG",
+   "name": "基本【雷】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "MET",
+   "name": "基本鋼能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "MET",
+   "name": "基本【鋼】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "MET",
+   "name": "基本【鋼】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "MET",
+   "name": "基本鋼能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "PSY",
+   "name": "基本超能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVHM",
+   "num": "PSY",
+   "name": "基本【超】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVEM",
+   "num": "PSY",
+   "name": "基本【超】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "PSY",
+   "name": "基本【超】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SP5",
+   "num": "009",
+   "name": "蒼響V-UNION",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SP5",
+   "num": "005",
+   "name": "超夢V-UNION",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "DAR",
+   "name": "基本惡能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "FIG",
+   "name": "基本鬥能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "FIR",
+   "name": "基本【火】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "GRA",
+   "name": "基本草能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "GRA",
+   "name": "基本草能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "LIG",
+   "name": "基本雷能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SH",
+   "num": "LIG",
+   "name": "基本雷能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "LIG",
+   "name": "基本雷能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "MET",
+   "name": "基本鋼能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVAW",
+   "num": "WAT",
+   "name": "基本【水】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "56",
+   "name": "摩托蜥",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8b",
+   "num": "056",
+   "name": "莫魯貝可V-UNION",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "DAR",
+   "name": "基本【惡】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S8a",
+   "num": "DAR",
+   "name": "基本惡能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVF",
+   "num": "DAR",
+   "name": "基本【惡】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVB",
+   "num": "FIG",
+   "name": "基本【鬥】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SH",
+   "num": "FIG",
+   "name": "基本鬥能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "FIG",
+   "name": "基本鬥能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVAL",
+   "num": "FIR",
+   "name": "基本【火】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVHK",
+   "num": "FIR",
+   "name": "基本【火】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SH",
+   "num": "FIR",
+   "name": "基本火能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "FIR",
+   "name": "基本火能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "MET",
+   "name": "基本【鋼】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVD",
+   "num": "PSY",
+   "name": "基本【超】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SVAW",
+   "num": "PSY",
+   "name": "基本【超】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "S10b",
+   "num": "PSY",
+   "name": "基本超能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SI",
+   "num": "PSY",
+   "name": "基本【超】能量",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "no0",
+   "name": "樂園度假地",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "no1",
+   "name": "勝利之證(冠軍)",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  },
+  {
+   "kind": "tw-official",
+   "code": "SV-P",
+   "num": "no2",
+   "name": "勝利之證(亞軍)",
+   "reason": "OFFICIAL_ENTRY_NOT_FOUND"
+  }
+ ],
+ "quarantineReasons": {
+  "tw-official:OFFICIAL_ENTRY_NOT_FOUND": 88
+ },
+ "waiting": [],
+ "files": 3,
+ "plans": [
+  {
+   "name": "tw-official-pokemon-official-tw-ac2a-01",
+   "kind": "tw-official",
+   "rows": 14
+  },
+  {
+   "name": "tw-official-pokemon-official-tw-ac2b-01",
+   "kind": "tw-official",
+   "rows": 13
+  },
+  {
+   "name": "tw-official-pokemon-official-tw-m6a-01",
+   "kind": "tw-official",
+   "rows": 2
+  }
+ ]
+}
