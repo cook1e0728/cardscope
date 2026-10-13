@@ -180,7 +180,8 @@ async function cachedBrowseRows(key,loader){
 function clearBrowseCache(){browseCache.clear()}
 function normalizeBrowseRegion(value){const region=String(value||'').trim().toUpperCase();return !region||region==='ALL'?null:region}
 function normalizeBrowseRarity(value){const rarity=String(value||'').trim();return !rarity||rarity.toLowerCase()==='all'?null:rarity}
-function normalizeBrowseSort(value){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc','price-asc','price-desc']).has(sort)?sort:'number-asc'}
+// Catalog rows carry no price (market prices are looked up per card), so a price sort always fell back to number order, but through the slow whole-game path (>90 s on JP). It is now plain number order.
+function normalizeBrowseSort(value){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc']).has(sort)?sort:'number-asc'}
 function browseToken(value){return normalizeSearch(value).replace(/[^\p{L}\p{N}]/gu,'')}
 function rarityRankingToken(value){return normalizeRarityToken(value)}
 function rarityDefinition(game){return normalizeRarityDefinition(game)}
@@ -222,10 +223,6 @@ function browseCompare(a,b,sort,order=null){
   if(sort==='release-asc'||sort==='release-desc'){const value=String(browseRelease(a)).localeCompare(String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
   if(sort==='rarity-asc'||sort==='rarity-desc')return compareBrowseRarity(a,b,sort.endsWith('desc')?'desc':'asc')||number();
   if(sort==='name-asc'||sort==='name-desc'){const value=browseNameCollator.compare(String(a.nameZh||a.nameEn||a.nameJa||a.id),String(b.nameZh||b.nameEn||b.nameJa||b.id))||number();return sort==='name-desc'?-value:value}
-  if(sort==='price-asc'||sort==='price-desc'){
-    const av=Number(a.priceTwd??a.price),bv=Number(b.priceTwd??b.price),aKnown=Number.isFinite(av),bKnown=Number.isFinite(bv);
-    if(aKnown||bKnown){const value=(aKnown?av:sort==='price-asc'?Infinity:-Infinity)-(bKnown?bv:sort==='price-asc'?Infinity:-Infinity);if(value)return sort==='price-desc'?-value:value}
-  }
   return number();
 }
 function buildBrowseFacets(rows,printingByCard){
