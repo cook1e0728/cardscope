@@ -853,6 +853,8 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   if(url.pathname==='/api/admin/catalog/health'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；請使用 Authorization Bearer 或 x-scrape-token 標頭'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{return json(res,200,{data:await loadAdminCatalogHealth()})}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/trends'&&req.method==='GET'){
     const requestedLimit=Number(url.searchParams.get('limit')),limit=Math.min(Math.max(Number.isFinite(requestedLimit)&&requestedLimit>0?requestedLimit:12,1),50);
+    // Trends come only from Yuyu-tei buyback history; Yuyu-tei declined reuse (2026-10-12), so the section is switched off rather than shown empty forever.
+    if(sourceDisplayDenied('yuyutei'))return json(res,200,{data:[],meta:{...trendMeta({status:'unavailable',rowsScanned:0,validRows:0,uniqueCards:0,observationWindow:trendObservationWindow([])}),disabled:true,disabledReason:'source-denied'}});
     if(!supabaseConfigured())return json(res,200,{data:[],meta:trendMeta({status:'unavailable',rowsScanned:0,validRows:0,uniqueCards:0,observationWindow:trendObservationWindow([])})});
     try{const snapshot=await loadTrendSnapshot();return json(res,200,{data:snapshot.data.slice(0,limit),meta:trendMeta(snapshot)})}catch(e){return json(res,502,{error:e.message,meta:trendMeta({status:'unavailable',rowsScanned:0,validRows:0,uniqueCards:0,observationWindow:trendObservationWindow([])})})}
   }

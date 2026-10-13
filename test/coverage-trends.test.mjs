@@ -55,6 +55,8 @@ test('trends fallback discloses unavailable source scope and does not create a r
   assert.deepEqual(body.meta.scope.coveredGames,[]);
   assert.ok(Object.hasOwn(body.meta.scope,'freshness'));
   assert.match(body.meta.warning,/不代表全市場/);
+  assert.equal(body.meta.disabled,true,'Yuyu-tei declined reuse: the trends section is switched off');
+  assert.equal(body.meta.disabledReason,'source-denied');
 });
 
 test('trend source query has no silent 500-row cap',async()=>{
