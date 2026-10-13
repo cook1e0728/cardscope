@@ -194,3 +194,7 @@ body[data-view="game"] section.section:has(> #series),body[data-view="game"] .br
 .version-switch{display:block;width:100%;min-height:44px;text-align:left;color:inherit;font:inherit;border:1px solid transparent;cursor:pointer}
 .version-switch:hover{border-color:var(--ip,#888)}
 .version-switch:focus-visible{outline:3px solid var(--ip,#333);outline-offset:2px}
+
+/* 日本官方卡表未列、保留待確認的卡（M6a 104–135 等） */
+.badge.listing-badge,.cards .card .badge.listing-badge{background:#FFF4D6;color:#6B4A00;border:1px solid #E8C770}
+.listing-note{color:#6B4A00}
