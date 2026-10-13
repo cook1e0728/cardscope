@@ -664,6 +664,13 @@
 - 寶可夢日版：最近 5 系列卡號／日文名／稀有度零差異；M6a 有 35 張（104–135 與 B/G/R ミュウ）只在資料庫、官方清單沒有；43 個 TCGdex 系列共 377 張 pending 卡卡號超過官方最大卡號（如 SM1M 067–073）；S9a／S10a／S11a／S12a 同號多版本 229 頁尚未依 ADR 0035 拆；候選缺漏系列 DPs-B、EP08、SC2、S8a-G 待查。
 - 航海王：59 個有代碼系列兩版本齊全、最近 5 包零差異；官方 3 個無代碼項目（推廣卡、限定商品收錄、家庭牌組）從未抓（`parseOnePieceSeries` 只收有代碼選項），每版本少 632 卡面、105 個 P- 卡號完全沒有；台版系列 0 張卡是正常（台版在 printing 層），但台版系列缺 `cardsCount`；`onepiece-op05-jp` 舊種子卡重複。
 
+### 依序執行 84：台版祕密稀有卡與缺號補齊（ADR 0023／0024，2026-10-14，桌電，已完成）
+
+- 依稽核（依序執行 83）第 1、4 項：`scripts/build-pokemon-tw-official-supplement-plan.mjs` 以 10-02 台灣官方快取對 19 個 Source archive 系列產生計畫，已有卡號全部與官方同名（misaligned 0、quarantined 0、稀有度未知 0）。`private.supplement_pokemon_tw_official_series`（md5 `5e3c479c…` 未變）19 批寫入 444 張（SV1S／SV1V／SV1a／SV5a／SV6a／SV7a 各 30、SV8 32、SV2D／SV2P 28、SV4K／SV4M 29、SV2a／SV3／SV3a／SV5M／SV6／SV7 各 3、SV5K 54、SV4a 46），19 批重播零異動，稽核 4→42。台版寶可夢 Printing 12,669 → 13,113；Card／Printing 稀有度不一致 0。報告 `docs/evidence/pokemon-tw/official-series/<CODE>-supplement-report-20261014.json`。
+- ADR 0024 連結：19 系列同號配對 2,400、無不一致系列，新連結 436（跳過 8 張日版無中文名的基本能量與已連結的 SV4a-347），`private.link_pokemon_jp_tw_same_number`（md5 `018281a8…` 未變）拆成 5 個請求寫入（各 4–15 秒）、5 批重播無異動。報告 `docs/evidence/pokemon-jp/jp-tw-same-number-links-20261014.json`。
+- 正式站：`pokemon-official-tw-sv6a-090` 桃歹郎ex SAR 與日版並列並有 TCGdex 參考價（NT$364／295）；台版 SV8 系列 138 張。
+- MC 的 5 張（VERSION_NAME_CONFLICT 隔離）屬官方匯入系列，不適用 ADR 0023，另案處理。
+
 下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

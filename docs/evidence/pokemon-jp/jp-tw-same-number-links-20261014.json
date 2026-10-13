@@ -1,0 +1,1858 @@
+{
+ "links": 436,
+ "batches": 5,
+ "byCode": {
+  "SV1a": 30,
+  "SV1S": 29,
+  "SV1V": 29,
+  "SV2a": 2,
+  "SV2D": 27,
+  "SV2P": 27,
+  "SV3": 2,
+  "SV3a": 3,
+  "SV4a": 46,
+  "SV4K": 28,
+  "SV4M": 28,
+  "SV5a": 30,
+  "SV5K": 54,
+  "SV5M": 3,
+  "SV6": 3,
+  "SV6a": 30,
+  "SV7": 3,
+  "SV7a": 30,
+  "SV8": 32
+ },
+ "misaligned": {},
+ "skipped": [
+  {
+   "code": "SV1S",
+   "num": "108",
+   "jpCardId": "pokemon-tcgdex-ja-sv1s-108",
+   "reason": "JP_NAME_MISSING"
+  },
+  {
+   "code": "SV1V",
+   "num": "108",
+   "jpCardId": "pokemon-tcgdex-ja-sv1v-108",
+   "reason": "JP_NAME_MISSING"
+  },
+  {
+   "code": "SV2a",
+   "num": "210",
+   "jpCardId": "pokemon-tcgdex-ja-sv2a-210",
+   "reason": "JP_NAME_MISSING"
+  },
+  {
+   "code": "SV2D",
+   "num": "099",
+   "jpCardId": "pokemon-tcgdex-ja-sv2d-099",
+   "reason": "JP_NAME_MISSING"
+  },
+  {
+   "code": "SV2P",
+   "num": "099",
+   "jpCardId": "pokemon-tcgdex-ja-sv2p-099",
+   "reason": "JP_NAME_MISSING"
+  },
+  {
+   "code": "SV3",
+   "num": "141",
+   "jpCardId": "pokemon-tcgdex-ja-sv3-141",
+   "reason": "JP_NAME_MISSING"
+  },
+  {
+   "code": "SV4a",
+   "num": "347",
+   "jpCardId": "pokemon-mew-ex-sv4a-347-jp",
+   "reason": "JP_ALREADY_LINKED"
+  },
+  {
+   "code": "SV4K",
+   "num": "095",
+   "jpCardId": "pokemon-tcgdex-ja-sv4k-095",
+   "reason": "JP_NAME_MISSING"
+  },
+  {
+   "code": "SV4M",
+   "num": "095",
+   "jpCardId": "pokemon-tcgdex-ja-sv4m-095",
+   "reason": "JP_NAME_MISSING"
+  }
+ ],
+ "plans": [
+  {
+   "version": 1,
+   "rule": "adr-0024",
+   "rows": [
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-074",
+     "twCardId": "pokemon-official-tw-sv1a-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-075",
+     "twCardId": "pokemon-official-tw-sv1a-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-076",
+     "twCardId": "pokemon-official-tw-sv1a-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-077",
+     "twCardId": "pokemon-official-tw-sv1a-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-078",
+     "twCardId": "pokemon-official-tw-sv1a-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-079",
+     "twCardId": "pokemon-official-tw-sv1a-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-080",
+     "twCardId": "pokemon-official-tw-sv1a-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-081",
+     "twCardId": "pokemon-official-tw-sv1a-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-082",
+     "twCardId": "pokemon-official-tw-sv1a-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-083",
+     "twCardId": "pokemon-official-tw-sv1a-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-084",
+     "twCardId": "pokemon-official-tw-sv1a-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-085",
+     "twCardId": "pokemon-official-tw-sv1a-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-086",
+     "twCardId": "pokemon-official-tw-sv1a-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-087",
+     "twCardId": "pokemon-official-tw-sv1a-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-088",
+     "twCardId": "pokemon-official-tw-sv1a-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-089",
+     "twCardId": "pokemon-official-tw-sv1a-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-090",
+     "twCardId": "pokemon-official-tw-sv1a-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-091",
+     "twCardId": "pokemon-official-tw-sv1a-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-092",
+     "twCardId": "pokemon-official-tw-sv1a-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-093",
+     "twCardId": "pokemon-official-tw-sv1a-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-094",
+     "twCardId": "pokemon-official-tw-sv1a-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-095",
+     "twCardId": "pokemon-official-tw-sv1a-095"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-096",
+     "twCardId": "pokemon-official-tw-sv1a-096"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-097",
+     "twCardId": "pokemon-official-tw-sv1a-097"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-098",
+     "twCardId": "pokemon-official-tw-sv1a-098"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-099",
+     "twCardId": "pokemon-official-tw-sv1a-099"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-100",
+     "twCardId": "pokemon-official-tw-sv1a-100"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-101",
+     "twCardId": "pokemon-official-tw-sv1a-101"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-102",
+     "twCardId": "pokemon-official-tw-sv1a-102"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1a-103",
+     "twCardId": "pokemon-official-tw-sv1a-103"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-079",
+     "twCardId": "pokemon-official-tw-sv1s-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-080",
+     "twCardId": "pokemon-official-tw-sv1s-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-081",
+     "twCardId": "pokemon-official-tw-sv1s-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-082",
+     "twCardId": "pokemon-official-tw-sv1s-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-083",
+     "twCardId": "pokemon-official-tw-sv1s-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-084",
+     "twCardId": "pokemon-official-tw-sv1s-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-085",
+     "twCardId": "pokemon-official-tw-sv1s-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-086",
+     "twCardId": "pokemon-official-tw-sv1s-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-087",
+     "twCardId": "pokemon-official-tw-sv1s-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-088",
+     "twCardId": "pokemon-official-tw-sv1s-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-089",
+     "twCardId": "pokemon-official-tw-sv1s-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-090",
+     "twCardId": "pokemon-official-tw-sv1s-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-091",
+     "twCardId": "pokemon-official-tw-sv1s-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-092",
+     "twCardId": "pokemon-official-tw-sv1s-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-093",
+     "twCardId": "pokemon-official-tw-sv1s-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-094",
+     "twCardId": "pokemon-official-tw-sv1s-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-095",
+     "twCardId": "pokemon-official-tw-sv1s-095"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-096",
+     "twCardId": "pokemon-official-tw-sv1s-096"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-097",
+     "twCardId": "pokemon-official-tw-sv1s-097"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-098",
+     "twCardId": "pokemon-official-tw-sv1s-098"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-099",
+     "twCardId": "pokemon-official-tw-sv1s-099"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-100",
+     "twCardId": "pokemon-official-tw-sv1s-100"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-101",
+     "twCardId": "pokemon-official-tw-sv1s-101"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-102",
+     "twCardId": "pokemon-official-tw-sv1s-102"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-103",
+     "twCardId": "pokemon-official-tw-sv1s-103"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-104",
+     "twCardId": "pokemon-official-tw-sv1s-104"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-105",
+     "twCardId": "pokemon-official-tw-sv1s-105"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-106",
+     "twCardId": "pokemon-official-tw-sv1s-106"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1s-107",
+     "twCardId": "pokemon-official-tw-sv1s-107"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-079",
+     "twCardId": "pokemon-official-tw-sv1v-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-080",
+     "twCardId": "pokemon-official-tw-sv1v-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-081",
+     "twCardId": "pokemon-official-tw-sv1v-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-082",
+     "twCardId": "pokemon-official-tw-sv1v-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-083",
+     "twCardId": "pokemon-official-tw-sv1v-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-084",
+     "twCardId": "pokemon-official-tw-sv1v-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-085",
+     "twCardId": "pokemon-official-tw-sv1v-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-086",
+     "twCardId": "pokemon-official-tw-sv1v-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-087",
+     "twCardId": "pokemon-official-tw-sv1v-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-088",
+     "twCardId": "pokemon-official-tw-sv1v-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-089",
+     "twCardId": "pokemon-official-tw-sv1v-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-090",
+     "twCardId": "pokemon-official-tw-sv1v-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-091",
+     "twCardId": "pokemon-official-tw-sv1v-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-092",
+     "twCardId": "pokemon-official-tw-sv1v-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-093",
+     "twCardId": "pokemon-official-tw-sv1v-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-094",
+     "twCardId": "pokemon-official-tw-sv1v-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-095",
+     "twCardId": "pokemon-official-tw-sv1v-095"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-096",
+     "twCardId": "pokemon-official-tw-sv1v-096"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-097",
+     "twCardId": "pokemon-official-tw-sv1v-097"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-098",
+     "twCardId": "pokemon-official-tw-sv1v-098"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-099",
+     "twCardId": "pokemon-official-tw-sv1v-099"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-100",
+     "twCardId": "pokemon-official-tw-sv1v-100"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-101",
+     "twCardId": "pokemon-official-tw-sv1v-101"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-102",
+     "twCardId": "pokemon-official-tw-sv1v-102"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-103",
+     "twCardId": "pokemon-official-tw-sv1v-103"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-104",
+     "twCardId": "pokemon-official-tw-sv1v-104"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-105",
+     "twCardId": "pokemon-official-tw-sv1v-105"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-106",
+     "twCardId": "pokemon-official-tw-sv1v-106"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv1v-107",
+     "twCardId": "pokemon-official-tw-sv1v-107"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2a-208",
+     "twCardId": "pokemon-official-tw-sv2a-208"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2a-209",
+     "twCardId": "pokemon-official-tw-sv2a-209"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-072",
+     "twCardId": "pokemon-official-tw-sv2d-072"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-073",
+     "twCardId": "pokemon-official-tw-sv2d-073"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-074",
+     "twCardId": "pokemon-official-tw-sv2d-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-075",
+     "twCardId": "pokemon-official-tw-sv2d-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-076",
+     "twCardId": "pokemon-official-tw-sv2d-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-077",
+     "twCardId": "pokemon-official-tw-sv2d-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-078",
+     "twCardId": "pokemon-official-tw-sv2d-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-079",
+     "twCardId": "pokemon-official-tw-sv2d-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-080",
+     "twCardId": "pokemon-official-tw-sv2d-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-081",
+     "twCardId": "pokemon-official-tw-sv2d-081"
+    }
+   ]
+  },
+  {
+   "version": 1,
+   "rule": "adr-0024",
+   "rows": [
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-082",
+     "twCardId": "pokemon-official-tw-sv2d-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-083",
+     "twCardId": "pokemon-official-tw-sv2d-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-084",
+     "twCardId": "pokemon-official-tw-sv2d-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-085",
+     "twCardId": "pokemon-official-tw-sv2d-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-086",
+     "twCardId": "pokemon-official-tw-sv2d-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-087",
+     "twCardId": "pokemon-official-tw-sv2d-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-088",
+     "twCardId": "pokemon-official-tw-sv2d-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-089",
+     "twCardId": "pokemon-official-tw-sv2d-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-090",
+     "twCardId": "pokemon-official-tw-sv2d-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-091",
+     "twCardId": "pokemon-official-tw-sv2d-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-092",
+     "twCardId": "pokemon-official-tw-sv2d-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-093",
+     "twCardId": "pokemon-official-tw-sv2d-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-094",
+     "twCardId": "pokemon-official-tw-sv2d-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-095",
+     "twCardId": "pokemon-official-tw-sv2d-095"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-096",
+     "twCardId": "pokemon-official-tw-sv2d-096"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-097",
+     "twCardId": "pokemon-official-tw-sv2d-097"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2d-098",
+     "twCardId": "pokemon-official-tw-sv2d-098"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-072",
+     "twCardId": "pokemon-official-tw-sv2p-072"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-073",
+     "twCardId": "pokemon-official-tw-sv2p-073"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-074",
+     "twCardId": "pokemon-official-tw-sv2p-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-075",
+     "twCardId": "pokemon-official-tw-sv2p-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-076",
+     "twCardId": "pokemon-official-tw-sv2p-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-077",
+     "twCardId": "pokemon-official-tw-sv2p-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-078",
+     "twCardId": "pokemon-official-tw-sv2p-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-079",
+     "twCardId": "pokemon-official-tw-sv2p-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-080",
+     "twCardId": "pokemon-official-tw-sv2p-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-081",
+     "twCardId": "pokemon-official-tw-sv2p-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-082",
+     "twCardId": "pokemon-official-tw-sv2p-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-083",
+     "twCardId": "pokemon-official-tw-sv2p-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-084",
+     "twCardId": "pokemon-official-tw-sv2p-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-085",
+     "twCardId": "pokemon-official-tw-sv2p-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-086",
+     "twCardId": "pokemon-official-tw-sv2p-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-087",
+     "twCardId": "pokemon-official-tw-sv2p-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-088",
+     "twCardId": "pokemon-official-tw-sv2p-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-089",
+     "twCardId": "pokemon-official-tw-sv2p-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-090",
+     "twCardId": "pokemon-official-tw-sv2p-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-091",
+     "twCardId": "pokemon-official-tw-sv2p-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-092",
+     "twCardId": "pokemon-official-tw-sv2p-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-093",
+     "twCardId": "pokemon-official-tw-sv2p-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-094",
+     "twCardId": "pokemon-official-tw-sv2p-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-095",
+     "twCardId": "pokemon-official-tw-sv2p-095"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-096",
+     "twCardId": "pokemon-official-tw-sv2p-096"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-097",
+     "twCardId": "pokemon-official-tw-sv2p-097"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv2p-098",
+     "twCardId": "pokemon-official-tw-sv2p-098"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv3-139",
+     "twCardId": "pokemon-official-tw-sv3-139"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv3-140",
+     "twCardId": "pokemon-official-tw-sv3-140"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv3a-090",
+     "twCardId": "pokemon-official-tw-sv3a-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv3a-091",
+     "twCardId": "pokemon-official-tw-sv3a-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv3a-092",
+     "twCardId": "pokemon-official-tw-sv3a-092"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-127",
+     "twCardId": "pokemon-official-tw-sv4a-127"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-128",
+     "twCardId": "pokemon-official-tw-sv4a-128"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-129",
+     "twCardId": "pokemon-official-tw-sv4a-129"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-130",
+     "twCardId": "pokemon-official-tw-sv4a-130"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-131",
+     "twCardId": "pokemon-official-tw-sv4a-131"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-132",
+     "twCardId": "pokemon-official-tw-sv4a-132"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-133",
+     "twCardId": "pokemon-official-tw-sv4a-133"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-134",
+     "twCardId": "pokemon-official-tw-sv4a-134"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-135",
+     "twCardId": "pokemon-official-tw-sv4a-135"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-136",
+     "twCardId": "pokemon-official-tw-sv4a-136"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-137",
+     "twCardId": "pokemon-official-tw-sv4a-137"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-138",
+     "twCardId": "pokemon-official-tw-sv4a-138"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-139",
+     "twCardId": "pokemon-official-tw-sv4a-139"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-140",
+     "twCardId": "pokemon-official-tw-sv4a-140"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-141",
+     "twCardId": "pokemon-official-tw-sv4a-141"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-142",
+     "twCardId": "pokemon-official-tw-sv4a-142"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-143",
+     "twCardId": "pokemon-official-tw-sv4a-143"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-144",
+     "twCardId": "pokemon-official-tw-sv4a-144"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-145",
+     "twCardId": "pokemon-official-tw-sv4a-145"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-146",
+     "twCardId": "pokemon-official-tw-sv4a-146"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-148",
+     "twCardId": "pokemon-official-tw-sv4a-148"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-149",
+     "twCardId": "pokemon-official-tw-sv4a-149"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-150",
+     "twCardId": "pokemon-official-tw-sv4a-150"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-151",
+     "twCardId": "pokemon-official-tw-sv4a-151"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-152",
+     "twCardId": "pokemon-official-tw-sv4a-152"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-153",
+     "twCardId": "pokemon-official-tw-sv4a-153"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-154",
+     "twCardId": "pokemon-official-tw-sv4a-154"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-155",
+     "twCardId": "pokemon-official-tw-sv4a-155"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-156",
+     "twCardId": "pokemon-official-tw-sv4a-156"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-157",
+     "twCardId": "pokemon-official-tw-sv4a-157"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-158",
+     "twCardId": "pokemon-official-tw-sv4a-158"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-159",
+     "twCardId": "pokemon-official-tw-sv4a-159"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-160",
+     "twCardId": "pokemon-official-tw-sv4a-160"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-161",
+     "twCardId": "pokemon-official-tw-sv4a-161"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-162",
+     "twCardId": "pokemon-official-tw-sv4a-162"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-163",
+     "twCardId": "pokemon-official-tw-sv4a-163"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-164",
+     "twCardId": "pokemon-official-tw-sv4a-164"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-165",
+     "twCardId": "pokemon-official-tw-sv4a-165"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-166",
+     "twCardId": "pokemon-official-tw-sv4a-166"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-167",
+     "twCardId": "pokemon-official-tw-sv4a-167"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-355",
+     "twCardId": "pokemon-official-tw-sv4a-355"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-356",
+     "twCardId": "pokemon-official-tw-sv4a-356"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-357",
+     "twCardId": "pokemon-official-tw-sv4a-357"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-358",
+     "twCardId": "pokemon-official-tw-sv4a-358"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-359",
+     "twCardId": "pokemon-official-tw-sv4a-359"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv4a-360",
+     "twCardId": "pokemon-official-tw-sv4a-360"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-067",
+     "twCardId": "pokemon-official-tw-sv4k-067"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-068",
+     "twCardId": "pokemon-official-tw-sv4k-068"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-069",
+     "twCardId": "pokemon-official-tw-sv4k-069"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-070",
+     "twCardId": "pokemon-official-tw-sv4k-070"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-071",
+     "twCardId": "pokemon-official-tw-sv4k-071"
+    }
+   ]
+  },
+  {
+   "version": 1,
+   "rule": "adr-0024",
+   "rows": [
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-072",
+     "twCardId": "pokemon-official-tw-sv4k-072"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-073",
+     "twCardId": "pokemon-official-tw-sv4k-073"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-074",
+     "twCardId": "pokemon-official-tw-sv4k-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-075",
+     "twCardId": "pokemon-official-tw-sv4k-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-076",
+     "twCardId": "pokemon-official-tw-sv4k-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-077",
+     "twCardId": "pokemon-official-tw-sv4k-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-078",
+     "twCardId": "pokemon-official-tw-sv4k-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-079",
+     "twCardId": "pokemon-official-tw-sv4k-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-080",
+     "twCardId": "pokemon-official-tw-sv4k-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-081",
+     "twCardId": "pokemon-official-tw-sv4k-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-082",
+     "twCardId": "pokemon-official-tw-sv4k-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-083",
+     "twCardId": "pokemon-official-tw-sv4k-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-084",
+     "twCardId": "pokemon-official-tw-sv4k-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-085",
+     "twCardId": "pokemon-official-tw-sv4k-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-086",
+     "twCardId": "pokemon-official-tw-sv4k-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-087",
+     "twCardId": "pokemon-official-tw-sv4k-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-088",
+     "twCardId": "pokemon-official-tw-sv4k-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-089",
+     "twCardId": "pokemon-official-tw-sv4k-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-090",
+     "twCardId": "pokemon-official-tw-sv4k-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-091",
+     "twCardId": "pokemon-official-tw-sv4k-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-092",
+     "twCardId": "pokemon-official-tw-sv4k-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-093",
+     "twCardId": "pokemon-official-tw-sv4k-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4k-094",
+     "twCardId": "pokemon-official-tw-sv4k-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-067",
+     "twCardId": "pokemon-official-tw-sv4m-067"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-068",
+     "twCardId": "pokemon-official-tw-sv4m-068"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-069",
+     "twCardId": "pokemon-official-tw-sv4m-069"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-070",
+     "twCardId": "pokemon-official-tw-sv4m-070"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-071",
+     "twCardId": "pokemon-official-tw-sv4m-071"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-072",
+     "twCardId": "pokemon-official-tw-sv4m-072"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-073",
+     "twCardId": "pokemon-official-tw-sv4m-073"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-074",
+     "twCardId": "pokemon-official-tw-sv4m-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-075",
+     "twCardId": "pokemon-official-tw-sv4m-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-076",
+     "twCardId": "pokemon-official-tw-sv4m-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-077",
+     "twCardId": "pokemon-official-tw-sv4m-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-078",
+     "twCardId": "pokemon-official-tw-sv4m-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-079",
+     "twCardId": "pokemon-official-tw-sv4m-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-080",
+     "twCardId": "pokemon-official-tw-sv4m-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-081",
+     "twCardId": "pokemon-official-tw-sv4m-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-082",
+     "twCardId": "pokemon-official-tw-sv4m-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-083",
+     "twCardId": "pokemon-official-tw-sv4m-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-084",
+     "twCardId": "pokemon-official-tw-sv4m-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-085",
+     "twCardId": "pokemon-official-tw-sv4m-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-086",
+     "twCardId": "pokemon-official-tw-sv4m-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-087",
+     "twCardId": "pokemon-official-tw-sv4m-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-088",
+     "twCardId": "pokemon-official-tw-sv4m-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-089",
+     "twCardId": "pokemon-official-tw-sv4m-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-090",
+     "twCardId": "pokemon-official-tw-sv4m-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-091",
+     "twCardId": "pokemon-official-tw-sv4m-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-092",
+     "twCardId": "pokemon-official-tw-sv4m-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-093",
+     "twCardId": "pokemon-official-tw-sv4m-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv4m-094",
+     "twCardId": "pokemon-official-tw-sv4m-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-067",
+     "twCardId": "pokemon-official-tw-sv5a-067"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-068",
+     "twCardId": "pokemon-official-tw-sv5a-068"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-069",
+     "twCardId": "pokemon-official-tw-sv5a-069"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-070",
+     "twCardId": "pokemon-official-tw-sv5a-070"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-071",
+     "twCardId": "pokemon-official-tw-sv5a-071"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-072",
+     "twCardId": "pokemon-official-tw-sv5a-072"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-073",
+     "twCardId": "pokemon-official-tw-sv5a-073"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-074",
+     "twCardId": "pokemon-official-tw-sv5a-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-075",
+     "twCardId": "pokemon-official-tw-sv5a-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-076",
+     "twCardId": "pokemon-official-tw-sv5a-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-077",
+     "twCardId": "pokemon-official-tw-sv5a-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-078",
+     "twCardId": "pokemon-official-tw-sv5a-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-079",
+     "twCardId": "pokemon-official-tw-sv5a-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-080",
+     "twCardId": "pokemon-official-tw-sv5a-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-081",
+     "twCardId": "pokemon-official-tw-sv5a-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-082",
+     "twCardId": "pokemon-official-tw-sv5a-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-083",
+     "twCardId": "pokemon-official-tw-sv5a-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-084",
+     "twCardId": "pokemon-official-tw-sv5a-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-085",
+     "twCardId": "pokemon-official-tw-sv5a-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-086",
+     "twCardId": "pokemon-official-tw-sv5a-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-087",
+     "twCardId": "pokemon-official-tw-sv5a-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-088",
+     "twCardId": "pokemon-official-tw-sv5a-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-089",
+     "twCardId": "pokemon-official-tw-sv5a-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-090",
+     "twCardId": "pokemon-official-tw-sv5a-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-091",
+     "twCardId": "pokemon-official-tw-sv5a-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-092",
+     "twCardId": "pokemon-official-tw-sv5a-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-093",
+     "twCardId": "pokemon-official-tw-sv5a-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-094",
+     "twCardId": "pokemon-official-tw-sv5a-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-095",
+     "twCardId": "pokemon-official-tw-sv5a-095"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv5a-096",
+     "twCardId": "pokemon-official-tw-sv5a-096"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-022",
+     "twCardId": "pokemon-official-tw-sv5k-022"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-023",
+     "twCardId": "pokemon-official-tw-sv5k-023"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-024",
+     "twCardId": "pokemon-official-tw-sv5k-024"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-025",
+     "twCardId": "pokemon-official-tw-sv5k-025"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-026",
+     "twCardId": "pokemon-official-tw-sv5k-026"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-027",
+     "twCardId": "pokemon-official-tw-sv5k-027"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-028",
+     "twCardId": "pokemon-official-tw-sv5k-028"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-029",
+     "twCardId": "pokemon-official-tw-sv5k-029"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-030",
+     "twCardId": "pokemon-official-tw-sv5k-030"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-031",
+     "twCardId": "pokemon-official-tw-sv5k-031"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-032",
+     "twCardId": "pokemon-official-tw-sv5k-032"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-033",
+     "twCardId": "pokemon-official-tw-sv5k-033"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-034",
+     "twCardId": "pokemon-official-tw-sv5k-034"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-035",
+     "twCardId": "pokemon-official-tw-sv5k-035"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-036",
+     "twCardId": "pokemon-official-tw-sv5k-036"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-037",
+     "twCardId": "pokemon-official-tw-sv5k-037"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-038",
+     "twCardId": "pokemon-official-tw-sv5k-038"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-039",
+     "twCardId": "pokemon-official-tw-sv5k-039"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-040",
+     "twCardId": "pokemon-official-tw-sv5k-040"
+    }
+   ]
+  },
+  {
+   "version": 1,
+   "rule": "adr-0024",
+   "rows": [
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-041",
+     "twCardId": "pokemon-official-tw-sv5k-041"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-042",
+     "twCardId": "pokemon-official-tw-sv5k-042"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-043",
+     "twCardId": "pokemon-official-tw-sv5k-043"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-044",
+     "twCardId": "pokemon-official-tw-sv5k-044"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-045",
+     "twCardId": "pokemon-official-tw-sv5k-045"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-046",
+     "twCardId": "pokemon-official-tw-sv5k-046"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-047",
+     "twCardId": "pokemon-official-tw-sv5k-047"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-048",
+     "twCardId": "pokemon-official-tw-sv5k-048"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-049",
+     "twCardId": "pokemon-official-tw-sv5k-049"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-050",
+     "twCardId": "pokemon-official-tw-sv5k-050"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-051",
+     "twCardId": "pokemon-official-tw-sv5k-051"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-052",
+     "twCardId": "pokemon-official-tw-sv5k-052"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-053",
+     "twCardId": "pokemon-official-tw-sv5k-053"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-054",
+     "twCardId": "pokemon-official-tw-sv5k-054"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-055",
+     "twCardId": "pokemon-official-tw-sv5k-055"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-056",
+     "twCardId": "pokemon-official-tw-sv5k-056"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-057",
+     "twCardId": "pokemon-official-tw-sv5k-057"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-058",
+     "twCardId": "pokemon-official-tw-sv5k-058"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-059",
+     "twCardId": "pokemon-official-tw-sv5k-059"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-060",
+     "twCardId": "pokemon-official-tw-sv5k-060"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-061",
+     "twCardId": "pokemon-official-tw-sv5k-061"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-062",
+     "twCardId": "pokemon-official-tw-sv5k-062"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-064",
+     "twCardId": "pokemon-official-tw-sv5k-064"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-065",
+     "twCardId": "pokemon-official-tw-sv5k-065"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-066",
+     "twCardId": "pokemon-official-tw-sv5k-066"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-067",
+     "twCardId": "pokemon-official-tw-sv5k-067"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-068",
+     "twCardId": "pokemon-official-tw-sv5k-068"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-069",
+     "twCardId": "pokemon-official-tw-sv5k-069"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-070",
+     "twCardId": "pokemon-official-tw-sv5k-070"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-071",
+     "twCardId": "pokemon-official-tw-sv5k-071"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-072",
+     "twCardId": "pokemon-official-tw-sv5k-072"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-073",
+     "twCardId": "pokemon-official-tw-sv5k-073"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-098",
+     "twCardId": "pokemon-official-tw-sv5k-098"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-099",
+     "twCardId": "pokemon-official-tw-sv5k-099"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5k-100",
+     "twCardId": "pokemon-official-tw-sv5k-100"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5m-098",
+     "twCardId": "pokemon-official-tw-sv5m-098"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5m-099",
+     "twCardId": "pokemon-official-tw-sv5m-099"
+    },
+    {
+     "jpCardId": "pokemon-official-ja-sv5m-100",
+     "twCardId": "pokemon-official-tw-sv5m-100"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6-131",
+     "twCardId": "pokemon-official-tw-sv6-131"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6-132",
+     "twCardId": "pokemon-official-tw-sv6-132"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6-133",
+     "twCardId": "pokemon-official-tw-sv6-133"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-065",
+     "twCardId": "pokemon-official-tw-sv6a-065"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-066",
+     "twCardId": "pokemon-official-tw-sv6a-066"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-067",
+     "twCardId": "pokemon-official-tw-sv6a-067"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-068",
+     "twCardId": "pokemon-official-tw-sv6a-068"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-069",
+     "twCardId": "pokemon-official-tw-sv6a-069"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-070",
+     "twCardId": "pokemon-official-tw-sv6a-070"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-071",
+     "twCardId": "pokemon-official-tw-sv6a-071"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-072",
+     "twCardId": "pokemon-official-tw-sv6a-072"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-073",
+     "twCardId": "pokemon-official-tw-sv6a-073"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-074",
+     "twCardId": "pokemon-official-tw-sv6a-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-075",
+     "twCardId": "pokemon-official-tw-sv6a-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-076",
+     "twCardId": "pokemon-official-tw-sv6a-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-077",
+     "twCardId": "pokemon-official-tw-sv6a-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-078",
+     "twCardId": "pokemon-official-tw-sv6a-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-079",
+     "twCardId": "pokemon-official-tw-sv6a-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-080",
+     "twCardId": "pokemon-official-tw-sv6a-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-081",
+     "twCardId": "pokemon-official-tw-sv6a-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-082",
+     "twCardId": "pokemon-official-tw-sv6a-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-083",
+     "twCardId": "pokemon-official-tw-sv6a-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-084",
+     "twCardId": "pokemon-official-tw-sv6a-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-085",
+     "twCardId": "pokemon-official-tw-sv6a-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-086",
+     "twCardId": "pokemon-official-tw-sv6a-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-087",
+     "twCardId": "pokemon-official-tw-sv6a-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-088",
+     "twCardId": "pokemon-official-tw-sv6a-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-089",
+     "twCardId": "pokemon-official-tw-sv6a-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-090",
+     "twCardId": "pokemon-official-tw-sv6a-090"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-091",
+     "twCardId": "pokemon-official-tw-sv6a-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-092",
+     "twCardId": "pokemon-official-tw-sv6a-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-093",
+     "twCardId": "pokemon-official-tw-sv6a-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv6a-094",
+     "twCardId": "pokemon-official-tw-sv6a-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7-133",
+     "twCardId": "pokemon-official-tw-sv7-133"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7-134",
+     "twCardId": "pokemon-official-tw-sv7-134"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7-135",
+     "twCardId": "pokemon-official-tw-sv7-135"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-065",
+     "twCardId": "pokemon-official-tw-sv7a-065"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-066",
+     "twCardId": "pokemon-official-tw-sv7a-066"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-067",
+     "twCardId": "pokemon-official-tw-sv7a-067"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-068",
+     "twCardId": "pokemon-official-tw-sv7a-068"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-069",
+     "twCardId": "pokemon-official-tw-sv7a-069"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-070",
+     "twCardId": "pokemon-official-tw-sv7a-070"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-071",
+     "twCardId": "pokemon-official-tw-sv7a-071"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-072",
+     "twCardId": "pokemon-official-tw-sv7a-072"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-073",
+     "twCardId": "pokemon-official-tw-sv7a-073"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-074",
+     "twCardId": "pokemon-official-tw-sv7a-074"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-075",
+     "twCardId": "pokemon-official-tw-sv7a-075"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-076",
+     "twCardId": "pokemon-official-tw-sv7a-076"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-077",
+     "twCardId": "pokemon-official-tw-sv7a-077"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-078",
+     "twCardId": "pokemon-official-tw-sv7a-078"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-079",
+     "twCardId": "pokemon-official-tw-sv7a-079"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-080",
+     "twCardId": "pokemon-official-tw-sv7a-080"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-081",
+     "twCardId": "pokemon-official-tw-sv7a-081"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-082",
+     "twCardId": "pokemon-official-tw-sv7a-082"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-083",
+     "twCardId": "pokemon-official-tw-sv7a-083"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-084",
+     "twCardId": "pokemon-official-tw-sv7a-084"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-085",
+     "twCardId": "pokemon-official-tw-sv7a-085"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-086",
+     "twCardId": "pokemon-official-tw-sv7a-086"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-087",
+     "twCardId": "pokemon-official-tw-sv7a-087"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-088",
+     "twCardId": "pokemon-official-tw-sv7a-088"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-089",
+     "twCardId": "pokemon-official-tw-sv7a-089"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-090",
+     "twCardId": "pokemon-official-tw-sv7a-090"
+    }
+   ]
+  },
+  {
+   "version": 1,
+   "rule": "adr-0024",
+   "rows": [
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-091",
+     "twCardId": "pokemon-official-tw-sv7a-091"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-092",
+     "twCardId": "pokemon-official-tw-sv7a-092"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-093",
+     "twCardId": "pokemon-official-tw-sv7a-093"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv7a-094",
+     "twCardId": "pokemon-official-tw-sv7a-094"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-107",
+     "twCardId": "pokemon-official-tw-sv8-107"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-108",
+     "twCardId": "pokemon-official-tw-sv8-108"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-109",
+     "twCardId": "pokemon-official-tw-sv8-109"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-110",
+     "twCardId": "pokemon-official-tw-sv8-110"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-111",
+     "twCardId": "pokemon-official-tw-sv8-111"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-112",
+     "twCardId": "pokemon-official-tw-sv8-112"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-113",
+     "twCardId": "pokemon-official-tw-sv8-113"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-114",
+     "twCardId": "pokemon-official-tw-sv8-114"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-115",
+     "twCardId": "pokemon-official-tw-sv8-115"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-116",
+     "twCardId": "pokemon-official-tw-sv8-116"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-117",
+     "twCardId": "pokemon-official-tw-sv8-117"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-118",
+     "twCardId": "pokemon-official-tw-sv8-118"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-119",
+     "twCardId": "pokemon-official-tw-sv8-119"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-120",
+     "twCardId": "pokemon-official-tw-sv8-120"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-121",
+     "twCardId": "pokemon-official-tw-sv8-121"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-122",
+     "twCardId": "pokemon-official-tw-sv8-122"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-123",
+     "twCardId": "pokemon-official-tw-sv8-123"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-124",
+     "twCardId": "pokemon-official-tw-sv8-124"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-125",
+     "twCardId": "pokemon-official-tw-sv8-125"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-126",
+     "twCardId": "pokemon-official-tw-sv8-126"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-127",
+     "twCardId": "pokemon-official-tw-sv8-127"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-128",
+     "twCardId": "pokemon-official-tw-sv8-128"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-129",
+     "twCardId": "pokemon-official-tw-sv8-129"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-130",
+     "twCardId": "pokemon-official-tw-sv8-130"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-131",
+     "twCardId": "pokemon-official-tw-sv8-131"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-132",
+     "twCardId": "pokemon-official-tw-sv8-132"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-133",
+     "twCardId": "pokemon-official-tw-sv8-133"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-134",
+     "twCardId": "pokemon-official-tw-sv8-134"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-135",
+     "twCardId": "pokemon-official-tw-sv8-135"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-136",
+     "twCardId": "pokemon-official-tw-sv8-136"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-137",
+     "twCardId": "pokemon-official-tw-sv8-137"
+    },
+    {
+     "jpCardId": "pokemon-tcgdex-ja-sv8-138",
+     "twCardId": "pokemon-official-tw-sv8-138"
+    }
+   ]
+  }
+ ]
+}
