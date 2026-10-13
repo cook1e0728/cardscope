@@ -676,6 +676,11 @@
 - 稽核第 2 項：`parseOnePieceSeries` 也回傳無代碼選項（`code: null`）；`syncOnePiece` 抓全部 62 個選項頁（新增 Family Deck Set／Promotion card／Limited Product Card 與繁中三項），系列與商品仍只由有代碼選項建立。P- 卡號歸新系列 `onepiece-official-p`／`onepiece-official-tw-p`（以 P- 卡最多的無代碼選項命名，即 Promotion card／推廣卡）；無代碼頁中的 OP01-xxx 異圖仍依卡號前綴歸原系列。台版系列也寫 `metadata.cardsCount`。Sonnet worker 實作、新增 `test/onepiece-uncoded-lists.test.mjs`；Node 358/358。
 - 寫入要等下一次航海王同步（每 72 小時，上次 10-12 19:25 UTC，下次約 10-15 19:30 UTC），或由使用者以管理端點提前觸發。預期每版本新增 632 卡面、105 個 P- 新卡號，現有 60 張無系列 P- 卡會掛上推廣卡系列。**同步後驗收**：`catalog_sync_runs` 的 twCards 應約 4,915、推廣卡系列有卡。
 
+### 依序執行 86：台版 MC 補回 5 張（ADR 0023 補充，2026-10-14，桌電，已完成）
+
+- 稽核第 4 項剩下的 MC：當初 ADR 0015 匯入時 273／274／278／279／287 同號兩個官方版本名稱只差名稱標記而被隔離。`buildOfficialTwSeriesPlans` 改以 `twNameKey` 比較同號版本名稱（名稱取最小官方 ID），新增測試；Node 359/359。
+- Migration `20261014100000_pokemon_tw_supplement_official_series`：補號函式目標系列也接受 `asia-pokemon-card-official-tw`（md5 `5e3c479c…` → `e5aa7b1d…`）。套用前以「migration＋MC 寫入＋重播＋強制回滾」整批測試（交易內 766 張，回滾後 761、md5 不變）；已套用並寫入 schema_migrations。MC 寫入 5 張（皆 NONE）、重播零異動；MC 766 張、台版寶可夢 13,118。ADR 0024 連結這 5 張日版同號卡（其餘 761 對早已連結），重播無異動。報告 `docs/evidence/pokemon-tw/official-series/MC-supplement-report-20261014.json`。
+
 下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

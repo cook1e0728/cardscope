@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { OFFICIAL_TW_RARITY_FILTERS, TW_SET_MARK_ALIASES, officialTwDetailUrl, officialTwRarityCode, twSetMarkMatches } from './pokemon-tw-official.mjs';
+import { OFFICIAL_TW_RARITY_FILTERS, TW_SET_MARK_ALIASES, officialTwDetailUrl, officialTwRarityCode, twNameKey, twSetMarkMatches } from './pokemon-tw-official.mjs';
 import { postgresJsonbText } from './pokemon-jp-import-sql.mjs';
 
 // ADR 0015: Taiwanese series the Source archive lacks are imported from the Taiwanese official
@@ -38,14 +38,15 @@ export function buildOfficialTwSeriesPlans({ code, seriesNameZh, cache, observed
   }
   const cards = [], evidence = [];
   for (const [number, versions] of byNumber) {
-    const names = new Set(versions.map(v => v.detail.nameZh));
+    // Versions may differ only in Source name markup (<奇樹的>光蚪仔 / 奇樹的光蚪仔): that is one card (ADR 0010 name rule).
+    const names = new Set(versions.map(v => twNameKey(v.detail.nameZh)));
     if (names.size > 1) { for (const v of versions) quarantined.push({ id: v.id, number, nameZh: v.detail.nameZh, reason: 'VERSION_NAME_CONFLICT' }); continue; }
     const ids = versions.map(v => v.id).sort((a, b) => Number(a) - Number(b));
     const labels = new Set(), oneEach = versions.every(v => (labelsById.get(v.id) || []).length === 1);
     for (const v of versions) for (const label of labelsById.get(v.id) || []) labels.add(label);
     const mapped = oneEach && labels.size === 1 ? officialTwRarityCode([...labels][0]) : { quarantine: labels.size ? `TW_RARITY_NOT_SINGLE:${[...labels].join('/')}` : 'TW_RARITY_NOT_LISTED' };
     if (mapped.quarantine) rarityUnknown.push({ number, ids, reason: mapped.quarantine });
-    const nameZh = versions[0].detail.nameZh;
+    const nameZh = [...versions].sort((a, b) => Number(a.id) - Number(b.id))[0].detail.nameZh;
     evidence.push({ number, ids, nameZh, rarityLabels: [...labels].sort() });
     cards.push({
       id: `pokemon-official-tw-${code.toLowerCase()}-${number.toLowerCase()}`,

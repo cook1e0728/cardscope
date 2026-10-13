@@ -33,6 +33,19 @@ test('versions of a number with different names are quarantined together', () =>
   assert.deepEqual(quarantined.map(q => q.reason), ['VERSION_NAME_CONFLICT', 'VERSION_NAME_CONFLICT']);
 });
 
+test('versions whose names differ only in name markup are one card, named after the lowest official ID', () => {
+  const cache = {
+    seriesLists: { MC: { complete: true, pages: { 1: ['18255', '16744'] } } },
+    details: { 18255: detail('273', '奇樹的光蚪仔', 'MC'), 16744: detail('273', '<奇樹的>光蚪仔', 'MC') },
+    rarityLists: rarityLists({ 1: ['18255', '16744'] })
+  };
+  const { plans, quarantined } = buildOfficialTwSeriesPlans({ code: 'MC', seriesNameZh: '初階牌組 100對戰收藏', cache, observedAt: 'x' });
+  assert.deepEqual(quarantined, []);
+  const card = plans[0].cards[0];
+  assert.equal(card.name_zh, '<奇樹的>光蚪仔');
+  assert.deepEqual(card.metadata.officialDetailIds, ['16744', '18255']);
+});
+
 test('ADR 0022: an aliased set mark is accepted only when the series uses it alone', () => {
   const series = { SVOM: { complete: true, pages: { 1: ['1', '2'] } }, SVOD: { complete: true, pages: { 1: ['3'] } } };
   const details = { 1: detail('001', '扒手貓', 'SVO_ex'), 2: detail(null, '基本【惡】能量', 'SVO_ex'), 3: detail('001', '天秤偶', 'SVOD_ex') };
