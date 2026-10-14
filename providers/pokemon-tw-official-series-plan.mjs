@@ -32,6 +32,8 @@ export function buildOfficialTwSeriesPlans({ code, seriesNameZh, cache, observed
     const detail = cache.details[id];
     if (!detail) throw new Error(`TW_OFFICIAL_DETAIL_MISSING:${code}:${id}`);
     if (!detail.number || !/^[A-Za-z0-9]+$/.test(detail.number)) { quarantined.push({ id, number: detail.number, nameZh: detail.nameZh, reason: 'NUMBER_MISSING' }); continue; }
+    // Promo series (SV-P, M-P, S-P, SM-P) number their cards 001, 002, ...; anything else (no0, a letter code) is a special entry and stays out.
+    if (/-P$/.test(code) && !/^\d+$/.test(detail.number)) { quarantined.push({ id, number: detail.number, nameZh: detail.nameZh, reason: 'PROMO_SPECIAL_NUMBER' }); continue; }
     if (!(twSetMarkMatches(detail.setMark, code) || detail.total === code)) { quarantined.push({ id, number: detail.number, nameZh: detail.nameZh, reason: `SET_MISMATCH:${detail.setMark}` }); continue; }
     if (!detail.nameZh) { quarantined.push({ id, number: detail.number, nameZh: null, reason: 'NAME_MISSING' }); continue; }
     byNumber.set(detail.number, [...(byNumber.get(detail.number) || []), { id: String(id), detail }]);

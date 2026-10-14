@@ -1,0 +1,115 @@
+{
+ "note": "Dry runs (p_dry_run=true) against the production database on 2026-10-14. Both functions reject hyphenated series codes (^[A-Za-z0-9]+$) before any write, so no plan can be dry-run to completion until a migration (like 20261004010000 for JP) allows -P; nothing was written.",
+ "dry": [
+  {
+   "plan": "SM-P-1",
+   "function": "private.import_pokemon_tw_official_series",
+   "cards": 1,
+   "planDigest": "2831e11fcd9ed812669c1c291bb7bfb6d186653173a2d62677dba693f88b5bb2",
+   "expectedInserted": {
+    "cards": 1,
+    "series": 1,
+    "canonical": 1,
+    "printings": 1
+   },
+   "dryRun": {
+    "rejected": true,
+    "message": "TW official import series identity is invalid for SM-P"
+   }
+  },
+  {
+   "plan": "M-P-1",
+   "function": "private.import_pokemon_tw_official_series",
+   "cards": 100,
+   "planDigest": "035ffd7dffd0be6030efce55a88acd80313a7b6a1b89ab28cd407d585dae6eee",
+   "expectedInserted": {
+    "cards": 100,
+    "series": 1,
+    "canonical": 100,
+    "printings": 100
+   },
+   "dryRun": {
+    "rejected": true,
+    "message": "TW official import series identity is invalid for M-P"
+   }
+  },
+  {
+   "plan": "M-P-2",
+   "function": "private.import_pokemon_tw_official_series",
+   "cards": 93,
+   "planDigest": "9506a4f3dfbd1e3645ccc433fd11e27dc3efa6cba3cb32a716cc22f6565f9077",
+   "expectedInserted": {
+    "cards": 93,
+    "series": 0,
+    "canonical": 93,
+    "printings": 93
+   },
+   "dryRun": {
+    "rejected": true,
+    "message": "TW official import series identity is invalid for M-P"
+   }
+  },
+  {
+   "plan": "S-P-1",
+   "function": "private.import_pokemon_tw_official_series",
+   "cards": 100,
+   "planDigest": "c55127f1cd89e91ac864e41b58d4b798aacf0d1a8733f14a1b1be865393b68c8",
+   "expectedInserted": {
+    "cards": 100,
+    "series": 1,
+    "canonical": 100,
+    "printings": 100
+   },
+   "dryRun": {
+    "rejected": true,
+    "message": "TW official import series identity is invalid for S-P"
+   }
+  },
+  {
+   "plan": "S-P-2",
+   "function": "private.import_pokemon_tw_official_series",
+   "cards": 50,
+   "planDigest": "5290a9bffe543acca136d1882b352ca939f11a00e9ca5f6c5a23de54cd570cf1",
+   "expectedInserted": {
+    "cards": 50,
+    "series": 0,
+    "canonical": 50,
+    "printings": 50
+   },
+   "dryRun": {
+    "rejected": true,
+    "message": "TW official import series identity is invalid for S-P"
+   }
+  },
+  {
+   "plan": "SV-P-supplement-1",
+   "function": "private.supplement_pokemon_tw_official_series",
+   "cards": 100,
+   "planDigest": "46a83d6e8d1bc98a0ebae02eb78cf40f634ecf6d682a8b1d3eb48cefd9d31a10",
+   "expectedInserted": {
+    "cards": 100,
+    "canonical": 100,
+    "printings": 100
+   },
+   "dryRun": {
+    "rejected": true,
+    "message": "TW official supplement series code is invalid"
+   }
+  },
+  {
+   "plan": "SV-P-supplement-2",
+   "function": "private.supplement_pokemon_tw_official_series",
+   "cards": 32,
+   "planDigest": "60f191d6c712ab6d936813ec6b4ade9fe16a4d9588fe9c673b132c74b58d96b9",
+   "expectedInserted": {
+    "cards": 32,
+    "canonical": 32,
+    "printings": 32
+   },
+   "dryRun": {
+    "rejected": true,
+    "message": "TW official supplement series code is invalid"
+   }
+  }
+ ]
+}

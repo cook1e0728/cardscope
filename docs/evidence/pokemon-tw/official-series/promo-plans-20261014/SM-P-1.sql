@@ -1,0 +1,15 @@
+-- SM-P batch 1/1: 1 cards (private.import_pokemon_tw_official_series). planDigest 2831e11fcd9ed812669c1c291bb7bfb6d186653173a2d62677dba693f88b5bb2
+create temporary table jp_official_import_result (v jsonb) on commit drop;
+do $do$
+declare d jsonb; r jsonb;
+begin
+  d := private.import_pokemon_tw_official_series($plan${"planVersion":1,"source":"asia-pokemon-card-official-tw","seriesProviderId":"SM-P","evidenceHash":"ffac2275d025cb4de459cb2627c4880806a6ae74d0f68e55e1cdfa74bc08d24c","sourceObservedAt":"2026-10-14T07:24:43.192Z","batch":{"index":1,"count":1,"seriesCardCount":1},"series":{"id":"pokemon-official-tw-sm-p","provider_id":"SM-P","name_zh":"特典卡 太陽&月亮","release_date":null,"source_url":"https://asia.pokemon-card.com/tw/card-search/list/?expansionCodes=SM-P","metadata":{"officialListCount":1,"evidenceHash":"ffac2275d025cb4de459cb2627c4880806a6ae74d0f68e55e1cdfa74bc08d24c","seriesNameBasis":"asia.pokemon-card.com/tw card search expansion list"}},"cards":[{"id":"pokemon-official-tw-sm-p-064","provider_id":"8112","official_card_number":"064","name_zh":"噴火龍GX","rarity_code":"NONE","source_url":"https://asia.pokemon-card.com/tw/card-search/detail/8112/","search_text":"噴火龍GX 064 SM-P-064 sm-p064","metadata":{"officialDetailIds":["8112"],"rarityLabels":["無標記"],"rarityBasis":"asia-pokemon-card-official-tw"}}]}$plan$::jsonb, 'claude-code-local:aa26488931', true);
+  if (d->>'replay')::boolean or d->>'planDigest' <> '2831e11fcd9ed812669c1c291bb7bfb6d186653173a2d62677dba693f88b5bb2'
+    or d->'before' <> '{"series":0,"cards":0,"canonical":0,"printings":0}'::jsonb
+    or d->'inserted' <> '{"cards": 1, "series": 1, "canonical": 1, "printings": 1}'::jsonb then raise exception 'unexpected dry run %', d; end if;
+  r := private.import_pokemon_tw_official_series($plan${"planVersion":1,"source":"asia-pokemon-card-official-tw","seriesProviderId":"SM-P","evidenceHash":"ffac2275d025cb4de459cb2627c4880806a6ae74d0f68e55e1cdfa74bc08d24c","sourceObservedAt":"2026-10-14T07:24:43.192Z","batch":{"index":1,"count":1,"seriesCardCount":1},"series":{"id":"pokemon-official-tw-sm-p","provider_id":"SM-P","name_zh":"特典卡 太陽&月亮","release_date":null,"source_url":"https://asia.pokemon-card.com/tw/card-search/list/?expansionCodes=SM-P","metadata":{"officialListCount":1,"evidenceHash":"ffac2275d025cb4de459cb2627c4880806a6ae74d0f68e55e1cdfa74bc08d24c","seriesNameBasis":"asia.pokemon-card.com/tw card search expansion list"}},"cards":[{"id":"pokemon-official-tw-sm-p-064","provider_id":"8112","official_card_number":"064","name_zh":"噴火龍GX","rarity_code":"NONE","source_url":"https://asia.pokemon-card.com/tw/card-search/detail/8112/","search_text":"噴火龍GX 064 SM-P-064 sm-p064","metadata":{"officialDetailIds":["8112"],"rarityLabels":["無標記"],"rarityBasis":"asia-pokemon-card-official-tw"}}]}$plan$::jsonb, 'claude-code-local:aa26488931', false);
+  if (r->>'replay')::boolean or r->>'planDigest' <> '2831e11fcd9ed812669c1c291bb7bfb6d186653173a2d62677dba693f88b5bb2' then raise exception 'unexpected import %', r; end if;
+  insert into jp_official_import_result values (r);
+end
+$do$;
+select v from jp_official_import_result;

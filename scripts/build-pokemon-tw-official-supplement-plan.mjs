@@ -8,7 +8,7 @@ const usage = [
   'ADR 0023: plans for private.supplement_pokemon_tw_official_series, adding the numbers a Source archive',
   'Taiwanese series lacks from the Taiwanese official card search cache. archive-printings.json:',
   '[{ code, series_id, num, name_zh }] for every printing of those archive series. A series is planned only',
-  'when every existing number carries the official name. Writes <CODE>-supplement.json/.sql/-replay.sql and',
+  'when every existing number carries the official name (promo -P series also accept unpadded numbers and number-less rows, see the plan builder). Writes <CODE>-supplement.json/.sql/-replay.sql and',
   '<CODE>-supplement-report.json. No network or database calls.'
 ].join('\n');
 
@@ -28,16 +28,19 @@ try {
     const ids = Object.values(cache.seriesLists?.[code]?.pages || {}).flat();
     const observedAt = ids.map(id => cache.details[id]?.fetchedAt).filter(Boolean).sort().at(-1);
     const result = buildOfficialTwSupplementPlan({ code, seriesId: seriesIds[0], existing: rows.map(({ num, name_zh }) => ({ num, name_zh })), cache, observedAt });
-    let digest = null;
-    if (result.plan) {
-      const sql = buildOfficialTwSupplementSql(result.plan, actor);
-      digest = sql.digest;
-      writeFileSync(join(outDir, `${code}-supplement.json`), `${JSON.stringify(result.plan, null, 1)}\n`);
-      writeFileSync(join(outDir, `${code}-supplement.sql`), sql.gated);
-      writeFileSync(join(outDir, `${code}-supplement-replay.sql`), sql.replay);
+    // One plan: <CODE>-supplement.*; several (promo series over 100 cards): <CODE>-supplement-<n>.*
+    const digests = [];
+    for (const [index, plan] of result.plans.entries()) {
+      const sql = buildOfficialTwSupplementSql(plan, actor);
+      const name = result.plans.length > 1 ? `${code}-supplement-${index + 1}` : `${code}-supplement`;
+      digests.push({ batch: index + 1, cards: plan.cards.length, planDigest: sql.digest });
+      writeFileSync(join(outDir, `${name}.json`), `${JSON.stringify(plan, null, 1)}\n`);
+      writeFileSync(join(outDir, `${name}.sql`), sql.gated);
+      writeFileSync(join(outDir, `${name}-replay.sql`), sql.replay);
     }
-    writeFileSync(join(outDir, `${code}-supplement-report.json`), `${JSON.stringify({ summary: result.summary, planDigest: digest, misaligned: result.misaligned, quarantined: result.quarantined, rarityUnknown: result.rarityUnknown, added: result.plan?.cards.map(card => ({ number: card.official_card_number, name: card.name_zh, rarity: card.rarity_code, ids: card.metadata.officialDetailIds })) ?? [] }, null, 1)}\n`);
-    console.log(JSON.stringify({ ...result.summary, planDigest: digest }));
+    const added = result.plans.flatMap(plan => plan.cards).map(card => ({ number: card.official_card_number, name: card.name_zh, rarity: card.rarity_code, ids: card.metadata.officialDetailIds }));
+    writeFileSync(join(outDir, `${code}-supplement-report.json`), `${JSON.stringify({ summary: result.summary, digests, planDigest: digests[0]?.planDigest ?? null, misaligned: result.misaligned, zeroPadAliases: result.zeroPadAliases, unnumberedAligned: result.unnumberedAligned, quarantined: result.quarantined, rarityUnknown: result.rarityUnknown, added }, null, 1)}\n`);
+    console.log(JSON.stringify({ ...result.summary, digests }));
   }
 } catch (error) {
   console.error(error.message === 'ARGUMENTS_REQUIRED' ? usage : error.message);

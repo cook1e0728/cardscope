@@ -57,3 +57,21 @@ test('ADR 0022: an aliased set mark is accepted only when the series uses it alo
   const mixed = { ...details, 2: detail('002', '酷豹', 'SVOM_ex') };
   assert.throws(() => buildOfficialTwSeriesPlans({ code: 'SVOM', seriesNameZh: '挑戰牌組', cache: { seriesLists: series, details: mixed, rarityLists: rarityLists() }, observedAt: 'x' }), /TW_SET_MARK_ALIAS_NOT_EXCLUSIVE:SVOM/);
 });
+
+test('promo series: PROMO.MARK pages count by the series printed after the slash, number-less, special-number and foreign-series pages are quarantined', () => {
+  const promo = (number, nameZh, total = 'M-P') => ({ number, nameZh, setMark: 'PROMO.MARK', total, fetchedAt: '2026-10-14T00:00:00Z' });
+  const cache = {
+    seriesLists: { 'M-P': { complete: true, pages: { 1: ['1', '2', '3', '4', '5', '6'] } } },
+    details: { 1: promo('001', '菊草葉'), 2: promo('002', '拉普拉斯ex'), 3: promo('002', '拉普拉斯ex'), 4: promo(null, '基本能量', null), 5: promo('003', '皮卡丘', 'SV-P'), 6: promo('no0', '樂園度假地') },
+    rarityLists: rarityLists({ 11: ['1', '2', '3', '6'], 6: ['5'] })
+  };
+  const { plans, quarantined, summary } = buildOfficialTwSeriesPlans({ code: 'M-P', seriesNameZh: '特典卡 超級進化', cache, observedAt: 'x' });
+  assert.equal(plans[0].series.id, 'pokemon-official-tw-m-p');
+  assert.equal(plans[0].series.provider_id, 'M-P');
+  assert.deepEqual(plans[0].cards.map(card => [card.id, card.official_card_number, card.rarity_code, card.metadata.officialDetailIds]), [
+    ['pokemon-official-tw-m-p-001', '001', 'NONE', ['1']],
+    ['pokemon-official-tw-m-p-002', '002', 'NONE', ['2', '3']]
+  ]);
+  assert.deepEqual(quarantined.map(row => [row.id, row.reason]), [['4', 'NUMBER_MISSING'], ['5', 'SET_MISMATCH:PROMO.MARK'], ['6', 'PROMO_SPECIAL_NUMBER']]);
+  assert.equal(summary.cards, 2);
+});

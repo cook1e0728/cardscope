@@ -1,0 +1,1285 @@
+{
+ "summary": {
+  "code": "SV-P",
+  "seriesId": "pokemon-tcgdex-tw-sv-p",
+  "existing": 94,
+  "official": 214,
+  "add": 132,
+  "batches": 2,
+  "misaligned": 0,
+  "quarantined": 23,
+  "zeroPadAliases": 1,
+  "unnumberedAligned": 12
+ },
+ "digests": [
+  {
+   "batch": 1,
+   "cards": 100,
+   "planDigest": "46a83d6e8d1bc98a0ebae02eb78cf40f634ecf6d682a8b1d3eb48cefd9d31a10"
+  },
+  {
+   "batch": 2,
+   "cards": 32,
+   "planDigest": "60f191d6c712ab6d936813ec6b4ade9fe16a4d9588fe9c673b132c74b58d96b9"
+  }
+ ],
+ "planDigest": "46a83d6e8d1bc98a0ebae02eb78cf40f634ecf6d682a8b1d3eb48cefd9d31a10",
+ "misaligned": [],
+ "zeroPadAliases": [
+  {
+   "archive": "56",
+   "official": "056",
+   "name": "摩托蜥"
+  }
+ ],
+ "unnumberedAligned": [
+  {
+   "number": "DAR",
+   "name": "基本惡能量"
+  },
+  {
+   "number": "FIG",
+   "name": "基本鬥能量"
+  },
+  {
+   "number": "FIR",
+   "name": "基本火能量"
+  },
+  {
+   "number": "GRA",
+   "name": "基本草能量"
+  },
+  {
+   "number": "LIG",
+   "name": "基本雷能量"
+  },
+  {
+   "number": "MET",
+   "name": "基本鋼能量"
+  },
+  {
+   "number": "no0",
+   "name": "樂園度假地"
+  },
+  {
+   "number": "no1",
+   "name": "勝利之證(冠軍)"
+  },
+  {
+   "number": "no2",
+   "name": "勝利之證(亞軍)"
+  },
+  {
+   "number": "no3",
+   "name": "勝利之證(季軍)"
+  },
+  {
+   "number": "PSY",
+   "name": "基本超能量"
+  },
+  {
+   "number": "WAT",
+   "name": "基本水能量"
+  }
+ ],
+ "quarantined": [
+  {
+   "id": "7821",
+   "number": null,
+   "nameZh": "基本惡能量",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "7820",
+   "number": null,
+   "nameZh": "基本鬥能量",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "7816",
+   "number": null,
+   "nameZh": "基本火能量",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "7815",
+   "number": null,
+   "nameZh": "基本草能量",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "7818",
+   "number": null,
+   "nameZh": "基本雷能量",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "7822",
+   "number": null,
+   "nameZh": "基本鋼能量",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "7819",
+   "number": null,
+   "nameZh": "基本超能量",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "8736",
+   "number": null,
+   "nameZh": "樂園度假地",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "9025",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "9026",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "9027",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12564",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12565",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12566",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12578",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12579",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12580",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12939",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12940",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "12941",
+   "number": null,
+   "nameZh": "勝利之證",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "18358",
+   "number": null,
+   "nameZh": "樂園度假地",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "18359",
+   "number": null,
+   "nameZh": "樂園度假地",
+   "reason": "NUMBER_MISSING"
+  },
+  {
+   "id": "7817",
+   "number": null,
+   "nameZh": "基本水能量",
+   "reason": "NUMBER_MISSING"
+  }
+ ],
+ "rarityUnknown": [],
+ "added": [
+  {
+   "number": "058",
+   "name": "慶祝開場樂",
+   "rarity": "NONE",
+   "ids": [
+    "12563"
+   ]
+  },
+  {
+   "number": "099",
+   "name": "吉利蛋",
+   "rarity": "NONE",
+   "ids": [
+    "10517"
+   ]
+  },
+  {
+   "number": "100",
+   "name": "大電海燕ex",
+   "rarity": "NONE",
+   "ids": [
+    "10518"
+   ]
+  },
+  {
+   "number": "101",
+   "name": "謎擬Q",
+   "rarity": "NONE",
+   "ids": [
+    "10519"
+   ]
+  },
+  {
+   "number": "102",
+   "name": "滑滑小子",
+   "rarity": "NONE",
+   "ids": [
+    "10520"
+   ]
+  },
+  {
+   "number": "103",
+   "name": "頭巾混混",
+   "rarity": "NONE",
+   "ids": [
+    "10521"
+   ]
+  },
+  {
+   "number": "104",
+   "name": "神奇糖果",
+   "rarity": "NONE",
+   "ids": [
+    "10522"
+   ]
+  },
+  {
+   "number": "105",
+   "name": "洛拍棒",
+   "rarity": "NONE",
+   "ids": [
+    "10523"
+   ]
+  },
+  {
+   "number": "106",
+   "name": "奇樹",
+   "rarity": "NONE",
+   "ids": [
+    "10524"
+   ]
+  },
+  {
+   "number": "107",
+   "name": "大嘴娃",
+   "rarity": "U",
+   "ids": [
+    "10647"
+   ]
+  },
+  {
+   "number": "108",
+   "name": "蜻蜻蜓",
+   "rarity": "NONE",
+   "ids": [
+    "11111"
+   ]
+  },
+  {
+   "number": "109",
+   "name": "遠古巨蜓",
+   "rarity": "NONE",
+   "ids": [
+    "11112"
+   ]
+  },
+  {
+   "number": "110",
+   "name": "輕身鱈ex",
+   "rarity": "NONE",
+   "ids": [
+    "11113"
+   ]
+  },
+  {
+   "number": "111",
+   "name": "百變怪",
+   "rarity": "NONE",
+   "ids": [
+    "11114"
+   ]
+  },
+  {
+   "number": "112",
+   "name": "厲害釣竿",
+   "rarity": "NONE",
+   "ids": [
+    "11115"
+   ]
+  },
+  {
+   "number": "113",
+   "name": "博士的研究",
+   "rarity": "NONE",
+   "ids": [
+    "11116"
+   ]
+  },
+  {
+   "number": "114",
+   "name": "博士的研究",
+   "rarity": "NONE",
+   "ids": [
+    "11117"
+   ]
+  },
+  {
+   "number": "115",
+   "name": "毅萬與馥好",
+   "rarity": "NONE",
+   "ids": [
+    "11118"
+   ]
+  },
+  {
+   "number": "116",
+   "name": "新葉喵",
+   "rarity": "NONE",
+   "ids": [
+    "11128"
+   ]
+  },
+  {
+   "number": "117",
+   "name": "呆火鱷",
+   "rarity": "NONE",
+   "ids": [
+    "11129"
+   ]
+  },
+  {
+   "number": "133",
+   "name": "捷拉奧拉",
+   "rarity": "NONE",
+   "ids": [
+    "11130"
+   ]
+  },
+  {
+   "number": "134",
+   "name": "霓虹魚V",
+   "rarity": "NONE",
+   "ids": [
+    "10856"
+   ]
+  },
+  {
+   "number": "135",
+   "name": "瑪納霏",
+   "rarity": "NONE",
+   "ids": [
+    "10857"
+   ]
+  },
+  {
+   "number": "136",
+   "name": "反擊捕捉器",
+   "rarity": "NONE",
+   "ids": [
+    "10858"
+   ]
+  },
+  {
+   "number": "137",
+   "name": "大地之容器",
+   "rarity": "NONE",
+   "ids": [
+    "10859"
+   ]
+  },
+  {
+   "number": "138",
+   "name": "洗翠的沉重球",
+   "rarity": "NONE",
+   "ids": [
+    "10860"
+   ]
+  },
+  {
+   "number": "139",
+   "name": "放逐吸塵器",
+   "rarity": "NONE",
+   "ids": [
+    "10861"
+   ]
+  },
+  {
+   "number": "140",
+   "name": "緊急滑板",
+   "rarity": "NONE",
+   "ids": [
+    "10862"
+   ]
+  },
+  {
+   "number": "141",
+   "name": "森林封印石",
+   "rarity": "NONE",
+   "ids": [
+    "10863"
+   ]
+  },
+  {
+   "number": "142",
+   "name": "烏栗",
+   "rarity": "NONE",
+   "ids": [
+    "10864"
+   ]
+  },
+  {
+   "number": "143",
+   "name": "雙重渦輪能量",
+   "rarity": "NONE",
+   "ids": [
+    "10865"
+   ]
+  },
+  {
+   "number": "144",
+   "name": "電蜘蛛ex",
+   "rarity": "NONE",
+   "ids": [
+    "11119"
+   ]
+  },
+  {
+   "number": "145",
+   "name": "貓頭夜鷹",
+   "rarity": "NONE",
+   "ids": [
+    "11120"
+   ]
+  },
+  {
+   "number": "146",
+   "name": "旋轉洛托姆",
+   "rarity": "NONE",
+   "ids": [
+    "11121"
+   ]
+  },
+  {
+   "number": "147",
+   "name": "爆炸頭水牛",
+   "rarity": "NONE",
+   "ids": [
+    "11122"
+   ]
+  },
+  {
+   "number": "148",
+   "name": "太樂巴戈斯ex",
+   "rarity": "NONE",
+   "ids": [
+    "11123"
+   ]
+  },
+  {
+   "number": "149",
+   "name": "玻璃喇叭",
+   "rarity": "NONE",
+   "ids": [
+    "11124"
+   ]
+  },
+  {
+   "number": "150",
+   "name": "赤松",
+   "rarity": "NONE",
+   "ids": [
+    "11125"
+   ]
+  },
+  {
+   "number": "151",
+   "name": "零之大空洞",
+   "rarity": "NONE",
+   "ids": [
+    "11126"
+   ]
+  },
+  {
+   "number": "152",
+   "name": "皮卡丘",
+   "rarity": "NONE",
+   "ids": [
+    "11127"
+   ]
+  },
+  {
+   "number": "153",
+   "name": "皮卡丘",
+   "rarity": "NONE",
+   "ids": [
+    "11492"
+   ]
+  },
+  {
+   "number": "154",
+   "name": "索羅亞克GX",
+   "rarity": "NONE",
+   "ids": [
+    "11493"
+   ]
+  },
+  {
+   "number": "155",
+   "name": "究極奈克洛茲瑪GX",
+   "rarity": "NONE",
+   "ids": [
+    "11494"
+   ]
+  },
+  {
+   "number": "156",
+   "name": "烈空坐GX",
+   "rarity": "NONE",
+   "ids": [
+    "11495"
+   ]
+  },
+  {
+   "number": "157",
+   "name": "皮卡丘&捷克羅姆GX",
+   "rarity": "NONE",
+   "ids": [
+    "11496"
+   ]
+  },
+  {
+   "number": "158",
+   "name": "阿爾宙斯&帝牙盧卡&帕路奇亞GX",
+   "rarity": "NONE",
+   "ids": [
+    "11497"
+   ]
+  },
+  {
+   "number": "159",
+   "name": "無極汰那VMAX",
+   "rarity": "NONE",
+   "ids": [
+    "11498"
+   ]
+  },
+  {
+   "number": "160",
+   "name": "夢幻VMAX",
+   "rarity": "NONE",
+   "ids": [
+    "11499"
+   ]
+  },
+  {
+   "number": "161",
+   "name": "阿爾宙斯VSTAR",
+   "rarity": "NONE",
+   "ids": [
+    "11500"
+   ]
+  },
+  {
+   "number": "162",
+   "name": "騎拉帝納VSTAR",
+   "rarity": "NONE",
+   "ids": [
+    "11501"
+   ]
+  },
+  {
+   "number": "163",
+   "name": "洛奇亞VSTAR",
+   "rarity": "NONE",
+   "ids": [
+    "11502"
+   ]
+  },
+  {
+   "number": "164",
+   "name": "密勒頓ex",
+   "rarity": "NONE",
+   "ids": [
+    "11503"
+   ]
+  },
+  {
+   "number": "165",
+   "name": "古劍豹ex",
+   "rarity": "NONE",
+   "ids": [
+    "11504"
+   ]
+  },
+  {
+   "number": "166",
+   "name": "噴火龍ex",
+   "rarity": "NONE",
+   "ids": [
+    "11505"
+   ]
+  },
+  {
+   "number": "167",
+   "name": "轟鳴月ex",
+   "rarity": "NONE",
+   "ids": [
+    "11506"
+   ]
+  },
+  {
+   "number": "168",
+   "name": "鐵武者ex",
+   "rarity": "NONE",
+   "ids": [
+    "11507"
+   ]
+  },
+  {
+   "number": "169",
+   "name": "皮卡丘",
+   "rarity": "NONE",
+   "ids": [
+    "11508"
+   ]
+  },
+  {
+   "number": "170",
+   "name": "謎擬Q",
+   "rarity": "NONE",
+   "ids": [
+    "11509"
+   ]
+  },
+  {
+   "number": "171",
+   "name": "伊布",
+   "rarity": "NONE",
+   "ids": [
+    "11510"
+   ]
+  },
+  {
+   "number": "174",
+   "name": "蟲甲聖ex",
+   "rarity": "NONE",
+   "ids": [
+    "11518"
+   ]
+  },
+  {
+   "number": "175",
+   "name": "鐵包袱",
+   "rarity": "NONE",
+   "ids": [
+    "11519"
+   ]
+  },
+  {
+   "number": "176",
+   "name": "沙河馬",
+   "rarity": "NONE",
+   "ids": [
+    "11520"
+   ]
+  },
+  {
+   "number": "177",
+   "name": "河馬獸",
+   "rarity": "NONE",
+   "ids": [
+    "11521"
+   ]
+  },
+  {
+   "number": "178",
+   "name": "老大的指令",
+   "rarity": "NONE",
+   "ids": [
+    "11522"
+   ]
+  },
+  {
+   "number": "179",
+   "name": "招式學習器機",
+   "rarity": "NONE",
+   "ids": [
+    "11523"
+   ]
+  },
+  {
+   "number": "180",
+   "name": "噴射能量",
+   "rarity": "NONE",
+   "ids": [
+    "11524"
+   ]
+  },
+  {
+   "number": "181",
+   "name": "慶祝開場樂",
+   "rarity": "NONE",
+   "ids": [
+    "11525"
+   ]
+  },
+  {
+   "number": "182",
+   "name": "朋友手冊",
+   "rarity": "NONE",
+   "ids": [
+    "12574"
+   ]
+  },
+  {
+   "number": "183",
+   "name": "大比鳥ex",
+   "rarity": "NONE",
+   "ids": [
+    "12575"
+   ]
+  },
+  {
+   "number": "184",
+   "name": "奧琳博士的氣魄",
+   "rarity": "NONE",
+   "ids": [
+    "12576"
+   ]
+  },
+  {
+   "number": "185",
+   "name": "皮卡丘ex",
+   "rarity": "NONE",
+   "ids": [
+    "12254"
+   ]
+  },
+  {
+   "number": "186",
+   "name": "米立龍",
+   "rarity": "NONE",
+   "ids": [
+    "12255"
+   ]
+  },
+  {
+   "number": "187",
+   "name": "破空焰",
+   "rarity": "NONE",
+   "ids": [
+    "12262"
+   ]
+  },
+  {
+   "number": "188",
+   "name": "刺龍王ex",
+   "rarity": "NONE",
+   "ids": [
+    "12263"
+   ]
+  },
+  {
+   "number": "189",
+   "name": "甲賀忍蛙ex",
+   "rarity": "NONE",
+   "ids": [
+    "12264"
+   ]
+  },
+  {
+   "number": "190",
+   "name": "古劍豹",
+   "rarity": "NONE",
+   "ids": [
+    "12265"
+   ]
+  },
+  {
+   "number": "191",
+   "name": "三合一磁怪",
+   "rarity": "NONE",
+   "ids": [
+    "12266"
+   ]
+  },
+  {
+   "number": "192",
+   "name": "愛管侍",
+   "rarity": "NONE",
+   "ids": [
+    "12267"
+   ]
+  },
+  {
+   "number": "204",
+   "name": "夜間擔架",
+   "rarity": "NONE",
+   "ids": [
+    "12577"
+   ]
+  },
+  {
+   "number": "208",
+   "name": "<赫普的>啪嚓海膽ex",
+   "rarity": "NONE",
+   "ids": [
+    "12567"
+   ]
+  },
+  {
+   "number": "209",
+   "name": "飄飄球",
+   "rarity": "NONE",
+   "ids": [
+    "12568"
+   ]
+  },
+  {
+   "number": "210",
+   "name": "隨風球",
+   "rarity": "NONE",
+   "ids": [
+    "12569"
+   ]
+  },
+  {
+   "number": "211",
+   "name": "米立龍",
+   "rarity": "NONE",
+   "ids": [
+    "12570"
+   ]
+  },
+  {
+   "number": "212",
+   "name": "好友寶芬",
+   "rarity": "NONE",
+   "ids": [
+    "12571"
+   ]
+  },
+  {
+   "number": "213",
+   "name": "派帕",
+   "rarity": "NONE",
+   "ids": [
+    "12572"
+   ]
+  },
+  {
+   "number": "214",
+   "name": "‌寶可夢中心的姐姐",
+   "rarity": "NONE",
+   "ids": [
+    "12573"
+   ]
+  },
+  {
+   "number": "215",
+   "name": "卡比獸",
+   "rarity": "NONE",
+   "ids": [
+    "12268"
+   ]
+  },
+  {
+   "number": "218",
+   "name": "艾莉絲的鬥志",
+   "rarity": "NONE",
+   "ids": [
+    "12859"
+   ]
+  },
+  {
+   "number": "220",
+   "name": "可達鴨",
+   "rarity": "NONE",
+   "ids": [
+    "12849"
+   ]
+  },
+  {
+   "number": "221",
+   "name": "哥達鴨",
+   "rarity": "NONE",
+   "ids": [
+    "12850"
+   ]
+  },
+  {
+   "number": "222",
+   "name": "大力鱷",
+   "rarity": "NONE",
+   "ids": [
+    "12851"
+   ]
+  },
+  {
+   "number": "223",
+   "name": "皮卡丘",
+   "rarity": "NONE",
+   "ids": [
+    "12852"
+   ]
+  },
+  {
+   "number": "224",
+   "name": "顫弦蠑螈ex",
+   "rarity": "NONE",
+   "ids": [
+    "12853"
+   ]
+  },
+  {
+   "number": "225",
+   "name": "振翼髮",
+   "rarity": "NONE",
+   "ids": [
+    "12854"
+   ]
+  },
+  {
+   "number": "226",
+   "name": "<火箭隊的>袋獸ex",
+   "rarity": "NONE",
+   "ids": [
+    "12855"
+   ]
+  },
+  {
+   "number": "227",
+   "name": "夜間擔架",
+   "rarity": "NONE",
+   "ids": [
+    "12856"
+   ]
+  },
+  {
+   "number": "228",
+   "name": "火箭隊的催眠裝置",
+   "rarity": "NONE",
+   "ids": [
+    "12857"
+   ]
+  },
+  {
+   "number": "229",
+   "name": "烏栗",
+   "rarity": "NONE",
+   "ids": [
+    "12858"
+   ]
+  },
+  {
+   "number": "230",
+   "name": "好友寶芬",
+   "rarity": "NONE",
+   "ids": [
+    "12938",
+    "12942"
+   ]
+  },
+  {
+   "number": "231",
+   "name": "木木梟",
+   "rarity": "NONE",
+   "ids": [
+    "12894"
+   ]
+  },
+  {
+   "number": "232",
+   "name": "小火龍",
+   "rarity": "NONE",
+   "ids": [
+    "12895"
+   ]
+  },
+  {
+   "number": "233",
+   "name": "傑尼龜",
+   "rarity": "NONE",
+   "ids": [
+    "12896"
+   ]
+  },
+  {
+   "number": "234",
+   "name": "卡咪龜",
+   "rarity": "NONE",
+   "ids": [
+    "12897"
+   ]
+  },
+  {
+   "number": "235",
+   "name": "水箭龜ex",
+   "rarity": "NONE",
+   "ids": [
+    "12898"
+   ]
+  },
+  {
+   "number": "236",
+   "name": "皮卡丘",
+   "rarity": "NONE",
+   "ids": [
+    "12899"
+   ]
+  },
+  {
+   "number": "237",
+   "name": "電海燕",
+   "rarity": "NONE",
+   "ids": [
+    "12900"
+   ]
+  },
+  {
+   "number": "238",
+   "name": "呆呆獸",
+   "rarity": "NONE",
+   "ids": [
+    "12901"
+   ]
+  },
+  {
+   "number": "239",
+   "name": "纏紅鶴",
+   "rarity": "NONE",
+   "ids": [
+    "12902"
+   ]
+  },
+  {
+   "number": "240",
+   "name": "托戈德瑪爾",
+   "rarity": "NONE",
+   "ids": [
+    "12903"
+   ]
+  },
+  {
+   "number": "242",
+   "name": "小火龍",
+   "rarity": "NONE",
+   "ids": [
+    "13115"
+   ]
+  },
+  {
+   "number": "243",
+   "name": "皮卡丘",
+   "rarity": "NONE",
+   "ids": [
+    "13116"
+   ]
+  },
+  {
+   "number": "244",
+   "name": "麒麟奇",
+   "rarity": "NONE",
+   "ids": [
+    "13117"
+   ]
+  },
+  {
+   "number": "245",
+   "name": "迷你龍",
+   "rarity": "NONE",
+   "ids": [
+    "13118"
+   ]
+  },
+  {
+   "number": "246",
+   "name": "伊布",
+   "rarity": "NONE",
+   "ids": [
+    "13119"
+   ]
+  },
+  {
+   "number": "247",
+   "name": "奇樹",
+   "rarity": "NONE",
+   "ids": [
+    "13957"
+   ]
+  },
+  {
+   "number": "249",
+   "name": "能量輸送",
+   "rarity": "NONE",
+   "ids": [
+    "13120"
+   ]
+  },
+  {
+   "number": "250",
+   "name": "傷藥",
+   "rarity": "NONE",
+   "ids": [
+    "13121"
+   ]
+  },
+  {
+   "number": "251",
+   "name": "粉碎之錘",
+   "rarity": "NONE",
+   "ids": [
+    "13122"
+   ]
+  },
+  {
+   "number": "252",
+   "name": "高級球",
+   "rarity": "NONE",
+   "ids": [
+    "13123"
+   ]
+  },
+  {
+   "number": "253",
+   "name": "寶可夢交替",
+   "rarity": "NONE",
+   "ids": [
+    "13124"
+   ]
+  },
+  {
+   "number": "254",
+   "name": "寶可夢捕捉器",
+   "rarity": "NONE",
+   "ids": [
+    "13125"
+   ]
+  },
+  {
+   "number": "255",
+   "name": "老大的指令",
+   "rarity": "NONE",
+   "ids": [
+    "13126"
+   ]
+  },
+  {
+   "number": "256",
+   "name": "黑連",
+   "rarity": "NONE",
+   "ids": [
+    "13127"
+   ]
+  },
+  {
+   "number": "257",
+   "name": "基本【草】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13128"
+   ]
+  },
+  {
+   "number": "258",
+   "name": "基本【火】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13129"
+   ]
+  },
+  {
+   "number": "259",
+   "name": "基本【水】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13130"
+   ]
+  },
+  {
+   "number": "260",
+   "name": "基本【雷】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13131"
+   ]
+  },
+  {
+   "number": "261",
+   "name": "基本【超】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13132"
+   ]
+  },
+  {
+   "number": "262",
+   "name": "基本【鬥】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13133"
+   ]
+  },
+  {
+   "number": "263",
+   "name": "基本【惡】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13134"
+   ]
+  },
+  {
+   "number": "264",
+   "name": "基本【鋼】能量",
+   "rarity": "NONE",
+   "ids": [
+    "13135"
+   ]
+  },
+  {
+   "number": "265",
+   "name": "比克提尼",
+   "rarity": "NONE",
+   "ids": [
+    "13136"
+   ]
+  }
+ ]
+}
