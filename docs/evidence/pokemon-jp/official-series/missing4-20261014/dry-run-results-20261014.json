@@ -1,0 +1,32 @@
+{
+ "checkedAt": "2026-10-14",
+ "note": "p_dry_run=true only; no rows written (series/cards counted 0 afterwards)",
+ "results": {
+  "SC2-1": {
+   "planDigest": "56f6de9d2f80b4c1e17d503808d1ff1db214731945857a20e70c6b1608b45645",
+   "cards": 21,
+   "quarantined": 0,
+   "quarantineReasons": []
+  },
+  "S8a-G-1": {
+   "planDigest": "eda0b170a1630442846d97f4ac1fd60afc1f591789a41f243311ea56385eefa0",
+   "cards": 15,
+   "quarantined": 1,
+   "quarantineReasons": [
+    "41679:NUMBER_MISSING"
+   ]
+  },
+  "DPs-B-1": {
+   "planDigest": "d40b79279fb7e66b64326b4a14ad4c1ff536a2baba87ae81ef4c3138ae3658c3",
+   "cards": 92,
+   "quarantined": 0,
+   "quarantineReasons": []
+  },
+  "EP08-1": {
+   "planDigest": "8911966d28f69e7f20cbdced0416ddbb65a4bce4c22b4c44d6b87919a9183db9",
+   "cards": 43,
+   "quarantined": 0,
+   "quarantineReasons": []
+  }
+ }
+}

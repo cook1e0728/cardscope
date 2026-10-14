@@ -729,6 +729,13 @@
 - SV-P「56」→「056」已修正（同日）：只改卡號、搜尋字串、稀有度 NONE（台灣官方詳細頁 9024、無標記篩選），ID 與 provider_id 不變、舊值存 metadata；單一交易含狀態檢查，先回滾測試再寫入，重跑會被檢查擋下。SQL 與修改前快照 `docs/evidence/pokemon-tw/fixes-20261014/`。SV-P 空值剩 12（no0–no3、基本能量 8）。
 - 待處理：no0 等特殊編號與無卡號特典（價值低）。
 
+### 依序執行 94：日版缺漏 4 系列 SC2、S8a-G、DPs-B、EP08（ADR 0012／0026，2026-10-14，桌電，已完成）
+
+- 使用者指定抓取改用 Scrapling／Crawl4AI：桌電裝在 repo 外的 `C:/Users/99wye/Documents/CardScope/.venv-crawl`（Python 3.12、Scrapling 0.4.15、Crawl4AI、Playwright Chromium）。本次用 Scrapling 一般 Fetcher（關閉 stealth 標頭、自訂 UA、單一連線、間隔 1.7 秒），190 個請求、非 200 為 0；原始 HTML 只在 scratchpad，repo 只留文字事實。證據 `docs/evidence/pokemon-jp/official-series/missing4-20261014/`。
+- 查證：SC2（VMAX 対戦トリプルスターターセット的リザードン牌組，2020-12-04）與資料庫 SCS 官方卡片 ID 零重疊，SCS 的シロナ換成マリィ，官方商品頁寫明「カード一部変更」，是不同商品；系列名維持官方原字串「スターターセットVMAX リザードン」（與 SCS 正規化後同名，靠代碼區分，依 ADR 0012 不自組名）。S8a-G（25th ANNIVERSARY GOLDEN BOX，官方只寫冬季發送，發售日留空）15 張，基本雷能量無卡號隔離。DPs-B（拡張パック「破空の激闘」，2008-07-10）92 張有印卡號；解析器容許總數後的促銷編號尾巴（`011 / 092 DPBP#531`）。EP08（エントリーパック’08 DX，2007-11-30）43 張無卡號，走 ADR 0026。
+- 寫入：4 份 gated 計畫（既有函式已接受連字號代碼，無新 migration）＋重播零異動，共 171 張。稀有度依 ADR 0019 只收 C～UR：DPs-B 9 張與 SC2／S8a-G／EP08 全部留空（Printing incomplete），DPs-B verified 83。
+- 中文名 ADR 0013：145 張（2 批＋重播零異動，候選 `derived-names/adr-0013-candidates-missing4-20261014.json`）；剩 26 張無唯一官方中文名。新增 `scripts/build-pokemon-jp-official-unnumbered-plan.mjs`。Node 369/369。注意：ADR 0013 候選查詢要先把日文名限縮在目標卡，全表計算 `jp_name_key` 會超過 Management API 約 100 秒而 524。
+
 下一個安全起點（2026-10-14 更新）：**10-14 查信**：皇巢未回、晴れる屋2 只有自動受理通知。遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

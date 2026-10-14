@@ -10,6 +10,14 @@ test('official detail page yields set mark, number, name and rarity icon', () =>
   assert.deepEqual(parseOfficialJpDetail('<h1 class="Heading1">x</h1>'), { nameJa: 'x', setMark: null, number: null, total: null, rarityIcon: null });
 });
 
+test('a printed promo number after the total (DPs-B 011 / 092 DPBP#531) does not hide the card number', () => {
+  const html = '<h1 class="Heading1 mt20">シェイミ</h1><div class="subtext Text-fjalla"><img src="/assets/images/card/regulation_logo_1/DPs-B.gif" class="img-regulation" alt="DPs-B" />\n&nbsp;011&nbsp;/&nbsp;092     DPBP#531&nbsp;\n<img src="/assets/images/card/rarity/ic_rare_r.gif" width="24" /></div>';
+  assert.deepEqual(parseOfficialJpDetail(html), { nameJa: 'シェイミ', setMark: 'DPs-B', number: '011', total: '092', rarityIcon: 'ic_rare_r' });
+  // 基本能量只印 LIG 之類的文字，仍是無卡號；其他尾巴格式也不放寬
+  assert.equal(parseOfficialJpDetail(html.replace('011&nbsp;/&nbsp;092     DPBP#531', 'LIG')).number, null);
+  assert.equal(parseOfficialJpDetail(html.replace('DPBP#531', 'extra text')).number, null);
+});
+
 test('rarity icons map to existing codes (dropping _c), while missing or unknown icons are quarantined', () => {
   assert.deepEqual(officialJpRarity('ic_rare_sar'), { rarity: 'SAR' });
   assert.deepEqual(officialJpRarity('ic_rare_ace'), { rarity: 'ACE' });

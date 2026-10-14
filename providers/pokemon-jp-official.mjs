@@ -37,7 +37,8 @@ export function parseOfficialJpDetail(html) {
   const subtext = html.match(/<div class="subtext[^"]*">([\s\S]*?)<\/div>/)?.[1] ?? null;
   if (!subtext) return { nameJa: name ? decodeText(name) : null, setMark: null, number: null, total: null, rarityIcon: null };
   const setMark = subtext.match(/class="img-regulation"[^>]*alt="([^"]*)"/)?.[1] ?? subtext.match(/regulation_logo_\d+\/([^./"]+)\.gif/)?.[1] ?? null;
-  const numbers = decodeText(subtext.replace(/<[^>]*>/g, ' ')).match(/^(\S+)\s*\/\s*(\S+)$/);
+  // DPs-B 的卡在總數後面還印促銷編號（`011 / 092 DPBP#531`）；只容許這種「大寫字母#數字」尾巴，其餘格式仍視為無卡號。
+  const numbers = decodeText(subtext.replace(/<[^>]*>/g, ' ')).match(/^(\S+)\s*\/\s*(\S+?)(?:\s+[A-Z]+#\d+)?$/);
   const rarityIcon = subtext.match(/\/rarity\/(ic_rare_[a-z0-9_]+|ic_prismstar)\.(?:gif|png|svg)/i)?.[1]?.toLowerCase() ?? null;
   return { nameJa: name ? decodeText(name) : null, setMark, number: numbers?.[1] ?? null, total: numbers?.[2] ?? null, rarityIcon };
 }
