@@ -719,7 +719,16 @@
 - 項目 4：M6 098／099 重抓官方頁 50539／50540 核對後升 verified。
 - 寫入後 ANALYZE `tcg_cards`／`tcg_printings`／`card_images`／`tcg_canonical_cards`。`tcgdex-ja` pending 卡 415 → 402。Node 364/364（先前記的 365 為誤記，8b45fa1 只在既有測試加斷言）。
 
-下一個安全起點（2026-10-13 更新）：遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
+### 依序執行 93：台版特典卡 SV-P 補號、M-P、S-P、SM-P（ADR 0041，2026-10-14，桌電，已完成）
+
+- 稽核（依序執行 83）未做的台版特典缺口。Sonnet worker 抓台灣官方 392 個請求（非 200 為 0；SV-P 詳細頁沿用 10-02 快取，官方 ID 集合相同），產生 7 份計畫：`docs/evidence/pokemon-tw/official-series/promo-plans-20261014/`，快取 `official-promo-cache-20261014.json`。程式：`-P` 系列特殊編號隔離為 `PROMO_SPECIAL_NUMBER`、補號支援補零別名（「56」↔「056」）、官方無卡號頁對齊、>100 張拆多份計畫；Node 368/368。
+- Migration `20261014160000_pokemon_tw_official_promo_series`：台灣官方匯入與補號函式代碼檢查接受 `-P`，補號改為同系列多份計畫（同 digest 為重播，索引 `…_one_per_plan`）；與正式庫定義的差異只有這三處（已逐行 diff）。新 md5：import `c713ff23…`、supplement `36ba83ca…`。
+- 先以單一交易「migration＋7 份寫入＋7 份重播＋強制例外」整批回滾測試，回滾後零殘留；再以同一內容正式套用並寫入 schema_migrations，7 份重播零異動，ANALYZE 四張目錄表。
+- 結果：M-P 193、S-P 150、SM-P 1（全部 verified、NONE），SV-P 94 → 226（新增 131 NONE、1 U；13 張空值是原有的 no0–no3／能量）。台版寶可夢 Printing 13,118 → 13,594。日台特典各自編號（同號同名 M-P 0/62、S-P 0/88），不連結。
+- 正式站（部署 `39b98aa` 後）：`/api/cards?game=pokemon&region=TW&series=<系列 ID>` 分別回 193／150／1／226 張；搜尋「噴火龍GX」（台版）含 `pokemon-official-tw-sm-p-064`。注意 `/api/cards` 要帶 `game`，只帶 `series` 會回 0。
+- 待處理：SV-P「56」→「056」補零修正、no0 等特殊編號與無卡號特典。
+
+下一個安全起點（2026-10-14 更新）：**10-14 查信**：皇巢未回、晴れる屋2 只有自動受理通知。遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
 - Git：工作分支 `claude/ui-a11y-polish` 與 `main` 同步（依序執行 39–44 皆已合併；45 為未合併的研究分支），Render 已部署並驗收：正式站 https://cardscope.onrender.com 首頁有 meta description 與跳過連結；`/api/cards/pokemon-official-tw-sv9-113` 並列日版 SR＋台版 SR。接續時：`git fetch && git checkout claude/ui-a11y-polish && git pull`（或從 main 開新的 `claude/<主題>` 分支）。沒有進行中的資料批次、沒有未提交的修改。
