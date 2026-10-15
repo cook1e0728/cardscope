@@ -1,0 +1,12 @@
+{
+ "note": "Dry runs (p_dry_run=true, rolled back inside the function) against the production database on 2026-10-15. Nothing was written; afterwards M-P still 193 printings, S-P 150, SV-P unnumbered rows still 12 with empty rarity, and no new audit rows (the only SV-P rarity audit rows are the 2026-10-02 ones).",
+ "supplement": [
+  { "plan": "M-P-promo-rest", "function": "private.supplement_pokemon_tw_official_series", "cards": 13, "planDigest": "bfbce311f7263b28c884c1aca06ac86a2d5d8a28089eb1a6905b99b99009e3a9", "dryRun": { "replay": false, "before": { "cards": 0, "canonical": 0, "printings": 0 }, "inserted": { "cards": 13, "canonical": 13, "printings": 13 } }, "composition": "6 energy codes (DAR, FIG, FIR, GRA, MET, PSY) + 7 number-less (勝利之證 x6, 樂園度假地 x1) as c<detail ID>" },
+  { "plan": "S-P-promo-rest", "function": "private.supplement_pokemon_tw_official_series", "cards": 1, "planDigest": "1e91291500bb668430a7b6b5e041cb848ce6277d1b34545a2895cceb56ce97fe", "dryRun": { "replay": false, "before": { "cards": 0, "canonical": 0, "printings": 0 }, "inserted": { "cards": 1, "canonical": 1, "printings": 1 } }, "composition": "冠軍慶典 (collector text n/a) as c7823" }
+ ],
+ "rarityFill": [
+  { "plan": "SV-P-rarity-exact", "function": "private.fill_pokemon_official_rarity_tw", "rows": 8, "planDigest": "c4760ae7aa9c7b9f3be979bce21b541a", "dryRun": { "kind": "tw-official", "rows": 8, "filled": 8, "verified": 8, "replay": false }, "composition": "the 8 basic energies (DAR FIG FIR GRA LIG MET PSY WAT), each matched 1:1 to the official page printing the same energy code, rarity NONE" },
+  { "plan": "SV-P-rarity-group", "function": "private.fill_pokemon_official_rarity_tw", "rows": 4, "planDigest": "8ac05fd63800ce81f839cc11431e984e", "dryRun": { "kind": "tw-official", "rows": 4, "filled": 4, "verified": 4, "replay": false }, "composition": "no0 (3 candidate official pages) and no1-no3 (12 candidate pages); every candidate page is in the 無標記 filter, but which page each archive row is cannot be shown, so officialDetailIds names the whole group. Owner decision." }
+ ],
+ "heldBack": "SV-P: the 8 energies are already in the series (no supplement), and the 15 number-less pages (勝利之證 x12, 樂園度假地 x3) are not planned because the archive rows no0-no3 would become duplicates of them with no way to tell which page is which."
+}
