@@ -107,3 +107,17 @@ export function createTcgdexPricing({ language = 'ja', fetch: fetchImpl = global
 
 export const fetchTcgdexPricing = createTcgdexPricing();
 export const fetchTcgdexPricingEn = createTcgdexPricing({ language: 'en' });
+
+// ADR 0037: official-import JP series checked against TCGdex (unique card numbers, Japanese names present). Evidence: docs/evidence/pokemon-jp/tcgdex-pricing-official-match-20261013.json
+export const TCGDEX_OFFICIAL_JP_SERIES = new Set(['SV4a', 'SV-P', 'M-P', 'SV5K', 'SV5M']);
+
+// Which TCGdex card a printing is priced against, and which name must match (ADR 0036/0037/0038). Pure: shared by the detail page and the daily snapshot (ADR 0042).
+// x is a printing ({ source, providerId, region, cardId, localSetCode, localCardNumber, nameJa, nameEn }) or the card itself; card only supplies the English-name fallback.
+export function tcgdexLookupForPrinting(x, card = null, { enSetMap = {}, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES } = {}) {
+  if (!x) return null;
+  const make = (id, expectedName, language) => typeof id === 'string' && id ? { id, expectedName, language } : null;
+  if (x.source === 'tcgdex-ja') return make(x.providerId || x.provider_id, null, 'ja');
+  if (x.region === 'JP' && x.cardId && !/-v\d+$/.test(x.cardId) && officialJpSeries.has(x.localSetCode) && x.localCardNumber && x.nameJa) return make(`${x.localSetCode}-${x.localCardNumber}`, x.nameJa, 'ja');
+  if (x.source === 'pokemontcg' && x.region === 'US' && Object.hasOwn(enSetMap, x.localSetCode || '') && (x.nameEn || card?.nameEn)) return make(tcgdexEnCardId(enSetMap[x.localSetCode], x.localCardNumber, x.providerId || x.provider_id), x.nameEn || card.nameEn, 'en');
+  return null;
+}
