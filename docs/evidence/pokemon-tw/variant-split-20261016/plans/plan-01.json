@@ -1,0 +1,56 @@
+{
+ "version": 1,
+ "rule": "adr-0043",
+ "rows": [
+  {
+   "baseCardId": "pokemon-official-tw-m-p-037",
+   "seriesCode": "M-P",
+   "number": "037",
+   "nameZh": "含羞苞",
+   "officialDetailIds": [
+    "14443",
+    "14444"
+   ],
+   "baseOfficial": {
+    "detailId": "14443",
+    "imageUrl": "https://asia.pokemon-card.com/tw/card-img/tw00014443.png",
+    "sourceUrl": "https://asia.pokemon-card.com/tw/card-search/detail/14443/"
+   },
+   "variants": [
+    {
+     "cardId": "pokemon-official-tw-m-p-037-v2",
+     "detailId": "14444",
+     "variantIndex": 2,
+     "variantName": "版本 2",
+     "imageUrl": "https://asia.pokemon-card.com/tw/card-img/tw00014444.png",
+     "sourceUrl": "https://asia.pokemon-card.com/tw/card-search/detail/14444/"
+    }
+   ]
+  },
+  {
+   "baseCardId": "pokemon-official-tw-m-p-113",
+   "seriesCode": "M-P",
+   "number": "113",
+   "nameZh": "寶可平板",
+   "officialDetailIds": [
+    "20089",
+    "20090"
+   ],
+   "baseOfficial": {
+    "detailId": "20089",
+    "imageUrl": "https://asia.pokemon-card.com/tw/card-img/tw00020089.png",
+    "sourceUrl": "https://asia.pokemon-card.com/tw/card-search/detail/20089/"
+   },
+   "variants": [
+    {
+     "cardId": "pokemon-official-tw-m-p-113-v2",
+     "detailId": "20090",
+     "variantIndex": 2,
+     "variantName": "版本 2",
+     "imageUrl": "https://asia.pokemon-card.com/tw/card-img/tw00020090.png",
+     "sourceUrl": "https://asia.pokemon-card.com/tw/card-search/detail/20090/"
+    }
+   ]
+  }
+ ]
+}
