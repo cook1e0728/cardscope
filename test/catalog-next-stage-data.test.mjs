@@ -354,58 +354,65 @@ test('global coverage marks failed and malformed later relation pages unknown',a
   });
 });
 
-test('ordinary browse bounds long-ID relation URLs and concurrency while paginating legacy printings',async()=>{
+test('series fallback (no browse_series_cards) bounds long-ID image URLs and concurrency while paginating legacy images',async()=>{
   const ids=Array.from({length:500},(_,index)=>`card-${String(index).padStart(3,'0')}-${'long-card-id-segment'.repeat(4)}`),
     cards=ids.map((id,index)=>({id,game:'pokemon',officialCardNumber:String(index+1),nameZh:'測試卡'})),
-    printings=ids.flatMap((cardId,index)=>Array.from({length:71},(_,printingIndex)=>({id:index*71+printingIndex+1,cardId,seriesId:'test-series',region:'JP',language:'ja-JP',localCardNumber:String(printingIndex+1),rarity:'R'}))),
+    printings=ids.flatMap((cardId,index)=>Array.from({length:3},(_,printingIndex)=>({id:index*3+printingIndex+1,cardId,seriesId:'test-series',region:'JP',language:'ja-JP',localCardNumber:String(printingIndex+1),rarity:'R'}))),
     images=ids.map((cardId,index)=>({id:index+1,cardId,language:'en',source:'ygoprodeck',imageUrl:`https://example.test/${index+1}.jpg`,sourceUrl:'https://example.test/source',isPrimary:true,fetchedAt:'2026-09-01T00:00:00.000Z'})),
-    relationRows={tcg_printings:printings,card_images:images},requests=[],activeByTable={tcg_printings:0,card_images:0},maxConcurrentByTable={tcg_printings:0,card_images:0};
+    requests=[],activeImages={count:0,max:0},tables=[];
   const parseCardIds=value=>[...String(value||'').matchAll(/"([^"]+)"/g)].map(([,id])=>id),
     handleDatabaseRequest=(req,res)=>{
-      const url=new URL(req.url,`http://${req.headers.host}`),reply=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body))};
-      if(url.pathname==='/rest/v1/tcg_cards'){
-        const limit=Number(url.searchParams.get('limit')||1000),offset=Number(url.searchParams.get('offset')||0);
-        return reply(200,cards.slice(offset,offset+limit));
-      }
-      const table=url.pathname.split('/').at(-1);
-      if(!Object.hasOwn(relationRows,table))return reply(200,[]);
-      const select=url.searchParams.get('select')||'',cardIds=parseCardIds(url.searchParams.get('card_id')),offset=Number(url.searchParams.get('offset')||0),isPrimary=table==='tcg_printings'?select.includes('rarityCode'):select.includes('imageRightsStatus');
-      requests.push({table,select,cardIds,offset,urlBytes:Buffer.byteLength(`${process.env.SUPABASE_URL}${req.url}`,'utf8')});
-      activeByTable[table]++;maxConcurrentByTable[table]=Math.max(maxConcurrentByTable[table],activeByTable[table]);
+      const url=new URL(req.url,`http://${req.headers.host}`),reply=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body))},table=url.pathname.split('/').at(-1);
+      tables.push(table);
+      const limit=Number(url.searchParams.get('limit')||1000),offset=Number(url.searchParams.get('offset')||0);
+      if(table==='tcg_printings')return reply(200,printings.slice(offset,offset+limit));
+      if(table==='tcg_cards'){const wanted=new Set(parseCardIds(url.searchParams.get('id')));return reply(200,cards.filter(card=>wanted.has(card.id)).slice(offset,offset+limit))}
+      if(table!=='card_images')return reply(200,[]);
+      const select=url.searchParams.get('select')||'',cardIds=parseCardIds(url.searchParams.get('card_id')),primary=select.includes('imageRightsStatus');
+      requests.push({select,cardIds,offset,urlBytes:Buffer.byteLength(`${process.env.SUPABASE_URL}${req.url}`,'utf8')});
+      activeImages.count++;activeImages.max=Math.max(activeImages.max,activeImages.count);
       setTimeout(()=>{
-        activeByTable[table]--;
-        if(isPrimary)return reply(400,{message:'force the bounded legacy-select path'});
-        const selectedIds=new Set(cardIds),rows=relationRows[table].filter(row=>selectedIds.has(row.cardId)).sort((a,b)=>a.id-b.id);
-        return reply(200,rows.slice(offset,offset+1000));
+        activeImages.count--;
+        if(primary)return reply(400,{message:'force the bounded legacy-select path'});
+        const selectedIds=new Set(cardIds);
+        return reply(200,images.filter(row=>selectedIds.has(row.cardId)).sort((a,b)=>a.id-b.id).slice(offset,offset+limit));
       },5);
     },previousBatchSize=process.env.CATALOG_RELATION_BATCH_SIZE;
   process.env.CATALOG_RELATION_BATCH_SIZE='100';
   try{
     await withCoverageDatabase('bounded-id-browse',handleDatabaseRequest,async baseUrl=>{
-      const response=await fetch(`${baseUrl}/api/cards?game=pokemon&region=JP&limit=60`),body=await response.json();
+      const response=await fetch(`${baseUrl}/api/cards?game=pokemon&series=test-series&limit=60`),body=await response.json();
       assert.equal(response.status,200);
       assert.equal(body.meta.total,500);
       assert.equal(body.data.length,60);
-      assert.equal(body.data[0].printings.length,71,'legacy offset pages must be combined for the real browse response');
+      assert.equal(body.data[0].printings.length,3);
     });
   }finally{
     if(previousBatchSize===undefined)delete process.env.CATALOG_RELATION_BATCH_SIZE;else process.env.CATALOG_RELATION_BATCH_SIZE=previousBatchSize;
   }
+  assert.ok(requests.length>0);
+  assert.ok(requests.every(request=>request.cardIds.length>0&&request.cardIds.length<=100),'each image request must stay within the 100-ID cap');
+  assert.ok(requests.every(request=>request.urlBytes<=8*1024),'encoded primary and legacy URLs must stay within 8 KiB');
+  const primary=requests.filter(request=>request.select.includes('imageRightsStatus')),legacyFirstPages=requests.filter(request=>!request.select.includes('imageRightsStatus')&&request.offset===0),batchKey=request=>request.cardIds.join('\u0000');
+  assert.ok(primary.some(request=>request.cardIds.length<100),'long IDs must trigger URL-byte splitting below the numeric batch cap');
+  assert.deepEqual([...new Set(primary.flatMap(request=>request.cardIds))].sort(),[...ids].sort(),'primary batches must preserve every card ID');
+  assert.deepEqual(primary.map(batchKey).sort(),legacyFirstPages.map(batchKey).sort(),'legacy fallback must retry the same bounded card-ID batches');
+  assert.ok(activeImages.max>1,'bounded loaders should still use parallel requests');
+  assert.ok(activeImages.max<=4,'concurrency must remain at or below four');
+  assert.equal(tables.filter(table=>table==='tcg_cards').length>0,true);
+});
 
-  const relationRequests=requests.filter(request=>Object.hasOwn(relationRows,request.table));
-  assert.ok(relationRequests.length>0);
-  assert.ok(relationRequests.every(request=>request.cardIds.length>0&&request.cardIds.length<=100),'each ordinary browse relation request must stay within the 100-ID cap');
-  assert.ok(relationRequests.every(request=>request.urlBytes<=8*1024),'encoded primary and legacy URLs must stay within 8 KiB');
-  for(const table of ['tcg_printings','card_images']){
-    const tableRequests=relationRequests.filter(request=>request.table===table),primary=tableRequests.filter(request=>table==='tcg_printings'?request.select.includes('rarityCode'):request.select.includes('imageRightsStatus')),
-      legacyFirstPages=tableRequests.filter(request=>!primary.includes(request)&&request.offset===0),batchKey=request=>request.cardIds.join('\u0000');
-    assert.ok(primary.some(request=>request.cardIds.length<100),'long IDs must trigger URL-byte splitting below the numeric batch cap');
-    assert.deepEqual([...new Set(primary.flatMap(request=>request.cardIds))].sort(),[...ids].sort(),'primary batches must preserve every card ID');
-    assert.deepEqual(primary.map(batchKey).sort(),legacyFirstPages.map(batchKey).sort(),'legacy fallback must retry the same bounded card-ID batches');
-    assert.ok(maxConcurrentByTable[table]>1,'bounded loaders should still use parallel requests');
-    assert.ok(maxConcurrentByTable[table]<=4,'concurrency must remain at or below four per relation table');
-  }
-  assert.ok(relationRequests.some(request=>request.table==='tcg_printings'&&request.offset>=1000),'legacy printing results must paginate beyond the first 1000 rows');
+test('series fallback refuses a series too large to be a series instead of loading it',async()=>{
+  const printings=Array.from({length:3001},(_,index)=>({id:index+1,cardId:`card-${index}`,seriesId:'huge-series',region:'JP',language:'ja-JP',localCardNumber:String(index),rarity:'R'})),tables=[];
+  await withCoverageDatabase('series-too-large',(req,res)=>{
+    const url=new URL(req.url,`http://${req.headers.host}`),table=url.pathname.split('/').at(-1),offset=Number(url.searchParams.get('offset')||0),limit=Number(url.searchParams.get('limit')||1000);
+    tables.push(table);res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(table==='tcg_printings'?printings.slice(offset,offset+limit):[]));
+  },async baseUrl=>{
+    const response=await fetch(`${baseUrl}/api/cards?game=pokemon&series=huge-series&limit=60`),body=await response.json();
+    assert.equal(response.status,502);
+    assert.match(body.error,/系列太大/);
+  });
+  assert.equal(tables.includes('tcg_cards'),false,'no card rows are read for an oversized series');
 });
 
 test('read-only reports fallback stays quiet when Supabase is unavailable', async () => {

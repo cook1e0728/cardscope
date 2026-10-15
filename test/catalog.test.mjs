@@ -672,6 +672,93 @@ test('the default browse page comes from browse_cards_page in one call',async()=
   }
 });
 
+// Rarity filter and name / release / rarity sorts: the database filters, sorts and pages (browse_cards_filtered); the server never reads a whole game.
+async function withBrowseDatabase(handler,run){
+  const requests=[];
+  const mockSupabase=createServer((req,res)=>{
+    const table=new URL(req.url,'http://mock-supabase').pathname.split('/').at(-1),chunks=[];
+    req.on('data',chunk=>chunks.push(chunk));
+    req.on('end',()=>{
+      const body=chunks.length?JSON.parse(Buffer.concat(chunks).toString('utf8')):null;requests.push({table,body});
+      Promise.resolve(handler(table,body)).then(result=>{res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(result))});
+    });
+  });
+  const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
+  let app;
+  try{
+    app=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(appPort),SUPABASE_URL:`http://127.0.0.1:${supabasePort}`,SUPABASE_SERVICE_KEY:'local-fixture-key',CATALOG_SYNC_ON_START:'false',CARD_IMAGE_CACHE_ON_START:'false',CATALOG_WARM_ON_START:'false'},stdio:['ignore','pipe','pipe']});
+    await new Promise((resolve,reject)=>{
+      let output='';const timer=setTimeout(()=>reject(new Error(`browse fixture start timeout: ${output}`)),5000);
+      app.once('exit',(code,signal)=>{clearTimeout(timer);reject(new Error(`browse fixture exited (${code??signal})`))});
+      app.stdout.on('data',chunk=>{output+=String(chunk);if(output.includes('CardScope is running')){clearTimeout(timer);resolve()}});
+    });
+    return await run(`http://127.0.0.1:${appPort}`,requests);
+  }finally{
+    if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
+    await closeHttpServer(mockSupabase);
+  }
+}
+const filteredCard=index=>({id:`pokemon-x-${index}`,canonicalId:`pokemon-x-${index}`,game:'pokemon',seriesId:'s',officialCardNumber:String(index).padStart(3,'0'),rarity:'SAR',nameZh:`卡${index}`,aliases:[],metadata:{},printings:[{id:index,cardId:`pokemon-x-${index}`,seriesId:'s',region:'JP',language:'ja-JP',localSetCode:'S',localCardNumber:String(index).padStart(3,'0'),rarity:'SAR',imageUrl:null,imageRehostRequired:false}],images:[]});
+const wholeGameTables=requests=>requests.filter(({table})=>['tcg_cards','tcg_printings','card_images'].includes(table)).length;
+
+test('a rarity filter and the name, release and rarity sorts are paged by the database, not loaded as a whole game',async()=>{
+  await withBrowseDatabase(table=>{
+    if(table==='browse_rarity_values')return ['SAR','Special Art Rare','Mystery X'];
+    if(table==='browse_cards_filtered')return {total:3,unmapped:false,cards:[filteredCard(1),filteredCard(2)]};
+    if(table==='browse_cards_facets')return {rarity:{SAR:3,unknown:1},region:{JP:4},language:{'ja-JP':4},unmapped:false};
+    return [];
+  },async(baseUrl,requests)=>{
+    const body=await (await fetch(`${baseUrl}/api/cards?game=pokemon&limit=2&offset=0&region=JP&rarity=Special%20Art%20Rare&sort=name-asc`)).json();
+    assert.deepEqual(body.data.map(card=>card.id),['pokemon-x-1','pokemon-x-2']);
+    assert.equal(body.meta.total,3);assert.equal(body.meta.hasMore,true);assert.equal(body.meta.facetStatus,'complete');
+    assert.deepEqual(body.meta.facets.rarity,{SAR:3,unknown:1});assert.equal(body.meta.facets.rarityLabels.SAR,'SAR');
+    const page=requests.find(request=>request.table==='browse_cards_filtered').body;
+    assert.deepEqual({game:page.p_game,region:page.p_region,token:page.p_token,sort:page.p_sort,limit:page.p_limit,offset:page.p_offset},{game:'pokemon',region:'JP',token:'SAR',sort:'name-asc',limit:2,offset:0});
+    const bySpelling=Object.fromEntries(page.p_rmap.map(row=>[row.raw,row]));
+    assert.deepEqual([bySpelling['Special Art Rare'].code,bySpelling['Special Art Rare'].token],['SAR','SAR'],'the alias maps to the canonical code the server uses');
+    assert.equal(typeof bySpelling.SAR.rank,'number');
+    assert.deepEqual(bySpelling['Mystery X'],{raw:'Mystery X',code:'Mystery X',token:'MYSTERYX',rank:null},'an unranked value keeps its own code and sorts last');
+    // A sort alone (rarity grouping view) sends no rarity token; the filter-less facets are reused from the cache.
+    await (await fetch(`${baseUrl}/api/cards?game=pokemon&limit=2&offset=2&region=JP&rarity=all&sort=rarity-desc`)).json();
+    const second=requests.filter(request=>request.table==='browse_cards_filtered').at(-1).body;
+    assert.deepEqual({token:second.p_token,sort:second.p_sort,offset:second.p_offset},{token:null,sort:'rarity-desc',offset:2});
+    assert.equal(requests.filter(request=>request.table==='browse_cards_facets').length,1,'facets do not depend on sort or offset and are cached');
+    assert.equal(wholeGameTables(requests),0,'no whole-game rows are read');
+  });
+});
+
+test('a rarity value the server table lacks makes it rebuild the table once and ask again',async()=>{
+  let valueCalls=0,pageCalls=0;
+  await withBrowseDatabase(table=>{
+    if(table==='browse_rarity_values'){valueCalls++;return valueCalls===1?['SAR']:['SAR','Brand New']}
+    if(table==='browse_cards_filtered'){pageCalls++;return {total:1,unmapped:pageCalls===1,cards:[filteredCard(1)]}}
+    if(table==='browse_cards_facets')return {rarity:{SAR:1},region:{JP:1},language:{'ja-JP':1},unmapped:false};
+    return [];
+  },async(baseUrl,requests)=>{
+    const body=await (await fetch(`${baseUrl}/api/cards?game=pokemon&limit=2&rarity=SAR&sort=release-desc`)).json();
+    assert.equal(body.meta.total,1);
+    assert.equal(valueCalls,2);assert.equal(pageCalls,2);
+    assert.ok(requests.filter(request=>request.table==='browse_cards_filtered').at(-1).body.p_rmap.some(row=>row.raw==='Brand New'));
+  });
+});
+
+test('heavy browse queries run two at a time and the queue is bounded (503 beyond it)',async()=>{
+  let active=0,peak=0;
+  await withBrowseDatabase(async table=>{
+    if(table==='browse_rarity_values')return ['SAR'];
+    if(table!=='browse_cards_filtered'&&table!=='browse_cards_facets')return [];
+    active++;peak=Math.max(peak,active);await new Promise(resolve=>setTimeout(resolve,40));active--;
+    return table==='browse_cards_filtered'?{total:1,unmapped:false,cards:[filteredCard(1)]}:{rarity:{SAR:1},region:{JP:1},language:{'ja-JP':1},unmapped:false};
+  },async baseUrl=>{
+    const responses=await Promise.all(Array.from({length:40},(_,index)=>fetch(`${baseUrl}/api/cards?game=pokemon&limit=1&offset=${index}&sort=name-asc`)));
+    const statuses=responses.map(response=>response.status);
+    await Promise.all(responses.map(response=>response.arrayBuffer()));
+    assert.ok(statuses.includes(200));assert.ok(statuses.includes(503),'requests past the queue are refused, not piled up');
+    assert.equal(responses.find(response=>response.status===503).headers.get('retry-after'),'5');
+    assert.ok(peak<=2,`at most two heavy queries at once (saw ${peak})`);
+  });
+});
+
 test('a series page comes from browse_series_cards in one call',async()=>{
   const card=index=>({id:`pokemon-s-${index}`,canonicalId:`pokemon-s-${index}`,game:'pokemon',seriesId:'pokemon-tcgdex-ja-sv8a',officialCardNumber:String(index).padStart(3,'0'),rarity:index===2?'RR':'C',nameZh:`卡${index}`,aliases:[],metadata:{}});
   const printing=index=>({id:index,cardId:`pokemon-s-${index}`,seriesId:'pokemon-tcgdex-ja-sv8a',region:'JP',language:'ja-JP',localSetCode:'SV8a',localCardNumber:String(index).padStart(3,'0'),rarity:index===2?'RR':'C',imageUrl:null,imageRehostRequired:false,metadata:{}});
@@ -849,4 +936,24 @@ test('anniversary queries also search the other ways the anniversary is written 
   assert.deepEqual(body.meta.queryTerms,['三十周年','30th','30周年','30週年']);
   const {body:plain}=await searchWithMock((table,params,respond)=>respond(table==='search_cards_ranked'?{matchedBy:null,matchCount:0,groupCount:0,cards:[]}:[]),'30th');
   assert.deepEqual(plain.meta.queryTerms,['30th','30周年','30週年']);
+});
+
+test('html, js and css revalidate with an ETag and answer If-None-Match with 304; images keep their handling',async()=>{
+  for(const path of ['/','/ui-enhancements.js','/catalog-layout.css']){
+    const first=await fetch(`http://127.0.0.1:${port}${path}`);
+    assert.equal(first.status,200,path);
+    assert.equal(first.headers.get('cache-control'),'no-cache',path);
+    const etag=first.headers.get('etag');
+    assert.match(etag,/^"[0-9a-f]{40}"$/,path);
+    await first.arrayBuffer();
+    const again=await fetch(`http://127.0.0.1:${port}${path}`,{headers:{'If-None-Match':etag}});
+    assert.equal(again.status,304,path);
+    assert.equal(again.headers.get('etag'),etag);
+    assert.equal((await again.arrayBuffer()).byteLength,0);
+    const stale=await fetch(`http://127.0.0.1:${port}${path}`,{headers:{'If-None-Match':'"stale"'}});
+    assert.equal(stale.status,200,path);await stale.arrayBuffer();
+  }
+  const image=await fetch(`http://127.0.0.1:${port}/assets/brand/web/cardscope-rabbit-mark-96.webp`);
+  assert.equal(image.headers.get('etag'),null,'images are not given the html/js/css validators');
+  await image.arrayBuffer();
 });

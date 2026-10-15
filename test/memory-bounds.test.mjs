@@ -49,3 +49,11 @@ test('browse cache forgets a failed load so the next call retries', async () => 
   assert.equal(browseCache.has('broken'), false);
   assert.deepEqual(await cachedBrowseRows('broken', async () => [1]), [1]);
 });
+
+test('browse cache also stays within a byte budget, dropping the oldest results first', async () => {
+  browseCache.clear();
+  for (const key of ['page:a', 'page:b', 'page:c']) await cachedBrowseRows(key, async () => ({ cards: [{ blob: 'x'.repeat(10 * 1024 * 1024) }] }));
+  assert.equal(browseCache.has('page:a'), false, 'the oldest result is dropped once the budget is exceeded');
+  assert.equal(browseCache.has('page:c'), true, 'the newest result is kept');
+  browseCache.clear();
+});

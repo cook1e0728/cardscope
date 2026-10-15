@@ -37,6 +37,7 @@ const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com','asia-en.o
 // instead of repeating the same database scan on every filter interaction.
 const BROWSE_CACHE_MS = 5 * 60 * 1000;
 const BROWSE_PAGE_MAX = 100;
+const BROWSE_SERIES_FALLBACK_MAX = 3000;
 const BROWSE_CARD_SELECT = 'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,source,providerId:provider_id,createdAt:created_at,updatedAt:updated_at';
 const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at,metadata,createdAt:created_at,updatedAt:updated_at';
 const BROWSE_IMAGE_SELECT = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at';
@@ -170,13 +171,17 @@ async function searchExternalCatalog(query){
   return {cards:[],sources,query:mapped.query}
 }
 async function supabaseFetchAll(pathAndQuery,pageSize=1000){const rows=[];for(let offset=0;;offset+=pageSize){const separator=pathAndQuery.includes('?')?'&':'?',batch=await supabaseFetch(`${pathAndQuery}${separator}limit=${pageSize}&offset=${offset}`);rows.push(...(batch||[]));if(!batch||batch.length<pageSize)return rows}}
+// Cached results are also bounded by size: 400 page-sized RPC results of ~200 KB each would otherwise pin about 80 MB.
+const BROWSE_CACHE_BYTES_MAX=24*1024*1024;
+function browseCacheBytes(data){try{return JSON.stringify(data)?.length||0}catch{return 0}}
+function trimBrowseCacheBytes(){let total=0;for(const entry of browseCache.values())total+=entry.bytes||0;for(const [entryKey,entry] of browseCache){if(total<=BROWSE_CACHE_BYTES_MAX)break;if(entry.bytes){browseCache.delete(entryKey);total-=entry.bytes}}}
 async function cachedBrowseRows(key,loader){
   const now=Date.now(),cached=browseCache.get(key);
   if(cached?.data&&cached.expiresAt>now)return cached.data;
   if(cached?.promise)return cached.promise;
   // A whole-game row list (tens of thousands of rows) is shared with the callers waiting on it but never kept: kept for five minutes it held
   // 100+ MB of the 512 MB instance (OOM crash loop, 2026-10-15/16).
-  const promise=Promise.resolve().then(loader).then(data=>{if(Array.isArray(data)&&data.length>BROWSE_CACHE_ROWS_MAX)browseCache.delete(key);else browseCache.set(key,{data,expiresAt:Date.now()+BROWSE_CACHE_MS});return data}).catch(error=>{browseCache.delete(key);throw error});
+  const promise=Promise.resolve().then(loader).then(data=>{if(Array.isArray(data)&&data.length>BROWSE_CACHE_ROWS_MAX)browseCache.delete(key);else{browseCache.set(key,{data,expiresAt:Date.now()+BROWSE_CACHE_MS,bytes:browseCacheBytes(data)});trimBrowseCacheBytes()}return data}).catch(error=>{browseCache.delete(key);throw error});
   browseCache.set(key,{promise,expiresAt:now+BROWSE_CACHE_MS});
   // Pages of every offset can be cached now; an expired entry still holds its rows until swept, so drop them on every miss, then the oldest past 400 keys.
   for(const [entryKey,entry] of browseCache)if(entry.data&&entry.expiresAt<=now)browseCache.delete(entryKey);
@@ -199,7 +204,7 @@ function compareBrowseRarity(a,b,direction='desc'){
   const ar=browseRarityRank(a.game,browseValues(a,a.printings,'rarity')[0]),br=browseRarityRank(b.game,browseValues(b,b.printings,'rarity')[0]);
   if(ar===Number.MAX_SAFE_INTEGER||br===Number.MAX_SAFE_INTEGER){if(ar!==br)return ar===Number.MAX_SAFE_INTEGER?1:-1}
   else if(ar!==br)return direction==='desc'?ar-br:br-ar;
-  return String(browseValues(a,a.printings,'rarity')[0]||'').localeCompare(String(browseValues(b,b.printings,'rarity')[0]||''),undefined,{numeric:true,sensitivity:'base'});
+  return browseNumberCollator.compare(String(browseValues(a,a.printings,'rarity')[0]||''),String(browseValues(b,b.printings,'rarity')[0]||''));
 }
 function browseValues(card,printings,key){
   const values=[];
@@ -220,13 +225,14 @@ function hydrateBrowseCard(card,printingByCard,imageByCard){
 function browseNumber(card){return String(card?.officialCardNumber||card?.printings?.find(p=>p.localCardNumber)?.localCardNumber||'')}
 function browseRelease(card){return card?.printings?.map(p=>p.releaseDate).filter(Boolean).sort().at(-1)||card?.releaseDate||''}
 // Shared collators: localeCompare with options builds a new ICU collator on every call, which dominated sorting a series.
-const browseNumberCollator=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'}),browseIdCollator=new Intl.Collator(),browseNameCollator=new Intl.Collator(undefined,{sensitivity:'base'});
+// Pinned to en-US (the ICU root order): the database sorts the same keys with ICU collations 'und-u-kn-true-ks-level1' / 'und-u-ks-level1' / 'und' (migration 20261016110000), and a host locale such as zh-TW would reorder Han names.
+const BROWSE_LOCALE='en-US',browseNumberCollator=new Intl.Collator(BROWSE_LOCALE,{numeric:true,sensitivity:'base'}),browseIdCollator=new Intl.Collator(BROWSE_LOCALE),browseNameCollator=new Intl.Collator(BROWSE_LOCALE,{sensitivity:'base'});
 // Cards that print no number (ADR 0026) arrive in official list order from browse_series_cards; keep that order among them.
 const notPrinted=card=>card?.metadata?.numberStatus==='not-printed';
 function browseCompare(a,b,sort,order=null){
   const number=()=>browseNumberCollator.compare(browseNumber(a),browseNumber(b))||(order&&notPrinted(a)&&notPrinted(b)?order.get(a)-order.get(b):0)||browseIdCollator.compare(String(a.id),String(b.id));
   if(sort==='number-desc')return -number();
-  if(sort==='release-asc'||sort==='release-desc'){const value=String(browseRelease(a)).localeCompare(String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
+  if(sort==='release-asc'||sort==='release-desc'){const value=browseIdCollator.compare(String(browseRelease(a)),String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
   if(sort==='rarity-asc'||sort==='rarity-desc')return compareBrowseRarity(a,b,sort.endsWith('desc')?'desc':'asc')||number();
   if(sort==='name-asc'||sort==='name-desc'){const value=browseNameCollator.compare(String(a.nameZh||a.nameEn||a.nameJa||a.id),String(b.nameZh||b.nameEn||b.nameJa||b.id))||number();return sort==='name-desc'?-value:value}
   return number();
@@ -261,18 +267,6 @@ function buildBrowsePage(rows,{region=null,rarity=null,seriesId=null,sort='numbe
   const order=new Map(matching.map((row,index)=>[row,index]));matching.sort((a,b)=>browseCompare(a,b,sort,order));
   const take=Math.min(Math.max(Number(limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(offset)||0,0),page=matching.slice(skip,skip+take);
   return {data:page,total:matching.length,hasMore:skip+page.length<matching.length,facets:buildBrowseFacets(baseMatching,printingByCard),facetStatus,limit:take,offset:skip};
-}
-async function loadDatabaseBrowseRows(game){
-  const safeGame=String(game).replace(/[^a-z0-9-]/gi,'');
-  return cachedBrowseRows(`cards:${safeGame}`,async()=>supabaseFetchAll(`/tcg_cards?${new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:'id.asc'})}`));
-}
-async function loadDatabasePrintings(cardIds=[]){
-  if (!Array.isArray(cardIds) || !cardIds.length) return [];
-  const key=`printings:${createHash('sha1').update(cardIds.join('|')).digest('hex')}`;
-  return cachedBrowseRows(key,async()=>{
-    const fallbackSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required';
-    return loadDatabaseRelationsForCards('tcg_printings',BROWSE_PRINTING_SELECT,cardIds,{legacySelect:fallbackSelect});
-  });
 }
 async function loadDatabaseImages(cardIds=[]){
   if (!Array.isArray(cardIds) || !cardIds.length) return [];
@@ -337,8 +331,8 @@ async function browseDatabasePageFast(game,options={}){
     const data=cards.map(({printings,images,...card})=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=Number(rpc.total);
     return {data,total,hasMore:skip+data.length<total,facets:null,facetStatus:'deferred',limit:take,offset:skip,errors:{printings:null,images:null}};
   }
-  // The paged PostgREST fallback below cannot filter by region; a region request takes the full filtered path instead.
-  if(region)return browseDatabaseCardsFull(game,options);
+  // The paged PostgREST fallback below cannot filter by region; a region request is paged by the database filter (browse_cards_filtered) instead of loading the game.
+  if(region)return browseDatabaseCardsFiltered(game,{...options,rarity:null});
   const params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:`official_card_number.${direction},id.${direction}`,limit:String(take+1),offset:String(skip)}),page=await supabaseFetchPage(`/tcg_cards?${params}`),cards=(page.data||[]).slice(0,take),cardIds=cards.map(card=>card.id);
   const fallbackPrintingSelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required',legacyImageSelect='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
   const [printingResult,imageResult]=await Promise.all([
@@ -364,6 +358,8 @@ async function browseDatabaseSeriesCards(game,options={}){
   }
   const printingParams=new URLSearchParams({select:BROWSE_PRINTING_SELECT,series_id:`eq.${safeSeries}`,order:'local_card_number.asc,id.asc'}),printings=await supabaseFetchAll(`/tcg_printings?${printingParams}`),cardIds=[...new Set((printings||[]).map(printing=>printing.cardId).filter(Boolean))];
   if(!cardIds.length)return {data:[],total:0,hasMore:false,facets:{rarity:{},region:{},language:{},rarityLabels:{}},facetStatus:'complete',limit:options.limit,offset:options.offset,errors:{printings:null,images:null}};
+  // Hard guard: a series is a few hundred cards; this fallback must never turn into a whole-game load.
+  if(cardIds.length>BROWSE_SERIES_FALLBACK_MAX)throw new Error('這個系列太大，無法在備援模式下載入');
   const cards=[];
   for(const batch of chunkCardIds(cardIds,RELATION_BATCH_SIZE)){
     const ids=batch.map(id=>`"${String(id).replaceAll('"','')}"`).join(','),params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,id:`in.(${ids})`,order:'official_card_number.asc,id.asc'});
@@ -377,13 +373,49 @@ async function browseDatabaseSeriesCards(game,options={}){
 async function browseDatabaseCards(game,options){
   if(options.seriesId)return browseDatabaseSeriesCards(game,options);
   if(databaseFastBrowseEligible(options))return browseDatabasePageFast(game,options);
-  return browseDatabaseCardsFull(game,options);
+  return browseDatabaseCardsFiltered(game,options);
 }
-async function browseDatabaseCardsFull(game,options){
-  const cards=await loadDatabaseBrowseRows(game),cardIds=cards.map(card=>card.id),printingResult=await loadDatabasePrintings(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'partial',error})),imageResult=await loadDatabaseImages(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error}));
-  const selectedCardIds=new Set(cards.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedCardIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedCardIds.has(image.cardId));
-  const printingByCard=buildPrintingIndex(printings),imageByCard=new Map();for(const image of images){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
-  const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:printingResult.status==='complete'?'complete':'partial'});return {...result,errors:{printings:printingResult.error?.message||null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
+// Rarity filter and the name / release / rarity sorts run inside the database (browse_cards_filtered + browse_cards_facets, migration 20261016110000):
+// the server asks for one page plus the total and facets and never loads a whole game (Pokemon is 55k cards and 105k printings; one such request
+// used to exhaust the 512 MB instance). Rarity codes, ranks and filter tokens come from data/rarity-rankings.json through the server's own
+// normalizers, passed to the database as a small raw-value table; a raw value the table lacks is reported back (unmapped) and the table rebuilt once.
+const BROWSE_HEAVY_MAX=2,BROWSE_HEAVY_QUEUE_MAX=24,browseHeavy={active:0,waiting:[]};
+// The database scans a whole game for each of these calls (1-3 s): run two at a time, queue a few more, then answer 503 instead of piling up.
+async function withBrowseHeavySlot(task){
+  if(browseHeavy.active<BROWSE_HEAVY_MAX)browseHeavy.active++;
+  else{
+    if(browseHeavy.waiting.length>=BROWSE_HEAVY_QUEUE_MAX){const error=new Error('目前篩選與排序的請求較多，請稍後再試');error.code='BROWSE_BUSY';throw error}
+    await new Promise(resolve=>browseHeavy.waiting.push(resolve));
+  }
+  try{return await task()}
+  finally{const next=browseHeavy.waiting.shift();if(next)next();else browseHeavy.active--}
+}
+async function loadBrowseRarityMap(game,{refresh=false}={}){
+  const key=`rarity-values:${game}`;
+  if(refresh)browseCache.delete(key);
+  const values=await cachedBrowseRows(key,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_rarity_values',{method:'POST',body:JSON.stringify({p_game:game})})));
+  return (Array.isArray(values)?values:[]).map(raw=>{
+    const code=rarityCanonicalCode(game,raw),rank=code?browseRarityRank(game,code):Number.MAX_SAFE_INTEGER;
+    return {raw,code,token:code?rarityCanonicalToken(game,code):null,rank:rank===Number.MAX_SAFE_INTEGER?null:rank};
+  });
+}
+async function browseDatabaseCardsFiltered(game,options={}){
+  const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),sort=normalizeBrowseSort(options.sort),region=normalizeBrowseRegion(options.region);
+  // An empty token means "no rarity filter", as in buildBrowsePage.
+  const token=options.rarity?rarityCanonicalToken(safeGame,options.rarity):'';
+  for(let attempt=0;;attempt++){
+    const rmap=await loadBrowseRarityMap(safeGame,{refresh:attempt>0}),pageKey=`rpc:browse_cards_filtered:${safeGame}|${region||''}|${token}|${sort}|${take}|${skip}`,facetKey=`rpc:browse_cards_facets:${safeGame}|${region||''}`;
+    const [page,facets]=await Promise.all([
+      cachedBrowseRows(pageKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_filtered',{method:'POST',body:JSON.stringify({p_game:safeGame,p_token:token||null,p_sort:sort,p_limit:take,p_offset:skip,p_rmap:rmap,...(region?{p_region:region}:{})})}))),
+      cachedBrowseRows(facetKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_facets',{method:'POST',body:JSON.stringify({p_game:safeGame,p_rmap:rmap,...(region?{p_region:region}:{})})})))
+    ]);
+    if(!page||!Array.isArray(page.cards)||!Number.isFinite(Number(page.total))||!facets||typeof facets.rarity!=='object')throw new Error('BROWSE_FILTERED_BAD_RESPONSE');
+    if((page.unmapped||facets.unmapped)&&attempt===0){browseCache.delete(pageKey);browseCache.delete(facetKey);continue}
+    const cards=structuredClone(page.cards).slice(0,take),printingByCard=buildPrintingIndex(cards.flatMap(card=>card.printings||[])),imageByCard=new Map(cards.map(card=>[card.id,card.images||[]]));
+    const data=cards.map(({printings,images,...card})=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=Number(page.total),rarityLabels={};
+    for(const value of Object.keys(facets.rarity))if(value!=='unknown')rarityLabels[value]=rarityDisplayLabel(safeGame,value);
+    return {data,total,hasMore:skip+data.length<total,facets:{rarity:{...facets.rarity},region:{...facets.region},language:{...facets.language},rarityLabels},facetStatus:'complete',limit:take,offset:skip,errors:{printings:null,images:null}};
+  }
 }
 
 function coverageMetric(covered,denominator,status='complete',details={}){
@@ -1004,7 +1036,7 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   if(url.pathname==='/api/providers/justtcg/search'){const q=(url.searchParams.get('q')||'').trim(),game=url.searchParams.get('game')||'';if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});try{return json(res,200,await justTcg('/cards',{q,game,limit:'10',priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/cards'){const cardId=url.searchParams.get('cardId');if(!cardId)return json(res,400,{error:'請提供 cardId'});try{return json(res,200,await justTcg('/cards',{cardId,priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/ebay/search'){const q=(url.searchParams.get('q')||'').trim(),marketplace=(url.searchParams.get('marketplace')||'EBAY_US').toUpperCase();if(!q)return json(res,400,{error:'請提供 q'});if(!EBAY_MARKETPLACES.has(marketplace))return json(res,400,{error:'不支援的 eBay marketplace'});try{return json(res,200,{data:await searchEbay(q,marketplace),meta:{marketplace,cacheHours:24}})}catch(e){return json(res,e.message==='EBAY_NOT_CONFIGURED'?503:502,{error:e.message})}}
-  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort')),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.max(Number(url.searchParams.get('offset'))||0,0);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors}},{'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){return json(res,502,{error:e.message})}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}})}
+  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort')),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.max(Number(url.searchParams.get('offset'))||0,0);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors}},{'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){return json(res,e.code==='BROWSE_BUSY'?503:502,{error:e.message},e.code==='BROWSE_BUSY'?{'Retry-After':'5'}:{})}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}})}
   if(url.pathname==='/api/search'&&req.method==='GET'){
     const searchCacheKey=`${(url.searchParams.get('region')||'all').toUpperCase()}|${(url.searchParams.get('q')||'').trim()}`,cachedSearch=recallSearch(searchCacheKey);if(cachedSearch)return json(res,200,cachedSearch,{'Server-Timing':'cache;desc="hit", total;dur=0'});
     const rawQ=(url.searchParams.get('q')||'').trim(),q=normalizeSearch(rawQ),region=(url.searchParams.get('region')||'all').toUpperCase(),searchStarted=performance.now(),databasePending=supabaseConfigured()?searchCatalogDatabase(rawQ,region).then(value=>({value,doneAt:performance.now()}),error=>({error})):null,catalog=await loadCatalog(),catalogDoneAt=performance.now(),seriesById=new Map(catalog.series.map(s=>[s.id,s])),nameValues=c=>[c.nameZh,c.nameJa,c.nameEn,c.nameKo,...(c.aliases||[]),...(c.printings||[]).flatMap(p=>[p.nameZh,p.nameJa,p.nameEn,p.nameKo])];
@@ -1038,7 +1070,10 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/robots.txt'){res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});return res.end(renderRobotsTxt(PUBLIC_BASE_URL))}
   if((req.method==='GET'||req.method==='HEAD')&&(url.pathname==='/sitemap.xml'||/^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname)))return serveSitemap(res,url.pathname);
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/'){const seoTarget=seoRequestTarget(url);if(seoTarget)return serveSeoIndex(res,seoTarget)}
-  let pathname=url.pathname==='/'?'/index.html':url.pathname;const file=normalize(join(root,pathname));if(!file.startsWith(root))return json(res,403,{error:'Forbidden'});try{const content=await readFile(file);res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream'});res.end(content)}catch{json(res,404,{error:'Not found'})}
+  let pathname=url.pathname==='/'?'/index.html':url.pathname;const file=normalize(join(root,pathname));if(!file.startsWith(root))return json(res,403,{error:'Forbidden'});try{const content=await readFile(file),ext=extname(file),headers={'Content-Type':types[ext]||'application/octet-stream'};
+    // html/js/css: always revalidate (no-cache) with a content ETag, so a deploy reaches browsers at once and an unchanged file is a 304. Images keep their existing handling.
+    if(['.html','.js','.css'].includes(ext)){const etag=`"${createHash('sha1').update(content).digest('hex')}"`;headers['Cache-Control']='no-cache';headers.ETag=etag;if(String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}
+    res.writeHead(200,headers);res.end(content)}catch{json(res,404,{error:'Not found'})}
 });
 
 const priceSnapshot=createPriceSnapshotController({db:supabaseFetch});
@@ -1060,6 +1095,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 
