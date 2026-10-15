@@ -753,6 +753,14 @@
 - Gemini 第二意見：使用者裝了 Antigravity CLI（`%LOCALAPPDATA%\agy\bin\agy.exe`，帳號只有 Gemini 3.8 Flash）。社群 MCP `antigravity-claude-mcp` 讀過原始碼後不採用（以 `--dangerously-skip-permissions` 執行、`npx -y` 不鎖版本、Windows PATH 解析錯）。改為需要時直接以 `--sandbox --disable-slash-commands`、不給資料夾、把內容放進提示呼叫（細節在 Claude 記憶）。第一次用於審 ADR 0042，採納兩點：跌破門檻時寫一筆讓走勢跟著跌；429／5xx 暫停 60 秒、不計入連續 20 次失敗、連續退避 30 次才停。不採納：Render 休眠（已有 UptimeRobot）、改用 GitHub Actions 跑快照。Node 419/419。
 - 跨市場比價：同來源、同版本的平台參考價達最低掛牌價 3 倍以上時，加中性標籤「與最低掛牌價差距大（約 N 倍）」與說明；最低掛牌低於 0.1 不比較（多為品況差的單張）。例：SV2a-094 逆閃 EUR 800 對 150。部署 `1da78c6`。
 
+### 依序執行 97：剩餘特典卡、拍照查卡評估、會員收藏方案（2026-10-15，桌電）
+
+- **使用者決定（2026-10-15）：目前不花費額外金錢**——不申請付費 Gemini API、不升級 Render／Supabase；遇到容量或速度限制先找免費解法。
+- 剩餘特典卡（Sonnet worker，Scrapling 重抓 37 頁全 200）：M-P 補 6 張基本能量（官方卡號即能量代碼）、SV-P 8 張能量依官方頁一對一補 NONE 並升 verified；M-P 193 → 199，SV-P 空稀有度 12 → 4（no0–no3）。先整批回滾測試再寫入，重播零異動。勝利之證、樂園度假地、冠軍慶典暫不匯入（分不出名次，見 ADR 0041 補充）。新增 `providers/pokemon-tw-official-promo-rest-plan.mjs`＋命令列＋6 個測試。
+- 拍照查卡評估：`docs/research/photo-card-search/README.md`。AI Plus 不含 API 額度、免費層條款不適合公開網站、條款有 18 歲限制；依使用者決定，若要做只做瀏覽器端 OCR（照片不離開手機）。
+- 會員收藏方案：`docs/research/collections/README.md`。建議先做免登入 v0（收藏加品況／版本／備註、清單頁、JSON 匯入匯出、總值改用參考價快照；約 1–2 天、零費用）；v1 Google 登入＋雲端同步等快照容量實測後再決定（Email 登入在免費方案不可行）。待使用者決定是否做 v0。
+- 進行中：搜尋速度（Sonnet worker，只寫 migration 檔不套用，待主導者回滾測試後套用）。Node 425/425。
+
 下一個安全起點（2026-10-14 更新）：**10-14 查信**：皇巢未回、晴れる屋2 只有自動受理通知。遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
