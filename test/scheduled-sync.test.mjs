@@ -8,7 +8,8 @@ const [server,workflow]=await Promise.all([
 ]);
 
 test('the catalog freshness check repeats while the instance stays up',()=>{
-  assert.match(server,/setTimeout\(runScheduledCatalogSync,3000\)/);
+  assert.match(server,/setTimeout\(runScheduledCatalogSync,process\.env\.CATALOG_WARM_ON_START!=='false'\?45000:3000\)/,'the first look waits for the heavy warm-ups');
+  assert.match(server,/if\(startup\)await Promise\.allSettled\(\[sitemapWarm,coverageWarm\]\)/,'the first sync never peaks together with the sitemap and coverage warm-ups');
   assert.match(server,/CATALOG_SYNC_INTERVAL_MINUTES\?\?60/);
   assert.match(server,/setInterval\(runScheduledCatalogSync,intervalMinutes\*60000\)\.unref\(\)/);
   assert.match(server,/if\(syncRunning\)return;/,'runs never overlap');

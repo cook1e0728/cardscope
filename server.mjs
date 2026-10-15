@@ -41,6 +41,7 @@ const BROWSE_CARD_SELECT = 'id,canonicalId:canonical_id,game:game_id,seriesId:se
 const BROWSE_PRINTING_SELECT = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,rarityCode:rarity_code,rarityLabel:rarity_label,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at,metadata,createdAt:created_at,updatedAt:updated_at';
 const BROWSE_IMAGE_SELECT = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at,imageRightsStatus:image_rights_status,imageLicenseExpiresAt:image_license_expires_at';
 const browseCache=new Map();
+const BROWSE_CACHE_ROWS_MAX = 5000;
 const RELATION_BATCH_SIZE = Math.min(100, Math.max(1, Number(process.env.CATALOG_RELATION_BATCH_SIZE) || 100));
 const RELATION_QUERY_MAX_BYTES = 8 * 1024;
 const RELATION_QUERY_CONCURRENCY = 4;
@@ -173,10 +174,13 @@ async function cachedBrowseRows(key,loader){
   const now=Date.now(),cached=browseCache.get(key);
   if(cached?.data&&cached.expiresAt>now)return cached.data;
   if(cached?.promise)return cached.promise;
-  const promise=Promise.resolve().then(loader).then(data=>{browseCache.set(key,{data,expiresAt:Date.now()+BROWSE_CACHE_MS});return data}).catch(error=>{browseCache.delete(key);throw error});
+  // A whole-game row list (tens of thousands of rows) is shared with the callers waiting on it but never kept: kept for five minutes it held
+  // 100+ MB of the 512 MB instance (OOM crash loop, 2026-10-15/16).
+  const promise=Promise.resolve().then(loader).then(data=>{if(Array.isArray(data)&&data.length>BROWSE_CACHE_ROWS_MAX)browseCache.delete(key);else browseCache.set(key,{data,expiresAt:Date.now()+BROWSE_CACHE_MS});return data}).catch(error=>{browseCache.delete(key);throw error});
   browseCache.set(key,{promise,expiresAt:now+BROWSE_CACHE_MS});
-  // Pages of every offset can be cached now; drop expired entries, then the oldest, past 400 keys.
-  if(browseCache.size>400){for(const [entryKey,entry] of browseCache)if(entry.data&&entry.expiresAt<=now)browseCache.delete(entryKey);while(browseCache.size>400)browseCache.delete(browseCache.keys().next().value)}
+  // Pages of every offset can be cached now; an expired entry still holds its rows until swept, so drop them on every miss, then the oldest past 400 keys.
+  for(const [entryKey,entry] of browseCache)if(entry.data&&entry.expiresAt<=now)browseCache.delete(entryKey);
+  while(browseCache.size>400)browseCache.delete(browseCache.keys().next().value);
   return promise;
 }
 function clearBrowseCache(){browseCache.clear()}
@@ -323,44 +327,6 @@ async function loadDatabaseRelationsForCards(table,select,cardIds,{legacySelect=
   }
   return rows;
 }
-async function loadDatabaseAllRelationPages(table,select){
-  const rows=[],seenIds=new Set();let lastId=null;
-  while(true){
-    const query=new URLSearchParams({select,order:'id.asc',limit:String(RELATION_SCAN_PAGE_SIZE)});
-    if(lastId!==null)query.set('id',`gt.${lastId}`);
-    const page=await supabaseFetch(`/${table}?${query}`);
-    if(!Array.isArray(page)||page.length>RELATION_SCAN_PAGE_SIZE)throw relationPaginationError('invalid-page');
-    let pageLastId=lastId;
-    for(const row of page){
-      const value=row?.id,id=Number(value);
-      if((typeof value!=='number'&&typeof value!=='string')||!Number.isSafeInteger(id)||String(id)!==String(value))throw relationPaginationError('invalid-id');
-      if(seenIds.has(id))throw relationPaginationError('repeated-id');
-      if(pageLastId!==null&&id<=pageLastId)throw relationPaginationError('unordered-id');
-      seenIds.add(id);pageLastId=id;
-    }
-    if(!page.length)return rows;
-    rows.push(...page);
-    if(pageLastId===lastId)throw relationPaginationError('stalled-cursor');
-    lastId=pageLastId;
-  }
-}
-function relationPaginationError(reason){const error=new Error(`RELATION_PAGINATION_${reason.toUpperCase().replaceAll('-','_')}`);error.code='RELATION_PAGINATION_INVALID';return error}
-async function loadDatabaseAllRelations(table,select,{legacySelect=null}={}){
-  try{return await loadDatabaseAllRelationPages(table,select)}
-  catch(error){
-    if(!legacySelect||error.code==='RELATION_PAGINATION_INVALID')throw error;
-    const rows=await loadDatabaseAllRelationPages(table,legacySelect);
-    return table==='card_images'?rows.map(row=>({...row,imageRightsStatus:'not-provided'})):rows;
-  }
-}
-async function loadDatabaseCoveragePrintings(){
-  const legacySelect='id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required';
-  return loadDatabaseAllRelations('tcg_printings',BROWSE_PRINTING_SELECT,{legacySelect});
-}
-async function loadDatabaseCoverageImages(){
-  const legacySelect='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
-  return loadDatabaseAllRelations('card_images',BROWSE_IMAGE_SELECT,{legacySelect});
-}
 async function browseDatabasePageFast(game,options={}){
   const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),direction=options.sort==='number-desc'?'desc':'asc',region=normalizeBrowseRegion(options.region);
   // One round trip through browse_cards_page when the database has it; otherwise the page, printing and image queries below.
@@ -457,26 +423,60 @@ function attachCatalogBaselines(games,report){
   for(const [gameId,game] of Object.entries(games||{}))game.baseline=compactCatalogBaseline(rows.get(gameId));
   return games;
 }
-function buildCoverageGameRaw(gameId,cards=[],printings=[],images=[],options={}){
+// Coverage is aggregated card chunk by card chunk, never the whole catalog at once (about 75k cards, 105k printings and 45k images
+// overflowed the 512 MB instance). Every metric either adds up across chunks or is kept as a small ordered set / first-50 sample.
+const COVERAGE_SAMPLE_LIMIT=50,COVERAGE_CARD_CHUNK=1000;
+function createCoverageAccumulator(){
+  return {cards:0,displayableImages:0,chineseNames:0,rarities:0,cardsWithImageUrls:0,cardsWithSeries:0,totalPrintings:0,totalImages:0,seriesIds:new Set(),cardSeries:new Set(),printingSeries:new Set(),sources:[new Set(),new Set(),new Set()],
+    health:{urlRecords:0,policyEligibleUrlRecords:0,policyUnknownUrlRecords:0,policyExcludedUrlRecords:0,displayableCards:0,cardCount:0},
+    audit:{cards:0,stableIdentityCards:0,unkeyedCards:0,cardsWithPrintings:0,cardsWithImages:0,printingReferences:0,linkedPrintingReferences:0,imageReferences:0,linkedImageReferences:0,orphanPrintings:0,orphanImages:0,crossGameReferences:0,missingImages:{count:0,sampleIds:[]},missingChineseNames:{count:0,sampleIds:[]}},
+    providerKeys:new Map(),missingDisplayable:{count:0,sampleIds:[]},timestamp:{latest:null,oldest:null,raw:false}};
+}
+function accumulateCoverage(acc,cards=[],printings=[],images=[]){
   const rows=Array.isArray(cards)?cards:[],cardIds=new Set(rows.map(card=>card?.id).filter(Boolean)),selectedPrintings=(printings||[]).filter(printing=>cardIds.has(printing?.cardId)),selectedImages=(images||[]).filter(image=>cardIds.has(image?.cardId)),printingByCard=buildPrintingIndex(selectedPrintings),imageByCard=new Map();
   for(const image of selectedImages){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
-  const cardHasPrinting=card=>Boolean((printingByCard.get(card.id)||[]).length),cardHasImageUrl=card=>Boolean((imageByCard.get(card.id)||[]).some(image=>image?.imageUrl)||(printingByCard.get(card.id)||[]).some(printing=>printing?.imageUrl)||card?.imageUrl),cardHasUsableImage=card=>Boolean((imageByCard.get(card.id)||[]).some(browseHasUsableImage)||(printingByCard.get(card.id)||[]).some(browseHasUsableImage)||(card?.imageUrl&&imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt,imageSourceOf(card)))),cardHasChineseName=card=>Boolean(String(card?.nameZh||'').trim()),cardHasRarity=card=>browseValues(card,printingByCard.get(card.id)||[],'rarity').length;
-  const imageHealth=summarizeImageHealth({cards:rows,printings:selectedPrintings,images:selectedImages,isDisplayable:browseHasUsableImage,isPolicyEligible:row=>imageRightsAllowDisplay(row?.imageRightsStatus,row?.imageLicenseExpiresAt,imageSourceOf(row))}),cardsWithPrintings=rows.filter(cardHasPrinting).length,cardsWithImageUrls=rows.filter(cardHasImageUrl).length,displayableImages=rows.filter(cardHasUsableImage).length,missingDisplayableImageCards=rows.filter(card=>!cardHasUsableImage(card)),chineseNames=rows.filter(cardHasChineseName).length,rarities=rows.filter(cardHasRarity).length,seriesIds=new Set(rows.flatMap(card=>[card?.seriesId,...(printingByCard.get(card.id)||[]).map(printing=>printing?.seriesId)]).filter(Boolean)),coveredSets=uniqueValues(rows.map(card=>card?.seriesId),selectedPrintings.map(printing=>printing?.seriesId||printing?.localSetCode)),timestamp=coverageTimestamp(rows,selectedPrintings,selectedImages,options.fallbackUpdatedAt),freshness=coverageFreshness(timestamp.latest),cardStatus=options.cardStatus||'complete',printingStatus=options.printingStatus||'complete',imageStatus=options.imageStatus||'complete',cardDenominator=cardStatus==='unknown'?null:rows.length,imageMetricStatus=imageStatus==='unknown'&&printingStatus==='unknown'?'unknown':imageStatus==='complete'?'complete':imageStatus,linkAudit=auditCatalogLinks({cards:rows,printings:selectedPrintings,images:selectedImages}),fields={
-    cards:coverageMetric(rows.length,null,cardStatus==='complete'?'observed-total':'unknown',{denominatorStatus:'unknown',note:'目前僅能確認資料庫觀測到的卡片列數；各 IP 可驗證的完整分母尚未提供。'}),
-    images:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{urlRecords:imageHealth.urlRecords,policyEligibleUrlRecords:imageHealth.policyEligibleUrlRecords,policyUnknownUrlRecords:imageHealth.policyUnknownUrlRecords,policyExcludedUrlRecords:imageHealth.policyExcludedUrlRecords,cardsWithImageUrls,sampledLoadCount:imageHealth.sampledLoadCount,sampledLoadStatus:imageHealth.sampledLoadStatus}),
-    chineseNames:coverageMetric(chineseNames,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.name_zh'}),
-    rarity:coverageMetric(rarities,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.rarity or tcg_printings.rarity'}),
-    printings:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:selectedPrintings.length}),
-    versions:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:selectedPrintings.length,note:'版本以 tcg_printings 的 region/language 列表示。'}),
+  const cardHasImageUrl=card=>Boolean((imageByCard.get(card.id)||[]).some(image=>image?.imageUrl)||(printingByCard.get(card.id)||[]).some(printing=>printing?.imageUrl)||card?.imageUrl),cardHasUsableImage=card=>Boolean((imageByCard.get(card.id)||[]).some(browseHasUsableImage)||(printingByCard.get(card.id)||[]).some(browseHasUsableImage)||(card?.imageUrl&&imageRightsAllowDisplay(card.imageRightsStatus,card.imageLicenseExpiresAt,imageSourceOf(card)))),cardHasChineseName=card=>Boolean(String(card?.nameZh||'').trim()),cardHasRarity=card=>browseValues(card,printingByCard.get(card.id)||[],'rarity').length;
+  const health=summarizeImageHealth({cards:rows,printings:selectedPrintings,images:selectedImages,isDisplayable:browseHasUsableImage,isPolicyEligible:row=>imageRightsAllowDisplay(row?.imageRightsStatus,row?.imageLicenseExpiresAt,imageSourceOf(row))}),audit=auditCatalogLinks({cards:rows,printings:selectedPrintings,images:selectedImages,providerKeys:acc.providerKeys}),missingDisplayable=rows.filter(card=>!cardHasUsableImage(card)),timestamp=coverageTimestamp(rows,selectedPrintings,selectedImages);
+  acc.cards+=rows.length;acc.displayableImages+=rows.length-missingDisplayable.length;acc.chineseNames+=rows.filter(cardHasChineseName).length;acc.rarities+=rows.filter(cardHasRarity).length;acc.cardsWithImageUrls+=rows.filter(cardHasImageUrl).length;acc.cardsWithSeries+=rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length;acc.totalPrintings+=selectedPrintings.length;acc.totalImages+=selectedImages.length;
+  for(const row of rows){if(row?.seriesId){acc.seriesIds.add(row.seriesId);acc.cardSeries.add(String(row.seriesId))}for(const key of [row?.source,row?.imageSource,row?.providerId,row?.provider])if(key)acc.sources[0].add(String(key))}
+  for(const printing of selectedPrintings){if(printing?.seriesId)acc.seriesIds.add(printing.seriesId);const set=printing?.seriesId||printing?.localSetCode;if(set)acc.printingSeries.add(String(set));for(const key of [printing?.source,printing?.imageSource,printing?.providerId,printing?.provider])if(key)acc.sources[1].add(String(key))}
+  for(const image of selectedImages)for(const key of [image?.source,image?.imageSource,image?.providerId,image?.provider])if(key)acc.sources[2].add(String(key));
+  for(const key of Object.keys(acc.health))acc.health[key]+=health[key];
+  for(const key of Object.keys(acc.audit))if(typeof acc.audit[key]==='number')acc.audit[key]+=audit[key];
+  for(const key of ['missingImages','missingChineseNames']){acc.audit[key].count+=audit[key].count;const room=COVERAGE_SAMPLE_LIMIT-acc.audit[key].sampleIds.length;if(room>0)acc.audit[key].sampleIds.push(...audit[key].sampleIds.slice(0,room))}
+  acc.missingDisplayable.count+=missingDisplayable.length;{const room=COVERAGE_SAMPLE_LIMIT-acc.missingDisplayable.sampleIds.length;if(room>0)acc.missingDisplayable.sampleIds.push(...missingDisplayable.slice(0,room).map(card=>card.id))}
+  if(timestamp.latest&&(!acc.timestamp.latest||timestamp.latest>acc.timestamp.latest))acc.timestamp.latest=timestamp.latest;
+  if(timestamp.oldest&&(!acc.timestamp.oldest||timestamp.oldest<acc.timestamp.oldest))acc.timestamp.oldest=timestamp.oldest;
+  if([rows,selectedPrintings,selectedImages].some(group=>group.some(row=>row?.updatedAt||row?.fetchedAt)))acc.timestamp.raw=true;
+  return acc;
+}
+function finishCoverage(acc,gameId,options={}){
+  const rowsLength=acc.cards,imageHealth={...summarizeImageHealth(),...acc.health},stableIdentityCards=acc.audit.stableIdentityCards;
+  const duplicateProviderKeys=[...acc.providerKeys.entries()].filter(([,ids])=>ids.length>1).map(([key,ids])=>({key:key.replace('\u001f',':'),cardIds:ids}));
+  const linkAudit={status:'observed',cards:acc.audit.cards,stableIdentityCards,unkeyedCards:acc.audit.unkeyedCards,cardsWithPrintings:acc.audit.cardsWithPrintings,cardsWithImages:acc.audit.cardsWithImages,printingReferences:acc.audit.printingReferences,linkedPrintingReferences:acc.audit.linkedPrintingReferences,imageReferences:acc.audit.imageReferences,linkedImageReferences:acc.audit.linkedImageReferences,orphanPrintings:acc.audit.orphanPrintings,orphanImages:acc.audit.orphanImages,crossGameReferences:acc.audit.crossGameReferences,duplicateProviderKeys,missingImages:acc.audit.missingImages,missingChineseNames:acc.audit.missingChineseNames,complete:acc.audit.cards>0&&stableIdentityCards===acc.audit.cards&&acc.audit.orphanPrintings===0&&acc.audit.orphanImages===0&&acc.audit.crossGameReferences===0};
+  const fallbackText=typeof options.fallbackUpdatedAt==='string'&&options.fallbackUpdatedAt?options.fallbackUpdatedAt:null,fallbackIso=fallbackText?coverageIso(fallbackText):null,hasRows=Boolean(acc.timestamp.latest),observed=hasRows||Boolean(fallbackIso),timestamp={latest:hasRows?acc.timestamp.latest:fallbackIso,oldest:hasRows?acc.timestamp.oldest:fallbackIso,status:observed?'observed':'unknown',field:observed?(fallbackText&&!acc.timestamp.raw?'catalog.updatedAt':'updated_at/fetched_at'):'not-available'};
+  const freshness=coverageFreshness(timestamp.latest),cardStatus=options.cardStatus||'complete',printingStatus=options.printingStatus||'complete',imageStatus=options.imageStatus||'complete',cardDenominator=cardStatus==='unknown'?null:rowsLength,imageMetricStatus=imageStatus==='unknown'&&printingStatus==='unknown'?'unknown':imageStatus==='complete'?'complete':imageStatus,coveredSets=uniqueValues([...acc.cardSeries],[...acc.printingSeries]),displayableImages=acc.displayableImages,cardsWithPrintings=acc.audit.cardsWithPrintings;
+  const fields={
+    cards:coverageMetric(rowsLength,null,cardStatus==='complete'?'observed-total':'unknown',{denominatorStatus:'unknown',note:'目前僅能確認資料庫觀測到的卡片列數；各 IP 可驗證的完整分母尚未提供。'}),
+    images:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{urlRecords:imageHealth.urlRecords,policyEligibleUrlRecords:imageHealth.policyEligibleUrlRecords,policyUnknownUrlRecords:imageHealth.policyUnknownUrlRecords,policyExcludedUrlRecords:imageHealth.policyExcludedUrlRecords,cardsWithImageUrls:acc.cardsWithImageUrls,sampledLoadCount:imageHealth.sampledLoadCount,sampledLoadStatus:imageHealth.sampledLoadStatus}),
+    chineseNames:coverageMetric(acc.chineseNames,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.name_zh'}),
+    rarity:coverageMetric(acc.rarities,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{field:'tcg_cards.rarity or tcg_printings.rarity'}),
+    printings:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:acc.totalPrintings}),
+    versions:coverageMetric(cardsWithPrintings,cardDenominator,printingStatus==='unknown'?'unknown':printingStatus,{records:acc.totalPrintings,note:'版本以 tcg_printings 的 region/language 列表示。'}),
     identity:coverageMetric(linkAudit.stableIdentityCards,cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{unkeyedCards:linkAudit.unkeyedCards}),
-    missingImages:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{missing:missingDisplayableImageCards.length,sampleIds:missingDisplayableImageCards.slice(0,50).map(card=>card.id),definition:'cards-without-policy-displayable-image'}),
-    missingChineseNames:coverageMetric(cardDenominator===null?null:Math.max(0,rows.length-linkAudit.missingChineseNames.count),cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{missing:linkAudit.missingChineseNames.count,sampleIds:linkAudit.missingChineseNames.sampleIds}),
+    missingImages:coverageMetric(displayableImages,cardDenominator,imageMetricStatus,{missing:acc.missingDisplayable.count,sampleIds:acc.missingDisplayable.sampleIds,definition:'cards-without-policy-displayable-image'}),
+    missingChineseNames:coverageMetric(cardDenominator===null?null:Math.max(0,rowsLength-linkAudit.missingChineseNames.count),cardDenominator,cardStatus==='unknown'?'unknown':cardStatus,{missing:linkAudit.missingChineseNames.count,sampleIds:linkAudit.missingChineseNames.sampleIds}),
     sourceTimestamp:{value:timestamp.latest,oldest:timestamp.oldest,status:timestamp.status,field:timestamp.field}
-  },sources=coverageSources(rows,selectedPrintings,selectedImages),expectedCards=options.expectedCards??null;
-  return {cards:rows.length,displayableImages,chineseNames,rarities,cardsWithImageUrls,cardsWithSeries:rows.filter(card=>Boolean(card?.seriesId)||Boolean((printingByCard.get(card.id)||[]).some(printing=>printing?.seriesId))).length,totalPrintings:selectedPrintings.length,totalImages:selectedImages.length,totalSeries:seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,linkAudit,imageHealth, imageUrlRecords:imageHealth.urlRecords,policyEligibleImageUrlRecords:imageHealth.policyEligibleUrlRecords,sampledImageLoadCount:imageHealth.sampledLoadCount,sampledImageLoadStatus:imageHealth.sampledLoadStatus,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 可驗證的完整卡表分母，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
+  },sources=uniqueValues([...acc.sources[0]],[...acc.sources[1]],[...acc.sources[2]]),expectedCards=options.expectedCards??null;
+  return {cards:rowsLength,displayableImages,chineseNames:acc.chineseNames,rarities:acc.rarities,cardsWithImageUrls:acc.cardsWithImageUrls,cardsWithSeries:acc.cardsWithSeries,totalPrintings:acc.totalPrintings,totalImages:acc.totalImages,totalSeries:acc.seriesIds.size,coveredSets,totalSets:coveredSets.length,expectedCards,completeness:expectedCards===null?'未核定':'已核對',sources,sourceTimestamp:timestamp.latest,sourceTimestampStatus:timestamp.status,observationWindow:timestamp,freshness,coverage:fields,fields,linkAudit,imageHealth, imageUrlRecords:imageHealth.urlRecords,policyEligibleImageUrlRecords:imageHealth.policyEligibleUrlRecords,sampledImageLoadCount:imageHealth.sampledLoadCount,sampledImageLoadStatus:imageHealth.sampledLoadStatus,metricStatus:{cards:cardStatus,printings:printingStatus,images:imageStatus,chineseNames:cardStatus,rarities:cardStatus,versions:printingStatus,sourceTimestamp:timestamp.status,expectedTotals:expectedCards===null?'unknown':'complete'},sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),scope:{sample:options.sample??false,complete:options.complete??(cardStatus==='complete'&&printingStatus==='complete'&&imageStatus==='complete'),kind:options.scopeKind||'current-observed-rows',expectedTotal:expectedCards,expectedTotalStatus:expectedCards===null?'unknown':'provided',coveredSets,totalSets:coveredSets.length,freshness,limitations:options.limitations||['目前未取得各 IP 可驗證的完整卡表分母，因此百分比僅表示目前資料列的欄位覆蓋率，不宣稱全系列完整。']}};
+}
+function buildCoverageGameRaw(gameId,cards=[],printings=[],images=[],options={}){
+  return finishCoverage(accumulateCoverage(createCoverageAccumulator(),cards,printings,images),gameId,options);
 }
 function buildCoverageGame(gameId,cards=[],printings=[],images=[],options={}){
-  const report=buildCoverageGameRaw(gameId,cards,printings,images,options);
+  return adjustCoverageGame(buildCoverageGameRaw(gameId,cards,printings,images,options),options);
+}
+function adjustCoverageGame(report,options={}){
   if(options.printingStatus!=='unknown'&&options.imageStatus!=='unknown')return report;
   if(options.printingStatus==='unknown'){
     report.rarities=null;
@@ -510,18 +510,60 @@ function buildFallbackCatalogCoverage(fallback,extra={}){
   attachCatalogBaselines(games,baseline.report);
   return {totalCards:(fallback.cards||[]).length,totalMatchingRecords:(fallback.cards||[]).length,games,coveredGames,coveredSets,totalSets:coveredSets.length,source:'catalog.json',updatedAt:fallback.updatedAt||null,expectedTotals:{value:null,status:'unknown',reason:'未提供各 IP 可驗證的完整卡表分母'},baselineRegistry:{schemaVersion:baseline.report.schemaVersion,registryVersion:baseline.report.registryVersion,reviewedAt:baseline.report.reviewedAt,status:baseline.report.summary.status,error:baseline.error},freshness,sample:true,complete:false,scope:{sample:true,complete:false,kind:'fallback-catalog-file',expectedTotal:null,expectedTotalStatus:'unknown',totalMatchingRecords:(fallback.cards||[]).length,coveredGames,coveredSets,totalSets:coveredSets.length,freshness,limitations:['資料庫未設定時使用公開備援資料檔；僅代表檔案內可觀測範圍。']},metricStatus:{cards:'catalog-file',printings:'catalog-file',images:'catalog-file',chineseNames:'catalog-file',rarities:'catalog-file',versions:'catalog-file',sourceTimestamp:fallback.updatedAt?'catalog-file':'unknown',expectedTotals:'unknown'},...extra};
 }
+// One page of a relation table for the cards of one chunk: a card_id range (indexed) in unique id order, offset-paged inside the small range.
+async function loadCoverageRelationRange(table,select,firstId,lastId){
+  // Read until an empty page and advance by what came back: a server that caps responses below the requested limit must not truncate silently.
+  const rows=[];
+  for(let offset=0;;){
+    const query=new URLSearchParams({select,order:'id.asc',limit:String(RELATION_SCAN_PAGE_SIZE),offset:String(offset)});
+    query.append('card_id',`gte.${firstId}`);query.append('card_id',`lte.${lastId}`);
+    const page=await supabaseFetch(`/${table}?${query}`);
+    if(!Array.isArray(page)||page.length>RELATION_SCAN_PAGE_SIZE)throw relationPaginationError('invalid-page');
+    if(!page.length)return rows;
+    rows.push(...page);offset+=page.length;
+  }
+}
+function relationPaginationError(reason){const error=new Error(`RELATION_PAGINATION_${reason.toUpperCase().replaceAll('-','_')}`);error.code='RELATION_PAGINATION_INVALID';return error}
+// Shared by all games of one coverage run: the first failure marks the whole relation unknown (as the former single global scan did) and stops further requests.
+function createCoverageRelation(table,select,legacySelect){
+  const state={status:'complete',error:null,legacy:false,async load(firstId,lastId){
+    if(state.status!=='complete')return [];
+    try{
+      if(!state.legacy){try{return await loadCoverageRelationRange(table,select,firstId,lastId)}catch(error){if(error.code==='RELATION_PAGINATION_INVALID')throw error;state.legacy=true}}
+      const rows=await loadCoverageRelationRange(table,legacySelect,firstId,lastId);
+      return table==='card_images'?rows.map(row=>({...row,imageRightsStatus:'not-provided'})):rows;
+    }catch(error){state.status='unknown';state.error=error.message;return []}
+  }};
+  return state;
+}
+// Cards of one game in keyset chunks; each chunk is folded into the accumulator with its printings and images and then dropped.
+async function loadCoverageGame(gameId,printingRelation,imageRelation){
+  const safeGame=String(gameId).replace(/[^a-z0-9-]/gi,''),acc=createCoverageAccumulator();let last=null;
+  try{
+    for(;;){
+      const params=new URLSearchParams({select:BROWSE_CARD_SELECT,game_id:`eq.${safeGame}`,order:'id.asc',limit:String(COVERAGE_CARD_CHUNK)});
+      if(last!==null)params.set('id',`gt.${last}`);
+      const cards=await supabaseFetch(`/tcg_cards?${params}`);
+      if(!Array.isArray(cards))throw new Error('COVERAGE_BAD_CARD_PAGE');
+      if(cards.length){const [printings,images]=await Promise.all([printingRelation.load(cards[0].id,cards.at(-1).id),imageRelation.load(cards[0].id,cards.at(-1).id)]);accumulateCoverage(acc,cards,printings,images)}
+      if(cards.length<COVERAGE_CARD_CHUNK)return {gameId,acc,status:'complete'};
+      const next=cards.at(-1)?.id;
+      if(!next||next===last)throw new Error('COVERAGE_CARD_PAGING_STALLED');
+      last=next;
+    }
+  }catch(error){return {gameId,acc:createCoverageAccumulator(),status:'unknown',error:error.message}}
+}
 async function loadCatalogCoverageUncached(){
   const fallback=await loadFallbackCatalog();
   if(!supabaseConfigured())return buildFallbackCatalogCoverage(fallback);
   try{
+    const printingRelation=createCoverageRelation('tcg_printings',BROWSE_PRINTING_SELECT,'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required'),imageRelation=createCoverageRelation('card_images',BROWSE_IMAGE_SELECT,'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at');
     const results=await Promise.all([
       supabaseFetchAll('/tcg_series?select=id,gameId:game_id,region,language,providerId:provider_id,sourceUrl:source_url,updatedAt:updated_at,metadata&order=game_id,region,id').then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
-      ...[...CATALOG_GAME_IDS].map(gameId=>loadDatabaseBrowseRows(gameId).then(rows=>({gameId,rows,status:'complete'})).catch(error=>({gameId,rows:[],status:'unknown',error:error.message}))),
-      loadDatabaseCoveragePrintings().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message})),
-      loadDatabaseCoverageImages().then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:error.message}))
-    ]),seriesResult=results[0],cardGroups=results.slice(1,-2),printingResult=results.at(-2),imageResult=results.at(-1),games={},allTimestamps=[],baseline=catalogBaselineReport(seriesResult.rows);
+      ...[...CATALOG_GAME_IDS].map(gameId=>loadCoverageGame(gameId,printingRelation,imageRelation))
+    ]),seriesResult=results[0],cardGroups=results.slice(1),printingResult={status:printingRelation.status,error:printingRelation.error},imageResult={status:imageRelation.status,error:imageRelation.error},games={},allTimestamps=[],baseline=catalogBaselineReport(seriesResult.rows);
     for(const group of cardGroups){
-      const selectedIds=new Set(group.rows.map(card=>card.id)),printings=printingResult.rows.filter(printing=>selectedIds.has(printing.cardId)),images=imageResult.rows.filter(image=>selectedIds.has(image.cardId)),entry=buildCoverageGame(group.gameId,group.rows,printings,images,{cardStatus:group.status,printingStatus:printingResult.status,imageStatus:imageResult.status});
+      const options={cardStatus:group.status,printingStatus:printingResult.status,imageStatus:imageResult.status},entry=adjustCoverageGame(finishCoverage(group.acc,group.gameId,options),options);
       games[group.gameId]=entry;allTimestamps.push(entry.sourceTimestamp);
     }
     attachCatalogBaselines(games,baseline.report);
@@ -1000,22 +1042,24 @@ const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${r
 });
 
 const priceSnapshot=createPriceSnapshotController({db:supabaseFetch});
+let sitemapWarm=null,coverageWarm=null;
 server.listen(port,()=>{
   if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false')priceSnapshot.start();
   console.log(`CardScope is running at http://localhost:${port}`);
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
   if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));
     // Coverage pages through every card and printing (about a minute cold); start it after the lighter warm-ups so the first visitor after a restart does not wait for it.
-    setTimeout(()=>loadCatalogCoverage().catch(error=>console.error('coverage warm-up failed',error.message)),30000).unref();
+    setTimeout(()=>{coverageWarm=loadCatalogCoverage().catch(error=>console.error('coverage warm-up failed',error.message))},30000).unref();
     // The sitemap scans every card (about a minute cold, 24-hour cache): build it after the other warm-ups so a crawler's first request is not the one that waits.
-    setTimeout(()=>loadSitemaps().catch(error=>console.error('sitemap warm-up failed',error.message)),15000).unref()}
+    setTimeout(()=>{sitemapWarm=loadSitemaps().catch(error=>console.error('sitemap warm-up failed',error.message))},15000).unref()}
   // A kept-warm instance can run for days, so the 72-hour freshness check repeats hourly instead of only at start-up.
-  if(process.env.CATALOG_SYNC_ON_START!=='false'&&supabaseConfigured()){let syncRunning=false,firstRun=true;const runScheduledCatalogSync=async()=>{if(syncRunning)return;syncRunning=true;const startup=firstRun;firstRun=false;try{const maxAgeHours=Math.max(1,Number(process.env.CATALOG_SYNC_MAX_AGE_HOURS)||72),needed=await catalogProvidersNeedingSync(supabaseFetch,maxAgeHours,{includeTcgdexTw:process.env.TCGDEX_TW_SYNC==='true'}),providers=filterAllowedCatalogProviders(needed),blocked=needed.filter(provider=>!providers.includes(provider));if(blocked.length)console.warn('source policy blocked scheduled catalog sync',blocked.join(','));if(providers.length){console.log('starting scheduled catalog sync',providers.join(','));const result=await syncCatalog(supabaseFetch,{providers});console.log('scheduled catalog sync complete',JSON.stringify(result))}const cacheSetting=process.env.CARD_IMAGE_CACHE_ON_START,shouldCacheImages=((startup&&cacheSetting==='true')||(cacheSetting!=='false'&&providers.includes('yugioh')))&&imageCollectionAllowed('yugioh');if(shouldCacheImages){console.log('starting card image cache');const images=await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)});console.log('card image cache complete',JSON.stringify(images))}}catch(error){console.error('scheduled catalog/image sync failed',error.message)}finally{syncRunning=false}};
-    setTimeout(runScheduledCatalogSync,3000);const intervalMinutes=Number(process.env.CATALOG_SYNC_INTERVAL_MINUTES??60);if(intervalMinutes>0)setInterval(runScheduledCatalogSync,intervalMinutes*60000).unref()}
+  if(process.env.CATALOG_SYNC_ON_START!=='false'&&supabaseConfigured()){let syncRunning=false,firstRun=true;const runScheduledCatalogSync=async()=>{if(syncRunning)return;syncRunning=true;const startup=firstRun;firstRun=false;try{if(startup)await Promise.allSettled([sitemapWarm,coverageWarm]);const maxAgeHours=Math.max(1,Number(process.env.CATALOG_SYNC_MAX_AGE_HOURS)||72),needed=await catalogProvidersNeedingSync(supabaseFetch,maxAgeHours,{includeTcgdexTw:process.env.TCGDEX_TW_SYNC==='true'}),providers=filterAllowedCatalogProviders(needed),blocked=needed.filter(provider=>!providers.includes(provider));if(blocked.length)console.warn('source policy blocked scheduled catalog sync',blocked.join(','));if(providers.length){console.log('starting scheduled catalog sync',providers.join(','));const result=await syncCatalog(supabaseFetch,{providers});console.log('scheduled catalog sync complete',JSON.stringify(result))}const cacheSetting=process.env.CARD_IMAGE_CACHE_ON_START,shouldCacheImages=((startup&&cacheSetting==='true')||(cacheSetting!=='false'&&providers.includes('yugioh')))&&imageCollectionAllowed('yugioh');if(shouldCacheImages){console.log('starting card image cache');const images=await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)});console.log('card image cache complete',JSON.stringify(images))}}catch(error){console.error('scheduled catalog/image sync failed',error.message)}finally{syncRunning=false}};
+    // The first look waits until the sitemap and coverage warm-ups (15 s and 30 s after start) are done: a sync holds tens of MB (YGOPRODeck's card list alone is 20 MB of JSON) and must not peak together with them.
+    setTimeout(runScheduledCatalogSync,process.env.CATALOG_WARM_ON_START!=='false'?45000:3000);const intervalMinutes=Number(process.env.CATALOG_SYNC_INTERVAL_MINUTES??60);if(intervalMinutes>0)setInterval(runScheduledCatalogSync,intervalMinutes*60000).unref()}
 });
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { buildBrowseFacets, buildBrowsePage, buildCoverageGame, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 

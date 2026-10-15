@@ -9,7 +9,7 @@ process.env.PORT = '0';
 process.env.CATALOG_SYNC_ON_START = 'false';
 // These tests count and hold the mock database requests; the start-up warm-up would add its own.
 process.env.CATALOG_WARM_ON_START = 'false';
-const { buildCoverageGame, coverageMetric, server } = await import('../server.mjs?catalog-next-stage-data');
+const { accumulateCoverage, adjustCoverageGame, buildCoverageGame, coverageMetric, createCoverageAccumulator, finishCoverage, server } = await import('../server.mjs?catalog-next-stage-data');
 test.after(async () => {
   if (!server.listening) return;
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
@@ -62,17 +62,17 @@ function coverageDatabaseHandler({cards,printings,images,requests=[],mode=null})
     if(url.pathname==='/rest/v1/tcg_series')return reply(200,[]);
     if(url.pathname==='/rest/v1/tcg_cards'){
       if(url.searchParams.get('game_id')!=='eq.pokemon')return reply(200,[]);
-      const limit=Number(url.searchParams.get('limit')||1000),offset=Number(url.searchParams.get('offset')||0);
-      return reply(200,cards.slice(offset,offset+limit));
+      const limit=Number(url.searchParams.get('limit')||1000),cursor=url.searchParams.get('id'),after=cursor?cursor.replace(/^gt\./,''):null;
+      requests.push({table:'tcg_cards',cursor,order:url.searchParams.get('order'),limit});
+      return reply(200,cards.filter(card=>after===null||card.id>after).slice(0,limit));
     }
     if(Object.hasOwn(relationRows,url.pathname.split('/').at(-1))){
-      const table=url.pathname.split('/').at(-1),select=url.searchParams.get('select')||'',cursor=url.searchParams.get('id'),rows=relationRows[table],isPrimary=table==='tcg_printings'?select.includes('rarityCode'):select.includes('imageRightsStatus');
-      requests.push({table,select,cursor,cardIdFilter:url.searchParams.get('card_id'),order:url.searchParams.get('order'),limit:Number(url.searchParams.get('limit')||1000)});
+      const table=url.pathname.split('/').at(-1),select=url.searchParams.get('select')||'',cardIdFilters=url.searchParams.getAll('card_id'),offset=Number(url.searchParams.get('offset')||0),rows=relationRows[table],isPrimary=table==='tcg_printings'?select.includes('rarityCode'):select.includes('imageRightsStatus');
+      requests.push({table,select,offset,cardIdFilters,order:url.searchParams.get('order'),limit:Number(url.searchParams.get('limit')||1000)});
       if(mode==='legacy-fallback'&&isPrimary)return reply(400,{message:'primary select requires the legacy fallback'});
-      if(mode==='later-page-failure'&&table==='tcg_printings'&&cursor)return reply(500,{message:'printing page failed'});
-      if(mode==='malformed-page'&&table==='tcg_printings'&&cursor)return reply(200,{rows:[]});
-      if(mode==='repeated-page'&&table==='tcg_printings'&&cursor)return reply(200,rows.slice(0,1000));
-      const after=cursor?Number(cursor.replace(/^gt\./,'')):null,limit=Math.min(Number(url.searchParams.get('limit')||1000),mode==='short-pages'?500:1000),ordered=rows.slice().sort((a,b)=>a.id-b.id),page=ordered.filter(row=>after===null||row.id>after).slice(0,limit);
+      if(mode==='later-page-failure'&&table==='tcg_printings'&&offset>0)return reply(500,{message:'printing page failed'});
+      if(mode==='malformed-page'&&table==='tcg_printings'&&offset>0)return reply(200,{rows:[]});
+      const lower=cardIdFilters.find(value=>value.startsWith('gte.'))?.slice(4),upper=cardIdFilters.find(value=>value.startsWith('lte.'))?.slice(4),limit=Math.min(Number(url.searchParams.get('limit')||1000),mode==='short-pages'?500:1000),ordered=rows.filter(row=>(lower===undefined||row.cardId>=lower)&&(upper===undefined||row.cardId<=upper)).sort((a,b)=>a.id-b.id),page=ordered.slice(offset,offset+limit);
       return reply(200,table==='card_images'&&!select.includes('imageRightsStatus')?page.map(({imageRightsStatus,...row})=>row):page);
     }
     return reply(200,[]);
@@ -252,7 +252,25 @@ test('aggregate coverage marks images unknown when printing lookup fails',async(
   }
 });
 
-test('global coverage scans complete keyset pages, filters orphan relations, and preserves legacy image rights',async()=>{
+test('chunked coverage equals the whole-catalog result for any chunk size',()=>{
+  let seed=11;const random=()=>(seed=(seed*1664525+1013904223)%4294967296)/4294967296,pick=list=>list[Math.floor(random()*list.length)];
+  const cards=Array.from({length:240},(_,index)=>({id:`c-${String(index).padStart(4,'0')}`,game:'pokemon',seriesId:random()<0.8?pick(['s1','s2','s3']):null,officialCardNumber:random()<0.8?String(index):'',nameZh:random()<0.6?'名':null,rarity:random()<0.5?'UR':null,providerId:random()<0.7?`p${index%200}`:null,source:pick(['a','b',null]),updatedAt:random()<0.8?`2026-0${1+Math.floor(random()*9)}-10T00:00:00.000Z`:null})),printings=[],images=[];
+  for(const card of cards){
+    for(let n=Math.floor(random()*4);n>0;n--)printings.push({id:printings.length+1,cardId:card.id,seriesId:random()<0.7?pick(['s1','s9']):null,localSetCode:pick(['L1',null]),region:pick(['JP','US']),rarity:pick(['R',null]),imageUrl:random()<0.5?`https://example.invalid/${printings.length}.png`:null,imageRehostRequired:random()<0.2,imageRightsStatus:pick(['not-provided','licensed','denied']),source:pick(['a','z']),updatedAt:random()<0.5?'2026-09-01T00:00:00.000Z':null});
+    for(let n=Math.floor(random()*3);n>0;n--)images.push({id:images.length+1,cardId:card.id,source:pick(['ygoprodeck','b']),imageUrl:random()<0.8?`https://example.invalid/i${images.length}.png`:null,imageRightsStatus:pick(['not-provided','licensed']),fetchedAt:random()<0.5?'2026-09-02T00:00:00.000Z':null});
+  }
+  for(const options of [{},{printingStatus:'unknown'},{fallbackUpdatedAt:'2026-05-05T00:00:00Z'}]){
+    const whole=buildCoverageGame('pokemon',cards,printings,images,options);
+    assert.equal(whole.linkAudit.duplicateProviderKeys.length>0,true,'the fixture must exercise duplicate provider keys across chunks');
+    for(const size of [1,7,64,100]){
+      const accumulator=createCoverageAccumulator();
+      for(let start=0;start<cards.length;start+=size){const chunk=cards.slice(start,start+size),ids=new Set(chunk.map(card=>card.id));accumulateCoverage(accumulator,chunk,printings.filter(row=>ids.has(row.cardId)),images.filter(row=>ids.has(row.cardId)))}
+      assert.deepEqual(JSON.parse(JSON.stringify(adjustCoverageGame(finishCoverage(accumulator,'pokemon',options),options))),JSON.parse(JSON.stringify(whole)),`chunk size ${size}`);
+    }
+  }
+});
+
+test('global coverage reads card chunks with ranged relation pages, filters out-of-range relations, and preserves legacy image rights',async()=>{
   const fixture=coverageFixture(),reports=[],relationRequestCounts=[];
   for(const mode of ['primary','legacy-fallback','short-pages']){
     const requests=[];
@@ -274,77 +292,51 @@ test('global coverage scans complete keyset pages, filters orphan relations, and
     });
     const relationRequests=requests.filter(request=>request.table==='tcg_printings'||request.table==='card_images');
     relationRequestCounts.push(relationRequests.length);
-    assert.ok(relationRequests.every(request=>request.cardIdFilter===null),'global scans must not send per-card ID filters');
-    assert.ok(relationRequests.every(request=>request.order==='id.asc'),'global scans must use a stable unique order');
-    assert.ok(relationRequests.every(request=>request.limit===1000),'each bounded global page must use the configured response cap');
+    assert.ok(relationRequests.every(request=>request.cardIdFilters.length===2&&request.cardIdFilters[0]==='gte.card-000'&&request.cardIdFilters[1]==='lte.card-499'),'every relation request is bounded to the card range of one chunk, never the whole table');
+    assert.ok(relationRequests.every(request=>request.order==='id.asc'),'ranged pages must use a stable unique order');
+    assert.ok(relationRequests.every(request=>request.limit===1000),'each bounded page must use the configured response cap');
     for(const table of ['tcg_printings','card_images']){
-      const tableRequests=relationRequests.filter(request=>request.table===table),primary=tableRequests.filter(request=>table==='tcg_printings'?request.select.includes('rarityCode'):request.select.includes('imageRightsStatus'));
-      assert.equal(tableRequests[0].cursor,null,'the first page must start at the beginning');
-      const pageSize=mode==='short-pages'?500:1000,rows=table==='tcg_printings'?fixture.printings:fixture.images,expectedCursors=[null];
-      for(let offset=pageSize;offset<rows.length;offset+=pageSize)expectedCursors.push(`gt.${offset}`);
-      expectedCursors.push(`gt.${rows.at(-1).id}`);
+      const tableRequests=relationRequests.filter(request=>request.table===table),primary=tableRequests.filter(request=>table==='tcg_printings'?request.select.includes('rarityCode'):request.select.includes('imageRightsStatus')),pageSize=mode==='short-pages'?500:1000,rows=table==='tcg_printings'?1500:1000,expectedOffsets=[];
+      for(let offset=0;offset<rows;offset+=pageSize)expectedOffsets.push(offset);
+      expectedOffsets.push(rows);
       if(mode==='legacy-fallback'){
         const fallback=tableRequests.filter(request=>!primary.includes(request));
         assert.equal(primary.length,1,'legacy select fallback starts only after the primary select fails');
-        assert.deepEqual(fallback.map(request=>request.cursor),expectedCursors,'legacy select fallback must scan through an empty terminal page');
+        assert.deepEqual(fallback.map(request=>request.offset),expectedOffsets,'legacy select fallback must read through an empty terminal page');
       }else{
-        assert.deepEqual(primary.map(request=>request.cursor),expectedCursors,'global scans must continue after short pages and stop only at an empty page');
+        assert.deepEqual(primary.map(request=>request.offset),expectedOffsets,'ranged reads must continue after short pages and stop only at an empty page');
       }
-      assert.ok(tableRequests.some(request=>request.cursor===`gt.${pageSize}`),'the second page must advance from the last unique ID');
     }
-    assert.ok(relationRequests.length<Math.ceil(fixture.cards.length/100)*2,'full coverage scans must reduce requests below the former 100-ID fanout');
   }
   assert.deepEqual(reports[0].coverage,reports[1].coverage,'primary and legacy projections should preserve coverage semantics');
   assert.deepEqual(reports[0].imageHealth,reports[1].imageHealth,'legacy image rights mapping should preserve the same policy provenance');
-  assert.deepEqual(relationRequestCounts,[6,8,9]);
+  assert.deepEqual(relationRequestCounts,[5,7,7]);
 });
 
-test('catalog coverage starts relation scans before blocked card queries resolve',async()=>{
-  const deferred=()=>{let resolve,reject;const promise=new Promise((done,fail)=>{resolve=done;reject=fail});return {promise,resolve,reject}},
-    releaseCards=deferred(),allCardRequestsStarted=deferred(),seriesRequestStarted=deferred(),relationsStarted=deferred(),cardGamesStarted=new Set(),relationTablesStarted=new Set(),
-    cardRows=[{id:'coverage-overlap-pokemon-card',game:'pokemon',nameZh:'測試卡',rarity:'UR'}];
-  let cardResponsesSent=0;
-  const handleDatabaseRequest=async(req,res)=>{
-    const url=new URL(req.url,`http://${req.headers.host}`),reply=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(body))};
-    if(url.pathname==='/rest/v1/tcg_series'){seriesRequestStarted.resolve();return reply(200,[])}
-    if(url.pathname==='/rest/v1/tcg_cards'){
-      const gameId=(url.searchParams.get('game_id')||'').replace(/^eq\./,'');
-      cardGamesStarted.add(gameId);
-      if(cardGamesStarted.size===games.length)allCardRequestsStarted.resolve();
-      await releaseCards.promise;
-      cardResponsesSent++;
-      return reply(200,gameId==='pokemon'?cardRows:[]);
-    }
-    const table=url.pathname.split('/').at(-1);
-    if(table==='tcg_printings'||table==='card_images'){
-      relationTablesStarted.add(table);
-      if(relationTablesStarted.size===2)relationsStarted.resolve();
-      return reply(200,[]);
-    }
-    return reply(200,[]);
-  };
-
-  await withCoverageDatabase('coverage-relation-overlap',handleDatabaseRequest,async baseUrl=>{
-    const responsePromise=fetch(`${baseUrl}/api/catalog/coverage`);
-    // This only prevents a regression from leaving the deferred card barrier hung; ordering is asserted by request events below.
-    const deadlockGuard=setTimeout(()=>relationsStarted.reject(new Error('relation scans did not start while card requests were blocked')),5000);
-    try{
-      await Promise.all([allCardRequestsStarted.promise,seriesRequestStarted.promise,relationsStarted.promise]);
-      assert.deepEqual([...cardGamesStarted].sort(),[...games].sort(),'all five card tasks must have started');
-      assert.deepEqual([...relationTablesStarted].sort(),['card_images','tcg_printings']);
-      assert.equal(cardResponsesSent,0,'relation calls must begin while every card response is still blocked');
-    }finally{clearTimeout(deadlockGuard);releaseCards.resolve()}
-    const response=await responsePromise,body=await response.json();
+test('coverage over several card chunks never asks for a whole relation table',async()=>{
+  const cards=Array.from({length:2500},(_,index)=>({id:`card-${String(index).padStart(4,'0')}`,game:'pokemon',nameZh:'測試卡',rarity:'UR',providerId:`provider-${index}`})),
+    printings=cards.map((card,index)=>({id:index+1,cardId:card.id,seriesId:'test-series',region:'JP',language:'ja-JP',localCardNumber:String(index),rarity:'R'})),
+    images=cards.filter((_,index)=>index%2===0).map((card,index)=>({id:index+1,cardId:card.id,language:'en',source:'ygoprodeck',imageUrl:`https://example.test/${index}.jpg`,sourceUrl:'https://example.test/source',isPrimary:true,fetchedAt:'2026-09-01T00:00:00.000Z'})),
+    requests=[];
+  await withCoverageDatabase('coverage-chunks',coverageDatabaseHandler({cards,printings,images,requests}),async baseUrl=>{
+    const response=await fetch(`${baseUrl}/api/catalog/coverage`),body=await response.json(),game=body.data.games.pokemon;
     assert.equal(response.status,200);
     assert.equal(body.data.complete,true);
-    assert.equal(body.data.totalCards,1);
-    assert.equal(body.data.errors.printings,null);
-    assert.equal(body.data.errors.images,null);
+    assert.equal(game.cards,2500);
+    assert.equal(game.totalPrintings,2500);
+    assert.equal(game.totalImages,1250);
+    assert.equal(game.coverage.images.covered,1250,'only cards with a displayable image count');
+    assert.equal(game.coverage.chineseNames.covered,2500);
+    assert.equal(game.linkAudit.duplicateProviderKeys.length,0);
   });
+  const cardRequests=requests.filter(request=>request.table==='tcg_cards'),relationRequests=requests.filter(request=>request.table!=='tcg_cards');
+  assert.deepEqual(cardRequests.map(request=>request.cursor),[null,'gt.card-0999','gt.card-1999'],'cards are read in keyset chunks, not in one list');
+  assert.ok(relationRequests.every(request=>request.cardIdFilters.length===2),'no relation request may be unbounded');
+  assert.deepEqual([...new Set(relationRequests.map(request=>request.cardIdFilters.join('..')))].sort(),['gte.card-0000..lte.card-0999','gte.card-1000..lte.card-1999','gte.card-2000..lte.card-2499']);
 });
 
-test('global coverage marks failed, malformed, and repeated later relation pages unknown',async t=>{
-  for(const mode of ['later-page-failure','malformed-page','repeated-page'])await t.test(mode,async()=>{
+test('global coverage marks failed and malformed later relation pages unknown',async t=>{
+  for(const mode of ['later-page-failure','malformed-page'])await t.test(mode,async()=>{
     const fixture=coverageFixture(),requests=[];
     await withCoverageDatabase(`global-scan-${mode}`,coverageDatabaseHandler({...fixture,requests,mode}),async baseUrl=>{
       const response=await fetch(`${baseUrl}/api/catalog/coverage`),body=await response.json(),report=body.data,game=report.games.pokemon;
@@ -357,7 +349,7 @@ test('global coverage marks failed, malformed, and repeated later relation pages
       assert.equal(game.coverage.printings.covered,null);
       assert.equal(game.coverage.printings.status,'unknown');
       assert.ok(report.errors.printings);
-      assert.ok(requests.some(request=>request.table==='tcg_printings'&&request.cursor==='gt.1000'));
+      assert.ok(requests.some(request=>request.table==='tcg_printings'&&request.offset===1000));
     });
   });
 });

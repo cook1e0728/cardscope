@@ -769,6 +769,20 @@
 - 正式站未快取兩字詞（伺服器端 rpc）：索隆 1.55 s、娜美 0.39、超夢 0.50、喵喵 0.39、伊布 0.51、魯夫 0.40（先前 8–23 s）。
 - 剩餘缺口：`ex`、`01` 這類命中數千張的詞，暖快取仍 0.8–1.5 秒、冷快取最差約 6.7 秒（`scored` 逐卡比對）；單字查詢仍掃全表。未處理。
 
+### 依序執行 99：正式站記憶體不足（OOM）當機循環修復（2026-10-16）
+
+- 症狀：Render 免費版（512 MB，Node 堆積上限約 255 MB）從 10-15 起反覆 `JavaScript heap out of memory`（exit 134），啟動後約 2.5 分鐘就掛、沒有任何請求；UptimeRobot 記到約 7 小時 503。
+- 根因（本機以模擬的正式規模資料量測：75,677 卡、104,615 printing、44,759 圖片，平均列寬取自正式庫；`--max-old-space-size=256 --expose-gc`）：**不是每日參考價快照，也不是 pokemon 同步**，而是啟動後 30 秒預熱的 `/api/catalog/coverage`（首頁每次載入也會呼叫，快取 5 分鐘後背景重算）。`loadCatalogCoverageUncached` 把五個遊戲的全部卡片、全部 printing、全部 card_images 一次讀進記憶體再算覆蓋率（JSON 約 165 MB），另外卡片列表經 `cachedBrowseRows` 被保留 5 分鐘、過期後也不釋放。量測：峰值 336 MB（上限 2 GB 時）、算完仍常駐 97 MB；上限 256 MB 時啟動後 33 秒即 OOM（重現）。資料庫成長（10-03 起的日版匯入）把它推過上限，10-15 加入的 sitemap 預熱、快照與走勢圖增加了同時在記憶體的工作，使每次重啟都撐不過去。
+- 修正：
+  - 覆蓋率改成「依卡片 id 每 1,000 張一塊」累加（`createCoverageAccumulator`／`accumulateCoverage`／`finishCoverage`）：每塊只讀該 id 範圍的 printing 與圖片（`card_id=gte…&card_id=lte…`，走既有 card_id 索引；正式庫比對範圍讀取與 join 的筆數完全相同：寶可夢 printing 55,428＝55,428、圖片 31,510＝31,510），五個遊戲各自串流、並行。輸出與舊算法逐欄位相同（隨機資料、單塊與 1／7／64／100 張分塊對照，含 fallback 時間戳、關聯失敗狀態）。`auditCatalogLinks` 新增可選參數 `providerKeys`，跨塊累計重複來源鍵。
+  - `cachedBrowseRows`：超過 5,000 列的整遊戲列表只供當下等待的呼叫共用、不保留；每次未命中先清掉過期項目（過去過期項目的資料一直留到被覆寫）。
+  - pokemontcg、YGOPRODeck 同步：卡名列改為每個系列（每 100 張）寫入、稀有度列依 `(game_id, rarity_code)` 保留最後一筆（upsert 本來就是如此去重），寫入內容與 `rows_written`／`metadata.enrichment` 計數不變。
+  - 啟動順序：第一次排程同步（含 YGOPRODeck 20 MB JSON）從啟動後 3 秒改為 45 秒，並等 sitemap 與覆蓋率預熱結束才開始（`CATALOG_WARM_ON_START=false` 仍是 3 秒）。
+- 量測（同一資料量，上限 256 MB）：啟動預熱峰值 336 MB → 約 100 MB（未觸發 GC 的原始值）；預熱後常駐 97 MB → 32 MB；上限壓到 96 MB 仍能完整啟動（修正前 256 MB 即 OOM）。每日參考價快照在 90,000 筆候選（TCGdex 以模擬回應、請求間隔縮短重放）下常駐穩定約 10 MB，**無洩漏**（懷疑過的 `AbortSignal.any` 在 Node 24 並不累積）；pokemontcg 同步峰值約 61 MB、YGOPRODeck 同步的 JSON 本身約 46 MB（解析時暫時約 90 MB），已避開與其他預熱重疊。
+- 沒有改 Render 設定、環境變數、`--max-old-space-size`，沒有升級。
+- 殘留風險：(1) 使用者在遊戲頁選稀有度篩選或「名稱／發行日／稀有度」排序且不在單一系列內時，仍走 `browseDatabaseCardsFull`（整個遊戲列表＋全部 printing／圖片），寶可夢規模下仍可能單次吃掉大量記憶體，現在至少不會被快取保留；需要的話下一步改成資料庫端分頁。(2) sitemap 建置原始峰值約 70–100 MB（RPC 回 7.5 萬列），建完即釋放。
+- 測試：新增 `test/memory-bounds.test.mjs`（快取上限）與覆蓋率分塊對照、多塊請求範圍測試；改寫 `catalog-next-stage-data.test.mjs` 中舊「全表掃描」的三個測試；`scheduled-sync.test.mjs` 更新啟動延遲斷言。Node 438/438。
+
 ### 依序執行 100：台版缺圖卡補官方外連圖（ADR 0031 補充，2026-10-16，桌電，已套用）
 
 - 起因：使用者回報台版 S10P 045 達克萊伊顯示「圖片待補」（日版同卡有官方圖）。盤點台版寶可夢「printing 與 `card_images` 都沒有圖」共 1,863 張（`asia-pokemon-card-official-tw` 1,339、`tcgdex-zh-tw` 524，各 28 個系列）：多為 10-09 回填之後才匯入的特典、補號系列，以及 TCGdex 台版卡沒有官方 ID。
