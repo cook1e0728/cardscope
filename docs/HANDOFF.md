@@ -736,6 +736,16 @@
 - 寫入：4 份 gated 計畫（既有函式已接受連字號代碼，無新 migration）＋重播零異動，共 171 張。稀有度依 ADR 0019 只收 C～UR：DPs-B 9 張與 SC2／S8a-G／EP08 全部留空（Printing incomplete），DPs-B verified 83。
 - 中文名 ADR 0013：145 張（2 批＋重播零異動，候選 `derived-names/adr-0013-candidates-missing4-20261014.json`）；剩 26 張無唯一官方中文名。新增 `scripts/build-pokemon-jp-official-unnumbered-plan.mjs`。Node 369/369。注意：ADR 0013 候選查詢要先把日文名限縮在目標卡，全表計算 `jp_name_key` 會超過 Management API 約 100 秒而 524。
 
+### 依序執行 95：SEO 與每日參考價快照（ADR 0042，2026-10-15，桌電，已部署）
+
+- 使用者問整體架構與市面網站的差距；建議先做 SEO（不花錢、不需新來源），同時開始存參考價（價格走勢要先累積資料）。會員收藏、Render／Supabase 付費升級需使用者決定，尚未做。
+- SEO（Sonnet worker）：`providers/seo.mjs`＋`server.mjs`。`/?game=&card=`、`/?game=&series=` 由伺服器改寫 `<title>`、description、canonical（作品層 ID，與 sitemap 一致）、OG／Twitter（卡圖）、JSON-LD BreadcrumbList、`<noscript>` 摘要；查詢 1.5 秒逾時回原頁、查無回 404＋noindex、無參數時逐位元不變。`/robots.txt`（排除 `/api/`，允許 `/api/images/`）、`/sitemap.xml`（index）＋`/sitemaps/pages|series|cards-<n>.xml`：卡片 65,481、系列 1,399、頁面 6。網址基底用 `PUBLIC_BASE_URL`（預設正式站），換網域時要設。
+- sitemap 冷啟動原本要逐頁抓 76 次（40–60 秒），Search Console 第一次抓逾時；migration `20261015120000_sitemap_card_groups`（`public.sitemap_card_groups()`，service_role 限定，資料庫端約 0.8 秒、結果與原本相同）後，部署後 `sitemap.xml` 0.7 秒、卡片子檔約 2 秒；啟動 15 秒後預熱。
+- Google Search Console（使用者同意、以使用者的 Brave 操作）：新增網址前置字元資源 `https://cardscope.onrender.com/`，以 HTML 檔案 `googlefb9a9f93e94c056f.html` 驗證擁有權（repo 根目錄，**不可刪**，刪了驗證會失效），已提交 `sitemap.xml`。提交後顯示「無法擷取」且無讀取時間（新提交常見）；**下次要回 Search Console 確認狀態變成「成功」**。
+- 每日參考價快照（ADR 0042，Sonnet worker）：`providers/price-snapshot.mjs`、migration `20261015090000_price_snapshots`（`public.price_snapshots`，RLS、只給 service_role；已套用）。候選 31,269 張，每秒 1 個請求，一輪約 8.7 小時；只存 Cardmarket trend／TCGplayer marketPrice、≥0.5、變動 ≥2% 或滿 7 天。部署會中斷，12 小時內以 cursor 接續（已實測：第 117 輪中斷 → 第 118 輪 07:08 UTC 從 `0:810437` 接續）。管理端點 `GET /api/admin/price-snapshot`、`POST …/run`、`POST …/stop`。覆蓋率與同步狀態查詢已排除 `price-snapshot` 紀錄。容量估算每月 40–80 MB（資料庫 319 MB／500 MB），**上線一週後用實際列數重估**。
+- 待查：Render 上約 9–14% 的卡回非 200（本機重打同一批 40 張全部 200），Render 免費方案查不到應用程式日誌；已在每輪 metadata 加 `errorCodes`（狀態碼分布）與 `errorSamples`，下次看 `catalog_sync_runs` 的 price-snapshot 列即可判斷是 429 限流還是其他。
+- 詳細頁與快照共用 `tcgdexLookupForPrinting`。Node 408/408。
+
 下一個安全起點（2026-10-14 更新）：**10-14 查信**：皇巢未回、晴れる屋2 只有自動受理通知。遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

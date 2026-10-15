@@ -129,7 +129,7 @@ export async function runPriceSnapshot(options = {}) {
     cursor: resumeCursor = null, resumedFrom = null, intervalMs = SNAPSHOT_REQUEST_INTERVAL_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxConsecutiveFailures = SNAPSHOT_MAX_CONSECUTIVE_FAILURES,
     pageSize = SNAPSHOT_PAGE_SIZE, chunkSize = SNAPSHOT_CHUNK_SIZE, writeBatchSize = SNAPSHOT_WRITE_BATCH_SIZE, onProgress, log = console, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES } = options;
   const today = new Date(now()).toISOString().slice(0, 10), startedAt = now();
-  const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, belowThreshold: 0, skipped: emptySkipped(), cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
+  const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, belowThreshold: 0, skipped: emptySkipped(), errorCodes: {}, errorSamples: [], cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
   const skippedTotal = () => Object.values(stats.skipped).reduce((sum, n) => sum + n, 0);
   const snapshot = () => ({ ...stats, skipped: { ...stats.skipped }, skippedTotal: skippedTotal() });
   if (!priceSnapshotEnabled({ env, collectionAllowed })) return { ...snapshot(), status: 'disabled' };
@@ -137,7 +137,7 @@ export async function runPriceSnapshot(options = {}) {
 
   const enSetMap = options.enSetMap ?? await loadEnSetMap();
   let runId = null, lastStatus = null, nextRequestAt = 0, consecutiveFailures = 0, stopReason = null;
-  const heartbeat = async () => { if (!runId) return; try { await patchRun(db, runId, { rows_seen: stats.candidates, rows_written: stats.written, cursor: stats.cursor, metadata: { heartbeatAt: new Date(now()).toISOString(), requests: stats.requests, skipped: stats.skipped, belowThreshold: stats.belowThreshold } }); } catch (error) { log.warn?.('price snapshot heartbeat failed', error.message); } };
+  const heartbeat = async () => { if (!runId) return; try { await patchRun(db, runId, { rows_seen: stats.candidates, rows_written: stats.written, cursor: stats.cursor, metadata: { heartbeatAt: new Date(now()).toISOString(), requests: stats.requests, skipped: stats.skipped, errorCodes: stats.errorCodes, errorSamples: stats.errorSamples, belowThreshold: stats.belowThreshold } }); } catch (error) { log.warn?.('price snapshot heartbeat failed', error.message); } };
 
   // The only way out to TCGdex: sequential, at most one request per intervalMs, abortable.
   const throttledFetch = async (url, init = {}) => {
@@ -177,7 +177,12 @@ export async function runPriceSnapshot(options = {}) {
           } catch (error) {
             if (signal?.aborted) { stopReason = 'ABORTED'; break; }
             done++;
-            stats.skipped[error?.name === 'TimeoutError' ? 'timeout' : String(error?.message).startsWith('TCGDEX_PRICING_') ? 'httpError' : 'networkError']++;
+            const kind = error?.name === 'TimeoutError' ? 'timeout' : String(error?.message).startsWith('TCGDEX_PRICING_') ? 'httpError' : 'networkError';
+            stats.skipped[kind]++;
+            // 記下狀態碼分布與前幾個例子，Render 上的錯誤才查得到原因（本機重打同一批卡都是 200）。
+            const code = kind === 'httpError' ? String(error.message).slice('TCGDEX_PRICING_'.length) : kind;
+            stats.errorCodes[code] = (stats.errorCodes[code] || 0) + 1;
+            if (stats.errorSamples.length < 10) stats.errorSamples.push(`${item.language}:${item.id}:${code}`);
             if (++consecutiveFailures >= maxConsecutiveFailures) { stopReason = 'CONSECUTIVE_FAILURES'; break; }
             continue;
           }
@@ -222,7 +227,7 @@ export async function runPriceSnapshot(options = {}) {
   stats.durationMs = now() - startedAt;
   const final = snapshot();
   try {
-    await finishRun(db, runId, stats.status === 'completed' ? 'completed' : 'failed', { seen: stats.candidates, written: stats.written, cursor: stats.status === 'completed' ? null : stats.cursor, metadata: { date: today, requests: stats.requests, rowsScanned: stats.rowsScanned, skipped: stats.skipped, skippedTotal: final.skippedTotal, belowThreshold: stats.belowThreshold, resumedFrom, durationMs: stats.durationMs } }, stats.error);
+    await finishRun(db, runId, stats.status === 'completed' ? 'completed' : 'failed', { seen: stats.candidates, written: stats.written, cursor: stats.status === 'completed' ? null : stats.cursor, metadata: { date: today, requests: stats.requests, rowsScanned: stats.rowsScanned, skipped: stats.skipped, errorCodes: stats.errorCodes, errorSamples: stats.errorSamples, skippedTotal: final.skippedTotal, belowThreshold: stats.belowThreshold, resumedFrom, durationMs: stats.durationMs } }, stats.error);
   } catch (error) { log.error?.('price snapshot run record failed', error.message); }
   return final;
 }
