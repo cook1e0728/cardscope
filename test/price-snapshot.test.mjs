@@ -236,7 +236,7 @@ test('20 failures in a row stop the round; a success in between resets the count
     const clock = makeClock(), printings = Array.from({ length: 40 }, (_, i) => printing(i + 1)), state = fakeDb({ printings, clock }), tcgdex = fakeTcgdex(clock, cards(printings));
     return { result: await runPriceSnapshot(baseOptions(clock, state, tcgdex)), state, tcgdex };
   };
-  const failing = await stop(printings => Object.fromEntries(printings.map(p => [p.provider_id, { status: 503 }])));
+  const failing = await stop(printings => Object.fromEntries(printings.map(p => [p.provider_id, { status: 403 }])));
   assert.equal(failing.result.status, 'failed');
   assert.equal(failing.result.error, 'CONSECUTIVE_FAILURES');
   assert.equal(failing.result.requests, 20);
@@ -378,4 +378,45 @@ test('the daily scheduler starts after a delay, runs one round, and then waits o
   assert.ok(timers[2].ms >= 10 * 60 * 1000);
   await controller.dispose();
   assert.equal(timers.length, 3, 'nothing is scheduled after dispose');
+});
+
+test('429 and 5xx back off for a minute instead of counting toward the stop limit; a long outage stops the round', async () => {
+  const run = async cards => {
+    const clock = makeClock(), printings = Array.from({ length: 40 }, (_, i) => printing(i + 1)), state = fakeDb({ printings, clock }), tcgdex = fakeTcgdex(clock, cards(printings));
+    const started = clock.now();
+    return { result: await runPriceSnapshot(baseOptions(clock, state, tcgdex)), elapsed: clock.now() - started };
+  };
+  // 25 cards in a row answer 503 (more than the 20-failure limit), then TCGdex recovers.
+  const burst = await run(printings => Object.fromEntries(printings.map((p, i) => [p.provider_id, i < 25 ? { status: i % 2 ? 429 : 503 } : { name: p.card.name_ja, trend: 2 }])));
+  assert.equal(burst.result.status, 'completed');
+  assert.equal(burst.result.skipped.httpError, 25);
+  assert.deepEqual(burst.result.errorCodes, { 503: 13, 429: 12 });
+  assert.equal(burst.result.written, 15);
+  assert.ok(burst.elapsed >= 25 * 60 * 1000, 'each 503/429 waited a minute');
+  // 30 back-offs in a row (about half an hour of outage) stop the round.
+  const outage = await run(printings => Object.fromEntries(printings.map(p => [p.provider_id, { status: 503 }])));
+  assert.equal(outage.result.status, 'failed');
+  assert.equal(outage.result.error, 'UPSTREAM_UNAVAILABLE');
+  assert.equal(outage.result.requests, 30);
+});
+
+test('a price that drops under 0.5 is written once so the trend follows it down, then no more', async () => {
+  const clock = makeClock();
+  const cards = { 'SV6a-001': { name: '名前1', trend: 3 } };
+  const state = fakeDb({ printings: [printing(1)], clock });
+  const tcgdex = fakeTcgdex(clock, cards);
+  const run = async () => runPriceSnapshot(baseOptions(clock, state, tcgdex));
+  assert.equal((await run()).written, 1);
+  clock.t += DAY; cards['SV6a-001'].trend = 0.3;
+  const dropped = await run();
+  assert.equal(dropped.written, 1);
+  assert.equal(dropped.droppedBelow, 1);
+  clock.t += DAY; cards['SV6a-001'].trend = 0.2;
+  assert.equal((await run()).written, 0, 'already under the threshold: nothing more');
+  clock.t += 8 * DAY;
+  assert.equal((await run()).written, 0, 'no weekly refresh under the threshold either');
+  assert.deepEqual(state.snapshots.map(row => row.amount), [3, 0.3]);
+  // A card that was never above the threshold is never stored.
+  const fresh = fakeDb({ printings: [printing(2)], clock });
+  assert.equal((await runPriceSnapshot(baseOptions(clock, fresh, fakeTcgdex(clock, { 'SV6a-002': { name: '名前2', trend: 0.2 } })))).written, 0);
 });

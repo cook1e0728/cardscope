@@ -89,7 +89,7 @@ const providerOf = market => market === 'TCGplayer' ? 'tcgplayer' : market === '
 
 // Only the platform reference price (priceType market); listing prices are never stored.
 export function snapshotRowsFromRecords(cardId, records, today) {
-  const rows = [], seen = new Set();
+  const rows = [], below = [], seen = new Set();
   let belowThreshold = 0;
   for (const record of records) {
     const provider = providerOf(record.market);
@@ -97,10 +97,11 @@ export function snapshotRowsFromRecords(cardId, records, today) {
     const amount = Number(record.amount), variant = String(record.variant ?? '').trim(), key = `${provider}|${variant}`;
     if (!Number.isFinite(amount) || seen.has(key)) continue;
     seen.add(key);
-    if (amount < MIN_SNAPSHOT_AMOUNT) { belowThreshold++; continue; }
-    rows.push({ card_id: cardId, provider, variant, currency: record.currency, snapshot_date: today, amount: Math.round(amount * 100) / 100, observed_at: record.observedAt ?? null });
+    const row = { card_id: cardId, provider, variant, currency: record.currency, snapshot_date: today, amount: Math.round(amount * 100) / 100, observed_at: record.observedAt ?? null };
+    if (amount < MIN_SNAPSHOT_AMOUNT) { belowThreshold++; if (row.amount > 0) below.push(row); continue; }
+    rows.push(row);
   }
-  return { rows, belowThreshold };
+  return { rows, below, belowThreshold };
 }
 
 async function startRun(db, scope) {
@@ -126,17 +127,17 @@ async function loadPrevious(db, cardIds, since) {
 // One run: list candidates, price each card (throttled), compare with the last stored value, insert the changed ones. Never throws for a failed run; check stats.status.
 export async function runPriceSnapshot(options = {}) {
   const { db, env = process.env, collectionAllowed = catalogCollectionAllowed, fetch: fetchImpl = (...args) => globalThis.fetch(...args), now = Date.now, sleep = defaultSleep, signal,
-    cursor: resumeCursor = null, resumedFrom = null, intervalMs = SNAPSHOT_REQUEST_INTERVAL_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxConsecutiveFailures = SNAPSHOT_MAX_CONSECUTIVE_FAILURES,
+    cursor: resumeCursor = null, resumedFrom = null, intervalMs = SNAPSHOT_REQUEST_INTERVAL_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxConsecutiveFailures = SNAPSHOT_MAX_CONSECUTIVE_FAILURES, backoffMs = 60 * 1000, maxConsecutiveBackoffs = 30,
     pageSize = SNAPSHOT_PAGE_SIZE, chunkSize = SNAPSHOT_CHUNK_SIZE, writeBatchSize = SNAPSHOT_WRITE_BATCH_SIZE, onProgress, log = console, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES } = options;
   const today = new Date(now()).toISOString().slice(0, 10), startedAt = now();
-  const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, belowThreshold: 0, skipped: emptySkipped(), errorCodes: {}, errorSamples: [], cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
+  const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, droppedBelow: 0, belowThreshold: 0, skipped: emptySkipped(), errorCodes: {}, errorSamples: [], cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
   const skippedTotal = () => Object.values(stats.skipped).reduce((sum, n) => sum + n, 0);
   const snapshot = () => ({ ...stats, skipped: { ...stats.skipped }, skippedTotal: skippedTotal() });
   if (!priceSnapshotEnabled({ env, collectionAllowed })) return { ...snapshot(), status: 'disabled' };
   if (!db) throw new Error('PRICE_SNAPSHOT_DB_REQUIRED');
 
   const enSetMap = options.enSetMap ?? await loadEnSetMap();
-  let runId = null, lastStatus = null, nextRequestAt = 0, consecutiveFailures = 0, stopReason = null;
+  let runId = null, lastStatus = null, nextRequestAt = 0, consecutiveFailures = 0, consecutiveBackoffs = 0, stopReason = null;
   const heartbeat = async () => { if (!runId) return; try { await patchRun(db, runId, { rows_seen: stats.candidates, rows_written: stats.written, cursor: stats.cursor, metadata: { heartbeatAt: new Date(now()).toISOString(), requests: stats.requests, skipped: stats.skipped, errorCodes: stats.errorCodes, errorSamples: stats.errorSamples, belowThreshold: stats.belowThreshold } }); } catch (error) { log.warn?.('price snapshot heartbeat failed', error.message); } };
 
   // The only way out to TCGdex: sequential, at most one request per intervalMs, abortable.
@@ -165,7 +166,7 @@ export async function runPriceSnapshot(options = {}) {
       for (let i = 0; i < page.items.length && !stopReason; i += chunkSize) {
         const chunk = page.items.slice(i, i + chunkSize);
         const pricing = { ja: createTcgdexPricing({ language: 'ja', fetch: throttledFetch, now, timeoutMs }), en: createTcgdexPricing({ language: 'en', fetch: throttledFetch, now, timeoutMs }) };
-        const found = [];
+        const found = [], foundBelow = [];
         let done = 0;
         for (const item of chunk) {
           if (signal?.aborted) { stopReason = 'ABORTED'; break; }
@@ -183,24 +184,36 @@ export async function runPriceSnapshot(options = {}) {
             const code = kind === 'httpError' ? String(error.message).slice('TCGDEX_PRICING_'.length) : kind;
             stats.errorCodes[code] = (stats.errorCodes[code] || 0) + 1;
             if (stats.errorSamples.length < 10) stats.errorSamples.push(`${item.language}:${item.id}:${code}`);
+            // TCGdex 偶爾連續回 503（實測一次 9 張）：429／5xx 先暫停再繼續，不算進連續失敗；連續退避太多次（約 30 分鐘）才停。
+            if (/^(429|5\d\d)$/.test(code)) {
+              if (++consecutiveBackoffs >= maxConsecutiveBackoffs) { stopReason = 'UPSTREAM_UNAVAILABLE'; break; }
+              try { await sleep(backoffMs, signal); } catch { stopReason = 'ABORTED'; break; }
+              continue;
+            }
             if (++consecutiveFailures >= maxConsecutiveFailures) { stopReason = 'CONSECUTIVE_FAILURES'; break; }
             continue;
           }
           done++;
-          if (stats.requests > before) consecutiveFailures = 0;
+          if (stats.requests > before) { consecutiveFailures = 0; consecutiveBackoffs = 0; }
           if (lastStatus === 404) { stats.skipped.notFound++; continue; }
-          const { rows, belowThreshold } = snapshotRowsFromRecords(item.cardId, records, today);
+          const { rows, below, belowThreshold } = snapshotRowsFromRecords(item.cardId, records, today);
           stats.belowThreshold += belowThreshold;
           if (!rows.length && !belowThreshold) stats.skipped.noPrice++;
           found.push(...rows);
+          foundBelow.push(...below);
         }
         stats.candidates += done;
-        if (found.length) {
-          const previous = await loadPrevious(db, [...new Set(found.map(row => row.card_id))], since), toWrite = new Map();
+        if (found.length || foundBelow.length) {
+          const previous = await loadPrevious(db, [...new Set([...found, ...foundBelow].map(row => row.card_id))], since), toWrite = new Map();
           for (const row of found) {
             const decision = snapshotDecision(previous.get(`${row.card_id}|${row.provider}|${row.variant}`), row.amount, today);
             if (!decision.store) { stats.skipped[decision.reason]++; continue; }
             toWrite.set(`${row.card_id}|${row.provider}|${row.variant}|${row.snapshot_date}`, row);
+          }
+          // 跌破門檻：只有上一筆還在門檻以上時寫一筆（走勢跟著跌下去，不會停在舊高點），之後不再寫。
+          for (const row of foundBelow) {
+            const last = previous.get(`${row.card_id}|${row.provider}|${row.variant}`);
+            if (last && last.snapshot_date !== today && Number(last.amount) >= MIN_SNAPSHOT_AMOUNT) { toWrite.set(`${row.card_id}|${row.provider}|${row.variant}|${row.snapshot_date}`, row); stats.droppedBelow++; }
           }
           const rows = [...toWrite.values()];
           for (let offset = 0; offset < rows.length; offset += writeBatchSize) {

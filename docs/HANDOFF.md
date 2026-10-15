@@ -746,6 +746,12 @@
 - 錯誤原因已查明（第 119 輪，07:30 UTC 起）：非 200 全是 TCGdex 的 **503**，而且是連續一段（SV2a-123～131 共 9 張）後自行恢復，不是持續限流；先前 9–14% 是集中在少數時段的短暫 503。這些卡隔天會再查；若之後 503 變多（每輪 `errorCodes` 可查），再考慮遇 503 退避重試。
 - 詳細頁與快照共用 `tcgdexLookupForPrinting`。Node 408/408。
 
+### 依序執行 96：參考價走勢圖、Gemini 第二意見（2026-10-15，桌電，已部署）
+
+- 更正：先前說「沒有推送時自動跑測試」是錯的，`.github/workflows/beta-reliability.yml` 每次推 main 都跑 `node --test`＋瀏覽器冒煙，近 10 次全過。
+- 走勢圖（Sonnet worker）：`GET /api/cards/:id/price-history`（同作品層實體卡、近 180 天、每條線＝實體卡＋來源＋variant，不合併；以今日匯率換台幣；快取 1 小時；失敗回 200＋`meta.unavailable`；回傳頂層 `{series, meta}`，與其他端點的 `{data}` 不同）。前端 `price-history-chart.js`（內嵌 SVG 階梯折線、最多 3 條、線型＋標記＋圖例＋文字摘要表），只在打開「跨市場比價」分頁時請求。測試 `test/price-trend.test.mjs`（`test/price-history.test.mjs` 是舊觀測模組的測試，未動）。
+- Gemini 第二意見：使用者裝了 Antigravity CLI（`%LOCALAPPDATA%\agy\bin\agy.exe`，帳號只有 Gemini 3.8 Flash）。社群 MCP `antigravity-claude-mcp` 讀過原始碼後不採用（以 `--dangerously-skip-permissions` 執行、`npx -y` 不鎖版本、Windows PATH 解析錯）。改為需要時直接以 `--sandbox --disable-slash-commands`、不給資料夾、把內容放進提示呼叫（細節在 Claude 記憶）。第一次用於審 ADR 0042，採納兩點：跌破門檻時寫一筆讓走勢跟著跌；429／5xx 暫停 60 秒、不計入連續 20 次失敗、連續退避 30 次才停。不採納：Render 休眠（已有 UptimeRobot）、改用 GitHub Actions 跑快照。Node 419/419。
+
 下一個安全起點（2026-10-14 更新）：**10-14 查信**：皇巢未回、晴れる屋2 只有自動受理通知。遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：
