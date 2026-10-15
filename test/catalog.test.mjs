@@ -724,6 +724,12 @@ test('a rarity filter and the name, release and rarity sorts are paged by the da
     assert.deepEqual({token:second.p_token,sort:second.p_sort,offset:second.p_offset},{token:null,sort:'rarity-desc',offset:2});
     assert.equal(requests.filter(request=>request.table==='browse_cards_facets').length,1,'facets do not depend on sort or offset and are cached');
     assert.equal(wholeGameTables(requests),0,'no whole-game rows are read');
+    // PostgREST resolves a function by the parameter names it is sent: with no region the call must still name p_region (null), as the real database answered PGRST202 otherwise.
+    await (await fetch(`${baseUrl}/api/cards?game=pokemon&limit=2&offset=0&region=all&rarity=all&sort=release-asc`)).json();
+    const noRegionPage=requests.filter(request=>request.table==='browse_cards_filtered').at(-1).body,noRegionFacets=requests.filter(request=>request.table==='browse_cards_facets').at(-1).body;
+    assert.deepEqual([Object.hasOwn(noRegionPage,'p_region'),noRegionPage.p_region,Object.hasOwn(noRegionFacets,'p_region'),noRegionFacets.p_region],[true,null,true,null]);
+    assert.deepEqual(Object.keys(noRegionPage).sort(),['p_game','p_limit','p_offset','p_region','p_rmap','p_sort','p_token'],'every parameter of browse_cards_filtered is sent');
+    assert.deepEqual(Object.keys(noRegionFacets).sort(),['p_game','p_region','p_rmap']);
   });
 });
 

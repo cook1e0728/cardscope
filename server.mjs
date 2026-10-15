@@ -378,7 +378,7 @@ async function browseDatabaseCards(game,options){
 // Rarity filter and the name / release / rarity sorts run inside the database (browse_cards_filtered + browse_cards_facets, migration 20261016110000):
 // the server asks for one page plus the total and facets and never loads a whole game (Pokemon is 55k cards and 105k printings; one such request
 // used to exhaust the 512 MB instance). Rarity codes, ranks and filter tokens come from data/rarity-rankings.json through the server's own
-// normalizers, passed to the database as a small raw-value table; a raw value the table lacks is reported back (unmapped) and the table rebuilt once.
+// normalizers, passed to the database as a small raw-value table (PostgREST needs every parameter named, so p_region/p_token are sent as null, never omitted); a raw value the table lacks is reported back (unmapped) and the table rebuilt once.
 const BROWSE_HEAVY_MAX=2,BROWSE_HEAVY_QUEUE_MAX=24,browseHeavy={active:0,waiting:[]};
 // The database scans a whole game for each of these calls (1-3 s): run two at a time, queue a few more, then answer 503 instead of piling up.
 async function withBrowseHeavySlot(task){
@@ -406,8 +406,8 @@ async function browseDatabaseCardsFiltered(game,options={}){
   for(let attempt=0;;attempt++){
     const rmap=await loadBrowseRarityMap(safeGame,{refresh:attempt>0}),pageKey=`rpc:browse_cards_filtered:${safeGame}|${region||''}|${token}|${sort}|${take}|${skip}`,facetKey=`rpc:browse_cards_facets:${safeGame}|${region||''}`;
     const [page,facets]=await Promise.all([
-      cachedBrowseRows(pageKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_filtered',{method:'POST',body:JSON.stringify({p_game:safeGame,p_token:token||null,p_sort:sort,p_limit:take,p_offset:skip,p_rmap:rmap,...(region?{p_region:region}:{})})}))),
-      cachedBrowseRows(facetKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_facets',{method:'POST',body:JSON.stringify({p_game:safeGame,p_rmap:rmap,...(region?{p_region:region}:{})})})))
+      cachedBrowseRows(pageKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_filtered',{method:'POST',body:JSON.stringify({p_game:safeGame,p_region:region||null,p_token:token||null,p_sort:sort,p_limit:take,p_offset:skip,p_rmap:rmap})}))),
+      cachedBrowseRows(facetKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_facets',{method:'POST',body:JSON.stringify({p_game:safeGame,p_region:region||null,p_rmap:rmap})})))
     ]);
     if(!page||!Array.isArray(page.cards)||!Number.isFinite(Number(page.total))||!facets||typeof facets.rarity!=='object')throw new Error('BROWSE_FILTERED_BAD_RESPONSE');
     if((page.unmapped||facets.unmapped)&&attempt===0){browseCache.delete(pageKey);browseCache.delete(facetKey);continue}
