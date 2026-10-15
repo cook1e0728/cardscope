@@ -769,6 +769,14 @@
 - 正式站未快取兩字詞（伺服器端 rpc）：索隆 1.55 s、娜美 0.39、超夢 0.50、喵喵 0.39、伊布 0.51、魯夫 0.40（先前 8–23 s）。
 - 剩餘缺口：`ex`、`01` 這類命中數千張的詞，暖快取仍 0.8–1.5 秒、冷快取最差約 6.7 秒（`scored` 逐卡比對）；單字查詢仍掃全表。未處理。
 
+### 依序執行 100：台版缺圖卡補官方外連圖（ADR 0031 補充，2026-10-16，桌電，已套用）
+
+- 起因：使用者回報台版 S10P 045 達克萊伊顯示「圖片待補」（日版同卡有官方圖）。盤點台版寶可夢「printing 與 `card_images` 都沒有圖」共 1,863 張（`asia-pokemon-card-official-tw` 1,339、`tcgdex-zh-tw` 524，各 28 個系列）：多為 10-09 回填之後才匯入的特典、補號系列，以及 TCGdex 台版卡沒有官方 ID。
+- 做法：沿用 ADR 0031 的台版規則（只存外連網址 `asia.pokemon-card.com/tw/card-img/tw<ID 補零 8 位>.png`，不拿其他版本冒充），只用既有快取（`official-rarity-20261002.json`、`official-promo-cache-20261014.json`，系列清單與詳細頁文字事實），沒有新增官方網站請求。新增 `providers/pokemon-tw-card-images-plan.mjs`（配對規則＋SQL 產生）、`scripts/build-pokemon-tw-card-images-plan.mjs`、`test/pokemon-tw-card-images-plan.test.mjs`（9 個測試）。
+- 結果：寫入 1,307 張（printing 單一官方 ID 932；無 ID 但「同系列＋卡號＋名稱」唯一 303；無卡號條目同名唯一 72；官方 printing 923、TCGdex 384）。`card_images` 44,759 → 46,066。S10P 045 → `tw00006344.png`，正式站台版 S10P 67 張全有圖。未寫 556 張：同號多版本 552（M2a 118、MC 120、SV11B 80、SV11W 80、SV2a 136、SVI 15、M-P 2、SV-P 1；一般版與寶可夢球鏡面版等，抽查 SV11B 001 兩個 ID 圖案相同、只差鏡面花紋，仍依 ADR 0031 不選），SV-P 樂園度假地與勝利之證 4（官方同名條目多筆）。
+- 驗證：每批（250×5＋57）先唯讀乾跑（計畫＝找到＝可寫＝不重複 ID）、整批回滾測試（`ROLLBACK_TEST_OK`，數量不變）、再寫入（精確筆數斷言）、重播零異動，最後 `ANALYZE card_images`。12 個樣本圖片網址 HEAD 全 200、`image/png`。Node 全套除 `catalog-next-stage-data.test.mjs`（記憶體不足，屬另一項進行中的修正）外全過。證據：`docs/evidence/pokemon-tw/images-20261016/`（`report.json` 含各系列計數與未配對卡原因、`result.json`、各批 SQL）。
+- 待決定：同號多版本 552 張（台版約 4% 仍無圖）。若要補，需先決定「一般版（最小官方 ID）視為該卡的圖」是否可接受，並修訂 ADR 0031；目前不寫。詳細頁 `/api/cards/<台版卡 id>` 的主圖仍是連結的日版卡圖（既有規則），台版圖在 printings 與台版清單。
+
 下一個安全起點（2026-10-14 更新）：**10-14 查信**：皇巢未回、晴れる屋2 只有自動受理通知。遊々亭已婉拒（見依序執行 77）。**已寄出詢問（2026-10-13，使用者同意）**：皇巢以使用者 Gmail 寄到 info@beehivetcg.com（主旨「價格資料引用合作查詢（CardScope 卡牌圖鑑）」）；晴れる屋2 經網頁表單送出（頁面顯示受理訊息，回覆會寄到使用者 Gmail）。內容見 `docs/research/price-sources/inquiries-20261013.md`。**回覆前不開啟收集**；同意就照信中條件串接並寫 ADR，拒絕則不用，約兩週無回覆再問使用者。可自行推進：10-24 後確認排球少年 HV-P04／HV-D04 已自動同步。**工作方式（使用者 2026-10-11 再確認）**：Opus 主導規劃與整合，多步驟實作／測試／資料比對預設派給 `sonnet-worker`（Sonnet、effort high）並行；10-10～11 這輪全由主導者自己做，未照分工，下一輪要照做。沒有進行中的資料批次或未提交修改；工作分支 `claude/binder-theme-preview` 與 `main` 同步。候選見下方「可自行推進」與「其他後續候選」，（MG 已查證不適用 ADR 0032）。以下為 2026-10-04 的舊狀態，仍可參考：
 
 下一個安全起點（2026-10-04 晚、筆電收尾時的狀態；筆電或桌電皆可接續）：

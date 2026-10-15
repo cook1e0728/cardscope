@@ -1,0 +1,4573 @@
+{
+ "candidates": 1863,
+ "matched": 1307,
+ "unmatched": 556,
+ "matchedByGroup": {
+  "a:metadata-and-detail": 932,
+  "c:series-number-name": 303,
+  "c:series-numberless-name": 72
+ },
+ "matchedBySource": {
+  "asia-pokemon-card-official-tw": 923,
+  "tcgdex-zh-tw": 384
+ },
+ "matchedBySet": {
+  "M-P": 197,
+  "S-P": 150,
+  "S10a": 51,
+  "S10b": 8,
+  "S10P": 47,
+  "S11": 80,
+  "S11a": 48,
+  "S12": 74,
+  "S8a": 9,
+  "S8b": 1,
+  "SC1a": 1,
+  "SH": 6,
+  "SI": 8,
+  "SLD": 1,
+  "SLL": 1,
+  "SM-P": 1,
+  "SN": 1,
+  "SV-P": 140,
+  "SV1a": 30,
+  "SV1S": 30,
+  "SV1V": 30,
+  "SV2a": 3,
+  "SV2D": 28,
+  "SV2P": 28,
+  "SV3": 3,
+  "SV3a": 3,
+  "SV4a": 46,
+  "SV4K": 29,
+  "SV4M": 29,
+  "SV5a": 30,
+  "SV5K": 54,
+  "SV5M": 3,
+  "SV6": 3,
+  "SV6a": 32,
+  "SV7": 3,
+  "SV7a": 30,
+  "SV8": 32,
+  "SVAL": 2,
+  "SVAM": 2,
+  "SVAW": 2,
+  "SVB": 8,
+  "SVC": 1,
+  "SVD": 8,
+  "SVEL": 1,
+  "SVEM": 1,
+  "SVF": 8,
+  "SVHK": 2,
+  "SVHM": 2
+ },
+ "unmatchedByReason": {
+  "MULTIPLE_OFFICIAL_VERSIONS": 552,
+  "NUMBERLESS_NAME_AMBIGUOUS": 4
+ },
+ "unmatchedBySet": {
+  "M-P": 2,
+  "M2a": 118,
+  "MC": 120,
+  "SV-P": 5,
+  "SV11B": 80,
+  "SV11W": 80,
+  "SV2a": 136,
+  "SVI": 15
+ },
+ "batches": [
+  {
+   "name": "batch-01",
+   "cards": 250,
+   "first": "pokemon-official-tw-m-p-001",
+   "last": "pokemon-official-tw-s-p-122",
+   "digest": "b24249d19dde4d47aadc574d27f7ad3b278699a517fd2a061fd56ebbe9c84b49"
+  },
+  {
+   "name": "batch-02",
+   "cards": 250,
+   "first": "pokemon-official-tw-s-p-123",
+   "last": "pokemon-tcgdex-tw-s11-067",
+   "digest": "18b6c59767fa0d4e0a8f1bd1a56acf79c4b373f46be88b602629d57bc6a5c864"
+  },
+  {
+   "name": "batch-03",
+   "cards": 250,
+   "first": "pokemon-tcgdex-tw-s11-068",
+   "last": "pokemon-official-tw-sv-p-180",
+   "digest": "54de5699812055a06e500d05706dfdd94d53cd0cfaf37d04890d024ca15cb576"
+  },
+  {
+   "name": "batch-04",
+   "cards": 250,
+   "first": "pokemon-official-tw-sv-p-181",
+   "last": "pokemon-official-tw-sv4a-148",
+   "digest": "572368b22c6e8ce010088153fdb5240cc09c53fd54075b350c466de8d4795da6"
+  },
+  {
+   "name": "batch-05",
+   "cards": 250,
+   "first": "pokemon-official-tw-sv4a-149",
+   "last": "pokemon-official-tw-sv8-118",
+   "digest": "41c5905f86b71fab9ed405d380a11a67a6a7c62964bb6d6c5fbfdc3396e055a3"
+  },
+  {
+   "name": "batch-06",
+   "cards": 57,
+   "first": "pokemon-official-tw-sv8-119",
+   "last": "pokemon-tcgdex-tw-svhm-psy",
+   "digest": "ccb8f02ff776ed75596f0e3e3e7fd14f9f00baeb081c4e54d7f774d17308ffaa"
+  }
+ ],
+ "planDigest": "31afe2ff21cf58fba5c0d279cfa7b025285ba279b0c5200487fe8ba2ee0e9ce3",
+ "unmatchedCards": [
+  {
+   "cardId": "pokemon-official-tw-m-p-037",
+   "code": "M-P",
+   "number": "037",
+   "nameZh": "含羞苞",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14443|14444"
+  },
+  {
+   "cardId": "pokemon-official-tw-m-p-113",
+   "code": "M-P",
+   "number": "113",
+   "nameZh": "寶可平板",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:20089|20090"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-001",
+   "code": "M2a",
+   "number": "001",
+   "nameZh": "<阿響的>凱羅斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14661|16235|16236"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-002",
+   "code": "M2a",
+   "number": "002",
+   "nameZh": "蜻蜻蜓",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14662|16237|16238"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-004",
+   "code": "M2a",
+   "number": "004",
+   "nameZh": "刺尾蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14664|16239|16240"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-005",
+   "code": "M2a",
+   "number": "005",
+   "nameZh": "甲殼繭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14665|16241|16242"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-006",
+   "code": "M2a",
+   "number": "006",
+   "nameZh": "狩獵鳳蝶",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14666|16243|16244"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-007",
+   "code": "M2a",
+   "number": "007",
+   "nameZh": "盾甲繭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14667|16245|16246"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-008",
+   "code": "M2a",
+   "number": "008",
+   "nameZh": "毒粉蛾",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14668|16247|16248"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-009",
+   "code": "M2a",
+   "number": "009",
+   "nameZh": "竹蘭的毒薔薇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14669|16249|16250"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-010",
+   "code": "M2a",
+   "number": "010",
+   "nameZh": "<竹蘭的>羅絲雷朵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14670|16251|16252"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-011",
+   "code": "M2a",
+   "number": "011",
+   "nameZh": "含羞苞",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14671|16253|16254"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-012",
+   "code": "M2a",
+   "number": "012",
+   "nameZh": "謝米",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14672|16255|16256"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-013",
+   "code": "M2a",
+   "number": "013",
+   "nameZh": "石居蟹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14673|16257|16258"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-014",
+   "code": "M2a",
+   "number": "014",
+   "nameZh": "岩殿居蟹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14674|16259|16260"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-015",
+   "code": "M2a",
+   "number": "015",
+   "nameZh": "<火箭隊的>團珠蛛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14675|16261|16262"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-016",
+   "code": "M2a",
+   "number": "016",
+   "nameZh": "<火箭隊的>操陷蛛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14676|16263|16264"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-018",
+   "code": "M2a",
+   "number": "018",
+   "nameZh": "<阿響的>熔岩蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14678|16265|16266"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-019",
+   "code": "M2a",
+   "number": "019",
+   "nameZh": "<阿響的>熔岩蝸牛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14679|16267|16268"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-020",
+   "code": "M2a",
+   "number": "020",
+   "nameZh": "炎帝",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14680|16269|16270"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-022",
+   "code": "M2a",
+   "number": "022",
+   "nameZh": "呆火駝",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14682|16271|16272"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-023",
+   "code": "M2a",
+   "number": "023",
+   "nameZh": "噴火駝",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14683|16273|16274"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-024",
+   "code": "M2a",
+   "number": "024",
+   "nameZh": "暖暖豬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14684|16275|16276"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-025",
+   "code": "M2a",
+   "number": "025",
+   "nameZh": "炒炒豬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14685|16277|16278"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-026",
+   "code": "M2a",
+   "number": "026",
+   "nameZh": "炎武王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14686|16279|16280"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-027",
+   "code": "M2a",
+   "number": "027",
+   "nameZh": "N的火紅不倒翁",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14687|16281|16282"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-028",
+   "code": "M2a",
+   "number": "028",
+   "nameZh": "N的達摩狒狒",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14688|16283|16284"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-030",
+   "code": "M2a",
+   "number": "030",
+   "nameZh": "炭小侍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14690|16285|16286"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-032",
+   "code": "M2a",
+   "number": "032",
+   "nameZh": "可達鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14692|16287|16288"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-033",
+   "code": "M2a",
+   "number": "033",
+   "nameZh": "哥達鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14693|16289|16290"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-034",
+   "code": "M2a",
+   "number": "034",
+   "nameZh": "<火箭隊的>急凍鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14694|16291|16292"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-035",
+   "code": "M2a",
+   "number": "035",
+   "nameZh": "雪童子",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14695|16293|16294"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-037",
+   "code": "M2a",
+   "number": "037",
+   "nameZh": "N的迷你冰",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14697|16295|16296"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-038",
+   "code": "M2a",
+   "number": "038",
+   "nameZh": "N的多多冰",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14698|16297|16298"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-039",
+   "code": "M2a",
+   "number": "039",
+   "nameZh": "N的雙倍多多冰",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14699|16299|16300"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-040",
+   "code": "M2a",
+   "number": "040",
+   "nameZh": "雪吞蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14700|16301|16302"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-041",
+   "code": "M2a",
+   "number": "041",
+   "nameZh": "雪絨蛾",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14701|16303|16304"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-042",
+   "code": "M2a",
+   "number": "042",
+   "nameZh": "雪暴馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14702|16305|16306"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-043",
+   "code": "M2a",
+   "number": "043",
+   "nameZh": "古劍豹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14703|16307|16308"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-045",
+   "code": "M2a",
+   "number": "045",
+   "nameZh": "小磁怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14705|16309|16310"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-046",
+   "code": "M2a",
+   "number": "046",
+   "nameZh": "三合一磁怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14706|16311|16312"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-047",
+   "code": "M2a",
+   "number": "047",
+   "nameZh": "麻麻小魚",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14707|16313|16314"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-048",
+   "code": "M2a",
+   "number": "048",
+   "nameZh": "麻麻鰻",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14708|16315|16316"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-050",
+   "code": "M2a",
+   "number": "050",
+   "nameZh": "泥巴魚",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14710|16317|16318"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-052",
+   "code": "M2a",
+   "number": "052",
+   "nameZh": "傘電蜥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14712|16319|16320"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-053",
+   "code": "M2a",
+   "number": "053",
+   "nameZh": "光電傘蜥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14713|16321|16322"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-054",
+   "code": "M2a",
+   "number": "054",
+   "nameZh": "卡璞・鳴鳴",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14714|16323|16324"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-055",
+   "code": "M2a",
+   "number": "055",
+   "nameZh": "捷拉奧拉",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14715|16325|16326"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-056",
+   "code": "M2a",
+   "number": "056",
+   "nameZh": "奇樹的光蚪仔",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14716|16327|16328"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-058",
+   "code": "M2a",
+   "number": "058",
+   "nameZh": "奇樹的電海燕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14718|16329|16330"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-059",
+   "code": "M2a",
+   "number": "059",
+   "nameZh": "奇樹的大電海燕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14719|16331|16332"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-061",
+   "code": "M2a",
+   "number": "061",
+   "nameZh": "火箭隊的蛋蛋",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14721|16333|16334"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-062",
+   "code": "M2a",
+   "number": "062",
+   "nameZh": "火箭隊的椰蛋樹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14722|16335|16336"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-064",
+   "code": "M2a",
+   "number": "064",
+   "nameZh": "波克比",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14724|16337|16338"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-065",
+   "code": "M2a",
+   "number": "065",
+   "nameZh": "波克基古",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14725|16339|16340"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-066",
+   "code": "M2a",
+   "number": "066",
+   "nameZh": "波克基斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14726|16341|16342"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-067",
+   "code": "M2a",
+   "number": "067",
+   "nameZh": "夢妖",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14727|16343|16344"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-068",
+   "code": "M2a",
+   "number": "068",
+   "nameZh": "夢妖魔",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14728|16345|16346"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-069",
+   "code": "M2a",
+   "number": "069",
+   "nameZh": "拉魯拉絲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14729|16347|16348"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-070",
+   "code": "M2a",
+   "number": "070",
+   "nameZh": "奇魯莉安",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14730|16349|16350"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-072",
+   "code": "M2a",
+   "number": "072",
+   "nameZh": "夜巡靈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14732|16351|16352"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-073",
+   "code": "M2a",
+   "number": "073",
+   "nameZh": "彷徨夜靈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14733|16353|16354"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-074",
+   "code": "M2a",
+   "number": "074",
+   "nameZh": "黑夜魔靈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14734|16355|16356"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-076",
+   "code": "M2a",
+   "number": "076",
+   "nameZh": "洛托姆",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14736|16357|16358"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-077",
+   "code": "M2a",
+   "number": "077",
+   "nameZh": "赫普的小木靈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14737|16359|16360"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-078",
+   "code": "M2a",
+   "number": "078",
+   "nameZh": "赫普的朽木妖",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14738|16361|16362"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-079",
+   "code": "M2a",
+   "number": "079",
+   "nameZh": "<火箭隊的>謎擬Q",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14739|16363|16364"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-080",
+   "code": "M2a",
+   "number": "080",
+   "nameZh": "靈幽馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14740|16365|16366"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-081",
+   "code": "M2a",
+   "number": "081",
+   "nameZh": "願增猿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14741|16367|16368"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-082",
+   "code": "M2a",
+   "number": "082",
+   "nameZh": "火箭隊的地鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14742|16369|16370"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-083",
+   "code": "M2a",
+   "number": "083",
+   "nameZh": "火箭隊的三地鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14743|16371|16372"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-084",
+   "code": "M2a",
+   "number": "084",
+   "nameZh": "瑪沙那",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14744|16373|16374"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-085",
+   "code": "M2a",
+   "number": "085",
+   "nameZh": "恰雷姆",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14745|16375|16376"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-086",
+   "code": "M2a",
+   "number": "086",
+   "nameZh": "月石",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14746|16377|16378"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-087",
+   "code": "M2a",
+   "number": "087",
+   "nameZh": "太陽岩",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14747|16379|16380"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-088",
+   "code": "M2a",
+   "number": "088",
+   "nameZh": "竹蘭的圓陸鯊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14748|16381|16382"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-089",
+   "code": "M2a",
+   "number": "089",
+   "nameZh": "竹蘭的尖牙陸鯊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14749|16383|16384"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-091",
+   "code": "M2a",
+   "number": "091",
+   "nameZh": "利歐路",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14751|16385|16386"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-093",
+   "code": "M2a",
+   "number": "093",
+   "nameZh": "頑皮熊貓",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14753|16387|16388"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-095",
+   "code": "M2a",
+   "number": "095",
+   "nameZh": "小炭仔",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14755|16389|16390"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-096",
+   "code": "M2a",
+   "number": "096",
+   "nameZh": "大炭車",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14756|16391|16392"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-097",
+   "code": "M2a",
+   "number": "097",
+   "nameZh": "巨炭山",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14757|16393|16394"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-098",
+   "code": "M2a",
+   "number": "098",
+   "nameZh": "夠讚狗",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14758|16395|16396"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-099",
+   "code": "M2a",
+   "number": "099",
+   "nameZh": "火箭隊的超音蝠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14759|16397|16398"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-100",
+   "code": "M2a",
+   "number": "100",
+   "nameZh": "火箭隊的大嘴蝠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14760|16399|16400"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-102",
+   "code": "M2a",
+   "number": "102",
+   "nameZh": "<火箭隊的>黑暗鴉",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14762|16401|16402"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-103",
+   "code": "M2a",
+   "number": "103",
+   "nameZh": "火箭隊的烏鴉頭頭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14763|16403|16404"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-104",
+   "code": "M2a",
+   "number": "104",
+   "nameZh": "<火箭隊的>狃拉",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14764|16405|16406"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-105",
+   "code": "M2a",
+   "number": "105",
+   "nameZh": "伽勒爾 蛇紋熊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14765|16407|16408"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-106",
+   "code": "M2a",
+   "number": "106",
+   "nameZh": "伽勒爾 直衝熊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14766|16409|16410"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-107",
+   "code": "M2a",
+   "number": "107",
+   "nameZh": "伽勒爾 堵攔熊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14767|16411|16412"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-108",
+   "code": "M2a",
+   "number": "108",
+   "nameZh": "<竹蘭的>花岩怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14768|16413|16414"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-109",
+   "code": "M2a",
+   "number": "109",
+   "nameZh": "滑滑小子",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14769|16415|16416"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-111",
+   "code": "M2a",
+   "number": "111",
+   "nameZh": "N的索羅亞",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14771|16417|16418"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-113",
+   "code": "M2a",
+   "number": "113",
+   "nameZh": "流氓熊貓",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14773|16419|16420"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-115",
+   "code": "M2a",
+   "number": "115",
+   "nameZh": "桃歹郎",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14775|16421|16422"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-116",
+   "code": "M2a",
+   "number": "116",
+   "nameZh": "駒刀小兵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14776|16423|16424"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-117",
+   "code": "M2a",
+   "number": "117",
+   "nameZh": "劈斬司令",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14777|16425|16426"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-118",
+   "code": "M2a",
+   "number": "118",
+   "nameZh": "仆斬將軍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14778|16427|16428"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-120",
+   "code": "M2a",
+   "number": "120",
+   "nameZh": "瑪機雅娜",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14780|16429|16430"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-121",
+   "code": "M2a",
+   "number": "121",
+   "nameZh": "鋁鋼龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14781|16431|16432"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-124",
+   "code": "M2a",
+   "number": "124",
+   "nameZh": "迷你龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14784|16433|16434"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-125",
+   "code": "M2a",
+   "number": "125",
+   "nameZh": "哈克龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14785|16435|16436"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-127",
+   "code": "M2a",
+   "number": "127",
+   "nameZh": "烈空坐",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14787|16437|16438"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-128",
+   "code": "M2a",
+   "number": "128",
+   "nameZh": "N的萊希拉姆",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14788|16439|16440"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-129",
+   "code": "M2a",
+   "number": "129",
+   "nameZh": "N的捷克羅姆",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14789|16441|16442"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-130",
+   "code": "M2a",
+   "number": "130",
+   "nameZh": "嗡蝠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14790|16443|16444"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-131",
+   "code": "M2a",
+   "number": "131",
+   "nameZh": "音波龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14791|16445|16446"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-132",
+   "code": "M2a",
+   "number": "132",
+   "nameZh": "多龍梅西亞",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14792|16447|16448"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-133",
+   "code": "M2a",
+   "number": "133",
+   "nameZh": "多龍奇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14793|16449|16450"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-135",
+   "code": "M2a",
+   "number": "135",
+   "nameZh": "米立龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14795|16451|16452"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-136",
+   "code": "M2a",
+   "number": "136",
+   "nameZh": "赫普的卡比獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14796|16453|16454"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-137",
+   "code": "M2a",
+   "number": "137",
+   "nameZh": "咕咕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14797|16455|16456"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-138",
+   "code": "M2a",
+   "number": "138",
+   "nameZh": "貓頭夜鷹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14798|16457|16458"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-139",
+   "code": "M2a",
+   "number": "139",
+   "nameZh": "旋轉洛托姆",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14799|16459|16460"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-140",
+   "code": "M2a",
+   "number": "140",
+   "nameZh": "爆炸頭水牛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14800|16461|16462"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-141",
+   "code": "M2a",
+   "number": "141",
+   "nameZh": "赫普的毛辮羊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14801|16463|16464"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-142",
+   "code": "M2a",
+   "number": "142",
+   "nameZh": "赫普的毛毛角羊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14802|16465|16466"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-143",
+   "code": "M2a",
+   "number": "143",
+   "nameZh": "赫普的古月鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14803|16467|16468"
+  },
+  {
+   "cardId": "pokemon-official-tw-m2a-144",
+   "code": "M2a",
+   "number": "144",
+   "nameZh": "太樂巴戈斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:14804|16469|16470"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-016",
+   "code": "MC",
+   "number": "016",
+   "nameZh": "菊草葉",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16487|18206"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-017",
+   "code": "MC",
+   "number": "017",
+   "nameZh": "月桂葉",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16488|18207"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-018",
+   "code": "MC",
+   "number": "018",
+   "nameZh": "超級大竺葵ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16489|18208"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-030",
+   "code": "MC",
+   "number": "030",
+   "nameZh": "毒薔薇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16501|18209"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-031",
+   "code": "MC",
+   "number": "031",
+   "nameZh": "羅絲雷朵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16502|18210"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-052",
+   "code": "MC",
+   "number": "052",
+   "nameZh": "鐵蟻ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16523|18211"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-054",
+   "code": "MC",
+   "number": "054",
+   "nameZh": "畢力吉翁",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16525|18212"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-061",
+   "code": "MC",
+   "number": "061",
+   "nameZh": "卡璞・哞哞",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16532|18213"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-069",
+   "code": "MC",
+   "number": "069",
+   "nameZh": "迷你芙",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16540|18214"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-070",
+   "code": "MC",
+   "number": "070",
+   "nameZh": "奧利紐",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16541|18215"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-071",
+   "code": "MC",
+   "number": "071",
+   "nameZh": "奧利瓦ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16542|18216"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-077",
+   "code": "MC",
+   "number": "077",
+   "nameZh": "鐵斑葉ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16548|18217"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-080",
+   "code": "MC",
+   "number": "080",
+   "nameZh": "厄鬼椪 碧草面具",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16551|18218"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-083",
+   "code": "MC",
+   "number": "083",
+   "nameZh": "小火龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16554|18219"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-084",
+   "code": "MC",
+   "number": "084",
+   "nameZh": "火恐龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16555|18220"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-085",
+   "code": "MC",
+   "number": "085",
+   "nameZh": "超級噴火龍Yex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16556|18221"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-087",
+   "code": "MC",
+   "number": "087",
+   "nameZh": "小火馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16558|18222"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-094",
+   "code": "MC",
+   "number": "094",
+   "nameZh": "火伊布ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16565|18223"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-101",
+   "code": "MC",
+   "number": "101",
+   "nameZh": "煤炭龜",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16572|18224"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-107",
+   "code": "MC",
+   "number": "107",
+   "nameZh": "比克提尼",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16578|18225"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-109",
+   "code": "MC",
+   "number": "109",
+   "nameZh": "暖暖豬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16580|18226"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-111",
+   "code": "MC",
+   "number": "111",
+   "nameZh": "炒炒豬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16582|18227"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-113",
+   "code": "MC",
+   "number": "113",
+   "nameZh": "超級炎武王ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16584|18228"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-114",
+   "code": "MC",
+   "number": "114",
+   "nameZh": "爆香猴",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16585|18229"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-115",
+   "code": "MC",
+   "number": "115",
+   "nameZh": "爆香猿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16586|18230"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-126",
+   "code": "MC",
+   "number": "126",
+   "nameZh": "萊希拉姆ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16597|18231"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-127",
+   "code": "MC",
+   "number": "127",
+   "nameZh": "小獅獅",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16598|18232"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-128",
+   "code": "MC",
+   "number": "128",
+   "nameZh": "火炎獅",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16599|18233"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-129",
+   "code": "MC",
+   "number": "129",
+   "nameZh": "波爾凱尼恩ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16600|18234"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-145",
+   "code": "MC",
+   "number": "145",
+   "nameZh": "炭小侍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16616|18235"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-146",
+   "code": "MC",
+   "number": "146",
+   "nameZh": "紅蓮鎧騎ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16617|18236"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-162",
+   "code": "MC",
+   "number": "162",
+   "nameZh": "冰伊布ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16633|18237"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-165",
+   "code": "MC",
+   "number": "165",
+   "nameZh": "小鋸鱷",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16636|18238"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-167",
+   "code": "MC",
+   "number": "167",
+   "nameZh": "藍鱷",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16638|18239"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-169",
+   "code": "MC",
+   "number": "169",
+   "nameZh": "超級大力鱷ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16640|18240"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-192",
+   "code": "MC",
+   "number": "192",
+   "nameZh": "雷吉艾斯ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16663|18241"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-203",
+   "code": "MC",
+   "number": "203",
+   "nameZh": "酋雷姆ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16674|18242"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-204",
+   "code": "MC",
+   "number": "204",
+   "nameZh": "闇黑酋雷姆ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16675|18243"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-205",
+   "code": "MC",
+   "number": "205",
+   "nameZh": "凱路迪歐ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16676|18244"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-211",
+   "code": "MC",
+   "number": "211",
+   "nameZh": "潤水鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16682|18245"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-212",
+   "code": "MC",
+   "number": "212",
+   "nameZh": "湧躍鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16683|18246"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-213",
+   "code": "MC",
+   "number": "213",
+   "nameZh": "狂歡浪舞鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16684|18247"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-225",
+   "code": "MC",
+   "number": "225",
+   "nameZh": "皮卡丘",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16696|18248"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-226",
+   "code": "MC",
+   "number": "226",
+   "nameZh": "雷丘",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16697|18249"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-227",
+   "code": "MC",
+   "number": "227",
+   "nameZh": "皮卡丘ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16698|18250"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-237",
+   "code": "MC",
+   "number": "237",
+   "nameZh": "電擊魔獸ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16708|18251"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-253",
+   "code": "MC",
+   "number": "253",
+   "nameZh": "電飛鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16724|18252"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-264",
+   "code": "MC",
+   "number": "264",
+   "nameZh": "托戈德瑪爾",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16735|18253"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-270",
+   "code": "MC",
+   "number": "270",
+   "nameZh": "莫魯貝可",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16741|18254"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-273",
+   "code": "MC",
+   "number": "273",
+   "nameZh": "<奇樹的>光蚪仔",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16744|18255"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-274",
+   "code": "MC",
+   "number": "274",
+   "nameZh": "<奇樹的>電肚蛙ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16745|18256"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-278",
+   "code": "MC",
+   "number": "278",
+   "nameZh": "<奇樹的>電海燕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16749|18257"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-279",
+   "code": "MC",
+   "number": "279",
+   "nameZh": "<奇樹的>大電海燕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16750|18258"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-284",
+   "code": "MC",
+   "number": "284",
+   "nameZh": "密勒頓ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16755|18259"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-287",
+   "code": "MC",
+   "number": "287",
+   "nameZh": "<莉莉艾的>皮皮ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16758|18260"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-297",
+   "code": "MC",
+   "number": "297",
+   "nameZh": "瑪力露麗ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16768|18261"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-298",
+   "code": "MC",
+   "number": "298",
+   "nameZh": "太陽伊布ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16769|18262"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-312",
+   "code": "MC",
+   "number": "312",
+   "nameZh": "拉帝亞斯ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16783|18263"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-313",
+   "code": "MC",
+   "number": "313",
+   "nameZh": "拉帝歐斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16784|18264"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-349",
+   "code": "MC",
+   "number": "349",
+   "nameZh": "墓仔狗",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16820|18265"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-351",
+   "code": "MC",
+   "number": "351",
+   "nameZh": "墓揚犬ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16822|18266"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-368",
+   "code": "MC",
+   "number": "368",
+   "nameZh": "瑪沙那",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16839|18267"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-369",
+   "code": "MC",
+   "number": "369",
+   "nameZh": "恰雷姆",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16840|18268"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-374",
+   "code": "MC",
+   "number": "374",
+   "nameZh": "雷吉洛克ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16845|18269"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-394",
+   "code": "MC",
+   "number": "394",
+   "nameZh": "泥巴魚ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16865|18270"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-421",
+   "code": "MC",
+   "number": "421",
+   "nameZh": "毛崖蟹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16892|18271"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-425",
+   "code": "MC",
+   "number": "425",
+   "nameZh": "故勒頓ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16896|18272"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-427",
+   "code": "MC",
+   "number": "427",
+   "nameZh": "厄鬼椪 礎石面具",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16898|18273"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-429",
+   "code": "MC",
+   "number": "429",
+   "nameZh": "鐵磐岩ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16900|18274"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-437",
+   "code": "MC",
+   "number": "437",
+   "nameZh": "<火箭隊的>尼多王ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16908|18275"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-440",
+   "code": "MC",
+   "number": "440",
+   "nameZh": "<火箭隊的>叉字蝠ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16911|18276"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-446",
+   "code": "MC",
+   "number": "446",
+   "nameZh": "月亮伊布ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16917|18277"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-456",
+   "code": "MC",
+   "number": "456",
+   "nameZh": "達克萊伊ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16927|18278"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-474",
+   "code": "MC",
+   "number": "474",
+   "nameZh": "禿鷹丫頭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16945|18279"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-475",
+   "code": "MC",
+   "number": "475",
+   "nameZh": "禿鷹娜ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16946|18280"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-484",
+   "code": "MC",
+   "number": "484",
+   "nameZh": "<派帕的>獒教父ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16955|18281"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-492",
+   "code": "MC",
+   "number": "492",
+   "nameZh": "巨鉗螳螂ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16963|18282"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-499",
+   "code": "MC",
+   "number": "499",
+   "nameZh": "雷吉斯奇魯ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16970|18283"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-502",
+   "code": "MC",
+   "number": "502",
+   "nameZh": "帝牙盧卡",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16973|18284"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-512",
+   "code": "MC",
+   "number": "512",
+   "nameZh": "蓋諾賽克特ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16983|18285"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-514",
+   "code": "MC",
+   "number": "514",
+   "nameZh": "托戈德瑪爾ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16985|18286"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-521",
+   "code": "MC",
+   "number": "521",
+   "nameZh": "銅象",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16992|18287"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-522",
+   "code": "MC",
+   "number": "522",
+   "nameZh": "大王銅象",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:16993|18288"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-536",
+   "code": "MC",
+   "number": "536",
+   "nameZh": "鐵頭殼",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17007|18289"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-551",
+   "code": "MC",
+   "number": "551",
+   "nameZh": "故勒頓ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17022|18290"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-564",
+   "code": "MC",
+   "number": "564",
+   "nameZh": "伊布",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17035|18291"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-568",
+   "code": "MC",
+   "number": "568",
+   "nameZh": "卡比獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17039|18292"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-579",
+   "code": "MC",
+   "number": "579",
+   "nameZh": "傲骨燕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17050|18293"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-580",
+   "code": "MC",
+   "number": "580",
+   "nameZh": "大王燕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17051|18294"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-587",
+   "code": "MC",
+   "number": "587",
+   "nameZh": "貓鼬斬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17058|18295"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-588",
+   "code": "MC",
+   "number": "588",
+   "nameZh": "貓鼬斬ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17059|18296"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-593",
+   "code": "MC",
+   "number": "593",
+   "nameZh": "捲捲耳",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17064|18297"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-594",
+   "code": "MC",
+   "number": "594",
+   "nameZh": "長耳兔",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17065|18298"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-595",
+   "code": "MC",
+   "number": "595",
+   "nameZh": "魅力喵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17066|18299"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-596",
+   "code": "MC",
+   "number": "596",
+   "nameZh": "東施喵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17067|18300"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-597",
+   "code": "MC",
+   "number": "597",
+   "nameZh": "聒噪鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17068|18301"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-605",
+   "code": "MC",
+   "number": "605",
+   "nameZh": "爆炸頭水牛ex",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17076|18302"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-621",
+   "code": "MC",
+   "number": "621",
+   "nameZh": "老翁龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17092|18303"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-626",
+   "code": "MC",
+   "number": "626",
+   "nameZh": "怒鸚哥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17097|18304"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-627",
+   "code": "MC",
+   "number": "627",
+   "nameZh": "摩托蜥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17098|18305"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-639",
+   "code": "MC",
+   "number": "639",
+   "nameZh": "能量輸送",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17110|18306"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-643",
+   "code": "MC",
+   "number": "643",
+   "nameZh": "傷藥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17114|18307"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-644",
+   "code": "MC",
+   "number": "644",
+   "nameZh": "粉碎之錘",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17115|18308"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-648",
+   "code": "MC",
+   "number": "648",
+   "nameZh": "好友寶芬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17119|18309"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-651",
+   "code": "MC",
+   "number": "651",
+   "nameZh": "高級球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17122|18310"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-655",
+   "code": "MC",
+   "number": "655",
+   "nameZh": "神奇糖果",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17126|18311"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-662",
+   "code": "MC",
+   "number": "662",
+   "nameZh": "寶可平板",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17133|18312"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-663",
+   "code": "MC",
+   "number": "663",
+   "nameZh": "寶可夢交替",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17134|18313"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-665",
+   "code": "MC",
+   "number": "665",
+   "nameZh": "寶可夢捕捉器",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17136|18314"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-669",
+   "code": "MC",
+   "number": "669",
+   "nameZh": "精靈球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17140|18315"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-679",
+   "code": "MC",
+   "number": "679",
+   "nameZh": "反擊增幅器",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17150|18316"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-688",
+   "code": "MC",
+   "number": "688",
+   "nameZh": "氣球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17159|18317"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-689",
+   "code": "MC",
+   "number": "689",
+   "nameZh": "猛攻手鐲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17160|18318"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-694",
+   "code": "MC",
+   "number": "694",
+   "nameZh": "艾莉絲的鬥志",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17165|18319"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-698",
+   "code": "MC",
+   "number": "698",
+   "nameZh": "暗碼迷的解讀",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17169|18320"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-700",
+   "code": "MC",
+   "number": "700",
+   "nameZh": "女服務生",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17171|18321"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-702",
+   "code": "MC",
+   "number": "702",
+   "nameZh": "蓋伊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17173|18322"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-711",
+   "code": "MC",
+   "number": "711",
+   "nameZh": "裁判",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17182|18323"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-724",
+   "code": "MC",
+   "number": "724",
+   "nameZh": "老大的指令",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17195|18324"
+  },
+  {
+   "cardId": "pokemon-official-tw-mc-729",
+   "code": "MC",
+   "number": "729",
+   "nameZh": "莉莉艾的決意",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:17200|18325"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv-p-230",
+   "code": "SV-P",
+   "number": "230",
+   "nameZh": "好友寶芬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12938|12942"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv-p-no0",
+   "code": "SV-P",
+   "number": "no0",
+   "nameZh": "樂園度假地",
+   "group": "c",
+   "reason": "NUMBERLESS_NAME_AMBIGUOUS:8736|18358|18359"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv-p-no1",
+   "code": "SV-P",
+   "number": "no1",
+   "nameZh": "勝利之證(冠軍)",
+   "group": "c",
+   "reason": "NUMBERLESS_NAME_AMBIGUOUS:9025|9026|9027|12564|12565|12566|12578|12579|12580|12939|12940|12941"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv-p-no2",
+   "code": "SV-P",
+   "number": "no2",
+   "nameZh": "勝利之證(亞軍)",
+   "group": "c",
+   "reason": "NUMBERLESS_NAME_AMBIGUOUS:9025|9026|9027|12564|12565|12566|12578|12579|12580|12939|12940|12941"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv-p-no3",
+   "code": "SV-P",
+   "number": "no3",
+   "nameZh": "勝利之證(季軍)",
+   "group": "c",
+   "reason": "NUMBERLESS_NAME_AMBIGUOUS:9025|9026|9027|12564|12565|12566|12578|12579|12580|12939|12940|12941"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-001",
+   "code": "SV11B",
+   "number": "001",
+   "nameZh": "藤藤蛇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12943|13868"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-002",
+   "code": "SV11B",
+   "number": "002",
+   "nameZh": "青藤蛇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12944|13869"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-004",
+   "code": "SV11B",
+   "number": "004",
+   "nameZh": "花椰猴",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12946|13871"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-005",
+   "code": "SV11B",
+   "number": "005",
+   "nameZh": "花椰猿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12947|13872"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-006",
+   "code": "SV11B",
+   "number": "006",
+   "nameZh": "百合根娃娃",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12948|13873"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-007",
+   "code": "SV11B",
+   "number": "007",
+   "nameZh": "裙兒小姐",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12949|13874"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-008",
+   "code": "SV11B",
+   "number": "008",
+   "nameZh": "沙鈴仙人掌",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12950|13875"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-009",
+   "code": "SV11B",
+   "number": "009",
+   "nameZh": "蓋蓋蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12951|13876"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-010",
+   "code": "SV11B",
+   "number": "010",
+   "nameZh": "哎呀球菇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12952|13877"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-011",
+   "code": "SV11B",
+   "number": "011",
+   "nameZh": "敗露球菇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12953|13878"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-012",
+   "code": "SV11B",
+   "number": "012",
+   "nameZh": "比克提尼",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12954|13879"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-013",
+   "code": "SV11B",
+   "number": "013",
+   "nameZh": "火紅不倒翁",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12955|13880"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-014",
+   "code": "SV11B",
+   "number": "014",
+   "nameZh": "達摩狒狒",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12956|13881"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-015",
+   "code": "SV11B",
+   "number": "015",
+   "nameZh": "燭光靈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12957|13882"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-016",
+   "code": "SV11B",
+   "number": "016",
+   "nameZh": "燈火幽靈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12958|13883"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-017",
+   "code": "SV11B",
+   "number": "017",
+   "nameZh": "水晶燈火靈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12959|13884"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-018",
+   "code": "SV11B",
+   "number": "018",
+   "nameZh": "燃燒蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12960|13885"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-019",
+   "code": "SV11B",
+   "number": "019",
+   "nameZh": "火神蛾",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12961|13886"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-020",
+   "code": "SV11B",
+   "number": "020",
+   "nameZh": "冷水猴",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12962|13887"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-021",
+   "code": "SV11B",
+   "number": "021",
+   "nameZh": "冷水猿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12963|13888"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-022",
+   "code": "SV11B",
+   "number": "022",
+   "nameZh": "圓蝌蚪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12964|13889"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-023",
+   "code": "SV11B",
+   "number": "023",
+   "nameZh": "藍蟾蜍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12965|13890"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-024",
+   "code": "SV11B",
+   "number": "024",
+   "nameZh": "蟾蜍王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12966|13891"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-025",
+   "code": "SV11B",
+   "number": "025",
+   "nameZh": "原蓋海龜",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12967|13892"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-026",
+   "code": "SV11B",
+   "number": "026",
+   "nameZh": "肋骨海龜",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12968|13893"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-027",
+   "code": "SV11B",
+   "number": "027",
+   "nameZh": "保母曼波",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12969|13894"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-028",
+   "code": "SV11B",
+   "number": "028",
+   "nameZh": "噴嚏熊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12970|13895"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-029",
+   "code": "SV11B",
+   "number": "029",
+   "nameZh": "凍原熊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12971|13896"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-030",
+   "code": "SV11B",
+   "number": "030",
+   "nameZh": "幾何雪花",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12972|13897"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-032",
+   "code": "SV11B",
+   "number": "032",
+   "nameZh": "電飛鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12974|13899"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-033",
+   "code": "SV11B",
+   "number": "033",
+   "nameZh": "麻麻小魚",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12975|13900"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-034",
+   "code": "SV11B",
+   "number": "034",
+   "nameZh": "麻麻鰻",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12976|13901"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-035",
+   "code": "SV11B",
+   "number": "035",
+   "nameZh": "麻麻鰻魚王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12977|13902"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-036",
+   "code": "SV11B",
+   "number": "036",
+   "nameZh": "雷電雲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12978|13903"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-038",
+   "code": "SV11B",
+   "number": "038",
+   "nameZh": "食夢夢",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12980|13905"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-039",
+   "code": "SV11B",
+   "number": "039",
+   "nameZh": "夢夢蝕",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12981|13906"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-040",
+   "code": "SV11B",
+   "number": "040",
+   "nameZh": "單卵細胞球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12982|13907"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-041",
+   "code": "SV11B",
+   "number": "041",
+   "nameZh": "雙卵細胞球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12983|13908"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-042",
+   "code": "SV11B",
+   "number": "042",
+   "nameZh": "人造細胞卵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12984|13909"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-043",
+   "code": "SV11B",
+   "number": "043",
+   "nameZh": "小灰怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12985|13910"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-044",
+   "code": "SV11B",
+   "number": "044",
+   "nameZh": "大宇怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12986|13911"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-045",
+   "code": "SV11B",
+   "number": "045",
+   "nameZh": "泥偶小人",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12987|13912"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-046",
+   "code": "SV11B",
+   "number": "046",
+   "nameZh": "泥偶巨人",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12988|13913"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-048",
+   "code": "SV11B",
+   "number": "048",
+   "nameZh": "螺釘地鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12990|13915"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-050",
+   "code": "SV11B",
+   "number": "050",
+   "nameZh": "搬運小匠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12992|13917"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-051",
+   "code": "SV11B",
+   "number": "051",
+   "nameZh": "鐵骨土人",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12993|13918"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-052",
+   "code": "SV11B",
+   "number": "052",
+   "nameZh": "修建老匠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12994|13919"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-053",
+   "code": "SV11B",
+   "number": "053",
+   "nameZh": "投摔鬼",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12995|13920"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-054",
+   "code": "SV11B",
+   "number": "054",
+   "nameZh": "石居蟹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12996|13921"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-055",
+   "code": "SV11B",
+   "number": "055",
+   "nameZh": "岩殿居蟹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12997|13922"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-056",
+   "code": "SV11B",
+   "number": "056",
+   "nameZh": "土地雲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12998|13923"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-057",
+   "code": "SV11B",
+   "number": "057",
+   "nameZh": "百足蜈蚣",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:12999|13924"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-058",
+   "code": "SV11B",
+   "number": "058",
+   "nameZh": "車輪毬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13000|13925"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-059",
+   "code": "SV11B",
+   "number": "059",
+   "nameZh": "蜈蚣王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13001|13926"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-060",
+   "code": "SV11B",
+   "number": "060",
+   "nameZh": "黑眼鱷",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13002|13927"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-061",
+   "code": "SV11B",
+   "number": "061",
+   "nameZh": "混混鱷",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13003|13928"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-062",
+   "code": "SV11B",
+   "number": "062",
+   "nameZh": "流氓鱷",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13004|13929"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-063",
+   "code": "SV11B",
+   "number": "063",
+   "nameZh": "禿鷹丫頭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13005|13930"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-064",
+   "code": "SV11B",
+   "number": "064",
+   "nameZh": "禿鷹娜",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13006|13931"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-065",
+   "code": "SV11B",
+   "number": "065",
+   "nameZh": "騎士蝸牛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13007|13932"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-066",
+   "code": "SV11B",
+   "number": "066",
+   "nameZh": "駒刀小兵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13008|13933"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-067",
+   "code": "SV11B",
+   "number": "067",
+   "nameZh": "劈斬司令",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13009|13934"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-068",
+   "code": "SV11B",
+   "number": "068",
+   "nameZh": "勾帕路翁",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13010|13935"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-070",
+   "code": "SV11B",
+   "number": "070",
+   "nameZh": "牙牙",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13012|13937"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-071",
+   "code": "SV11B",
+   "number": "071",
+   "nameZh": "斧牙龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13013|13938"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-072",
+   "code": "SV11B",
+   "number": "072",
+   "nameZh": "雙斧戰龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13014|13939"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-073",
+   "code": "SV11B",
+   "number": "073",
+   "nameZh": "豆豆鴿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13015|13940"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-074",
+   "code": "SV11B",
+   "number": "074",
+   "nameZh": "咕咕鴿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13016|13941"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-075",
+   "code": "SV11B",
+   "number": "075",
+   "nameZh": "高傲雉雞",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13017|13942"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-076",
+   "code": "SV11B",
+   "number": "076",
+   "nameZh": "差不多娃娃",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13018|13943"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-077",
+   "code": "SV11B",
+   "number": "077",
+   "nameZh": "泡沫栗鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13019|13944"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-078",
+   "code": "SV11B",
+   "number": "078",
+   "nameZh": "奇諾栗鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13020|13945"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-079",
+   "code": "SV11B",
+   "number": "079",
+   "nameZh": "能量硬幣",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13021|13946"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-080",
+   "code": "SV11B",
+   "number": "080",
+   "nameZh": "陳舊的背蓋化石",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13022|13947"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-081",
+   "code": "SV11B",
+   "number": "081",
+   "nameZh": "寶可裝置3.0",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13023|13948"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-082",
+   "code": "SV11B",
+   "number": "082",
+   "nameZh": "氣球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13024|13949"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-083",
+   "code": "SV11B",
+   "number": "083",
+   "nameZh": "N的謀劃",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13025|13950"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-084",
+   "code": "SV11B",
+   "number": "084",
+   "nameZh": "博士的研究",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13026|13951"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-085",
+   "code": "SV11B",
+   "number": "085",
+   "nameZh": "真菰",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13027|13952"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11b-086",
+   "code": "SV11B",
+   "number": "086",
+   "nameZh": "稜鏡能量",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13028|13953"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-001",
+   "code": "SV11W",
+   "number": "001",
+   "nameZh": "蟲寶包",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13029|13358"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-002",
+   "code": "SV11W",
+   "number": "002",
+   "nameZh": "寶包繭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13030|13359"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-003",
+   "code": "SV11W",
+   "number": "003",
+   "nameZh": "保母蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13031|13360"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-004",
+   "code": "SV11W",
+   "number": "004",
+   "nameZh": "木棉球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13032|13361"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-006",
+   "code": "SV11W",
+   "number": "006",
+   "nameZh": "四季鹿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13034|13363"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-007",
+   "code": "SV11W",
+   "number": "007",
+   "nameZh": "萌芽鹿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13035|13364"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-008",
+   "code": "SV11W",
+   "number": "008",
+   "nameZh": "小嘴蝸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13036|13365"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-009",
+   "code": "SV11W",
+   "number": "009",
+   "nameZh": "敏捷蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13037|13366"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-010",
+   "code": "SV11W",
+   "number": "010",
+   "nameZh": "畢力吉翁",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13038|13367"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-011",
+   "code": "SV11W",
+   "number": "011",
+   "nameZh": "暖暖豬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13039|13368"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-012",
+   "code": "SV11W",
+   "number": "012",
+   "nameZh": "炒炒豬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13040|13369"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-013",
+   "code": "SV11W",
+   "number": "013",
+   "nameZh": "炎武王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13041|13370"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-014",
+   "code": "SV11W",
+   "number": "014",
+   "nameZh": "爆香猴",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13042|13371"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-015",
+   "code": "SV11W",
+   "number": "015",
+   "nameZh": "爆香猿",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13043|13372"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-016",
+   "code": "SV11W",
+   "number": "016",
+   "nameZh": "熔蟻獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13044|13373"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-018",
+   "code": "SV11W",
+   "number": "018",
+   "nameZh": "水水獺",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13046|13375"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-019",
+   "code": "SV11W",
+   "number": "019",
+   "nameZh": "雙刃丸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13047|13376"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-020",
+   "code": "SV11W",
+   "number": "020",
+   "nameZh": "大劍鬼",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13048|13377"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-021",
+   "code": "SV11W",
+   "number": "021",
+   "nameZh": "野蠻鱸魚",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13049|13378"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-022",
+   "code": "SV11W",
+   "number": "022",
+   "nameZh": "鴨寶寶",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13050|13379"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-023",
+   "code": "SV11W",
+   "number": "023",
+   "nameZh": "舞天鵝",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13051|13380"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-024",
+   "code": "SV11W",
+   "number": "024",
+   "nameZh": "迷你冰",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13052|13381"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-025",
+   "code": "SV11W",
+   "number": "025",
+   "nameZh": "多多冰",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13053|13382"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-026",
+   "code": "SV11W",
+   "number": "026",
+   "nameZh": "雙倍多多冰",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13054|13383"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-028",
+   "code": "SV11W",
+   "number": "028",
+   "nameZh": "斑斑馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13056|13385"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-029",
+   "code": "SV11W",
+   "number": "029",
+   "nameZh": "雷電斑馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13057|13386"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-030",
+   "code": "SV11W",
+   "number": "030",
+   "nameZh": "電電蟲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13058|13387"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-031",
+   "code": "SV11W",
+   "number": "031",
+   "nameZh": "電蜘蛛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13059|13388"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-032",
+   "code": "SV11W",
+   "number": "032",
+   "nameZh": "泥巴魚",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13060|13389"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-033",
+   "code": "SV11W",
+   "number": "033",
+   "nameZh": "滾滾蝙蝠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13061|13390"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-034",
+   "code": "SV11W",
+   "number": "034",
+   "nameZh": "心蝙蝠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13062|13391"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-035",
+   "code": "SV11W",
+   "number": "035",
+   "nameZh": "象徵鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13063|13392"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-036",
+   "code": "SV11W",
+   "number": "036",
+   "nameZh": "哭哭面具",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13064|13393"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-037",
+   "code": "SV11W",
+   "number": "037",
+   "nameZh": "死神棺",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13065|13955"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-038",
+   "code": "SV11W",
+   "number": "038",
+   "nameZh": "哥德寶寶",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13066|13395"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-039",
+   "code": "SV11W",
+   "number": "039",
+   "nameZh": "哥德小童",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13067|13396"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-040",
+   "code": "SV11W",
+   "number": "040",
+   "nameZh": "哥德小姐",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13068|13397"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-041",
+   "code": "SV11W",
+   "number": "041",
+   "nameZh": "輕飄飄",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13069|13398"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-043",
+   "code": "SV11W",
+   "number": "043",
+   "nameZh": "石丸子",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13071|13400"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-044",
+   "code": "SV11W",
+   "number": "044",
+   "nameZh": "地幔岩",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13072|13401"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-045",
+   "code": "SV11W",
+   "number": "045",
+   "nameZh": "龐岩怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13073|13402"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-046",
+   "code": "SV11W",
+   "number": "046",
+   "nameZh": "打擊鬼",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13074|13403"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-047",
+   "code": "SV11W",
+   "number": "047",
+   "nameZh": "始祖小鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13075|13404"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-048",
+   "code": "SV11W",
+   "number": "048",
+   "nameZh": "始祖大鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13076|13405"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-049",
+   "code": "SV11W",
+   "number": "049",
+   "nameZh": "功夫鼬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13077|13406"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-050",
+   "code": "SV11W",
+   "number": "050",
+   "nameZh": "師父鼬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13078|13407"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-051",
+   "code": "SV11W",
+   "number": "051",
+   "nameZh": "代拉基翁",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13079|13408"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-052",
+   "code": "SV11W",
+   "number": "052",
+   "nameZh": "扒手貓",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13080|13409"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-053",
+   "code": "SV11W",
+   "number": "053",
+   "nameZh": "酷豹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13081|13410"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-054",
+   "code": "SV11W",
+   "number": "054",
+   "nameZh": "滑滑小子",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13082|13411"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-055",
+   "code": "SV11W",
+   "number": "055",
+   "nameZh": "頭巾混混",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13083|13412"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-056",
+   "code": "SV11W",
+   "number": "056",
+   "nameZh": "破破袋",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13084|13413"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-057",
+   "code": "SV11W",
+   "number": "057",
+   "nameZh": "灰塵山",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13085|13414"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-058",
+   "code": "SV11W",
+   "number": "058",
+   "nameZh": "索羅亞",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13086|13415"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-059",
+   "code": "SV11W",
+   "number": "059",
+   "nameZh": "索羅亞克",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13087|13416"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-060",
+   "code": "SV11W",
+   "number": "060",
+   "nameZh": "單首龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13088|13417"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-061",
+   "code": "SV11W",
+   "number": "061",
+   "nameZh": "雙首暴龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13089|13418"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-063",
+   "code": "SV11W",
+   "number": "063",
+   "nameZh": "種子鐵球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13091|13420"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-064",
+   "code": "SV11W",
+   "number": "064",
+   "nameZh": "堅果啞鈴",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13092|13421"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-065",
+   "code": "SV11W",
+   "number": "065",
+   "nameZh": "齒輪兒",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13093|13422"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-066",
+   "code": "SV11W",
+   "number": "066",
+   "nameZh": "齒輪組",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13094|13423"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-067",
+   "code": "SV11W",
+   "number": "067",
+   "nameZh": "齒輪怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13095|13424"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-068",
+   "code": "SV11W",
+   "number": "068",
+   "nameZh": "鐵蟻",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13096|13425"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-069",
+   "code": "SV11W",
+   "number": "069",
+   "nameZh": "赤面龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13097|13426"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-070",
+   "code": "SV11W",
+   "number": "070",
+   "nameZh": "探探鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13098|13427"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-071",
+   "code": "SV11W",
+   "number": "071",
+   "nameZh": "步哨鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13099|13428"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-072",
+   "code": "SV11W",
+   "number": "072",
+   "nameZh": "小約克",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13100|13429"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-073",
+   "code": "SV11W",
+   "number": "073",
+   "nameZh": "哈約克",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13101|13430"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-074",
+   "code": "SV11W",
+   "number": "074",
+   "nameZh": "長毛狗",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13102|13431"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-076",
+   "code": "SV11W",
+   "number": "076",
+   "nameZh": "毛頭小鷹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13104|13433"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-077",
+   "code": "SV11W",
+   "number": "077",
+   "nameZh": "勇士雄鷹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13105|13434"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-078",
+   "code": "SV11W",
+   "number": "078",
+   "nameZh": "龍捲雲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13106|13435"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-079",
+   "code": "SV11W",
+   "number": "079",
+   "nameZh": "能量回收",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13107|13436"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-080",
+   "code": "SV11W",
+   "number": "080",
+   "nameZh": "道具拆除器",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13108|13437"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-081",
+   "code": "SV11W",
+   "number": "081",
+   "nameZh": "陳舊的羽毛化石",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13109|13438"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-082",
+   "code": "SV11W",
+   "number": "082",
+   "nameZh": "猛攻手鐲",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13110|13439"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-083",
+   "code": "SV11W",
+   "number": "083",
+   "nameZh": "滑稽演員",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13111|13440"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-084",
+   "code": "SV11W",
+   "number": "084",
+   "nameZh": "黑連",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13112|13441"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-085",
+   "code": "SV11W",
+   "number": "085",
+   "nameZh": "鬥子",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13113|13442"
+  },
+  {
+   "cardId": "pokemon-official-tw-sv11w-086",
+   "code": "SV11W",
+   "number": "086",
+   "nameZh": "燃火能量",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:13114|13443"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-021",
+   "code": "SV2a",
+   "number": "021",
+   "nameZh": "烈雀",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8144|14871"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-022",
+   "code": "SV2a",
+   "number": "022",
+   "nameZh": "大嘴雀",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8145|14872"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-023",
+   "code": "SV2a",
+   "number": "023",
+   "nameZh": "阿柏蛇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8146|14873"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-025",
+   "code": "SV2a",
+   "number": "025",
+   "nameZh": "皮卡丘",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8148|14874"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-026",
+   "code": "SV2a",
+   "number": "026",
+   "nameZh": "雷丘",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8149|14875"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-027",
+   "code": "SV2a",
+   "number": "027",
+   "nameZh": "穿山鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8150|14876"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-028",
+   "code": "SV2a",
+   "number": "028",
+   "nameZh": "穿山王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8151|14877"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-029",
+   "code": "SV2a",
+   "number": "029",
+   "nameZh": "尼多蘭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8152|14878"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-030",
+   "code": "SV2a",
+   "number": "030",
+   "nameZh": "尼多娜",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8153|14879"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-031",
+   "code": "SV2a",
+   "number": "031",
+   "nameZh": "尼多后",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8154|14880"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-032",
+   "code": "SV2a",
+   "number": "032",
+   "nameZh": "尼多朗",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8155|14881"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-033",
+   "code": "SV2a",
+   "number": "033",
+   "nameZh": "尼多力諾",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8156|14882"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-034",
+   "code": "SV2a",
+   "number": "034",
+   "nameZh": "尼多王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8157|14883"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-035",
+   "code": "SV2a",
+   "number": "035",
+   "nameZh": "皮皮",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8158|14884"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-036",
+   "code": "SV2a",
+   "number": "036",
+   "nameZh": "皮可西",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8159|14885"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-037",
+   "code": "SV2a",
+   "number": "037",
+   "nameZh": "六尾",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8160|14886"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-039",
+   "code": "SV2a",
+   "number": "039",
+   "nameZh": "胖丁",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8162|14887"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-041",
+   "code": "SV2a",
+   "number": "041",
+   "nameZh": "超音蝠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8164|14888"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-042",
+   "code": "SV2a",
+   "number": "042",
+   "nameZh": "大嘴蝠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8165|14889"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-043",
+   "code": "SV2a",
+   "number": "043",
+   "nameZh": "走路草",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8166|14890"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-044",
+   "code": "SV2a",
+   "number": "044",
+   "nameZh": "臭臭花",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8167|14891"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-045",
+   "code": "SV2a",
+   "number": "045",
+   "nameZh": "霸王花",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8168|14892"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-046",
+   "code": "SV2a",
+   "number": "046",
+   "nameZh": "派拉斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8169|14893"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-047",
+   "code": "SV2a",
+   "number": "047",
+   "nameZh": "派拉斯特",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8170|14894"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-048",
+   "code": "SV2a",
+   "number": "048",
+   "nameZh": "毛球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8171|14895"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-049",
+   "code": "SV2a",
+   "number": "049",
+   "nameZh": "摩魯蛾",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8172|14896"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-050",
+   "code": "SV2a",
+   "number": "050",
+   "nameZh": "地鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8173|14897"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-051",
+   "code": "SV2a",
+   "number": "051",
+   "nameZh": "三地鼠",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8174|14898"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-052",
+   "code": "SV2a",
+   "number": "052",
+   "nameZh": "喵喵",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8175|14899"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-053",
+   "code": "SV2a",
+   "number": "053",
+   "nameZh": "貓老大",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8176|14900"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-054",
+   "code": "SV2a",
+   "number": "054",
+   "nameZh": "可達鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8177|14901"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-055",
+   "code": "SV2a",
+   "number": "055",
+   "nameZh": "哥達鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8178|14902"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-056",
+   "code": "SV2a",
+   "number": "056",
+   "nameZh": "猴怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8179|14903"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-057",
+   "code": "SV2a",
+   "number": "057",
+   "nameZh": "火爆猴",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8180|14904"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-058",
+   "code": "SV2a",
+   "number": "058",
+   "nameZh": "卡蒂狗",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8181|14905"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-059",
+   "code": "SV2a",
+   "number": "059",
+   "nameZh": "風速狗",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8182|14906"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-060",
+   "code": "SV2a",
+   "number": "060",
+   "nameZh": "蚊香蝌蚪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8183|14907"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-061",
+   "code": "SV2a",
+   "number": "061",
+   "nameZh": "蚊香君",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8184|14908"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-062",
+   "code": "SV2a",
+   "number": "062",
+   "nameZh": "蚊香泳士",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8185|14909"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-063",
+   "code": "SV2a",
+   "number": "063",
+   "nameZh": "凱西",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8186|14910"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-064",
+   "code": "SV2a",
+   "number": "064",
+   "nameZh": "勇基拉",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8187|14911"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-066",
+   "code": "SV2a",
+   "number": "066",
+   "nameZh": "腕力",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8189|14912"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-067",
+   "code": "SV2a",
+   "number": "067",
+   "nameZh": "豪力",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8190|14913"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-068",
+   "code": "SV2a",
+   "number": "068",
+   "nameZh": "怪力",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8191|14914"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-069",
+   "code": "SV2a",
+   "number": "069",
+   "nameZh": "喇叭芽",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8192|14915"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-070",
+   "code": "SV2a",
+   "number": "070",
+   "nameZh": "口呆花",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8193|14916"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-071",
+   "code": "SV2a",
+   "number": "071",
+   "nameZh": "大食花",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8194|14917"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-072",
+   "code": "SV2a",
+   "number": "072",
+   "nameZh": "瑪瑙水母",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8195|14918"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-073",
+   "code": "SV2a",
+   "number": "073",
+   "nameZh": "毒刺水母",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8196|14919"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-074",
+   "code": "SV2a",
+   "number": "074",
+   "nameZh": "小拳石",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8197|14920"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-075",
+   "code": "SV2a",
+   "number": "075",
+   "nameZh": "隆隆石",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8198|14921"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-077",
+   "code": "SV2a",
+   "number": "077",
+   "nameZh": "小火馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8200|14922"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-078",
+   "code": "SV2a",
+   "number": "078",
+   "nameZh": "烈焰馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8201|14923"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-079",
+   "code": "SV2a",
+   "number": "079",
+   "nameZh": "呆呆獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8202|14924"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-080",
+   "code": "SV2a",
+   "number": "080",
+   "nameZh": "呆殼獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8203|14925"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-081",
+   "code": "SV2a",
+   "number": "081",
+   "nameZh": "小磁怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8204|14926"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-082",
+   "code": "SV2a",
+   "number": "082",
+   "nameZh": "三合一磁怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8205|14927"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-083",
+   "code": "SV2a",
+   "number": "083",
+   "nameZh": "大蔥鴨",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8206|14928"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-084",
+   "code": "SV2a",
+   "number": "084",
+   "nameZh": "嘟嘟",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8207|14929"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-085",
+   "code": "SV2a",
+   "number": "085",
+   "nameZh": "嘟嘟利",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8208|14930"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-086",
+   "code": "SV2a",
+   "number": "086",
+   "nameZh": "小海獅",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8209|14931"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-087",
+   "code": "SV2a",
+   "number": "087",
+   "nameZh": "白海獅",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8210|14932"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-088",
+   "code": "SV2a",
+   "number": "088",
+   "nameZh": "臭泥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8211|14933"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-089",
+   "code": "SV2a",
+   "number": "089",
+   "nameZh": "臭臭泥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8212|14934"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-090",
+   "code": "SV2a",
+   "number": "090",
+   "nameZh": "大舌貝",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8213|14935"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-091",
+   "code": "SV2a",
+   "number": "091",
+   "nameZh": "刺甲貝",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8214|14936"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-092",
+   "code": "SV2a",
+   "number": "092",
+   "nameZh": "鬼斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8215|14937"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-093",
+   "code": "SV2a",
+   "number": "093",
+   "nameZh": "鬼斯通",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8216|14938"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-094",
+   "code": "SV2a",
+   "number": "094",
+   "nameZh": "耿鬼",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8217|14939"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-095",
+   "code": "SV2a",
+   "number": "095",
+   "nameZh": "大岩蛇",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8218|14940"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-096",
+   "code": "SV2a",
+   "number": "096",
+   "nameZh": "催眠貘",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8219|14941"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-097",
+   "code": "SV2a",
+   "number": "097",
+   "nameZh": "引夢貘人",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8220|14942"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-098",
+   "code": "SV2a",
+   "number": "098",
+   "nameZh": "大鉗蟹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8221|14943"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-099",
+   "code": "SV2a",
+   "number": "099",
+   "nameZh": "巨鉗蟹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8222|14944"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-100",
+   "code": "SV2a",
+   "number": "100",
+   "nameZh": "霹靂電球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8223|14945"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-101",
+   "code": "SV2a",
+   "number": "101",
+   "nameZh": "頑皮雷彈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8224|14946"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-102",
+   "code": "SV2a",
+   "number": "102",
+   "nameZh": "蛋蛋",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8225|14947"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-103",
+   "code": "SV2a",
+   "number": "103",
+   "nameZh": "椰蛋樹",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8226|14948"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-104",
+   "code": "SV2a",
+   "number": "104",
+   "nameZh": "卡拉卡拉",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8227|14949"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-105",
+   "code": "SV2a",
+   "number": "105",
+   "nameZh": "嘎啦嘎啦",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8228|14950"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-106",
+   "code": "SV2a",
+   "number": "106",
+   "nameZh": "飛腿郎",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8229|14951"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-107",
+   "code": "SV2a",
+   "number": "107",
+   "nameZh": "快拳郎",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8230|14952"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-108",
+   "code": "SV2a",
+   "number": "108",
+   "nameZh": "大舌頭",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8231|14953"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-109",
+   "code": "SV2a",
+   "number": "109",
+   "nameZh": "瓦斯彈",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8232|14954"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-110",
+   "code": "SV2a",
+   "number": "110",
+   "nameZh": "雙彈瓦斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8233|14955"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-111",
+   "code": "SV2a",
+   "number": "111",
+   "nameZh": "獨角犀牛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8234|14956"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-112",
+   "code": "SV2a",
+   "number": "112",
+   "nameZh": "鑽角犀獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8235|14957"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-113",
+   "code": "SV2a",
+   "number": "113",
+   "nameZh": "吉利蛋",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8236|14958"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-114",
+   "code": "SV2a",
+   "number": "114",
+   "nameZh": "蔓藤怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8237|14959"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-116",
+   "code": "SV2a",
+   "number": "116",
+   "nameZh": "墨海馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8239|14960"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-117",
+   "code": "SV2a",
+   "number": "117",
+   "nameZh": "海刺龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8240|14961"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-118",
+   "code": "SV2a",
+   "number": "118",
+   "nameZh": "角金魚",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8241|14962"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-119",
+   "code": "SV2a",
+   "number": "119",
+   "nameZh": "金魚王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8242|14963"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-120",
+   "code": "SV2a",
+   "number": "120",
+   "nameZh": "海星星",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8243|14964"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-121",
+   "code": "SV2a",
+   "number": "121",
+   "nameZh": "寶石海星",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8244|14965"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-122",
+   "code": "SV2a",
+   "number": "122",
+   "nameZh": "魔牆人偶",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8245|14966"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-123",
+   "code": "SV2a",
+   "number": "123",
+   "nameZh": "飛天螳螂",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8246|14967"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-125",
+   "code": "SV2a",
+   "number": "125",
+   "nameZh": "電擊獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8248|14968"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-126",
+   "code": "SV2a",
+   "number": "126",
+   "nameZh": "鴨嘴火獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8249|14969"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-127",
+   "code": "SV2a",
+   "number": "127",
+   "nameZh": "凱羅斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8250|14970"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-128",
+   "code": "SV2a",
+   "number": "128",
+   "nameZh": "肯泰羅",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8251|14971"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-129",
+   "code": "SV2a",
+   "number": "129",
+   "nameZh": "鯉魚王",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8252|14972"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-130",
+   "code": "SV2a",
+   "number": "130",
+   "nameZh": "暴鯉龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8253|14973"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-131",
+   "code": "SV2a",
+   "number": "131",
+   "nameZh": "拉普拉斯",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8254|14974"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-132",
+   "code": "SV2a",
+   "number": "132",
+   "nameZh": "百變怪",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8255|14975"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-133",
+   "code": "SV2a",
+   "number": "133",
+   "nameZh": "伊布",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8256|14976"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-134",
+   "code": "SV2a",
+   "number": "134",
+   "nameZh": "水伊布",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8257|14977"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-135",
+   "code": "SV2a",
+   "number": "135",
+   "nameZh": "雷伊布",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8258|14978"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-136",
+   "code": "SV2a",
+   "number": "136",
+   "nameZh": "火伊布",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8259|14979"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-137",
+   "code": "SV2a",
+   "number": "137",
+   "nameZh": "多邊獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8260|14980"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-138",
+   "code": "SV2a",
+   "number": "138",
+   "nameZh": "菊石獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8261|14981"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-139",
+   "code": "SV2a",
+   "number": "139",
+   "nameZh": "多刺菊石獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8262|14982"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-140",
+   "code": "SV2a",
+   "number": "140",
+   "nameZh": "化石盔",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8263|14983"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-141",
+   "code": "SV2a",
+   "number": "141",
+   "nameZh": "鐮刀盔",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8264|14984"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-142",
+   "code": "SV2a",
+   "number": "142",
+   "nameZh": "化石翼龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8265|14985"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-143",
+   "code": "SV2a",
+   "number": "143",
+   "nameZh": "卡比獸",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8266|14986"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-144",
+   "code": "SV2a",
+   "number": "144",
+   "nameZh": "急凍鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8267|14987"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-146",
+   "code": "SV2a",
+   "number": "146",
+   "nameZh": "火焰鳥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8269|14988"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-147",
+   "code": "SV2a",
+   "number": "147",
+   "nameZh": "迷你龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8270|14989"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-148",
+   "code": "SV2a",
+   "number": "148",
+   "nameZh": "哈克龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8271|14990"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-149",
+   "code": "SV2a",
+   "number": "149",
+   "nameZh": "快龍",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8272|14991"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-150",
+   "code": "SV2a",
+   "number": "150",
+   "nameZh": "超夢",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8273|14992"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-152",
+   "code": "SV2a",
+   "number": "152",
+   "nameZh": "能量貼紙",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8275|14993"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-153",
+   "code": "SV2a",
+   "number": "153",
+   "nameZh": "抓換臂",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8276|14994"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-154",
+   "code": "SV2a",
+   "number": "154",
+   "nameZh": "陳舊的貝殼化石",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8277|14995"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-155",
+   "code": "SV2a",
+   "number": "155",
+   "nameZh": "陳舊的甲殼化石",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8278|14996"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-156",
+   "code": "SV2a",
+   "number": "156",
+   "nameZh": "陳舊的秘密琥珀",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8279|14997"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-157",
+   "code": "SV2a",
+   "number": "157",
+   "nameZh": "安全護目鏡",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8280|14998"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-158",
+   "code": "SV2a",
+   "number": "158",
+   "nameZh": "大氣球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8281|14999"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-159",
+   "code": "SV2a",
+   "number": "159",
+   "nameZh": "硬硬束帶",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8282|15000"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-160",
+   "code": "SV2a",
+   "number": "160",
+   "nameZh": "吃剩的東西",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8283|15001"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-161",
+   "code": "SV2a",
+   "number": "161",
+   "nameZh": "莉佳的招待",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8284|15002"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-162",
+   "code": "SV2a",
+   "number": "162",
+   "nameZh": "坂木的領導力",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8285|15003"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-163",
+   "code": "SV2a",
+   "number": "163",
+   "nameZh": "奈奈美的幫助",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8286|15004"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-164",
+   "code": "SV2a",
+   "number": "164",
+   "nameZh": "正輝的輸送",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8287|15005"
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-165",
+   "code": "SV2a",
+   "number": "165",
+   "nameZh": "自行車道",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:8288|15006"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-005",
+   "code": "SVI",
+   "number": "005",
+   "nameZh": "原野水母",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11291|11292"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-006",
+   "code": "SVI",
+   "number": "006",
+   "nameZh": "陸地水母",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11293|11294"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-007",
+   "code": "SVI",
+   "number": "007",
+   "nameZh": "小火馬",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11295|11296"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-019",
+   "code": "SVI",
+   "number": "019",
+   "nameZh": "咩利羊",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11308|11309"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-025",
+   "code": "SVI",
+   "number": "025",
+   "nameZh": "飄飄雛",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11315|11316"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-050",
+   "code": "SVI",
+   "number": "050",
+   "nameZh": "傷藥",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11341|11342"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-052",
+   "code": "SVI",
+   "number": "052",
+   "nameZh": "超級球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11344|11345|11346|11347"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-054",
+   "code": "SVI",
+   "number": "054",
+   "nameZh": "寶可夢交替",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11349|11350|11351|11352"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-055",
+   "code": "SVI",
+   "number": "055",
+   "nameZh": "寶可夢捕捉器",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11353|11354|11355"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-056",
+   "code": "SVI",
+   "number": "056",
+   "nameZh": "精靈球",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11356|11357|11358|11359"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-059",
+   "code": "SVI",
+   "number": "059",
+   "nameZh": "裁判",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11362|11363|11364"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-060",
+   "code": "SVI",
+   "number": "060",
+   "nameZh": "短褲小子",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11365|11366|11367|11368"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-062",
+   "code": "SVI",
+   "number": "062",
+   "nameZh": "妮莫",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11370|11371|11372|11373"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-064",
+   "code": "SVI",
+   "number": "064",
+   "nameZh": "博士的研究",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11375|11376|11377"
+  },
+  {
+   "cardId": "pokemon-official-tw-svi-065",
+   "code": "SVI",
+   "number": "065",
+   "nameZh": "野餐女孩",
+   "group": "b",
+   "reason": "MULTIPLE_OFFICIAL_VERSIONS:11378|11379|11380|11381"
+  }
+ ]
+}

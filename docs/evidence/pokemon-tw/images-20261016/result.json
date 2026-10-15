@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-16",
+  "before": { "cardImagesRows": 44759, "twPokemonCardsWithoutImage": { "asia-pokemon-card-official-tw": 1339, "tcgdex-zh-tw": 524 } },
+  "gates": "each of the 6 batches: dry run (planned = cards_found = eligible = distinct_detail_ids = expected), whole-batch rollback test (ROLLBACK_TEST_OK, card_images count unchanged at 44759), write (exact eligible and insert counts asserted), replay (eligible 0, nothing inserted); then ANALYZE card_images",
+  "written": { "batch-01": 250, "batch-02": 250, "batch-03": 250, "batch-04": 250, "batch-05": 250, "batch-06": 57, "total": 1307 },
+  "after": { "cardImagesRows": 46066, "twPokemonCardsWithoutImage": { "asia-pokemon-card-official-tw": 416, "tcgdex-zh-tw": 140 } },
+  "urlSampleCheck": "url-sample-check.json (12 HEAD requests, 1.7 s apart, all 200 image/png)",
+  "production": "GET /api/cards?game=pokemon&region=TW&series=pokemon-tcgdex-tw-s10p returns 67 cards, 0 without imageUrl; pokemon-tcgdex-tw-s10p-045 imageUrl https://asia.pokemon-card.com/tw/card-img/tw00006344.png (pokemon-tw-official). GET /api/cards/pokemon-tcgdex-tw-s10p-045 lists the TW printing with that image; the canonical card's headline image is still the linked JP one (existing canonical rule)."
+}
