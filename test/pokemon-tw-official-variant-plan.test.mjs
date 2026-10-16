@@ -125,3 +125,71 @@ test('ADR 0043: the migration defines the audited function with the same rule, I
   assert.match(sql, /grant execute on function private\.split_pokemon_tw_official_variants\(jsonb, text, boolean\) to service_role;/);
   assert.ok(!/\bdelete from\b/i.test(sql));
 });
+
+// ADR 0043 addendum (2026-10-17): the existing TCGdex image decides which official page the base card is.
+const tcgdexBase = (num, ids, extra = {}) => ({
+  id: `pokemon-tcgdex-tw-sv8a-${num}`, source: 'tcgdex-zh-tw', provider_id: `SV8a-${num}`, code: 'SV8a', num, name_zh: '含羞苞', ids, has_image: true, printing_image: true, ...extra
+});
+const sv8aCache = { 11526: page('含羞苞', 'SV8a_exp', '001'), 12319: page('含羞苞', 'SV8a_exp', '001'), 11527: page('含羞苞', 'SV8a_exp', '002'), 12320: page('含羞苞', 'SV8a_exp', '002'), 500: page('含羞苞', 'SV8a_exp', '003'), 501: page('含羞苞', 'SV8a_exp', '003'), 502: page('含羞苞', 'SV8a_exp', '003') };
+
+test('ADR 0043 addendum: a base card with a printing image is never split without a verified image match', () => {
+  const card = tcgdexBase('001', ['11526', '12319']);
+  const none = buildTwOfficialVariantPlans({ details: sv8aCache, baseCards: [card] });
+  assert.equal(none.plans.length, 0);
+  assert.deepEqual(none.skipped.map(row => row.reason), ['base-image-version-unknown']);
+  const bad = buildTwOfficialVariantPlans({ details: sv8aCache, baseCards: [card], imageMatches: { [card.id]: '99999' } });
+  assert.deepEqual(bad.skipped.map(row => row.reason), ['image-match-not-listed:99999']);
+});
+
+test('ADR 0043 addendum: the image matching the smallest ID keeps the classic plan (no baseVersionIndex, no base image added)', () => {
+  const card = tcgdexBase('001', ['11526', '12319']);
+  const { plans, skipped } = buildTwOfficialVariantPlans({ details: sv8aCache, baseCards: [card], imageMatches: { [card.id]: '11526' } });
+  assert.deepEqual(skipped, []);
+  const [row] = plans[0].plan.rows;
+  assert.ok(!('baseVersionIndex' in row));
+  assert.equal(row.baseOfficial.detailId, '11526');
+  assert.deepEqual(row.variants.map(v => [v.cardId, v.detailId, v.variantIndex, v.variantName]), [['pokemon-tcgdex-tw-sv8a-001-v2', '12319', 2, '版本 2']]);
+  assert.equal(plans[0].baseImages, 0);
+});
+
+test('ADR 0043 addendum: the image matching a larger ID makes the base card that version and the smaller IDs new cards numbered by ID order', () => {
+  const two = tcgdexBase('001', ['11526', '12319']);
+  const three = tcgdexBase('003', ['500', '501', '502']);
+  const { plans, skipped } = buildTwOfficialVariantPlans({ details: sv8aCache, baseCards: [two, three], imageMatches: { [two.id]: '12319', [three.id]: 501 } });
+  assert.deepEqual(skipped, []);
+  const [a, b] = plans[0].plan.rows;
+  assert.equal(a.baseVersionIndex, 2);
+  assert.deepEqual(a.officialDetailIds, ['11526', '12319']);
+  assert.deepEqual(a.baseOfficial, { detailId: '12319', imageUrl: 'https://asia.pokemon-card.com/tw/card-img/tw00012319.png', sourceUrl: 'https://asia.pokemon-card.com/tw/card-search/detail/12319/' });
+  assert.deepEqual(a.variants.map(v => [v.cardId, v.detailId, v.variantIndex, v.variantName, v.imageUrl]), [['pokemon-tcgdex-tw-sv8a-001-v1', '11526', 1, '版本 1', 'https://asia.pokemon-card.com/tw/card-img/tw00011526.png']]);
+  assert.equal(b.baseVersionIndex, 2);
+  assert.deepEqual(b.variants.map(v => [v.cardId, v.detailId, v.variantIndex]), [['pokemon-tcgdex-tw-sv8a-003-v1', '500', 1], ['pokemon-tcgdex-tw-sv8a-003-v3', '502', 3]]);
+  assert.deepEqual(Object.keys(a), ['baseCardId', 'seriesCode', 'number', 'nameZh', 'officialDetailIds', 'baseVersionIndex', 'baseOfficial', 'variants']);
+  assert.equal(plans[0].baseImages, 0);
+  assert.equal(plans[0].cards, 3);
+});
+
+test('ADR 0043 addendum: an official-source base must carry the Provider ID of the page it corresponds to', () => {
+  const official = base('SV11B', '001', '藤藤蛇', ['100', '101']);
+  const cache = { 100: page('藤藤蛇', 'SV11B_exp', '001'), 101: page('藤藤蛇', 'SV11B_exp', '001') };
+  const reason = card => buildTwOfficialVariantPlans({ details: cache, baseCards: [card], imageMatches: { [card.id]: '101' } }).skipped.map(row => row.reason);
+  assert.deepEqual(reason(official), ['base-provider-not-matched']);
+  assert.equal(buildTwOfficialVariantPlans({ details: cache, baseCards: [{ ...official, provider_id: '101' }], imageMatches: { [official.id]: '101' } }).plans[0].plan.rows[0].baseVersionIndex, 2);
+});
+
+test('ADR 0043 addendum: the migration widens the function with an optional baseVersionIndex and keeps the other guards', () => {
+  const sql = readFileSync(new URL('../supabase/migrations/20261017100000_pokemon_tw_variant_split_base_version.sql', import.meta.url), 'utf8');
+  assert.match(sql, /create or replace function private\.split_pokemon_tw_official_variants\(/);
+  assert.ok(!/create table/i.test(sql) && !/\bdelete from\b/i.test(sql));
+  assert.match(sql, /coalesce\(\(r->>'baseVersionIndex'\)::integer, 1\) base_idx/);
+  assert.match(sql, /pl\.idx = pl\.base_idx then 'index'/);
+  assert.match(sql, /official_ids->>\(pl\.base_idx - 1\) then 'base-provider-id'/);
+  assert.match(sql, /pl\.base_detail_id is distinct from pl\.official_ids->>\(pl\.base_idx - 1\) then 'base-detail-id'/);
+  assert.match(sql, /'variantIndex', b\.base_idx, 'variantName', '版本 ' \|\| b\.base_idx/);
+  assert.match(sql, /'variantOfficialDetailId', b\.base_detail_id/);
+  assert.match(sql, /c\.metadata->>'variantIndex' is distinct from b\.base_idx::text/);
+  assert.match(sql, /accepts 1-100 distinct new cards per call/);
+  assert.match(sql, /must include every extra official page of a base card/);
+  assert.match(sql, /select pl\.card_id, p\.region, p\.language, p\.local_set_code, p\.local_card_number, null,/);
+  assert.match(sql, /grant execute on function private\.split_pokemon_tw_official_variants\(jsonb, text, boolean\) to service_role;/);
+});

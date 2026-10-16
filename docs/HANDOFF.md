@@ -837,6 +837,15 @@
 - 正式站自 10-15 19:46 UTC 部署後無 `server_failed`（至 10-16 17:20 約 21.5 小時）。
 - 待使用者決定：台版 MC 等「版本 k」只看得出卡圖表面紋路差異（MC 456 版本 2 有雲霧狀閃卡紋），台灣官方頁沒有文字標示；選項 (1) 找官方商品頁／日版官方檔名的文字證據再命名、(2) 依卡圖判斷命名並寫 ADR。SV2a 17、SV8a 144 張同號多版本（已有 TCGdex 圖）未拆。 10-17 查證選項 (1)：日本官方 MC 只有一張 456（`049172_P_DAKURAIEX.jpg`，774 個 MC 圖檔無 `_m`）；台灣 MC 商品頁（初階牌組100對戰收藏）只寫牌組內容，沒有閃卡／鏡面說明。沒有文字證據，維持「版本 k」。
 
+### 依序執行 105：台版 SV2a／SV8a 已有 TCGdex 圖的同號多版本拆成版本卡（ADR 0043 補充，2026-10-17，桌電，已套用）
+
+- 範圍：依序執行 101 沒處理的 161 張（SV2a 17、SV8a 144，各恰好 2 個官方 ID，原卡是 TCGdex 台版卡且已有 TCGdex 圖）。先決問題「TCGdex 圖是哪一頁」用圖片比對解決：161 張的 TCGdex `low.webp` 與兩個官方卡圖縮成同尺寸後比平均像素差與 dHash，吻合者 0.0046～0.0086、另一頁 0.0465～0.1682，**161 張全部明確、零模糊**；每 1.6 秒一個請求、全數 200、圖片只在暫存資料夾。
+- **沒有單一規則**：SV2a 17 張全是較小 ID；SV8a 144 張中 110 張是**較大** ID、34 張較小。所以逐張依圖判定（`docs/evidence/pokemon-tw/variant-split-20261017/image-match.json`，含每張距離與對應表；`compare-images.py` 為比對程式）。
+- 做法：版本序號仍依官方 ID 由小到大（版本 1 永遠是最小 ID）；原卡對應它圖片的那一頁，不是版本 1 時，原卡就是「版本 2」，較小 ID 那頁新增為 `<原卡 ID>-v1`（卡片 ID 的 `-v<k>` 一律等於版本序號）。原卡 metadata 另記 `variantOfficialDetailId`；原卡的 TCGdex 圖不動、不補官方圖；新卡用該頁官方圖，來源、Provider ID、metadata 白名單與 101 相同。
+- 程式：migration `20261017100000_pokemon_tw_variant_split_base_version`（同一函式 `create or replace`，計畫列選用欄位 `baseVersionIndex` 預設 1，10-16 的 12 份計畫重播不受影響；已寫入 schema_migrations）；`providers/pokemon-tw-official-variant-plan.mjs` 加 `imageMatches`（有 printing 圖卻沒比對結果一律不拆）、`scripts/build-pokemon-tw-official-variant-plan.mjs` 加 `--matches`；`test/pokemon-tw-official-variant-plan.test.mjs` 加 5 項（共 11）。
+- 驗證與寫入：唯讀乾跑（migration 在交易內建立後三份計畫乾跑，再整批回滾）17／100／44 張全符合；整批回滾測試（migration＋10-16 的 12 份重播＋3 份計畫＋3 份重播）交易內新卡 297（含 10-16 的 136）、Printing 297、卡圖 297、稽核 42，回滾後函式 md5、各表筆數、稽核表與寫入前完全相同；再套用 migration 並寫入 3 份計畫：SV2a 17、SV8a 100＋44 張新卡（原卡補圖 0），3 份重播全為 `replay=true` 零異動，ANALYZE `tcg_cards`、`tcg_printings`、`card_images`、`tcg_canonical_cards`。寫入後核對：新卡 161 皆同作品層、ID 後綴＝版本序號、有自己的官方圖與 Printing，原卡 161 的 TCGdex 圖沒變（沒有 `card_images`）、版本序號與新卡零碰撞（原卡為版本 1：SV2a 17＋SV8a 34；為版本 2：SV8a 110）。正式站 `/api/cards/pokemon-tcgdex-tw-sv8a-001` 顯示原卡「版本 2」（TCGdex 圖）＋`-v1`「版本 1」（官方 11526 圖），`pokemon-tcgdex-tw-sv8a-034` 顯示原卡「版本 1」＋`-v2`（官方 12343 圖）。證據 `docs/evidence/pokemon-tw/variant-split-20261017/`。
+- 注意：(1) 寫入期間依序執行 104 的 migration 持有排他鎖，函式的 5 秒 `lock_timeout` 觸發過數次（整筆回滾、零殘留），避開後重跑成功。(2) 依序執行 104 的 `public.browse_refresh_keys()` 在這次寫入時還沒套用到正式庫，**之後套用 104 時它會一併納入這 161 張新卡；若 104 先套用，需在此之後呼叫 `select public.browse_refresh_keys('pokemon');`**。(3) 前端「收錄版本」若按卡片順序排列，原卡可能是「版本 2」而 `-v1` 排在後面，未改前端。(4) 台版同號多版本現已全部拆開（M2a／MC／SV11B／SV11W／SV2a／SV8a／SVI／M-P／SV-P）。
+
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
 - 分支 `claude/grill-with-docs-4i2eha`（尚未合併 main、未開 PR）；本輪只改文件，無程式變更、Render 無需部署。

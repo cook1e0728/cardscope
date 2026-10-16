@@ -1,0 +1,4 @@
+-- rollback-test.sql (not kept, 668 KB): migration 20261017100000 + the 12 replay files in ../variant-split-20261016/plans + plans/plan-01..03.sql + plans/plan-01..03-replay.sql, then a final DO block raising the counts below; the transaction is rolled back.
+
+HTTP 400
+{"message":"Failed to run sql query: ERROR:  P0001: ROLLBACK_TEST_OK oldReplays=12 newCards=297 newPrintings=297 newImages=297 baseCardsMarked=297 audit=42\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"}

@@ -1,0 +1,3571 @@
+{
+ "generated": "2026-10-17",
+ "method": "compare-images.py: TCGdex low.webp (245x337) vs official tw<id>.png, both resized to 48x66 RGB, mean absolute pixel difference (0-1) and 16x16 dHash Hamming distance; images fetched one per 1.6 s into a scratch folder and not stored in the repo",
+ "rule": "matched when best pixel distance < 0.02, the other >= 3x best, official-vs-official pixel distance >= 0.03, and dHash agrees by >= 20 bits; otherwise ambiguous (left unsplit)",
+ "summary": {
+  "compared": 161,
+  "matched": 161,
+  "ambiguous": 0,
+  "byMatchedVersion": {
+   "SV2a:v1": 17,
+   "SV8a:v2": 110,
+   "SV8a:v1": 34
+  },
+  "matchedPixelDistanceRange": [
+   0.0046,
+   0.0086
+  ],
+  "otherPixelDistanceRange": [
+   0.0465,
+   0.1682
+  ],
+  "officialVsOfficialPixelMin": 0.0465
+ },
+ "matches": {
+  "pokemon-tcgdex-tw-sv2a-001": "8124",
+  "pokemon-tcgdex-tw-sv2a-002": "8125",
+  "pokemon-tcgdex-tw-sv2a-004": "8127",
+  "pokemon-tcgdex-tw-sv2a-005": "8128",
+  "pokemon-tcgdex-tw-sv2a-007": "8130",
+  "pokemon-tcgdex-tw-sv2a-008": "8131",
+  "pokemon-tcgdex-tw-sv2a-010": "8133",
+  "pokemon-tcgdex-tw-sv2a-011": "8134",
+  "pokemon-tcgdex-tw-sv2a-012": "8135",
+  "pokemon-tcgdex-tw-sv2a-013": "8136",
+  "pokemon-tcgdex-tw-sv2a-014": "8137",
+  "pokemon-tcgdex-tw-sv2a-015": "8138",
+  "pokemon-tcgdex-tw-sv2a-016": "8139",
+  "pokemon-tcgdex-tw-sv2a-017": "8140",
+  "pokemon-tcgdex-tw-sv2a-018": "8141",
+  "pokemon-tcgdex-tw-sv2a-019": "8142",
+  "pokemon-tcgdex-tw-sv2a-020": "8143",
+  "pokemon-tcgdex-tw-sv8a-001": "12319",
+  "pokemon-tcgdex-tw-sv8a-002": "12320",
+  "pokemon-tcgdex-tw-sv8a-004": "12321",
+  "pokemon-tcgdex-tw-sv8a-005": "12322",
+  "pokemon-tcgdex-tw-sv8a-006": "12323",
+  "pokemon-tcgdex-tw-sv8a-007": "12324",
+  "pokemon-tcgdex-tw-sv8a-008": "12325",
+  "pokemon-tcgdex-tw-sv8a-009": "11534",
+  "pokemon-tcgdex-tw-sv8a-011": "11536",
+  "pokemon-tcgdex-tw-sv8a-012": "12328",
+  "pokemon-tcgdex-tw-sv8a-013": "12329",
+  "pokemon-tcgdex-tw-sv8a-014": "12330",
+  "pokemon-tcgdex-tw-sv8a-015": "12331",
+  "pokemon-tcgdex-tw-sv8a-017": "12332",
+  "pokemon-tcgdex-tw-sv8a-018": "11543",
+  "pokemon-tcgdex-tw-sv8a-021": "11546",
+  "pokemon-tcgdex-tw-sv8a-023": "12335",
+  "pokemon-tcgdex-tw-sv8a-024": "12336",
+  "pokemon-tcgdex-tw-sv8a-025": "12337",
+  "pokemon-tcgdex-tw-sv8a-028": "12338",
+  "pokemon-tcgdex-tw-sv8a-029": "12339",
+  "pokemon-tcgdex-tw-sv8a-030": "12340",
+  "pokemon-tcgdex-tw-sv8a-032": "11557",
+  "pokemon-tcgdex-tw-sv8a-033": "11558",
+  "pokemon-tcgdex-tw-sv8a-034": "11559",
+  "pokemon-tcgdex-tw-sv8a-035": "12344",
+  "pokemon-tcgdex-tw-sv8a-036": "11561",
+  "pokemon-tcgdex-tw-sv8a-037": "12346",
+  "pokemon-tcgdex-tw-sv8a-038": "12347",
+  "pokemon-tcgdex-tw-sv8a-040": "12348",
+  "pokemon-tcgdex-tw-sv8a-042": "12349",
+  "pokemon-tcgdex-tw-sv8a-043": "12350",
+  "pokemon-tcgdex-tw-sv8a-044": "12351",
+  "pokemon-tcgdex-tw-sv8a-045": "11570",
+  "pokemon-tcgdex-tw-sv8a-047": "11572",
+  "pokemon-tcgdex-tw-sv8a-048": "12354",
+  "pokemon-tcgdex-tw-sv8a-051": "12355",
+  "pokemon-tcgdex-tw-sv8a-053": "11578",
+  "pokemon-tcgdex-tw-sv8a-055": "11580",
+  "pokemon-tcgdex-tw-sv8a-057": "11582",
+  "pokemon-tcgdex-tw-sv8a-058": "12359",
+  "pokemon-tcgdex-tw-sv8a-059": "12360",
+  "pokemon-tcgdex-tw-sv8a-060": "11585",
+  "pokemon-tcgdex-tw-sv8a-061": "12362",
+  "pokemon-tcgdex-tw-sv8a-062": "12363",
+  "pokemon-tcgdex-tw-sv8a-064": "12364",
+  "pokemon-tcgdex-tw-sv8a-065": "12365",
+  "pokemon-tcgdex-tw-sv8a-066": "12366",
+  "pokemon-tcgdex-tw-sv8a-067": "12367",
+  "pokemon-tcgdex-tw-sv8a-068": "11593",
+  "pokemon-tcgdex-tw-sv8a-070": "12369",
+  "pokemon-tcgdex-tw-sv8a-071": "11596",
+  "pokemon-tcgdex-tw-sv8a-072": "12371",
+  "pokemon-tcgdex-tw-sv8a-073": "12372",
+  "pokemon-tcgdex-tw-sv8a-075": "12373",
+  "pokemon-tcgdex-tw-sv8a-076": "12374",
+  "pokemon-tcgdex-tw-sv8a-077": "12375",
+  "pokemon-tcgdex-tw-sv8a-079": "12376",
+  "pokemon-tcgdex-tw-sv8a-080": "11605",
+  "pokemon-tcgdex-tw-sv8a-081": "12378",
+  "pokemon-tcgdex-tw-sv8a-082": "11607",
+  "pokemon-tcgdex-tw-sv8a-083": "12380",
+  "pokemon-tcgdex-tw-sv8a-084": "12381",
+  "pokemon-tcgdex-tw-sv8a-085": "12382",
+  "pokemon-tcgdex-tw-sv8a-086": "12383",
+  "pokemon-tcgdex-tw-sv8a-087": "12384",
+  "pokemon-tcgdex-tw-sv8a-089": "12385",
+  "pokemon-tcgdex-tw-sv8a-090": "11615",
+  "pokemon-tcgdex-tw-sv8a-092": "12387",
+  "pokemon-tcgdex-tw-sv8a-094": "12388",
+  "pokemon-tcgdex-tw-sv8a-095": "12389",
+  "pokemon-tcgdex-tw-sv8a-096": "12390",
+  "pokemon-tcgdex-tw-sv8a-097": "12391",
+  "pokemon-tcgdex-tw-sv8a-098": "12392",
+  "pokemon-tcgdex-tw-sv8a-099": "12393",
+  "pokemon-tcgdex-tw-sv8a-100": "11625",
+  "pokemon-tcgdex-tw-sv8a-106": "12395",
+  "pokemon-tcgdex-tw-sv8a-107": "11632",
+  "pokemon-tcgdex-tw-sv8a-108": "12397",
+  "pokemon-tcgdex-tw-sv8a-109": "12398",
+  "pokemon-tcgdex-tw-sv8a-110": "12399",
+  "pokemon-tcgdex-tw-sv8a-111": "12400",
+  "pokemon-tcgdex-tw-sv8a-112": "12401",
+  "pokemon-tcgdex-tw-sv8a-113": "12402",
+  "pokemon-tcgdex-tw-sv8a-114": "12403",
+  "pokemon-tcgdex-tw-sv8a-115": "11640",
+  "pokemon-tcgdex-tw-sv8a-116": "12405",
+  "pokemon-tcgdex-tw-sv8a-118": "12406",
+  "pokemon-tcgdex-tw-sv8a-119": "12407",
+  "pokemon-tcgdex-tw-sv8a-121": "11646",
+  "pokemon-tcgdex-tw-sv8a-122": "11647",
+  "pokemon-tcgdex-tw-sv8a-123": "11648",
+  "pokemon-tcgdex-tw-sv8a-125": "11650",
+  "pokemon-tcgdex-tw-sv8a-127": "12412",
+  "pokemon-tcgdex-tw-sv8a-128": "12413",
+  "pokemon-tcgdex-tw-sv8a-129": "12414",
+  "pokemon-tcgdex-tw-sv8a-130": "12415",
+  "pokemon-tcgdex-tw-sv8a-131": "12416",
+  "pokemon-tcgdex-tw-sv8a-132": "12417",
+  "pokemon-tcgdex-tw-sv8a-133": "12418",
+  "pokemon-tcgdex-tw-sv8a-135": "12419",
+  "pokemon-tcgdex-tw-sv8a-137": "12420",
+  "pokemon-tcgdex-tw-sv8a-138": "11663",
+  "pokemon-tcgdex-tw-sv8a-139": "12422",
+  "pokemon-tcgdex-tw-sv8a-140": "12423",
+  "pokemon-tcgdex-tw-sv8a-141": "12424",
+  "pokemon-tcgdex-tw-sv8a-143": "12425",
+  "pokemon-tcgdex-tw-sv8a-144": "12426",
+  "pokemon-tcgdex-tw-sv8a-145": "12427",
+  "pokemon-tcgdex-tw-sv8a-147": "11672",
+  "pokemon-tcgdex-tw-sv8a-150": "12429",
+  "pokemon-tcgdex-tw-sv8a-151": "12430",
+  "pokemon-tcgdex-tw-sv8a-153": "12431",
+  "pokemon-tcgdex-tw-sv8a-154": "12432",
+  "pokemon-tcgdex-tw-sv8a-155": "12433",
+  "pokemon-tcgdex-tw-sv8a-156": "12434",
+  "pokemon-tcgdex-tw-sv8a-157": "12435",
+  "pokemon-tcgdex-tw-sv8a-158": "12436",
+  "pokemon-tcgdex-tw-sv8a-160": "12437",
+  "pokemon-tcgdex-tw-sv8a-161": "11686",
+  "pokemon-tcgdex-tw-sv8a-162": "12439",
+  "pokemon-tcgdex-tw-sv8a-163": "11688",
+  "pokemon-tcgdex-tw-sv8a-164": "12441",
+  "pokemon-tcgdex-tw-sv8a-165": "12442",
+  "pokemon-tcgdex-tw-sv8a-166": "12443",
+  "pokemon-tcgdex-tw-sv8a-167": "12444",
+  "pokemon-tcgdex-tw-sv8a-168": "12445",
+  "pokemon-tcgdex-tw-sv8a-169": "12446",
+  "pokemon-tcgdex-tw-sv8a-170": "12447",
+  "pokemon-tcgdex-tw-sv8a-171": "11696",
+  "pokemon-tcgdex-tw-sv8a-172": "12449",
+  "pokemon-tcgdex-tw-sv8a-173": "11698",
+  "pokemon-tcgdex-tw-sv8a-174": "12451",
+  "pokemon-tcgdex-tw-sv8a-175": "12452",
+  "pokemon-tcgdex-tw-sv8a-176": "12453",
+  "pokemon-tcgdex-tw-sv8a-177": "12454",
+  "pokemon-tcgdex-tw-sv8a-178": "12455",
+  "pokemon-tcgdex-tw-sv8a-179": "12456",
+  "pokemon-tcgdex-tw-sv8a-180": "12457",
+  "pokemon-tcgdex-tw-sv8a-181": "11706",
+  "pokemon-tcgdex-tw-sv8a-182": "12459",
+  "pokemon-tcgdex-tw-sv8a-183": "12460",
+  "pokemon-tcgdex-tw-sv8a-185": "12461",
+  "pokemon-tcgdex-tw-sv8a-186": "11711"
+ },
+ "ambiguous": [],
+ "rows": [
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-001",
+   "series": "SV2a",
+   "number": "001",
+   "detailIds": [
+    "8124",
+    "14854"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0067,
+    0.0615
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    56
+   ],
+   "officialVsOfficialPixel": 0.061,
+   "officialVsOfficialDhash": 55,
+   "matchedDetailId": "8124",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-002",
+   "series": "SV2a",
+   "number": "002",
+   "detailIds": [
+    "8125",
+    "14855"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.007,
+    0.06
+   ],
+   "tcgdexVsOfficialDhash": [
+    6,
+    56
+   ],
+   "officialVsOfficialPixel": 0.0595,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "8125",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-004",
+   "series": "SV2a",
+   "number": "004",
+   "detailIds": [
+    "8127",
+    "14856"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0073,
+    0.0541
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    50
+   ],
+   "officialVsOfficialPixel": 0.0537,
+   "officialVsOfficialDhash": 54,
+   "matchedDetailId": "8127",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-005",
+   "series": "SV2a",
+   "number": "005",
+   "detailIds": [
+    "8128",
+    "14857"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0075,
+    0.0528
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    60
+   ],
+   "officialVsOfficialPixel": 0.0523,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "8128",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-007",
+   "series": "SV2a",
+   "number": "007",
+   "detailIds": [
+    "8130",
+    "14858"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0071,
+    0.0567
+   ],
+   "tcgdexVsOfficialDhash": [
+    7,
+    54
+   ],
+   "officialVsOfficialPixel": 0.056,
+   "officialVsOfficialDhash": 55,
+   "matchedDetailId": "8130",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-008",
+   "series": "SV2a",
+   "number": "008",
+   "detailIds": [
+    "8131",
+    "14859"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0067,
+    0.0543
+   ],
+   "tcgdexVsOfficialDhash": [
+    6,
+    62
+   ],
+   "officialVsOfficialPixel": 0.0535,
+   "officialVsOfficialDhash": 62,
+   "matchedDetailId": "8131",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-010",
+   "series": "SV2a",
+   "number": "010",
+   "detailIds": [
+    "8133",
+    "14860"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0071,
+    0.0612
+   ],
+   "tcgdexVsOfficialDhash": [
+    8,
+    65
+   ],
+   "officialVsOfficialPixel": 0.0604,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "8133",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-011",
+   "series": "SV2a",
+   "number": "011",
+   "detailIds": [
+    "8134",
+    "14861"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0069,
+    0.0585
+   ],
+   "tcgdexVsOfficialDhash": [
+    6,
+    55
+   ],
+   "officialVsOfficialPixel": 0.058,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "8134",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-012",
+   "series": "SV2a",
+   "number": "012",
+   "detailIds": [
+    "8135",
+    "14862"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0072,
+    0.0591
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    52
+   ],
+   "officialVsOfficialPixel": 0.0587,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "8135",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-013",
+   "series": "SV2a",
+   "number": "013",
+   "detailIds": [
+    "8136",
+    "14863"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.007,
+    0.062
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    62
+   ],
+   "officialVsOfficialPixel": 0.0614,
+   "officialVsOfficialDhash": 62,
+   "matchedDetailId": "8136",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-014",
+   "series": "SV2a",
+   "number": "014",
+   "detailIds": [
+    "8137",
+    "14864"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0069,
+    0.0576
+   ],
+   "tcgdexVsOfficialDhash": [
+    6,
+    66
+   ],
+   "officialVsOfficialPixel": 0.0573,
+   "officialVsOfficialDhash": 64,
+   "matchedDetailId": "8137",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-015",
+   "series": "SV2a",
+   "number": "015",
+   "detailIds": [
+    "8138",
+    "14865"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0073,
+    0.0783
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    54
+   ],
+   "officialVsOfficialPixel": 0.0785,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "8138",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-016",
+   "series": "SV2a",
+   "number": "016",
+   "detailIds": [
+    "8139",
+    "14866"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0052,
+    0.05
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    55
+   ],
+   "officialVsOfficialPixel": 0.0498,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "8139",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-017",
+   "series": "SV2a",
+   "number": "017",
+   "detailIds": [
+    "8140",
+    "14867"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0046,
+    0.0488
+   ],
+   "tcgdexVsOfficialDhash": [
+    8,
+    65
+   ],
+   "officialVsOfficialPixel": 0.0486,
+   "officialVsOfficialDhash": 63,
+   "matchedDetailId": "8140",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-018",
+   "series": "SV2a",
+   "number": "018",
+   "detailIds": [
+    "8141",
+    "14868"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0046,
+    0.0465
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    61
+   ],
+   "officialVsOfficialPixel": 0.0465,
+   "officialVsOfficialDhash": 62,
+   "matchedDetailId": "8141",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-019",
+   "series": "SV2a",
+   "number": "019",
+   "detailIds": [
+    "8142",
+    "14869"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.005,
+    0.0512
+   ],
+   "tcgdexVsOfficialDhash": [
+    2,
+    59
+   ],
+   "officialVsOfficialPixel": 0.051,
+   "officialVsOfficialDhash": 61,
+   "matchedDetailId": "8142",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv2a-020",
+   "series": "SV2a",
+   "number": "020",
+   "detailIds": [
+    "8143",
+    "14870"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0048,
+    0.0493
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    60
+   ],
+   "officialVsOfficialPixel": 0.0491,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "8143",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-001",
+   "series": "SV8a",
+   "number": "001",
+   "detailIds": [
+    "11526",
+    "12319"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1018,
+    0.0073
+   ],
+   "tcgdexVsOfficialDhash": [
+    79,
+    1
+   ],
+   "officialVsOfficialPixel": 0.1019,
+   "officialVsOfficialDhash": 78,
+   "matchedDetailId": "12319",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-002",
+   "series": "SV8a",
+   "number": "002",
+   "detailIds": [
+    "11527",
+    "12320"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1001,
+    0.0066
+   ],
+   "tcgdexVsOfficialDhash": [
+    64,
+    0
+   ],
+   "officialVsOfficialPixel": 0.1,
+   "officialVsOfficialDhash": 64,
+   "matchedDetailId": "12320",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-004",
+   "series": "SV8a",
+   "number": "004",
+   "detailIds": [
+    "11529",
+    "12321"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0967,
+    0.0068
+   ],
+   "tcgdexVsOfficialDhash": [
+    68,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0968,
+   "officialVsOfficialDhash": 68,
+   "matchedDetailId": "12321",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-005",
+   "series": "SV8a",
+   "number": "005",
+   "detailIds": [
+    "11530",
+    "12322"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0974,
+    0.0065
+   ],
+   "tcgdexVsOfficialDhash": [
+    61,
+    0
+   ],
+   "officialVsOfficialPixel": 0.0967,
+   "officialVsOfficialDhash": 61,
+   "matchedDetailId": "12322",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-006",
+   "series": "SV8a",
+   "number": "006",
+   "detailIds": [
+    "11531",
+    "12323"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1061,
+    0.0072
+   ],
+   "tcgdexVsOfficialDhash": [
+    61,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1061,
+   "officialVsOfficialDhash": 63,
+   "matchedDetailId": "12323",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-007",
+   "series": "SV8a",
+   "number": "007",
+   "detailIds": [
+    "11532",
+    "12324"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1012,
+    0.0071
+   ],
+   "tcgdexVsOfficialDhash": [
+    69,
+    3
+   ],
+   "officialVsOfficialPixel": 0.101,
+   "officialVsOfficialDhash": 72,
+   "matchedDetailId": "12324",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-008",
+   "series": "SV8a",
+   "number": "008",
+   "detailIds": [
+    "11533",
+    "12325"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1073,
+    0.0074
+   ],
+   "tcgdexVsOfficialDhash": [
+    76,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1065,
+   "officialVsOfficialDhash": 76,
+   "matchedDetailId": "12325",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-009",
+   "series": "SV8a",
+   "number": "009",
+   "detailIds": [
+    "11534",
+    "12326"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.008,
+    0.0969
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    64
+   ],
+   "officialVsOfficialPixel": 0.0978,
+   "officialVsOfficialDhash": 63,
+   "matchedDetailId": "11534",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-011",
+   "series": "SV8a",
+   "number": "011",
+   "detailIds": [
+    "11536",
+    "12327"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0069,
+    0.1076
+   ],
+   "tcgdexVsOfficialDhash": [
+    2,
+    74
+   ],
+   "officialVsOfficialPixel": 0.1079,
+   "officialVsOfficialDhash": 74,
+   "matchedDetailId": "11536",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-012",
+   "series": "SV8a",
+   "number": "012",
+   "detailIds": [
+    "11537",
+    "12328"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1,
+    0.0069
+   ],
+   "tcgdexVsOfficialDhash": [
+    64,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0993,
+   "officialVsOfficialDhash": 63,
+   "matchedDetailId": "12328",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-013",
+   "series": "SV8a",
+   "number": "013",
+   "detailIds": [
+    "11538",
+    "12329"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1037,
+    0.0064
+   ],
+   "tcgdexVsOfficialDhash": [
+    71,
+    3
+   ],
+   "officialVsOfficialPixel": 0.1037,
+   "officialVsOfficialDhash": 70,
+   "matchedDetailId": "12329",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-014",
+   "series": "SV8a",
+   "number": "014",
+   "detailIds": [
+    "11539",
+    "12330"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0994,
+    0.0081
+   ],
+   "tcgdexVsOfficialDhash": [
+    65,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0989,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "12330",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-015",
+   "series": "SV8a",
+   "number": "015",
+   "detailIds": [
+    "11540",
+    "12331"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1024,
+    0.0065
+   ],
+   "tcgdexVsOfficialDhash": [
+    61,
+    1
+   ],
+   "officialVsOfficialPixel": 0.1018,
+   "officialVsOfficialDhash": 62,
+   "matchedDetailId": "12331",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-017",
+   "series": "SV8a",
+   "number": "017",
+   "detailIds": [
+    "11542",
+    "12332"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1143,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    72,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1147,
+   "officialVsOfficialDhash": 72,
+   "matchedDetailId": "12332",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-018",
+   "series": "SV8a",
+   "number": "018",
+   "detailIds": [
+    "11543",
+    "12333"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0073,
+    0.1043
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    60
+   ],
+   "officialVsOfficialPixel": 0.1046,
+   "officialVsOfficialDhash": 62,
+   "matchedDetailId": "11543",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-021",
+   "series": "SV8a",
+   "number": "021",
+   "detailIds": [
+    "11546",
+    "12334"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0086,
+    0.0782
+   ],
+   "tcgdexVsOfficialDhash": [
+    2,
+    71
+   ],
+   "officialVsOfficialPixel": 0.0783,
+   "officialVsOfficialDhash": 71,
+   "matchedDetailId": "11546",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-023",
+   "series": "SV8a",
+   "number": "023",
+   "detailIds": [
+    "11548",
+    "12335"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0716,
+    0.0068
+   ],
+   "tcgdexVsOfficialDhash": [
+    65,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0709,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "12335",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-024",
+   "series": "SV8a",
+   "number": "024",
+   "detailIds": [
+    "11549",
+    "12336"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0809,
+    0.0069
+   ],
+   "tcgdexVsOfficialDhash": [
+    47,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0798,
+   "officialVsOfficialDhash": 45,
+   "matchedDetailId": "12336",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-025",
+   "series": "SV8a",
+   "number": "025",
+   "detailIds": [
+    "11550",
+    "12337"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0819,
+    0.0074
+   ],
+   "tcgdexVsOfficialDhash": [
+    56,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0808,
+   "officialVsOfficialDhash": 57,
+   "matchedDetailId": "12337",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-028",
+   "series": "SV8a",
+   "number": "028",
+   "detailIds": [
+    "11553",
+    "12338"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0895,
+    0.0077
+   ],
+   "tcgdexVsOfficialDhash": [
+    68,
+    0
+   ],
+   "officialVsOfficialPixel": 0.0892,
+   "officialVsOfficialDhash": 68,
+   "matchedDetailId": "12338",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-029",
+   "series": "SV8a",
+   "number": "029",
+   "detailIds": [
+    "11554",
+    "12339"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0876,
+    0.008
+   ],
+   "tcgdexVsOfficialDhash": [
+    69,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0868,
+   "officialVsOfficialDhash": 68,
+   "matchedDetailId": "12339",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-030",
+   "series": "SV8a",
+   "number": "030",
+   "detailIds": [
+    "11555",
+    "12340"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0921,
+    0.0071
+   ],
+   "tcgdexVsOfficialDhash": [
+    70,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0913,
+   "officialVsOfficialDhash": 70,
+   "matchedDetailId": "12340",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-032",
+   "series": "SV8a",
+   "number": "032",
+   "detailIds": [
+    "11557",
+    "12341"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0064,
+    0.0938
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    76
+   ],
+   "officialVsOfficialPixel": 0.0944,
+   "officialVsOfficialDhash": 74,
+   "matchedDetailId": "11557",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-033",
+   "series": "SV8a",
+   "number": "033",
+   "detailIds": [
+    "11558",
+    "12342"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0075,
+    0.0893
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    76
+   ],
+   "officialVsOfficialPixel": 0.0897,
+   "officialVsOfficialDhash": 75,
+   "matchedDetailId": "11558",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-034",
+   "series": "SV8a",
+   "number": "034",
+   "detailIds": [
+    "11559",
+    "12343"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0079,
+    0.0942
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    93
+   ],
+   "officialVsOfficialPixel": 0.0941,
+   "officialVsOfficialDhash": 88,
+   "matchedDetailId": "11559",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-035",
+   "series": "SV8a",
+   "number": "035",
+   "detailIds": [
+    "11560",
+    "12344"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.099,
+    0.0069
+   ],
+   "tcgdexVsOfficialDhash": [
+    84,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0989,
+   "officialVsOfficialDhash": 80,
+   "matchedDetailId": "12344",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-036",
+   "series": "SV8a",
+   "number": "036",
+   "detailIds": [
+    "11561",
+    "12345"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0067,
+    0.0793
+   ],
+   "tcgdexVsOfficialDhash": [
+    10,
+    78
+   ],
+   "officialVsOfficialPixel": 0.0798,
+   "officialVsOfficialDhash": 80,
+   "matchedDetailId": "11561",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-037",
+   "series": "SV8a",
+   "number": "037",
+   "detailIds": [
+    "11562",
+    "12346"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0869,
+    0.0062
+   ],
+   "tcgdexVsOfficialDhash": [
+    74,
+    5
+   ],
+   "officialVsOfficialPixel": 0.0869,
+   "officialVsOfficialDhash": 71,
+   "matchedDetailId": "12346",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-038",
+   "series": "SV8a",
+   "number": "038",
+   "detailIds": [
+    "11563",
+    "12347"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0923,
+    0.0078
+   ],
+   "tcgdexVsOfficialDhash": [
+    73,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0915,
+   "officialVsOfficialDhash": 74,
+   "matchedDetailId": "12347",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-040",
+   "series": "SV8a",
+   "number": "040",
+   "detailIds": [
+    "11565",
+    "12348"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0922,
+    0.0071
+   ],
+   "tcgdexVsOfficialDhash": [
+    74,
+    1
+   ],
+   "officialVsOfficialPixel": 0.092,
+   "officialVsOfficialDhash": 75,
+   "matchedDetailId": "12348",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-042",
+   "series": "SV8a",
+   "number": "042",
+   "detailIds": [
+    "11567",
+    "12349"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0855,
+    0.0065
+   ],
+   "tcgdexVsOfficialDhash": [
+    69,
+    6
+   ],
+   "officialVsOfficialPixel": 0.0857,
+   "officialVsOfficialDhash": 71,
+   "matchedDetailId": "12349",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-043",
+   "series": "SV8a",
+   "number": "043",
+   "detailIds": [
+    "11568",
+    "12350"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0903,
+    0.0069
+   ],
+   "tcgdexVsOfficialDhash": [
+    78,
+    0
+   ],
+   "officialVsOfficialPixel": 0.0899,
+   "officialVsOfficialDhash": 78,
+   "matchedDetailId": "12350",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-044",
+   "series": "SV8a",
+   "number": "044",
+   "detailIds": [
+    "11569",
+    "12351"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0895,
+    0.0073
+   ],
+   "tcgdexVsOfficialDhash": [
+    89,
+    4
+   ],
+   "officialVsOfficialPixel": 0.089,
+   "officialVsOfficialDhash": 89,
+   "matchedDetailId": "12351",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-045",
+   "series": "SV8a",
+   "number": "045",
+   "detailIds": [
+    "11570",
+    "12352"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0068,
+    0.0852
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    75
+   ],
+   "officialVsOfficialPixel": 0.0859,
+   "officialVsOfficialDhash": 75,
+   "matchedDetailId": "11570",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-047",
+   "series": "SV8a",
+   "number": "047",
+   "detailIds": [
+    "11572",
+    "12353"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0072,
+    0.0738
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    51
+   ],
+   "officialVsOfficialPixel": 0.0746,
+   "officialVsOfficialDhash": 46,
+   "matchedDetailId": "11572",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-048",
+   "series": "SV8a",
+   "number": "048",
+   "detailIds": [
+    "11573",
+    "12354"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0928,
+    0.0072
+   ],
+   "tcgdexVsOfficialDhash": [
+    70,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0921,
+   "officialVsOfficialDhash": 70,
+   "matchedDetailId": "12354",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-051",
+   "series": "SV8a",
+   "number": "051",
+   "detailIds": [
+    "11576",
+    "12355"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0904,
+    0.0074
+   ],
+   "tcgdexVsOfficialDhash": [
+    56,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0894,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "12355",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-053",
+   "series": "SV8a",
+   "number": "053",
+   "detailIds": [
+    "11578",
+    "12356"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0082,
+    0.0958
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    66
+   ],
+   "officialVsOfficialPixel": 0.0964,
+   "officialVsOfficialDhash": 66,
+   "matchedDetailId": "11578",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-055",
+   "series": "SV8a",
+   "number": "055",
+   "detailIds": [
+    "11580",
+    "12357"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0084,
+    0.0839
+   ],
+   "tcgdexVsOfficialDhash": [
+    1,
+    40
+   ],
+   "officialVsOfficialPixel": 0.0844,
+   "officialVsOfficialDhash": 39,
+   "matchedDetailId": "11580",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-057",
+   "series": "SV8a",
+   "number": "057",
+   "detailIds": [
+    "11582",
+    "12358"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0058,
+    0.0747
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    67
+   ],
+   "officialVsOfficialPixel": 0.0748,
+   "officialVsOfficialDhash": 68,
+   "matchedDetailId": "11582",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-058",
+   "series": "SV8a",
+   "number": "058",
+   "detailIds": [
+    "11583",
+    "12359"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0765,
+    0.0064
+   ],
+   "tcgdexVsOfficialDhash": [
+    66,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0753,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "12359",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-059",
+   "series": "SV8a",
+   "number": "059",
+   "detailIds": [
+    "11584",
+    "12360"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0801,
+    0.0069
+   ],
+   "tcgdexVsOfficialDhash": [
+    54,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0795,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "12360",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-060",
+   "series": "SV8a",
+   "number": "060",
+   "detailIds": [
+    "11585",
+    "12361"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0061,
+    0.0788
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    74
+   ],
+   "officialVsOfficialPixel": 0.079,
+   "officialVsOfficialDhash": 73,
+   "matchedDetailId": "11585",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-061",
+   "series": "SV8a",
+   "number": "061",
+   "detailIds": [
+    "11586",
+    "12362"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0737,
+    0.007
+   ],
+   "tcgdexVsOfficialDhash": [
+    60,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0732,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12362",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-062",
+   "series": "SV8a",
+   "number": "062",
+   "detailIds": [
+    "11587",
+    "12363"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0677,
+    0.0063
+   ],
+   "tcgdexVsOfficialDhash": [
+    60,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0667,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12363",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-064",
+   "series": "SV8a",
+   "number": "064",
+   "detailIds": [
+    "11589",
+    "12364"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0747,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    66,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0746,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "12364",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-065",
+   "series": "SV8a",
+   "number": "065",
+   "detailIds": [
+    "11590",
+    "12365"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0797,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0799,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12365",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-066",
+   "series": "SV8a",
+   "number": "066",
+   "detailIds": [
+    "11591",
+    "12366"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0813,
+    0.0065
+   ],
+   "tcgdexVsOfficialDhash": [
+    57,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0808,
+   "officialVsOfficialDhash": 55,
+   "matchedDetailId": "12366",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-067",
+   "series": "SV8a",
+   "number": "067",
+   "detailIds": [
+    "11592",
+    "12367"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0719,
+    0.0063
+   ],
+   "tcgdexVsOfficialDhash": [
+    56,
+    0
+   ],
+   "officialVsOfficialPixel": 0.0714,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "12367",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-068",
+   "series": "SV8a",
+   "number": "068",
+   "detailIds": [
+    "11593",
+    "12368"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.007,
+    0.0731
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    64
+   ],
+   "officialVsOfficialPixel": 0.0734,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "11593",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-070",
+   "series": "SV8a",
+   "number": "070",
+   "detailIds": [
+    "11595",
+    "12369"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0834,
+    0.0064
+   ],
+   "tcgdexVsOfficialDhash": [
+    56,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0829,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "12369",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-071",
+   "series": "SV8a",
+   "number": "071",
+   "detailIds": [
+    "11596",
+    "12370"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0063,
+    0.0758
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    48
+   ],
+   "officialVsOfficialPixel": 0.0754,
+   "officialVsOfficialDhash": 47,
+   "matchedDetailId": "11596",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-072",
+   "series": "SV8a",
+   "number": "072",
+   "detailIds": [
+    "11597",
+    "12371"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.071,
+    0.0074
+   ],
+   "tcgdexVsOfficialDhash": [
+    56,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0699,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "12371",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-073",
+   "series": "SV8a",
+   "number": "073",
+   "detailIds": [
+    "11598",
+    "12372"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.073,
+    0.0063
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0727,
+   "officialVsOfficialDhash": 57,
+   "matchedDetailId": "12372",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-075",
+   "series": "SV8a",
+   "number": "075",
+   "detailIds": [
+    "11600",
+    "12373"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0841,
+    0.0062
+   ],
+   "tcgdexVsOfficialDhash": [
+    60,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0836,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12373",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-076",
+   "series": "SV8a",
+   "number": "076",
+   "detailIds": [
+    "11601",
+    "12374"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0814,
+    0.0067
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    0
+   ],
+   "officialVsOfficialPixel": 0.0806,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12374",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-077",
+   "series": "SV8a",
+   "number": "077",
+   "detailIds": [
+    "11602",
+    "12375"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0846,
+    0.0068
+   ],
+   "tcgdexVsOfficialDhash": [
+    42,
+    1
+   ],
+   "officialVsOfficialPixel": 0.084,
+   "officialVsOfficialDhash": 43,
+   "matchedDetailId": "12375",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-079",
+   "series": "SV8a",
+   "number": "079",
+   "detailIds": [
+    "11604",
+    "12376"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1144,
+    0.0067
+   ],
+   "tcgdexVsOfficialDhash": [
+    63,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1138,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "12376",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-080",
+   "series": "SV8a",
+   "number": "080",
+   "detailIds": [
+    "11605",
+    "12377"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0084,
+    0.1017
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    67
+   ],
+   "officialVsOfficialPixel": 0.1023,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "11605",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-081",
+   "series": "SV8a",
+   "number": "081",
+   "detailIds": [
+    "11606",
+    "12378"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1117,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    70,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1116,
+   "officialVsOfficialDhash": 70,
+   "matchedDetailId": "12378",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-082",
+   "series": "SV8a",
+   "number": "082",
+   "detailIds": [
+    "11607",
+    "12379"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0075,
+    0.1005
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    74
+   ],
+   "officialVsOfficialPixel": 0.1011,
+   "officialVsOfficialDhash": 70,
+   "matchedDetailId": "11607",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-083",
+   "series": "SV8a",
+   "number": "083",
+   "detailIds": [
+    "11608",
+    "12380"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1024,
+    0.007
+   ],
+   "tcgdexVsOfficialDhash": [
+    78,
+    6
+   ],
+   "officialVsOfficialPixel": 0.1019,
+   "officialVsOfficialDhash": 80,
+   "matchedDetailId": "12380",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-084",
+   "series": "SV8a",
+   "number": "084",
+   "detailIds": [
+    "11609",
+    "12381"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1073,
+    0.0073
+   ],
+   "tcgdexVsOfficialDhash": [
+    64,
+    1
+   ],
+   "officialVsOfficialPixel": 0.1063,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "12381",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-085",
+   "series": "SV8a",
+   "number": "085",
+   "detailIds": [
+    "11610",
+    "12382"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1031,
+    0.0072
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    1
+   ],
+   "officialVsOfficialPixel": 0.102,
+   "officialVsOfficialDhash": 60,
+   "matchedDetailId": "12382",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-086",
+   "series": "SV8a",
+   "number": "086",
+   "detailIds": [
+    "11611",
+    "12383"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0774,
+    0.0076
+   ],
+   "tcgdexVsOfficialDhash": [
+    52,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0764,
+   "officialVsOfficialDhash": 52,
+   "matchedDetailId": "12383",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-087",
+   "series": "SV8a",
+   "number": "087",
+   "detailIds": [
+    "11612",
+    "12384"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.082,
+    0.0081
+   ],
+   "tcgdexVsOfficialDhash": [
+    48,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0801,
+   "officialVsOfficialDhash": 47,
+   "matchedDetailId": "12384",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-089",
+   "series": "SV8a",
+   "number": "089",
+   "detailIds": [
+    "11614",
+    "12385"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1006,
+    0.0067
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0996,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "12385",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-090",
+   "series": "SV8a",
+   "number": "090",
+   "detailIds": [
+    "11615",
+    "12386"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0085,
+    0.1068
+   ],
+   "tcgdexVsOfficialDhash": [
+    6,
+    66
+   ],
+   "officialVsOfficialPixel": 0.1071,
+   "officialVsOfficialDhash": 62,
+   "matchedDetailId": "11615",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-092",
+   "series": "SV8a",
+   "number": "092",
+   "detailIds": [
+    "11617",
+    "12387"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.157,
+    0.0068
+   ],
+   "tcgdexVsOfficialDhash": [
+    73,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1579,
+   "officialVsOfficialDhash": 71,
+   "matchedDetailId": "12387",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-094",
+   "series": "SV8a",
+   "number": "094",
+   "detailIds": [
+    "11619",
+    "12388"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1511,
+    0.0068
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    1
+   ],
+   "officialVsOfficialPixel": 0.1519,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "12388",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-095",
+   "series": "SV8a",
+   "number": "095",
+   "detailIds": [
+    "11620",
+    "12389"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1575,
+    0.0069
+   ],
+   "tcgdexVsOfficialDhash": [
+    68,
+    3
+   ],
+   "officialVsOfficialPixel": 0.1582,
+   "officialVsOfficialDhash": 71,
+   "matchedDetailId": "12389",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-096",
+   "series": "SV8a",
+   "number": "096",
+   "detailIds": [
+    "11621",
+    "12390"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1551,
+    0.0074
+   ],
+   "tcgdexVsOfficialDhash": [
+    64,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1557,
+   "officialVsOfficialDhash": 64,
+   "matchedDetailId": "12390",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-097",
+   "series": "SV8a",
+   "number": "097",
+   "detailIds": [
+    "11622",
+    "12391"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1569,
+    0.0074
+   ],
+   "tcgdexVsOfficialDhash": [
+    62,
+    4
+   ],
+   "officialVsOfficialPixel": 0.157,
+   "officialVsOfficialDhash": 62,
+   "matchedDetailId": "12391",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-098",
+   "series": "SV8a",
+   "number": "098",
+   "detailIds": [
+    "11623",
+    "12392"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1682,
+    0.0075
+   ],
+   "tcgdexVsOfficialDhash": [
+    80,
+    2
+   ],
+   "officialVsOfficialPixel": 0.1683,
+   "officialVsOfficialDhash": 80,
+   "matchedDetailId": "12392",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-099",
+   "series": "SV8a",
+   "number": "099",
+   "detailIds": [
+    "11624",
+    "12393"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.1145,
+    0.0079
+   ],
+   "tcgdexVsOfficialDhash": [
+    67,
+    1
+   ],
+   "officialVsOfficialPixel": 0.1141,
+   "officialVsOfficialDhash": 68,
+   "matchedDetailId": "12393",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-100",
+   "series": "SV8a",
+   "number": "100",
+   "detailIds": [
+    "11625",
+    "12394"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0074,
+    0.1165
+   ],
+   "tcgdexVsOfficialDhash": [
+    2,
+    65
+   ],
+   "officialVsOfficialPixel": 0.1164,
+   "officialVsOfficialDhash": 65,
+   "matchedDetailId": "11625",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-106",
+   "series": "SV8a",
+   "number": "106",
+   "detailIds": [
+    "11631",
+    "12395"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.063,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    58,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0631,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12395",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-107",
+   "series": "SV8a",
+   "number": "107",
+   "detailIds": [
+    "11632",
+    "12396"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0052,
+    0.0685
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    64
+   ],
+   "officialVsOfficialPixel": 0.0686,
+   "officialVsOfficialDhash": 64,
+   "matchedDetailId": "11632",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-108",
+   "series": "SV8a",
+   "number": "108",
+   "detailIds": [
+    "11633",
+    "12397"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0652,
+    0.0058
+   ],
+   "tcgdexVsOfficialDhash": [
+    60,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0653,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "12397",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-109",
+   "series": "SV8a",
+   "number": "109",
+   "detailIds": [
+    "11634",
+    "12398"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.068,
+    0.0065
+   ],
+   "tcgdexVsOfficialDhash": [
+    60,
+    2
+   ],
+   "officialVsOfficialPixel": 0.067,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "12398",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-110",
+   "series": "SV8a",
+   "number": "110",
+   "detailIds": [
+    "11635",
+    "12399"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0703,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    60,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0704,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12399",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-111",
+   "series": "SV8a",
+   "number": "111",
+   "detailIds": [
+    "11636",
+    "12400"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0793,
+    0.0058
+   ],
+   "tcgdexVsOfficialDhash": [
+    48,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0789,
+   "officialVsOfficialDhash": 47,
+   "matchedDetailId": "12400",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-112",
+   "series": "SV8a",
+   "number": "112",
+   "detailIds": [
+    "11637",
+    "12401"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0746,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    73,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0749,
+   "officialVsOfficialDhash": 71,
+   "matchedDetailId": "12401",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-113",
+   "series": "SV8a",
+   "number": "113",
+   "detailIds": [
+    "11638",
+    "12402"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0716,
+    0.0059
+   ],
+   "tcgdexVsOfficialDhash": [
+    45,
+    5
+   ],
+   "officialVsOfficialPixel": 0.0712,
+   "officialVsOfficialDhash": 44,
+   "matchedDetailId": "12402",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-114",
+   "series": "SV8a",
+   "number": "114",
+   "detailIds": [
+    "11639",
+    "12403"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0678,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    58,
+    1
+   ],
+   "officialVsOfficialPixel": 0.068,
+   "officialVsOfficialDhash": 57,
+   "matchedDetailId": "12403",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-115",
+   "series": "SV8a",
+   "number": "115",
+   "detailIds": [
+    "11640",
+    "12404"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0057,
+    0.0716
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    66
+   ],
+   "officialVsOfficialPixel": 0.0712,
+   "officialVsOfficialDhash": 67,
+   "matchedDetailId": "11640",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-116",
+   "series": "SV8a",
+   "number": "116",
+   "detailIds": [
+    "11641",
+    "12405"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0723,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    36,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0717,
+   "officialVsOfficialDhash": 35,
+   "matchedDetailId": "12405",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-118",
+   "series": "SV8a",
+   "number": "118",
+   "detailIds": [
+    "11643",
+    "12406"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0896,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    77,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0898,
+   "officialVsOfficialDhash": 77,
+   "matchedDetailId": "12406",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-119",
+   "series": "SV8a",
+   "number": "119",
+   "detailIds": [
+    "11644",
+    "12407"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0837,
+    0.0068
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0838,
+   "officialVsOfficialDhash": 59,
+   "matchedDetailId": "12407",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-121",
+   "series": "SV8a",
+   "number": "121",
+   "detailIds": [
+    "11646",
+    "12408"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0078,
+    0.0917
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    78
+   ],
+   "officialVsOfficialPixel": 0.0919,
+   "officialVsOfficialDhash": 77,
+   "matchedDetailId": "11646",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-122",
+   "series": "SV8a",
+   "number": "122",
+   "detailIds": [
+    "11647",
+    "12409"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0081,
+    0.0767
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    39
+   ],
+   "officialVsOfficialPixel": 0.0767,
+   "officialVsOfficialDhash": 38,
+   "matchedDetailId": "11647",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-123",
+   "series": "SV8a",
+   "number": "123",
+   "detailIds": [
+    "11648",
+    "12410"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0078,
+    0.0809
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    28
+   ],
+   "officialVsOfficialPixel": 0.081,
+   "officialVsOfficialDhash": 32,
+   "matchedDetailId": "11648",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-125",
+   "series": "SV8a",
+   "number": "125",
+   "detailIds": [
+    "11650",
+    "12411"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0053,
+    0.0797
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    68
+   ],
+   "officialVsOfficialPixel": 0.0803,
+   "officialVsOfficialDhash": 67,
+   "matchedDetailId": "11650",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-127",
+   "series": "SV8a",
+   "number": "127",
+   "detailIds": [
+    "11652",
+    "12412"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0854,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    69,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0852,
+   "officialVsOfficialDhash": 70,
+   "matchedDetailId": "12412",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-128",
+   "series": "SV8a",
+   "number": "128",
+   "detailIds": [
+    "11653",
+    "12413"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0899,
+    0.006
+   ],
+   "tcgdexVsOfficialDhash": [
+    53,
+    0
+   ],
+   "officialVsOfficialPixel": 0.089,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "12413",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-129",
+   "series": "SV8a",
+   "number": "129",
+   "detailIds": [
+    "11654",
+    "12414"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0841,
+    0.0064
+   ],
+   "tcgdexVsOfficialDhash": [
+    69,
+    6
+   ],
+   "officialVsOfficialPixel": 0.0834,
+   "officialVsOfficialDhash": 67,
+   "matchedDetailId": "12414",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-130",
+   "series": "SV8a",
+   "number": "130",
+   "detailIds": [
+    "11655",
+    "12415"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0955,
+    0.0063
+   ],
+   "tcgdexVsOfficialDhash": [
+    68,
+    0
+   ],
+   "officialVsOfficialPixel": 0.0945,
+   "officialVsOfficialDhash": 68,
+   "matchedDetailId": "12415",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-131",
+   "series": "SV8a",
+   "number": "131",
+   "detailIds": [
+    "11656",
+    "12416"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0749,
+    0.0064
+   ],
+   "tcgdexVsOfficialDhash": [
+    59,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0738,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "12416",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-132",
+   "series": "SV8a",
+   "number": "132",
+   "detailIds": [
+    "11657",
+    "12417"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0784,
+    0.0058
+   ],
+   "tcgdexVsOfficialDhash": [
+    71,
+    5
+   ],
+   "officialVsOfficialPixel": 0.078,
+   "officialVsOfficialDhash": 66,
+   "matchedDetailId": "12417",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-133",
+   "series": "SV8a",
+   "number": "133",
+   "detailIds": [
+    "11658",
+    "12418"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0798,
+    0.0058
+   ],
+   "tcgdexVsOfficialDhash": [
+    70,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0796,
+   "officialVsOfficialDhash": 69,
+   "matchedDetailId": "12418",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-135",
+   "series": "SV8a",
+   "number": "135",
+   "detailIds": [
+    "11660",
+    "12419"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.073,
+    0.0071
+   ],
+   "tcgdexVsOfficialDhash": [
+    35,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0718,
+   "officialVsOfficialDhash": 36,
+   "matchedDetailId": "12419",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-137",
+   "series": "SV8a",
+   "number": "137",
+   "detailIds": [
+    "11662",
+    "12420"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0695,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    51,
+    5
+   ],
+   "officialVsOfficialPixel": 0.0678,
+   "officialVsOfficialDhash": 50,
+   "matchedDetailId": "12420",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-138",
+   "series": "SV8a",
+   "number": "138",
+   "detailIds": [
+    "11663",
+    "12421"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0051,
+    0.0681
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    44
+   ],
+   "officialVsOfficialPixel": 0.0685,
+   "officialVsOfficialDhash": 43,
+   "matchedDetailId": "11663",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-139",
+   "series": "SV8a",
+   "number": "139",
+   "detailIds": [
+    "11664",
+    "12422"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0746,
+    0.0053
+   ],
+   "tcgdexVsOfficialDhash": [
+    44,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0743,
+   "officialVsOfficialDhash": 45,
+   "matchedDetailId": "12422",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-140",
+   "series": "SV8a",
+   "number": "140",
+   "detailIds": [
+    "11665",
+    "12423"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0719,
+    0.0054
+   ],
+   "tcgdexVsOfficialDhash": [
+    57,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0714,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "12423",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-141",
+   "series": "SV8a",
+   "number": "141",
+   "detailIds": [
+    "11666",
+    "12424"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0642,
+    0.006
+   ],
+   "tcgdexVsOfficialDhash": [
+    40,
+    3
+   ],
+   "officialVsOfficialPixel": 0.063,
+   "officialVsOfficialDhash": 41,
+   "matchedDetailId": "12424",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-143",
+   "series": "SV8a",
+   "number": "143",
+   "detailIds": [
+    "11668",
+    "12425"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0695,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    53,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0689,
+   "officialVsOfficialDhash": 50,
+   "matchedDetailId": "12425",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-144",
+   "series": "SV8a",
+   "number": "144",
+   "detailIds": [
+    "11669",
+    "12426"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0802,
+    0.0062
+   ],
+   "tcgdexVsOfficialDhash": [
+    42,
+    0
+   ],
+   "officialVsOfficialPixel": 0.079,
+   "officialVsOfficialDhash": 42,
+   "matchedDetailId": "12426",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-145",
+   "series": "SV8a",
+   "number": "145",
+   "detailIds": [
+    "11670",
+    "12427"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0728,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    57,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0724,
+   "officialVsOfficialDhash": 54,
+   "matchedDetailId": "12427",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-147",
+   "series": "SV8a",
+   "number": "147",
+   "detailIds": [
+    "11672",
+    "12428"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0055,
+    0.0632
+   ],
+   "tcgdexVsOfficialDhash": [
+    8,
+    56
+   ],
+   "officialVsOfficialPixel": 0.0643,
+   "officialVsOfficialDhash": 56,
+   "matchedDetailId": "11672",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-150",
+   "series": "SV8a",
+   "number": "150",
+   "detailIds": [
+    "11675",
+    "12429"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0669,
+    0.0061
+   ],
+   "tcgdexVsOfficialDhash": [
+    43,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0658,
+   "officialVsOfficialDhash": 42,
+   "matchedDetailId": "12429",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-151",
+   "series": "SV8a",
+   "number": "151",
+   "detailIds": [
+    "11676",
+    "12430"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0796,
+    0.0055
+   ],
+   "tcgdexVsOfficialDhash": [
+    49,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0785,
+   "officialVsOfficialDhash": 48,
+   "matchedDetailId": "12430",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-153",
+   "series": "SV8a",
+   "number": "153",
+   "detailIds": [
+    "11678",
+    "12431"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0768,
+    0.0058
+   ],
+   "tcgdexVsOfficialDhash": [
+    65,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0763,
+   "officialVsOfficialDhash": 64,
+   "matchedDetailId": "12431",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-154",
+   "series": "SV8a",
+   "number": "154",
+   "detailIds": [
+    "11679",
+    "12432"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0722,
+    0.0052
+   ],
+   "tcgdexVsOfficialDhash": [
+    56,
+    3
+   ],
+   "officialVsOfficialPixel": 0.072,
+   "officialVsOfficialDhash": 55,
+   "matchedDetailId": "12432",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-155",
+   "series": "SV8a",
+   "number": "155",
+   "detailIds": [
+    "11680",
+    "12433"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0669,
+    0.006
+   ],
+   "tcgdexVsOfficialDhash": [
+    55,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0659,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "12433",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-156",
+   "series": "SV8a",
+   "number": "156",
+   "detailIds": [
+    "11681",
+    "12434"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0691,
+    0.0055
+   ],
+   "tcgdexVsOfficialDhash": [
+    53,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0685,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "12434",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-157",
+   "series": "SV8a",
+   "number": "157",
+   "detailIds": [
+    "11682",
+    "12435"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0749,
+    0.0063
+   ],
+   "tcgdexVsOfficialDhash": [
+    47,
+    7
+   ],
+   "officialVsOfficialPixel": 0.0737,
+   "officialVsOfficialDhash": 46,
+   "matchedDetailId": "12435",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-158",
+   "series": "SV8a",
+   "number": "158",
+   "detailIds": [
+    "11683",
+    "12436"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.079,
+    0.0058
+   ],
+   "tcgdexVsOfficialDhash": [
+    42,
+    6
+   ],
+   "officialVsOfficialPixel": 0.078,
+   "officialVsOfficialDhash": 38,
+   "matchedDetailId": "12436",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-160",
+   "series": "SV8a",
+   "number": "160",
+   "detailIds": [
+    "11685",
+    "12437"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0707,
+    0.0054
+   ],
+   "tcgdexVsOfficialDhash": [
+    49,
+    6
+   ],
+   "officialVsOfficialPixel": 0.0702,
+   "officialVsOfficialDhash": 47,
+   "matchedDetailId": "12437",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-161",
+   "series": "SV8a",
+   "number": "161",
+   "detailIds": [
+    "11686",
+    "12438"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.005,
+    0.0646
+   ],
+   "tcgdexVsOfficialDhash": [
+    3,
+    54
+   ],
+   "officialVsOfficialPixel": 0.0655,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "11686",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-162",
+   "series": "SV8a",
+   "number": "162",
+   "detailIds": [
+    "11687",
+    "12439"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0675,
+    0.005
+   ],
+   "tcgdexVsOfficialDhash": [
+    47,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0671,
+   "officialVsOfficialDhash": 47,
+   "matchedDetailId": "12439",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-163",
+   "series": "SV8a",
+   "number": "163",
+   "detailIds": [
+    "11688",
+    "12440"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0055,
+    0.0718
+   ],
+   "tcgdexVsOfficialDhash": [
+    6,
+    47
+   ],
+   "officialVsOfficialPixel": 0.0726,
+   "officialVsOfficialDhash": 47,
+   "matchedDetailId": "11688",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-164",
+   "series": "SV8a",
+   "number": "164",
+   "detailIds": [
+    "11689",
+    "12441"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0668,
+    0.0056
+   ],
+   "tcgdexVsOfficialDhash": [
+    43,
+    0
+   ],
+   "officialVsOfficialPixel": 0.0662,
+   "officialVsOfficialDhash": 43,
+   "matchedDetailId": "12441",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-165",
+   "series": "SV8a",
+   "number": "165",
+   "detailIds": [
+    "11690",
+    "12442"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0811,
+    0.0054
+   ],
+   "tcgdexVsOfficialDhash": [
+    39,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0805,
+   "officialVsOfficialDhash": 38,
+   "matchedDetailId": "12442",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-166",
+   "series": "SV8a",
+   "number": "166",
+   "detailIds": [
+    "11691",
+    "12443"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0668,
+    0.0055
+   ],
+   "tcgdexVsOfficialDhash": [
+    49,
+    8
+   ],
+   "officialVsOfficialPixel": 0.0662,
+   "officialVsOfficialDhash": 51,
+   "matchedDetailId": "12443",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-167",
+   "series": "SV8a",
+   "number": "167",
+   "detailIds": [
+    "11692",
+    "12444"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0714,
+    0.0058
+   ],
+   "tcgdexVsOfficialDhash": [
+    48,
+    7
+   ],
+   "officialVsOfficialPixel": 0.0708,
+   "officialVsOfficialDhash": 51,
+   "matchedDetailId": "12444",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-168",
+   "series": "SV8a",
+   "number": "168",
+   "detailIds": [
+    "11693",
+    "12445"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0686,
+    0.0059
+   ],
+   "tcgdexVsOfficialDhash": [
+    55,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0678,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "12445",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-169",
+   "series": "SV8a",
+   "number": "169",
+   "detailIds": [
+    "11694",
+    "12446"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0722,
+    0.006
+   ],
+   "tcgdexVsOfficialDhash": [
+    54,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0716,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "12446",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-170",
+   "series": "SV8a",
+   "number": "170",
+   "detailIds": [
+    "11695",
+    "12447"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.074,
+    0.0062
+   ],
+   "tcgdexVsOfficialDhash": [
+    54,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0733,
+   "officialVsOfficialDhash": 55,
+   "matchedDetailId": "12447",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-171",
+   "series": "SV8a",
+   "number": "171",
+   "detailIds": [
+    "11696",
+    "12448"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0055,
+    0.0684
+   ],
+   "tcgdexVsOfficialDhash": [
+    5,
+    49
+   ],
+   "officialVsOfficialPixel": 0.0694,
+   "officialVsOfficialDhash": 50,
+   "matchedDetailId": "11696",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-172",
+   "series": "SV8a",
+   "number": "172",
+   "detailIds": [
+    "11697",
+    "12449"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0689,
+    0.006
+   ],
+   "tcgdexVsOfficialDhash": [
+    41,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0682,
+   "officialVsOfficialDhash": 40,
+   "matchedDetailId": "12449",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-173",
+   "series": "SV8a",
+   "number": "173",
+   "detailIds": [
+    "11698",
+    "12450"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0051,
+    0.0659
+   ],
+   "tcgdexVsOfficialDhash": [
+    4,
+    51
+   ],
+   "officialVsOfficialPixel": 0.0668,
+   "officialVsOfficialDhash": 53,
+   "matchedDetailId": "11698",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-174",
+   "series": "SV8a",
+   "number": "174",
+   "detailIds": [
+    "11699",
+    "12451"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0634,
+    0.0059
+   ],
+   "tcgdexVsOfficialDhash": [
+    48,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0622,
+   "officialVsOfficialDhash": 46,
+   "matchedDetailId": "12451",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-175",
+   "series": "SV8a",
+   "number": "175",
+   "detailIds": [
+    "11700",
+    "12452"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0839,
+    0.0053
+   ],
+   "tcgdexVsOfficialDhash": [
+    34,
+    1
+   ],
+   "officialVsOfficialPixel": 0.083,
+   "officialVsOfficialDhash": 33,
+   "matchedDetailId": "12452",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-176",
+   "series": "SV8a",
+   "number": "176",
+   "detailIds": [
+    "11701",
+    "12453"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.077,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    51,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0765,
+   "officialVsOfficialDhash": 49,
+   "matchedDetailId": "12453",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-177",
+   "series": "SV8a",
+   "number": "177",
+   "detailIds": [
+    "11702",
+    "12454"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0665,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    50,
+    6
+   ],
+   "officialVsOfficialPixel": 0.0658,
+   "officialVsOfficialDhash": 48,
+   "matchedDetailId": "12454",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-178",
+   "series": "SV8a",
+   "number": "178",
+   "detailIds": [
+    "11703",
+    "12455"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0769,
+    0.0054
+   ],
+   "tcgdexVsOfficialDhash": [
+    52,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0764,
+   "officialVsOfficialDhash": 54,
+   "matchedDetailId": "12455",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-179",
+   "series": "SV8a",
+   "number": "179",
+   "detailIds": [
+    "11704",
+    "12456"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0698,
+    0.006
+   ],
+   "tcgdexVsOfficialDhash": [
+    46,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0689,
+   "officialVsOfficialDhash": 47,
+   "matchedDetailId": "12456",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-180",
+   "series": "SV8a",
+   "number": "180",
+   "detailIds": [
+    "11705",
+    "12457"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0766,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    69,
+    2
+   ],
+   "officialVsOfficialPixel": 0.0762,
+   "officialVsOfficialDhash": 67,
+   "matchedDetailId": "12457",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-181",
+   "series": "SV8a",
+   "number": "181",
+   "detailIds": [
+    "11706",
+    "12458"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0048,
+    0.0813
+   ],
+   "tcgdexVsOfficialDhash": [
+    2,
+    52
+   ],
+   "officialVsOfficialPixel": 0.0818,
+   "officialVsOfficialDhash": 52,
+   "matchedDetailId": "11706",
+   "matchedVersionIndex": 1
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-182",
+   "series": "SV8a",
+   "number": "182",
+   "detailIds": [
+    "11707",
+    "12459"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0826,
+    0.0057
+   ],
+   "tcgdexVsOfficialDhash": [
+    50,
+    1
+   ],
+   "officialVsOfficialPixel": 0.0824,
+   "officialVsOfficialDhash": 49,
+   "matchedDetailId": "12459",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-183",
+   "series": "SV8a",
+   "number": "183",
+   "detailIds": [
+    "11708",
+    "12460"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0859,
+    0.0054
+   ],
+   "tcgdexVsOfficialDhash": [
+    60,
+    3
+   ],
+   "officialVsOfficialPixel": 0.0858,
+   "officialVsOfficialDhash": 61,
+   "matchedDetailId": "12460",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-185",
+   "series": "SV8a",
+   "number": "185",
+   "detailIds": [
+    "11710",
+    "12461"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0783,
+    0.0054
+   ],
+   "tcgdexVsOfficialDhash": [
+    63,
+    4
+   ],
+   "officialVsOfficialPixel": 0.0782,
+   "officialVsOfficialDhash": 63,
+   "matchedDetailId": "12461",
+   "matchedVersionIndex": 2
+  },
+  {
+   "cardId": "pokemon-tcgdex-tw-sv8a-186",
+   "series": "SV8a",
+   "number": "186",
+   "detailIds": [
+    "11711",
+    "12462"
+   ],
+   "tcgdexVsOfficialPixel": [
+    0.0052,
+    0.0658
+   ],
+   "tcgdexVsOfficialDhash": [
+    1,
+    59
+   ],
+   "officialVsOfficialPixel": 0.0672,
+   "officialVsOfficialDhash": 58,
+   "matchedDetailId": "11711",
+   "matchedVersionIndex": 1
+  }
+ ]
+}

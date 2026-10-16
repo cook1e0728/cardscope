@@ -6,6 +6,10 @@ import { officialTwImageUrl } from './pokemon-tw-card-images-plan.mjs';
 // number is several official versions. The smallest ID is the existing card (version 1); every other page becomes
 // `<base>-v<k>` (private.split_pokemon_tw_official_variants, same rules as ADR 0035 / 0039). The cached official detail
 // pages hold only name, set mark and number, so names are the neutral 「版本 k」. No network or database calls.
+// Addendum (2026-10-17): a base card that already shows a TCGdex image corresponds to the official page whose image it is
+// (compared image by image, docs/evidence/pokemon-tw/variant-split-20261017/). `imageMatches` maps that base card to its page; when it
+// is not the smallest ID the row carries `baseVersionIndex` (its position in the sorted IDs), the base card is that version
+// and the smallest ID becomes a new card `<base>-v1`. A base card with a printing image and no match is never split.
 
 const FN = 'private.split_pokemon_tw_official_variants';
 const MAX_CARDS = 100;
@@ -14,12 +18,13 @@ const numeric = (a, b) => String(a).localeCompare(String(b), 'en', { numeric: tr
 
 /**
  * details: official detail cache `.details` ({ [detailId]: { nameZh, setMark, number, total } });
- * baseCards: [{ id, source, code, num, name_zh, ids, has_image }] one row per card whose TW printing lists >= 2 official IDs
- *   (has_image: the card has a card_images row or a printing image_url).
+ * baseCards: [{ id, source, code, num, name_zh, ids, has_image, printing_image }] one row per card whose TW printing lists >= 2 official IDs
+ *   (has_image: the card has a card_images row or a printing image_url; printing_image: it has a printing image_url, i.e. a TCGdex image).
+ * imageMatches: { [baseCardId]: detailId } the official page the base card's existing printing image shows (required when printing_image).
  * Returns { plans: [{ series, plan, bases, cards, baseImages }], skipped, summary }; plan is the p_plan argument of the SQL
  * function (each plan <= 100 new cards, a base card never split, one series each).
  */
-export function buildTwOfficialVariantPlans({ details, baseCards }) {
+export function buildTwOfficialVariantPlans({ details, baseCards, imageMatches = {} }) {
   const skipped = [];
   const codes = [...new Set(baseCards.map(base => base.code))].sort();
   const rowsBySeries = new Map(codes.map(code => [code, []]));
@@ -43,17 +48,22 @@ export function buildTwOfficialVariantPlans({ details, baseCards }) {
       return page.number !== base.num || !sameTwName(base.name_zh, page.nameZh) || !(twSetMarkMatches(page.setMark, base.code) || page.total === base.code);
     });
     if (wrong) { skip(`detail-disagrees:${wrong}:${details[wrong].setMark}:${details[wrong].number}:${details[wrong].nameZh}`); continue; }
-    if (base.source === 'asia-pokemon-card-official-tw' && String(base.provider_id) !== ids[0]) { skip('base-provider-not-smallest'); continue; }
+    const matched = imageMatches[base.id] === undefined ? null : String(imageMatches[base.id]);
+    if (matched !== null && !ids.includes(matched)) { skip(`image-match-not-listed:${matched}`); continue; }
+    if (matched === null && base.printing_image) { skip('base-image-version-unknown'); continue; }
+    const baseIndex = matched === null ? 1 : ids.indexOf(matched) + 1;
+    if (base.source === 'asia-pokemon-card-official-tw' && String(base.provider_id) !== ids[baseIndex - 1]) { skip(baseIndex === 1 ? 'base-provider-not-smallest' : 'base-provider-not-matched'); continue; }
     rowsBySeries.get(base.code).push({
       baseCardId: base.id,
       seriesCode: base.code,
       number: base.num,
       nameZh: base.name_zh,
       officialDetailIds: ids,
-      baseOfficial: { detailId: ids[0], imageUrl: officialTwImageUrl(ids[0]), sourceUrl: officialTwDetailUrl(ids[0]) },
-      variants: ids.slice(1).map((id, i) => {
-        const variantIndex = i + 2;
-        return { cardId: `${base.id}-v${variantIndex}`, detailId: id, variantIndex, variantName: `版本 ${variantIndex}`, imageUrl: officialTwImageUrl(id), sourceUrl: officialTwDetailUrl(id) };
+      ...(baseIndex === 1 ? {} : { baseVersionIndex: baseIndex }),
+      baseOfficial: { detailId: ids[baseIndex - 1], imageUrl: officialTwImageUrl(ids[baseIndex - 1]), sourceUrl: officialTwDetailUrl(ids[baseIndex - 1]) },
+      variants: ids.flatMap((id, i) => {
+        const variantIndex = i + 1;
+        return variantIndex === baseIndex ? [] : [{ cardId: `${base.id}-v${variantIndex}`, detailId: id, variantIndex, variantName: `版本 ${variantIndex}`, imageUrl: officialTwImageUrl(id), sourceUrl: officialTwDetailUrl(id) }];
       }),
       hasImage: Boolean(base.has_image)
     });

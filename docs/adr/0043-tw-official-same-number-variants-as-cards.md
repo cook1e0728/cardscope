@@ -21,6 +21,16 @@ status: accepted
 ## Consequences
 
 - 2026-10-16：8 個系列 552 張原卡（M2a 118、MC 120、SV2a 136、SV11B 80、SV11W 80、SVI 15、M-P 2、SV-P 1），新增 685 張版本卡（M2a 236、MC 120、SV2a 136、SV11B 80、SV11W 80、SVI 30、M-P 2、SV-P 1），12 份計畫寫入＋重播零異動；685 張新卡與 552 張原卡皆有官方卡圖。migration `20261016100000_pokemon_tw_official_variant_split`（`private.split_pokemon_tw_official_variants`），套用前以 migration＋12 份計畫＋12 份重播整批回滾測試（交易內新卡 685、新 Printing 685、新卡圖 685、原卡 552，回滾後零殘留）。證據 `docs/evidence/pokemon-tw/variant-split-20261016/`。
-- 沒有拆的同號多版本台版卡：SV2a 17 張、SV8a 144 張已有 TCGdex 台版圖（不屬於「完全沒有圖」）。若要比照拆分，需先決定原卡既有的 TCGdex 圖視為哪一版（可能是任何一版），再另開計畫；目前不處理。
+- 沒有拆的同號多版本台版卡：SV2a 17 張、SV8a 144 張已有 TCGdex 台版圖（不屬於「完全沒有圖」）。已於 2026-10-17 處理，見下方補充。
 - 台版官方 ID 與日本官方卡片 ID 是不同編號空間，數字可能相同（SV2a 的 7 個台灣詳細頁 ID 15000～15006 同時是日版 EP08 官方卡片 ID）；唯一索引是（來源、Provider ID），來源不同不衝突，ID 碰撞檢查因此只看台灣官方來源。
 - 之後 ADR 0010／0015 匯入或補號若再遇到同號多頁，應直接依本 ADR 拆成多張卡。
+
+## 補充：原卡已有 TCGdex 台版圖的同號多版本（2026-10-17）
+
+前面「沒有拆的」SV2a 17 張、SV8a 144 張（共 161 張，每張恰好 2 個官方 ID）已有 TCGdex 台版圖，先要知道這張圖是哪一頁。逐張把 TCGdex 的 `low.webp` 與兩個官方卡圖 `tw<ID 補零 8 位>.png` 縮成同尺寸後比對（平均像素差與 dHash；圖片只存在暫存資料夾、不進 repo，每 1.6 秒一個請求，全數 HTTP 200）：
+
+- 161 張全部可明確判定，沒有模糊者：吻合的那一頁像素差 0.0046～0.0086，另一頁 0.0465～0.1682（兩個官方頁之間至少差 0.0465，256 位 dHash 吻合者差 ≤ 10 位、另一頁差 ≥ 28 位）。
+- 沒有單一規則：SV2a 17 張全是官方 ID 較小的一頁；SV8a 144 張中 110 張是**較大的** ID（例如 SV8a-001 是 12319，不是 11526），34 張是較小的。因此逐張依圖片判定，不套「一律最小 ID」。
+- 決定：原卡對應到它圖片所屬的那一頁，版本序號仍依官方 ID 由小到大排（「版本 1」永遠是最小的 ID）。原卡不是版本 1 時，原卡的 `variantIndex`／`variantName`／`variantKey` 就是它那一頁的序號（例如「版本 2」），較小 ID 的那一頁新增為 `<原卡 ID>-v1`（卡片 ID 的 `-v<k>` 一律等於版本序號，所以此時會出現 `-v1`）。原卡 metadata 另記 `variantOfficialDetailId`（它對應的官方 ID，其餘版本的 metadata 見上）。原卡既有的 TCGdex 圖不動、不加官方圖；新卡圖用該頁自己的官方圖。這樣每個版本只出現一次，不會讓同一張圖同時掛在「版本 1」和「版本 2」，也不會有一頁官方圖沒人顯示。
+- 程式：migration `20261017100000_pokemon_tw_variant_split_base_version`（只 `create or replace` 同一個函式，計畫列新增選用欄位 `baseVersionIndex`，預設 1，與 10-16 的 12 份計畫完全相容；稽核表、100 張上限、重播零異動、ID 與圖片碰撞檢查不變）；`providers/pokemon-tw-official-variant-plan.mjs` 新增 `imageMatches`，原卡有 printing 圖但沒有比對結果時一律不拆（`base-image-version-unknown`）。
+- 2026-10-17 結果：SV2a 17 張、SV8a 144 張原卡（3 份計畫：17、100、44 張新卡），新增 161 張版本卡（原卡為版本 1：SV2a 17＋SV8a 34；原卡為版本 2：SV8a 110），每張新卡有自己的官方卡圖、Printing 與同一作品層；原卡的 TCGdex 圖不變。3 份計畫寫入＋重播零異動。證據 `docs/evidence/pokemon-tw/variant-split-20261017/`（`image-match.json` 為逐張距離與對應表，`compare-images.py` 為比對程式）。
