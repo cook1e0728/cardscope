@@ -175,14 +175,14 @@ async function supabaseFetchAll(pathAndQuery,pageSize=1000){const rows=[];for(le
 const BROWSE_CACHE_BYTES_MAX=24*1024*1024;
 function browseCacheBytes(data){try{return JSON.stringify(data)?.length||0}catch{return 0}}
 function trimBrowseCacheBytes(){let total=0;for(const entry of browseCache.values())total+=entry.bytes||0;for(const [entryKey,entry] of browseCache){if(total<=BROWSE_CACHE_BYTES_MAX)break;if(entry.bytes){browseCache.delete(entryKey);total-=entry.bytes}}}
-async function cachedBrowseRows(key,loader){
+async function cachedBrowseRows(key,loader,ttlMs=BROWSE_CACHE_MS){
   const now=Date.now(),cached=browseCache.get(key);
   if(cached?.data&&cached.expiresAt>now)return cached.data;
   if(cached?.promise)return cached.promise;
   // A whole-game row list (tens of thousands of rows) is shared with the callers waiting on it but never kept: kept for five minutes it held
   // 100+ MB of the 512 MB instance (OOM crash loop, 2026-10-15/16).
-  const promise=Promise.resolve().then(loader).then(data=>{if(Array.isArray(data)&&data.length>BROWSE_CACHE_ROWS_MAX)browseCache.delete(key);else{browseCache.set(key,{data,expiresAt:Date.now()+BROWSE_CACHE_MS,bytes:browseCacheBytes(data)});trimBrowseCacheBytes()}return data}).catch(error=>{browseCache.delete(key);throw error});
-  browseCache.set(key,{promise,expiresAt:now+BROWSE_CACHE_MS});
+  const promise=Promise.resolve().then(loader).then(data=>{if(Array.isArray(data)&&data.length>BROWSE_CACHE_ROWS_MAX)browseCache.delete(key);else{browseCache.set(key,{data,expiresAt:Date.now()+ttlMs,bytes:browseCacheBytes(data)});trimBrowseCacheBytes()}return data}).catch(error=>{browseCache.delete(key);throw error});
+  browseCache.set(key,{promise,expiresAt:now+ttlMs});
   // Pages of every offset can be cached now; an expired entry still holds its rows until swept, so drop them on every miss, then the oldest past 400 keys.
   for(const [entryKey,entry] of browseCache)if(entry.data&&entry.expiresAt<=now)browseCache.delete(entryKey);
   while(browseCache.size>400)browseCache.delete(browseCache.keys().next().value);
@@ -379,7 +379,11 @@ async function browseDatabaseCards(game,options){
 // the server asks for one page plus the total and facets and never loads a whole game (Pokemon is 55k cards and 105k printings; one such request
 // used to exhaust the 512 MB instance). Rarity codes, ranks and filter tokens come from data/rarity-rankings.json through the server's own
 // normalizers, passed to the database as a small raw-value table (PostgREST needs every parameter named, so p_region/p_token are sent as null, never omitted); a raw value the table lacks is reported back (unmapped) and the table rebuilt once.
-const BROWSE_HEAVY_MAX=2,BROWSE_HEAVY_QUEUE_MAX=24,browseHeavy={active:0,waiting:[]};
+// supabaseFetch gives up after 12 s; these calls scan a whole game (1-3 s warm, more while the small instance is busy or cold), so they get the database's own 20 s limit plus a margin.
+// Facets and the rarity table change only with catalog imports: keep them long.
+const BROWSE_HEAVY_MAX=2,BROWSE_HEAVY_QUEUE_MAX=24,BROWSE_HEAVY_TIMEOUT_MS=25000,BROWSE_FACET_TTL_MS=30*60*1000,BROWSE_RARITY_TABLE_TTL_MS=60*60*1000,browseHeavy={active:0,waiting:[]};
+const browseFacetFailures=new Map();
+const browseRpc=(name,body)=>supabaseFetch(`/rpc/${name}`,{method:'POST',body:JSON.stringify(body),signal:AbortSignal.timeout(BROWSE_HEAVY_TIMEOUT_MS)});
 // The database scans a whole game for each of these calls (1-3 s): run two at a time, queue a few more, then answer 503 instead of piling up.
 async function withBrowseHeavySlot(task){
   if(browseHeavy.active<BROWSE_HEAVY_MAX)browseHeavy.active++;
@@ -393,7 +397,7 @@ async function withBrowseHeavySlot(task){
 async function loadBrowseRarityMap(game,{refresh=false}={}){
   const key=`rarity-values:${game}`;
   if(refresh)browseCache.delete(key);
-  const values=await cachedBrowseRows(key,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_rarity_values',{method:'POST',body:JSON.stringify({p_game:game})})));
+  const values=await cachedBrowseRows(key,()=>withBrowseHeavySlot(()=>browseRpc('browse_rarity_values',{p_game:game})),BROWSE_RARITY_TABLE_TTL_MS);
   return (Array.isArray(values)?values:[]).map(raw=>{
     const code=rarityCanonicalCode(game,raw),rank=code?browseRarityRank(game,code):Number.MAX_SAFE_INTEGER;
     return {raw,code,token:code?rarityCanonicalToken(game,code):null,rank:rank===Number.MAX_SAFE_INTEGER?null:rank};
@@ -405,16 +409,18 @@ async function browseDatabaseCardsFiltered(game,options={}){
   const token=options.rarity?rarityCanonicalToken(safeGame,options.rarity):'';
   for(let attempt=0;;attempt++){
     const rmap=await loadBrowseRarityMap(safeGame,{refresh:attempt>0}),pageKey=`rpc:browse_cards_filtered:${safeGame}|${region||''}|${token}|${sort}|${take}|${skip}`,facetKey=`rpc:browse_cards_facets:${safeGame}|${region||''}`;
-    const [page,facets]=await Promise.all([
-      cachedBrowseRows(pageKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_filtered',{method:'POST',body:JSON.stringify({p_game:safeGame,p_region:region||null,p_token:token||null,p_sort:sort,p_limit:take,p_offset:skip,p_rmap:rmap})}))),
-      cachedBrowseRows(facetKey,()=>withBrowseHeavySlot(()=>supabaseFetch('/rpc/browse_cards_facets',{method:'POST',body:JSON.stringify({p_game:safeGame,p_region:region||null,p_rmap:rmap})})))
-    ]);
-    if(!page||!Array.isArray(page.cards)||!Number.isFinite(Number(page.total))||!facets||typeof facets.rarity!=='object')throw new Error('BROWSE_FILTERED_BAD_RESPONSE');
-    if((page.unmapped||facets.unmapped)&&attempt===0){browseCache.delete(pageKey);browseCache.delete(facetKey);continue}
+    // The page first (it gets the database to itself); facets only describe the game and are optional: if they cannot be had in time the page still goes out with facets deferred, as the number-order pages already do.
+    const page=await cachedBrowseRows(pageKey,()=>withBrowseHeavySlot(()=>browseRpc('browse_cards_filtered',{p_game:safeGame,p_region:region||null,p_token:token||null,p_sort:sort,p_limit:take,p_offset:skip,p_rmap:rmap})));
+    let facets=null;
+    // After a failed facet call the next minute skips it instead of making every page wait out the timeout again.
+    if(Date.now()-(browseFacetFailures.get(facetKey)||0)>=60000)try{facets=await cachedBrowseRows(facetKey,()=>withBrowseHeavySlot(()=>browseRpc('browse_cards_facets',{p_game:safeGame,p_region:region||null,p_rmap:rmap})),BROWSE_FACET_TTL_MS);if(!facets||typeof facets.rarity!=='object')facets=null}
+    catch(error){browseFacetFailures.set(facetKey,Date.now());console.error('browse facets failed; page sent without them',error.message)}
+    if(!page||!Array.isArray(page.cards)||!Number.isFinite(Number(page.total)))throw new Error('BROWSE_FILTERED_BAD_RESPONSE');
+    if((page.unmapped||facets?.unmapped)&&attempt===0){browseCache.delete(pageKey);browseCache.delete(facetKey);continue}
     const cards=structuredClone(page.cards).slice(0,take),printingByCard=buildPrintingIndex(cards.flatMap(card=>card.printings||[])),imageByCard=new Map(cards.map(card=>[card.id,card.images||[]]));
     const data=cards.map(({printings,images,...card})=>hydrateBrowseCard(card,printingByCard,imageByCard)),total=Number(page.total),rarityLabels={};
-    for(const value of Object.keys(facets.rarity))if(value!=='unknown')rarityLabels[value]=rarityDisplayLabel(safeGame,value);
-    return {data,total,hasMore:skip+data.length<total,facets:{rarity:{...facets.rarity},region:{...facets.region},language:{...facets.language},rarityLabels},facetStatus:'complete',limit:take,offset:skip,errors:{printings:null,images:null}};
+    if(facets)for(const value of Object.keys(facets.rarity))if(value!=='unknown')rarityLabels[value]=rarityDisplayLabel(safeGame,value);
+    return {data,total,hasMore:skip+data.length<total,facets:facets?{rarity:{...facets.rarity},region:{...facets.region},language:{...facets.language},rarityLabels}:null,facetStatus:facets?'complete':'deferred',limit:take,offset:skip,errors:{printings:null,images:null}};
   }
 }
 

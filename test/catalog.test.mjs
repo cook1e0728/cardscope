@@ -680,7 +680,7 @@ async function withBrowseDatabase(handler,run){
     req.on('data',chunk=>chunks.push(chunk));
     req.on('end',()=>{
       const body=chunks.length?JSON.parse(Buffer.concat(chunks).toString('utf8')):null;requests.push({table,body});
-      Promise.resolve(handler(table,body)).then(result=>{res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(result))});
+      Promise.resolve(handler(table,body)).then(result=>{const status=result?.__status||200;res.writeHead(status,{'content-type':'application/json'});res.end(JSON.stringify(status===200?result:{message:'database error'}))});
     });
   });
   const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
@@ -730,6 +730,23 @@ test('a rarity filter and the name, release and rarity sorts are paged by the da
     assert.deepEqual([Object.hasOwn(noRegionPage,'p_region'),noRegionPage.p_region,Object.hasOwn(noRegionFacets,'p_region'),noRegionFacets.p_region],[true,null,true,null]);
     assert.deepEqual(Object.keys(noRegionPage).sort(),['p_game','p_limit','p_offset','p_region','p_rmap','p_sort','p_token'],'every parameter of browse_cards_filtered is sent');
     assert.deepEqual(Object.keys(noRegionFacets).sort(),['p_game','p_region','p_rmap']);
+  });
+});
+
+test('a page still goes out, with facets deferred, when the facet query fails; the failure is not retried for a minute',async()=>{
+  let facetCalls=0;
+  await withBrowseDatabase(table=>{
+    if(table==='browse_rarity_values')return ['SAR'];
+    if(table==='browse_cards_filtered')return {total:2,unmapped:false,cards:[filteredCard(1),filteredCard(2)]};
+    if(table==='browse_cards_facets'){facetCalls++;return {__status:500}}
+    return [];
+  },async baseUrl=>{
+    for(const offset of [0,1]){
+      const response=await fetch(`${baseUrl}/api/cards?game=pokemon&limit=1&offset=${offset}&rarity=SAR&sort=name-asc`),body=await response.json();
+      assert.equal(response.status,200);
+      assert.equal(body.meta.total,2);assert.equal(body.meta.facets,null);assert.equal(body.meta.facetStatus,'deferred');
+    }
+    assert.equal(facetCalls,1,'a failed facet query is not repeated for every page');
   });
 });
 
