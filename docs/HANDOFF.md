@@ -827,6 +827,15 @@
 - 部署後發現（已修）：PostgREST 依「送出的參數名稱」找函式，缺少 `p_region` 就回 PGRST202（`browse_cards_filtered`／`browse_cards_facets` 的 region 為必填參數）；本機端對端用的是自己組 SQL 的代理，沒抓到。第一版部署（fe50199）對沒帶地區的請求回 502 約 10 分鐘，隨即改成一律送 `p_region`（沒有就送 null）並加測試。教訓：驗證 RPC 要走真正的 PostgREST，不要只用 Management API。
 - 注意：(1) `unmapped` 重試只在稀有度原始字串集合改變時發生。(2) 這些 RPC 每次掃一個遊戲（寶可夢暖快取約 1.3 s、facet 約 2.5 s），所以限流 2 個；若之後要更快，可把排序鍵物化成表（需在每次匯入後重建）。(3) 若日後改變 `data/rarity-rankings.json`，不需要改資料庫。
 
+### 依序執行 103：冷快取逾時保護、搜尋卡片開錯版本、航海王同步驗收（2026-10-17，桌電）
+
+- 依序執行 102 的 worker 因用量上限中斷，留下未提交的韌性修改；主導者審閱後提交 `19b2692`：重 RPC 給 25 s（`browseRpc`），facet 改為可選（失敗時頁面照送、`facetStatus:'deferred'`、一分鐘內不重試），facet 快取 30 分鐘、稀有度表 60 分鐘。起因：正式站冷快取時寶可夢稀有度篩選與名稱排序回 502（57014 statement timeout），暖快取 0.4–2.4 s。Node 453/453。
+- 搜尋結果把同作品層合成一筆時，`id` 是作品層（台版 ID），標籤卻依 `referencePrintingId`（日版）；點開變成台版。前端 `cardOpenId(card)` 改用標示版本的卡片 ID（格子、上下張、位置）。部署 `5ad0f0c` 後正式站「達克萊伊ex」SVI 034 開為日版。
+- 前端靜態檔（`ui-enhancements.js` 等）沒有 `Cache-Control`／`ETag`，瀏覽器會沿用舊程式：**尚未修**（worker 中斷前未做）。下一步：靜態 html/js/css 加 `Cache-Control: no-cache`＋`ETag`／304。
+- 航海王同步（run 131，10-16 01:46 UTC）：twCards 4,915、twSets 60；台版特典 `onepiece-official-tw-p` 的 printing 244 張、瀏覽 API 回 244（卡片層 `series_id` 本來就是亞洲英文系列，台版靠 printing 的 `series_id`）。
+- 正式站自 10-15 19:46 UTC 部署後無 `server_failed`（至 10-16 17:20 約 21.5 小時）。
+- 待使用者決定：台版 MC 等「版本 k」只看得出卡圖表面紋路差異（MC 456 版本 2 有雲霧狀閃卡紋），台灣官方頁沒有文字標示；選項 (1) 找官方商品頁／日版官方檔名的文字證據再命名、(2) 依卡圖判斷命名並寫 ADR。SV2a 17、SV8a 144 張同號多版本（已有 TCGdex 圖）未拆。
+
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
 
 - 分支 `claude/grill-with-docs-4i2eha`（尚未合併 main、未開 PR）；本輪只改文件，無程式變更、Render 無需部署。
