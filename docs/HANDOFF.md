@@ -867,7 +867,7 @@
 - 大小：新增 24.1 MB（鍵表 24 MB 含主鍵，其餘表合計約 0.2 MB），資料庫 375 MB；下一次寶可夢重建期間舊世代尚未清理會暫時多約 11 MB（約 35 MB，仍低於 40 MB）。鍵表設 autovacuum 5%。
 - 時間（資料庫內，`explain analyze`，暖快取、同樣參數；live＝102 原函式）：寶可夢名稱排序 offset 800 live 2.0–5.3 s → 鍵表 0.13 s（冷後端第一次 1.7 s，是 ICU collation 與計畫初始化）；發售日遞減 1.3–1.5 s → 0.13–0.19 s；SAR 篩選＋編號 1.1–1.2 s → 0.11 s；SAR＋名稱 1.0–1.2 s → 0.08–0.10 s；稀有度遞減 1.1–1.2 s → 0.15 s；遊戲王名稱 0.45–1.0 s → 0.05–0.42 s；航海王名稱 0.15–0.28 s → 0.03–0.13 s；寶可夢 facet 2.2–2.5 s → 0.26 s。頁面讀取緩衝區（查詢碰到的頁數）36,000 → 5,000 左右，冷快取時要從磁碟讀的量約 1/7（沒有辦法強制清空快取，所以冷數字只能用緩衝區比例估算：舊路徑冷快取 9–15 s，預估新路徑 1–2 s）。正式站端對端（Render，含網路約 0.33 s）：改前（live）7.6 s（冷）、1.8、1.9、1.4、2.9、4.9、1.8 s；改後 2.3、1.3、1.8、1.8、1.9、1.5、1.1 s、其餘新參數 0.6–1.2 s，伺服器快取命中 0.34 s。端對端改善不如資料庫內明顯，因為剩下的時間是 Render↔Supabase 往返與把 100 張卡的 JSON（printings、圖片）轉成回應。
 - 重建耗時（正式，Management API）：haikyuu 0.3 s、weiss-schwarz 0.2 s、onepiece 2.8 s、yugioh 9.6 s、pokemon 16.0 s（冷）；publish 另約 0.2–2 s。寶可夢的時間大半是讀兩張寬表（`tcg_cards` 4 s、`tcg_printings` 7.5 s，冷快取），運算本身約 3 s。
-- 注意：(1) 我的回滾測試與 trigger 建立會在測試期間對 `tcg_cards`／`tcg_printings` 持有鎖，曾擋到另一工作階段的寫入（已無）。(2) 伺服器端頁面快取 5 分鐘、facet 30 分鐘、稀有度表 60 分鐘，所以同步後前端最多再等這些時間才看到新資料（與 102 相同）。(3) 若日後改了 `sort` 種類或排序鍵語意，必須同時改 `browse_refresh_keys_build` 與 `*_live`，並重跑 `node scripts/browse-keys-equivalence.mjs run`。(4) `browse_card_keys_mat` 預設 `SECURITY`：RLS 開啟、只授權 `service_role`。
+- 注意：(1) 我的回滾測試與 trigger 建立會在測試期間對 `tcg_cards`／`tcg_printings` 持有鎖，曾擋到另一工作階段的寫入（已無）。(2) 伺服器端頁面快取 5 分鐘、facet 30 分鐘、稀有度表 60 分鐘，所以同步後前端最多再等這些時間才看到新資料（與 102 相同）。(3) 若日後改了 `sort` 種類或排序鍵語意，必須同時改 `browse_refresh_keys_build` 與 `*_live`，並重跑 `node scripts/browse-keys-equivalence.mjs run`。
 - Node 全套 467/467（新增 8，`test/browse-keys-refresh.test.mjs`）。
 
 ## 前一里程碑（2026-10-01 晚，SVLN 已正式匯入）
