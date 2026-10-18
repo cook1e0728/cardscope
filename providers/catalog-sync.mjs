@@ -386,9 +386,23 @@ export async function catalogProvidersNeedingSync(db,maxAgeHours=72,{includeTcgd
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}
 
+// Browse keys (migration 20261017110000): the game-wide browse RPCs read a materialized key table that must be rebuilt after the catalog changes.
+// Writes are noticed by database triggers, so a stale game just falls back to the slow live query until it is rebuilt; this rebuilds the stale ones.
+// build and publish are separate transactions because one PostgREST request is cut at 20 s (a cold build can need more; the pages it read stay cached, so a retry is fast).
+export async function refreshBrowseKeys(db,{games=null,attempts=3}={}){
+  const stale=await db('/rpc/browse_keys_stale',{method:'POST',body:'{}'}),targets=(Array.isArray(stale)?stale:[]).filter(game=>!games||games.includes(game)),results={};
+  const call=(name,game)=>db(`/rpc/${name}`,{method:'POST',body:JSON.stringify({p_game:game})});
+  for(const game of targets){
+    for(let attempt=1;attempt<=attempts;attempt++){try{const built=await call('browse_refresh_keys_build',game),published=await call('browse_refresh_keys_publish',game);results[game]={built,published,attempts:attempt};break}catch(error){results[game]={error:error.message,attempts:attempt}}}
+  }
+  return results;
+}
+
 export async function syncCatalog(db,{providers=['pokemon','onepiece','yugioh'],maxPokemonPages=Infinity}={}){
   const results={};
   for(const provider of providers){try{results[provider]=provider==='pokemon'?await syncPokemon(db,{maxPages:maxPokemonPages}):provider==='pokemonZhTw'?await syncPokemonZhTw(db):provider==='onepiece'?await syncOnePiece(db):provider==='haikyuu'?await syncHaikyuu(db):provider==='weissFrieren'?await syncWeissFrieren(db):await syncYugioh(db)}catch(error){results[provider]={error:error.message}}}
+  // Whatever the providers wrote (even partly, after an error) is picked up by the key rebuild; a failure here only leaves the slow live query in place.
+  try{const keys=await refreshBrowseKeys(db);if(Object.keys(keys).length)results.browseKeys=keys}catch(error){results.browseKeys={error:error.message}}
   return results;
 }
 

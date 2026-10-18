@@ -106,3 +106,17 @@ node scripts/plan-pokemon-enrichment.mjs snapshot.json --fields name_zh,rarity -
 - 圖片：只接受 `assets.tcgdex.net` 的同一 printing URL、24 小時內成功的圖片探測證據，並維持 `not-provided/not-inferred` 權利狀態。來源沒有圖時，`changedImages` 合理地為 0。
 
 舊的 `private.promote_pokemon_rarity_candidates` 僅保留既有批次相容性；新的批次不得混用兩個 promotion 函式。
+
+## 目錄資料異動後的圖鑑鍵重建
+
+遊戲層級的圖鑑分頁（稀有度篩選、名稱／發售日／稀有度排序、facet）讀的是預先算好的排序鍵表 `browse_card_keys_mat`（migration `20261017110000`）。
+`tcg_cards`／`tcg_printings` 的任何會影響排序鍵的異動（新增、刪除、卡號／名稱／稀有度／地區／語言／發售日改動）都會被資料庫 trigger 記錄，
+該遊戲在重建前自動退回舊的整遊戲掃描（結果一定正確，只是慢：暖 1–3 s、冷 9–15 s），不會出現舊資料。
+
+- `syncCatalog`（`providers/catalog-sync.mjs`）結束時會自動重建所有過期的遊戲（`refreshBrowseKeys`）；伺服器排程每小時也會補做遺漏。
+- **手動資料批次**（SQL migration、`scripts/` 的匯入或補值、直接改表）做完後，請在同一個工作階段呼叫：
+  `node scripts/run-sql.mjs -e "select public.browse_refresh_keys('pokemon')"`（不帶參數＝全部遊戲；寶可夢冷快取約 10–20 s）。
+  漏掉也不會出錯，只是該遊戲慢到下一次伺服器排程重建為止。
+- 重建分兩段：`browse_refresh_keys_build(game)` 算新世代（讀取端看不到），`browse_refresh_keys_publish(game)` 切換世代並清除已處理的異動。經 PostgREST 的單一請求有 20 s 上限，所以伺服器端是兩次呼叫且 build 會重試；用 Management API（`scripts/run-sql.mjs`）則沒有這個限制。
+- 一次檢查新舊兩條路徑結果相同：`node scripts/browse-keys-equivalence.mjs run --only pages`（先 `browse_refresh_keys(game, false)` 只 build，公開前比對）。
+- 不納入異動偵測的只有 printing 的 `image_url`／`image_rehost_required`（伺服器圖片快取會一直改它們）；它們只影響「沒有卡號也沒有稀有度的卡，在同地區多個 printing 間誰排第一」，下次重建即更正。
