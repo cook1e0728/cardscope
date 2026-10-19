@@ -774,6 +774,15 @@
 - 依 ADR 0042 上線一週重估（提前到第 5 天）：快照 48,347 列／9.9 MB，首輪後每天約 0.5–0.65 萬列、約 1.3 MB；資料庫 395 MB（`browse_card_keys_mat` 39 MB 含重建後的可重用空間）。距 450 MB 停止線約 55 MB，約 6 週。細節寫入 ADR 0042「容量重估」。**到 430 MB 前要請使用者決定修剪或縮小範圍。**
 - 依序執行 108、109 的 CI（Beta reliability）皆通過；`POST /api/prices/reference` 正式站以 `pokemon-pokemontcg-base1-1` 驗證回 Cardmarket 47.99 EUR／TCGplayer 70.82 USD，與資料庫一致。
 
+### 依序執行 111：廣泛短詞搜尋加速（2026-10-20，桌電，已套用）
+
+- 起因：正式站未快取 `ex` 5.9 s、`V` 2.9 s、`01` 2.0 s（伺服器 `rpc`），依序執行 98 記的「`scored` 逐卡比對」缺口。
+- 診斷（`EXPLAIN (ANALYZE)`）：名稱比對本身很快（`ex` 約 10 ms，bigram GIN；`V` 約 40 ms），慢在 `scored`：每張命中的卡各自重算一次 `needles`（HashAggregate loops=4,246）、各自 fold 五個欄位（SQL 函式內嵌後每個欄位算兩次）、再用主鍵回表一次。暖快取下 `ex` 約 0.5 s、`V` 約 1.2 s、`01` 約 0.9 s；伺服器偶爾 3–6 s 是同一份 CPU 工作遇到共用 CPU 限速（同一查詢 `EXPLAIN` 曾 0.5 s → 3.0 s，buffer 全為 hit）。
+- Migration `20261020090000_search_ranked_fast_scoring`（只 `create or replace` 六參數 `search_cards_ranked`，簽章、輸出、授權不變，舊四參數版未動）：(1) `name_matched` 在同一次 heap 掃描帶出評分欄位，不再回表；(2) `needles` materialized；(3) fold 與名稱階層只依「欄位值」不依卡片，先對命中卡所有**不同**欄位值各算一次（`V` 的 38,885 個欄位值剩 8,601 個），再依值 join 回卡片取最小階層；(4) 單字樣式（`%V%`）用 `(search_names || '') like` 直接掃表（約 40 ms），不再讀整個 trigram GIN 逐筆複核。沒有新索引、沒有新欄位，資料庫仍 395 MB。
+- 等價驗證（整批回滾測試，`ROLLBACK_TEST_OK mismatches=[]`）：122 個組合（查詢詞 ex、V、01、魯夫＋luffy、噴火龍＋charizard、luffy、pikachu、モモワロウ、超夢、夫、Charizard、SV6a 090、SV6a、ナイトワンダラー、魯夫、EX、02、v、ｖ、Ｖ、pikachu ex、火箭隊的超夢、桃歹郎ex＋SAR，各 × 地區 全部／JP／TW × offset 0／40，另有 ex＋SAR、V＋RR/RRR/SR、pikachu 台版＋AR/SAR/UR），完整 jsonb 文字逐筆相同，三批的串接 md5 新舊一致（28 組 2e3006e5…、48 組 6d90bb64…、46 組 86efc125…）；涵蓋 matchedBy name／text／series／無命中四種。套用後以現行函式重算同樣三批 md5 仍一致。
+- 效果：回滾測試同批總時間 8.7 s → 2.7 s、55 s → 17 s、9.1 s → 2.6 s（含冷快取的雜訊）；單一查詢暖快取 `ex` 520 → 112 ms、`V` 1,200 → 360 ms、`01` 880 → 205 ms；一般名稱不變或更快（魯夫 90 → 30 ms）。正式站未快取（`EX`、`Ex`、`eX`、`v`、`02`、`03`、`05`）伺服器 `rpc` 0.47–1.06 s（含 Render→Supabase 往返約 0.4–0.6 s，`Pikachu` 同樣 0.74 s），僅套用後第一個請求 4.1 s（冷快取）。`npm test` 498/498。
+- 已知限制：資料庫共用 CPU 被限速或閒置後第一次請求仍可能數秒；`cards` CTE 的 `limit 300` 沒有 `order by`（既有行為，一頁 40 組不會觸及）。
+
 ### 依序執行 109：收藏 v0（ADR 0045，2026-10-19，桌電）
 
 - 依 ADR 0044 Q13 與 `docs/research/collections/README.md` 的 v0 做「我的收藏」：免登入、只存在瀏覽器、沒有 migration、沒有新服務。主方案「不加入使用者追蹤」改成「不做使用者行為追蹤；收藏是使用者主動儲存的資料，v0 免登入、v1 起可選登入」，記在 `docs/adr/0045-collection-v0-local-only.md`。
