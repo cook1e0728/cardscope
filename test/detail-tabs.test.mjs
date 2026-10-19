@@ -114,5 +114,5 @@ test('我的收藏：用語統一為「我的收藏」與「張」，並提供 w
   assert.match(ui, /aria-label="我的收藏張數"/);
   assert.match(ui, /window\.openCollection=openCollection;/);
   assert.match(ui, /dialog\.showModal\(\)/, '用原生 dialog，焦點鎖定、Escape 與焦點返回由瀏覽器處理');
-  assert.match(ui, /<h2 id="collectionTitle">我的收藏<\/h2>/);
+  assert.match(ui, /<h2 id="collectionTitle"[^>]*>我的收藏<\/h2>/);
 });

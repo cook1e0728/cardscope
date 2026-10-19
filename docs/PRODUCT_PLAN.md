@@ -157,11 +157,11 @@ CardScope 是「繁體中文玩家的跨語言、跨版本 TCG 查證與收藏�
 - 只比較相同 printing、來源、價格種類、品況和幣別，兩次觀測至少相隔 24 小時。
 - `/api/trends` 必須提供訊號／價格種類、來源和連結、前後觀測時間、樣本數及適用範圍。
 - 若資料只有遊々亭買取，介面名稱使用「單一來源買取漲幅」，不可稱「人氣漲勢」。
-- 暫不建立人氣排行、不用 Reddit 熱度推算卡片行情，也不加入使用者追蹤。
+- 暫不建立人氣排行、不用 Reddit 熱度推算卡片行情，也不做使用者行為追蹤（人氣、瀏覽軌跡、廣告、分析）；收藏是使用者主動儲存的資料，v0 免登入、只存在使用者的瀏覽器，v1 起可選登入（ADR 0045）。
 
 ## 公開介面相容性
 
-保留既有 `/api/catalog`、`/api/cards`、`/api/search`、`/api/cards/:id`、`/api/cards/:id/market`、`/api/trends`、coverage／health／sources 與管理端點。擴充查詢與欄位時保持舊參數可用；來源故障必須回傳清楚狀態，不讓單一 provider 令整個 Catalog 失效。
+保留既有 `/api/catalog`、`/api/cards`、`/api/search`、`/api/cards/:id`、`/api/cards/:id/market`、`/api/trends`、coverage／health／sources 與管理端點。擴充查詢與欄位時保持舊參數可用；新增 `POST /api/prices/reference`（收藏參考價，最多 100 張、只讀 `price_snapshots`，ADR 0045）；來源故障必須回傳清楚狀態，不讓單一 provider 令整個 Catalog 失效。
 
 ## 驗收與發布門檻
 

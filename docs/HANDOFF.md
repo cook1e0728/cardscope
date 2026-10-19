@@ -769,6 +769,14 @@
 - SAMPLE 角落浮水印只在 `?preview=sample-corner` 時啟用（存 localStorage，`?preview=off` 清除）；使用者看過後把 `ui-enhancements.js` 的 `SAMPLE_CORNER_DEFAULT` 改 true 即為預設。
 - Node 488/488。`scripts/beta-browser-smoke.mjs` 已依新首頁改寫但本機沒有 playwright 未跑，交給 CI。
 
+### 依序執行 109：收藏 v0（ADR 0045，2026-10-19，桌電）
+
+- 依 ADR 0044 Q13 與 `docs/research/collections/README.md` 的 v0 做「我的收藏」：免登入、只存在瀏覽器、沒有 migration、沒有新服務。主方案「不加入使用者追蹤」改成「不做使用者行為追蹤；收藏是使用者主動儲存的資料，v0 免登入、v1 起可選登入」，記在 `docs/adr/0045-collection-v0-local-only.md`。
+- 後端：新增 `POST /api/prices/reference`（`server.mjs`、純函式 `providers/collection-valuation.mjs`）。body 只收 `{cardIds}`（1–100 個字串，多餘欄位 400，20 KB 上限）；一次查 `price_snapshots`（主鍵前導欄位 `card_id` 已可用，不需新索引），依日期新到舊最多 5,000 列，取每組 card＋provider＋variant 最新一列，原幣、新台幣（`getTwdRates()`）、快照日期；無快照回空陣列；不打外部 TCGdex。
+- 前端：新檔 `collection-store.js`（匯入驗證、合併、舊資料搬移、總值計算，純函式）；`ui-enhancements.js` 的 `window.openCollection()` 擴成清單（圖、名稱、版本、地區、張數／品況／版本／備註可編輯、查看、移除、空狀態、「只存在這台裝置」說明、參考總值分來源小計、JSON 匯出／匯入、CSV 沿用並補欄位）。收藏鍵改用實體卡 id（`cardOpenId`）並存 `canonicalId`；舊資料開啟清單時逐筆向 `/api/cards/:id` 補快照：作品層 id 只有一張實體卡才換、多版本標「版本待確認」讓使用者選、查不到或失敗就原樣保留，不刪任何舊資料。沿用 `cardscope-favorites`／`cardscope-watchlist`／`cardscope-watchlist-meta` 三個鍵。
+- 取捨：v0 每張卡一列（不同品況分開記請寫備註）；購入價與損益不做；匯入檔內的圖片與名稱快照不採用，匯入後依 id 向本站補齊；單批快照超過 5,000 列時要改 `distinct on` RPC（需 migration）。
+- 測試：Node 498/498（新增 `test/collection-valuation.test.mjs`、`test/collection-store.test.mjs`；`test/detail-tabs.test.mjs` 放寬一個標題正規式）。本機以「正式站 GET 代理＋固定快照的 POST 端點」預覽過：加入、編輯、移除、總值、匯出→匯入來回、舊資料搬移（含多版本不猜）、手機 375 px 與桌面，觸控目標皆 ≥44 px。
+
 ### 依序執行 106：另一工作階段的成果合併後收尾（2026-10-18，桌電）
 
 - 兩個工作階段曾同時改程式：本工作階段的搜尋 worker（10-15 開始、後被系統以無進度中止）與另一工作階段的依序執行 98–105 重疊。另一工作階段已關機；`git pull` 前把 worker 未完成的修改存成本機 `git stash`（`stash@{0}`，含 migration `20261015150000_search_ranked_short_cjk.sql`）。該 migration 也重寫 `search_cards_ranked`，已被依序執行 98 的 bigram 版本取代，**不得套用**。伺服器端「資料庫慢時重送一次相同查詢」不採用（小實例上會加重負載）；「快取過期先回舊結果、背景更新」需拆搜尋路由，暫不做。

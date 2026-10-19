@@ -1,4 +1,4 @@
-const uiLocal={get(key,fallback){try{return localStorage.getItem(key)||fallback}catch{return fallback}},set(key,value){try{localStorage.setItem(key,value)}catch{}}};
+const uiLocal={get(key,fallback){try{return localStorage.getItem(key)||fallback}catch{return fallback}},set(key,value){try{localStorage.setItem(key,value);return true}catch{return false}}};
 let cardViewMode='grid';
 let activeDetailCardId=null,detailReturnCardId=null;
 let favoritesOnly=uiLocal.get('cardscope-favorites-only','0')==='1';
@@ -97,10 +97,25 @@ function isFavorite(id){return favoriteIds.has(String(id))}
 function watchQuantity(id){const value=Number(watchlist[String(id)]);return Number.isInteger(value)&&value>0?value:0}
 function allKnownCards(){const rows=[...(currentCardRows||[]),...(C?.cards||[])];return [...new Map(rows.map(card=>[String(card.id),card])).values()]}
 function cardForWatch(id){const card=allKnownCards().find(item=>String(item.id)===String(id));if(card)return card;const snapshot=watchlistMeta[String(id)];return snapshot?{...snapshot,__watchlistSnapshot:true}:null}
+// ADR 0045：收藏以實體卡 ID 為鍵（搜尋列的 id 是作品層 ID，所以用 cardOpenId 取畫面上那個版本的實體卡）；舊資料若以作品層 ID 存，仍對得上。
+const CS=window.CollectionStore,COMMON_FINISHES=['normal','holo','reverse'],renderedCards=new Map();
+function physicalIdOf(card){const id=String(cardOpenId(card));return id===String(card.id)&&card.physicalCardIds?.length===1?String(card.physicalCardIds[0]):id}
+function entryKey(card){const key=physicalIdOf(card);return[key,String(card.id)].find(item=>favoriteIds.has(item)||watchlist[item])||key}
+function cardSnapshot(card,key){
+  const printing=(card.printings||[]).find(p=>String(p.cardId)===String(key))||null;
+  return{id:String(key),canonicalId:String(card.canonicalId||card.id||''),game:cardGameId(card)||'',nameZh:card.nameZh||'',nameEn:card.nameEn||'',nameJa:card.nameJa||'',nameKo:card.nameKo||'',officialCardNumber:card.officialCardNumber||printing?.localCardNumber||'',rarity:printing?.rarity||card.rarity||'',region:printing?.region||card.region||card.printings?.[0]?.region||'',version:printing?.metadata?.variantName||card.metadata?.variantName||'',image:(printing?.imageUrl&&!printing.imageRehostRequired?printing.imageUrl:image(card))||''};
+}
+function persistCollection(){return[uiLocal.set('cardscope-favorites',JSON.stringify([...favoriteIds])),uiLocal.set('cardscope-watchlist',JSON.stringify(watchlist)),uiLocal.set('cardscope-watchlist-meta',JSON.stringify(watchlistMeta))].every(Boolean)}
+// 在收藏內時保留畫面快照與使用者填的品況／版本／備註；移出收藏就一併刪除。
+function touchMeta(key){
+  if(!favoriteIds.has(key)&&!watchlist[key]){delete watchlistMeta[key];return}
+  const card=renderedCards.get(key)||allKnownCards().find(item=>String(item.id)===key);
+  if(card)watchlistMeta[key]={...watchlistMeta[key],...cardSnapshot(card,key),v:1};
+}
 
 const cardscopeBaseFilteredCards=typeof filteredCards==='function'?filteredCards:null;
 if(cardscopeBaseFilteredCards){
-  filteredCards=function(rows){const result=cardscopeBaseFilteredCards(rows);return favoritesOnly?result.filter(card=>isFavorite(card.id)):result};
+  filteredCards=function(rows){const result=cardscopeBaseFilteredCards(rows);return favoritesOnly?result.filter(card=>isFavorite(entryKey(card))):result};
 }
 
 function missingImageMarkup(message='圖片來源尚未收錄'){
@@ -135,7 +150,8 @@ function installViewToggle(){
 function drawViewButtons(){document.querySelectorAll('#cardViewSwitch [data-view]').forEach(button=>button.classList.toggle('on',button.dataset.view===cardViewMode))}
 
 function cardActionsMarkup(card){
-  const id=e(card.id),favorite=isFavorite(card.id),quantity=watchQuantity(card.id);
+  const key=entryKey(card);renderedCards.set(key,card);if(renderedCards.size>800)renderedCards.delete(renderedCards.keys().next().value);
+  const id=e(key),favorite=isFavorite(key),quantity=watchQuantity(key);
   return `<div class="card-actions" data-action="card-actions"><button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="${id}" aria-pressed="${favorite}" aria-label="${favorite?'從我的收藏移除':'加入我的收藏'}" title="${favorite?'從我的收藏移除':'加入我的收藏'}">${favorite?'★':'☆'}</button><div class="watchlist-inline" data-action="watchlist" aria-label="我的收藏張數"><button type="button" data-watch-decrement="${id}" aria-label="減少數量"${quantity?'':' disabled'}>−</button><span data-watch-quantity="${id}">${quantity}</span><button type="button" data-watch-increment="${id}" aria-label="增加數量">＋</button></div></div>`;
 }
 
@@ -195,7 +211,7 @@ function renderFavoritesControl(){
 
 function toggleFavorite(id){
   const key=String(id);if(favoriteIds.has(key))favoriteIds.delete(key);else favoriteIds.add(key);
-  saveUiArray('cardscope-favorites',favoriteIds);cards(currentCardRows,true);
+  touchMeta(key);persistCollection();cards(currentCardRows,true);
 }
 
 function showCollectionToast(){
@@ -207,12 +223,8 @@ function showCollectionToast(){
 
 function setWatchQuantity(id,quantity){
   const key=String(id),previous=watchQuantity(key),next=Math.max(0,Math.min(999,Number(quantity)||0));
-  if(next){
-    watchlist[key]=next;
-    const card=allKnownCards().find(item=>String(item.id)===key);
-    if(card)watchlistMeta[key]={id:key,game:card.game,nameZh:card.nameZh,nameEn:card.nameEn,nameJa:card.nameJa,nameKo:card.nameKo,officialCardNumber:card.officialCardNumber,rarity:card.rarity,region:card.region};
-  }else{delete watchlist[key];delete watchlistMeta[key]}
-  saveUiObject('cardscope-watchlist',watchlist);saveUiObject('cardscope-watchlist-meta',watchlistMeta);cards(currentCardRows,true);if(previous===0&&next>0)showCollectionToast();
+  if(next)watchlist[key]=next;else delete watchlist[key];
+  touchMeta(key);persistCollection();cards(currentCardRows,true);if(previous===0&&next>0)showCollectionToast();
 }
 
 function watchlistEntries(){
@@ -235,10 +247,10 @@ function renderWatchlistSummary(){
 
 function csvCell(value){let text=String(value??'');if(/^[\s]*[=+@-]/.test(text))text="'"+text;return `"${text.replace(/"/g,'""')}"`}
 function downloadWatchlistCsv(){
-  const entries=watchlistEntries();if(!entries.length)return;
-  const header=['卡片 ID','名稱','原名','官方卡號','稀有度','數量','已驗證價格幣別','已驗證單價','已驗證小計'];
-  const rows=entries.map(({id,quantity,card})=>{const price=card&&!card.__watchlistSnapshot&&priceFor(card),amount=price&&Number(price.price),valid=Number.isFinite(amount)&&price.currency;return[id,card?name(card):'卡片資料待載入',card?original(card):'',card?cardNumberLabel(card):'',card?cardRarityLabel(card):'',quantity,valid?price.currency:'',valid?amount:'',valid?amount*quantity:''].map(csvCell).join(',')});
-  const blob=new Blob([`\uFEFF${[header.map(csvCell).join(','),...rows].join('\r\n')}`],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='cardscope-watchlist.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),0);
+  const items=collectionItems();if(!items.length)return;
+  const header=['卡片 ID','名稱','原名','官方卡號','稀有度','數量','已驗證價格幣別','已驗證單價','已驗證小計','品況','版本','備註','作品層 ID'];
+  const rows=items.map(item=>{const id=item.id,quantity=item.quantity||1,card=cardForWatch(id),price=card&&!card.__watchlistSnapshot&&priceFor(card),amount=price&&Number(price.price),valid=Number.isFinite(amount)&&price.currency,known=card&&(!card.__watchlistSnapshot||card.v);return[id,known?name(card):'卡片資料待載入',known?original(card):'',known?(card.__watchlistSnapshot?card.officialCardNumber:cardNumberLabel(card)):'',known?(card.__watchlistSnapshot?card.rarity:cardRarityLabel(card)):'',quantity,valid?price.currency:'',valid?amount:'',valid?amount*quantity:'',CS.CONDITIONS.find(([key])=>key===item.condition)?.[1]||'',item.finish,item.note,item.canonicalId].map(csvCell).join(',')});
+  downloadFile('cardscope-watchlist.csv','text/csv;charset=utf-8',`\uFEFF${[header.map(csvCell).join(','),...rows].join('\r\n')}`);
 }
 
 function installCardUtilities(){
@@ -478,7 +490,7 @@ function installFilterSheet(){
 function installFeatureTour(){
   if($('cardscopeFeatureTour'))return;
   const section=document.createElement('details');section.id='cardscopeFeatureTour';section.className='feature-tour section';section.setAttribute('aria-label','CardScope 使用說明');
-  section.innerHTML='<summary><span class="help-summary-copy"><b>快速使用說明</b><small>稀有度分組與我的收藏</small></span><img src="/assets/brand/web/cardscope-rabbit-mark-96.webp" alt="" loading="lazy"><span class="help-summary-chevron" aria-hidden="true">⌄</span></summary><div class="help-grid"><article class="help-item"><b>先選瀏覽方式</b><p>圖鑑模式看卡面，清單模式看欄位；需要依真實稀有度整理時，切換稀有度分組。</p></article><article class="help-item"><b>我的收藏</b><p>卡片上的星號與張數只儲存在此裝置；張數可用加減調整，價格只計入已驗證買取資料。</p></article><article class="help-item"><b>資料不足會明確標示</b><p>沒有可靠卡圖、名稱或價格時保留待補提示，不以生成內容補成官方資料。</p></article></div>';
+  section.innerHTML='<summary><span class="help-summary-copy"><b>快速使用說明</b><small>稀有度分組與我的收藏</small></span><img src="/assets/brand/web/cardscope-rabbit-mark-96.webp" alt="" loading="lazy"><span class="help-summary-chevron" aria-hidden="true">⌄</span></summary><div class="help-grid"><article class="help-item"><b>先選瀏覽方式</b><p>圖鑑模式看卡面，清單模式看欄位；需要依真實稀有度整理時，切換稀有度分組。</p></article><article class="help-item"><b>我的收藏</b><p>卡片上的星號與張數只儲存在此裝置（不用登入）；在「我的收藏」可編輯品況、版本、備註，看平台參考價總值，並匯出備份。</p></article><article class="help-item"><b>資料不足會明確標示</b><p>沒有可靠卡圖、名稱或價格時保留待補提示，不以生成內容補成官方資料。</p></article></div>';
   const footer=document.querySelector?.('.brand-footer'),notice=$('notice');
   if(footer)footer.insertAdjacentElement('beforebegin',section);else if(notice)notice.insertAdjacentElement('afterend',section);
 }
@@ -598,16 +610,134 @@ const detailTabsStyle=document.createElement('style');
 detailTabsStyle.textContent=`.detail-tabs [hidden]{display:none!important}.rarity-code{text-decoration:none;cursor:help}.rarity-full{font-size:12px}.detail-meta{margin:0 0 14px}
 html.sample-corner .card-sample-watermark{left:auto;right:5%;top:auto;bottom:3%;display:inline-block;overflow:visible;font-size:clamp(9px,1vw,12px);font-weight:800;letter-spacing:.08em;opacity:.55;text-shadow:0 1px 2px #000b;transform:none}
 html.sample-corner .card-sample-watermark.card-sample-watermark-zoom{left:auto;right:4%;top:auto;bottom:3%;font-size:clamp(14px,2vw,24px);letter-spacing:.1em}
-.collection-dialog{width:min(560px,calc(100vw - 32px));max-height:min(80vh,720px);padding:0;border:1px solid var(--line,#d9d1c0);border-radius:12px;background:#fff;color:inherit}.collection-dialog::backdrop{background:#0008}.collection-dialog>div{display:grid;gap:12px;padding:16px}.collection-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.collection-dialog h2{margin:0;font-size:20px}.collection-list{display:grid;gap:8px;margin:0;padding:0;list-style:none;overflow-y:auto;max-height:50vh}.collection-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line,#d9d1c0);border-radius:8px}.collection-list li>span{min-width:0;overflow-wrap:anywhere}`;
+.collection-dialog{width:min(760px,calc(100vw - 16px));max-height:calc(100dvh - 16px);padding:0;border:1px solid var(--rule,#d9d1c0);border-radius:12px;background:#fff;color:inherit}.collection-dialog::backdrop{background:#0008}.coll{display:grid;gap:12px;padding:16px}.coll header{display:flex;align-items:center;justify-content:space-between;gap:12px}.coll h2{margin:0;font-size:20px}.coll header button{min-width:44px}.coll h3{margin:0 0 6px;font-size:16px}.coll-local{margin:0;padding:10px 12px;border-radius:8px;background:var(--paper-2,#f8f5ee);border:1px solid var(--rule,#d9d1c0);font-size:14px}.coll-value{padding:10px 12px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-value p{margin:6px 0 0}.coll-sums{display:grid;gap:6px;margin:0;padding:0;list-style:none}.coll-sums li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.coll-sums b{font-size:18px}.coll-sums small{color:var(--ink-2,#5a5348)}.coll-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.coll-item{content-visibility:auto;contain-intrinsic-size:auto 220px;display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 12px;padding:10px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-art{position:relative;width:64px;aspect-ratio:5/7;overflow:hidden;border-radius:6px;background:var(--paper-2,#f8f5ee)}.coll-art .card-sample-watermark{font-size:9px;letter-spacing:.04em}.coll-art img{width:100%;height:100%;object-fit:contain}.coll-art .image-fallback{font-size:11px}.coll-main{min-width:0;overflow-wrap:anywhere}.coll-name{display:block}.coll-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.coll-price{display:grid;gap:2px;margin-top:6px;font-size:13px}.coll-skip{color:var(--ink-2,#5a5348)}.coll-fields,.coll-pick,.coll-actions{grid-column:1/-1}.coll-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.coll-fields label,.coll-pick{display:grid;gap:2px;font-size:13px;font-weight:700}.coll-fields input,.coll-fields select,.coll-pick select{width:100%;font:inherit;font-weight:400}.coll-note-field{grid-column:1/-1}.coll-actions,.coll-tools{display:flex;flex-wrap:wrap;gap:8px}.coll-actions{justify-content:flex-end}@media(min-width:720px){.coll-fields{grid-template-columns:90px repeat(2,minmax(0,1fr))}}@media(max-width:520px){.coll{padding:12px}.coll-tools button{flex:1 1 140px}}`;
 document.head.append(detailTabsStyle);
 
-// 頂欄／底部導覽的「我的收藏」呼叫 window.openCollection()：列出星號與張數清單，可查看卡片、下載 CSV；資料只在此裝置。
-function openCollection(){
-  let dialog=$('collectionDialog');
-  if(!dialog){dialog=document.createElement('dialog');dialog.id='collectionDialog';dialog.className='collection-dialog';dialog.setAttribute('aria-labelledby','collectionTitle');document.body.append(dialog);dialog.addEventListener('click',event=>{if(event.target===dialog||event.target.closest('[data-collection-close]'))dialog.close();const open=event.target.closest('[data-collection-open]');if(open){dialog.close();openCard(open.dataset.collectionOpen)}})}
-  const ids=collectionIds(),rows=ids.map(id=>{const card=cardForWatch(id),quantity=watchQuantity(id)||1;return`<li><span><b>${e(card?name(card):id)}</b>${card?` <small class="meta">${e(cardNumberLabel(card))} · ${cardRarityMarkup(card)}</small>`:''}</span><span>${quantity} 張 <button type="button" data-collection-open="${e(id)}">查看</button></span></li>`}).join(''),total=collectionTotal();
-  dialog.innerHTML=`<div><header><h2 id="collectionTitle">我的收藏</h2><button type="button" data-collection-close aria-label="關閉我的收藏">×</button></header>${ids.length?`<p class="meta">共 ${total} 張，只儲存在此裝置，不會送出。</p><ul class="collection-list">${rows}</ul><button type="button" id="collectionCsv">下載清單 CSV</button>`:'<div class="state">還沒有收藏。在卡片上按星號或「＋」就會出現在這裡。</div>'}</div>`;
+// 頂欄／底部導覽的「我的收藏」呼叫 window.openCollection()（ADR 0045，v0 免登入）：清單可編輯張數／品況／版本／備註、看參考總值、匯出入 JSON 備份、下載 CSV。資料只在這台裝置。
+const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:''};
+const COLLECTION_REASONS={slab:'鑑定卡不計入',none:'尚無參考價快照',choose:'請選擇版本',['no-match']:'所選版本沒有對應的參考價'};
+const collectionItems=()=>CS.itemsFromLegacy(favoriteIds,watchlist,watchlistMeta);
+const collectionDialog=()=>$('collectionDialog'),collectionRowEl=id=>[...document.querySelectorAll('#collectionDialog [data-coll-id]')].find(item=>item.dataset.collId===id);
+const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collStatus');if(node)node.textContent=collectionUi.progress};
+const typingInCollection=()=>/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'')&&collectionDialog()?.contains(document.activeElement);
+function finishLabel(key){return key===''?'未指定':(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[key])||key}
+function finishChoices(item){return[...new Set(['',...(collectionUi.prices[item.id]||[]).map(price=>price.variant).filter(Boolean),...COMMON_FINISHES,item.finish])]}
+function collectionValuation(){return CS.valuate(collectionItems().map(item=>({...item,quantity:item.quantity||1})),collectionUi.prices)}
+function reasonText(id,reason){return watchlistMeta[id]?.ambiguous?'請先選擇卡片版本':COLLECTION_REASONS[reason]||''}
+function rowPriceHtml(item,valuation){
+  const state=collectionUi.pricesState,entry=valuation.perEntry[item.id];
+  if(watchlistMeta[item.id]?.ambiguous)return '<span class="coll-skip">未計入：請先選擇卡片版本</span>';
+  if(state==='loading'||state==='idle')return '<span class="meta">查詢參考價中…</span>';
+  if(state==='error'||!entry)return '';
+  if(!entry.counted.length)return `<span class="coll-skip">未計入：${e(reasonText(item.id,entry.reason))}</span>`;
+  return entry.counted.map(({provider,price,qty})=>`<span class="coll-price-line">${e(CS.PROVIDER_LABELS[provider])} 參考價 ${e(price.currency)} ${Number(price.amount).toLocaleString()}${Number.isFinite(price.amountTwd)?`（約 NT$ ${price.amountTwd.toLocaleString()}${qty>1?` × ${qty}`:''}）`:''} · ${e(price.snapshotDate)}</span>`).join('')+(entry.needsFinish?'<span class="coll-skip">另一來源有多個版本：選擇版本後才計入</span>':'');
+}
+function valueHtml(valuation){
+  const state=collectionUi.pricesState;
+  if(!collectionItems().length)return '';
+  if(state==='loading'||state==='idle')return '<h3>參考總值</h3><p class="meta">正在查詢參考價…</p>';
+  if(state==='error')return '<h3>參考總值</h3><p class="meta">參考價暫時無法取得，不影響收藏本身。</p>';
+  const fx=collectionUi.priceMeta?.exchangeRates,sums=Object.entries(CS.PROVIDER_LABELS).filter(([key])=>valuation.byProvider[key]).map(([key,label])=>{const row=valuation.byProvider[key];return `<li><span>${e(label)} 參考價小計</span><b>約 NT$ ${Math.round(row.twd).toLocaleString()}</b><small>${row.entries} 款${row.missingFx?`；${row.missingFx} 款缺匯率未換算`:''}</small></li>`}).join('');
+  return `<h3>參考總值</h3>${sums?`<ul class="coll-sums">${sums}</ul>`:'<p>目前沒有可計入的參考價。</p>'}<p class="meta">${valuation.counted}／${valuation.total} 款有參考價${valuation.uncounted.length?`；其餘 ${valuation.uncounted.length} 款未計入（原因標在各卡）`:''}。${valuation.dateFrom?`快照日期 ${e(valuation.dateFrom)}${valuation.dateTo!==valuation.dateFrom?` 至 ${e(valuation.dateTo)}`:''}。`:''}不同來源不相加；品況不調整價格。${fx?.source==='fallback'?'匯率為備用值，僅供概略。':fx?.updatedAt?`匯率日期 ${e(fx.updatedAt)}。`:''}</p><p class="meta">${e(collectionUi.priceMeta?.note||'參考價不是成交價或台灣行情。')}</p>`;
+}
+function refreshCollectionValue(){
+  const valuation=collectionValuation(),host=$('collValue');if(host)host.innerHTML=valueHtml(valuation);
+  collectionItems().forEach(item=>{const cell=collectionRowEl(item.id)?.querySelector('.coll-price');if(cell)cell.innerHTML=rowPriceHtml(item,valuation)});
+  const total=$('collTotal');if(total)total.textContent=`共 ${collectionIds().length} 款、${collectionTotal()} 張`;
+}
+// Alt-art versions can share region, set and number; add the id only when the label alone would not tell them apart.
+function choiceLabels(choices){const labels=choices.map(choice=>[choice.cardId,[rn(choice.region),choice.set,choice.number,choice.rarity,choice.variant].filter(Boolean).join(' · ')]);return labels.map(([cardId,label])=>[cardId,labels.filter(row=>row[1]===label).length>1?`${label} · ${cardId}`:label])}
+function collectionRowHtml(item,valuation){
+  const meta=watchlistMeta[item.id]||{},known=!!meta.v,title=known?name(meta):collectionUi.failed.has(item.id)?`查無這張卡的資料（${item.id}）`:`卡片資料載入中（${item.id}）`,qty=item.quantity||1,id=e(item.id);
+  const facts=known?[meta.officialCardNumber||'卡號待補',meta.rarity?rarityMarkup(meta.rarity,meta.game):'稀有度待補'].join(' · '):'',badges=known?`${meta.region?`<span class="badge">${e(rn(meta.region))}</span>`:''}${meta.version?`<span class="badge variant-badge">${e(meta.version)}</span>`:''}${meta.ambiguous?'<span class="badge">版本待確認</span>':''}`:'';
+  const pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[]).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
+  return `<li class="coll-item" data-coll-id="${id}"><div class="coll-art">${known&&meta.image?resilientImage(meta.image,title,'圖片來源尚未收錄'):missingImageMarkup('')}</div><div class="coll-main"><b class="coll-name">${e(title)}</b><div class="meta">${facts}</div><div class="coll-badges">${badges}</div><div class="coll-price">${rowPriceHtml(item,valuation)}</div></div>${pick}<div class="coll-fields"><label>張數<input type="number" inputmode="numeric" min="1" max="999" step="1" value="${qty}" data-coll-field="quantity"></label><label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([key,label])=>`<option value="${e(key)}"${key===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>版本<select data-coll-field="finish">${finishChoices(item).map(key=>`<option value="${e(key)}"${key===item.finish?' selected':''}>${e(finishLabel(key))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label></div><div class="coll-actions"><button type="button" data-collection-open="${id}">查看</button><button type="button" data-coll-remove="${id}" aria-label="從我的收藏移除${e(title)}">移除</button></div></li>`;
+}
+function renderCollection(){
+  const dialog=collectionDialog();if(!dialog)return;const items=collectionItems(),valuation=collectionValuation();
+  dialog.innerHTML=`<div class="coll"><header><h2 id="collectionTitle" tabindex="-1">我的收藏</h2><button type="button" data-collection-close aria-label="關閉我的收藏">×</button></header><p class="coll-local" role="note"><b>只存在這台裝置</b>：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期「匯出備份」。</p>${items.length?`<p class="meta" id="collTotal">共 ${collectionIds().length} 款、${collectionTotal()} 張</p><section class="coll-value" id="collValue" aria-label="參考總值">${valueHtml(valuation)}</section><ul class="coll-list">${items.map(item=>collectionRowHtml(item,valuation)).join('')}</ul>`:'<div class="state">還沒有收藏。在卡片上按星號或「＋」就會出現在這裡；也可以匯入之前的備份。</div>'}<div class="coll-tools"><button type="button" data-coll-export${items.length?'':' disabled'}>匯出備份（JSON）</button><button type="button" data-coll-import>匯入備份</button><input type="file" id="collFile" accept="application/json,.json" hidden><button type="button" id="collectionCsv"${items.length?'':' disabled'}>下載清單 CSV</button></div><p class="meta" id="collStatus" role="status" aria-live="polite">${e(collectionUi.progress)}</p></div>`;
   const csv=$('collectionCsv');if(csv)csv.onclick=downloadWatchlistCsv;
-  if(!dialog.open)dialog.showModal();
+}
+const rerenderCollection=()=>{if(collectionDialog()?.open&&!typingInCollection())renderCollection()};
+function refreshGrid(){renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true)}
+
+// 把 items 寫回三個既有 localStorage 鍵；畫面快照（名稱、圖、地區）依 id 沿用。
+function applyItems(items){
+  const old={...watchlistMeta};favoriteIds.clear();Object.keys(watchlist).forEach(key=>delete watchlist[key]);Object.keys(watchlistMeta).forEach(key=>delete watchlistMeta[key]);
+  items.forEach(item=>{if(item.favorite)favoriteIds.add(item.id);if(item.quantity>0)watchlist[item.id]=item.quantity;watchlistMeta[item.id]={...old[item.id],id:item.id,canonicalId:item.canonicalId||old[item.id]?.canonicalId||'',condition:item.condition,finish:item.finish,note:item.note}});
+  if(!persistCollection())collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），這次的變更關掉頁面後會消失；請先匯出備份。');
+}
+
+// 舊資料搬移：收藏鍵可能是作品層 ID（搜尋、詳細頁）或實體卡 ID（圖鑑）。逐筆向 /api/cards/:id 查，換成實體卡 ID 並補快照；
+// 只有一張實體卡才自動換，多版本不猜（留給使用者選）；查不到或失敗就原封不動保留。
+async function resolveCollectionEntry(key){
+  const response=await fetch('/api/cards/'+encodeURIComponent(key));
+  if(response.status===404){collectionUi.failed.add(key);return}
+  if(!response.ok)throw Error(`HTTP ${response.status}`);
+  const card=(await response.json()).data,where=CS.locateCard(key,card),snapshot={...cardSnapshot(card,where.id),id:where.id,canonicalId:where.canonicalId||String(card.canonicalId||card.id),ambiguous:!!where.ambiguous,choices:where.choices||[],v:1};
+  if(where.id!==key){const items=collectionItems(),from=items.find(item=>item.id===key);if(from)applyItems(CS.mergeItems(items.filter(item=>item.id!==key),[{...from,id:where.id,canonicalId:snapshot.canonicalId}]).items)}
+  watchlistMeta[where.id]={...watchlistMeta[where.id],...snapshot};
+}
+async function resolveCollection(){
+  const pending=collectionItems().map(item=>item.id).filter(id=>!watchlistMeta[id]?.v&&!collectionUi.failed.has(id)).slice(0,200);
+  const kept=collectionUi.progress;let done=0;const queue=[...pending],worker=async()=>{while(queue.length){const key=queue.shift();try{await resolveCollectionEntry(key)}catch{}done++;collectionUi.progress=`正在補齊卡片資料（${done}／${pending.length}）…`;collectionStatus(collectionUi.progress)}};
+  if(!pending.length)return false;
+  await Promise.all([worker(),worker(),worker(),worker()]);persistCollection();collectionStatus(kept);return true;
+}
+async function loadCollectionPrices(){
+  const ids=collectionItems().map(item=>item.id).filter(id=>!watchlistMeta[id]?.ambiguous&&!(id in collectionUi.prices));
+  if(!ids.length){collectionUi.pricesState='ready';refreshCollectionValue();return}
+  collectionUi.pricesState='loading';
+  try{for(let index=0;index<ids.length;index+=100){const response=await fetch('/api/prices/reference',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardIds:ids.slice(index,index+100)})});if(!response.ok)throw Error(`HTTP ${response.status}`);const body=(await response.json()).data;body.cards.forEach(row=>{collectionUi.prices[row.cardId]=row.prices});collectionUi.priceMeta=body.meta}collectionUi.pricesState='ready'}catch{collectionUi.pricesState='error'}
+  rerenderCollection();if(typingInCollection())refreshCollectionValue();
+}
+
+function downloadFile(filename,type,text){const url=URL.createObjectURL(new Blob([text],{type})),link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),0)}
+async function importCollectionFile(file){
+  if(!file)return;
+  if(file.size>CS.LIMITS.fileMaxChars*3){collectionStatus('檔案過大（上限 1 MB），沒有匯入。');return}
+  let text='';try{text=await file.text()}catch{collectionStatus('讀不到這個檔案。');return}
+  const parsed=CS.parseBackup(text);if(parsed.error){collectionStatus(`沒有匯入：${parsed.error}。`);return}
+  const merged=CS.mergeItems(collectionItems(),parsed.items);
+  if(merged.items.length>CS.LIMITS.itemsMax){collectionStatus(`合併後會超過 ${CS.LIMITS.itemsMax} 款上限，沒有匯入。`);return}
+  applyItems(merged.items);refreshGrid();renderCollection();
+  collectionStatus(`已匯入：新增 ${merged.added} 款、合併 ${merged.merged} 款${parsed.skipped?`、略過 ${parsed.skipped} 筆格式不符`:''}。`);
+  collectionUi.pricesState='idle';await resolveCollection();await loadCollectionPrices();rerenderCollection();
+}
+function onCollectionField(input){
+  const row=input.closest('[data-coll-id]'),id=row?.dataset.collId,field=input.dataset.collField;if(!id||!field)return;
+  if(field==='quantity'){const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>CS.LIMITS.quantityMax)return;watchlist[id]=value}
+  else watchlistMeta[id]={...watchlistMeta[id],id,[field]:field==='note'?input.value.slice(0,CS.LIMITS.noteMax):input.value};
+  if(!persistCollection())collectionStatus('無法寫入瀏覽器儲存空間，這次的變更關掉頁面後會消失；請先匯出備份。');
+  refreshCollectionValue();if(field==='quantity')refreshGrid();
+}
+function removeCollectionItem(id){
+  const meta=watchlistMeta[id],title=meta?.v?name(meta):id;
+  if(!confirm(`從「我的收藏」移除 ${title}？品況、版本與備註也會一併刪除。`))return;
+  favoriteIds.delete(id);delete watchlist[id];delete watchlistMeta[id];persistCollection();refreshGrid();renderCollection();$('collectionTitle')?.focus();collectionStatus(`已移除 ${title}。`);
+}
+function installCollectionDialog(){
+  let dialog=collectionDialog();if(dialog)return dialog;
+  dialog=document.createElement('dialog');dialog.id='collectionDialog';dialog.className='collection-dialog';dialog.setAttribute('aria-labelledby','collectionTitle');document.body.append(dialog);
+  dialog.addEventListener('click',event=>{
+    const target=event.target;if(target===dialog||target.closest('[data-collection-close]'))return dialog.close();
+    const open=target.closest('[data-collection-open]');if(open){dialog.close();return openCard(open.dataset.collectionOpen)}
+    const remove=target.closest('[data-coll-remove]');if(remove)return removeCollectionItem(remove.dataset.collRemove);
+    if(target.closest('[data-coll-export]'))return downloadFile(`cardscope-collection-${new Date().toISOString().slice(0,10)}.json`,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(collectionItems()),null,2));
+    if(target.closest('[data-coll-import]'))return $('collFile')?.click();
+  });
+  dialog.addEventListener('input',event=>{if(event.target.dataset?.collField)onCollectionField(event.target)});
+  dialog.addEventListener('change',event=>{
+    const target=event.target;
+    if(target.id==='collFile'){const file=target.files?.[0];target.value='';importCollectionFile(file);return}
+    if(target.dataset?.collField==='quantity')target.value=String(watchQuantity(target.closest('[data-coll-id]')?.dataset.collId)||1);
+    if(target.dataset?.collPick&&target.value){const from=target.dataset.collPick,items=collectionItems(),item=items.find(row=>row.id===from);if(!item)return;applyItems(CS.mergeItems(items.filter(row=>row.id!==from),[{...item,id:target.value}]).items);refreshGrid();renderCollection();resolveCollection().then(()=>loadCollectionPrices()).then(rerenderCollection)}
+  });
+  return dialog;
+}
+function openCollection(){
+  const dialog=installCollectionDialog();collectionUi.prices={};collectionUi.pricesState='idle';collectionUi.progress='';
+  renderCollection();if(!dialog.open)dialog.showModal();
+  if(collectionItems().length)resolveCollection().then(changed=>{if(changed){refreshGrid();rerenderCollection()}return loadCollectionPrices()});
 }
 window.openCollection=openCollection;
