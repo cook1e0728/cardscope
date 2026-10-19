@@ -6,7 +6,7 @@ const [html,css,ui]=await Promise.all(['../index.html','../catalog-layout.css','
 
 test('game pages are marked before first paint and kept in sync by render',()=>{
   assert.ok(html.indexOf("document.body.dataset.view=")<html.indexOf('class="skip-link"'),'the view is set before any content paints');
-  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)\{document\.body\.dataset\.view=gameView\?'game':'landing';document\.body\.dataset\.game=game\}placeTrends\(gameView\);/);
+  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)\{document\.body\.dataset\.view=gameView\?'game':siteView==='about'\?'about':'landing';document\.body\.dataset\.game=game\}placeTrends\(gameView\);/);
 });
 
 test('game pages open on series and cards; the landing keeps its introduction',()=>{
@@ -44,4 +44,23 @@ test('a region-limited search offers the IP\'s other regions and survives a regi
   assert.ok(html.includes("else if(activeSearch?.game===game&&activeSearch.state===browse)search(activeSearch.q)"),'a region change re-runs the active search');
   assert.ok(html.includes('沒有符合的卡；'),'the notice names the other regions');
   assert.match(theme,/\.series-band-regions button\{[^}]*min-height:44px/,'the switch buttons share the 44px region button style');
+});
+
+test('the landing is search first; statistics, health and the purple CTA live on ?view=about',async()=>{
+  const theme=await readFile(new URL('../theme-binder.css',import.meta.url),'utf8');
+  assert.ok(html.indexOf('id="homeSearch"')<html.indexOf('id="channels"'),'the search box comes before the game tiles');
+  assert.match(html,/data-example="桃歹郎"/);
+  assert.doesNotMatch(html,/class="tabs"|最新收錄/,'the dead 最新收錄 tab row is gone');
+  assert.match(html,/href="\/\?view=about"/,'the footer links to the data status');
+  assert.match(html,/p\.get\('view'\)==='about'\?'about':'landing'/,'the view is set before first paint');
+  assert.match(theme,/body:not\(\[data-view="about"\]\) #coverageStatus/);
+  assert.match(theme,/body:not\(\[data-view="about"\]\) \.brand-showcase/);
+  assert.match(theme,/body\[data-view="landing"\] section\.section:has\(> #series\)/,'the empty 商品圖鑑 frame is gone from the landing');
+  assert.match(theme,/body\[data-view="landing"\] \.top \.search\{display:none\}/,'one visible search box at a time');
+});
+test('loading shows grey card-shaped skeletons and results scroll below the sticky header',()=>{
+  assert.match(html,/class="sk-card"/);
+  assert.match(html,/function scrollBelowHeader\(/);
+  assert.doesNotMatch(html,/scrollIntoView/,'every scroll target clears the header');
+  assert.match(html,/id="cardsTitle" tabindex="-1"/,'the result heading can take focus');
 });

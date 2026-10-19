@@ -11,7 +11,6 @@
   const bandTab={},recentKey='cardscope-band-recent',regionOrder=['JP','TW','US','ASIA','KR','CN'];
   const regionLabel={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲英文版'};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
   const today=()=>new Date().toISOString().slice(0,10);
   const regionSelect=()=>document.getElementById('browseRegion');
   function recent(){try{return JSON.parse(localStorage.getItem(recentKey)||'[]')}catch{return[]}}
@@ -49,23 +48,51 @@
     const rank=row=>productMatchesCategory(row,'sealed')?0:productMatchesCategory(row,'decks')?1:2;
     return (P||[]).filter(row=>row.seriesId===item.id&&row.imageUrl&&row.imageKind==='sealed-product').sort((a,b)=>rank(a)-rank(b))[0]?.imageUrl||null;
   }
-  function tile(kind,item){
+  function tile(kind,item,extra=''){
     const imageUrl=kind==='series'?cover(item):item.imageUrl,name=kind==='product'?productName(item):seriesName(item),code=item.officialCode||'',upcoming=item.releaseDate&&item.releaseDate>today(),fresh=!upcoming&&item.releaseDate&&item.releaseDate>=recentSince();
     const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('is-type');this.remove()">`:'';
-    const sub=code||(kind==='product'?item.productSubtype||item.productType||item.releaseDate||'':'代碼待補');
-    return`<button type="button" class="band-tile" data-kind="${kind}" data-id="${esc(item.id)}" title="${esc([name,code,item.releaseDate].filter(Boolean).join('・'))}">`
+    const sub=(extra?extra+' · ':'')+(code||(kind==='product'?item.productSubtype||item.productType||item.releaseDate||'':'代碼待補'));
+    return`<button type="button" class="band-tile" data-kind="${kind}" data-id="${esc(item.id)}" data-game="${esc(item.game)}" title="${esc([name,code,item.releaseDate].filter(Boolean).join('・'))}">`
       +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>`
       +`<b class="band-tile-name">${esc(name)}</b><span class="band-tile-code">${esc(sub)}</span></button>`;
   }
   // Released in the last 90 days: shown as a NEW badge on the series' own tile.
   const recentSince=()=>new Date(Date.now()-90*864e5).toISOString().slice(0,10);
-  async function openSeries(item){
-    remember(item.id);resetRarityFilter();clearProduct();
+  // auto: the page opened this series as the game's default view, so it is not remembered as 最近瀏覽 and the page does not scroll.
+  async function openSeries(item,{auto=false}={}){
+    if(!auto)remember(item.id);resetRarityFilter();clearProduct();
     browse.product={...item,seriesId:item.id,versionLabel:regionLabel[item.region]};browse.seriesId=item.id;
     const box=document.getElementById('selectedProduct');box.classList.add('open');
     const art=cover(item);box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionLabel[item.region]||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
-    box.scrollIntoView({behavior:reduce()?'auto':'smooth',block:'start'});
-    await loadCardsPage(true);render();
+    if(!auto)scrollBelowHeader(box);
+    await loadCardsPage(true);render();if(!auto)window.announceBrowse?.(true);
+  }
+  // Default view of a game page: the newest released series of the browsing region; one with no cards yet falls through to the next (three at most).
+  async function openLatestSeries(){
+    ensureRegion();const startGame=game,region=regionSelect()?.value||'all',list=byDate((C.series||[]).filter(item=>item.game===game&&(region==='all'||item.region===region)&&!(item.releaseDate&&item.releaseDate>today()))).slice(0,3);
+    for(const item of list){
+      await openSeries(item,{auto:true});
+      // A failed load keeps its retry button; only an empty series falls through to the next one.
+      if(game!==startGame||browse.seriesId!==item.id||browse.rows.length||cardDisplayState==='error')return true;
+    }
+    return false;
+  }
+  // Landing: the newest dated series of each IP (its first region) as the same tiles the game page uses; a tile opens that game on that series.
+  function renderHome(){
+    const host=document.getElementById('homeLatest'),rail=document.getElementById('homeLatestRail');if(!host||!rail)return;
+    if(game!=='all'){host.hidden=true;return}
+    const ids=(window.CARD_GAMES||C.games||[]).map(choice=>choice.id).filter(id=>id&&id!=='all'),picks=[];
+    for(const id of ids){
+      const rows=(C.series||[]).filter(item=>item.game===id&&item.releaseDate&&item.releaseDate<=today()),region=regionOrder.find(code=>rows.some(item=>item.region===code));
+      picks.push(...rows.filter(item=>item.region===region).sort(compare).slice(0,2));
+    }
+    const list=picks.sort((a,b)=>String(b.releaseDate).localeCompare(String(a.releaseDate))).slice(0,8);
+    host.hidden=!list.length;
+    rail.innerHTML=list.map(item=>tile('series',item,(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'')).join('');
+    rail.onclick=event=>{
+      const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
+      const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
+    };
   }
   function render(){
     const anchor=document.getElementById('gameContext');let band=document.getElementById('seriesBand');
@@ -103,13 +130,13 @@
       if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
       const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;render();return}
       const card=event.target.closest('.band-tile');if(!card)return;
-      if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);document.getElementById('selectedProduct')?.scrollIntoView({behavior:reduce()?'auto':'smooth',block:'start'});return}
+      if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);scrollBelowHeader(document.getElementById('selectedProduct'));return}
       const item=series.find(row=>row.id===card.dataset.id);if(item)openSeries(item);
     };
   }
   const previous=series;
   series=function(){if(game!=='all')ensureRegion();previous();render()};
-  window.renderSeriesBand=render;
+  window.renderSeriesBand=render;window.openBandSeries=openSeries;window.openLatestSeries=openLatestSeries;window.renderHomeLatest=renderHome;
   // Called by search(): opens the search tab when something matches and returns {here, others:[[region,count]], label}: matches in this region and in the IP's other regions.
   window.setBandSearch=(query,terms)=>{bandSearch=query?{query,game,terms:terms?.length?terms:[query]}:null;if(bandSearch)bandTab[game]='search';render();return bandSearch?searchSummary:{here:0,others:[],label:''}};
   if(typeof game!=='undefined'&&typeof C!=='undefined')render();

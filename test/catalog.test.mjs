@@ -256,7 +256,7 @@ test('round three browsing controls and honest fallbacks stay wired',async()=>{
   assert.match(ui,/圖鑑模式/);
   assert.match(ui,/清單模式/);
   assert.match(ui,/圖片待補/);
-  for(const tab of ['資訊','跨市場比價','成交趨勢','使用者回報'])assert.match(ui,new RegExp(tab));
+  for(const tab of ['資訊','價格','走勢'])assert.match(ui,new RegExp(tab));
   for(const interaction of ['tilt-card','perspective:1000px','上一張卡','下一張卡','ArrowLeft','ArrowRight','card-zoom','點擊卡圖可放大'])assert.match(ui,new RegExp(interaction));
   for(const marker of ['cardscopeFeatureTour','feature-tour','快速使用說明','help-grid'])assert.match(ui,new RegExp(marker));
   assert.doesNotMatch(ui,/暫停輪播|setInterval/);

@@ -101,7 +101,7 @@ test('removed gameFilters is not referenced by homepage scripts',()=>{
 });
 test('IP navigation uses explicitly non-official CardScope artwork',async()=>{
   const switcher=await readFile(new URL('../game-switcher.js',import.meta.url),'utf8');
-  assert.match(switcher,/CardScope 非官方分類圖/);
+  assert.doesNotMatch(switcher,/非官方分類圖/,'official logos are labelled as logos, not as unofficial art');
   for(const id of ['pokemon','onepiece','yugioh','haikyuu','frieren']){
     const svg=await readFile(new URL(`../assets/ip-${id}.svg`,import.meta.url),'utf8');
     assert.match(svg,/CardScope 自製/);
@@ -113,4 +113,54 @@ test('all seven rabbit roles are wired to local brand assets',async()=>{
     assert.match(html+source+await readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8'),new RegExp(`rabbit-${name}(?:-\\d+)?\\.(?:jpg|png|webp)`));
   }
   assert.match(html,/mascot-gallery/);
+});
+test('search shows the real total, applied conditions, load more, and a suggestion when nothing matches',async()=>{
+  const calls=[],rows=(offset,n)=>Array.from({length:n},(_,i)=>({id:`c${offset}-${i}`,game:'pokemon',nameZh:'桃歹郎'}));
+  const h=harness(async url=>{
+    calls.push(String(url));const params=new URL(String(url),'http://localhost').searchParams,offset=Number(params.get('offset')||0);
+    if(params.get('q')==='zero')return{ok:true,json:async()=>({data:[],meta:{total:0,suggestion:{q:'桃歹郎',reason:''}}})};
+    return{ok:true,json:async()=>({data:rows(offset,2),meta:{total:225,offset,limit:2,hasMore:offset<2,parsed:{q:'桃歹郎 SAR 日版',name:'桃歹郎',rarities:['SAR'],region:'JP'}}})};
+  });
+  h.run("game='all';$('q').value='桃歹郎 SAR 日版'");
+  await h.run('search()');
+  assert.match(h.node('cardsTitle').textContent,/桃歹郎 SAR 日版.*225/,'the heading carries the real total, not the page size');
+  assert.match(h.node('appliedFilters').innerHTML,/取消條件 SAR/);
+  assert.match(h.node('appliedFilters').innerHTML,/取消條件 日版/);
+  assert.equal(h.node('loadMore').style.display,'block');
+  assert.match(calls[0],/limit=48/);
+  await h.run('search(null,true)');
+  assert.match(calls[1],/offset=2/,'load more continues from the server offset');
+  assert.equal(h.run('currentCardRows.length'),4,'the next page is appended');
+  assert.equal(h.node('loadMore').style.display,'none');
+  h.run('cancelAppliedFilter("rarity","SAR")');
+  await new Promise(resolve=>setTimeout(resolve,10));
+  assert.equal(new URL(calls.at(-1),'http://localhost').searchParams.get('q'),'桃歹郎 日版','cancelling a chip searches the name plus the remaining conditions');
+  h.run("$('q').value='zero'");
+  await h.run('search()');
+  assert.match(h.node('cards').innerHTML,/找不到「zero」的結果/);
+  assert.match(h.node('cards').innerHTML,/data-search="桃歹郎"/,'the suggestion is clickable');
+  assert.equal(h.node('appliedFilters').hidden,true);
+});
+test('an older search response without the new meta still shows its row count',async()=>{
+  const h=harness(async()=>({ok:true,json:async()=>({data:[{id:'a',game:'pokemon',nameZh:'噴火龍'},{id:'b',game:'pokemon',nameZh:'噴火龍'}],meta:{}})}));
+  h.run("game='all';$('q').value='噴火龍'");
+  await h.run('search()');
+  assert.match(h.node('cardsTitle').textContent,/噴火龍.*2/);
+  assert.equal(h.node('loadMore').style.display,'none');
+  assert.equal(h.node('appliedFilters').hidden,true);
+});
+test('a game page opens on a series or the full list, 48 cards at a time',async()=>{
+  const requests=[],h=harness(async url=>{requests.push(String(url));return{ok:true,json:async()=>({data:[],meta:{total:0,hasMore:false,facets:{rarity:{}}}})}});
+  h.run("game='pokemon';C={games:[],series:[],cards:[]};window.openBandSeries=async item=>{browse.seriesId=item.id;await loadCardsPage(true)}");
+  await h.run("loadGameCards('pokemon')");
+  assert.equal(h.run('browse.all'),true,'no catalog series: the full list is the fallback');
+  assert.match(requests[0],/limit=48/);
+  assert.doesNotMatch(requests[0],/series=/);
+  h.run("C={games:[],series:[{id:'s1',game:'pokemon'}],cards:[]}");
+  await h.run("loadGameCards('pokemon',{series:'s1'})");
+  assert.match(requests[1],/series=s1/);
+  assert.equal(h.run('browse.all'),false);
+  await h.run("loadGameCards('pokemon',{all:true})");
+  assert.doesNotMatch(requests[2],/series=/);
+  assert.equal(h.run('browse.all'),true);
 });

@@ -38,7 +38,7 @@ function navigationHarness(initialSearch='?game=pokemon&region=JP&rarity=SR&pric
   const applyUrl=url=>{const parsed=new URL(url,location.origin);location.pathname=parsed.pathname;location.search=parsed.search;location.hash=parsed.hash};
   const history={state:{scrollY:0},replaceState(state,unused,url){this.state=state;historyCalls.push({method:'replace',url});applyUrl(url)},pushState(state,unused,url){this.state=state;historyCalls.push({method:'push',url});applyUrl(url)}};
   const context=vm.createContext({document,history,location,URL,URLSearchParams,console,setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1},window:null,
-    C:{games:[{id:'pokemon',nameZh:'寶可夢'}]},game:initialParams.get('game')||'all',browse:{seriesId:'',offset:Number(initialParams.get('pages')||1)>1?200:0,loading:false,hasMore:false},
+    C:{games:[{id:'pokemon',nameZh:'寶可夢'}]},game:initialParams.get('game')||'all',browse:{seriesId:'',offset:Number(initialParams.get('pages')||1)>1?96:0,loading:false,hasMore:false},
     cardFilters:{rarity:initialParams.get('rarity')||'all',price:initialParams.get('price')||'all',sort:initialParams.get('sort')||'number-asc'},
     openCalls:[],chooseCalls:[]});
   context.window=context;
@@ -125,4 +125,24 @@ test('Forward and reload with a card reopen the requested detail',async()=>{
   await reloaded.flush();
   assert.equal(reloaded.nodes.get('modal').classList.contains('open'),true);
   assert.equal(reloaded.run('activeDetailCardId'),'pk-reload');
+});
+
+test('view=all and a series in the URL pick the game page view without loading the default first',async()=>{
+  const all=navigationHarness('?game=pokemon&view=all');
+  all.run('browse.all=true');
+  await all.flush();
+  assert.equal(JSON.stringify(all.context.cardscopeEntry),'{"series":"","all":true}');
+  assert.equal(new URL(all.historyCalls.at(-1).url,'http://localhost').searchParams.get('view'),'all','the full-list view survives the URL rewrite');
+  const series=navigationHarness('?game=pokemon&series=pokemon-jp-m6a');
+  await series.flush();
+  assert.equal(JSON.stringify(series.context.cardscopeEntry),'{"series":"pokemon-jp-m6a","all":false}');
+  const plain=navigationHarness('?game=pokemon');
+  await plain.flush();
+  assert.equal(plain.context.cardscopeEntry,null,'a bare game URL opens the default newest series');
+});
+test('the browse and search announcements from index.html update the URL',async()=>{
+  assert.match(navigation,/addEventListener\('cardscope:browse'/);
+  assert.match(navigation,/addEventListener\('cardscope:search'/);
+  assert.match(html,/new CustomEvent\('cardscope:browse'/);
+  assert.match(html,/new CustomEvent\('cardscope:search'/);
 });

@@ -14,7 +14,7 @@ test('catalog defaults to the visual grid and exposes an explicit IP landing sco
   assert.match(ui,/let cardViewMode='grid'/);
   assert.match(ui,/data-view="grid">圖鑑模式/);
   assert.match(html,/game==='all'/);
-  assert.match(html,/classList\.add\('game-entry-grid'\)/);
+  assert.doesNotMatch(html,/classList\.add\('game-entry-grid'\)/,'the landing no longer draws a second game chooser');
   assert.match(html,/不同 IP 不會合併|每個 IP 獨立呈現/);
   assert.doesNotMatch(html+ui,/\bgameFilters\b/);
 });
@@ -53,11 +53,11 @@ test('desktop and mobile brand layouts keep rabbit artwork separate from copy',(
   assert.match(css,/\.brand-showcase-copy\{width:auto;min-width:0/);
 });
 
-test('IP picker is modal, keyboard reachable, and preserves per-IP scope',()=>{
-  assert.match(switcher,/aria-haspopup','dialog/);
-  assert.match(switcher,/aria-modal','true/);
-  assert.match(switcher,/event\.key==='Escape'/);
-  assert.match(switcher,/aria-pressed="\$\{choice\.id===active\}"/);
-  assert.match(switcher,/不同作品不會合併/);
-  assert.match(switcher,/依版本與系列分開/);
+test('primary navigation is real buttons and the logo tiles are the only game chooser',()=>{
+  const nav=html.match(/<nav class="nav"[^]*?<\/nav>/)[0];
+  assert.deepEqual([...nav.matchAll(/data-nav="([^"]+)">([^<]+)</g)].map(match=>[match[1],match[2]]),[['search','搜尋'],['browse','圖鑑'],['collection','我的收藏']]);
+  assert.doesNotMatch(nav,/<b[ >]/,'the old non-focusable <b> labels are gone');
+  assert.doesNotMatch(switcher,/\.game-pick|className='game-switch'|picker\.classList|aria-haspopup/,'the header drop-down and its dialog duplicated the tiles');
+  assert.match(switcher,/scope\.openCollection/);
+  assert.match(switcher,/navigate\[button\.dataset\.nav\]/);
 });

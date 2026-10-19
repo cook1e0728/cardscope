@@ -56,7 +56,7 @@ test('card detail markup is a labelled modal dialog wired to the focus helper',(
   assert.match(ui,/installDialogFocus\?\.\(\$\('modal'\)/);
 });
 
-test('Escape handled by the zoom view does not also close the detail dialog',()=>{
+test('Escape handled by the zoom view (and arrow keys handled by the tab list) do not also act on the detail dialog',()=>{
   const listener=ui.slice(ui.lastIndexOf("document.addEventListener('keydown'"));
-  assert.match(listener,/^document\.addEventListener\('keydown',event=>\{if\(event\.key==='Escape'&&event\.defaultPrevented\)return;/);
+  assert.match(listener,/^document\.addEventListener\('keydown',event=>\{if\(event\.defaultPrevented\)return;/);
 });

@@ -16,14 +16,14 @@ test('the tall card filter bar does not stick over cards on phones',()=>{
   assert.match(phone,/\.card-tools\{position:static\}/);
 });
 
-test('phone bottom bar buttons jump to existing sections instead of doing nothing',async()=>{
-  const [html,ui]=await Promise.all(['../index.html','../ui-enhancements.js'].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
+test('phone bottom bar has the same three real actions as the header (搜尋、圖鑑、我的收藏)',async()=>{
+  const [html,switcher]=await Promise.all(['../index.html','../game-switcher.js'].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
   const bar=html.match(/<nav class="bottom"[^]*?<\/nav>/)[0];
-  assert.match(bar,/aria-label="快速跳轉"/);
-  assert.deepEqual([...bar.matchAll(/data-jump="([^"]+)"/g)].map(match=>match[1]),['q','cardTools','coverageStatus','watchlistSummary']);
-  assert.equal((bar.match(/<button/g)||[]).length,4,'every bar button has a destination');
-  for(const id of ['q','cardTools','coverageStatus','watchlistSummary'])assert.ok(html.includes(`id="${id}"`)||ui.includes(`id='${id}'`)||ui.includes(`id="${id}"`)||ui.includes(`.id='${id}'`),`${id} exists`);
-  assert.match(ui,/nav\.bottom \[data-jump\]/);
+  assert.match(bar,/aria-label="主要導覽"/);
+  assert.deepEqual([...bar.matchAll(/data-nav="([^"]+)"/g)].map(match=>match[1]),['search','browse','collection']);
+  assert.equal((bar.match(/<button/g)||[]).length,3,'every bar button has an action');
+  assert.doesNotMatch(bar,/data-jump/,'no page-anchor stand-ins');
+  assert.match(switcher,/querySelectorAll\('\[data-nav\]'\)/,'header and bar share one handler');
 });
 
 test('short viewports (200% zoom, landscape phones) do not pin the header',()=>{

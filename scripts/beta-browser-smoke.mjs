@@ -208,9 +208,11 @@ async function runViewport(browser,viewport){
   try{
     await page.goto(baseUrl,{waitUntil:'domcontentloaded'});
     await waitForVisible(page.locator('#channels .channel').first(),'IP navigation did not render');
-    try{await waitForVisible(page.locator('#cards .game-entry').first(),'IP landing entries did not render')}
+    try{await waitForVisible(page.locator('#homeSearch'),'the landing search box did not render')}
     catch(error){throw new Error(`${error.message}; pageErrors=${pageErrors.join(' | ')}; cards=${await page.locator('#cards').innerText().catch(()=>'<unavailable>')}`,{cause:error})}
-    assert.equal(await page.locator('#cards .game-entry').count(),5,`${viewport.name} should show five IP landing entries`);
+    assert.equal(await page.locator('#channels .channel[data-ip]:not([data-ip="all"])').count(),5,`${viewport.name} should show five IP entry tiles`);
+    assert.equal(await page.locator('#cards .game-entry').count(),0,`${viewport.name} the landing keeps only one game chooser`);
+    assert.equal(await page.locator('.home-examples [data-example]').count()>=3,true,`${viewport.name} should show search examples`);
     const channelIds=[];
     const channels=page.locator('#channels .channel');
     for(let index=0;index<await channels.count();index+=1){
@@ -288,7 +290,7 @@ async function runViewport(browser,viewport){
     assert.deepEqual(smallTargets,[],`${viewport.name} controls under 44px`);
 
     if(viewport.width<=760){
-      await page.locator('nav.bottom [data-jump="q"]').click();
+      await page.locator('nav.bottom [data-nav="search"]').click();
       await page.waitForFunction(()=>document.activeElement?.id==='q',undefined,{timeout:5000});
     }
 
@@ -308,21 +310,21 @@ async function runViewport(browser,viewport){
     // Cross-IP search remains available from the all-games landing state and
     // must show an honest zero result without fixture/demo cards.
     await clickIp(page,'all');
-    await page.locator('#q').fill('no-such-card');
-    await page.locator('#go').click();
-    await waitForVisible(page.locator('#notice'),'zero-result search did not update its notice');
-    await page.waitForFunction(()=>/找不到結果/.test(document.querySelector('#notice')?.textContent||''),undefined,{timeout:8000});
-    assert.match(await page.locator('#notice').innerText(),/找不到結果/);
+    await page.locator('#heroQ').fill('no-such-card');
+    await page.locator('#heroGo').click();
+    await waitForVisible(page.locator('#cards .search-empty'),'zero-result search did not show its empty state');
+    assert.match(await page.locator('#cards .search-empty').innerText(),/找不到/);
     assert.equal(await page.locator('#cards .card').count(),0,`${viewport.name} zero-result search rendered cards`);
     assert.equal(new URL(page.url()).searchParams.get('q'),'no-such-card');
     if(viewport.name==='desktop'){
       await page.reload({waitUntil:'domcontentloaded'});
-      await page.waitForFunction(()=>/找不到結果/.test(document.querySelector('#notice')?.textContent||''),undefined,{timeout:8000});
+      await waitForVisible(page.locator('#cards .search-empty'),'reload did not restore the zero-result state');
       assert.equal(new URL(page.url()).searchParams.get('q'),'no-such-card','reload should preserve the search URL');
       await page.goBack({waitUntil:'domcontentloaded'});
-      await waitForVisible(page.locator('#cards .game-entry').first(),'browser Back did not restore the all-game landing');
+      await waitForVisible(page.locator('#homeSearch'),'browser Back did not restore the all-game landing');
+      assert.equal(await page.locator('#cardsSection.has-results').count(),0,'Back to the landing should clear the results');
       await page.goForward({waitUntil:'domcontentloaded'});
-      await page.waitForFunction(()=>/找不到結果/.test(document.querySelector('#notice')?.textContent||''),undefined,{timeout:8000});
+      await waitForVisible(page.locator('#cards .search-empty'),'reload did not restore the zero-result state');
     }
     assert.equal(pageErrors.length,0,`${viewport.name} page errors: ${pageErrors.join('; ')}`);
     assert.ok(state.optionalServiceFailures>=2,`${viewport.name} detail did not exercise both optional service failures`);

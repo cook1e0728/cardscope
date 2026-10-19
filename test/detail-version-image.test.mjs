@@ -13,5 +13,5 @@ test('收錄版本列出稀有度，其他卡的版本可點擊切換且不改�
   assert.match(source, /data-version-card="\$\{e\(p\.cardId\)\}"/);
   assert.match(source, /openCard\(button\.dataset\.versionCard,\{keepPosition:true\}\)/);
   assert.match(source, /if\(!options\.keepPosition\)\{activeDetailCardId=id;detailReturnCardId=id\}/);
-  assert.match(source, /\$\{p\.rarity\?` · \$\{e\(rarityText\(p\.rarity\)\)\}`:''\}/);
+  assert.match(source, /\$\{p\.rarity\?` · \$\{rarityMarkup\(p\.rarity,cardGameId\(c\)\)\}`:''\}/);
 });

@@ -82,8 +82,7 @@ test('mobile layout constrains header, dialogs, filters, and long text to the vi
   for(const rule of ['overflow-x:clip','grid-template-columns:minmax(0,1fr) auto','grid-column:1/-1','min-height:100dvh','overflow-wrap:anywhere'])assert.match(layout,new RegExp(rule.replace(/[()]/g,'\\$&')));
   assert.match(layout,/\.channel-art img\{width:auto;height:auto;max-width:92px;max-height:44px;padding:0\}/);
   assert.match(layout,/\.brand-showcase picture\{position:absolute;inset:0 0 0 42%;width:auto\}/);
-  assert.match(switcher,/max-height:calc\(100dvh - 16px\)/);
-  assert.match(switcher,/grid-template-columns:64px minmax\(0,1fr\)/);
+  assert.doesNotMatch(switcher,/\.game-pick|className='game-switch'|picker\.classList/,'the duplicate game chooser (header drop-down and dialog) is gone');
 });
 
 test('default catalog browsing fetches only the requested page and its image relations',()=>{
@@ -93,7 +92,7 @@ test('default catalog browsing fetches only the requested page and its image rel
   assert.match(serverSource,/loadDatabasePageRelations\('card_images'/);
   assert.match(serverSource,/Prefer:'count=exact'/);
   assert.match(indexSource,/正在載入\$\{G\(selectedGame\)\.nameZh\|\|selectedGame\}卡片與圖片/);
-  assert.match(indexSource,/countedRarities\.length\?countedRarities:rankedRarities/);
+  assert.match(indexSource,/legacyRarityValues=\[\.\.\.new Set\(countedRarities\)\]/,'the rarity menu lists only what the current scope has');
 });
 
 test('series browsing scopes printing and card queries before loading images',()=>{

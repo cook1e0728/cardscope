@@ -197,9 +197,11 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
   }
 });
 
-test('detail page wiring: the market panel holds a trend slot that loads only when the tab is opened', async () => {
+test('detail page wiring: the trend panel holds the slot that loads only when the 走勢 tab is opened', async () => {
   const [ui, html] = await Promise.all(['../ui-enhancements.js', '../index.html'].map(path => readFile(new URL(path, import.meta.url), 'utf8')));
-  assert.match(ui, /<div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div><\/section><section data-detail-panel="trend"/);
+  assert.match(ui, /detailPanel\('trend',true,`<div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div>`\)/);
+  assert.match(ui, /\[data-detail-tab="trend"\]/);
+  assert.doesNotMatch(ui.match(/detailPanel\('market',true,[^]*?\$\{detailPanel\('trend'/)[0], /data-price-trend/, 'the price panel no longer carries the trend');
   assert.match(ui, /tab\.addEventListener\('click',\(\)=>window\.PriceTrend\.load\(slot/);
   assert.ok(html.indexOf('/price-history-chart.js') > 0 && html.indexOf('/price-history-chart.js') < html.indexOf('/ui-enhancements.js'));
   assert.doesNotMatch(ui.match(/openCard=async function[^]*?window\.openCard=openCard/)[0], /price-history'/, 'the detail request itself never asks for the trend');
