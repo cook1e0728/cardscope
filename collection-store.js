@@ -66,7 +66,11 @@
     return{id:key,canonicalId,ambiguous:true,choices:ps.filter(p=>p.cardId&&!seen.has(p.cardId)&&seen.add(p.cardId)).map(p=>({cardId:String(p.cardId),region:p.region||'',set:p.localSetCode||'',number:p.localCardNumber||'',rarity:p.rarity||'',variant:p.metadata?.variantName||''}))};
   }
 
-  // Reference total. Per provider and entry: a chosen finish must match a snapshot variant exactly; with no finish chosen, one variant is used
+  // Cardmarket says holo / TCGplayer says holofoil for the same finish (the site labels them alike), so compare by this key.
+  const FINISH_ALIASES={holofoil:'holo',reverseholofoil:'reverse',reverseholo:'reverse'};
+  const finishKey=value=>{const key=String(value||'').toLowerCase().replace(/[-_ ]/g,'');return FINISH_ALIASES[key]||key};
+
+  // Reference total. Per provider and entry: a chosen finish must match a snapshot variant (same finish key); with no finish chosen, one variant is used
   // and several variants mean "choose a version" (never picked for the user). Slabs and cards without snapshots are not counted. Sources are never added together.
   function valuate(entries,pricesById){
     const byProvider={},perEntry={},uncounted=[],dates=[];
@@ -76,7 +80,7 @@
       else if(!prices.length)reason='none';
       else for(const provider of Object.keys(PROVIDER_LABELS)){
         const own=prices.filter(p=>p.provider===provider);if(!own.length)continue;
-        const pick=finish?own.filter(p=>p.variant===finish):own.length===1?own:[];
+        const pick=finish?own.filter(p=>finishKey(p.variant)===finishKey(finish)):own.length===1?own:[];
         if(pick.length!==1){if(!finish)needsFinish=true;continue}
         counted.push({provider,price:pick[0],qty});
       }
@@ -89,5 +93,5 @@
     return{byProvider,perEntry,uncounted,counted:entries.length-uncounted.length,total:entries.length,dateFrom:dates[0]||'',dateTo:dates.at(-1)||''};
   }
 
-  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate};
+  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,finishKey,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate};
 })(typeof window!=='undefined'?window:globalThis);

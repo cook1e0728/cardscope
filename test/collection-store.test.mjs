@@ -89,17 +89,19 @@ test('reference total: per source, finish must match, several variants need a ch
     { id: 'slab', quantity: 1, condition: 'SLAB', finish: '' },
     { id: 'none', quantity: 4, condition: '', finish: '' },
     { id: 'picked', quantity: 3, condition: 'HP', finish: 'reverse' },
-    { id: 'wrong', quantity: 1, condition: '', finish: 'holofoil' }
-  ], { ...prices, multi2: prices.multi, picked: prices.multi, wrong: prices.one });
-  assert.deepEqual(v.byProvider.cardmarket, { twd: 200 * 2 + 200 + 80 * 3, entries: 3, missingFx: 0 });
-  assert.deepEqual(v.byProvider.tcgplayer, { twd: 320, entries: 1, missingFx: 0 });
+    { id: 'wrong', quantity: 1, condition: '', finish: 'reverse' },
+    { id: 'alias', quantity: 1, condition: '', finish: 'holo' }
+  ], { ...prices, multi2: prices.multi, picked: prices.multi, wrong: prices.one, alias: prices.both });
+  assert.deepEqual(v.byProvider.cardmarket, { twd: 200 * 2 + 200 + 80 * 3 + 200, entries: 4, missingFx: 0 });
+  assert.deepEqual(v.byProvider.tcgplayer, { twd: 320 + 320, entries: 2, missingFx: 0 }, 'finish holo also matches TCGplayer holofoil (same finish, different source vocabulary)');
   assert.deepEqual(Object.fromEntries(v.uncounted.map(x => [x.id, x.reason])), { multi: 'choose', multi2: 'choose', slab: 'slab', none: 'none', wrong: 'no-match' });
-  assert.equal(v.counted, 3);
-  assert.equal(v.total, 8);
+  assert.equal(v.counted, 4);
+  assert.equal(v.total, 9);
   assert.equal(v.dateFrom, '2026-10-10');
   assert.equal(v.dateTo, '2026-10-18');
   assert.equal(v.perEntry.both.counted.length, 2, 'both sources counted separately, never merged into one number');
   assert.equal(v.perEntry.one.counted[0].qty, 2);
+  assert.deepEqual(['holofoil', 'reverse-holofoil', 'reverseHolofoil', 'Holo', 'normal', ''].map(CS.finishKey), ['holo', 'reverse', 'reverse', 'holo', 'normal', '']);
   const noFx = CS.valuate([{ id: 'x', quantity: 1, condition: '', finish: '' }], { x: [price('cardmarket', '', 5, null)] });
   assert.deepEqual(noFx.byProvider.cardmarket, { twd: 0, entries: 1, missingFx: 1 }, 'a price without a TWD rate is flagged, not counted as 0 silently');
   assert.deepEqual(CS.valuate([], {}), { byProvider: {}, perEntry: {}, uncounted: [], counted: 0, total: 0, dateFrom: '', dateTo: '' });
