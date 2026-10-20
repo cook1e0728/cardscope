@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
+import { encodeShard, shardOf, shortDigest } from '../providers/price-archive.mjs';
 
 // ADR 0042: reference-price trend. Front-end SVG builder (pure functions) and GET /api/cards/:id/price-history over HTTP with a fake Supabase.
 
@@ -108,19 +109,38 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
   const cards = {
     'card-jp': { ...base, id: 'card-jp', printings: [printing('card-jp', 'JP'), printing('card-us', 'US', { source: 'pokemontcg' })] },
     'card-empty': { ...base, id: 'card-empty', printings: [printing('card-empty', 'JP')] },
-    'card-down': { ...base, id: 'card-down', printings: [printing('card-down', 'JP')] }
+    'card-down': { ...base, id: 'card-down', printings: [printing('card-down', 'JP')] },
+    'card-recent': { ...base, id: 'card-recent', printings: [printing('card-recent', 'JP')] }
   };
   const snapshotRows = [
-    { card_id: 'card-jp', provider: 'cardmarket', variant: 'holo', currency: 'EUR', snapshot_date: daysAgo(100), amount: 4 },
     { card_id: 'card-jp', provider: 'cardmarket', variant: 'holo', currency: 'EUR', snapshot_date: daysAgo(10), amount: 5.5 },
     { card_id: 'card-jp', provider: 'cardmarket', variant: 'reverse', currency: 'EUR', snapshot_date: daysAgo(10), amount: 2 },
     { card_id: 'card-us', provider: 'tcgplayer', variant: 'holofoil', currency: 'USD', snapshot_date: daysAgo(30), amount: 10 },
     { card_id: 'card-us', provider: 'tcgplayer', variant: 'holofoil', currency: 'USD', snapshot_date: daysAgo(3), amount: 12 },
-    { card_id: 'card-us', provider: 'tcgplayer', variant: 'holofoil', currency: 'USD', snapshot_date: daysAgo(2), amount: 13 }
+    { card_id: 'card-us', provider: 'tcgplayer', variant: 'holofoil', currency: 'USD', snapshot_date: daysAgo(2), amount: 13 },
+    { card_id: 'card-recent', provider: 'cardmarket', variant: 'holo', currency: 'EUR', snapshot_date: daysAgo(3), amount: 7 }
   ];
   const snapshotQueries = [];
+  // ADR 0046: the 100-day-old row lives in the (mock) private Storage bucket, not in the table; the response must be the same as before the archive existed.
+  const archivedRow = { card_id: 'card-jp', provider: 'cardmarket', variant: 'holo', currency: 'EUR', snapshot_date: daysAgo(100), amount: 4 };
+  const archiveMonth = archivedRow.snapshot_date.slice(0, 7), archiveShard = shardOf('card-jp');
+  const archiveShardFile = await encodeShard(archiveMonth, archiveShard, [archivedRow]);
+  const archiveFiles = new Map([
+    ['v1/manifest.json', Buffer.from(JSON.stringify({ v: 1, months: { [archiveMonth]: { [String(archiveShard).padStart(2, '0')]: { n: 1, d: shortDigest(archiveShardFile.digest) } } } }))],
+    [`v1/${archiveMonth}/${String(archiveShard).padStart(2, '0')}.json.gz`, archiveShardFile.gz]
+  ]);
+  let storageDown = false;
+  const storageRequests = [];
   const mockSupabase = createServer((req, res) => {
     const url = new URL(req.url, 'http://mock-supabase'), table = url.pathname.split('/').at(-1);
+    if (url.pathname.startsWith('/storage/v1/object/authenticated/price-archive/')) {
+      storageRequests.push(url.pathname);
+      const file = archiveFiles.get(url.pathname.slice('/storage/v1/object/authenticated/price-archive/'.length));
+      if (storageDown) { res.writeHead(500); return res.end('storage down'); }
+      if (!file) { res.writeHead(404, { 'content-type': 'application/json' }); return res.end('{"statusCode":"404","error":"not_found"}'); }
+      res.writeHead(200, { 'content-type': 'application/octet-stream' });
+      return res.end(file);
+    }
     let raw = '';
     req.on('data', chunk => { raw += chunk; });
     req.on('end', () => {
@@ -155,6 +175,18 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
     });
     const get = async id => { const response = await fetch(`http://127.0.0.1:${appPort}/api/cards/${id}/price-history`); return { status: response.status, body: await response.json() }; };
 
+    // The archive being unreachable degrades to the database rows (the last 30 days), says so, and is not cached for the full hour.
+    storageDown = true;
+    const recent = await get('card-recent');
+    assert.equal(recent.status, 200);
+    assert.deepEqual(recent.body.series.map(s => s.points.length), [1]);
+    assert.equal(recent.body.meta.archiveUnavailable, true);
+    assert.equal(recent.body.meta.unavailable, undefined);
+
+    storageDown = false;
+    storageRequests.length = 0;
+    snapshotQueries.length = 0;
+
     const first = await get('card-jp');
     assert.equal(first.status, 200);
     const { series, meta } = first.body;
@@ -175,6 +207,9 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
     const again = await get('card-jp');
     assert.deepEqual(again.body, first.body);
     assert.equal(snapshotQueries.length, 1, 'cached for an hour');
+    assert.equal(meta.archiveUnavailable, undefined);
+    assert.ok(storageRequests.some(p => p.endsWith('/v1/manifest.json')) && storageRequests.some(p => p.endsWith(`/${archiveMonth}/${String(archiveShard).padStart(2, '0')}.json.gz`)), 'the archived month was read');
+    assert.equal(storageRequests.length, 2, 'one manifest and one shard file for this request, nothing else');
 
     const empty = await get('card-empty');
     assert.equal(empty.status, 200);

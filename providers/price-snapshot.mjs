@@ -15,6 +15,9 @@ export const SNAPSHOT_CHUNK_SIZE = 50;             // cards priced, then compare
 export const SNAPSHOT_WRITE_BATCH_SIZE = 200;
 export const SNAPSHOT_INTERVAL_MS = 24 * 60 * 60 * 1000;
 export const SNAPSHOT_INITIAL_DELAY_MS = 5 * 60 * 1000;
+// ADR 0046 automatic brake: at 440 MB (pg_database_size) a round does not start and a running round stops after the current chunk; the run note says DB_SIZE_BRAKE.
+export const SNAPSHOT_DB_BRAKE_BYTES = 440 * 1024 * 1024;
+export const SNAPSHOT_BRAKE_CHECK_CHUNKS = 10;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PRINTING_SELECT = 'id,card_id,source,provider_id,region,local_set_code,local_card_number,card:tcg_cards(game_id,name_ja,name_en)';
@@ -114,6 +117,12 @@ async function finishRun(db, id, status, stats, error = null) {
   await patchRun(db, id, { status, rows_seen: stats.seen || 0, rows_written: stats.written || 0, cursor: stats.cursor || null, error: error ? String(error).slice(0, 1000) : null, metadata: stats.metadata || {}, finished_at: new Date().toISOString() });
 }
 
+// Total database size from the server's own function (migration 20261020110000); null when it cannot be read.
+export async function readDatabaseSize(db) {
+  const size = Number(await db('/rpc/cardscope_db_size_bytes', { method: 'POST', body: '{}' }));
+  return Number.isFinite(size) && size > 0 ? size : null;
+}
+
 async function loadPrevious(db, cardIds, since) {
   const latest = new Map(), pageSize = 1000;
   for (let offset = 0; ; offset += pageSize) {
@@ -128,9 +137,9 @@ async function loadPrevious(db, cardIds, since) {
 export async function runPriceSnapshot(options = {}) {
   const { db, env = process.env, collectionAllowed = catalogCollectionAllowed, fetch: fetchImpl = (...args) => globalThis.fetch(...args), now = Date.now, sleep = defaultSleep, signal,
     cursor: resumeCursor = null, resumedFrom = null, intervalMs = SNAPSHOT_REQUEST_INTERVAL_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxConsecutiveFailures = SNAPSHOT_MAX_CONSECUTIVE_FAILURES, backoffMs = 60 * 1000, maxConsecutiveBackoffs = 30,
-    pageSize = SNAPSHOT_PAGE_SIZE, chunkSize = SNAPSHOT_CHUNK_SIZE, writeBatchSize = SNAPSHOT_WRITE_BATCH_SIZE, onProgress, log = console, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES } = options;
+    pageSize = SNAPSHOT_PAGE_SIZE, chunkSize = SNAPSHOT_CHUNK_SIZE, writeBatchSize = SNAPSHOT_WRITE_BATCH_SIZE, onProgress, log = console, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES, dbBrakeBytes = SNAPSHOT_DB_BRAKE_BYTES, brakeCheckChunks = SNAPSHOT_BRAKE_CHECK_CHUNKS } = options;
   const today = new Date(now()).toISOString().slice(0, 10), startedAt = now();
-  const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, droppedBelow: 0, belowThreshold: 0, skipped: emptySkipped(), errorCodes: {}, errorSamples: [], cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
+  const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, dbSizeBytes: null, droppedBelow: 0, belowThreshold: 0, skipped: emptySkipped(), errorCodes: {}, errorSamples: [], cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
   const skippedTotal = () => Object.values(stats.skipped).reduce((sum, n) => sum + n, 0);
   const snapshot = () => ({ ...stats, skipped: { ...stats.skipped }, skippedTotal: skippedTotal() });
   if (!priceSnapshotEnabled({ env, collectionAllowed })) return { ...snapshot(), status: 'disabled' };
@@ -139,6 +148,15 @@ export async function runPriceSnapshot(options = {}) {
   const enSetMap = options.enSetMap ?? await loadEnSetMap();
   let runId = null, lastStatus = null, nextRequestAt = 0, consecutiveFailures = 0, consecutiveBackoffs = 0, stopReason = null;
   const heartbeat = async () => { if (!runId) return; try { await patchRun(db, runId, { rows_seen: stats.candidates, rows_written: stats.written, cursor: stats.cursor, metadata: { heartbeatAt: new Date(now()).toISOString(), requests: stats.requests, skipped: stats.skipped, errorCodes: stats.errorCodes, errorSamples: stats.errorSamples, belowThreshold: stats.belowThreshold } }); } catch (error) { log.warn?.('price snapshot heartbeat failed', error.message); } };
+
+  // Fail open (log only) when the size cannot be read: a broken probe must not silently end the daily snapshot, but a readable size at or over the limit always stops it.
+  const brakeCheck = async () => {
+    try {
+      const size = await readDatabaseSize(db);
+      stats.dbSizeBytes = size;
+      if (size != null && size >= dbBrakeBytes) { stopReason = 'DB_SIZE_BRAKE'; log.warn?.('price snapshot paused by the database size brake', size, dbBrakeBytes); }
+    } catch (error) { log.warn?.('price snapshot size probe failed', error.message); }
+  };
 
   // The only way out to TCGdex: sequential, at most one request per intervalMs, abortable.
   const throttledFetch = async (url, init = {}) => {
@@ -159,9 +177,11 @@ export async function runPriceSnapshot(options = {}) {
     if (resumedFrom) await patchRun(db, resumedFrom, { status: 'failed', error: 'INTERRUPTED', finished_at: new Date().toISOString() }, '&status=eq.running').catch(() => {});
     // Fail before any TCGdex request when the table is missing (migration not applied yet).
     await db('/price_snapshots?select=card_id&limit=1');
+    await brakeCheck();
+    let chunksDone = 0;
 
     const since = new Date(Date.parse(`${today}T00:00:00Z`) - SNAPSHOT_MAX_AGE_DAYS * DAY_MS).toISOString().slice(0, 10);
-    for await (const page of listSnapshotCandidates(db, { enSetMap, officialJpSeries, pageSize, cursor: resumeCursor, signal })) {
+    if (!stopReason) for await (const page of listSnapshotCandidates(db, { enSetMap, officialJpSeries, pageSize, cursor: resumeCursor, signal })) {
       stats.rowsScanned += page.rowsScanned;
       for (let i = 0; i < page.items.length && !stopReason; i += chunkSize) {
         const chunk = page.items.slice(i, i + chunkSize);
@@ -224,12 +244,13 @@ export async function runPriceSnapshot(options = {}) {
         }
         if (done) stats.cursor = chunk[done - 1].cursor;
         await heartbeat();
+        if (++chunksDone % brakeCheckChunks === 0) await brakeCheck();
         onProgress?.(snapshot());
       }
       if (stopReason) break;
     }
     if (!stopReason && signal?.aborted) stopReason = 'ABORTED';
-    stats.status = stopReason ? (stopReason === 'ABORTED' ? 'aborted' : 'failed') : 'completed';
+    stats.status = stopReason ? (stopReason === 'ABORTED' ? 'aborted' : stopReason === 'DB_SIZE_BRAKE' ? 'paused' : 'failed') : 'completed';
     stats.error = stopReason;
   } catch (error) {
     stats.status = 'failed';
@@ -240,7 +261,7 @@ export async function runPriceSnapshot(options = {}) {
   stats.durationMs = now() - startedAt;
   const final = snapshot();
   try {
-    await finishRun(db, runId, stats.status === 'completed' ? 'completed' : 'failed', { seen: stats.candidates, written: stats.written, cursor: stats.status === 'completed' ? null : stats.cursor, metadata: { date: today, requests: stats.requests, rowsScanned: stats.rowsScanned, skipped: stats.skipped, errorCodes: stats.errorCodes, errorSamples: stats.errorSamples, skippedTotal: final.skippedTotal, belowThreshold: stats.belowThreshold, resumedFrom, durationMs: stats.durationMs } }, stats.error);
+    await finishRun(db, runId, stats.status === 'completed' ? 'completed' : stats.status === 'paused' ? 'skipped' : 'failed', { seen: stats.candidates, written: stats.written, cursor: stats.status === 'completed' ? null : stats.cursor, metadata: { date: today, requests: stats.requests, rowsScanned: stats.rowsScanned, skipped: stats.skipped, errorCodes: stats.errorCodes, errorSamples: stats.errorSamples, skippedTotal: final.skippedTotal, belowThreshold: stats.belowThreshold, dbSizeBytes: stats.dbSizeBytes, resumedFrom, durationMs: stats.durationMs } }, stats.error);
   } catch (error) { log.error?.('price snapshot run record failed', error.message); }
   return final;
 }
@@ -260,7 +281,7 @@ export async function planNextSnapshotRun(db, { now = Date.now, intervalMs = SNA
 }
 
 // What server.mjs wires in: a daily scheduler plus run / status / stop for the admin endpoints. Rounds never overlap (one in-process run at a time).
-export function createPriceSnapshotController({ db, log = console, intervalMs = SNAPSHOT_INTERVAL_MS, initialDelayMs = SNAPSHOT_INITIAL_DELAY_MS, minGapMs = 10 * 60 * 1000, now = Date.now, setTimer = setTimeout, clearTimer = clearTimeout, ...runOptions } = {}) {
+export function createPriceSnapshotController({ db, log = console, intervalMs = SNAPSHOT_INTERVAL_MS, initialDelayMs = SNAPSHOT_INITIAL_DELAY_MS, minGapMs = 10 * 60 * 1000, isBlocked = () => false, now = Date.now, setTimer = setTimeout, clearTimer = clearTimeout, ...runOptions } = {}) {
   let timer = null, running = null, abort = null, progress = null, last = null, nextRunAt = null, disposed = false;
   const enabled = () => priceSnapshotEnabled({ env: runOptions.env, collectionAllowed: runOptions.collectionAllowed });
 
@@ -285,7 +306,7 @@ export function createPriceSnapshotController({ db, log = console, intervalMs = 
     timer = null; nextRunAt = null;
     let delay = intervalMs;
     try {
-      if (running) delay = minGapMs;
+      if (running || isBlocked()) delay = minGapMs;
       else if (!enabled()) delay = intervalMs;
       else {
         const plan = await planNextSnapshotRun(db, { now, intervalMs });

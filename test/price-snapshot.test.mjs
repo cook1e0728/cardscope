@@ -6,6 +6,7 @@ import { tcgdexLookupForPrinting } from '../providers/tcgdex-pricing.mjs';
 const NOW = Date.parse('2026-10-15T00:00:00.000Z');
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
+const MIB = 1024 * 1024;
 const EN_SET_MAP = { sv1: { tcgdex: 'sv01', numberFormat: 'pad3' } };
 const noLog = { log() {}, warn() {}, error() {} };
 const jsonResponse = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -15,8 +16,8 @@ const settle = async condition => { for (let i = 0; i < 2000 && !condition(); i+
 const makeClock = (start = NOW) => { const clock = { t: start, now: () => clock.t, sleep: async ms => { clock.t += ms; } }; return clock; };
 
 // In-memory stand-in for the PostgREST calls the snapshot makes (printings, price_snapshots, catalog_sync_runs).
-function fakeDb({ printings = [], snapshots = [], runs = [], clock = makeClock(), probeError = null } = {}) {
-  const state = { calls: [], snapshots: [...snapshots], runs: [...runs], batches: [] };
+function fakeDb({ printings = [], snapshots = [], runs = [], clock = makeClock(), probeError = null, dbSizes = [380 * MIB], sizeError = null } = {}) {
+  const state = { calls: [], snapshots: [...snapshots], runs: [...runs], batches: [], sizeReads: 0 };
   const codesOf = text => [...String(text).matchAll(/"([^"]*)"/g)].map(match => match[1]);
   const matches = (row, q) => {
     for (const column of ['source', 'region']) {
@@ -31,6 +32,10 @@ function fakeDb({ printings = [], snapshots = [], runs = [], clock = makeClock()
   state.db = async (path, options = {}) => {
     state.calls.push({ path, method: options.method || 'GET', headers: options.headers, body: options.body });
     const [route, query = ''] = path.split('?'), q = new URLSearchParams(query);
+    if (route === '/rpc/cardscope_db_size_bytes') {
+      if (sizeError) throw new Error(sizeError);
+      return dbSizes[Math.min(state.sizeReads++, dbSizes.length - 1)];
+    }
     if (route === '/tcg_printings') {
       const after = Number(q.get('id').replace('gt.', ''));
       return printings.filter(row => row.id > after && matches(row, q)).sort((a, b) => a.id - b.id).slice(0, Number(q.get('limit')));
@@ -419,4 +424,55 @@ test('a price that drops under 0.5 is written once so the trend follows it down,
   // A card that was never above the threshold is never stored.
   const fresh = fakeDb({ printings: [printing(2)], clock });
   assert.equal((await runPriceSnapshot(baseOptions(clock, fresh, fakeTcgdex(clock, { 'SV6a-002': { name: '名前2', trend: 0.2 } })))).written, 0);
+});
+
+// ADR 0046: the automatic brake at 440 MB.
+test('the database size brake: at 440 MB a round makes no TCGdex request, writes nothing, and leaves a run note', async () => {
+  const clock = makeClock(), state = fakeDb({ printings: [printing(1)], clock, dbSizes: [440 * MIB] }), tcgdex = fakeTcgdex(clock, { 'SV6a-001': { name: '名前1', trend: 10 } });
+  const result = await runPriceSnapshot(baseOptions(clock, state, tcgdex));
+  assert.equal(result.status, 'paused');
+  assert.equal(result.error, 'DB_SIZE_BRAKE');
+  assert.equal(result.dbSizeBytes, 440 * MIB);
+  assert.equal(tcgdex.requests.length, 0);
+  assert.equal(state.snapshots.length, 0);
+  assert.equal(state.runs.length, 1);
+  assert.equal(state.runs[0].status, 'skipped');
+  assert.equal(state.runs[0].error, 'DB_SIZE_BRAKE');
+  assert.equal(state.runs[0].metadata.dbSizeBytes, 440 * MIB);
+});
+
+test('just under 440 MB the round runs; a probe that cannot be read does not stop it (fails open)', async () => {
+  for (const options of [{ dbSizes: [440 * MIB - 1] }, { sizeError: 'function missing' }]) {
+    const clock = makeClock(), state = fakeDb({ printings: [printing(1)], clock, ...options }), tcgdex = fakeTcgdex(clock, { 'SV6a-001': { name: '名前1', trend: 10 } });
+    const result = await runPriceSnapshot(baseOptions(clock, state, tcgdex));
+    assert.equal(result.status, 'completed', JSON.stringify(options));
+    assert.equal(result.written, 1);
+  }
+});
+
+test('the brake is checked again while a round runs and stops it after the current chunk, keeping the cursor', async () => {
+  const clock = makeClock(), cards = {}, printings = [];
+  for (let id = 1; id <= 6; id++) { printings.push(printing(id)); cards[`SV6a-${String(id).padStart(3, '0')}`] = { name: `名前${id}`, trend: 10 + id }; }
+  const state = fakeDb({ printings, clock, dbSizes: [380 * MIB, 380 * MIB, 441 * MIB] }), tcgdex = fakeTcgdex(clock, cards);
+  const result = await runPriceSnapshot(baseOptions(clock, state, tcgdex, { chunkSize: 1, brakeCheckChunks: 2 }));
+  assert.equal(result.status, 'paused');
+  assert.equal(result.candidates, 4, 'start, then checks after chunk 2 (ok) and chunk 4 (over)');
+  assert.equal(state.snapshots.length, 4);
+  assert.equal(state.runs[0].status, 'skipped');
+  assert.ok(state.runs[0].cursor, 'the cursor stays so the round can resume');
+});
+
+test('the controller does not start a round while the archiver is running', async () => {
+  const timers = [];
+  let blocked = true;
+  const clock = makeClock(), state = fakeDb({ printings: [printing(1)], clock }), tcgdex = fakeTcgdex(clock, { 'SV6a-001': { name: '名前1', trend: 10 } });
+  const controller = createPriceSnapshotController({ ...baseOptions(clock, state, tcgdex), isBlocked: () => blocked, intervalMs: DAY, initialDelayMs: 1, minGapMs: 5, setTimer: (fn, ms) => { const t = { fn, ms, unref() {} }; timers.push(t); return t; }, clearTimer() {} });
+  controller.start();
+  await timers[0].fn();
+  assert.equal(state.runs.length, 0, 'no round started');
+  assert.equal(timers[1].ms, 5, 'looks again soon');
+  blocked = false;
+  await timers[1].fn();
+  assert.equal(state.runs.length, 1);
+  await controller.dispose();
 });
