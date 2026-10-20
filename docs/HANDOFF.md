@@ -769,6 +769,11 @@
 - SAMPLE 角落浮水印只在 `?preview=sample-corner` 時啟用（存 localStorage，`?preview=off` 清除）；使用者看過後把 `ui-enhancements.js` 的 `SAMPLE_CORNER_DEFAULT` 改 true 即為預設。
 - Node 488/488。`scripts/beta-browser-smoke.mjs` 已依新首頁改寫但本機沒有 playwright 未跑，交給 CI。
 
+### 依序執行 113：SAMPLE 浮水印調淡、Search Console 成功（2026-10-20，桌電）
+
+- 使用者決定維持卡面中央的大 SAMPLE、只調淡（不改角落樣式）：`catalog-layout.css` 的 `.card-sample-watermark` 改 `opacity:.4`、陰影減輕，大小位置不變；招式文字可讀。角落預覽（`?preview=sample-corner`）保留但不設為預設。法律面說明：浮水印大小不改變 ADR 0031 已接受的卡圖顯示風險，主要作用是降低截圖誤用。
+- Google Search Console：sitemap 狀態「成功」，上次讀取 10-19，探索到 67,133 個網頁。
+
 ### 依序執行 110：快照容量重估（2026-10-20，桌電，唯讀）
 
 - 依 ADR 0042 上線一週重估（提前到第 5 天）：快照 48,347 列／9.9 MB，首輪後每天約 0.5–0.65 萬列、約 1.3 MB；資料庫 395 MB（`browse_card_keys_mat` 39 MB 含重建後的可重用空間）。距 450 MB 停止線約 55 MB，約 6 週。細節寫入 ADR 0042「容量重估」。**到 430 MB 前要請使用者決定修剪或縮小範圍。**
