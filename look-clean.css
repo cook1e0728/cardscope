@@ -1,1 +1,300 @@
-/* 預覽方向 A「乾淨卡冊」：只在 ?look=clean 時載入（index.html 的 look 開關）。 */
+/* 預覽方向 A「乾淨卡冊」：只在 ?look=clean 時載入（index.html 的 look 開關）。
+   原則：保留卡冊（紙色底、每個 IP 一個主色、槍鐵灰卡套），但用留白與字級層次取代框線與陰影。
+   - 間距尺度 4/8/12/16/24/32/48/64；圓角只有 8、12、膠囊 三級；字重只用 400/500/700。
+   - 只有一種很淡的陰影；沒有新動畫，並把首頁既有的持續反光停掉。
+   - 數字（卡號、稀有度、系列代碼）用 Space Grotesk 等寬數字。
+   - 選中狀態除了顏色，一律加粗＋形狀（✓ 或外框）；操作區 ≥44px。
+   所有選擇器都帶 html[data-look="clean"] 前綴（由建置腳本加上），不會外洩到其他外觀。 */
+
+html[data-look="clean"]{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:64px;
+  --lc-bg:#F8F5EE;--lc-surface:#fff;--lc-ink:#1F1B16;--lc-ink-2:#5A5348;
+  --lc-hair:#E7E0D1;          /* 裝飾用分隔線 */
+  --lc-line:#857D6E;          /* 控制項外框：對 #F8F5EE 3.7:1、對白 4.1:1（WCAG 1.4.11） */
+  --lc-shadow:0 1px 2px rgba(31,27,22,.07);
+  --lc-sleeve:#2B2F35;        /* 槍鐵灰卡套（變薄） */
+  --lc-r-sm:8px;--lc-r-md:12px;
+  --lc-num:'Space Grotesk','Noto Sans TC',sans-serif;}
+
+/* ===== 基底與字級 ===== */
+html[data-look="clean"] body{background:var(--lc-bg);color:var(--lc-ink);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+html[data-look="clean"] body[data-view="game"]{background:var(--lc-bg)}
+html[data-look="clean"] .meta,html[data-look="clean"] .card .meta{color:var(--lc-ink-2)}
+html[data-look="clean"] .wrap{max-width:1280px;padding-inline:var(--s6)}
+html[data-look="clean"] .section{padding:0}
+html[data-look="clean"] main .section{border:0}
+html[data-look="clean"] h1,html[data-look="clean"] h2,html[data-look="clean"] h3{font-weight:700}
+
+/* ===== 頂欄 ===== */
+html[data-look="clean"] .top{background:var(--lc-bg);border-bottom:1px solid var(--lc-hair)}
+html[data-look="clean"] body[data-view="game"] .top{background:var(--lc-bg);border-bottom:2px solid var(--ip)}
+html[data-look="clean"] .bar{height:64px;gap:var(--s5)}
+html[data-look="clean"] .brand{font-size:20px;font-weight:700;letter-spacing:-.02em}
+html[data-look="clean"] .brand i{color:inherit;font-weight:400}
+html[data-look="clean"] .nav{gap:var(--s1)}
+html[data-look="clean"] .nav button{min-height:44px;padding:0 var(--s4);font-size:14px;font-weight:500;border-bottom-width:2px}
+html[data-look="clean"] .nav button:hover{border-bottom-color:var(--ip-ink)}
+html[data-look="clean"] .search{height:44px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;box-shadow:none}
+html[data-look="clean"] .search input{padding:0 var(--s4) 0 var(--s5);font-size:15px;background:transparent}
+html[data-look="clean"] .search button{width:56px;border-radius:0;background:var(--lc-ink);color:#fff}
+html[data-look="clean"] body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
+html[data-look="clean"] .search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
+
+/* ===== 首頁第一屏：標題、搜尋、範例、遊戲入口 ===== */
+html[data-look="clean"] .hero{padding-top:var(--s7)}
+html[data-look="clean"] body[data-view="landing"] .hero-intro h1{font-size:clamp(32px,4.4vw,56px);font-weight:700;line-height:1.12;letter-spacing:-.035em;margin:0 0 var(--s3)}
+html[data-look="clean"] body[data-view="landing"] .hero-intro p{margin:0;max-width:560px;font-size:17px;line-height:1.6;color:var(--lc-ink-2)}
+html[data-look="clean"] .home-search{max-width:720px;margin:var(--s6) 0 var(--s4);height:60px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;box-shadow:var(--lc-shadow)}
+html[data-look="clean"] .home-search input{padding:0 var(--s5);font-size:17px}
+html[data-look="clean"] .home-search button{min-width:112px;font-size:16px;font-weight:700;background:var(--lc-ink)}
+html[data-look="clean"] .home-search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
+html[data-look="clean"] .home-examples{gap:var(--s2);margin:0}
+html[data-look="clean"] .home-examples>span{font-size:13px;font-weight:500;color:var(--lc-ink-2);margin-right:var(--s1)}
+html[data-look="clean"] .home-examples button{min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-hair);border-radius:999px;background:#fff;font-size:14px;font-weight:500}
+html[data-look="clean"] .home-examples button:hover{border-color:var(--lc-ink)}
+
+/* 遊戲入口：白底細框磚，官方 Logo 原樣放在白底上；選中＝粗外框＋粗體標籤（不只靠顏色）。 */
+html[data-look="clean"] body[data-view="landing"] #channels{margin-top:var(--s7);padding:0 0 var(--s2);gap:var(--s3);scroll-snap-type:x proximity}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip]{min-width:152px;flex:1 1 0;padding:var(--s2);border:1px solid var(--lc-hair);border-radius:var(--lc-r-md);background:#fff;box-shadow:var(--lc-shadow);scroll-snap-align:start}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip]:hover{border-color:var(--lc-ink-2)}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip].on{border-color:var(--lc-ink);box-shadow:inset 0 0 0 1px var(--lc-ink)}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip] .channel-art{height:64px;padding:var(--s2) var(--s3);border:0;border-radius:var(--lc-r-sm);background:#fff}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:48px}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art{padding:var(--s2) var(--s3);border:0;background:#fff;box-shadow:none;animation:none}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art img{padding:0;border-radius:0;background:transparent;box-shadow:none}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art:before{display:none;animation:none}
+html[data-look="clean"] body[data-view] .channel[data-ip="all"] .channel-art{border:0;border-radius:var(--lc-r-sm);animation:none;box-shadow:none;background:linear-gradient(115deg,#2A2E34 0%,#565C64 22%,#A9AFB7 36%,#4A5058 56%,#2F343A 100%)}
+html[data-look="clean"] body[data-view] .channel[data-ip="all"] .channel-art:before,html[data-look="clean"] body[data-view] .channel[data-ip="all"] .channel-art:after{display:none;animation:none}
+html[data-look="clean"] body[data-view="landing"] .channel[data-ip="all"] .channel-art img{max-height:40px}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip="all"] .channel-art{height:28px;width:44px;border-radius:6px}
+html[data-look="clean"] .channel b{margin-top:var(--s2);font-size:14px;font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] .channel.on b{font-weight:700;color:var(--lc-ink)}
+
+html[data-look="clean"] .browse-regions{padding:var(--s4) 0 0;gap:var(--s3);font-size:13px}
+html[data-look="clean"] .browse-regions label{font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] .browse-regions select{min-height:44px;border:1px solid var(--lc-line);border-radius:999px;padding:0 var(--s6) 0 var(--s4);background:#fff;font-size:14px}
+html[data-look="clean"] .browse-regions span{font-size:13px;color:var(--lc-ink-2)}
+html[data-look="clean"] .mascot-gallery figcaption{font-size:12px}
+
+
+html[data-look="clean"] .home-latest{margin:var(--s7) 0 0}
+html[data-look="clean"] .home-latest h2,html[data-look="clean"] .section h2{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.3}
+html[data-look="clean"] .home-latest .series-band-rail{padding-top:var(--s4)}
+
+/* ===== 遊戲頁：遊戲切換（膠囊）與系列橫幅 ===== */
+html[data-look="clean"] body[data-view="game"] .channels{gap:var(--s2);padding:var(--s4) 0 var(--s3)}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip]{margin-top:0;min-height:44px;padding:0 var(--s4) 0 var(--s3);border:1px solid var(--lc-hair);border-radius:999px;background:transparent;color:var(--lc-ink-2);box-shadow:none;animation:none}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip]:not(.on){border-color:var(--lc-hair);background:transparent;color:var(--lc-ink-2);box-shadow:none;animation:none}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip]:not(.on):hover{margin-top:0;background:#fff;border-color:var(--lc-ink-2)}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip].on{min-height:44px;margin-top:0;background:#fff;border-color:var(--ip);color:var(--lc-ink);box-shadow:inset 0 0 0 1px var(--ip)}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip] b{margin:0;font-size:14px;font-weight:500;color:inherit}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip].on b{font-weight:700}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip] .channel-art img{background:transparent;padding:0;border-radius:0}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img{background:#fff;border-radius:4px;padding:2px 4px;box-sizing:content-box}
+html[data-look="clean"] body[data-view="game"] .channel[data-ip="all"]:not(.on) .channel-art img,html[data-look="clean"] body[data-view="game"] .channel[data-ip="all"] .channel-art img{background:transparent;border-radius:0;padding:0;height:20px;width:auto;max-width:none}
+
+
+html[data-look="clean"] .series-band{padding:0;background:transparent;border:0;border-radius:0}
+html[data-look="clean"] .series-band-head{padding:var(--s2) 0 var(--s3)}
+html[data-look="clean"] .series-band-regions{gap:var(--s2)}
+html[data-look="clean"] .series-band-regions button{min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background:#fff;color:var(--lc-ink);font-size:14px;font-weight:500}
+html[data-look="clean"] .series-band-regions button.on{background:var(--ip);border-color:var(--ip);color:var(--ip-on);font-weight:700}
+html[data-look="clean"] .series-band-regions button.on:before{content:"✓";margin-right:6px;font-weight:700}
+html[data-look="clean"] .series-band-tabs{gap:var(--s1);border-bottom:1px solid var(--lc-hair)}
+html[data-look="clean"] .series-band-tabs button{min-height:44px;padding:0 var(--s4);border-bottom-width:2px;color:var(--lc-ink-2);font-size:15px;font-weight:500}
+html[data-look="clean"] .series-band-tabs button.on{color:var(--lc-ink);font-weight:700;border-bottom-color:var(--ip)}
+html[data-look="clean"] .series-band-rail{gap:var(--s4);margin-inline:calc(var(--s2) * -1);padding:var(--s4) var(--s2) var(--s1);scroll-padding-inline:var(--s2)}
+html[data-look="clean"] .band-tile{align-items:flex-start;gap:0;text-align:left}
+html[data-look="clean"] .band-tile-art{border-radius:var(--lc-r-md);box-shadow:none;border:1px solid var(--lc-hair);background:#fff}
+html[data-look="clean"] .band-tile-art.is-type{border:0;background:var(--lc-sleeve)}
+html[data-look="clean"] .band-tile-art.is-type:before{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+html[data-look="clean"] .band-tile-flag{left:var(--s2);top:var(--s2);padding:2px var(--s2);border-radius:999px;background:var(--ip);color:var(--ip-on);font-size:12px;font-weight:700;letter-spacing:.04em}
+html[data-look="clean"] .band-tile-flag.is-new{background:var(--ip);color:var(--ip-on)}
+html[data-look="clean"] .band-tile-name{margin-top:var(--s2);min-height:2.8em;font-size:14px;font-weight:500;line-height:1.4;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip}
+html[data-look="clean"] .band-tile-code{margin-top:2px;color:var(--lc-ink-2);font:500 13px/1.3 var(--lc-num);font-variant-numeric:tabular-nums}
+html[data-look="clean"] .band-tile[aria-current] .band-tile-art{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--ip);border-color:transparent}
+html[data-look="clean"] .band-tile[aria-current] .band-tile-name{color:var(--ip-ink);font-weight:700}
+html[data-look="clean"] .band-tile:hover .band-tile-art img{transform:none}
+html[data-look="clean"] .band-tile:hover .band-tile-art{border-color:var(--lc-ink-2)}
+
+/* 選到的系列標題列：去掉淡色盒，改成上方分隔線的標題。 */
+html[data-look="clean"] .selected-product,html[data-look="clean"] .selected-product.open{grid-template-columns:auto minmax(0,1fr);gap:var(--s5);margin:var(--s5) 0 0;padding:var(--s5) 0 0;border:0;border-top:1px solid var(--lc-hair);border-radius:0;background:transparent;box-shadow:none}
+html[data-look="clean"] .selected-product-art{width:88px;height:88px;background:transparent;border-radius:var(--lc-r-md)}
+html[data-look="clean"] .selected-product-art .band-tile-art{width:88px;height:88px;min-height:0}
+html[data-look="clean"] .selected-product h2{margin:var(--s2) 0 var(--s1);font-size:24px}
+html[data-look="clean"] .selected-product .badge{padding:2px var(--s2);border-radius:999px;background:#ECE6D8;color:#4A443A;font-size:12px;font-weight:500}
+
+/* ===== 結果標題與工具列：去掉盒子，只留留白 ===== */
+html[data-look="clean"] #cardsSection{margin-top:var(--s7)}
+html[data-look="clean"] #cardsSection .title{margin:0 0 var(--s4);align-items:flex-end}
+html[data-look="clean"] body[data-view="game"] .section h2,html[data-look="clean"] #cardsSection .title h2{border-left:0;padding-left:0;font-size:24px;font-weight:700;letter-spacing:-.02em}
+html[data-look="clean"] #cardsMeta{display:block;margin-top:var(--s1);font-size:14px;color:var(--lc-ink-2)}
+html[data-look="clean"] .cards-mode{min-height:44px;padding:0 var(--s5);border:1px solid var(--lc-ink);border-radius:999px;background:transparent;font-size:14px;font-weight:500}
+html[data-look="clean"] body[data-view="game"] .cards-mode{border-color:var(--ip);color:var(--ip-ink)}
+html[data-look="clean"] .cards-mode:hover{background:#fff}
+
+html[data-look="clean"] .card-tools,html[data-look="clean"] body[data-view="game"] .card-tools{position:static;margin:var(--s4) 0 var(--s5);padding:0!important;gap:var(--s3) var(--s4);border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none}
+html[data-look="clean"] .view-switch{border:1px solid var(--lc-line);border-radius:999px;background:#fff;box-shadow:none;overflow:hidden}
+html[data-look="clean"] .view-switch button{min-height:44px;padding:0 var(--s4);border:0;border-radius:0;background:transparent;color:var(--lc-ink);font-size:14px;font-weight:500}
+html[data-look="clean"] body .view-switch button.on{background:var(--lc-ink)!important;border-color:var(--lc-ink)!important;color:#fff!important;font-weight:700}
+html[data-look="clean"] body .view-switch button.on:before{content:"✓";margin-right:6px}
+html[data-look="clean"] .filter-field label{margin-bottom:var(--s1);font-size:12px;font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] .filter-field select,html[data-look="clean"] .card-tools .filter-field select{height:44px!important;padding:0 var(--s6) 0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background-color:#fff;box-shadow:none;font-size:14px}
+html[data-look="clean"] .favorites-filter,html[data-look="clean"] .card-tools .favorites-filter{min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background:#fff;font-size:14px;font-weight:500}
+html[data-look="clean"] .favorites-filter.on{background:var(--lc-ink);border-color:var(--lc-ink);color:#fff;font-weight:700}
+html[data-look="clean"] .favorites-filter.on:before{content:"✓ "}
+html[data-look="clean"] .filter-sheet-toggle{border:1px solid var(--lc-line);border-radius:var(--lc-r-md);background:#fff}
+html[data-look="clean"] .filter-sheet-toggle b{font-weight:700}
+html[data-look="clean"] .filter-summary{font-size:13px;color:var(--lc-ink-2)}
+html[data-look="clean"] .applied-chip,html[data-look="clean"] button.applied-chip{min-height:44px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;font-size:14px;font-weight:700}
+html[data-look="clean"] .watchlist-summary{align-items:center;padding-top:var(--s4);border-top:1px solid var(--lc-hair);color:var(--lc-ink-2)}
+html[data-look="clean"] .watchlist-summary>div{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--s1) var(--s3)}
+html[data-look="clean"] .watchlist-summary b{font-size:14px;font-weight:700;color:var(--lc-ink)}
+html[data-look="clean"] .watchlist-summary span,html[data-look="clean"] .watchlist-summary small,html[data-look="clean"] .watchlist-summary em{font-size:13px;color:var(--lc-ink-2)}
+html[data-look="clean"] .watchlist-summary em{font-style:normal}
+html[data-look="clean"] .watchlist-summary button{min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background:#fff;font-size:14px;font-weight:500}
+html[data-look="clean"] .watchlist-summary button:disabled{border-color:var(--lc-hair);color:#8A8272}
+
+/* ===== 卡片格：卡圖為主角，名稱／卡號兩行；槍鐵灰卡套只包卡圖並變薄 ===== */
+html[data-look="clean"] .cards:not(.list-view){grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:var(--s6) var(--s5)}
+html[data-look="clean"] .cards .card:not(.card-list){display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;gap:var(--s1) var(--s2);position:relative;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--lc-ink)}
+html[data-look="clean"] .cards .card:not(.card-list):hover{border:0;box-shadow:none}
+html[data-look="clean"] .cards .card .art{flex:0 0 100%;order:0;margin-bottom:var(--s2);padding:3px;border:0;border-radius:var(--lc-r-sm);background:var(--lc-sleeve);box-shadow:none}
+html[data-look="clean"] .cards .card .art img{border-radius:5px}
+html[data-look="clean"] .cards .card:not(.card-list):hover .art,html[data-look="clean"] body[data-view="game"] .cards .card:not(.card-list):hover .art{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--ip)}
+html[data-look="clean"] .cards .card:not(.card-list) h3{order:2;flex:0 0 100%;margin:0;font-size:15px;font-weight:700;line-height:1.35;letter-spacing:-.01em;color:var(--lc-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-look="clean"] .cards .card:not(.card-list) .meta{display:contents}
+html[data-look="clean"] .cards .card:not(.card-list) .card-no{order:3;font:500 13px/1.4 var(--lc-num);font-variant-numeric:tabular-nums;color:var(--lc-ink-2)}
+html[data-look="clean"] .cards .card:not(.card-list)>.badge:not(.ip-badge){order:4;margin:0;padding:0;border-radius:0;background:transparent;border:0;font-size:12px;font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] .cards .card:not(.card-list)>.badge:not(.ip-badge):before{content:"·";margin-right:var(--s2)}
+html[data-look="clean"] .cards .card:not(.card-list) .card-rarity{order:5;margin-left:auto}
+html[data-look="clean"] .cards .card:not(.card-list)>.ip-badge{order:1;flex:0 0 100%;margin:0;padding:0;border:0;border-radius:0;background:transparent;font-size:12px;font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] body[data-view="game"] .cards .card .ip-badge{display:none}
+html[data-look="clean"] .card-rarity{clip-path:none;border-radius:999px;padding:1px var(--s2);font-family:var(--lc-num);font-size:12px;font-weight:700;background:#ECE6D8;color:#4A443A}
+html[data-look="clean"] .card-rarity[data-tier="high"]{background:#D6D9DE;color:#22252A}
+html[data-look="clean"] .card-rarity[data-tier="top"],html[data-look="clean"] body[data-view="game"] .card-rarity[data-tier="top"]{background:#C9A227;color:#2B2105}
+html[data-look="clean"] .cards .card .card-actions{order:6;flex:0 0 100%;display:flex;align-items:center;justify-content:space-between;gap:var(--s2);margin:var(--s2) 0 0;color:var(--lc-ink)}
+html[data-look="clean"] .cards .card .favorite-toggle{width:44px;height:44px;min-width:44px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--lc-ink-2);font-size:22px;justify-self:auto}
+html[data-look="clean"] .cards .card .favorite-toggle[aria-pressed=true]{color:var(--ip-ink);box-shadow:inset 0 0 0 2px var(--ip);background:transparent}
+html[data-look="clean"] .cards .card .watchlist-inline{gap:0;border:1px solid var(--lc-hair);border-radius:999px;background:#fff;justify-self:auto}
+html[data-look="clean"] .cards .card .watchlist-inline button{width:44px;min-width:44px;height:44px;background:transparent;color:var(--lc-ink);font-size:18px}
+html[data-look="clean"] .cards .card .watchlist-inline button:disabled{color:#8A8272}
+html[data-look="clean"] .cards .card .watchlist-inline span{min-width:24px;font:500 14px/1 var(--lc-num);color:var(--lc-ink)}
+/* 自己疊的 SAMPLE 浮水印：縮成卡圖右下角的小標，不再蓋住卡面文字（ADR 0044 Q11 預覽）。 */
+html[data-look="clean"] .card-sample-watermark{left:auto;right:var(--s2);top:auto;bottom:var(--s2);width:auto;padding:2px var(--s2);border-radius:4px;background:rgba(31,27,22,.7);font-size:12px;font-weight:700;letter-spacing:.1em;opacity:1;text-shadow:none;transform:none}
+html[data-look="clean"] .card-sample-watermark-zoom{font-size:12px}
+
+/* 清單模式：白底細分隔線列，不再是深色框。 */
+html[data-look="clean"] .cards.list-view{gap:0}
+html[data-look="clean"] .cards .card.card-list{padding:var(--s3) 0;border:0;border-bottom:1px solid var(--lc-hair);border-radius:0;background:transparent;box-shadow:none;color:var(--lc-ink)}
+html[data-look="clean"] .cards .card.card-list .art{margin:0;border-radius:6px}
+html[data-look="clean"] .cards .card.card-list h3,html[data-look="clean"] .cards .card .card-list-main h3{color:var(--lc-ink);font-size:15px;font-weight:700}
+html[data-look="clean"] .cards .card.card-list .card-list-main .meta,html[data-look="clean"] .cards .card.card-list .card-list-facts .meta{color:var(--lc-ink-2);font-size:13px}
+html[data-look="clean"] .cards .card.card-list .card-list-facts b{font:700 14px/1.4 var(--lc-num);font-variant-numeric:tabular-nums}
+html[data-look="clean"] .cards .card.card-list .ip-badge,html[data-look="clean"] .cards .card.card-list .badge{padding:0;border:0;border-radius:0;background:transparent;font-size:12px;font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] .cards .card.card-list .card-sample-watermark{display:none}
+html[data-look="clean"] .cards .card.card-list:hover{background:#fff;border-color:var(--lc-hair)}
+/* 稀有度分組 */
+html[data-look="clean"] .rarity-group{margin-top:var(--s6)}
+html[data-look="clean"] .rarity-group>header{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);margin:0 0 var(--s4);padding:0 0 var(--s2);border:0;border-bottom:1px solid var(--lc-hair);border-radius:0;background:transparent}
+html[data-look="clean"] .rarity-group>header h3,html[data-look="clean"] .rarity-group>header h3 span{margin:0;font-size:18px;font-weight:700;color:var(--lc-ink)}
+
+html[data-look="clean"] .rarity-group>header>span{font-size:13px;color:var(--lc-ink-2)}
+html[data-look="clean"] .rarity-group h3{border-left:0;padding-left:0}
+
+/* 載入更多、空狀態、提示 */
+html[data-look="clean"] .load-more,html[data-look="clean"] body .load-more{min-height:44px;margin:var(--s7) auto 0;padding:0 var(--s6);border:1px solid var(--lc-ink);border-radius:999px;background:transparent;font-size:15px;font-weight:700}
+html[data-look="clean"] body[data-view="game"] .load-more{border-color:var(--ip);color:var(--ip-ink)}
+html[data-look="clean"] .notice,html[data-look="clean"] .notice[data-state="info"],html[data-look="clean"] .notice[data-state="empty"],html[data-look="clean"] .search-empty,html[data-look="clean"] .cards-state{border:0;border-radius:var(--lc-r-md);background:#fff;box-shadow:var(--lc-shadow)}
+html[data-look="clean"] .cards-state.error,html[data-look="clean"] .notice[data-state="error"]{background:#FBEDEB}
+html[data-look="clean"] .sk-card{padding:0;border:0;border-radius:0;background:transparent}
+html[data-look="clean"] .sk-art{border-radius:var(--lc-r-sm);background:#E7E0D1}
+html[data-look="clean"] .suggest-chip{min-height:44px;border:1px solid var(--lc-ink);border-radius:999px}
+
+/* 遊戲頁下方的行情區 */
+html[data-look="clean"] #trendsSection{margin-top:var(--s7)}
+html[data-look="clean"] .trend-scope-item,html[data-look="clean"] .trend-empty,html[data-look="clean"] .trend-card{border:0;border-radius:var(--lc-r-md);background:#fff;box-shadow:var(--lc-shadow)}
+
+/* ===== 詳細頁：資訊列表標籤小、值大、對齊；分頁列俐落 ===== */
+html[data-look="clean"] .modal{background:rgba(31,27,22,.5)}
+html[data-look="clean"] .dialog,html[data-look="clean"] body[data-view="game"] .dialog{padding:var(--s6);border:0;border-top:3px solid var(--ip);border-radius:var(--lc-r-md);background:var(--lc-surface);box-shadow:none}
+html[data-look="clean"] .close{top:var(--s4);right:var(--s4);width:44px;height:44px;border:1px solid var(--lc-hair);background:#fff;color:var(--lc-ink);font-size:22px}
+html[data-look="clean"] .detail{gap:var(--s7)}
+html[data-look="clean"] .detail-tabs-layout{grid-template-columns:280px minmax(0,1fr)}
+html[data-look="clean"] .detail-nav{width:44px;height:44px;border:1px solid var(--lc-hair);background:#fff;box-shadow:none}
+html[data-look="clean"] .detail-art{border-radius:var(--lc-r-sm);background:var(--lc-sleeve);padding:3px}
+html[data-look="clean"] .detail-position{margin:var(--s3) 0 0;font-size:12px;color:var(--lc-ink-2)}
+html[data-look="clean"] .detail h2{margin:var(--s4) 0 var(--s2);font-size:28px;font-weight:700;line-height:1.2;letter-spacing:-.02em}
+html[data-look="clean"] .card-identity{display:block;margin:0 0 var(--s4)}
+html[data-look="clean"] .card-identity>div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:var(--s4);align-items:baseline;padding:var(--s3) 0;border-top:1px solid var(--lc-hair);border-radius:0;background:transparent}
+html[data-look="clean"] .card-identity>div:last-child{border-bottom:1px solid var(--lc-hair)}
+html[data-look="clean"] .card-identity dt{font-size:12px;font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] .card-identity dd{margin:0;font-size:16px;font-weight:500;line-height:1.4;font-variant-numeric:tabular-nums}
+html[data-look="clean"] .card-identity dd .rarity-code{font:700 16px/1.4 var(--lc-num)}
+html[data-look="clean"] .card-identity dd small{display:block;font-size:13px;font-weight:400;color:var(--lc-ink-2)}
+html[data-look="clean"] .detail-meta{margin:0 0 var(--s5)}
+html[data-look="clean"] .detail-meta>div:first-child{border-top:0;padding-top:0}
+html[data-look="clean"] .detail a{color:var(--ip-ink);text-underline-offset:3px}
+html[data-look="clean"] .detail-visual{display:flex;flex-direction:column}
+html[data-look="clean"] .detail-visual>*{order:5}
+html[data-look="clean"] .detail-visual .detail-visual-stage{order:0}
+html[data-look="clean"] .detail-visual .detail-position{order:1}
+html[data-look="clean"] .detail-visual>p{order:2;margin:var(--s4) 0 0;font-size:12px;font-weight:500;color:var(--lc-ink-2)}
+html[data-look="clean"] .detail-visual>h2{order:3;margin:var(--s1) 0 var(--s3)}
+html[data-look="clean"] .detail-visual>.card-identity{order:4}
+html[data-look="clean"] .detail-tabs{gap:var(--s1);margin-bottom:var(--s5);border-bottom:1px solid var(--lc-hair);background:transparent}
+html[data-look="clean"] .detail-tabs button,html[data-look="clean"] .view-switch.detail-tabs button{min-height:44px;padding:0 var(--s4);border:0;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent;color:var(--lc-ink-2);font-size:15px;font-weight:500}
+html[data-look="clean"] .detail-tabs button.on,html[data-look="clean"] body .detail-tabs button.on{background:transparent!important;color:var(--lc-ink)!important;font-weight:700;border-bottom-color:var(--ip)!important}
+html[data-look="clean"] .detail-tabs button.on:before{content:none}
+html[data-look="clean"] .detail h3{margin:var(--s6) 0 var(--s2);font-size:17px;font-weight:700}
+html[data-look="clean"] .detail .state,html[data-look="clean"] .detail .market{margin:0;padding:var(--s3) 0;border:0;border-top:1px solid var(--lc-hair);border-radius:0;background:transparent;font-size:15px}
+html[data-look="clean"] .detail .state:last-of-type{border-bottom:1px solid var(--lc-hair)}
+html[data-look="clean"] .detail .version-switch:hover{background:var(--lc-bg);border-color:transparent;border-top-color:var(--lc-hair)}
+html[data-look="clean"] .detail .badge{padding:2px var(--s2);border-radius:999px;background:#ECE6D8;color:#4A443A;font-size:12px;font-weight:500}
+html[data-look="clean"] .detail .rarity-code{font-family:var(--lc-num);font-weight:700}
+html[data-look="clean"] .source-link,html[data-look="clean"] body[data-view="game"] .source-link{align-self:flex-start;min-height:44px;
+display:inline-flex;align-items:center;margin-top:var(--s4);padding:0 var(--s5);border-radius:999px;background:var(--lc-ink);color:#fff;font-weight:700}
+html[data-look="clean"] .market-price b{font:700 22px/1.2 var(--lc-num);font-variant-numeric:tabular-nums}
+html[data-look="clean"] .pt-table td,html[data-look="clean"] .pt-table th{font-variant-numeric:tabular-nums}
+
+/* ===== 頁尾與使用說明：去掉盒子，只留分隔線與留白 ===== */
+html[data-look="clean"] .feature-tour{margin-top:var(--s7);padding:0;border:0;border-top:1px solid var(--lc-hair);border-radius:0;background:transparent;box-shadow:none}
+html[data-look="clean"] .feature-tour>summary,html[data-look="clean"] .brand-footer summary{min-height:44px;display:flex;align-items:center;gap:var(--s3);font-weight:500}
+html[data-look="clean"] .feature-tour>summary b{font-weight:700}
+html[data-look="clean"] .brand-footer{margin-top:var(--s7);padding:var(--s6) 0 var(--s7);border-top:1px solid var(--lc-hair)}
+html[data-look="clean"] .brand-footer p,html[data-look="clean"] .brand-footer small{font-size:13px;line-height:1.7;color:var(--lc-ink-2)}
+html[data-look="clean"] .brand-footer a{display:inline-block;padding:var(--s3) 0;color:var(--lc-ink);text-underline-offset:3px}
+html[data-look="clean"] .brand-footer b{font-weight:700;color:var(--lc-ink)}
+
+/* ===== 手機（390 優先） ===== */
+
+@media(max-width:760px){
+  html[data-look="clean"] .wrap{padding-inline:var(--s4)}
+  html[data-look="clean"] .bar{height:auto;padding-block:var(--s2);gap:var(--s2)}
+  html[data-look="clean"] .hero{padding-top:var(--s5)}
+  html[data-look="clean"] body[data-view="landing"] .hero-intro h1{font-size:32px}
+  html[data-look="clean"] body[data-view="landing"] .hero-intro p{font-size:15px}
+  html[data-look="clean"] .home-search{height:56px;margin:var(--s5) 0 var(--s3)}
+  html[data-look="clean"] .home-search input{padding:0 var(--s4);font-size:16px}
+  html[data-look="clean"] .home-search button{min-width:80px}
+  html[data-look="clean"] body[data-view="landing"] #channels{margin-top:var(--s6)}
+  html[data-look="clean"] body[data-view="landing"] .channel[data-ip]{flex:0 0 140px;min-width:140px}
+  html[data-look="clean"] body[data-view="landing"] .channel[data-ip] .channel-art{height:56px}
+  html[data-look="clean"] body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:40px}
+  html[data-look="clean"] .home-latest{margin-top:var(--s6)}
+  html[data-look="clean"] .home-latest h2,html[data-look="clean"] .section h2{font-size:20px}
+  html[data-look="clean"] body[data-view="game"] .section h2,html[data-look="clean"] #cardsSection .title h2{font-size:22px}
+  html[data-look="clean"] #cardsSection{margin-top:var(--s6)}
+  html[data-look="clean"] .band-tile{flex-basis:104px;width:104px}
+  html[data-look="clean"] .band-tile-art{width:104px;height:104px}
+  html[data-look="clean"] .series-band-rail{gap:var(--s3)}
+  html[data-look="clean"] .cards:not(.list-view){grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s5) var(--s3)}
+  html[data-look="clean"] .cards .card:not(.card-list) h3{font-size:14px}
+  html[data-look="clean"] .cards .card .favorite-toggle{width:44px}
+
+  html[data-look="clean"] .card-tools,html[data-look="clean"] body[data-view="game"] .card-tools{margin:var(--s3) 0 var(--s4)}
+  html[data-look="clean"] .view-switch{width:100%}
+  html[data-look="clean"] .dialog,html[data-look="clean"] body[data-view="game"] .dialog{padding:var(--s5) var(--s4)}
+  html[data-look="clean"] .detail,html[data-look="clean"] .detail-tabs-layout{gap:var(--s5);grid-template-columns:minmax(0,1fr)}
+  html[data-look="clean"] .detail h2{font-size:24px}
+  html[data-look="clean"] .card-identity>div{grid-template-columns:80px minmax(0,1fr)}
+}
