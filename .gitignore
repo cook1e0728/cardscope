@@ -141,3 +141,6 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Agent 交接自動快照（Stop hook 產生）
+docs/AGENT_BATON.auto.md

@@ -63,3 +63,14 @@ Workers must stop on ambiguity, unexpected interface/dependency changes, securit
 The primary GPT-6 Luna Max thread owns integration and normal final acceptance. Inspect actual diffs and validation results; do not accept summaries alone. GPT-6 Sol owns only the difficult decision it was asked to make and any explicitly requested high-risk final review.
 
 Never claim a model ran unless the agent activity or tool result identifies it. If a configured GPT-6 model is unavailable, report the limitation and use the best available safe route.
+
+## 跨工具協作（Claude Code ↔ Antigravity）
+
+適用於 Claude Code 與 Antigravity。上方 Luna／Sol 路由是 Codex 專用，這兩個工具略過。
+
+1. 開始工作前先讀 `docs/AGENT_BATON.md`（短版接力棒）。`docs/HANDOFF.md` 超過 1000 行，只在需要查歷史時才讀相關段落，不要整份讀。
+2. 每完成一個步驟：在 `docs/AGENT_BATON.md` 勾選任務、更新「已完成」與「下一步」，然後 commit 並 push，訊息寫清楚做了什麼。
+3. 執行方只能勾選 `AGENT_BATON.md` 的任務，不改任務內容；遇到卡關、需求不明或要改計畫，寫進「卡住的地方」並停手，由規劃方處理。
+4. 用量剩餘 5% 以下，或預期無法完成目前步驟時：不開始新步驟，先更新 `AGENT_BATON.md`（已完成、下一個確切步驟、未提交狀態、暫存檔位置）並 commit。
+5. `docs/AGENT_BATON.auto.md` 是 hook 自動產生的 git 快照（已 gitignore），僅供參考，不要編輯。
+6. 沿用 `docs/HANDOFF.md`「更新規則」：不 push 密鑰或本機產物；啟用新資料來源與花錢的設定仍需使用者確認。
