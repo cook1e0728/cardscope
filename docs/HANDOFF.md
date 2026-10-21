@@ -761,6 +761,12 @@
 - 會員收藏方案：`docs/research/collections/README.md`。建議先做免登入 v0（收藏加品況／版本／備註、清單頁、JSON 匯入匯出、總值改用參考價快照；約 1–2 天、零費用）；v1 Google 登入＋雲端同步等快照容量實測後再決定（Email 登入在免費方案不可行）。待使用者決定是否做 v0。
 - 搜尋速度：另一台電腦的進行中工作沒有提交，10-16 在桌電重做，見依序執行 98。Node 425/425。
 
+### 依序執行 115：Render OOM 通知與記憶體警戒日誌（2026-10-21，桌電）
+
+- 使用者收到 Render「exceeded its memory limit」信：10-21 05:29 UTC 實例 RSS 超過 512 MB 被重啟（`server_failed` oomKilled）。查證：本月執行小時、頻寬（約 1.5–2 GB）、建置（10-03 起 100 次約 54 分）都未超過免費額度；只有 `cardscope` 在跑，`cardscope-1`（新加坡）10-02 起暫停。重啟前沒有任何應用日誌、免費方案沒有請求紀錄；當時沒有排程工作（快照 02:59 已結束）；平常 RSS 約 166 MB，5 分鐘取樣抓不到尖峰；05 時頻寬 209 MB，疑似 Search Console 成功後爬蟲大量抓取，未證實。
+- 處置（不升級）：`server.mjs` 加記憶體警戒——每 2 秒看 RSS，超過 `MEMORY_WARN_MB`（預設 380）就把處理中的請求（方法、路徑、查詢前 160 字、User-Agent 前 60 字）寫進 Render 日誌（每分鐘最多一次，`memory high`）。**下次再收到 OOM 信，先到 Render 日誌搜尋 `memory high`。**
+- 清理：ygoprodeck 第 75、94、99、124 輪（9 月底到 10-15 重啟中斷、一直 running）標為 failed／INTERRUPTED。
+
 ### 依序執行 114：視覺質感改版：乾淨卡冊＋適度動態（ADR 0047，2026-10-21，桌電，已部署）
 
 - 使用者以 prompt-motion.com 為參考；grill 照建議。預覽分支 `claude/visual-polish-preview` 以 `?look=clean|motion` 切換，兩個 Sonnet worker 各做一個方向（A `look-clean.css`、B `look-motion.css/js`），以 `scripts/preview-proxy.mjs`（launch.json 的 `design-preview`，本機前端＋正式站唯讀 API）截改前／改後圖。使用者選「A＋B 都採用」。

@@ -1023,7 +1023,10 @@ async function serveSitemap(res,pathname){
   const body=cardFile?built.cards[Number(cardFile[1])-1]:null;return body?xml(body):json(res,404,{error:'Not found'});
 }
 
-const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${req.headers.host}`);
+// 記憶體警戒（2026-10-21 Render 免費方案 512 MB 被 OOM 重啟，免費方案沒有請求紀錄）：RSS 超過門檻時，把當下處理中的請求寫進日誌，下次就知道是哪個請求。
+const MEMORY_WARN_BYTES=(Number(process.env.MEMORY_WARN_MB)||380)*1024*1024,inflightRequests=new Set();let memoryWarnedAt=0;
+setInterval(()=>{const m=process.memoryUsage();if(m.rss<MEMORY_WARN_BYTES||Date.now()-memoryWarnedAt<60000)return;memoryWarnedAt=Date.now();console.warn('memory high',JSON.stringify({rssMb:Math.round(m.rss/1048576),heapMb:Math.round(m.heapUsed/1048576),inflight:[...inflightRequests].slice(0,15)}))},2000).unref();
+const server=createServer(async(req,res)=>{const url=new URL(req.url,`http://${req.headers.host}`);const inflightKey=`${req.method} ${url.pathname}${url.search.slice(0,160)} ${String(req.headers['user-agent']||'').slice(0,60)}`;inflightRequests.add(inflightKey);res.once('close',()=>inflightRequests.delete(inflightKey));
   if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog/image-status'&&req.method==='GET'){try{return json(res,200,{data:await yugiohImageStatus(supabaseFetch)})}catch(e){return json(res,502,{error:e.message})}}
