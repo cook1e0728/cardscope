@@ -92,17 +92,8 @@ test('資訊分頁：系列名（含版本與代碼）、資料來源名稱、�
   assert.match(ui, /\$\{detailInfoMeta\(c,ps,selectedPrinting\)\}<h3>卡片文字<\/h3>/);
 });
 
-test('SAMPLE 角落預覽：預設關閉，只有網址或 localStorage 旗標才加 class，卡圖自帶 SAMPLE 的照舊不疊', () => {
-  assert.match(ui, /const SAMPLE_CORNER_DEFAULT=false;/);
-  assert.match(ui, /get\('preview'\)/);
-  assert.match(ui, /preview==='sample-corner'/);
-  assert.match(ui, /localStorage\.getItem\('cardscope-preview-sample'\)==='corner'/);
-  assert.match(ui, /classList\.toggle\('sample-corner',on\)/);
-  const css = ui.match(/html\.sample-corner \.card-sample-watermark\{[^}]*\}/)[0];
-  assert.match(css, /left:auto;right:5%;top:auto;bottom:3%/);
-  assert.match(css, /opacity:\.55/);
-  assert.match(css, /transform:none/);
-  assert.match(ui, /html\.sample-corner \.card-sample-watermark\.card-sample-watermark-zoom\{/);
+test('SAMPLE 浮水印只有一套：角落預覽已移除，卡圖自帶 SAMPLE 的照舊不疊', () => {
+  assert.doesNotMatch(ui, /sample-corner|SAMPLE_CORNER_DEFAULT|cardscope-preview-sample/);
   assert.match(ui, /const sample=options\.embeddedSample\|\|options\.suppressOverlay\?'':`<span class="card-sample-watermark"/);
 });
 

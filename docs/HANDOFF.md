@@ -766,7 +766,7 @@
 - grill 兩輪（使用者「照建議」「自動照建議執行」），稽核 `docs/research/ui-audit-20261018.md`。三個 Sonnet worker 依檔案分工：A 搜尋 API（`server.mjs`、`providers/search-query.mjs`、migration `20261019090000_search_ranked_offset_rank`）、B 首頁／導覽／遊戲頁／搜尋結果（`index.html`、`navigation-state.js`、`series-band.js`、`game-switcher.js`、CSS）、C 詳細頁（`ui-enhancements.js`）。
 - 搜尋：`parseSearchQuery` 拆出稀有度代碼與版本詞（「桃歹郎ex SAR」→ 卡名＋SAR），回傳 `meta.total/offset/limit/hasMore/parsed/suggestion`、每筆 `matchRank`；新增六參數 `search_cards_ranked`（分頁、稀有度與版本同一 printing 篩、名稱命中排前、別名命中排後、同遊戲相鄰；`p_rarities` 為**小寫**拼法），舊四參數版未動、伺服器缺新函式時退回。migration 先回滾測試（魯夫 94 組、兩頁不重疊；桃歹郎＋SAR 19 → 4）再套用。已知取捨：兩字母代碼（SP、PR、TR）也會被當稀有度，靠零結果建議補救。
 - 前端：首頁大搜尋框＋範例晶片＋遊戲磚＋最新系列，覆蓋率等移到 `?view=about`；頂欄／手機底部「搜尋／圖鑑／我的收藏」（`window.openCollection()`，原生 dialog）；遊戲頁預設最新已發售系列、`view=all` 看全部、每頁 48、骨架載入；稀有度篩選只列實際有的；殘留紫／黃改卡冊色票。詳細頁「資訊／價格／走勢」（回報分頁隱藏）、資訊分頁補系列／資料來源／更新時間；稀有度顯示代碼、`<abbr>` 全名。
-- SAMPLE 角落浮水印只在 `?preview=sample-corner` 時啟用（存 localStorage，`?preview=off` 清除）；使用者看過後把 `ui-enhancements.js` 的 `SAMPLE_CORNER_DEFAULT` 改 true 即為預設。
+- SAMPLE 角落浮水印預覽（`?preview=sample-corner`）已於 2026-10-21 移除：使用者選了依序執行 113 的「中央、調淡」做法，避免兩套樣式並存。
 - Node 488/488。`scripts/beta-browser-smoke.mjs` 已依新首頁改寫但本機沒有 playwright 未跑，交給 CI。
 
 ### 依序執行 113：SAMPLE 浮水印調淡、Search Console 成功（2026-10-20，桌電）
