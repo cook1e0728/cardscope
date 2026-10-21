@@ -761,6 +761,13 @@
 - 會員收藏方案：`docs/research/collections/README.md`。建議先做免登入 v0（收藏加品況／版本／備註、清單頁、JSON 匯入匯出、總值改用參考價快照；約 1–2 天、零費用）；v1 Google 登入＋雲端同步等快照容量實測後再決定（Email 登入在免費方案不可行）。待使用者決定是否做 v0。
 - 搜尋速度：另一台電腦的進行中工作沒有提交，10-16 在桌電重做，見依序執行 98。Node 425/425。
 
+### 依序執行 114：視覺質感改版：乾淨卡冊＋適度動態（ADR 0047，2026-10-21，桌電，已部署）
+
+- 使用者以 prompt-motion.com 為參考；grill 照建議。預覽分支 `claude/visual-polish-preview` 以 `?look=clean|motion` 切換，兩個 Sonnet worker 各做一個方向（A `look-clean.css`、B `look-motion.css/js`），以 `scripts/preview-proxy.mjs`（launch.json 的 `design-preview`，本機前端＋正式站唯讀 API）截改前／改後圖。使用者選「A＋B 都採用」。
+- 上線：`<html class="look-clean look-motion">` 直接載入兩檔，選擇器由 `html[data-look=…]` 改為 `html.look-clean`／`html.look-motion`，移除 `?look=` 開關；A 裡的 SAMPLE 角落樣式刪除（維持中央調淡）。
+- 一併修正：系列／商品標題沒有中文名時顯示「中文名稱待補｜原名」→ 改為 `titleName()` 直接顯示原名（卡片仍用 `name()`）。
+- 主方案第 5 節動畫限制依 ADR 0047 放寬並註明。Node 520/520。待做（需改其他檔）：分頁籤附數量、詳細頁「原始頁面」連結 24px、手機篩選膠囊列。
+
 ### 依序執行 108：UI 改版第一輪（ADR 0044，2026-10-19，桌電，已部署）
 
 - grill 兩輪（使用者「照建議」「自動照建議執行」），稽核 `docs/research/ui-audit-20261018.md`。三個 Sonnet worker 依檔案分工：A 搜尋 API（`server.mjs`、`providers/search-query.mjs`、migration `20261019090000_search_ranked_offset_rank`）、B 首頁／導覽／遊戲頁／搜尋結果（`index.html`、`navigation-state.js`、`series-band.js`、`game-switcher.js`、CSS）、C 詳細頁（`ui-enhancements.js`）。

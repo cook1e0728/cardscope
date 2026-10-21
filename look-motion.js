@@ -1,7 +1,7 @@
 // 預覽方向 B 的動態：只在 ?look=motion 時載入。三道閘門：prefers-reduced-motion、桌面懸停（hover+fine）、使用者的「暫停動態」開關。
 (() => {
   const root = document.documentElement, host = document.getElementById('cards');
-  if (root.dataset.look !== 'motion' || !host) return;
+  if (!root.classList.contains('look-motion') || !host) return;
   const KEY = 'cardscope-motion-paused', STAGGER = 30, MAX_STAGGER = 11, FADE = 260;
   const reduceMQ = matchMedia('(prefers-reduced-motion: reduce)'), hoverMQ = matchMedia('(hover: hover) and (pointer: fine)');
   let paused = false;

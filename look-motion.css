@@ -1,63 +1,63 @@
 /* 預覽方向 B「卡冊加動態」：只在 ?look=motion 時載入（index.html 的 look 開關）。
-   只疊動態、不改版面；所有選擇器都帶 html[data-look="motion"]。
+   只疊動態、不改版面；所有選擇器都帶 html.look-motion。
    動畫只用 transform／opacity（含 translate 屬性），不加捲動綁定、頁面轉場與持續循環動畫。
    三道閘門：prefers-reduced-motion（系統）、(hover:hover) and (pointer:fine)（桌面懸停）、data-cs-paused（使用者開關）。 */
 
-html[data-look="motion"]{--cs-ease:cubic-bezier(.23,1,.32,1)}
+html.look-motion{--cs-ease:cubic-bezier(.23,1,.32,1)}
 
 /* ---- 1. 桌面懸停傾斜＋光澤（沿用詳細頁 tilt-card 的變數名與算法，幅度縮到約 7 成） ---- */
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
-  html[data-look="motion"]:not([data-cs-paused]) #cards .card:not(.card-list){
+  html.look-motion:not([data-cs-paused]) #cards .card:not(.card-list){
     position:relative;isolation:isolate;
     transition:transform 200ms var(--cs-ease),box-shadow 180ms ease,border-color 180ms ease;
   }
-  html[data-look="motion"]:not([data-cs-paused]) #cards .card:not(.card-list):hover{
+  html.look-motion:not([data-cs-paused]) #cards .card:not(.card-list):hover{
     transform:perspective(800px) translateY(-2px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));
     will-change:transform;
   }
   /* 光澤只畫在卡套框：偽元素在 isolate 的卡內以 z-index:-1 墊在卡圖與文字之下，
      所以只會在框的空白處（卡圖周圍、名稱列）透出，不會蓋在卡圖上假裝閃卡。
      峰值不透明度 .18：再高的話，框上次要文字（#C9CDD2）對比會掉到 4.5:1 以下。 */
-  html[data-look="motion"]:not([data-cs-paused]) #cards .card:not(.card-list)::before{
+  html.look-motion:not([data-cs-paused]) #cards .card:not(.card-list)::before{
     content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;
     background:radial-gradient(circle at var(--shine-x,50%) var(--shine-y,50%),rgba(255,255,255,.18) 0,rgba(255,255,255,0) 62%);
     opacity:0;transition:opacity 200ms ease;
   }
-  html[data-look="motion"]:not([data-cs-paused]) #cards .card:not(.card-list):hover::before{opacity:1}
+  html.look-motion:not([data-cs-paused]) #cards .card:not(.card-list):hover::before{opacity:1}
 }
 
 /* ---- 2. 卡片格依序淡入（所有裝置；JS 在新插入的卡上加 cs-pre，進入視窗後換成 cs-in）。
    放在懸停區塊之後：兩者特異性相同，這裡的 transition（含錯開延遲）要靠順序勝出。 ---- */
 @media (prefers-reduced-motion:no-preference){
-  html[data-look="motion"]:not([data-cs-paused]) #cards .card.cs-pre{opacity:0;translate:0 8px}
-  html[data-look="motion"]:not([data-cs-paused]) #cards .card.cs-in{
+  html.look-motion:not([data-cs-paused]) #cards .card.cs-pre{opacity:0;translate:0 8px}
+  html.look-motion:not([data-cs-paused]) #cards .card.cs-in{
     opacity:1;translate:0 0;
     /* 錯開延遲只套在淡入與位移；懸停的 transform 不延遲 */
     transition:opacity 260ms var(--cs-ease) var(--cs-d,0ms),translate 260ms var(--cs-ease) var(--cs-d,0ms),transform 200ms var(--cs-ease),box-shadow 180ms ease,border-color 180ms ease;
   }
 }
 /* 暫停、列印時保證不留在隱藏狀態 */
-html[data-look="motion"][data-cs-paused] #cards .card.cs-pre,
-html[data-look="motion"][data-cs-paused] #cards .card.cs-in{opacity:1;translate:none;transition:none}
-@media print{html[data-look="motion"] #cards .card.cs-pre{opacity:1;translate:none}}
+html.look-motion[data-cs-paused] #cards .card.cs-pre,
+html.look-motion[data-cs-paused] #cards .card.cs-in{opacity:1;translate:none;transition:none}
+@media print{html.look-motion #cards .card.cs-pre{opacity:1;translate:none}}
 
 /* ---- 3. 暫停動態開關（JS 注入；固定在左下，手機避開底部導覽） ---- */
-html[data-look="motion"] .cs-motion-toggle{
+html.look-motion .cs-motion-toggle{
   position:fixed;left:16px;bottom:16px;z-index:5;display:inline-flex;align-items:center;gap:10px;
   min-width:44px;min-height:44px;padding:0 6px 0 14px;border:1px solid #D9D1C0;border-radius:999px;
   background:#fff;color:#1F1B16;font:700 13px/1 'Noto Sans TC',system-ui,sans-serif;white-space:nowrap;cursor:pointer;
   box-shadow:0 2px 10px #1F1B1614;
 }
-html[data-look="motion"] .cs-motion-toggle:focus-visible{outline:3px solid #1F1B16;outline-offset:2px}
-html[data-look="motion"] .cs-motion-toggle[disabled]{cursor:default;color:#5A5348}
+html.look-motion .cs-motion-toggle:focus-visible{outline:3px solid #1F1B16;outline-offset:2px}
+html.look-motion .cs-motion-toggle[disabled]{cursor:default;color:#5A5348}
 /* 狀態不只靠顏色：軌道文字「開／關」＋旋鈕位置 */
-html[data-look="motion"] .cs-motion-state{
+html.look-motion .cs-motion-state{
   position:relative;display:inline-flex;align-items:center;min-width:56px;height:32px;padding:0 10px 0 32px;border-radius:999px;
   background:#E6E0D2;color:#1F1B16;font-size:12px;justify-content:flex-end;
 }
-html[data-look="motion"] .cs-motion-state::before{content:"";position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0004}
-html[data-look="motion"] .cs-motion-toggle[aria-checked="true"] .cs-motion-state{background:#1F1B16;color:#fff;padding:0 32px 0 10px;justify-content:flex-start}
-html[data-look="motion"] .cs-motion-toggle[aria-checked="true"] .cs-motion-state::before{left:auto;right:4px}
+html.look-motion .cs-motion-state::before{content:"";position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0004}
+html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state{background:#1F1B16;color:#fff;padding:0 32px 0 10px;justify-content:flex-start}
+html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state::before{left:auto;right:4px}
 @media (max-width:760px){
-  html[data-look="motion"] .cs-motion-toggle{left:12px;bottom:calc(62px + 10px + env(safe-area-inset-bottom))}
+  html.look-motion .cs-motion-toggle{left:12px;bottom:calc(62px + 10px + env(safe-area-inset-bottom))}
 }
