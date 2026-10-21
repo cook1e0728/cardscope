@@ -427,7 +427,7 @@ function detailRows(){const rows=filteredCards(currentCardRows||[]);return rows.
 function openAdjacentCard(step){const rows=detailRows(),index=rows.findIndex(card=>String(cardOpenId(card))===String(activeDetailCardId));if(index<0||rows.length<2)return;openCard(cardOpenId(rows[(index+step+rows.length)%rows.length]))}
 
 // ADR 0044 Q10：資料來源 id 轉成人看得懂的名稱（名稱對照 data/source-registry.json；未知 id 照原樣顯示）。
-const DETAIL_SOURCE_NAMES={'pokemon-card-official-jp':'日本官方卡片搜尋','pokemon-jp':'日本官方卡片搜尋','pokemon-tw-official':'台灣官方卡片搜尋','pokemon-tw':'台灣官方卡片搜尋',tcgdex:'TCGdex','tcgdex-ja':'TCGdex','tcgdex-zh-tw':'TCGdex','tcgdex-zh-hant-tw':'TCGdex',pokemontcg:'PokemonTCG',ygoprodeck:'YGOPRODeck','cardscope-yugioh-cache':'YGOPRODeck','yugioh-official-us':'遊戲王美國官方卡片資料庫','yugioh-neuron':'遊戲王官方 Neuron 資料庫','onepiece-official':'ONE PIECE 官方卡表','onepiece-official-p':'ONE PIECE 官方卡表','onepiece-official-runtime':'ONE PIECE 官方卡表','onepiece-official-tw':'ONE PIECE 台灣官方卡表','onepiece-official-tw-p':'ONE PIECE 台灣官方卡表','onepiece-tw':'ONE PIECE 台灣官方卡表','optcg-api':'OPTCG API','weiss-schwarz-official':'Weiß Schwarz 官方卡表','haikyu-official':'排球少年卡牌官方卡表'};
+const DETAIL_SOURCE_NAMES={'pokemon-card-official-jp':'日本官方卡片搜尋','pokemon-jp':'日本官方卡片搜尋','pokemon-tw-official':'台灣官方卡片搜尋','pokemon-tw':'台灣官方卡片搜尋','asia-pokemon-card-official-tw':'台灣官方卡片搜尋',tcgdex:'TCGdex','tcgdex-ja':'TCGdex','tcgdex-zh-tw':'TCGdex','tcgdex-zh-hant-tw':'TCGdex',pokemontcg:'PokemonTCG',ygoprodeck:'YGOPRODeck','cardscope-yugioh-cache':'YGOPRODeck','yugioh-official-us':'遊戲王美國官方卡片資料庫','yugioh-neuron':'遊戲王官方 Neuron 資料庫','onepiece-official':'ONE PIECE 官方卡表','onepiece-official-p':'ONE PIECE 官方卡表','onepiece-official-runtime':'ONE PIECE 官方卡表','onepiece-official-tw':'ONE PIECE 台灣官方卡表','onepiece-official-tw-p':'ONE PIECE 台灣官方卡表','onepiece-tw':'ONE PIECE 台灣官方卡表','optcg-api':'OPTCG API','weiss-schwarz-official':'Weiß Schwarz 官方卡表','haikyu-official':'排球少年卡牌官方卡表'};
 function detailInfoMeta(c,ps,selected){
   const series=c.series&&typeof c.series==='object'?c.series:null,seriesName=series&&(series.nameZh||series.nameJa||series.nameEn),code=series?.officialCode||selected?.localSetCode,tags=[series?.region&&rn(series.region),code].filter(Boolean).join('・'),
     sources=[...new Set([...ps.map(p=>p.source),c.source].filter(Boolean).map(id=>DETAIL_SOURCE_NAMES[id]||id))],link=/^https:\/\//.test(selected?.sourceUrl||'')?` <a href="${e(selected.sourceUrl)}" target="_blank" rel="noopener noreferrer">原始頁面</a>`:'',updated=ps.map(p=>p.updatedAt).filter(Boolean).map(String).sort().at(-1);
@@ -486,6 +486,27 @@ function installFilterSheet(){
   window.installDialogFocus?.(sheet,{initialFocus:()=>selects[0],returnTarget:()=>toggle});
   summarize();
 }
+
+// ADR 0047：手機把稀有度篩選攤成可水平捲動的膠囊列；選項與選取邏輯沿用 #rarityFilter（只列目前範圍有的稀有度），排序仍在「篩選與排序」抽屜。桌面以 CSS 隱藏。
+function installRarityPills(){
+  const select=$('rarityFilter'),tools=$('cardTools');if(!select||!tools||typeof MutationObserver==='undefined'||$('rarityPills'))return;
+  const strip=document.createElement('div');strip.id='rarityPills';strip.className='rarity-pills';strip.setAttribute('role','group');strip.setAttribute('aria-label','稀有度篩選');
+  let signature='';
+  const sync=()=>{
+    const options=[...select.options].filter(option=>!option.hidden&&!option.disabled),next=options.map(option=>option.value+'|'+option.textContent).join('||');
+    strip.hidden=options.length<2;
+    if(next!==signature){
+      const focused=strip.contains(document.activeElement)?document.activeElement.dataset.rarity:null;
+      signature=next;strip.innerHTML=options.map(option=>`<button type="button" data-rarity="${e(option.value)}">${e(option.value==='all'?'全部':option.textContent)}</button>`).join('');
+      if(focused!=null)[...strip.children].find(button=>button.dataset.rarity===focused)?.focus({preventScroll:true});
+    }
+    [...strip.children].forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rarity===select.value)));
+  };
+  strip.addEventListener('click',event=>{const button=event.target.closest('[data-rarity]');if(!button||select.value===button.dataset.rarity)return;select.value=button.dataset.rarity;select.dispatchEvent(new Event('change',{bubbles:true}))});
+  new MutationObserver(sync).observe(select,{childList:true,subtree:true});select.addEventListener('change',sync);
+  tools.append(strip);sync();
+}
+
 
 function installFeatureTour(){
   if($('cardscopeFeatureTour'))return;
@@ -585,6 +606,7 @@ installDetailModalAccessibility();
 installViewToggle();
 installCardUtilities();
 installFilterSheet();
+installRarityPills();
 if(currentCardRows.length)cards(currentCardRows,true);
 // Phone bottom bar: jump to sections that already exist on the page (探索 also focuses the search box).
 document.querySelectorAll('nav.bottom [data-jump]').forEach(button=>{button.onclick=()=>{

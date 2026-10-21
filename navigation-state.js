@@ -80,8 +80,12 @@
 
   async function copyCurrentUrl(button){
     const url=new URL(urlFor(),location.origin).href;
-    try{await navigator.clipboard.writeText(url);button.textContent='已複製分享網址'}
-    catch{button.textContent='請複製瀏覽器網址'}
+    // 先用系統分享（使用者取消不算錯），再試剪貼簿，都不行就顯示唯讀、已全選的網址欄。
+    if(navigator.share){try{await navigator.share({title:`${node('detail')?.querySelector('h2')?.textContent||'卡片'} - CardScope`,url});return}catch(error){if(error?.name==='AbortError')return}}
+    try{await navigator.clipboard.writeText(url);button.textContent='已複製分享網址';return}catch{}
+    let field=button.parentElement.querySelector('.share-url');
+    if(!field){field=document.createElement('input');field.type='text';field.readOnly=true;field.className='share-url';field.setAttribute('aria-label','分享網址（請複製）');field.addEventListener('focus',()=>field.select());button.after(field)}
+    field.value=url;button.textContent='請複製下方網址';field.focus();field.select();
   }
 
   function installDetailShare(){

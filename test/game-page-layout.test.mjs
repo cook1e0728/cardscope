@@ -64,3 +64,18 @@ test('loading shows grey card-shaped skeletons and results scroll below the stic
   assert.doesNotMatch(html,/scrollIntoView/,'every scroll target clears the header');
   assert.match(html,/id="cardsTitle" tabindex="-1"/,'the result heading can take focus');
 });
+
+test('UI 收尾（ADR 0047）：分頁籤附數量、手機稀有度膠囊列、分享備援、原始頁面 44px',async()=>{
+  const [band,clean]=await Promise.all(['../series-band.js','../look-clean.css'].map(path=>readFile(new URL(path,import.meta.url),'utf8')));
+  assert.match(band,/<span class="count" aria-hidden="true">\$\{count\}<\/span>/,'tab count comes from lists already in memory');
+  assert.match(band,/aria-label="\$\{esc\(`\$\{text\}，\$\{count\} \$\{unit\}`\)\}"/,'screen readers hear the unit, e.g. 朱／紫系列，12 個系列');
+  assert.match(clean,/\.series-band-tabs \.count\{[^}]*font-variant-numeric:tabular-nums/);
+  assert.match(ui,/function installRarityPills\(\)/);
+  assert.match(ui,/select\.dispatchEvent\(new Event\('change',\{bubbles:true\}\)\)/,'pills drive the existing #rarityFilter');
+  assert.match(clean,/\.rarity-pills\{display:none\}/,'desktop keeps the select');
+  assert.match(clean,/\.rarity-pills button\[aria-pressed="true"\]:before\{content:"✓ "\}/,'the selected pill is not colour-only');
+  const nav=await readFile(new URL('../navigation-state.js',import.meta.url),'utf8');assert.match(nav,/AbortError'\)return/,'cancelling the share sheet is not an error');
+  assert.match(nav,/field\.readOnly=true/,'the last fallback is a selectable read-only URL field');
+  assert.match(clean,/\.detail-meta a\{[^}]*min-height:44px/);
+  assert.match(clean,/\.card-identity>div\{grid-template-columns:64px minmax\(0,1fr\)/,'phones get compact key-value rows');
+});
