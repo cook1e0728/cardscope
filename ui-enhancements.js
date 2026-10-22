@@ -597,6 +597,40 @@ function installCatalogHealth(){
   coverageRequest.then(body=>{const data=body.data||{},games=data.games||{},labels={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'葬送的芙莉蓮',haikyuu:'排球少年'},totalLabel=enhancementCoverageLabel(data,Array.isArray(C?.cards)?C.cards.length:null),updated=betaDate(data.updatedAt||data.updated_at),items=Object.entries(labels).map(([id,label])=>{const row=games[id]||{},cards=healthNumber(row,['cards','cardCount','card_count']),expected=healthNumber(row,['expectedCards','expected_cards','officialTotal','official_total']),names=healthNumber(row,['chineseNames','chinese_names','translatedNames','translated_names']),rarities=healthNumber(row,['rarities','rarityCount','rarity_count']),images=healthNumber(row,['displayableImages','displayable_images']),imageUrls=healthNumber(row,['cardsWithImageUrls','cards_with_image_urls']),metricStatus=betaValue(row,['completeness','status','dataStatus','data_status'],'未核定'),scope=typeof row.scope==='object'?betaValue(row,['scope.kind'],'目前收錄資料'):betaValue(row,['scope','coverage','region'],'目前收錄資料');return`<article class="health-item" data-game="${e(id)}"><div class="health-item-heading"><b>${e(label)}</b><span>${cards===null?'卡片數待補':`${cards.toLocaleString()} 張`}</span></div><span class="health-scope">${e(scope)} · ${e(metricStatus)}</span>${healthMetric('中文名',names,cards)}${healthMetric('稀有度',rarities,cards)}${healthMetric('可顯示圖片',images,cards,{showGap:true})}${healthMetric('已有圖片網址',imageUrls,cards)}${expected===null?'<small class="health-status">完整分母未核定，不顯示假完成率。</small>':''}</article>`}).join('');section.innerHTML=`<summary>資料完整度與圖片權利狀態</summary><div class="health-head"><div><b>五個 IP 分開檢視</b><span>${e(totalLabel)}；報告更新：${e(updated)}</span></div><span class="health-head-status">${e(data.metricStatus?.cards||'以目前資料列計算')}</span></div><div class="health-grid">${items}</div><p class="health-note">圖片是否可顯示依來源與目前權利狀態判斷；顯示圖片不等於已取得著作權授權。完整分母尚未核定的 IP 只顯示收錄量與欄位覆蓋，不把收錄量冒充完整度。<a href="#betaGuidanceTitle">查看勘誤與權利通知方式</a></p>`;const betaUpdated=document.getElementById('betaUpdatedAt');if(betaUpdated&&data.updatedAt)betaUpdated.textContent=`${String(data.updatedAt).slice(0,10)} · 覆蓋報告`}).catch(error=>{const totalLabel=enhancementCoverageLabel(null,Array.isArray(C?.cards)?C.cards.length:null);section.innerHTML=`<summary>資料完整度與圖片權利狀態</summary><p class="health-note">完整度報告暫時無法讀取：${e(error.message)}；${e(totalLabel)}；資料庫總數待核。</p>`})
 }
 function installReportTemplate(){const button=document.getElementById('copyReportTemplate');if(!button||button.dataset.ready)return;button.dataset.ready='1';button.onclick=async()=>{const template='CardScope 勘誤／權利通知\n卡片 ID：\n官方卡號：\nIP／版本：\n來源網址：\n問題描述：\n可供核對的官方連結：';const status=document.getElementById('betaCopyStatus');try{await navigator.clipboard.writeText(template);if(status)status.textContent='已複製模板'}catch{if(status)status.textContent='目前無法自動複製，請依上方欄位手動整理'}}}
+// ADR 0049：手機版單行緊湊頂欄（左側：遊戲 Logo 下拉＋版本下拉；右側：膠囊搜尋框＋圓形放大鏡鈕）。桌面版以 CSS 隱藏。
+function installMobileCompactHeader(){
+  const bar=document.querySelector('.top .bar'),searchBox=bar?.querySelector('.search'),regionSelect=$('browseRegion');
+  if(!bar||!searchBox||$('mobileHeaderScope'))return;
+  const host=document.createElement('div');host.id='mobileHeaderScope';host.className='mobile-header-scope';
+  host.innerHTML=`<label class="mobile-scope-pill"><span class="sr-only">切換遊戲</span><img id="mobileScopeLogo" src="/assets/brand/web/cardscope-rabbit-mark-96.webp" alt="" width="24" height="24"><select id="mobileGameSelect" aria-label="切換卡牌遊戲"></select></label><span class="mobile-scope-sep" aria-hidden="true">|</span><label class="mobile-region-pill"><span class="sr-only">切換地區版本</span><select id="mobileRegionSelect" aria-label="切換地區版本"></select></label>`;
+  searchBox.before(host);
+  const gameSel=$('mobileGameSelect'),regSel=$('mobileRegionSelect'),logo=$('mobileScopeLogo');
+  const sync=()=>{
+    const choices=window.CARD_GAMES||[{id:'all',name:'探索'},{id:'pokemon',name:'寶可夢'},{id:'onepiece',name:'航海王'},{id:'yugioh',name:'遊戲王'},{id:'weiss-schwarz',name:'芙莉蓮'},{id:'haikyuu',name:'排球少年'}];
+    const currentGame=typeof game!=='undefined'?game:'all';
+    const gameSig=choices.map(c=>c.id).join('|');
+    if(gameSel.dataset.sig!==gameSig){
+      gameSel.dataset.sig=gameSig;
+      gameSel.innerHTML=choices.map(c=>`<option value="${e(c.id)}">${e(c.id==='all'?'探索全部':c.name)}</option>`).join('');
+    }
+    gameSel.value=currentGame;
+    const visual=typeof window.gameNavImage==='function'?window.gameNavImage(currentGame):'/assets/brand/web/cardscope-rabbit-mark-96.webp';
+    if(logo&&visual)logo.src=visual;
+    if(regionSelect){
+      const opts=[...regionSelect.options].map(o=>`<option value="${e(o.value)}">${e(o.value==='all'?'全版本':o.textContent)}</option>`).join('');
+      if(regSel.innerHTML!==opts)regSel.innerHTML=opts;
+      regSel.value=regionSelect.value||'all';
+    }
+  };
+  gameSel.onchange=()=>{if(typeof window.choose==='function')window.choose(gameSel.value);setTimeout(sync,30)};
+  regSel.onchange=()=>{if(!regionSelect)return;regionSelect.value=regSel.value;regionSelect.dispatchEvent(new Event('change',{bubbles:true}));setTimeout(sync,30)};
+  if(regionSelect)regionSelect.addEventListener('change',sync);
+  document.addEventListener('cardscope:browse',sync);
+  if(typeof MutationObserver!=='undefined'&&document.body)new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['data-game','data-view']});
+  sync();
+  window.syncMobileHeaderScope=sync;
+}
+
 installTrendTransparency();
 installReportTemplate();
 installFeatureTour();
@@ -607,6 +641,7 @@ installViewToggle();
 installCardUtilities();
 installFilterSheet();
 installRarityPills();
+installMobileCompactHeader();
 if(currentCardRows.length)cards(currentCardRows,true);
 // Phone bottom bar: jump to sections that already exist on the page (探索 also focuses the search box).
 document.querySelectorAll('nav.bottom [data-jump]').forEach(button=>{button.onclick=()=>{

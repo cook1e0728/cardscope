@@ -44,6 +44,7 @@ html.look-clean .search input{padding:0 var(--s3);font-size:15px;background:tran
 html.look-clean .search button{width:40px;min-width:44px;height:40px;min-height:40px;border-radius:999px;background:var(--lc-ink);color:#fff;font-size:18px;display:inline-grid;place-items:center}
 html.look-clean body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
 html.look-clean .search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
+html.look-clean .mobile-header-scope{display:none}
 
 /* ===== 首頁第一屏：標題、搜尋、範例、遊戲入口 ===== */
 html.look-clean .hero{padding-top:var(--s7)}
@@ -306,14 +307,24 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
 /* ===== 手機（390 優先） ===== */
 
 @media(max-width:760px){
-  html.look-clean .wrap{padding-inline:var(--s4)}
-  html.look-clean .bar{height:auto;padding-block:var(--s2);gap:var(--s2)}
+  html.look-clean .wrap{padding-inline:var(--s3)}
+  html.look-clean body[data-view="landing"] .top{background:var(--lc-bg);color:var(--lc-ink);border-bottom:1px solid var(--lc-hair)}
+  html.look-clean .bar{display:flex;flex-wrap:nowrap;align-items:center;height:auto;padding-block:var(--s2);gap:var(--s2)}
+  html.look-clean .bar>.brand{display:none}
+  html.look-clean .mobile-header-scope{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;min-width:0}
+  html.look-clean .mobile-scope-pill,html.look-clean .mobile-region-pill{position:relative;display:inline-flex;align-items:center;min-height:44px}
+  html.look-clean .mobile-scope-pill img{width:26px;height:22px;object-fit:contain;margin-right:2px;flex:none}
+  html.look-clean .mobile-scope-pill select,html.look-clean .mobile-region-pill select{min-height:44px;padding:0 16px 0 4px;border:0;border-radius:var(--lc-r-sm);background:transparent;color:var(--lc-ink);font:700 13px/1 'Noto Sans TC',sans-serif;cursor:pointer;max-width:76px;text-overflow:ellipsis}
+  html.look-clean .mobile-scope-sep{color:var(--lc-hair);font-size:14px;user-select:none}
+  html.look-clean .top .search,html.look-clean body[data-view="landing"] .top .search{display:flex;order:2;flex:1 1 0;min-width:0;max-width:none;height:44px;padding:2px 3px 2px var(--s3);border:2px solid var(--lc-ink);border-radius:999px;background:#fff}
+  html.look-clean .top .search input{padding:0 var(--s2);font-size:14px}
+  html.look-clean .top .search button{width:38px;min-width:44px;height:38px;min-height:38px;border-radius:999px;font-size:16px}
+  html.look-clean .browse-regions{display:none}
   html.look-clean .bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;height:62px;padding-bottom:env(safe-area-inset-bottom);background:var(--lc-surface);border-top:1px solid var(--lc-hair)}
   html.look-clean .bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 0;font-size:12px;font-weight:500;line-height:1.1;color:var(--lc-ink-2)}
   html.look-clean .bottom button b,html.look-clean .bottom-profile img{display:grid;place-items:center;width:24px;height:24px;margin:0;font-size:18px;line-height:1;flex:none}
   html.look-clean .bottom button span{line-height:1.1}
-  html.look-clean .hero{padding-top:var(--s3)}
-  html.look-clean body[data-view="landing"] .top .search{display:flex;order:3;flex-basis:100%;max-width:none}
+  html.look-clean .hero{padding-top:var(--s2)}
   html.look-clean body[data-view="landing"] .hero{margin-top:var(--s2);padding:0;border:0;background:transparent;background-image:none}
   html.look-clean body[data-view="landing"] .hero-intro,html.look-clean body[data-view="landing"] .home-search,html.look-clean body[data-view="landing"] .home-examples,html.look-clean body[data-view="landing"] .hero-art{display:none}
   html.look-clean body[data-view="landing"] #channels{margin-top:0;padding:var(--s3) var(--s3) var(--s3) 18px;border-left-width:8px}
