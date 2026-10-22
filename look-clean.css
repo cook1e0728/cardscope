@@ -438,3 +438,49 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .rarity-hud-grid button[aria-pressed="true"]{background:#D49B1B;border-color:#FFF8E7;color:#1F1B16;font-weight:900}
   html.look-clean .rarity-hud-grid button[aria-pressed="true"] small{color:#1F1B16;font-weight:800}
 }
+
+/* ===== 首頁桌面第一屏「夜間展示櫃」（ADR 0049，2026-10-22 使用者從 5 版預覽選定）=====
+   第一屏改成一整片深靛色帶（接兔子插畫的星空），拿掉打孔紙、側邊粗色條與卡中卡；搜尋鍵金色、遊戲標誌放在米白小牌上。
+   只作用於 ≥761px；手機版首屏沿用上方規則。 */
+@media (min-width:761px){
+  html.look-clean body[data-view="landing"] .hero{background:none;background-image:none;border:0;border-radius:0;padding:0;margin-top:var(--s7)}
+  html.look-clean body[data-view="landing"] #channels,
+  html.look-clean .home-latest{background:none;border:0;border-radius:0;padding:0}
+  html.look-clean .home-search button{cursor:pointer}
+  html.look-clean body[data-view="landing"] .hero{grid-template-rows:auto auto 1fr}
+  html.look-clean body[data-view="landing"] .hero>.home-examples{align-self:start}
+  html.look-clean body[data-view="landing"]{background:#EDE8DE}
+  html.look-clean body[data-view="landing"] .top{background:#16132A}
+  html.look-clean body[data-view="landing"] .hero{grid-template-columns:minmax(0,1fr) 260px;column-gap:var(--s7);margin-top:var(--s5);padding:var(--s8) var(--s7) var(--s6);border-radius:24px;background:#1B1733;color:#F3EEE3}
+  html.look-clean body[data-view="landing"] .hero-intro h1{font-family:'Chiron Hei HK','Noto Sans TC',sans-serif;font-weight:700;font-size:clamp(44px,5.4vw,72px);color:#F6F1E6;letter-spacing:-.02em}
+  html.look-clean body[data-view="landing"] .hero-intro p{color:#C9C1DA;font-size:18px}
+  html.look-clean body[data-view="landing"] .hero-art{width:260px;padding:0;background:none;border-radius:14px;box-shadow:0 24px 40px -16px rgba(0,0,0,.6);outline:1px solid #3B3560}
+  html.look-clean body[data-view="landing"] .hero-art img{border-radius:14px}
+  html.look-clean .home-search{height:62px;border:1px solid #4A4470;border-radius:14px;background:#24203F}
+  html.look-clean .home-search input{color:#F3EEE3}
+  html.look-clean .home-search input::placeholder{color:#A49CBB}
+  html.look-clean .home-search button{background:#E7BA4C;color:#1B1733;border-radius:0 13px 13px 0}
+  html.look-clean .home-search button:hover{background:#F2CB66}
+  html.look-clean .home-search:focus-within{box-shadow:0 0 0 2px #1B1733,0 0 0 4px #E7BA4C}
+  html.look-clean .home-examples>span{color:#A49CBB}
+  html.look-clean .home-examples button{min-height:40px;border:1px solid #3B3560;background:transparent;color:#E4DEF0}
+  html.look-clean .home-examples button:hover{background:#2A2548;border-color:#6A62A0}
+  html.look-clean body[data-view="landing"] #channels{margin-top:var(--s6);gap:var(--s3)}
+  html.look-clean body[data-view="landing"] .channel[data-ip]{min-width:0;padding:var(--s2) var(--s2) var(--s3);border-radius:14px;background:#24203F}
+  html.look-clean body[data-view="landing"] .channel[data-ip]:hover{background:#2E2950}
+  html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art{border-radius:10px;background:#F6F1E6}
+  html.look-clean body[data-view="landing"] .channel[data-ip="all"] .channel-art{background:#0F0D1E}
+  html.look-clean body[data-view="landing"] .channel[data-ip] b{color:#C9C1DA}
+  html.look-clean body[data-view="landing"] .channel[data-ip].on{outline:2px solid #E7BA4C;outline-offset:-2px}
+  html.look-clean body[data-view="landing"] .channel[data-ip].on b{color:#F6F1E6}
+  html.look-clean .browse-regions label,html.look-clean .browse-regions span{color:#C9C1DA}
+  html.look-clean .browse-regions select{background:#24203F;color:#F3EEE3;border-color:#6A62A0}
+  html.look-clean .home-latest{margin-top:var(--s6);padding:var(--s6) 0 0;border-top:1px solid #3B3560}
+  html.look-clean .home-latest h2{color:#F6F1E6}
+  html.look-clean .home-latest .home-latest-tabs button{color:#C9C1DA}
+  html.look-clean .home-latest .home-latest-tabs button.on{color:#F6F1E6;border-bottom-color:#E7BA4C}
+  html.look-clean .home-latest .band-tile-name{color:#F6F1E6}
+  html.look-clean .home-latest .band-tile.is-mascot-new .band-tile-name{color:#F6F1E6}
+  html.look-clean .home-latest .band-tile-code,html.look-clean .home-latest .home-cards-head,html.look-clean .home-latest .home-cards-head h3{color:#C9C1DA}
+  html.look-clean .home-latest .home-cards-more{color:#E7BA4C}
+}

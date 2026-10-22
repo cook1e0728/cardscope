@@ -41,9 +41,8 @@
 - 修正：詳細頁預覽只用第一個候選圖片，失敗就顯示「圖片待補」，放大檢視卻會改用下一個候選（例：台版 M4-003 預覽空白、放大出現日版圖）。`resilientImage` 新增 `fallbacks`，詳細頁與卡片格都依序改用其他版本的圖。起因：2026-10-22 台灣官方站 `asia.pokemon-card.com` 整站顯示維護中，`/tw/card-img/*.png` 全部 302 回首頁。
 - 補強：migration `20261022120000_browse_series_sibling_images`（已在正式庫回滾測試後套用、登記 schema_migrations，函式 md5 `48c66419…`）讓 `browse_series_cards` 多回傳 `siblingImages`（同作品層其他卡的 card_images）；伺服器依圖片權利篩過後掛成每張卡的 `fallbackImageUrls`（最多 3 個），卡牆依序備援。台版 M4 120/120、日版 M4 120/120 都有對方版本的圖；資料庫兩次呼叫共 183 ms。
 
-## 首頁桌面 5 版預覽（2026-10-22，待使用者選）
-- `?preview=1`～`5`（`index.html` 開關＋`home-preview.css`，只作用於 ≥761px 首頁；底部有切換列）：1 目錄頁、2 搜尋工作台、3 夜間展示櫃、4 Bento、5 實體卡感。依 impeccable 與 ui-ux-pro-max 的規則（只讀規則、未執行它們的腳本）。不帶參數時首頁不變。
-- 1440px 截圖在本機 `docs/design-previews/home-20261022/`（未提交，已加入 .git/info/exclude）。使用者選定後再正式套用並移除其餘版本與開關。
+## 首頁桌面改版（2026-10-22）
+- 依 impeccable 與 ui-ux-pro-max 做 5 版預覽，使用者選第 3 版「夜間展示櫃」→ ADR 0050，樣式併入 `look-clean.css` 末段（≥761px），預覽開關與 `home-preview.css` 已移除；手機首屏不變。
 
 ## 下一步（唯一，具體到檔案與指令）
 - 10-24 後確認排球少年 HV-P04／HV-D04 自動同步（`/api/search?q=HV-P04`）。
