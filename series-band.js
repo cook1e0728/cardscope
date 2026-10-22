@@ -112,6 +112,36 @@
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
     };
+    renderHomeCardsPreview(host,list[0]||allDated[0]);
+  }
+  const homeCardsCache=new Map();
+  async function renderHomeCardsPreview(host,targetSeries){
+    if(!host||!targetSeries||typeof fetch!=='function')return;
+    let wrap=document.getElementById('homeCardsPreview');
+    if(!wrap){
+      wrap=document.createElement('div');wrap.id='homeCardsPreview';wrap.className='home-cards-preview';
+      host.append(wrap);
+    }
+    const key=`${targetSeries.game}|${targetSeries.id}`;
+    wrap.dataset.key=key;
+    const draw=rows=>{
+      if(wrap.dataset.key!==key||game!=='all')return;
+      if(!rows.length){wrap.hidden=true;return}
+      wrap.hidden=false;
+      const gameName=(window.CARD_GAMES||[]).find(c=>c.id===targetSeries.game)?.name||targetSeries.game;
+      wrap.innerHTML=`<div class="home-cards-head"><h3>最新單卡預覽 · ${esc(seriesName(targetSeries))}</h3><button type="button" class="home-cards-more" data-open-series="${esc(targetSeries.id)}" data-open-game="${esc(targetSeries.game)}" data-open-region="${esc(targetSeries.region||'')}">查看完整卡表（${esc(gameName)}）›</button></div><div class="cards home-cards-grid">${rows.slice(0,8).map(c=>typeof cardMarkup==='function'?cardMarkup(c):'').join('')}</div>`;
+      if(typeof activateCardActions==='function')activateCardActions(wrap.querySelector('.home-cards-grid'));
+      const moreBtn=wrap.querySelector('[data-open-series]');
+      if(moreBtn)moreBtn.onclick=()=>{const select=regionSelect();if(select&&moreBtn.dataset.openRegion)select.value=moreBtn.dataset.openRegion;window.cardscopeEntry={series:moreBtn.dataset.openSeries};window.choose(moreBtn.dataset.openGame)};
+    };
+    if(homeCardsCache.has(key))return draw(homeCardsCache.get(key));
+    try{
+      const params=new URLSearchParams({game:targetSeries.game,series:targetSeries.id,region:targetSeries.region||'JP',limit:'8',offset:'0',sort:'rarity-desc'});
+      const res=await fetch('/api/cards?'+params);if(!res.ok)return;
+      const body=await res.json(),rows=Array.isArray(body.data)?body.data:[];
+      if(rows.length)homeCardsCache.set(key,rows);
+      draw(rows);
+    }catch{}
   }
   function render(){
     const anchor=document.getElementById('gameContext');let band=document.getElementById('seriesBand');
