@@ -114,6 +114,9 @@ html.look-clean .home-cards-head{display:flex;align-items:center;justify-content
 html.look-clean .home-cards-head h3{margin:0;font-family:var(--lc-display);font-size:18px;font-weight:700;color:var(--lc-ink)}
 html.look-clean .home-cards-more{min-height:44px;padding:0 var(--s3);border:0;border-radius:999px;background:transparent;color:#B8820E;font-size:13px;font-weight:700;cursor:pointer}
 html.look-clean .home-cards-more:hover{background:#F3EEE3}
+html.look-clean .home-preview-ips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+html.look-clean .home-preview-ip{min-height:32px;padding:0 10px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;color:var(--lc-ink-2);font-size:12px;font-weight:700;cursor:pointer}
+html.look-clean .home-preview-ip.on{border-color:var(--lc-ink);background:var(--lc-ink);color:#fff}
 
 /* ===== 遊戲頁：遊戲切換（膠囊）與系列橫幅 ===== */
 html.look-clean body[data-view="game"] .channels{gap:var(--s2);padding:var(--s4) 0 var(--s3)}
@@ -276,9 +279,10 @@ html.look-clean .detail a{color:var(--ip-ink);text-underline-offset:3px}
 html.look-clean .detail-meta a{display:inline-flex;align-items:center;min-height:44px;margin:-12px 0;padding:0 var(--s2)}
 /* 分享鈕失敗時的唯讀網址欄（ui-enhancements.js） */
 html.look-clean .detail .share-url{display:block;width:100%;min-height:44px;margin:0 0 var(--s4);padding:0 var(--s3);border:1px solid var(--lc-line);border-radius:var(--lc-r-sm);background:#fff;color:var(--lc-ink);font:500 14px/1.4 var(--lc-num)}
-/* 手機稀有度膠囊列（ui-enhancements.js installRarityPills）；桌面不顯示 */
+/* 手機稀有度分類清單（ui-enhancements.js installRarityPills）；桌面不顯示 */
+html.look-clean .rarity-picker-toggle{display:none}
 html.look-clean .rarity-pills{display:none}
-html.look-clean .rarity-pills[hidden]{display:none!important}
+html.look-clean .rarity-picker-toggle[hidden],html.look-clean .rarity-pills[hidden]{display:none!important}
 html.look-clean .detail-visual{display:flex;flex-direction:column}
 html.look-clean .detail-visual>*{order:5}
 html.look-clean .detail-visual .detail-visual-stage{order:0}
@@ -396,10 +400,13 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .detail-tabs{margin-bottom:var(--s3)}
   html.look-clean .detail h3{margin:var(--s5) 0 var(--s2)}
   html.look-clean .detail .share-url{font-size:16px}
-  /* 稀有度膠囊列：可水平捲動，選中有 ✓ 加外框 */
-  html.look-clean .rarity-pills{display:flex;flex:0 0 100%;gap:var(--s2);min-width:0;margin:0 calc(var(--s4) * -1);padding:var(--s1) var(--s4);overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
-  html.look-clean .rarity-pills::-webkit-scrollbar{display:none}
-  html.look-clean .rarity-pills button{flex:0 0 auto;min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background:#fff;color:var(--lc-ink);font-size:14px;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+  /* 稀有度分類：改為點擊按鈕展開 2 欄清單選擇（免橫向滾動），選中有 ✓ 加外框 */
+  html.look-clean .rarity-picker-toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);flex:0 0 100%;width:100%;min-height:44px;padding:8px 14px;border:1.5px solid var(--lc-ink);border-radius:12px;background:#fff;color:var(--lc-ink);font-size:14px;font-weight:500;text-align:left;cursor:pointer}
+  html.look-clean .rarity-picker-toggle b{font-weight:700;color:var(--ip-ink)}
+  html.look-clean .rarity-picker-hint{color:var(--lc-ink-2);font-size:12px;font-weight:700;white-space:nowrap}
+  html.look-clean .rarity-pills{display:none;flex:0 0 100%;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0;margin:0;padding:10px;border:1px solid #D8D0C2;border-left:6px solid var(--ip);border-radius:12px;background:#FBF9F4;overflow:visible}
+  html.look-clean .rarity-pills.open{display:grid}
+  html.look-clean .rarity-pills button{display:flex;align-items:center;justify-content:center;min-height:44px;padding:6px 10px;border:1px solid var(--lc-line);border-radius:10px;background:#fff;color:var(--lc-ink);font-size:13px;font-weight:500;text-align:center;line-height:1.25;white-space:normal;font-variant-numeric:tabular-nums}
   html.look-clean .rarity-pills button[aria-pressed="true"]{border-color:var(--lc-ink);background:var(--lc-ink);color:#fff;font-weight:700;box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
   html.look-clean .rarity-pills button[aria-pressed="true"]:before{content:"✓ "}
 }

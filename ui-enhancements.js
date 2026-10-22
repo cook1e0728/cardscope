@@ -487,24 +487,37 @@ function installFilterSheet(){
   summarize();
 }
 
-// ADR 0047：手機把稀有度篩選攤成可水平捲動的膠囊列；選項與選取邏輯沿用 #rarityFilter（只列目前範圍有的稀有度），排序仍在「篩選與排序」抽屜。桌面以 CSS 隱藏。
+// ADR 0047／0049：手機把稀有度分類改為「點擊按鈕展開多欄清單選擇」（避免橫向滾動與誤觸重滾）；選項與選取邏輯沿用 #rarityFilter，桌面以 CSS 隱藏。
 function installRarityPills(){
   const select=$('rarityFilter'),tools=$('cardTools');if(!select||!tools||typeof MutationObserver==='undefined'||$('rarityPills'))return;
+  const toggle=document.createElement('button');toggle.type='button';toggle.id='rarityPickerToggle';toggle.className='rarity-picker-toggle';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','rarityPills');
   const strip=document.createElement('div');strip.id='rarityPills';strip.className='rarity-pills';strip.setAttribute('role','group');strip.setAttribute('aria-label','稀有度篩選');
   let signature='';
+  const setOpen=open=>{
+    const next=Boolean(open)&&!strip.hidden;
+    strip.classList.toggle('open',next);
+    toggle.setAttribute('aria-expanded',String(next));
+  };
   const sync=()=>{
     const options=[...select.options].filter(option=>!option.hidden&&!option.disabled),next=options.map(option=>option.value+'|'+option.textContent).join('||');
-    strip.hidden=options.length<2;
+    const hide=options.length<2;
+    strip.hidden=hide;toggle.hidden=hide;
+    if(hide)setOpen(false);
     if(next!==signature){
       const focused=strip.contains(document.activeElement)?document.activeElement.dataset.rarity:null;
       signature=next;strip.innerHTML=options.map(option=>`<button type="button" data-rarity="${e(option.value)}">${e(option.value==='all'?'全部':option.textContent)}</button>`).join('');
       if(focused!=null)[...strip.children].find(button=>button.dataset.rarity===focused)?.focus({preventScroll:true});
     }
+    const currentOpt=options.find(option=>option.value===select.value)||options[0];
+    const currentLabel=!currentOpt||currentOpt.value==='all'?'全部稀有度':currentOpt.textContent;
+    toggle.innerHTML=`<span>稀有度分類：<b>${e(currentLabel)}</b></span><small class="rarity-picker-hint">${strip.classList.contains('open')?'收起清單 ▴':`點擊選擇（${Math.max(0,options.length-1)} 種）▾`}</small>`;
     [...strip.children].forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rarity===select.value)));
   };
-  strip.addEventListener('click',event=>{const button=event.target.closest('[data-rarity]');if(!button||select.value===button.dataset.rarity)return;select.value=button.dataset.rarity;select.dispatchEvent(new Event('change',{bubbles:true}))});
+  toggle.onclick=()=>{setOpen(!strip.classList.contains('open'));sync()};
+  strip.addEventListener('click',event=>{const button=event.target.closest('[data-rarity]');if(!button)return;setOpen(false);if(select.value===button.dataset.rarity){sync();return}select.value=button.dataset.rarity;select.dispatchEvent(new Event('change',{bubbles:true}))});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&strip.classList.contains('open')){setOpen(false);sync();toggle.focus()}});
   new MutationObserver(sync).observe(select,{childList:true,subtree:true});select.addEventListener('change',sync);
-  tools.append(strip);sync();
+  tools.append(toggle,strip);sync();
 }
 
 
