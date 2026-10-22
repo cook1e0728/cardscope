@@ -611,13 +611,13 @@ function installMobileCompactHeader(){
     const gameSig=choices.map(c=>c.id).join('|');
     if(gameSel.dataset.sig!==gameSig){
       gameSel.dataset.sig=gameSig;
-      gameSel.innerHTML=choices.map(c=>`<option value="${e(c.id)}">${e(c.id==='all'?'探索全部':c.name)}</option>`).join('');
+      gameSel.innerHTML=choices.map(c=>`<option value="${e(c.id)}">${e(c.id==='all'?'探索':c.id==='weiss-schwarz'?'芙莉蓮':c.name)}</option>`).join('');
     }
     gameSel.value=currentGame;
     const visual=typeof window.gameNavImage==='function'?window.gameNavImage(currentGame):'/assets/brand/web/cardscope-rabbit-mark-96.webp';
     if(logo&&visual)logo.src=visual;
     if(regionSelect){
-      const opts=[...regionSelect.options].map(o=>`<option value="${e(o.value)}">${e(o.value==='all'?'全版本':o.textContent)}</option>`).join('');
+      const opts=[...regionSelect.options].map(o=>`<option value="${e(o.value)}">${e(o.value==='all'?'全部':o.textContent)}</option>`).join('');
       if(regSel.innerHTML!==opts)regSel.innerHTML=opts;
       regSel.value=regionSelect.value||'all';
     }

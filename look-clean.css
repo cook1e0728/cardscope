@@ -317,11 +317,11 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean body[data-view="landing"] .top{background:var(--lc-bg);color:var(--lc-ink);border-bottom:1px solid var(--lc-hair)}
   html.look-clean .bar{display:flex;flex-wrap:nowrap;align-items:center;height:auto;padding-block:var(--s2);gap:var(--s2)}
   html.look-clean .bar>.brand{display:none}
-  html.look-clean .mobile-header-scope{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;min-width:0}
+  html.look-clean .mobile-header-scope{display:inline-flex;align-items:center;gap:2px;flex:0 0 auto;min-width:0}
   html.look-clean .mobile-scope-pill,html.look-clean .mobile-region-pill{position:relative;display:inline-flex;align-items:center;min-height:44px}
-  html.look-clean .mobile-scope-pill img{width:26px;height:22px;object-fit:contain;margin-right:2px;flex:none}
-  html.look-clean .mobile-scope-pill select,html.look-clean .mobile-region-pill select{min-height:44px;padding:0 16px 0 4px;border:0;border-radius:var(--lc-r-sm);background:transparent;color:var(--lc-ink);font:700 13px/1 'Noto Sans TC',sans-serif;cursor:pointer;max-width:76px;text-overflow:ellipsis}
-  html.look-clean .mobile-scope-sep{color:var(--lc-hair);font-size:14px;user-select:none}
+  html.look-clean .mobile-scope-pill img{width:22px;height:20px;object-fit:contain;margin-right:2px;flex:none}
+  html.look-clean .mobile-scope-pill select,html.look-clean .mobile-region-pill select{min-height:44px;padding:0 2px;border:0;border-radius:var(--lc-r-sm);background:transparent;color:var(--lc-ink);font:700 13px/1 'Noto Sans TC',sans-serif;cursor:pointer;width:auto}
+  html.look-clean .mobile-scope-sep{color:var(--lc-hair);font-size:13px;user-select:none}
   html.look-clean .top .search,html.look-clean body[data-view="landing"] .top .search{display:flex;order:2;flex:1 1 0;min-width:0;max-width:none;height:44px;padding:2px 3px 2px var(--s3);border:2px solid var(--lc-ink);border-radius:999px;background:#fff}
   html.look-clean .top .search input{padding:0 var(--s2);font-size:14px}
   html.look-clean .top .search button{width:38px;min-width:44px;height:38px;min-height:38px;border-radius:999px;font-size:16px}
@@ -363,7 +363,8 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .cards .card:not(.card-list)>.badge:not(.ip-badge){font-size:10px;padding:0 4px}
   html.look-clean .cards .card:not(.card-list) .watchlist-inline{display:none}
   html.look-clean .cards .card:not(.card-list) .card-actions{position:absolute;top:0;right:0;width:auto;margin:0}
-  html.look-clean .cards .card:not(.card-list) .favorite-toggle{width:44px;height:44px;min-width:44px;background:rgba(31,27,22,.55);color:#fff;font-size:16px}
+  html.look-clean .cards .card:not(.card-list) .favorite-toggle{width:44px;height:44px;min-width:44px;padding:10px;border:0;background:radial-gradient(circle,rgba(31,27,22,.62) 0 12px,transparent 13px);color:#fff;font-size:13px;box-shadow:none}
+  html.look-clean .cards .card:not(.card-list) .favorite-toggle[aria-pressed="true"]{background:radial-gradient(circle,#D7261E 0 12px,transparent 13px);color:#FFE500}
   html.look-clean #trendsSection{margin-top:var(--s4);padding:var(--s3) var(--s3) var(--s3) 14px;background:#FBF9F4;border:1px solid #D8D0C2;border-left:8px solid #C83E2B;border-radius:14px}
   html.look-clean #trendsSection .trend-scope{display:none}
   html.look-clean #trendsSection .trend-rail{display:flex;overflow-x:auto;gap:10px;padding-top:var(--s2);scroll-snap-type:x proximity}
