@@ -167,7 +167,11 @@ async function waitForVisible(locator,message){
   });
 }
 
+// Phones (≤760px) show the 2×5 quick grid instead of #channels on the landing page (look-clean.css).
+const IP_ENTRY='#channels .channel:visible, .mobile-quick-grid .mqg-tile:visible';
 async function clickIp(page,id){
+  const tile=page.locator(`.mobile-quick-grid .mqg-tile[data-ip="${id}"]:not([data-mqg-action]):visible`).first();
+  if(await tile.count()){await tile.click();return;}
   const channels=page.locator('#channels .channel');
   for(let index=0;index<await channels.count();index+=1){
     const onclick=await channels.nth(index).getAttribute('onclick');
@@ -207,10 +211,11 @@ async function runViewport(browser,viewport){
   await installFixtures(page,state);
   try{
     await page.goto(baseUrl,{waitUntil:'domcontentloaded'});
-    await waitForVisible(page.locator('#channels .channel').first(),'IP navigation did not render');
-    try{await waitForVisible(page.locator('#homeSearch'),'the landing search box did not render')}
+    await waitForVisible(page.locator(IP_ENTRY).first(),'IP navigation did not render');
+    // Phones search from the header capsule (#q); the large landing form is desktop-only.
+    try{await waitForVisible(page.locator('#homeSearch:visible, #q:visible').first(),'the landing search box did not render')}
     catch(error){throw new Error(`${error.message}; pageErrors=${pageErrors.join(' | ')}; cards=${await page.locator('#cards').innerText().catch(()=>'<unavailable>')}`,{cause:error})}
-    assert.equal(await page.locator('#channels .channel[data-ip]:not([data-ip="all"])').count(),5,`${viewport.name} should show five IP entry tiles`);
+    assert.equal(new Set(await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(id=>id&&id!=='all'))).size,5,`${viewport.name} should show five IP entry tiles`);
     assert.equal(await page.locator('#cards .game-entry').count(),0,`${viewport.name} the landing keeps only one game chooser`);
     assert.equal(await page.locator('.home-examples [data-example]').count()>=3,true,`${viewport.name} should show search examples`);
     const channelIds=[];
@@ -220,6 +225,7 @@ async function runViewport(browser,viewport){
       const match=onclick?.match(/'([^']+)'/);
       if(match)channelIds.push(match[1]);
     }
+    channelIds.push(...await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(Boolean)));
     for(const id of gameIds)assert.ok(channelIds.includes(id)||await page.locator(`.game-pick[data-id="${id}"]`).count(),`${viewport.name} missing ${id} switch control`);
 
     // First switch intentionally fails, then recovers through the visible UI retry.
@@ -310,8 +316,9 @@ async function runViewport(browser,viewport){
     // Cross-IP search remains available from the all-games landing state and
     // must show an honest zero result without fixture/demo cards.
     await clickIp(page,'all');
-    await page.locator('#heroQ').fill('no-such-card');
-    await page.locator('#heroGo').click();
+    const heroSearch=await page.locator('#heroQ').isVisible();
+    await page.locator(heroSearch?'#heroQ':'#q').fill('no-such-card');
+    await page.locator(heroSearch?'#heroGo':'#go').click();
     await waitForVisible(page.locator('#cards .search-empty'),'zero-result search did not show its empty state');
     assert.match(await page.locator('#cards .search-empty').innerText(),/找不到/);
     assert.equal(await page.locator('#cards .card').count(),0,`${viewport.name} zero-result search rendered cards`);
@@ -321,7 +328,7 @@ async function runViewport(browser,viewport){
       await waitForVisible(page.locator('#cards .search-empty'),'reload did not restore the zero-result state');
       assert.equal(new URL(page.url()).searchParams.get('q'),'no-such-card','reload should preserve the search URL');
       await page.goBack({waitUntil:'domcontentloaded'});
-      await waitForVisible(page.locator('#homeSearch'),'browser Back did not restore the all-game landing');
+      await page.waitForFunction(()=>document.body.dataset.view==='landing',null,{timeout:8000}).catch(error=>{throw new Error(`browser Back did not restore the all-game landing: ${error.message}`)});
       assert.equal(await page.locator('#cardsSection.has-results').count(),0,'Back to the landing should clear the results');
       await page.goForward({waitUntil:'domcontentloaded'});
       await waitForVisible(page.locator('#cards .search-empty'),'reload did not restore the zero-result state');
@@ -347,6 +354,8 @@ async function runPhaseTwoChecks(browser){
     await page.goto(`${baseUrl}/?game=onepiece&card=${encodeURIComponent(cardId)}`,{waitUntil:'domcontentloaded'});
     const share=page.locator('#modal.open [data-share-card]');
     await waitForVisible(share,'share button missing on a permanent card URL');
+    // Test the clipboard path: Edge (local runs) has the system share sheet, CI's Chromium does not.
+    await page.evaluate(()=>Object.defineProperty(navigator,'share',{value:undefined,configurable:true}));
     await share.click();
     await page.waitForFunction(()=>document.querySelector('[data-share-card]')?.textContent==='已複製分享網址',undefined,{timeout:5000});
     const copied=new URL(await page.evaluate(()=>navigator.clipboard.readText()));
@@ -404,7 +413,7 @@ try{
   try{
     await installFixtures(zoomed,makeFixtureState(fixtureCatalog()));
     await zoomed.goto(baseUrl,{waitUntil:'domcontentloaded'});
-    await waitForVisible(zoomed.locator('#channels .channel').first(),'200% zoom: IP navigation did not render');
+    await waitForVisible(zoomed.locator(IP_ENTRY).first(),'200% zoom: IP navigation did not render');
     const layout=await zoomed.evaluate(()=>({header:getComputedStyle(document.querySelector('.top')).position,overflow:document.documentElement.scrollWidth-innerWidth}));
     assert.equal(layout.header,'static','200% zoom: the header should not stay pinned');
     assert.ok(layout.overflow<=0,`200% zoom: page overflows sideways by ${layout.overflow}px`);

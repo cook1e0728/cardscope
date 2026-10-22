@@ -1,7 +1,7 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-10-22（台灣）｜更新者：Claude Code（正式站抽查、手機浮動元件遮擋修正）
+> 上次更新：2026-10-22（台灣）｜更新者：Claude Code（CI 冒煙測試修復、手機關閉鈕與小按鈕修正）
 
 ## 角色
 - 規劃／驗收：Claude Code
@@ -40,6 +40,11 @@
 - 修正：手機首頁 2×5 快速入口的角標原為寫死文字（排球少年 10-24 後仍會顯示「即將發售」、寶可夢台版 90 天內沒有新系列卻標「新發售」）→ 改依目錄發售日計算（`window.syncMobileQuickGrid`，首頁重繪時由 `index.html` 呼叫）；「航海王日文」實際沒有日版資料、會退回台版 → 改為「航海王英文」（ASIA）。
 - 修正：詳細頁預覽只用第一個候選圖片，失敗就顯示「圖片待補」，放大檢視卻會改用下一個候選（例：台版 M4-003 預覽空白、放大出現日版圖）。`resilientImage` 新增 `fallbacks`，詳細頁與卡片格都依序改用其他版本的圖。起因：2026-10-22 台灣官方站 `asia.pokemon-card.com` 整站顯示維護中，`/tw/card-img/*.png` 全部 302 回首頁。
 - 補強：migration `20261022120000_browse_series_sibling_images`（已在正式庫回滾測試後套用、登記 schema_migrations，函式 md5 `48c66419…`）讓 `browse_series_cards` 多回傳 `siblingImages`（同作品層其他卡的 card_images）；伺服器依圖片權利篩過後掛成每張卡的 `fallbackImageUrls`（最多 3 個），卡牆依序備援。台版 M4 120/120、日版 M4 120/120 都有對方版本的圖；資料庫兩次呼叫共 183 ms。
+
+## CI 修復（2026-10-22 晚，Claude Code）
+- `ec181e6`、`ba397c4` 的 Beta reliability 失敗：`scripts/beta-browser-smoke.mjs` 還照舊首頁寫。改為手機找 2×5 快速入口格（`.mqg-tile`）與頂欄 `#q`／`#go`、桌面找 `#channels`／`#heroQ`；返回首頁改看 `body[data-view=landing]`；分享測試固定走剪貼簿（停用 `navigator.share`，本機 Edge 有系統分享）。
+- 測試抓到的真問題（已修，`look-clean.css`）：手機詳細頁「×」關閉鈕被卡圖區塊蓋住點不到 → `#close{z-index:10}`；頂欄搜尋鈕 38px、稀有度直選「拇指盤」鈕 28px → 都改 44px。
+- 本機跑法：無 Supabase 環境啟動 `PORT=4202 node server.mjs`，再 `CI=true CARDSCOPE_URL=http://127.0.0.1:4202 PLAYWRIGHT_CHANNEL=msedge node scripts/beta-browser-smoke.mjs`，全部通過；Node 522/522。
 
 ## 首頁桌面改版（2026-10-22）
 - 依 impeccable 與 ui-ux-pro-max 做 5 版預覽，使用者選第 3 版「夜間展示櫃」→ ADR 0050，樣式併入 `look-clean.css` 末段（≥761px），預覽開關與 `home-preview.css` 已移除；手機首屏不變。

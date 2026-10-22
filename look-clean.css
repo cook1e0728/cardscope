@@ -41,7 +41,7 @@ html.look-clean .nav button{display:inline-flex;align-items:center;justify-conte
 html.look-clean .nav button:hover{border-bottom-color:var(--ip-ink)}
 html.look-clean .search{order:2;flex:1 1 320px;max-width:620px;height:46px;padding:2px 3px 2px var(--s3);border:2px solid var(--lc-ink);border-radius:999px;background:#fff;box-shadow:none;align-items:center}
 html.look-clean .search input{padding:0 var(--s3);font-size:15px;background:transparent;color:var(--lc-ink)}
-html.look-clean .search button{width:40px;min-width:44px;height:40px;min-height:40px;border-radius:999px;background:var(--lc-ink);color:#fff;font-size:18px;display:inline-grid;place-items:center}
+html.look-clean .search button{width:44px;min-width:44px;height:44px;min-height:44px;border-radius:999px;background:var(--lc-ink);color:#fff;font-size:18px;display:inline-grid;place-items:center}
 html.look-clean body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
 html.look-clean .search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
 html.look-clean .mobile-header-scope{display:none}
@@ -328,7 +328,7 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .mobile-scope-sep{color:var(--lc-hair);font-size:13px;user-select:none}
   html.look-clean .top .search,html.look-clean body[data-view="landing"] .top .search{display:flex;order:2;flex:1 1 0;min-width:0;max-width:none;height:44px;padding:2px 3px 2px var(--s3);border:2px solid var(--lc-ink);border-radius:999px;background:#fff}
   html.look-clean .top .search input{padding:0 var(--s2);font-size:14px}
-  html.look-clean .top .search button{width:38px;min-width:44px;height:38px;min-height:38px;border-radius:999px;font-size:16px}
+  html.look-clean .top .search button{width:44px;min-width:44px;height:44px;min-height:44px;border-radius:999px;font-size:16px}
   html.look-clean .browse-regions{display:none}
   html.look-clean .bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;height:62px;padding-bottom:env(safe-area-inset-bottom);background:var(--lc-surface);border-top:1px solid var(--lc-hair)}
   html.look-clean .bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 0;font-size:12px;font-weight:500;line-height:1.1;color:var(--lc-ink-2)}
@@ -407,7 +407,7 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .rarity-bento-title b{font-size:13px;font-weight:900;color:var(--lc-ink)}
   html.look-clean .rarity-bento-title span{font-size:11px;color:var(--lc-ink-2);white-space:nowrap}
   html.look-clean .rarity-bento-actions{display:flex;align-items:center;gap:5px;flex:none}
-  html.look-clean .rarity-bento-reset,html.look-clean .rarity-hud-Jump{min-height:28px;padding:3px 9px;border:0;border-radius:999px;background:#ECE6D8;color:#4A443A;font-size:11px;font-weight:700;cursor:pointer}
+  html.look-clean .rarity-bento-reset,html.look-clean .rarity-hud-Jump{min-height:44px;padding:3px 9px;border:0;border-radius:999px;background:#ECE6D8;color:#4A443A;font-size:11px;font-weight:700;cursor:pointer}
   html.look-clean .rarity-hud-Jump{background:#1F1B16;color:#E7BA4C;border:1px solid #D49B1B}
   html.look-clean .rarity-pills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;min-width:0;margin:0;padding:0;overflow:visible}
   html.look-clean .rarity-pills button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:46px;padding:5px 8px;border:1px solid #D8D0C2;border-radius:10px;background:#fff;color:var(--lc-ink);text-align:left;line-height:1.2;white-space:normal;font-variant-numeric:tabular-nums;cursor:pointer;position:relative}
@@ -484,3 +484,6 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .home-latest .band-tile-code,html.look-clean .home-latest .home-cards-head,html.look-clean .home-latest .home-cards-head h3{color:#C9C1DA}
   html.look-clean .home-latest .home-cards-more{color:#E7BA4C}
 }
+
+/* 詳細頁關閉鈕：手機緊湊版的卡圖區塊會疊在它上面，點不到（2026-10-22 冒煙測試發現）。 */
+#close{z-index:10}
