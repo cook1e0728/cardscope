@@ -50,7 +50,7 @@
 - 依 impeccable 與 ui-ux-pro-max 做 5 版預覽，使用者選第 3 版「夜間展示櫃」→ ADR 0050，樣式併入 `look-clean.css` 末段（≥761px），預覽開關與 `home-preview.css` 已移除；手機首屏不變。
 
 ## 下一步（唯一，具體到檔案與指令）
-- 10-24 後確認排球少年 HV-P04／HV-D04 自動同步（`/api/search?q=HV-P04`）。
+- 10-24 後確認排球少年 HV-P04／HV-D04 卡圖自動補上（`/api/search?q=HV-P04&limit=200`）。10-23 查：卡已在（HV-P04 100 張、HV-D04 13 張，搜尋上限可能截斷），但 0 張有圖；CI `000f8ad` Beta reliability 已綠。
 
 ## 卡住的地方／需要規劃方決策
 - 無。
