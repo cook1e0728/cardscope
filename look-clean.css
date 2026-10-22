@@ -439,7 +439,7 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .rarity-hud-grid button[aria-pressed="true"] small{color:#1F1B16;font-weight:800}
 }
 
-/* ===== 首頁桌面第一屏「夜間展示櫃」（ADR 0049，2026-10-22 使用者從 5 版預覽選定）=====
+/* ===== 首頁桌面第一屏「夜間展示櫃」（ADR 0050，2026-10-22 使用者從 5 版預覽選定）=====
    第一屏改成一整片深靛色帶（接兔子插畫的星空），拿掉打孔紙、側邊粗色條與卡中卡；搜尋鍵金色、遊戲標誌放在米白小牌上。
    只作用於 ≥761px；手機版首屏沿用上方規則。 */
 @media (min-width:761px){
