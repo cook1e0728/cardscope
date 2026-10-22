@@ -62,6 +62,14 @@ test('only images without an embedded SAMPLE receive one horizontal overlay',()=
   assert.match(uiSource,/if\(sample\)sample\.hidden=true/);
 });
 
+test('card image falls back to the other versions before showing 圖片待補',()=>{
+  const h=createHarness(undefined,true);
+  const markup=h.run("resilientImage('/tw.png','測試卡','圖片待補',{fallbacks:['/tw.png','/jp.png','/jp.png']})");
+  assert.match(markup,/data-fallbacks="\[&quot;\/jp\.png&quot;\]"/);
+  assert.match(markup,/this\.src=next\[0\]/);
+  assert.doesNotMatch(h.run("resilientImage('/tw.png','測試卡','圖片待補')"),/data-fallbacks/);
+});
+
 test('card detail prefers provider high-resolution images before thumbnails',()=>{
   const h=createHarness(undefined,true);
   const tcgdex=h.run("cardImageSourceCandidates({images:[],printings:[]},{metadata:{imageBase:'https://assets.tcgdex.net/zh-tw/S/S10P/001'},imageUrl:'https://assets.tcgdex.net/zh-tw/S/S10P/001/low.webp'})");
