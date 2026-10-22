@@ -56,6 +56,12 @@
       +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>`
       +`<b class="band-tile-name">${esc(name)}</b><span class="band-tile-code">${esc(sub)}</span></button>`;
   }
+  function mascotNewTile(target){
+    const hint=target?`${seriesName(target)}・${target.officialCode||''}`:'最新收錄系列';
+    return`<button type="button" class="band-tile is-mascot-new" data-kind="mascot-new"${target?` data-id="${esc(target.id)}" data-game="${esc(target.game)}"`:''} title="${esc(`最新系列 NEW｜${hint}`)}">`
+      +`<span class="band-tile-art is-mascot-art"><img src="/assets/brand/web/rabbit-success-160.webp" alt="" loading="lazy"><span class="band-tile-flag is-new">NEW</span></span>`
+      +`<b class="band-tile-name">最新系列</b><span class="band-tile-code">NEW</span></button>`;
+  }
   // Released in the last 90 days: shown as a NEW badge on the series' own tile.
   const recentSince=()=>new Date(Date.now()-90*864e5).toISOString().slice(0,10);
   // auto: the page opened this series as the game's default view, so it is not remembered as 最近瀏覽 and the page does not scroll.
@@ -78,17 +84,30 @@
     return false;
   }
   // Landing: the newest dated series of each IP (its first region) as the same tiles the game page uses; a tile opens that game on that series.
+  let homeTab='latest';
   function renderHome(){
     const host=document.getElementById('homeLatest'),rail=document.getElementById('homeLatestRail');if(!host||!rail)return;
     if(game!=='all'){host.hidden=true;return}
     const ids=(window.CARD_GAMES||C.games||[]).map(choice=>choice.id).filter(id=>id&&id!=='all'),picks=[];
     for(const id of ids){
       const rows=(C.series||[]).filter(item=>item.game===id&&item.releaseDate&&item.releaseDate<=today()),region=regionOrder.find(code=>rows.some(item=>item.region===code));
-      picks.push(...rows.filter(item=>item.region===region).sort(compare).slice(0,2));
+      picks.push(...rows.filter(item=>item.region===region).sort(compare).slice(0,3));
     }
-    const list=picks.sort((a,b)=>String(b.releaseDate).localeCompare(String(a.releaseDate))).slice(0,8);
-    host.hidden=!list.length;
-    rail.innerHTML=list.map(item=>tile('series',item,(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'')).join('');
+    const allDated=picks.sort((a,b)=>String(b.releaseDate).localeCompare(String(a.releaseDate)));
+    const gameTabs=ids.map(id=>{
+      const name=(window.CARD_GAMES||[]).find(choice=>choice.id===id)?.name||id;
+      const count=allDated.filter(item=>item.game===id).length;
+      return count?[id,name,count]:null;
+    }).filter(Boolean);
+    const tabs=[['latest','最新系列',Math.min(8,allDated.length)],...gameTabs];
+    if(!tabs.some(([id])=>id===homeTab))homeTab='latest';
+    const list=(homeTab==='latest'?allDated:allDated.filter(item=>item.game===homeTab)).slice(0,8);
+    host.hidden=!allDated.length;
+    let tabBar=host.querySelector('.series-band-tabs');
+    if(!tabBar){tabBar=document.createElement('div');tabBar.className='series-band-tabs home-latest-tabs';tabBar.setAttribute('role','tablist');tabBar.setAttribute('aria-label','最新系列快速分類');rail.before(tabBar)}
+    tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
+    tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(!btn)return;homeTab=btn.dataset.homeTab;renderHome()};
+    rail.innerHTML=(list.length?mascotNewTile(list[0]):'')+list.map(item=>tile('series',item,(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'')).join('');
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
@@ -123,14 +142,15 @@
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionLabel[id]||id)}</button>`).join('')}</div></div>`
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
       +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionLabel[id]||id)} ${count} 項</button>`).join('')}</div>`:'')
-      +`<div class="series-band-rail" role="tabpanel">${list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join('')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionLabel[region]||'')}沒有符合的系列或商品。`:`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
+      +`<div class="series-band-rail" role="tabpanel">${(list.length?(dated[0]?mascotNewTile(dated[0]):'')+list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join(''):'')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionLabel[region]||'')}沒有符合的系列或商品。`:`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
     band.querySelector('.series-band-rail').scrollLeft=keep;
-    const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
+    const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     band.onclick=event=>{
       const regionButton=event.target.closest('[data-region],[data-search-region]'),target=regionButton?.dataset.region||regionButton?.dataset.searchRegion;
       if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
       const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;render();return}
       const card=event.target.closest('.band-tile');if(!card)return;
+      if(card.dataset.kind==='mascot-new'){bandTab[game]='latest';const newest=dated[0];if(newest)openSeries(newest);else render();return}
       if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);scrollBelowHeader(document.getElementById('selectedProduct'));return}
       const item=series.find(row=>row.id===card.dataset.id);if(item)openSeries(item);
     };

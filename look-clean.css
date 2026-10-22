@@ -102,8 +102,10 @@ html.look-clean .browse-regions span{font-size:14px;color:var(--lc-ink-2)}
 html.look-clean .mascot-gallery figcaption{font-size:12px}
 
 
-html.look-clean .home-latest{margin:var(--s7) 0 0}
+html.look-clean .home-latest{margin:var(--s6) 0 0;padding:var(--s5) var(--s5) var(--s4) var(--s6);background:#FBF9F4;border:1px solid #D8D0C2;border-left:12px solid #D49B1B;border-radius:16px}
 html.look-clean .home-latest h2,html.look-clean .section h2{font-family:var(--lc-display);font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+html.look-clean .home-latest .home-latest-tabs{margin-top:var(--s3)}
+html.look-clean .home-latest .home-latest-tabs button.on{border-bottom-color:#D49B1B}
 html.look-clean .home-latest .series-band-rail{padding-top:var(--s4)}
 
 /* ===== 遊戲頁：遊戲切換（膠囊）與系列橫幅 ===== */
@@ -132,6 +134,10 @@ html.look-clean .series-band-tabs .count{margin-left:2px;color:var(--lc-ink-2);f
 html.look-clean .series-band-rail{gap:var(--s4);margin-inline:calc(var(--s2) * -1);padding:var(--s4) var(--s2) var(--s1);scroll-padding-inline:var(--s2)}
 html.look-clean .band-tile{align-items:flex-start;gap:0;text-align:left}
 html.look-clean .band-tile-art{border-radius:var(--lc-r-md);box-shadow:none;border:1px solid var(--lc-hair);background:#fff}
+html.look-clean .band-tile-art.is-mascot-art{border:2px solid var(--lc-ink);background:var(--lc-ink);box-shadow:inset 0 0 0 2px #D49B1B}
+html.look-clean .band-tile-art.is-mascot-art img{padding:4px;object-fit:cover;border-radius:10px}
+html.look-clean .band-tile.is-mascot-new .band-tile-name{font-weight:700;color:var(--lc-ink)}
+html.look-clean .band-tile.is-mascot-new .band-tile-code{font-weight:700;color:#B8820E}
 html.look-clean .band-tile-art.is-type{border:0;background:var(--lc-sleeve)}
 html.look-clean .band-tile-art.is-type:before{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
 html.look-clean .band-tile-flag{left:var(--s2);top:var(--s2);padding:2px var(--s2);border-radius:999px;background:var(--ip);color:var(--ip-on);font-size:12px;font-weight:700;letter-spacing:.04em}
@@ -313,7 +319,7 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean body[data-view="landing"] .channel[data-ip]{flex:0 0 112px;min-width:112px}
   html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art{height:48px}
   html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:36px}
-  html.look-clean .home-latest{margin-top:var(--s4)}
+  html.look-clean .home-latest{margin-top:var(--s4);padding:var(--s4) var(--s3) var(--s3) 18px;border-left-width:8px}
   html.look-clean .home-latest h2,html.look-clean .section h2{font-size:20px}
   html.look-clean body[data-view="game"] .section h2,html.look-clean #cardsSection .title h2{font-size:22px}
   html.look-clean #cardsSection{margin-top:var(--s6)}
