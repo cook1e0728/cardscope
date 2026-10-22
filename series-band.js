@@ -90,10 +90,26 @@
     if(game!=='all'){host.hidden=true;return}
     const ids=(window.CARD_GAMES||C.games||[]).map(choice=>choice.id).filter(id=>id&&id!=='all'),picks=[];
     for(const id of ids){
-      const rows=(C.series||[]).filter(item=>item.game===id&&item.releaseDate&&item.releaseDate<=today()),region=regionOrder.find(code=>rows.some(item=>item.region===code));
-      picks.push(...rows.filter(item=>item.region===region).sort(compare).slice(0,3));
+      const rows=(C.series||[]).filter(item=>item.game===id&&item.releaseDate&&item.releaseDate<=today()).sort((a,b)=>compare(a,b)||regionOrder.indexOf(a.region)-regionOrder.indexOf(b.region));
+      const grouped=[],used=new Set();
+      for(const row of rows){
+        if(used.has(row.id))continue;
+        const siblings=rows.filter(s=>!used.has(s.id)&&(s.id===row.id||(s.officialCode&&row.officialCode&&String(s.officialCode).toUpperCase()===String(row.officialCode).toUpperCase())||(s.releaseDate===row.releaseDate&&fold(seriesName(s))===fold(seriesName(row))))).sort((a,b)=>regionOrder.indexOf(a.region)-regionOrder.indexOf(b.region));
+        siblings.forEach(s=>used.add(s.id));
+        grouped.push(...siblings);
+        if(grouped.length>=4)break;
+      }
+      picks.push(...grouped.slice(0,4));
     }
-    const allDated=picks.sort((a,b)=>String(b.releaseDate).localeCompare(String(a.releaseDate)));
+    const allDated=[];
+    {const byRelease=[...picks].sort((a,b)=>String(b.releaseDate).localeCompare(String(a.releaseDate))||regionOrder.indexOf(a.region)-regionOrder.indexOf(b.region)),seen=new Set();
+      for(const row of byRelease){
+        if(seen.has(row.id))continue;
+        const siblings=byRelease.filter(s=>!seen.has(s.id)&&s.game===row.game&&(s.id===row.id||(s.officialCode&&row.officialCode&&String(s.officialCode).toUpperCase()===String(row.officialCode).toUpperCase())||(s.releaseDate===row.releaseDate&&fold(seriesName(s))===fold(seriesName(row))))).sort((a,b)=>regionOrder.indexOf(a.region)-regionOrder.indexOf(b.region));
+        siblings.forEach(s=>seen.add(s.id));
+        allDated.push(...siblings);
+      }
+    }
     const gameTabs=ids.map(id=>{
       const name=(window.CARD_GAMES||[]).find(choice=>choice.id===id)?.name||id;
       const count=allDated.filter(item=>item.game===id).length;
@@ -107,7 +123,7 @@
     if(!tabBar){tabBar=document.createElement('div');tabBar.className='series-band-tabs home-latest-tabs';tabBar.setAttribute('role','tablist');tabBar.setAttribute('aria-label','最新系列快速分類');rail.before(tabBar)}
     tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
     tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(!btn)return;homeTab=btn.dataset.homeTab;renderHome()};
-    rail.innerHTML=(list.length?mascotNewTile(list[0]):'')+list.map(item=>tile('series',item,(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'')).join('');
+    rail.innerHTML=(list.length?mascotNewTile(list[0]):'')+list.map(item=>tile('series',item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionLabel[item.region]||item.region||''].filter(Boolean).join(' '))).join('');
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);

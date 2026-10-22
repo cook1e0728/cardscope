@@ -638,14 +638,14 @@ function installMobileQuickGrid(){
   const grid=document.createElement('div');grid.id='mobileQuickGrid';grid.className='mobile-quick-grid';grid.setAttribute('role','group');grid.setAttribute('aria-label','手機快速探索入口');
   const items=[
     {game:'pokemon',region:'JP',label:'寶可夢日文',logo:'/assets/ip-logos/pokemon.svg',tag:'新發售',hot:true},
-    {game:'onepiece',region:'JP',label:'航海王日文',logo:'/assets/ip-logos/onepiece.png',tag:'新發售',hot:true},
-    {game:'yugioh',region:'JP',label:'遊戲王日文',logo:'/assets/ip-logos/yugioh.png',tag:'新發售',hot:true},
-    {game:'weiss-schwarz',region:'JP',label:'芙莉蓮日文',logo:'/assets/ip-logos/weiss-schwarz.png',tag:'熱門收錄',hot:false},
-    {game:'haikyuu',region:'JP',label:'排球少年日文',logo:'/assets/ip-logos/haikyuu.svg',tag:'即將發售',hot:true},
     {game:'pokemon',region:'TW',label:'寶可夢繁中',logo:'/assets/ip-logos/pokemon.svg',tag:'新發售',hot:true},
     {game:'pokemon',region:'US',label:'寶可夢美版',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
+    {game:'onepiece',region:'JP',label:'航海王日文',logo:'/assets/ip-logos/onepiece.png',tag:'新發售',hot:true},
     {game:'onepiece',region:'TW',label:'航海王繁中',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
+    {game:'yugioh',region:'JP',label:'遊戲王日文',logo:'/assets/ip-logos/yugioh.png',tag:'新發售',hot:true},
     {game:'yugioh',region:'US',label:'遊戲王美版',logo:'/assets/ip-logos/yugioh.png',tag:'收錄中',hot:false},
+    {game:'weiss-schwarz',region:'JP',label:'芙莉蓮日文',logo:'/assets/ip-logos/weiss-schwarz.png',tag:'熱門收錄',hot:false},
+    {game:'haikyuu',region:'JP',label:'排球少年日文',logo:'/assets/ip-logos/haikyuu.svg',tag:'即將發售',hot:true},
     {game:'all',region:'all',label:'我的收藏冊',logo:'/assets/brand/web/rabbit-success-160.webp',tag:'收藏冊',hot:false,action:'collection'}
   ];
   grid.innerHTML=items.map(item=>`<button type="button" class="mqg-tile" data-mqg-game="${e(item.game)}" data-mqg-region="${e(item.region)}"${item.action?` data-mqg-action="${e(item.action)}"`:''} data-ip="${e(item.game)}"><span class="mqg-art"><img src="${e(item.logo)}" alt="" loading="lazy"><span class="mqg-badge${item.hot?' is-hot':''}">${e(item.tag)}</span></span><b class="mqg-label">${e(item.label)}</b></button>`).join('');
