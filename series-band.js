@@ -197,7 +197,8 @@
     // [id, text, hint, count, unit]: the count comes from lists already in memory (no extra request); unit feeds the screen-reader label.
     const tabs=[...(found.length||elsewhere.length?[['search',`搜尋：${bandSearch.query}`,'',found.length,'項']]:[]),['latest','全部系列','',series.length,'個系列'],...(seen.length?[['recent','最近瀏覽','',seen.length,'個系列']]:[]),...categories.map(item=>[`product:${item.id}`,label(item),item.description,item.rows.length,'項商品']),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label,'',bucket.items.length,'個系列'])];
     let active=bandTab[game]||'latest';if(!tabs.some(([id])=>id===active))active='latest';bandTab[game]=active;
-    const dated=byDate(series),firstEraTab=categories.length?tabs.findIndex(([id])=>id.startsWith('group:')):-1;
+    // 兔子格開最新已發售系列；dated 的第一筆可能是即將發售
+    const dated=byDate(series),newest=dated.find(item=>!(item.releaseDate&&item.releaseDate>today()))||dated[0],firstEraTab=categories.length?tabs.findIndex(([id])=>id.startsWith('group:')):-1;
     let kind='series',list;
     if(active==='search')list=found;
     else if(active==='latest')list=dated;
@@ -209,7 +210,7 @@
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionLabel[id]||id)}</button>`).join('')}</div></div>`
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
       +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionLabel[id]||id)} ${count} 項</button>`).join('')}</div>`:'')
-      +`<div class="series-band-rail" role="tabpanel">${(list.length?(dated[0]?mascotNewTile(dated[0]):'')+list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join(''):'')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionLabel[region]||'')}沒有符合的系列或商品。`:`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
+      +`<div class="series-band-rail" role="tabpanel">${(list.length?(newest?mascotNewTile(newest):'')+list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join(''):'')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionLabel[region]||'')}沒有符合的系列或商品。`:`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
     band.querySelector('.series-band-rail').scrollLeft=keep;
     const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     band.onclick=event=>{
@@ -217,7 +218,7 @@
       if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
       const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;render();return}
       const card=event.target.closest('.band-tile');if(!card)return;
-      if(card.dataset.kind==='mascot-new'){bandTab[game]='latest';const newest=dated[0];if(newest)openSeries(newest);else render();return}
+      if(card.dataset.kind==='mascot-new'){bandTab[game]='latest';if(newest)openSeries(newest);else render();return}
       if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);scrollBelowHeader(document.getElementById('selectedProduct'));return}
       const item=series.find(row=>row.id===card.dataset.id);if(item)openSeries(item);
     };

@@ -700,7 +700,7 @@ function installMobileQuickGrid(){
     {game:'pokemon',region:'JP',label:'寶可夢日文',logo:'/assets/ip-logos/pokemon.svg',tag:'新發售',hot:true},
     {game:'pokemon',region:'TW',label:'寶可夢繁中',logo:'/assets/ip-logos/pokemon.svg',tag:'新發售',hot:true},
     {game:'pokemon',region:'US',label:'寶可夢美版',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
-    {game:'onepiece',region:'JP',label:'航海王日文',logo:'/assets/ip-logos/onepiece.png',tag:'新發售',hot:true},
+    {game:'onepiece',region:'ASIA',label:'航海王英文',logo:'/assets/ip-logos/onepiece.png',tag:'新發售',hot:true},
     {game:'onepiece',region:'TW',label:'航海王繁中',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
     {game:'yugioh',region:'JP',label:'遊戲王日文',logo:'/assets/ip-logos/yugioh.png',tag:'新發售',hot:true},
     {game:'yugioh',region:'US',label:'遊戲王美版',logo:'/assets/ip-logos/yugioh.png',tag:'收錄中',hot:false},
@@ -709,6 +709,17 @@ function installMobileQuickGrid(){
     {game:'all',region:'all',label:'我的收藏冊',logo:'/assets/brand/web/rabbit-success-160.webp',tag:'收藏冊',hot:false,action:'collection'}
   ];
   grid.innerHTML=items.map(item=>`<button type="button" class="mqg-tile" data-mqg-game="${e(item.game)}" data-mqg-region="${e(item.region)}"${item.action?` data-mqg-action="${e(item.action)}"`:''} data-ip="${e(item.game)}"><span class="mqg-art"><img src="${e(item.logo)}" alt="" loading="lazy"><span class="mqg-badge${item.hot?' is-hot':''}">${e(item.tag)}</span></span><b class="mqg-label">${e(item.label)}</b></button>`).join('');
+  // 角標依目錄的發售日計算（tag 只是目錄載入前的預設）；首頁每次重繪時由 index.html 呼叫
+  window.syncMobileQuickGrid=()=>{
+    const rows=Array.isArray(C?.series)?C.series:[];if(!rows.length)return;
+    const today=new Date().toISOString().slice(0,10),since=new Date(Date.now()-90*864e5).toISOString().slice(0,10);
+    grid.querySelectorAll('.mqg-tile:not([data-mqg-action])').forEach(btn=>{
+      const own=rows.filter(row=>row.game===btn.dataset.mqgGame&&row.region===btn.dataset.mqgRegion),badge=btn.querySelector('.mqg-badge');if(!badge)return;
+      const tag=own.some(row=>row.releaseDate>today)?'即將發售':own.some(row=>row.releaseDate&&row.releaseDate<=today&&row.releaseDate>=since)?'新發售':'收錄中';
+      badge.textContent=tag;badge.classList.toggle('is-hot',tag!=='收錄中');
+    });
+  };
+  window.syncMobileQuickGrid();
   grid.onclick=event=>{
     const btn=event.target.closest('.mqg-tile');if(!btn)return;
     if(btn.dataset.mqgAction==='collection'&&typeof window.openCollection==='function')return window.openCollection();
