@@ -59,5 +59,6 @@ html.look-motion .cs-motion-state::before{content:"";position:absolute;left:4px;
 html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state{background:#1F1B16;color:#fff;padding:0 32px 0 10px;justify-content:flex-start}
 html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state::before{left:auto;right:4px}
 @media (max-width:760px){
-  html.look-motion .cs-motion-toggle{left:12px;bottom:calc(62px + 10px + env(safe-area-inset-bottom))}
+  /* 手機固定浮鈕會蓋住卡牆，改放頁尾 */
+  html.look-motion .cs-motion-toggle{position:static;display:flex;width:max-content;margin:16px auto calc(62px + 16px + env(safe-area-inset-bottom));box-shadow:none}
 }
