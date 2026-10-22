@@ -33,15 +33,15 @@ html.look-clean body[data-view="landing"] .nav button:hover{color:#fff;border-bo
 html.look-clean body[data-view="landing"] .nav button:focus-visible{outline-color:var(--lc-bg)}
 html.look-clean body[data-view="landing"] .brand img{filter:invert(1)}
 html.look-clean body[data-view="game"] .top{background:var(--lc-bg);border-bottom:2px solid var(--ip)}
-html.look-clean .bar{height:64px;gap:var(--s5);justify-content:space-between}
+html.look-clean .bar{height:64px;gap:var(--s4);justify-content:space-between}
 html.look-clean .brand{font-size:20px;font-weight:700;letter-spacing:-.02em}
 html.look-clean .brand i{color:inherit;font-weight:400}
-html.look-clean .nav{gap:var(--s1);margin:0 0 0 auto;align-items:center}
+html.look-clean .nav{order:3;gap:var(--s1);margin:0 0 0 auto;align-items:center}
 html.look-clean .nav button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 var(--s4);font-size:15px;font-weight:500;line-height:1;border-bottom-width:2px}
 html.look-clean .nav button:hover{border-bottom-color:var(--ip-ink)}
-html.look-clean .search{height:44px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;box-shadow:none}
-html.look-clean .search input{padding:0 var(--s4) 0 var(--s5);font-size:15px;background:transparent}
-html.look-clean .search button{width:56px;border-radius:0;background:var(--lc-ink);color:#fff}
+html.look-clean .search{order:2;flex:1 1 320px;max-width:620px;height:46px;padding:2px 3px 2px var(--s3);border:2px solid var(--lc-ink);border-radius:999px;background:#fff;box-shadow:none;align-items:center}
+html.look-clean .search input{padding:0 var(--s3);font-size:15px;background:transparent;color:var(--lc-ink)}
+html.look-clean .search button{width:40px;min-width:44px;height:40px;min-height:40px;border-radius:999px;background:var(--lc-ink);color:#fff;font-size:18px;display:inline-grid;place-items:center}
 html.look-clean body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
 html.look-clean .search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
 
@@ -305,21 +305,15 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 0;font-size:12px;font-weight:500;line-height:1.1;color:var(--lc-ink-2)}
   html.look-clean .bottom button b,html.look-clean .bottom-profile img{display:grid;place-items:center;width:24px;height:24px;margin:0;font-size:18px;line-height:1;flex:none}
   html.look-clean .bottom button span{line-height:1.1}
-  html.look-clean .hero{padding-top:var(--s5)}
-  html.look-clean body[data-view="landing"] .hero{margin-top:var(--s3);padding:var(--s5) var(--s4) var(--s5) var(--s5);border-left-width:8px;background-image:none}
-  html.look-clean body[data-view="landing"] #channels{margin-top:var(--s5);padding:var(--s3) var(--s3) var(--s3) 18px;border-left-width:8px}
-  html.look-clean body[data-view="landing"] .hero-art{width:96px;margin:0 auto var(--s3);border-radius:var(--lc-r-sm);padding:2px}
-  html.look-clean body[data-view="landing"] .hero-art img{border-radius:6px}
-  html.look-clean body[data-view="landing"] .hero-intro h1{font-size:clamp(30px,8.5vw,36px);line-height:1.15}
-  html.look-clean body[data-view="landing"] .hero-intro p{font-size:16px;line-height:1.55;max-width:none}
-  html.look-clean .home-search{height:56px;margin:var(--s5) 0 var(--s3)}
-  html.look-clean .home-search input{padding:0 var(--s4);font-size:16px}
-  html.look-clean .home-search button{min-width:80px}
-  html.look-clean body[data-view="landing"] #channels{margin-top:var(--s6)}
-  html.look-clean body[data-view="landing"] .channel[data-ip]{flex:0 0 140px;min-width:140px}
-  html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art{height:56px}
-  html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:40px}
-  html.look-clean .home-latest{margin-top:var(--s6)}
+  html.look-clean .hero{padding-top:var(--s3)}
+  html.look-clean body[data-view="landing"] .top .search{display:flex;order:3;flex-basis:100%;max-width:none}
+  html.look-clean body[data-view="landing"] .hero{margin-top:var(--s2);padding:0;border:0;background:transparent;background-image:none}
+  html.look-clean body[data-view="landing"] .hero-intro,html.look-clean body[data-view="landing"] .home-search,html.look-clean body[data-view="landing"] .home-examples,html.look-clean body[data-view="landing"] .hero-art{display:none}
+  html.look-clean body[data-view="landing"] #channels{margin-top:0;padding:var(--s3) var(--s3) var(--s3) 18px;border-left-width:8px}
+  html.look-clean body[data-view="landing"] .channel[data-ip]{flex:0 0 112px;min-width:112px}
+  html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art{height:48px}
+  html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:36px}
+  html.look-clean .home-latest{margin-top:var(--s4)}
   html.look-clean .home-latest h2,html.look-clean .section h2{font-size:20px}
   html.look-clean body[data-view="game"] .section h2,html.look-clean #cardsSection .title h2{font-size:22px}
   html.look-clean #cardsSection{margin-top:var(--s6)}
