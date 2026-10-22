@@ -487,37 +487,83 @@ function installFilterSheet(){
   summarize();
 }
 
-// ADR 0047／0049：手機把稀有度分類改為「點擊按鈕展開多欄清單選擇」（避免橫向滾動與誤觸重滾）；選項與選取邏輯沿用 #rarityFilter，桌面以 CSS 隱藏。
+// ADR 0047／0049：手機版稀有度分類採用「V1 雙行 Bento 3 欄直選格 ＋ V5 底部拇指懸浮快選盤」；選項與選取邏輯沿用 #rarityFilter，桌面以 CSS 隱藏。
+const RARITY_ZH_META={
+  SAR:{zh:'特殊藝術',tier:'top'},UR:{zh:'金卡極稀有',tier:'top'},MUR:{zh:'極限稀有',tier:'top'},FUR:{zh:'特殊極稀有',tier:'top'},BWR:{zh:'黑白稀有',tier:'top'},HR:{zh:'彩虹稀有',tier:'top'},MA:{zh:'超級攻擊',tier:'top'},
+  SR:{zh:'超稀有閃',tier:'high'},SSR:{zh:'色違超稀有',tier:'high'},CSR:{zh:'角色超稀有',tier:'high'},AR:{zh:'插畫稀有',tier:'high'},CHR:{zh:'角色稀有',tier:'high'},S:{zh:'色違稀有',tier:'high'},K:{zh:'光輝稀有',tier:'high'},ACE:{zh:'ACE王牌',tier:'high'},RRR:{zh:'三閃稀有',tier:'high'},RR:{zh:'雙閃稀有',tier:'high'},
+  TR:{zh:'寶藏稀有',tier:'top'},SP:{zh:'特別平行',tier:'top'},SEC:{zh:'秘藏稀有',tier:'top'},'SEC+':{zh:'頂規秘藏',tier:'top'},SSP:{zh:'超特別卡',tier:'top'},OFR:{zh:'全圖稀有',tier:'high'},L:{zh:'領航卡',tier:'high'},
+  QCSR:{zh:'25週年金鑽',tier:'top'},'Starlight Rare':{zh:'鑽彩最高賞',tier:'top'},'Ghost Rare':{zh:'全息浮雕',tier:'top'},CR:{zh:'收藏家半鑽',tier:'top'},PSR:{zh:'稜鏡半鑽',tier:'top'},'Platinum Secret Rare':{zh:'白金半鑽',tier:'top'},'Ultimate Rare':{zh:'浮雕金亮',tier:'top'},'Secret Rare':{zh:'半鑽高稀有',tier:'top'},
+  'Ultra Rare':{zh:'金亮閃卡',tier:'high'},'Super Rare':{zh:'亮面閃卡',tier:'high'},'Gold Rare':{zh:'黃金閃卡',tier:'high'},
+  '極P':{zh:'極平行最高賞',tier:'top'},'極':{zh:'極稀有',tier:'top'},'秘':{zh:'秘藏稀有',tier:'top'},'頂P':{zh:'頂平行閃',tier:'high'},'頂':{zh:'頂稀有',tier:'high'},
+  R:{zh:'稀有閃卡',tier:'base'},Rare:{zh:'稀有卡',tier:'base'},UC:{zh:'非普通卡',tier:'base'},U:{zh:'非普通卡',tier:'base'},C:{zh:'基礎普卡',tier:'base'},Common:{zh:'基礎普卡',tier:'base'},N:{zh:'基礎普卡',tier:'base'},P:{zh:'特典推廣',tier:'base'},PR:{zh:'特典推廣',tier:'base'},'DON!!':{zh:'咚!!卡',tier:'base'},NONE:{zh:'無標記',tier:'base'}
+};
+function parseRarityOption(option){
+  if(option.value==='all')return{value:'all',code:'全部卡片',zh:'全部稀有度',count:'',tier:'all'};
+  const raw=String(option.textContent||'').trim(),m=raw.match(/^(.*?)(?:[（(]([0-9,]+)[）)])?$/);
+  const label=(m?m[1]:raw).trim(),count=m&&m[2]?m[2]:'';
+  const shortCode=label.replace(/\s+Rare$/i,'').trim()||label;
+  const info=RARITY_ZH_META[option.value]||RARITY_ZH_META[label]||{zh:'系列收錄',tier:'base'};
+  return{value:option.value,code:shortCode,fullCode:label,zh:info.zh,count,tier:info.tier};
+}
 function installRarityPills(){
   const select=$('rarityFilter'),tools=$('cardTools');if(!select||!tools||typeof MutationObserver==='undefined'||$('rarityPills'))return;
-  const toggle=document.createElement('button');toggle.type='button';toggle.id='rarityPickerToggle';toggle.className='rarity-picker-toggle';toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','rarityPills');
+  const box=document.createElement('div');box.id='rarityBentoBox';box.className='rarity-bento-box';
+  const head=document.createElement('div');head.className='rarity-bento-head';
   const strip=document.createElement('div');strip.id='rarityPills';strip.className='rarity-pills';strip.setAttribute('role','group');strip.setAttribute('aria-label','稀有度篩選');
-  let signature='';
-  const setOpen=open=>{
-    const next=Boolean(open)&&!strip.hidden;
-    strip.classList.toggle('open',next);
-    toggle.setAttribute('aria-expanded',String(next));
+  box.append(head,strip);
+  const hud=document.createElement('aside');hud.id='rarityThumbHud';hud.className='rarity-thumb-hud';hud.setAttribute('aria-label','單手拇指稀有度快選盤');hud.hidden=true;
+  let signature='',hudCollapsed=false,hudManuallyOpened=false;
+  const pickRarity=val=>{
+    if(!val)return;
+    if(select.value===val){sync();return}
+    select.value=val;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+  };
+  const updateHudVisibility=()=>{
+    const inGame=typeof game!=='undefined'&&game!=='all'&&!box.hidden;
+    if(!inGame){hud.hidden=true;return}
+    const rect=box.getBoundingClientRect();
+    const scrolledPast=rect.bottom<64;
+    hud.hidden=!(scrolledPast||hudManuallyOpened);
   };
   const sync=()=>{
     const options=[...select.options].filter(option=>!option.hidden&&!option.disabled),next=options.map(option=>option.value+'|'+option.textContent).join('||');
     const hide=options.length<2;
-    strip.hidden=hide;toggle.hidden=hide;
-    if(hide)setOpen(false);
+    strip.hidden=hide;box.hidden=hide;
+    const parsed=options.map(parseRarityOption);
+    const totalSum=parsed.reduce((acc,item)=>acc+(Number(String(item.count).replace(/,/g,''))||0),0);
+    if(parsed[0]&&parsed[0].value==='all'&&totalSum>0)parsed[0].count=totalSum.toLocaleString();
+    const cur=parsed.find(item=>item.value===select.value)||parsed[0]||{code:'全部卡片',count:''};
+    head.innerHTML=`<div class="rarity-bento-title"><b>稀有度直選</b><span>免展開 · 點擊即換</span></div><div class="rarity-bento-actions"><button type="button" class="rarity-hud-Jump" data-open-hud="1">${hudManuallyOpened?'隱藏拇指盤':'✦ 底部拇指盤'}</button>${select.value!=='all'?'<button type="button" class="rarity-bento-reset" data-rarity-reset="all">重置全部</button>':''}</div>`;
     if(next!==signature){
       const focused=strip.contains(document.activeElement)?document.activeElement.dataset.rarity:null;
-      signature=next;strip.innerHTML=options.map(option=>`<button type="button" data-rarity="${e(option.value)}">${e(option.value==='all'?'全部':option.textContent)}</button>`).join('');
+      signature=next;
+      strip.innerHTML=parsed.map(item=>`<button type="button" data-rarity="${e(item.value)}" data-tier="${e(item.tier)}"><span class="rp-top"><b class="rp-code">${e(item.code)}</b>${item.tier!=='all'?`<i class="rp-dot is-${e(item.tier)}" aria-hidden="true"></i>`:''}</span><small class="rp-meta">${e(item.value==='all'?(item.count?`共 ${item.count} 張`:'全部稀有度'):`${item.zh}${item.count?` · ${item.count} 張`:''}`)}</small></button>`).join('');
       if(focused!=null)[...strip.children].find(button=>button.dataset.rarity===focused)?.focus({preventScroll:true});
     }
-    const currentOpt=options.find(option=>option.value===select.value)||options[0];
-    const currentLabel=!currentOpt||currentOpt.value==='all'?'全部稀有度':currentOpt.textContent;
-    toggle.innerHTML=`<span>稀有度分類：<b>${e(currentLabel)}</b></span><small class="rarity-picker-hint">${strip.classList.contains('open')?'收起清單 ▴':`點擊選擇（${Math.max(0,options.length-1)} 種）▾`}</small>`;
     [...strip.children].forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rarity===select.value)));
+    hud.classList.toggle('is-collapsed',hudCollapsed);
+    hud.innerHTML=hudCollapsed
+      ?`<button type="button" class="rarity-hud-pill" data-hud-toggle="0"><span>✦ 稀有度：<b>${e(cur.code)}${cur.count?` (${e(cur.count)})`:''}</b></span><small>展開拇指盤 ▴</small></button>`
+      :`<div class="rarity-hud-head"><span class="rarity-hud-title">✦ 拇指稀有度快選盤（點選即換）</span><button type="button" class="rarity-hud-close" data-hud-toggle="1">收合為膠囊 ▾</button></div><div class="rarity-hud-grid" role="group" aria-label="底部稀有度快選">${parsed.map(item=>`<button type="button" data-rarity="${e(item.value)}" aria-pressed="${item.value===select.value}"><b>${item.value===select.value?'✓ ':''}${e(item.code)}</b><small>${e(item.value==='all'?(item.count?`${item.count} 張`:'全部'):`${item.zh}${item.count?` · ${item.count}`:''}`)}</small></button>`).join('')}</div>`;
+    updateHudVisibility();
   };
-  toggle.onclick=()=>{setOpen(!strip.classList.contains('open'));sync()};
-  strip.addEventListener('click',event=>{const button=event.target.closest('[data-rarity]');if(!button)return;setOpen(false);if(select.value===button.dataset.rarity){sync();return}select.value=button.dataset.rarity;select.dispatchEvent(new Event('change',{bubbles:true}))});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&strip.classList.contains('open')){setOpen(false);sync();toggle.focus()}});
+  head.onclick=event=>{
+    if(event.target.closest('[data-rarity-reset]')){pickRarity('all');return}
+    if(event.target.closest('[data-open-hud]')){hudManuallyOpened=!hudManuallyOpened;if(hudManuallyOpened)hudCollapsed=false;sync();return}
+  };
+  strip.addEventListener('click',event=>{const button=event.target.closest('[data-rarity]');if(!button||select.value===button.dataset.rarity)return;select.value=button.dataset.rarity;select.dispatchEvent(new Event('change',{bubbles:true}))});
+  hud.addEventListener('click',event=>{
+    const toggleBtn=event.target.closest('[data-hud-toggle]');
+    if(toggleBtn){hudCollapsed=toggleBtn.dataset.hudToggle==='1';sync();return}
+    const button=event.target.closest('[data-rarity]');
+    if(!button)return;
+    pickRarity(button.dataset.rarity);
+  });
+  window.addEventListener('scroll',updateHudVisibility,{passive:true});
   new MutationObserver(sync).observe(select,{childList:true,subtree:true});select.addEventListener('change',sync);
-  tools.append(toggle,strip);sync();
+  if(document.body)new MutationObserver(updateHudVisibility).observe(document.body,{attributes:true,attributeFilter:['data-view','data-game']});
+  tools.append(box);document.body.append(hud);sync();
 }
 
 

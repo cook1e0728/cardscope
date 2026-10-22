@@ -279,10 +279,10 @@ html.look-clean .detail a{color:var(--ip-ink);text-underline-offset:3px}
 html.look-clean .detail-meta a{display:inline-flex;align-items:center;min-height:44px;margin:-12px 0;padding:0 var(--s2)}
 /* 分享鈕失敗時的唯讀網址欄（ui-enhancements.js） */
 html.look-clean .detail .share-url{display:block;width:100%;min-height:44px;margin:0 0 var(--s4);padding:0 var(--s3);border:1px solid var(--lc-line);border-radius:var(--lc-r-sm);background:#fff;color:var(--lc-ink);font:500 14px/1.4 var(--lc-num)}
-/* 手機稀有度分類清單（ui-enhancements.js installRarityPills）；桌面不顯示 */
-html.look-clean .rarity-picker-toggle{display:none}
+/* 手機稀有度 V1 直選格＋V5 底部拇指懸浮盤（ui-enhancements.js installRarityPills）；桌面不顯示 */
+html.look-clean .rarity-bento-box,html.look-clean .rarity-thumb-hud{display:none}
 html.look-clean .rarity-pills{display:none}
-html.look-clean .rarity-picker-toggle[hidden],html.look-clean .rarity-pills[hidden]{display:none!important}
+html.look-clean .rarity-bento-box[hidden],html.look-clean .rarity-thumb-hud[hidden],html.look-clean .rarity-pills[hidden]{display:none!important}
 html.look-clean .detail-visual{display:flex;flex-direction:column}
 html.look-clean .detail-visual>*{order:5}
 html.look-clean .detail-visual .detail-visual-stage{order:0}
@@ -400,13 +400,41 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .detail-tabs{margin-bottom:var(--s3)}
   html.look-clean .detail h3{margin:var(--s5) 0 var(--s2)}
   html.look-clean .detail .share-url{font-size:16px}
-  /* 稀有度分類：改為點擊按鈕展開 2 欄清單選擇（免橫向滾動），選中有 ✓ 加外框 */
-  html.look-clean .rarity-picker-toggle{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);flex:0 0 100%;width:100%;min-height:44px;padding:8px 14px;border:1.5px solid var(--lc-ink);border-radius:12px;background:#fff;color:var(--lc-ink);font-size:14px;font-weight:500;text-align:left;cursor:pointer}
-  html.look-clean .rarity-picker-toggle b{font-weight:700;color:var(--ip-ink)}
-  html.look-clean .rarity-picker-hint{color:var(--lc-ink-2);font-size:12px;font-weight:700;white-space:nowrap}
-  html.look-clean .rarity-pills{display:none;flex:0 0 100%;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0;margin:0;padding:10px;border:1px solid #D8D0C2;border-left:6px solid var(--ip);border-radius:12px;background:#FBF9F4;overflow:visible}
-  html.look-clean .rarity-pills.open{display:grid}
-  html.look-clean .rarity-pills button{display:flex;align-items:center;justify-content:center;min-height:44px;padding:6px 10px;border:1px solid var(--lc-line);border-radius:10px;background:#fff;color:var(--lc-ink);font-size:13px;font-weight:500;text-align:center;line-height:1.25;white-space:normal;font-variant-numeric:tabular-nums}
-  html.look-clean .rarity-pills button[aria-pressed="true"]{border-color:var(--lc-ink);background:var(--lc-ink);color:#fff;font-weight:700;box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
+  /* 稀有度分類（V1 雙行 Bento 3 欄直選格 ＋ V5 底部拇指懸浮快選盤） */
+  html.look-clean .rarity-bento-box{display:block;flex:0 0 100%;width:100%;padding:10px 10px 10px 12px;border:1.5px solid #D8D0C2;border-left:7px solid var(--ip,#C83E2B);border-radius:14px;background:#FBF9F4;box-sizing:border-box}
+  html.look-clean .rarity-bento-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
+  html.look-clean .rarity-bento-title{display:flex;align-items:baseline;gap:6px;min-width:0}
+  html.look-clean .rarity-bento-title b{font-size:13px;font-weight:900;color:var(--lc-ink)}
+  html.look-clean .rarity-bento-title span{font-size:11px;color:var(--lc-ink-2);white-space:nowrap}
+  html.look-clean .rarity-bento-actions{display:flex;align-items:center;gap:5px;flex:none}
+  html.look-clean .rarity-bento-reset,html.look-clean .rarity-hud-Jump{min-height:28px;padding:3px 9px;border:0;border-radius:999px;background:#ECE6D8;color:#4A443A;font-size:11px;font-weight:700;cursor:pointer}
+  html.look-clean .rarity-hud-Jump{background:#1F1B16;color:#E7BA4C;border:1px solid #D49B1B}
+  html.look-clean .rarity-pills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;min-width:0;margin:0;padding:0;overflow:visible}
+  html.look-clean .rarity-pills button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:46px;padding:5px 8px;border:1px solid #D8D0C2;border-radius:10px;background:#fff;color:var(--lc-ink);text-align:left;line-height:1.2;white-space:normal;font-variant-numeric:tabular-nums;cursor:pointer;position:relative}
+  html.look-clean .rarity-pills button .rp-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:3px}
+  html.look-clean .rarity-pills button .rp-code{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  html.look-clean .rarity-pills button .rp-dot{width:7px;height:7px;border-radius:50%;flex:none}
+  html.look-clean .rarity-pills button .rp-dot.is-top{background:#D49B1B;box-shadow:0 0 0 2px #FFF3C4}
+  html.look-clean .rarity-pills button .rp-dot.is-high{background:#8C96A6}
+  html.look-clean .rarity-pills button .rp-dot.is-base{background:#C8BFA8}
+  html.look-clean .rarity-pills button .rp-meta{margin-top:2px;font-size:10px;font-weight:500;color:#6E6558;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  html.look-clean .rarity-pills button[aria-pressed="true"]{border-color:var(--lc-ink);background:var(--lc-ink);color:#FFF8E7;font-weight:700;box-shadow:0 0 0 2px #FBF9F4,0 0 0 3.5px var(--ip,#C83E2B)}
+  html.look-clean .rarity-pills button[aria-pressed="true"] .rp-meta{color:#E7BA4C;font-weight:700}
   html.look-clean .rarity-pills button[aria-pressed="true"]:before{content:"✓ "}
+  html.look-clean .rarity-pills button[aria-pressed="true"]::before{position:absolute;top:5px;right:6px;font-size:10px;color:#E7BA4C}
+  html.look-clean .rarity-pills button[aria-pressed="true"] .rp-dot{display:none}
+  html.look-clean body[data-view="game"] .rarity-thumb-hud{display:block;position:fixed;left:10px;right:10px;bottom:68px;z-index:25;padding:10px;border:1.5px solid #D49B1B;border-radius:16px;background:rgba(31,27,22,.96);color:#FFF8E7;box-shadow:0 12px 28px rgba(0,0,0,.35);backdrop-filter:blur(8px)}
+  html.look-clean body[data-view="game"] .rarity-thumb-hud.is-collapsed{left:auto;right:12px;padding:0;border-radius:999px}
+  html.look-clean .rarity-hud-pill{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#FFF8E7;font-size:12px;font-weight:700;cursor:pointer}
+  html.look-clean .rarity-hud-pill b{color:#E7BA4C}
+  html.look-clean .rarity-hud-pill small{color:#C8BFA8;font-size:11px}
+  html.look-clean .rarity-hud-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;padding:0 2px}
+  html.look-clean .rarity-hud-title{font-size:12px;font-weight:800;color:#E7BA4C}
+  html.look-clean .rarity-hud-close{min-height:28px;padding:3px 10px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#FFF8E7;font-size:11px;font-weight:700;cursor:pointer}
+  html.look-clean .rarity-hud-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:156px;overflow-y:auto}
+  html.look-clean .rarity-hud-grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px;padding:5px 6px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:rgba(255,255,255,.07);color:#FFF8E7;text-align:center;cursor:pointer}
+  html.look-clean .rarity-hud-grid button b{font-size:12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  html.look-clean .rarity-hud-grid button small{font-size:10px;color:#C8BFA8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  html.look-clean .rarity-hud-grid button[aria-pressed="true"]{background:#D49B1B;border-color:#FFF8E7;color:#1F1B16;font-weight:900}
+  html.look-clean .rarity-hud-grid button[aria-pressed="true"] small{color:#1F1B16;font-weight:800}
 }
