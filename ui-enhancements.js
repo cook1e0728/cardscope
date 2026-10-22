@@ -512,7 +512,8 @@ function installRarityPills(){
   const strip=document.createElement('div');strip.id='rarityPills';strip.className='rarity-pills';strip.setAttribute('role','group');strip.setAttribute('aria-label','稀有度篩選');
   box.append(head,strip);
   const hud=document.createElement('aside');hud.id='rarityThumbHud';hud.className='rarity-thumb-hud';hud.setAttribute('aria-label','單手拇指稀有度快選盤');hud.hidden=true;
-  let signature='',hudCollapsed=false,hudManuallyOpened=false;
+  // 捲動自動出現時先收成膠囊，展開版會蓋住約兩成卡牆
+  let signature='',hudCollapsed=true,hudManuallyOpened=false;
   const pickRarity=val=>{
     if(!val)return;
     if(select.value===val){sync();return}
