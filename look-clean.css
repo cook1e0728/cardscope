@@ -45,6 +45,7 @@ html.look-clean .search button{width:40px;min-width:44px;height:40px;min-height:
 html.look-clean body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
 html.look-clean .search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
 html.look-clean .mobile-header-scope{display:none}
+html.look-clean .mobile-quick-grid{display:none}
 
 /* ===== 首頁第一屏：標題、搜尋、範例、遊戲入口 ===== */
 html.look-clean .hero{padding-top:var(--s7)}
@@ -327,10 +328,15 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .hero{padding-top:var(--s2)}
   html.look-clean body[data-view="landing"] .hero{margin-top:var(--s2);padding:0;border:0;background:transparent;background-image:none}
   html.look-clean body[data-view="landing"] .hero-intro,html.look-clean body[data-view="landing"] .home-search,html.look-clean body[data-view="landing"] .home-examples,html.look-clean body[data-view="landing"] .hero-art{display:none}
-  html.look-clean body[data-view="landing"] #channels{margin-top:0;padding:var(--s3) var(--s3) var(--s3) 18px;border-left-width:8px}
-  html.look-clean body[data-view="landing"] .channel[data-ip]{flex:0 0 112px;min-width:112px}
-  html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art{height:48px}
-  html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:36px}
+  html.look-clean body[data-view="landing"] #channels{display:none}
+  html.look-clean body[data-view="landing"] .mobile-quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 6px;padding:var(--s3) var(--s2) var(--s3) 14px;background:#FBF9F4;border:1px solid #D8D0C2;border-left:8px solid #D49B1B;border-radius:14px}
+  html.look-clean .mqg-tile{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:var(--lc-ink);cursor:pointer;text-align:center}
+  html.look-clean .mqg-art{position:relative;display:grid;place-items:center;width:54px;height:54px;padding:5px;border-radius:14px;background:#fff;border:1px solid var(--lc-hair);box-sizing:border-box}
+  html.look-clean .mqg-tile[data-mqg-action="collection"] .mqg-art{background:var(--lc-ink);border-color:#D49B1B}
+  html.look-clean .mqg-art img{width:100%;height:100%;object-fit:contain;border-radius:8px}
+  html.look-clean .mqg-badge{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:var(--lc-ink);color:#fff;font-size:10px;font-weight:700;line-height:1.25;white-space:nowrap}
+  html.look-clean .mqg-badge.is-hot{background:#D7261E;color:#fff}
+  html.look-clean .mqg-label{width:100%;margin-top:2px;font-size:11px;font-weight:500;line-height:1.25;color:var(--lc-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   html.look-clean .home-latest{margin-top:var(--s4);padding:var(--s4) var(--s3) var(--s3) 18px;border-left-width:8px}
   html.look-clean .home-latest h2,html.look-clean .section h2{font-size:20px}
   html.look-clean body[data-view="game"] .section h2,html.look-clean #cardsSection .title h2{font-size:22px}

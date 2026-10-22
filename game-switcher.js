@@ -85,8 +85,8 @@
       scrollTo({top:0,behavior:behavior()});box?.focus({preventScroll:true});box?.select?.();
     },
     browse(){
-      const tabs=document.getElementById('channels');if(!tabs)return;
-      scope.scrollBelowHeader?.(tabs,8);(tabs.querySelector('.channel.on')||tabs.querySelector('.channel'))?.focus({preventScroll:true});
+      const quick=document.getElementById('mobileQuickGrid'),tabs=visible(quick)?quick:document.getElementById('channels');if(!tabs)return;
+      scope.scrollBelowHeader?.(tabs,8);(tabs.querySelector('.channel.on')||tabs.querySelector('.channel')||tabs.querySelector('.mqg-tile'))?.focus({preventScroll:true});
     },
     // ui-enhancements.js owns the favourites; it should expose window.openCollection(). Until it does, open the same list through its page controls:
     // a game page's "只看收藏" filter and 我的收藏 summary (a game is chosen first when none is open).
