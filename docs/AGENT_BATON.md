@@ -1,29 +1,26 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-10-21 約 15:00（台灣）｜更新者：Claude Code（用量到上限，交給 Antigravity）
+> 上次更新：2026-10-22 約 11:30（台灣）｜更新者：Antigravity（已完成首頁吉祥物、V5 活頁卡冊視覺與 ADR 0048）
 
 ## 角色
-- 規劃／驗收：Claude Code（用量用完，暫停）
-- 執行：Antigravity（接手）
+- 規劃／驗收：Claude Code
+- 執行：Antigravity
 
 ## 目前任務
-首頁第一屏加入吉祥物兔子插畫（使用者已同意：右側卡套框、周圍紙色、手機縮成標題上方小圖、緩慢漂浮）。
+首頁第一屏吉祥物兔子插畫與「方案 4＋5 變化 V5（實體活頁打孔卡冊＋雙色書籤）」視覺改版已完成並通過測試。
 
 ## 任務清單
-- [ ] 1. 首頁兔子插畫的樣式
-  - 現況：`index.html` 已在 `<section class="hero" id="hero">` 開頭加入 `<figure class="hero-art" aria-hidden="true"><img src="/assets/brand/web/rabbit-explore.webp" width="480" height="1041" ...></figure>`，**尚未提交**；沒有樣式時圖片會很大，**不可單獨部署**。
-  - 可寫檔案：`look-clean.css`（以 `html.look-clean` 為前綴；只在 `body[data-view="landing"]` 生效，其他頁隱藏 `.hero-art`）、`index.html`（只限 hero 區）。
-  - 做法：桌面（>760px）`.hero` 用兩欄 grid，`.hero-intro`、`.home-search`、`.home-examples` 在左欄第 1–3 列，`.hero-art` 在右欄跨 1–3 列，其餘（`#channels` 等）跨全寬；`.hero-art` 寬約 240px、`aspect-ratio:63/88`、`object-fit:cover`（`object-position` 讓兔子在框內）、圓角 12px、3px 槍鐵灰卡套框（沿用卡片格的卡套色）。手機（≤760px）縮成標題上方約 96px 寬小圖。漂浮：`transform: translateY` 4px、約 6 秒循環、ease-in-out；`@media (prefers-reduced-motion: reduce)` 與 `html[data-cs-paused]`（暫停動態開關）時停止。
-  - 驗收：`npm test` 全數通過（基準 521）；用 `node scripts/preview-proxy.mjs 4300`（本機前端＋正式站唯讀 API）看桌面 1440、手機 390／320 的首頁，搜尋框維持在第一屏、無橫向捲動；文字對比 AA。
-- [ ] 2. 新增 ADR 0048（首頁吉祥物與持續漂浮動畫，延伸 ADR 0047），主方案第 5 節註明。
+- [x] 1. 首頁兔子插畫的樣式與首頁視覺改版（`index.html`、`look-clean.css`：吉祥物卡套框與 4px/6s 緩慢漂浮、昭源圓黑體 `Chiron GoRound TC`、新標題與導覽文案、頂欄與手機底欄對齊、方案 4＋5 變化 V5 活頁打孔與雙色書脊）
+- [x] 2. 新增 ADR 0048（`docs/adr/0048-hero-mascot-and-ambient-float.md`，延伸 ADR 0047），並於 `docs/PRODUCT_PLAN.md` 第 5 節註明。
 
-## 已完成（本輪 Claude Code）
+## 已完成（本輪 Antigravity + Claude Code）
+- 首頁第一屏吉祥物與視覺改版（ADR 0048）：`index.html`＋`look-clean.css` 完成桌面兩欄置中卡套框（240px、63/88）、手機標題上方 96px 小圖、4px／6s 緩慢漂浮（支援 `prefers-reduced-motion` 與 `data-cs-paused` 暫停）、昭源圓黑體標題、導覽列對齊與 V5 活頁打孔雙色書脊卡冊樣式；`npm test` 521 項全數通過。
 - UI 收尾已部署（`d12aea8`）：手機詳細頁緊湊排列與 320px 修正、分享改用系統分享＋網址欄備援（`navigation-state.js` 的 `copyCurrentUrl`）、原始頁面 44px、系列分頁籤附數量、手機稀有度膠囊列、補台灣官方來源名稱。
 - 視覺改版 ADR 0047（乾淨卡冊＋適度動態）、記憶體警戒日誌（Render OOM 後，日誌搜尋 `memory high`）均已上線。
 
 ## 下一步（唯一，具體到檔案與指令）
-- 做任務 1：改 `look-clean.css`，以 `scripts/preview-proxy.mjs` 預覽並截圖給使用者確認，`npm test` 通過後提交 `index.html`＋`look-clean.css`，推 `claude/binder-theme-preview` 並快轉 `main`（Render 會部署），再看正式站首頁。
+- 觀察 Render 自動部署後，抽查正式站 `https://cardscope.onrender.com/` 首頁桌面與手機版畫面；後續依時程於 10-24 後確認排球少年 HV-P04／HV-D04 自動同步。
 
 ## 卡住的地方／需要規劃方決策
 - 無。

@@ -13,10 +13,10 @@ html.look-clean{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:4
   --lc-shadow:0 1px 2px rgba(31,27,22,.07);
   --lc-sleeve:#2B2F35;        /* 槍鐵灰卡套（變薄） */
   --lc-r-sm:8px;--lc-r-md:12px;
-  --lc-num:'Space Grotesk','Noto Sans TC',sans-serif;}
+  --lc-num:'Space Grotesk','Noto Sans TC',sans-serif;--lc-display:'Chiron GoRound TC','Noto Sans TC',sans-serif;}
 
 /* ===== 基底與字級 ===== */
-html.look-clean body{background:var(--lc-bg);color:var(--lc-ink);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+html.look-clean body{background:var(--lc-bg);color:var(--lc-ink);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
 html.look-clean body[data-view="game"]{background:var(--lc-bg)}
 html.look-clean .meta,html.look-clean .card .meta{color:var(--lc-ink-2)}
 html.look-clean .wrap{max-width:1280px;padding-inline:var(--s6)}
@@ -25,13 +25,19 @@ html.look-clean main .section{border:0}
 html.look-clean h1,html.look-clean h2,html.look-clean h3{font-weight:700}
 
 /* ===== 頂欄 ===== */
-html.look-clean .top{background:var(--lc-bg);border-bottom:1px solid var(--lc-hair)}
+html.look-clean .top{background:var(--lc-bg);border-bottom:0}
+html.look-clean body[data-view="landing"]{background:#E6DFD3}
+html.look-clean body[data-view="landing"] .top{background:var(--lc-ink);color:var(--lc-bg)}
+html.look-clean body[data-view="landing"] .brand,html.look-clean body[data-view="landing"] .nav button{color:var(--lc-bg)}
+html.look-clean body[data-view="landing"] .nav button:hover{color:#fff;border-bottom-color:var(--lc-bg)}
+html.look-clean body[data-view="landing"] .nav button:focus-visible{outline-color:var(--lc-bg)}
+html.look-clean body[data-view="landing"] .brand img{filter:invert(1)}
 html.look-clean body[data-view="game"] .top{background:var(--lc-bg);border-bottom:2px solid var(--ip)}
-html.look-clean .bar{height:64px;gap:var(--s5)}
+html.look-clean .bar{height:64px;gap:var(--s5);justify-content:space-between}
 html.look-clean .brand{font-size:20px;font-weight:700;letter-spacing:-.02em}
 html.look-clean .brand i{color:inherit;font-weight:400}
-html.look-clean .nav{gap:var(--s1)}
-html.look-clean .nav button{min-height:44px;padding:0 var(--s4);font-size:14px;font-weight:500;border-bottom-width:2px}
+html.look-clean .nav{gap:var(--s1);margin:0 0 0 auto;align-items:center}
+html.look-clean .nav button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 var(--s4);font-size:15px;font-weight:500;line-height:1;border-bottom-width:2px}
 html.look-clean .nav button:hover{border-bottom-color:var(--ip-ink)}
 html.look-clean .search{height:44px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;box-shadow:none}
 html.look-clean .search input{padding:0 var(--s4) 0 var(--s5);font-size:15px;background:transparent}
@@ -41,43 +47,63 @@ html.look-clean .search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px
 
 /* ===== 首頁第一屏：標題、搜尋、範例、遊戲入口 ===== */
 html.look-clean .hero{padding-top:var(--s7)}
-html.look-clean body[data-view="landing"] .hero-intro h1{font-size:clamp(32px,4.4vw,56px);font-weight:700;line-height:1.12;letter-spacing:-.035em;margin:0 0 var(--s3)}
-html.look-clean body[data-view="landing"] .hero-intro p{margin:0;max-width:560px;font-size:17px;line-height:1.6;color:var(--lc-ink-2)}
-html.look-clean .home-search{max-width:720px;margin:var(--s6) 0 var(--s4);height:60px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;box-shadow:var(--lc-shadow)}
+html.look-clean body[data-view="landing"] .hero{background:#FBF9F4;background-image:radial-gradient(circle at 14px 28px,#E6DFD3 5px,transparent 6px),radial-gradient(circle at 14px 50%,#E6DFD3 5px,transparent 6px),radial-gradient(circle at 14px calc(100% - 28px),#E6DFD3 5px,transparent 6px);margin-top:var(--s5);padding:var(--s6) var(--s7) var(--s6) 48px;border:1px solid #D8D0C2;border-left:12px solid var(--lc-sleeve);border-radius:16px}
+html.look-clean body[data-view="landing"] .hero-intro{padding:0;gap:0}html.look-clean body[data-view="landing"] .hero-intro h1{font-family:var(--lc-display);font-size:clamp(36px,4.8vw,64px);font-weight:700;line-height:1.08;letter-spacing:-.025em;max-width:none;margin:0 0 var(--s3)}
+html.look-clean body[data-view="landing"] .hero-intro p{margin:0;max-width:44ch;font-size:18px;line-height:1.55;color:var(--lc-ink-2);text-wrap:pretty}
+html.look-clean .home-search{max-width:680px;margin:var(--s6) 0 var(--s4);height:60px;border:2px solid var(--lc-ink);border-radius:var(--lc-r-md);background:#fff;box-shadow:none}
 html.look-clean .home-search input{padding:0 var(--s5);font-size:17px}
-html.look-clean .home-search button{min-width:112px;font-size:16px;font-weight:700;background:var(--lc-ink)}
+html.look-clean .home-search button{min-width:112px;font-size:16px;font-weight:700;background:#C83E2B;color:#fff}
 html.look-clean .home-search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
 html.look-clean .home-examples{gap:var(--s2);margin:0}
 html.look-clean .home-examples>span{font-size:13px;font-weight:500;color:var(--lc-ink-2);margin-right:var(--s1)}
-html.look-clean .home-examples button{min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-hair);border-radius:999px;background:#fff;font-size:14px;font-weight:500}
-html.look-clean .home-examples button:hover{border-color:var(--lc-ink)}
+html.look-clean .home-examples button{min-height:44px;padding:0 var(--s4);border:0;border-radius:var(--lc-r-sm);background:#EFEAE0;font-size:14px;font-weight:500}
+html.look-clean .home-examples button:hover{background:#E2DBD0}
+
+/* 首頁吉祥物（ADR 0048）：只在首頁顯示；卡套框（3px 槍鐵灰）＋周圍紙色；緩慢漂浮 4px／6 秒。
+   桌面：右欄跨標題、搜尋、範例三列；手機：標題上方約 96px 寬小圖。
+   系統要求減少動態或使用者按「暫停動態」（data-cs-paused）時不漂浮。 */
+html.look-clean .hero-art{display:none}
+html.look-clean body[data-view="landing"] .hero-art{display:block;width:240px;margin:0;padding:3px;aspect-ratio:63/88;border-radius:var(--lc-r-md);background:var(--lc-sleeve);box-sizing:border-box}
+html.look-clean body[data-view="landing"] .hero-art img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 36%;border-radius:9px}
+@keyframes lc-hero-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media(prefers-reduced-motion:no-preference){
+  html.look-clean:not([data-cs-paused]) body[data-view="landing"] .hero-art{animation:lc-hero-float 6s ease-in-out infinite}
+}
+@media(min-width:761px){
+  html.look-clean body[data-view="landing"] .hero{display:grid;grid-template-columns:minmax(0,760px) minmax(240px,1fr);column-gap:var(--s6);align-items:start}
+  html.look-clean body[data-view="landing"] .hero>*{grid-column:1/-1;min-width:0}
+  html.look-clean body[data-view="landing"] .hero>.hero-intro{grid-column:1;grid-row:1}
+  html.look-clean body[data-view="landing"] .hero>.home-search{grid-column:1;grid-row:2}
+  html.look-clean body[data-view="landing"] .hero>.home-examples{grid-column:1;grid-row:3}
+  html.look-clean body[data-view="landing"] .hero>.hero-art{grid-column:2;grid-row:1/4;align-self:center;justify-self:center}
+}
 
 /* 遊戲入口：白底細框磚，官方 Logo 原樣放在白底上；選中＝粗外框＋粗體標籤（不只靠顏色）。 */
-html.look-clean body[data-view="landing"] #channels{margin-top:var(--s7);padding:0 0 var(--s2);gap:var(--s3);scroll-snap-type:x proximity}
-html.look-clean body[data-view="landing"] .channel[data-ip]{min-width:152px;flex:1 1 0;padding:var(--s2);border:1px solid var(--lc-hair);border-radius:var(--lc-r-md);background:#fff;box-shadow:var(--lc-shadow);scroll-snap-align:start}
-html.look-clean body[data-view="landing"] .channel[data-ip]:hover{border-color:var(--lc-ink-2)}
-html.look-clean body[data-view="landing"] .channel[data-ip].on{border-color:var(--lc-ink);box-shadow:inset 0 0 0 1px var(--lc-ink)}
+html.look-clean body[data-view="landing"] #channels{margin-top:28px;padding:var(--s5) var(--s5) var(--s5) var(--s6);gap:var(--s3);background:#FBF9F4;border:1px solid #D8D0C2;border-left:12px solid #D49B1B;border-radius:16px;scroll-snap-type:x proximity}
+html.look-clean body[data-view="landing"] .channel[data-ip]{min-width:152px;flex:1 1 0;padding:var(--s2);border:0;border-radius:var(--lc-r-md);background:#fff;box-shadow:none;scroll-snap-align:start}
+html.look-clean body[data-view="landing"] .channel[data-ip]:hover{background:#F3EEE3}
+html.look-clean body[data-view="landing"] .channel[data-ip].on{outline:2px solid var(--lc-ink);outline-offset:-2px;box-shadow:none}
 html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art{height:64px;padding:var(--s2) var(--s3);border:0;border-radius:var(--lc-r-sm);background:#fff}
 html.look-clean body[data-view="landing"] .channel[data-ip] .channel-art img{max-height:48px}
 html.look-clean body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art{padding:var(--s2) var(--s3);border:0;background:#fff;box-shadow:none;animation:none}
 html.look-clean body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art img{padding:0;border-radius:0;background:transparent;box-shadow:none}
 html.look-clean body[data-view="landing"] .channel[data-ip]:not([data-ip="all"]) .channel-art:before{display:none;animation:none}
-html.look-clean body[data-view] .channel[data-ip="all"] .channel-art{border:0;border-radius:var(--lc-r-sm);animation:none;box-shadow:none;background:linear-gradient(115deg,#2A2E34 0%,#565C64 22%,#A9AFB7 36%,#4A5058 56%,#2F343A 100%)}
+html.look-clean body[data-view] .channel[data-ip="all"] .channel-art{border:0;border-radius:var(--lc-r-sm);animation:none;box-shadow:none;background:var(--lc-sleeve)}
 html.look-clean body[data-view] .channel[data-ip="all"] .channel-art:before,html.look-clean body[data-view] .channel[data-ip="all"] .channel-art:after{display:none;animation:none}
 html.look-clean body[data-view="landing"] .channel[data-ip="all"] .channel-art img{max-height:40px}
 html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art{height:28px;width:44px;border-radius:6px}
 html.look-clean .channel b{margin-top:var(--s2);font-size:14px;font-weight:500;color:var(--lc-ink-2)}
 html.look-clean .channel.on b{font-weight:700;color:var(--lc-ink)}
 
-html.look-clean .browse-regions{padding:var(--s4) 0 0;gap:var(--s3);font-size:13px}
+html.look-clean .browse-regions{padding:var(--s4) 0 0;border-top:0;gap:var(--s3);font-size:14px}
 html.look-clean .browse-regions label{font-weight:500;color:var(--lc-ink-2)}
 html.look-clean .browse-regions select{min-height:44px;border:1px solid var(--lc-line);border-radius:999px;padding:0 var(--s6) 0 var(--s4);background:#fff;font-size:14px}
-html.look-clean .browse-regions span{font-size:13px;color:var(--lc-ink-2)}
+html.look-clean .browse-regions span{font-size:14px;color:var(--lc-ink-2)}
 html.look-clean .mascot-gallery figcaption{font-size:12px}
 
 
 html.look-clean .home-latest{margin:var(--s7) 0 0}
-html.look-clean .home-latest h2,html.look-clean .section h2{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.3}
+html.look-clean .home-latest h2,html.look-clean .section h2{font-family:var(--lc-display);font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
 html.look-clean .home-latest .series-band-rail{padding-top:var(--s4)}
 
 /* ===== 遊戲頁：遊戲切換（膠囊）與系列橫幅 ===== */
@@ -266,7 +292,7 @@ html.look-clean .feature-tour{margin-top:var(--s7);padding:0;border:0;border-top
 html.look-clean .feature-tour>summary,html.look-clean .brand-footer summary{min-height:44px;display:flex;align-items:center;gap:var(--s3);font-weight:500}
 html.look-clean .feature-tour>summary b{font-weight:700}
 html.look-clean .brand-footer{margin-top:var(--s7);padding:var(--s6) 0 var(--s7);border-top:1px solid var(--lc-hair)}
-html.look-clean .brand-footer p,html.look-clean .brand-footer small{font-size:13px;line-height:1.7;color:var(--lc-ink-2)}
+html.look-clean .brand-footer p,html.look-clean .brand-footer small{max-width:60ch;font-size:16px;line-height:1.6;color:var(--lc-ink-2)}
 html.look-clean .brand-footer a{display:inline-block;padding:var(--s3) 0;color:var(--lc-ink);text-underline-offset:3px}
 html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
 
@@ -275,9 +301,17 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
 @media(max-width:760px){
   html.look-clean .wrap{padding-inline:var(--s4)}
   html.look-clean .bar{height:auto;padding-block:var(--s2);gap:var(--s2)}
+  html.look-clean .bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;height:62px;padding-bottom:env(safe-area-inset-bottom);background:var(--lc-surface);border-top:1px solid var(--lc-hair)}
+  html.look-clean .bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 0;font-size:12px;font-weight:500;line-height:1.1;color:var(--lc-ink-2)}
+  html.look-clean .bottom button b,html.look-clean .bottom-profile img{display:grid;place-items:center;width:24px;height:24px;margin:0;font-size:18px;line-height:1;flex:none}
+  html.look-clean .bottom button span{line-height:1.1}
   html.look-clean .hero{padding-top:var(--s5)}
-  html.look-clean body[data-view="landing"] .hero-intro h1{font-size:32px}
-  html.look-clean body[data-view="landing"] .hero-intro p{font-size:15px}
+  html.look-clean body[data-view="landing"] .hero{margin-top:var(--s3);padding:var(--s5) var(--s4) var(--s5) var(--s5);border-left-width:8px;background-image:none}
+  html.look-clean body[data-view="landing"] #channels{margin-top:var(--s5);padding:var(--s3) var(--s3) var(--s3) 18px;border-left-width:8px}
+  html.look-clean body[data-view="landing"] .hero-art{width:96px;margin:0 auto var(--s3);border-radius:var(--lc-r-sm);padding:2px}
+  html.look-clean body[data-view="landing"] .hero-art img{border-radius:6px}
+  html.look-clean body[data-view="landing"] .hero-intro h1{font-size:clamp(30px,8.5vw,36px);line-height:1.15}
+  html.look-clean body[data-view="landing"] .hero-intro p{font-size:16px;line-height:1.55;max-width:none}
   html.look-clean .home-search{height:56px;margin:var(--s5) 0 var(--s3)}
   html.look-clean .home-search input{padding:0 var(--s4);font-size:16px}
   html.look-clean .home-search button{min-width:80px}
