@@ -785,10 +785,11 @@ test('heavy browse queries run two at a time and the queue is bounded (503 beyon
 test('a series page comes from browse_series_cards in one call',async()=>{
   const card=index=>({id:`pokemon-s-${index}`,canonicalId:`pokemon-s-${index}`,game:'pokemon',seriesId:'pokemon-tcgdex-ja-sv8a',officialCardNumber:String(index).padStart(3,'0'),rarity:index===2?'RR':'C',nameZh:`卡${index}`,aliases:[],metadata:{}});
   const printing=index=>({id:index,cardId:`pokemon-s-${index}`,seriesId:'pokemon-tcgdex-ja-sv8a',region:'JP',language:'ja-JP',localSetCode:'SV8a',localCardNumber:String(index).padStart(3,'0'),rarity:index===2?'RR':'C',imageUrl:null,imageRehostRequired:false,metadata:{}});
+  const sibling=(index,name)=>({groupId:`pokemon-s-${index}`,cardId:`pokemon-jp-${index}`,source:'pokemon-card-official-jp',imageUrl:`https://www.pokemon-card.com/${name}.jpg`});
   const requests=[];
   const mockSupabase=createServer((req,res)=>{
     const table=new URL(req.url,'http://mock-supabase').pathname.split('/').at(-1);requests.push(table);
-    res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(table==='browse_series_cards'?{printings:[printing(1),printing(2),printing(3)],cards:[card(1),card(2),card(3)],images:[]}:[]));
+    res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify(table==='browse_series_cards'?{printings:[printing(1),printing(2),printing(3)],cards:[card(1),card(2),card(3)],images:[],siblingImages:[sibling(2,'jp-2'),sibling(2,'jp-2'),sibling(3,'jp-3')]}:[]));
   });
   const supabasePort=await listenOnEphemeralPort(mockSupabase),appPort=await freePort();
   let app;
@@ -801,6 +802,7 @@ test('a series page comes from browse_series_cards in one call',async()=>{
     });
     const body=await (await fetch(`http://127.0.0.1:${appPort}/api/cards?game=pokemon&series=pokemon-tcgdex-ja-sv8a&limit=100&offset=0&region=all&rarity=RR&sort=number-asc`)).json();
     assert.deepEqual(body.data.map(c=>c.id),['pokemon-s-2']);
+    assert.deepEqual(body.data[0].fallbackImageUrls,['https://www.pokemon-card.com/jp-2.jpg'],'same canonical group only, de-duplicated');
     assert.equal(body.meta.total,1);
     assert.equal(requests.filter(table=>table==='tcg_printings'||table==='card_images').length,0,'no PostgREST relation queries');
   }finally{

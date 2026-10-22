@@ -356,6 +356,10 @@ async function browseDatabaseSeriesCards(game,options={}){
     if(!rpc.cards.length)return {data:[],total:0,hasMore:false,facets:{rarity:{},region:{},language:{},rarityLabels:{}},facetStatus:'complete',limit:options.limit,offset:options.offset,errors:{printings:null,images:null},timings};
     started=performance.now();const printingByCard=buildPrintingIndex(rpc.printings),imageByCard=new Map();
     for(const image of rpc.images){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
+    // 同作品層其他卡的圖（migration 20261022120000）：本卡圖片失效時卡牆依序改用，例如台灣官方站維護時用日版圖
+    const siblingUrls=new Map();
+    for(const image of Array.isArray(rpc.siblingImages)?rpc.siblingImages:[]){if(!browseHasUsableImage(image))continue;const list=siblingUrls.get(image.groupId)||[];if(!list.includes(image.imageUrl))list.push(image.imageUrl);siblingUrls.set(image.groupId,list)}
+    for(const card of rpc.cards){const urls=siblingUrls.get(card.canonicalId||card.id);if(urls?.length)card.fallbackImageUrls=urls.slice(0,3)}
     const page=buildBrowsePage(rpc.cards,{...options,printingByCard,imageByCard,facetStatus:'complete'});mark('page',started);
     return {...page,errors:{printings:null,images:null},timings};
   }
