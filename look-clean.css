@@ -424,6 +424,8 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .rarity-pills button[aria-pressed="true"]::before{position:absolute;top:5px;right:6px;font-size:10px;color:#E7BA4C}
   html.look-clean .rarity-pills button[aria-pressed="true"] .rp-dot{display:none}
   html.look-clean body[data-view="game"] .rarity-thumb-hud{display:block;position:fixed;left:10px;right:10px;bottom:68px;z-index:25;padding:10px;border:1.5px solid #D49B1B;border-radius:16px;background:rgba(31,27,22,.96);color:#FFF8E7;box-shadow:0 12px 28px rgba(0,0,0,.35);backdrop-filter:blur(8px)}
+  /* 深色快選盤上，遊戲頁預設的 IP 深色焦點框對比不足（約 2.4:1）→ 改米白（WCAG 1.4.11）。 */
+  html.look-clean body[data-view="game"] .rarity-thumb-hud :focus-visible{outline:2px solid #FFF8E7;outline-offset:-4px}
   html.look-clean body[data-view="game"] .rarity-thumb-hud.is-collapsed{left:auto;right:12px;padding:0;border-radius:999px}
   html.look-clean .rarity-hud-pill{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#FFF8E7;font-size:12px;font-weight:700;cursor:pointer}
   html.look-clean .rarity-hud-pill b{color:#E7BA4C}
@@ -472,6 +474,10 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean body[data-view="landing"] .channel[data-ip="all"] .channel-art{background:#0F0D1E}
   html.look-clean body[data-view="landing"] .channel[data-ip] b{color:#C9C1DA}
   html.look-clean body[data-view="landing"] .channel[data-ip].on{outline:2px solid #E7BA4C;outline-offset:-2px}
+  /* 深色展示櫃上原本的深灰焦點框對比只有約 1.5:1 → 改米白（WCAG 1.4.11）。遊戲格的選中金框也和焦點分不出來，改用向內的粗框（外框會被捲動列裁掉）。 */
+  html.look-clean body[data-view="landing"] .hero :focus-visible{outline-color:#F6F1E6}
+  html.look-clean body[data-view="landing"] .hero .home-search button:focus-visible{outline-color:#1B1733}
+  html.look-clean body[data-view="landing"] .channel[data-ip]:focus-visible{outline:3px solid #F6F1E6;outline-offset:-3px}
   html.look-clean body[data-view="landing"] .channel[data-ip].on b{color:#F6F1E6}
   html.look-clean .browse-regions label,html.look-clean .browse-regions span{color:#C9C1DA}
   html.look-clean .browse-regions select{background:#24203F;color:#F3EEE3;border-color:#6A62A0}

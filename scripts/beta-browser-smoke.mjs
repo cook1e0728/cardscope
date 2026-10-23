@@ -204,6 +204,32 @@ async function retryBrowse(page){
   await retry.click();
 }
 
+// Tab through the page: every stop is visible and a solid focus outline reaches 3:1 against what is behind it (WCAG 2.4.7, 1.4.11).
+// shortcut: compares against the nearest opaque ancestor background, so rings drawn over images or gradients are not measured.
+async function assertFocusRings(page,label,stops=45){
+  const failures=[];
+  for(let index=0;index<stops;index+=1){
+    await page.keyboard.press('Tab');
+    const issue=await page.evaluate(()=>{
+      const element=document.activeElement;
+      if(!element||element===document.body)return null;
+      const style=getComputedStyle(element),box=element.getBoundingClientRect();
+      const name=`${element.tagName}${element.id?'#'+element.id:''}.${String(element.className).split(' ')[0]}`;
+      if(!box.width||!box.height||style.visibility==='hidden')return `${name} is focused but invisible`;
+      if(style.outlineStyle==='none'||style.outlineStyle==='auto'||!parseFloat(style.outlineWidth))return null;
+      const rgb=value=>(String(value).match(/[\d.]+/g)||[]).map(Number);
+      const luminance=([r,g,b])=>[r,g,b].map(channel=>{channel/=255;return channel<=0.03928?channel/12.92:((channel+0.055)/1.055)**2.4}).reduce((sum,channel,i)=>sum+channel*[0.2126,0.7152,0.0722][i],0);
+      let node=parseFloat(style.outlineOffset)<0?element:element.parentElement,background=[255,255,255];
+      for(;node;node=node.parentElement){const color=rgb(getComputedStyle(node).backgroundColor);if(color.length&&(color[3]===undefined||color[3]>0.5)){background=color;break}}
+      const [high,low]=[luminance(rgb(style.outlineColor)),luminance(background)].sort((a,b)=>b-a);
+      const ratio=(high+0.05)/(low+0.05);
+      return ratio<3?`${name} focus ring ${ratio.toFixed(2)}:1`:null;
+    });
+    if(issue&&!failures.includes(issue))failures.push(issue);
+  }
+  assert.deepEqual(failures,[],`${label} keyboard focus is hard to see`);
+}
+
 async function runViewport(browser,viewport){
   const page=await browser.newPage({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1});
   const catalog=fixtureCatalog(),state=makeFixtureState(catalog),pageErrors=[];
@@ -227,6 +253,8 @@ async function runViewport(browser,viewport){
     }
     channelIds.push(...await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(Boolean)));
     for(const id of gameIds)assert.ok(channelIds.includes(id)||await page.locator(`.game-pick[data-id="${id}"]`).count(),`${viewport.name} missing ${id} switch control`);
+    await assertFocusRings(page,`${viewport.name} landing`);
+    await page.evaluate(()=>document.activeElement?.blur());
 
     // First switch intentionally fails, then recovers through the visible UI retry.
     await clickIp(page,'pokemon');
@@ -389,6 +417,10 @@ async function runPhaseTwoChecks(browser){
     await waitForVisible(calm.locator('#channels .channel').first(),'reduced motion: IP navigation did not render');
     const durations=await calm.locator('#channels .channel').first().evaluate(item=>getComputedStyle(item).transitionDuration.split(',').map(value=>parseFloat(value)*(value.trim().endsWith('ms')?1:1000)));
     assert.ok(durations.every(ms=>ms<=1),`reduced motion: channel transitions still run (${durations.join(', ')} ms)`);
+    // Nothing keeps moving: the hero mascot float, card fade-ins and skeleton pulses all stop.
+    await calm.waitForTimeout(300);
+    const running=await calm.evaluate(()=>document.getAnimations().filter(animation=>animation.playState==='running').map(animation=>`${animation.animationName||animation.transitionProperty}@${animation.effect?.target?.className||''}`));
+    assert.deepEqual(running,[],'reduced motion: animations still running');
   }finally{await calm.close()}
   return {viewport:'phase-two',checks:['share','recent','slow-network','reduced-motion']};
 }
@@ -417,6 +449,15 @@ try{
     const layout=await zoomed.evaluate(()=>({header:getComputedStyle(document.querySelector('.top')).position,overflow:document.documentElement.scrollWidth-innerWidth}));
     assert.equal(layout.header,'static','200% zoom: the header should not stay pinned');
     assert.ok(layout.overflow<=0,`200% zoom: page overflows sideways by ${layout.overflow}px`);
+    // The game page and the card detail also fit, and the detail's close button is not covered.
+    await clickIp(zoomed,'pokemon');
+    await retryBrowse(zoomed);
+    await waitForGame(zoomed,'pokemon');
+    assert.ok(await zoomed.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'200% zoom: game page overflows sideways');
+    await zoomed.locator('#cards .card-open-hit[data-card-open]').first().click();
+    await waitForVisible(zoomed.locator('#modal.open .detail'),'200% zoom: card detail did not open');
+    const closeHit=await zoomed.evaluate(()=>{const box=document.getElementById('close').getBoundingClientRect();return box.top>=0&&box.bottom<=innerHeight&&document.elementFromPoint(box.left+box.width/2,box.top+box.height/2)?.closest('#close')!==null});
+    assert.ok(closeHit,'200% zoom: the detail close button is off screen or covered');
     results.push({viewport:'zoom-200',header:layout.header});
   }finally{await zoomed.close()}
   console.log(`Beta browser smoke passed: ${JSON.stringify(results)}`);

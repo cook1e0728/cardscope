@@ -1,7 +1,7 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-10-22（台灣）｜更新者：Claude Code（CI 冒煙測試修復、手機關閉鈕與小按鈕修正）
+> 上次更新：2026-10-23（台灣）｜更新者：Claude Code（無障礙驗收：焦點框對比修正、冒煙測試補鍵盤／減少動態／200% 檢查）
 
 ## 角色
 - 規劃／驗收：Claude Code
@@ -45,6 +45,12 @@
 - `ec181e6`、`ba397c4` 的 Beta reliability 失敗：`scripts/beta-browser-smoke.mjs` 還照舊首頁寫。改為手機找 2×5 快速入口格（`.mqg-tile`）與頂欄 `#q`／`#go`、桌面找 `#channels`／`#heroQ`；返回首頁改看 `body[data-view=landing]`；分享測試固定走剪貼簿（停用 `navigator.share`，本機 Edge 有系統分享）。
 - 測試抓到的真問題（已修，`look-clean.css`）：手機詳細頁「×」關閉鈕被卡圖區塊蓋住點不到 → `#close{z-index:10}`；頂欄搜尋鈕 38px、稀有度直選「拇指盤」鈕 28px → 都改 44px。
 - 本機跑法：無 Supabase 環境啟動 `PORT=4202 node server.mjs`，再 `CI=true CARDSCOPE_URL=http://127.0.0.1:4202 PLAYWRIGHT_CHANNEL=msedge node scripts/beta-browser-smoke.mjs`，全部通過；Node 522/522。
+
+## 無障礙驗收（2026-10-23，Claude Code）
+- 以 Playwright 在桌面 1440、手機 390、200% 縮放（640×400）與 320px 重排下，掃首頁／遊戲頁／我的收藏／詳細頁：Tab 走訪、焦點可見與對比、只能用滑鼠點的元素、橫向溢出、關閉鈕可點、減少動態下仍在跑的動畫。
+- 修正（`look-clean.css`）：桌面首頁深色展示櫃上的焦點框是深灰（約 1.5:1，幾乎看不見）→ 改米白；選中的遊戲格本來就有金框，焦點落在上面分不出來 → 改向內米白粗框；首頁大搜尋鈕（金底）焦點框改深色；手機稀有度快選盤（深底）焦點框改米白。
+- 沒問題的：無鍵盤陷阱（收藏對話框正確鎖焦點）、無只能滑鼠點的元素、減少動態下無動畫在跑、200%／320px 無橫向溢出、詳細頁關閉鈕可點。
+- `scripts/beta-browser-smoke.mjs` 新增：首頁 45 個 Tab 停點的焦點框對比 ≥3:1、減少動態下 `document.getAnimations()` 無執行中動畫、200% 縮放的遊戲頁不溢出與詳細頁關閉鈕可點。已確認拿掉 CSS 修正時新檢查會失敗。
 
 ## 首頁桌面改版（2026-10-22）
 - 依 impeccable 與 ui-ux-pro-max 做 5 版預覽，使用者選第 3 版「夜間展示櫃」→ ADR 0050，樣式併入 `look-clean.css` 末段（≥761px），預覽開關與 `home-preview.css` 已移除；手機首屏不變。
