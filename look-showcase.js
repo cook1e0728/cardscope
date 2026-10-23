@@ -96,12 +96,11 @@
     cap.setAttribute('aria-hidden','true');
     im.src=c.src;im.alt='';im.decoding='async';f.append(im);b.append(f,cap);b.onclick=()=>openCard(c,b);return b;
   }
-  function buildCards(cards){
-    const hero=$('#hero'),intro=$('.hero-intro'),art=$('.hero-art');
-    if(!hero||!intro||$('.cs1-fan'))return;
-    const real=cards.length>=2;
+  // 先擺好兔子卡與星軌（版面不會在卡片到達時跳動），卡片資料回來再發牌進來
+  function buildFan(){
+    const hero=$('#hero'),art=$('.hero-art');
+    if(!hero||$('.cs1-fan'))return null;
     const NS='http://www.w3.org/2000/svg',fan=el('div','cs1-fan'),svg=doc.createElementNS(NS,'svg');
-    if(real){fan.setAttribute('role','group');fan.setAttribute('aria-label','精選高稀有度卡片')}
     svg.setAttribute('viewBox',`0 0 ${ZONE.w} ${ZONE.h}`);svg.setAttribute('aria-hidden','true');
     // 一道星軌像皇冠一樣跨過整手牌的上緣，左右各收成一顆星
     const pts=[[8,128],[96,62],[200,24],[290,6],[380,24],[484,62],[572,128]];
@@ -110,7 +109,6 @@
       +pts.map((p,i)=>`<path class="cs1-spark${i===3?' cs1-spark-end':''}" style="--i:${Math.abs(i-3)}" d="${SPARKLE}" transform="translate(${p[0]} ${p[1]}) scale(${i===3?1.5:1-Math.abs(i-3)*.15})"/>`).join('');
     const comet=el('span','cs1-comet');comet.style.offsetPath=`path("${smooth(pts)}")`;
     fan.append(svg,comet);
-    if(real)cards.forEach((c,i)=>fan.append(cardBtn(c,i,POS[i])));
     hero.append(fan);
     // 兔子卡在寬螢幕時搬進手牌區當主角，窄一點就放回原位
     if(art){
@@ -118,8 +116,21 @@
       const place=()=>{if(wide.matches){if(art.parentElement!==fan)fan.append(art)}else if(art.parentElement!==home)home.insertBefore(art,next)};
       place();wide.addEventListener('change',place);decorateRabbit(art);
     }
+    // 手機：兔子卡先放在標題卡裡（高度先佔好），兩側的卡之後補上
+    const intro=$('.hero-intro');
+    if(intro){
+      const strip=el('div','cs1-strip'),bunny=el('span','cs1-card cs1-strip-rabbit'),bf=el('span','cs1-float'),bi=el('img');
+      bunny.setAttribute('aria-hidden','true');bunny.style.setProperty('--i',1);bi.src='/assets/brand/web/rabbit-explore.webp';bi.alt='';bf.append(bi);bunny.append(bf);
+      strip.append(bunny);intro.append(strip,$('.cs1-replay-m')||'');
+    }
     if(root.classList.contains('cs1-play'))setTimeout(()=>runComet(comet),1700);
-    if(!real)return;
+    return fan;
+  }
+  function addCards(cards){
+    const hero=$('#hero'),intro=$('.hero-intro'),fan=$('.cs1-fan');
+    if(!hero||!intro||!fan||cards.length<2||fan.querySelector('.cs1-card'))return;
+    fan.setAttribute('role','group');fan.setAttribute('aria-label','精選高稀有度卡片');
+    cards.forEach((c,i)=>fan.append(cardBtn(c,i,POS[i])));
     // 精確指標的桌面：游標移動時整手牌跟著輕微偏移（視差）
     const fine=matchMedia('(hover:hover) and (pointer:fine)');let raf=0;
     hero.addEventListener('pointermove',e=>{
@@ -127,12 +138,9 @@
       raf=requestAnimationFrame(()=>{raf=0;const r=hero.getBoundingClientRect();fan.style.setProperty('--px',((e.clientX-r.left)/r.width*2-1).toFixed(3));fan.style.setProperty('--py',((e.clientY-r.top)/r.height*2-1).toFixed(3))});
     });
     hero.addEventListener('pointerleave',()=>{fan.style.setProperty('--px',0);fan.style.setProperty('--py',0)});
-    const strip=el('div','cs1-strip');strip.setAttribute('role','group');strip.setAttribute('aria-label','精選高稀有度卡片');
     // 手機和桌面同一個構圖：兔子卡居中、兩側各一張
-    const bunny=el('span','cs1-card cs1-strip-rabbit'),bf=el('span','cs1-float'),bi=el('img');
-    bunny.setAttribute('aria-hidden','true');bunny.style.setProperty('--i',1);bi.src='/assets/brand/web/rabbit-explore.webp';bi.alt='';bf.append(bi);bunny.append(bf);
-    strip.append(cardBtn(cards[0],0),bunny,cardBtn(cards[1],2));
-    intro.append(strip,$('.cs1-replay-m')||'');
+    const strip=$('.cs1-strip'),bunny=strip?.querySelector('.cs1-strip-rabbit');
+    if(strip&&bunny){strip.setAttribute('role','group');strip.setAttribute('aria-label','精選高稀有度卡片');bunny.before(cardBtn(cards[0],0));bunny.after(cardBtn(cards[1],2))}
     // 關閉詳細頁後焦點回到被點的卡
     const m=$('#modal');
     if(m)new MutationObserver(()=>{if(!m.classList.contains('open')&&lastCard&&doc.activeElement===doc.body){lastCard.focus({preventScroll:true});lastCard=null}}).observe(m,{attributes:true,attributeFilter:['class']});
@@ -224,7 +232,7 @@
     $('.browse-regions')?.append(mk(''));
     $('.hero-intro')?.append(mk('cs1-replay-m'));
     new MutationObserver(syncNav).observe(doc.body,{attributes:true,attributeFilter:['data-view']});
-    pickCards().then(buildCards).catch(()=>{});
+    buildFan();pickCards().then(addCards).catch(()=>{});
     maybeAutoStart();
   }
   ready(()=>{try{init()}catch(e){}});
