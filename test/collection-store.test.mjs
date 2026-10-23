@@ -123,3 +123,29 @@ test('wiring: store loads before the UI, keys are the physical card id, the dial
   assert.match(ui, /id="collectionCsv"/, 'CSV export stays');
   assert.match(ui, /type="file" id="collFile" accept="application\/json,\.json" hidden/);
 });
+
+test('favorites unification: a star becomes quantity 1 once, existing counts stay, nothing is mutated or lost', () => {
+  const watchlist = { b: 3, c: 'x' };
+  const out = CS.migrateFavorites(new Set(['a', 'b', 'c', 'bad\u0000id']), watchlist);
+  assert.deepEqual(out.watchlist, { a: 1, b: 3, c: 1 }, 'starred without a count -> 1; a valid count is kept; an invalid count of a starred card -> 1; an unusable id is skipped');
+  assert.equal(out.added, 2);
+  assert.deepEqual(watchlist, { b: 3, c: 'x' }, 'the input is not changed');
+  assert.deepEqual(CS.migrateFavorites(['a'], out.watchlist).watchlist, out.watchlist, 'running it again changes nothing');
+  assert.equal(CS.migrateFavorites([], { z: 2 }).added, 0);
+});
+
+test('collected quantity: owning a card is quantity > 0; a star-only item from an old backup counts as 1', () => {
+  assert.equal(CS.collectedQuantity(item({ quantity: 4, favorite: true })), 4);
+  assert.equal(CS.collectedQuantity(item({ quantity: 0, favorite: true })), 1);
+  assert.equal(CS.collectedQuantity(item({ quantity: 0, favorite: false })), 0);
+});
+
+test('sole finish: a card with one price version has it as the default version, several or none do not', () => {
+  const row = (provider, variant) => ({ provider, variant });
+  assert.equal(CS.soleFinish([row('cardmarket', 'holo')]), 'holo');
+  assert.equal(CS.soleFinish([row('cardmarket', 'holo'), row('tcgplayer', 'holofoil')]), 'holo', 'Cardmarket holo and TCGplayer holofoil are the same finish');
+  assert.equal(CS.soleFinish([row('cardmarket', 'holo'), row('cardmarket', 'reverse')]), '');
+  assert.equal(CS.soleFinish([row('cardmarket', 'holo'), row('tcgplayer', '')]), '', 'a blank variant next to a named one is not "one version"');
+  assert.equal(CS.soleFinish([]), '');
+  assert.equal(CS.soleFinish(undefined), '');
+});

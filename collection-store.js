@@ -46,6 +46,15 @@
     return{items:[...seen.values()],skipped};
   }
 
+  // Owning a card is quantity > 0. The old star list moves into quantities once: an existing count stays, a star without a valid count becomes 1.
+  function migrateFavorites(favoriteIds,watchlist){
+    const next={...watchlist};let added=0;
+    for(const id of favoriteIds){const count=Number(next[id]);if(idOf(id)&&!(Number.isInteger(count)&&count>0)){next[id]=1;added++}}
+    return{watchlist:next,added};
+  }
+  // A starred item from an old backup (quantity 0) counts as 1.
+  const collectedQuantity=item=>item.quantity>0?item.quantity:item.favorite?1:0;
+
   // Legacy storage (cardscope-favorites array, cardscope-watchlist {id:quantity}, cardscope-watchlist-meta {id:snapshot}) <-> items.
   function itemsFromLegacy(favoriteIds,watchlist,meta){
     const has=id=>favoriteIds.has?favoriteIds.has(id):favoriteIds.includes(id);
@@ -70,6 +79,9 @@
   const FINISH_ALIASES={holofoil:'holo',reverseholofoil:'reverse',reverseholo:'reverse'};
   const finishKey=value=>{const key=String(value||'').toLowerCase().replace(/[-_ ]/g,'');return FINISH_ALIASES[key]||key};
 
+  // The only finish a card has prices for (all rows share one finish key and it is not blank), else ''. The UI shows it as the default version; nothing is stored.
+  const soleFinish=prices=>{const rows=prices||[];return rows.length&&new Set(rows.map(p=>finishKey(p.variant))).size===1?rows[0].variant||'':''};
+
   // Reference total. Per provider and entry: a chosen finish must match a snapshot variant (same finish key); with no finish chosen, one variant is used
   // and several variants mean "choose a version" (never picked for the user). Slabs and cards without snapshots are not counted. Sources are never added together.
   function valuate(entries,pricesById){
@@ -93,5 +105,5 @@
     return{byProvider,perEntry,uncounted,counted:entries.length-uncounted.length,total:entries.length,dateFrom:dates[0]||'',dateTo:dates.at(-1)||''};
   }
 
-  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,finishKey,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate};
+  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,finishKey,soleFinish,migrateFavorites,collectedQuantity,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate};
 })(typeof window!=='undefined'?window:globalThis);

@@ -2,7 +2,7 @@ const uiLocal={get(key,fallback){try{return localStorage.getItem(key)||fallback}
 let cardViewMode='grid';
 let activeDetailCardId=null,detailReturnCardId=null;
 let favoritesOnly=uiLocal.get('cardscope-favorites-only','0')==='1';
-const favoriteIds=new Set(readUiArray('cardscope-favorites'));
+const legacyFavoriteIds=readUiArray('cardscope-favorites');
 const watchlist=readUiObject('cardscope-watchlist');
 const watchlistMeta=readUiObject('cardscope-watchlist-meta');
 const rarityOptionMemory=new Map();
@@ -93,22 +93,30 @@ function cardRarityMarkup(card){return rarityMarkup(cardRarityRaw(card),cardGame
 function cardNumberLabel(card){return card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||(card.metadata?.numberStatus==='not-printed'?'未印卡號':'卡號待補')}
 function cardPriceLabel(price){return price&&Number.isFinite(Number(price.price))&&price.currency?`${e(price.currency)} ${Number(price.price).toLocaleString()} 買取`:''}
 function cardGameLabel(card){const catalogName=G(card.game).nameZh;if(catalogName)return catalogName;return (window.CARD_GAMES||[]).find(item=>item.id===card.game)?.name||card.game||'IP 待補'}
-function isFavorite(id){return favoriteIds.has(String(id))}
+// 數量就是收藏：數量 > 0 即「已收藏」，☆ 只是把數量設成 1（或詢問後移除）的快速鍵。
 function watchQuantity(id){const value=Number(watchlist[String(id)]);return Number.isInteger(value)&&value>0?value:0}
+function isFavorite(id){return watchQuantity(id)>0}
 function allKnownCards(){const rows=[...(currentCardRows||[]),...(C?.cards||[])];return [...new Map(rows.map(card=>[String(card.id),card])).values()]}
 function cardForWatch(id){const card=allKnownCards().find(item=>String(item.id)===String(id));if(card)return card;const snapshot=watchlistMeta[String(id)];return snapshot?{...snapshot,__watchlistSnapshot:true}:null}
 // ADR 0045：收藏以實體卡 ID 為鍵（搜尋列的 id 是作品層 ID，所以用 cardOpenId 取畫面上那個版本的實體卡）；舊資料若以作品層 ID 存，仍對得上。
 const CS=window.CollectionStore,COMMON_FINISHES=['normal','holo','reverse'],renderedCards=new Map();
 function physicalIdOf(card){const id=String(cardOpenId(card));return id===String(card.id)&&card.physicalCardIds?.length===1?String(card.physicalCardIds[0]):id}
-function entryKey(card){const key=physicalIdOf(card);return[key,String(card.id)].find(item=>favoriteIds.has(item)||watchlist[item])||key}
+function entryKey(card){const key=physicalIdOf(card);return[key,String(card.id)].find(item=>watchQuantity(item)>0)||key}
 function cardSnapshot(card,key){
   const printing=(card.printings||[]).find(p=>String(p.cardId)===String(key))||null;
   return{id:String(key),canonicalId:String(card.canonicalId||card.id||''),game:cardGameId(card)||'',nameZh:card.nameZh||'',nameEn:card.nameEn||'',nameJa:card.nameJa||'',nameKo:card.nameKo||'',officialCardNumber:card.officialCardNumber||printing?.localCardNumber||'',rarity:printing?.rarity||card.rarity||'',region:printing?.region||card.region||card.printings?.[0]?.region||'',version:printing?.metadata?.variantName||card.metadata?.variantName||'',image:(printing?.imageUrl&&!printing.imageRehostRequired?printing.imageUrl:image(card))||''};
 }
-function persistCollection(){return[uiLocal.set('cardscope-favorites',JSON.stringify([...favoriteIds])),uiLocal.set('cardscope-watchlist',JSON.stringify(watchlist)),uiLocal.set('cardscope-watchlist-meta',JSON.stringify(watchlistMeta))].every(Boolean)}
+function persistCollection(){return[uiLocal.set('cardscope-watchlist',JSON.stringify(watchlist)),uiLocal.set('cardscope-watchlist-meta',JSON.stringify(watchlistMeta))].every(Boolean)}
+// 舊 ☆ 清單只在第一次載入時搬成數量 1（已有數量的不變）。舊鍵原封不動留作備份；數量寫入成功才記下已搬移，失敗下次載入再搬，不會遺失。
+function migrateLegacyFavorites(){
+  if(!CS||uiLocal.get('cardscope-collection-unified','')==='1')return;
+  Object.assign(watchlist,CS.migrateFavorites(legacyFavoriteIds,watchlist).watchlist);
+  if(uiLocal.set('cardscope-watchlist',JSON.stringify(watchlist)))uiLocal.set('cardscope-collection-unified','1');
+}
+migrateLegacyFavorites();
 // 在收藏內時保留畫面快照與使用者填的品況／版本／備註；移出收藏就一併刪除。
 function touchMeta(key){
-  if(!favoriteIds.has(key)&&!watchlist[key]){delete watchlistMeta[key];return}
+  if(!watchQuantity(key)){delete watchlistMeta[key];return}
   const card=renderedCards.get(key)||allKnownCards().find(item=>String(item.id)===key);
   if(card)watchlistMeta[key]={...watchlistMeta[key],...cardSnapshot(card,key),v:1};
 }
@@ -153,8 +161,8 @@ function drawViewButtons(){document.querySelectorAll('#cardViewSwitch [data-view
 
 function cardActionsMarkup(card){
   const key=entryKey(card);renderedCards.set(key,card);if(renderedCards.size>800)renderedCards.delete(renderedCards.keys().next().value);
-  const id=e(key),favorite=isFavorite(key),quantity=watchQuantity(key);
-  return `<div class="card-actions" data-action="card-actions"><button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="${id}" aria-pressed="${favorite}" aria-label="${favorite?'從我的收藏移除':'加入我的收藏'}" title="${favorite?'從我的收藏移除':'加入我的收藏'}">${favorite?'★':'☆'}</button><div class="watchlist-inline" data-action="watchlist" aria-label="我的收藏張數"><button type="button" data-watch-decrement="${id}" aria-label="減少數量"${quantity?'':' disabled'}>−</button><span data-watch-quantity="${id}">${quantity}</span><button type="button" data-watch-increment="${id}" aria-label="增加數量">＋</button></div></div>`;
+  const id=e(key),quantity=watchQuantity(key),favorite=quantity>0,starLabel=favorite?`已收藏 ${quantity} 張，按一下移除`:'加入我的收藏（數量 1）';
+  return `<div class="card-actions" data-action="card-actions"><button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="${id}" aria-pressed="${favorite}" aria-label="${starLabel}" title="${starLabel}">${favorite?'★':'☆'}</button><div class="watchlist-inline" data-action="watchlist" aria-label="我的收藏張數"><button type="button" data-watch-decrement="${id}" aria-label="減少數量"${quantity?'':' disabled'}>−</button><span data-watch-quantity="${id}">${quantity}</span><button type="button" data-watch-increment="${id}" aria-label="增加數量">＋</button></div></div>`;
 }
 
 // Three sticker tiers for the binder theme: top (SAR/UR/SEC…), high (SR/AR/RRR…), and everything else.
@@ -183,8 +191,8 @@ function activateCardActions(root=$('cards')){
   if(!root)return;
   root.querySelectorAll('[data-card-open]').forEach(card=>{card.onclick=event=>{if(event.target.closest('[data-action]'))return;openCard(card.dataset.cardOpen)};card.onkeydown=event=>{if(event.target.closest('[data-action]'))return;if(event.key==='Enter'||event.key===' '){event.preventDefault();openCard(card.dataset.cardOpen)}}});
   root.querySelectorAll('[data-favorite-id]').forEach(button=>{button.onclick=event=>{event.stopPropagation();toggleFavorite(button.dataset.favoriteId)}});
-  root.querySelectorAll('[data-watch-increment]').forEach(button=>{button.onclick=event=>{event.stopPropagation();setWatchQuantity(button.dataset.watchIncrement,watchQuantity(button.dataset.watchIncrement)+1)}});
-  root.querySelectorAll('[data-watch-decrement]').forEach(button=>{button.onclick=event=>{event.stopPropagation();setWatchQuantity(button.dataset.watchDecrement,watchQuantity(button.dataset.watchDecrement)-1)}});
+  root.querySelectorAll('[data-watch-increment]').forEach(button=>{button.onclick=event=>{event.stopPropagation();stepWatchQuantity(button.dataset.watchIncrement,1)}});
+  root.querySelectorAll('[data-watch-decrement]').forEach(button=>{button.onclick=event=>{event.stopPropagation();stepWatchQuantity(button.dataset.watchDecrement,-1)}});
 }
 
 function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img src="/assets/brand/web/rabbit-offline.webp" alt="奔跑中的 CardScope 兔子" loading="lazy"><div><b>兔子還在尋找卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
@@ -208,13 +216,19 @@ cards=function(rows,keepSource=false){
 
 function renderFavoritesControl(){
   const control=$('favoritesOnly');if(!control)return;
-  control.classList.toggle('on',favoritesOnly);control.setAttribute('aria-pressed',String(favoritesOnly));control.textContent=`只看我的收藏（${favoriteIds.size}）`;
+  control.classList.toggle('on',favoritesOnly);control.setAttribute('aria-pressed',String(favoritesOnly));control.textContent=`只看我的收藏（${collectionIds().length}）`;
 }
 
+// ☆ 與詳細頁的按鈕共用：未收藏 → 數量 1；已收藏 → 詢問後移除（品況、版本與備註會一併刪除）。回傳是否有變動。
 function toggleFavorite(id){
-  const key=String(id);if(favoriteIds.has(key))favoriteIds.delete(key);else favoriteIds.add(key);
-  touchMeta(key);persistCollection();cards(currentCardRows,true);
+  const key=String(id),quantity=watchQuantity(key);
+  if(!quantity){setWatchQuantity(key,1);return true}
+  const meta=watchlistMeta[key],title=meta?.v?name(meta):(renderedCards.get(key)?name(renderedCards.get(key)):key);
+  if(!confirm(`從「我的收藏」移除 ${title}（${quantity} 張）？品況、版本與備註也會一併刪除。`))return false;
+  setWatchQuantity(key,0);return true;
 }
+// ± 按鈕：減到 0 等於移除，走同一個詢問。
+function stepWatchQuantity(id,step){const key=String(id),next=watchQuantity(key)+step;if(next<1&&watchQuantity(key)>0)toggleFavorite(key);else if(next>=1)setWatchQuantity(key,next)}
 
 function showCollectionToast(){
   let toast=$('brandCollectionToast');
@@ -226,7 +240,7 @@ function showCollectionToast(){
 function setWatchQuantity(id,quantity){
   const key=String(id),previous=watchQuantity(key),next=Math.max(0,Math.min(999,Number(quantity)||0));
   if(next)watchlist[key]=next;else delete watchlist[key];
-  touchMeta(key);persistCollection();cards(currentCardRows,true);if(previous===0&&next>0)showCollectionToast();
+  touchMeta(key);persistCollection();cards(currentCardRows,true);renderDetailCollect();if(previous===0&&next>0)showCollectionToast();
 }
 
 function watchlistEntries(){
@@ -237,9 +251,9 @@ function watchlistTotals(){
   const totals=new Map();watchlistEntries().forEach(({card,quantity})=>{if(!card||card.__watchlistSnapshot)return;const price=priceFor(card),amount=price&&Number(price.price),currency=price&&String(price.currency||'').trim();if(!Number.isFinite(amount)||!currency)return;totals.set(currency,(totals.get(currency)||0)+amount*quantity)});return totals;
 }
 
-// 星號收藏與張數清單合併成「我的收藏」：有張數就用張數，只有星號算 1 張。
-function collectionIds(){return[...new Set([...favoriteIds,...Object.keys(watchlist)])]}
-function collectionTotal(){return collectionIds().reduce((sum,id)=>sum+(watchQuantity(id)||1),0)}
+// 「我的收藏」= 數量 > 0 的卡；款數與總張數在網格、摘要與收藏視窗用同一組函式。
+function collectionIds(){return Object.keys(watchlist).filter(id=>watchQuantity(id)>0)}
+function collectionTotal(){return collectionIds().reduce((sum,id)=>sum+watchQuantity(id),0)}
 function renderWatchlistSummary(){
   const host=$('watchlistSummary');if(!host)return;
   const entries=watchlistEntries(),totals=watchlistTotals(),verified=[...totals].map(([currency,amount])=>`${e(currency)} ${amount.toLocaleString()}`).join(' ／ ');
@@ -430,10 +444,17 @@ function openAdjacentCard(step){const rows=detailRows(),index=rows.findIndex(car
 
 // ADR 0044 Q10：資料來源 id 轉成人看得懂的名稱（名稱對照 data/source-registry.json；未知 id 照原樣顯示）。
 const DETAIL_SOURCE_NAMES={'pokemon-card-official-jp':'日本官方卡片搜尋','pokemon-jp':'日本官方卡片搜尋','pokemon-tw-official':'台灣官方卡片搜尋','pokemon-tw':'台灣官方卡片搜尋','asia-pokemon-card-official-tw':'台灣官方卡片搜尋',tcgdex:'TCGdex','tcgdex-ja':'TCGdex','tcgdex-zh-tw':'TCGdex','tcgdex-zh-hant-tw':'TCGdex',pokemontcg:'PokemonTCG',ygoprodeck:'YGOPRODeck','cardscope-yugioh-cache':'YGOPRODeck','yugioh-official-us':'遊戲王美國官方卡片資料庫','yugioh-neuron':'遊戲王官方 Neuron 資料庫','onepiece-official':'ONE PIECE 官方卡表','onepiece-official-p':'ONE PIECE 官方卡表','onepiece-official-runtime':'ONE PIECE 官方卡表','onepiece-official-tw':'ONE PIECE 台灣官方卡表','onepiece-official-tw-p':'ONE PIECE 台灣官方卡表','onepiece-tw':'ONE PIECE 台灣官方卡表','optcg-api':'OPTCG API','weiss-schwarz-official':'Weiß Schwarz 官方卡表','haikyu-official':'排球少年卡牌官方卡表'};
+// 系列名要跟隨「目前顯示」那個版本：日版卡不顯示台版系列名（目錄查不到該版本的系列時寧可顯示「系列待補」）。
+function printingSeries(c,selected){
+  const base=c.series&&typeof c.series==='object'?c.series:null;
+  if(selected?.seriesId&&selected.seriesId!==base?.id)return(typeof C!=='undefined'&&C.series||[]).find(row=>row.id===selected.seriesId)||null;
+  return base&&(!selected?.region||!base.region||base.region===selected.region)?base:null;
+}
+const setCodeText=value=>/^unspecified$/i.test(String(value||'').trim())?'':String(value||'');
 function detailInfoMeta(c,ps,selected){
-  const series=c.series&&typeof c.series==='object'?c.series:null,seriesName=series&&(series.nameZh||series.nameJa||series.nameEn),code=series?.officialCode||selected?.localSetCode,tags=[series?.region&&rn(series.region),code].filter(Boolean).join('・'),
+  const series=printingSeries(c,selected),seriesName=series&&(series.nameZh||series.nameJa||series.nameEn),code=setCodeText(series?.officialCode||selected?.localSetCode),tags=[(series?.region||selected?.region)&&rn(series?.region||selected?.region,c.game),code].filter(Boolean).join('・'),
     sources=[...new Set([...ps.map(p=>p.source),c.source].filter(Boolean).map(id=>DETAIL_SOURCE_NAMES[id]||id))],link=/^https:\/\//.test(selected?.sourceUrl||'')?` <a href="${e(selected.sourceUrl)}" target="_blank" rel="noopener noreferrer">原始頁面</a>`:'',updated=ps.map(p=>p.updatedAt).filter(Boolean).map(String).sort().at(-1);
-  return `<dl class="card-identity detail-meta"><div><dt>系列</dt><dd>${seriesName?`${e(seriesName)}${tags?`（${e(tags)}）`:''}`:'系列待補'}</dd></div><div><dt>資料來源</dt><dd>${sources.length?e(sources.join('、')):'來源待補'}${link}</dd></div>${updated?`<div><dt>更新時間</dt><dd><time datetime="${e(updated)}">${e(updated.slice(0,10))}</time></dd></div>`:''}</dl>`;
+  return `<dl class="card-identity detail-meta"><div><dt>系列</dt><dd>${seriesName?`${e(seriesName)}${tags?`（${e(tags)}）`:''}`:`系列待補${tags?`（${e(tags)}）`:''}`}</dd></div><div><dt>資料來源</dt><dd>${sources.length?e(sources.join('、')):'來源待補'}${link}</dd></div>${updated?`<div><dt>更新時間</dt><dd><time datetime="${e(updated)}">${e(updated.slice(0,10))}</time></dd></div>`:''}</dl>`;
 }
 // 分頁：資訊／價格／走勢；「使用者回報」在有表單前隱藏（保留程式與面板）。原「成交趨勢」分頁已由走勢取代。
 const DETAIL_TABS=[['info','資訊'],['market','價格'],['trend','走勢'],['reports','使用者回報']];
@@ -441,7 +462,20 @@ function detailTabsMarkup(){return `<div class="detail-tabs" role="tablist" aria
 function detailPanel(key,hidden,body){return `<section role="tabpanel" id="detail-panel-${key}" aria-labelledby="detail-tab-${key}" tabindex="0" data-detail-panel="${key}"${hidden||key==='reports'?' hidden':''}>${body}</section>`}
 
 // ADR 0042／0044：參考價走勢只在使用者打開「走勢」分頁時才請求（price-history-chart.js），不拖慢詳細頁開啟。
-function bindPriceTrend(){const slot=document.querySelector('#detail [data-price-trend]'),tab=document.querySelector('#detail [data-detail-tab="trend"]');if(!slot||!tab||!window.PriceTrend)return;tab.addEventListener('click',()=>window.PriceTrend.load(slot,{regionLabel:region=>region?rn(region):'',variantLabel:variant=>typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variant]||variant}))}
+function bindPriceTrend(gameId){const slot=document.querySelector('#detail [data-price-trend]'),tab=document.querySelector('#detail [data-detail-tab="trend"]');if(!slot||!tab||!window.PriceTrend)return;tab.addEventListener('click',()=>window.PriceTrend.load(slot,{regionLabel:region=>region?rn(region,gameId):'',variantLabel:variant=>typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variant]||variant}))}
+
+// 收錄版本列：平行卡（圖片網址或卡 ID 帶 _p1／_r2）標「異圖 N」；航海王台灣版是日文印刷，語言顯示日文（只改顯示）；遊戲王卡號顯示印刷編號，密碼放次要資訊。
+function parallelLabel(p,gameId){const m=String(p?.imageUrl||'').match(/_([pr])(\d+)\.\w+(?:\?|$)/i)||(gameId==='onepiece'?String(p?.cardId||'').match(/-([pr])(\d+)$/i):null);return m?`異圖 ${Number(m[2])}`:''}
+function printingLanguage(p,gameId){return gameId==='onepiece'&&p?.region==='TW'?'日文':ln(p?.language)}
+function detailNumber(c,selected){const passcode=String(c.officialCardNumber||''),printed=selected?.localCardNumber;return cardGameId(c)==='yugioh'&&printed&&/^\d+$/.test(passcode)&&printed!==passcode?`${e(printed)} <small class="meta" title="遊戲王卡片密碼（Passcode）">密碼 ${e(passcode)}</small>`:e(cardNumberLabel(c))}
+// 詳細頁的收藏按鈕：數量 > 0 即已收藏；按鈕、± 與網格上的 ☆ 共用同一份數量。
+function renderDetailCollect(){
+  const slot=document.querySelector('#detail [data-detail-collect]');if(!slot)return;
+  const key=slot.dataset.detailCollect,quantity=watchQuantity(key),focused=slot.contains(document.activeElement)?document.activeElement.dataset.collectAct:'';
+  slot.innerHTML=quantity?`<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="true" title="已收藏，按一下移除">★ 已收藏 ×${quantity}</button><span class="detail-collect-step" role="group" aria-label="收藏張數"><button type="button" data-collect-act="dec" aria-label="減少數量">−</button><button type="button" data-collect-act="inc" aria-label="增加數量">＋</button></span>`:'<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</button>';
+  slot.onclick=event=>{const act=event.target.closest('[data-collect-act]')?.dataset.collectAct;if(act==='toggle')toggleFavorite(key);else if(act==='dec')stepWatchQuantity(key,-1);else if(act==='inc')stepWatchQuantity(key,1)};
+  if(focused)(slot.querySelector(`[data-collect-act="${focused}"]`)||slot.querySelector('[data-collect-act="toggle"]'))?.focus();
+}
 
 openCard=async function(id,options={}){
   if(!options.keepPosition){activeDetailCardId=id;detailReturnCardId=id}$('modal').classList.add('open');$('detail').textContent='正在載入…';
@@ -449,10 +483,10 @@ openCard=async function(id,options={}){
     const cr=await fetch('/api/cards/'+encodeURIComponent(id)),cb=await cr.json();
     if(!cr.ok)throw Error(cb.error);
     const [marketResult,reportResult]=await Promise.allSettled([fetch('/api/cards/'+encodeURIComponent(id)+'/market'),fetch('/api/reports?cardId='+encodeURIComponent(id))]),marketResponse=marketResult.status==='fulfilled'?marketResult.value:null,reportResponse=reportResult.status==='fulfilled'?reportResult.value:null,mb=marketResponse?.ok?await marketResponse.json().catch(()=>({data:{records:[],meta:{}}})):{data:{records:[],meta:{warning:'行情服務暫時無法回應；卡片資料仍可正常查看。'}}},rb=reportResponse?.ok?await reportResponse.json().catch(()=>({data:{reports:[]}})):{data:{reports:[]}},c=cb.data,m=mb.data||{records:[],meta:{}},reports=rb.data?.reports||[];
-    const ps=c.printings||[],ref=ps.find(p=>p.region==='JP')||ps.find(p=>p.region==='TW')||ps.find(p=>p.region==='US')||ps.find(p=>p.region==='KR')||ps[0],selectedPrinting=ps.find(p=>p.cardId&&String(p.cardId)===String(id))||ps.find(p=>c.referencePrintingId&&String(p.id??p.cardId)===String(c.referencePrintingId))||ps.find(p=>p.region===c.region&&p.language===c.language)||ref,versions=versionOrder(ps).map(p=>{const diff=[];if(ref&&p!==ref&&p.localCardNumber&&p.localCardNumber!==ref.localCardNumber)diff.push('卡號不同');if(ref&&p!==ref&&p.rarity&&ref.rarity&&p.rarity!==ref.rarity)diff.push('稀有度不同');const switchable=p!==selectedPrinting&&p.cardId&&String(p.cardId)!==String(selectedPrinting?.cardId),body=`<b>${e(rn(p.region,c.game))}</b>${p===ref?' · <span class="badge">比對基準</span>':''}${p===selectedPrinting?' · <span class="badge">目前顯示</span>':''} · ${e(ln(p.language))} · ${e(p.localSetCode)} · ${e(p.localCardNumber)}${p.rarity?` · ${rarityMarkup(p.rarity,cardGameId(c))}`:''}${p.metadata?.variantName?` · ${e(p.metadata.variantName)}`:''}${diff.length?`<br><span class="meta">版本差異：${e(diff.join('、'))}</span>`:''}${switchable?'<br><span class="meta">點擊查看此版本的卡圖</span>':''}`;return switchable?`<button type="button" class="state version-switch" data-version-card="${e(p.cardId)}">${body}</button>`:`<div class="state">${body}</div>`}).join(''),markets=m.records?.length?m.records.map(r=>`<div class="market"><b>${e(r.provider)}</b> · ${e(r.priceType)} · ${e(r.currency)} ${Number(r.amount).toLocaleString()}</div>`).join(''):'<div class="state">目前沒有可靠對應價格，不以假價格補空白。</div>',reportList=reports.length?reports.map(r=>`<div class="state"><b>${e(r.platform)}</b> · ${e(r.currency)} ${Number(r.price).toLocaleString()}<br><span class="meta">使用者回報，尚未驗證</span></div>`).join(''):'<div class="state">目前沒有使用者回報。</div>';
+    const ps=c.printings||[],ref=ps.find(p=>p.region==='JP')||ps.find(p=>p.region==='TW')||ps.find(p=>p.region==='US')||ps.find(p=>p.region==='KR')||ps[0],selectedPrinting=ps.find(p=>p.cardId&&String(p.cardId)===String(id))||ps.find(p=>c.referencePrintingId&&String(p.id??p.cardId)===String(c.referencePrintingId))||ps.find(p=>p.region===c.region&&p.language===c.language)||ref,versions=versionOrder(ps).map(p=>{const diff=[];if(ref&&p!==ref&&p.localCardNumber&&p.localCardNumber!==ref.localCardNumber)diff.push('卡號不同');if(ref&&p!==ref&&p.rarity&&ref.rarity&&p.rarity!==ref.rarity)diff.push('稀有度不同');const switchable=p!==selectedPrinting&&p.cardId&&String(p.cardId)!==String(selectedPrinting?.cardId),body=`<b>${e(rn(p.region,c.game))}</b>${p===ref?' · <span class="badge">比對基準</span>':''}${p===selectedPrinting?' · <span class="badge">目前顯示</span>':''} · ${e(printingLanguage(p,cardGameId(c)))} · ${e(setCodeText(p.localSetCode)||'系列未標示')} · ${e(p.localCardNumber)}${parallelLabel(p,cardGameId(c))?` · <span class="badge">${e(parallelLabel(p,cardGameId(c)))}</span>`:''}${p.rarity?` · ${rarityMarkup(p.rarity,cardGameId(c))}`:''}${p.metadata?.variantName?` · ${e(p.metadata.variantName)}`:''}${diff.length?`<br><span class="meta">版本差異：${e(diff.join('、'))}</span>`:''}${switchable?'<br><span class="meta">點擊查看此版本的卡圖</span>':''}`;return switchable?`<button type="button" class="state version-switch" data-version-card="${e(p.cardId)}">${body}</button>`:`<div class="state">${body}</div>`}).join(''),markets=m.records?.length?m.records.map(r=>`<div class="market"><b>${e(r.provider)}</b> · ${e(r.priceType)} · ${e(r.currency)} ${Number(r.amount).toLocaleString()}</div>`).join(''):'<div class="state">目前沒有可靠對應價格，不以假價格補空白。</div>',reportList=reports.length?reports.map(r=>`<div class="state"><b>${e(r.platform)}</b> · ${e(r.currency)} ${Number(r.price).toLocaleString()}<br><span class="meta">使用者回報，尚未驗證</span></div>`).join(''):'<div class="state">目前沒有使用者回報。</div>';
     const detailImageSources=cardImageSourceCandidates(c,selectedPrinting),detailImageUrl=detailImageSources[0]||image(c),detailSet=detailRows(),detailIndex=detailSet.findIndex(card=>String(cardOpenId(card))===String(activeDetailCardId)),position=detailIndex>=0?`${detailIndex+1} / ${detailSet.length}`:'目前卡片',zhPart=zhParts(c.nameZh),zhName=zhPart.name||'中文名稱待補',originalName=original(c)||'原文名稱待補',gid=cardGameId(c),rarities=[...new Set([c.rarity,...ps.map(p=>p.rarity)].filter(Boolean).map(rarityText).map(value=>rarityMarkup(value,gid,true)))].join('、')||'稀有度待補';
-    const watermarkOptions=cardWatermarkOptions(c,detailImageUrl),zoomSourceAttribute=detailImageSources.length?`data-card-zoom-src="${e(detailImageSources[0])}" data-card-zoom-sources="${e(JSON.stringify(detailImageSources))}" data-card-zoom-alt="${e(name(c))}" data-card-embedded-sample="${watermarkOptions.embeddedSample?'1':'0'}" data-card-suppress-sample="${watermarkOptions.suppressOverlay?'1':'0'}"`:'';
-    $('detail').innerHTML=`<div class="detail detail-tabs-layout"><div class="detail-visual"><div class="detail-visual-stage"><button class="detail-nav detail-prev" data-card-step="-1" aria-label="上一張卡" title="上一張卡">&#8592;</button><div class="detail-art tilt-card" tabindex="0" ${zoomSourceAttribute} aria-label="${detailImageUrl?'點擊放大卡圖；移動游標可傾斜查看':'卡片圖片待補'}"><div class="tilt-card-surface">${resilientImage(detailImageUrl,name(c),'這張卡尚未收錄可公開顯示的圖片',{...watermarkOptions,fallbacks:detailImageSources})}<span class="tilt-shine" aria-hidden="true"></span></div></div><button class="detail-nav detail-next" data-card-step="1" aria-label="下一張卡" title="下一張卡">&#8594;</button></div><div class="detail-position"><span>${e(position)}</span><small>${detailImageUrl?'點擊卡圖可放大；移動游標可傾斜查看':'圖片來源待補'}</small></div><h2>${e(name(c))}</h2><dl class="card-identity"><div><dt>中文名</dt><dd>${e(zhName)}${zhPart.note?` <small class="meta" title="台版來源在名稱後附加的標記">${e(zhPart.note)}</small>`:''}${c.nameZh&&['derived-same-name','derived-cross-series'].includes(c.metadata?.nameZhBasis)?` <small class="meta" title="${c.metadata.nameZhBasis==='derived-cross-series'?'台版未收錄這張卡；中文名沿用其他系列同日文名卡片的台版官方名稱':'台版未收錄這張卡；中文名沿用同系列同日文名卡片的台版官方名稱'}">同名推導</small>`:''}</dd></div><div><dt>原文名</dt><dd>${e(originalName)}</dd></div><div><dt>卡號</dt><dd>${e(cardNumberLabel(c))}${listingNote(c)}</dd></div><div><dt>稀有度</dt><dd>${rarities}${ps.filter(p=>p.metadata?.rarityBeforeOfficial?.rarity&&p.rarity).map(p=>` <small class="meta" title="依日本官方卡片資料修正；原資料來源標為 ${e(p.metadata.rarityBeforeOfficial.rarity)}">${e(rn(p.region,c.game))}依官方修正（原資料為 ${e(p.metadata.rarityBeforeOfficial.rarity)}）</small>`).join('')}</dd></div></dl><p>${e(c.game?.nameZh||G(c.game).nameZh||c.game)}</p></div><div>${detailTabsMarkup()}${detailPanel('info',false,`${detailInfoMeta(c,ps,selectedPrinting)}<h3>卡片文字</h3>${cardTextBlock(c)}<h3>收錄版本</h3><p class="meta">每個版本分別標示語言、卡號與稀有度；缺少日版時依序採台版、美版、韓版或其他版本作比對基準。</p>${versions||'<div class="state">版本待補</div>'}`)}${detailPanel('market',true,`<h3>跨市場比價</h3><p class="meta">平台參考價，不是成交價或台灣行情；新台幣為換算參考。</p>${typeof marketBlock==='function'?marketBlock(m):`<p class="meta">${e(m.meta?.warning||'不同價格性質不混算。')}</p>${markets}`}`)}${detailPanel('trend',true,`<div class="price-trend" data-price-trend="${e(id)}"></div>`)}${detailPanel('reports',true,reportList)}</div></div>`;activateDetailInteractions();bindPriceTrend();$('detail').querySelectorAll('[data-version-card]').forEach(button=>{button.onclick=()=>openCard(button.dataset.versionCard,{keepPosition:true})});
+    const collectKey=[selectedPrinting?.cardId,id,c.id].filter(Boolean).map(String).find(key=>watchQuantity(key)>0)||String(selectedPrinting?.cardId||id),watermarkOptions=cardWatermarkOptions(c,detailImageUrl),zoomSourceAttribute=detailImageSources.length?`data-card-zoom-src="${e(detailImageSources[0])}" data-card-zoom-sources="${e(JSON.stringify(detailImageSources))}" data-card-zoom-alt="${e(name(c))}" data-card-embedded-sample="${watermarkOptions.embeddedSample?'1':'0'}" data-card-suppress-sample="${watermarkOptions.suppressOverlay?'1':'0'}"`:'';
+    $('detail').innerHTML=`<div class="detail detail-tabs-layout"><div class="detail-visual"><div class="detail-visual-stage"><button class="detail-nav detail-prev" data-card-step="-1" aria-label="上一張卡" title="上一張卡">&#8592;</button><div class="detail-art tilt-card" tabindex="0" ${zoomSourceAttribute} aria-label="${detailImageUrl?'點擊放大卡圖；移動游標可傾斜查看':'卡片圖片待補'}"><div class="tilt-card-surface">${resilientImage(detailImageUrl,name(c),'這張卡尚未收錄可公開顯示的圖片',{...watermarkOptions,fallbacks:detailImageSources})}<span class="tilt-shine" aria-hidden="true"></span></div></div><button class="detail-nav detail-next" data-card-step="1" aria-label="下一張卡" title="下一張卡">&#8594;</button></div><div class="detail-position"><span>${e(position)}</span><small>${detailImageUrl?'點擊卡圖可放大；移動游標可傾斜查看':'圖片來源待補'}</small></div><h2>${e(name(c))}</h2><div class="detail-collect" data-detail-collect="${e(collectKey)}" role="group" aria-label="我的收藏"></div><dl class="card-identity"><div><dt>中文名</dt><dd>${e(zhName)}${zhPart.note?` <small class="meta" title="台版來源在名稱後附加的標記">${e(zhPart.note)}</small>`:''}${c.nameZh&&['derived-same-name','derived-cross-series'].includes(c.metadata?.nameZhBasis)?` <small class="meta" title="${c.metadata.nameZhBasis==='derived-cross-series'?'台版未收錄這張卡；中文名沿用其他系列同日文名卡片的台版官方名稱':'台版未收錄這張卡；中文名沿用同系列同日文名卡片的台版官方名稱'}">同名推導</small>`:''}</dd></div><div><dt>原文名</dt><dd>${e(originalName)}</dd></div><div><dt>卡號</dt><dd>${detailNumber(c,selectedPrinting)}${listingNote(c)}</dd></div><div><dt>稀有度</dt><dd>${rarities}${ps.filter(p=>p.metadata?.rarityBeforeOfficial?.rarity&&p.rarity).map(p=>` <small class="meta" title="依日本官方卡片資料修正；原資料來源標為 ${e(p.metadata.rarityBeforeOfficial.rarity)}">${e(rn(p.region,c.game))}依官方修正（原資料為 ${e(p.metadata.rarityBeforeOfficial.rarity)}）</small>`).join('')}</dd></div></dl><p>${e(c.game?.nameZh||G(c.game).nameZh||c.game)}</p></div><div>${detailTabsMarkup()}${detailPanel('info',false,`${detailInfoMeta(c,ps,selectedPrinting)}<h3>卡片文字</h3>${cardTextBlock(c)}<h3>收錄版本</h3><p class="meta">每個版本分別標示語言、卡號與稀有度；缺少日版時依序採台版、美版、韓版或其他版本作比對基準。</p>${versions||'<div class="state">版本待補</div>'}`)}${detailPanel('market',true,`<h3>跨市場比價</h3><p class="meta">平台參考價，不是成交價或台灣行情；新台幣為換算參考。</p>${typeof marketBlock==='function'?marketBlock(m):`<p class="meta">${e(m.meta?.warning||'不同價格性質不混算。')}</p>${markets}`}`)}${detailPanel('trend',true,`<div class="price-trend" data-price-trend="${e(id)}"></div>`)}${detailPanel('reports',true,reportList)}</div></div>`;renderedCards.set(collectKey,c);activateDetailInteractions();bindPriceTrend(c.game);renderDetailCollect();$('detail').querySelectorAll('[data-version-card]').forEach(button=>{button.onclick=()=>openCard(button.dataset.versionCard,{keepPosition:true})});
   }catch(error){$('detail').innerHTML=`<div class="state">卡片資料載入失敗：${e(error.message)}</div>`}
 };
 window.openCard=openCard;
@@ -606,6 +640,11 @@ nextStageStyle.textContent=`
   .favorite-toggle{min-width:44px;min-height:44px}
   .watchlist-inline button{width:44px;height:44px;min-width:44px}
   .watchlist-inline span{min-width:34px}
+  .detail-collect{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0}
+  .detail-collect button{min-width:44px;min-height:44px;padding:0 14px;border:1px solid #d4d4d4;border-radius:10px;background:#fff;color:#222;font:inherit;font-weight:800;cursor:pointer}
+  .detail-collect button[aria-pressed=true]{background:#fff8bf;border-color:#c9a800;color:#5c4900}
+  .detail-collect button:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+  .detail-collect-step{display:inline-flex;gap:6px}
   .modal.open{place-items:start center}
   .modal .dialog{max-height:calc(100dvh - 32px);overflow:auto}
   .card-zoom-viewport{min-height:clamp(260px,calc(100dvh - 142px),900px)}
@@ -704,7 +743,7 @@ function installMobileQuickGrid(){
     {game:'pokemon',region:'US',label:'寶可夢美版',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
     {game:'onepiece',region:'ASIA',label:'航海王英文',logo:'/assets/ip-logos/onepiece.png',tag:'新發售',hot:true},
     {game:'onepiece',region:'TW',label:'航海王日文',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
-    {game:'yugioh',region:'JP',label:'遊戲王日文',logo:'/assets/ip-logos/yugioh.png',tag:'新發售',hot:true},
+    {game:'all',region:'all',label:'新手導覽',logo:'/assets/brand/web/rabbit-profile-96.webp',tag:'重看',hot:false,action:'tour'},
     {game:'yugioh',region:'US',label:'遊戲王美版',logo:'/assets/ip-logos/yugioh.png',tag:'收錄中',hot:false},
     {game:'weiss-schwarz',region:'JP',label:'芙莉蓮日文',logo:'/assets/ip-logos/weiss-schwarz.png',tag:'熱門收錄',hot:false},
     {game:'haikyuu',region:'JP',label:'排球少年日文',logo:'/assets/ip-logos/haikyuu.svg',tag:'即將發售',hot:true},
@@ -725,6 +764,7 @@ function installMobileQuickGrid(){
   grid.onclick=event=>{
     const btn=event.target.closest('.mqg-tile');if(!btn)return;
     if(btn.dataset.mqgAction==='collection'&&typeof window.openCollection==='function')return window.openCollection();
+    if(btn.dataset.mqgAction==='tour')return window.csStartTour?.();
     const g=btn.dataset.mqgGame,r=btn.dataset.mqgRegion;
     if(regionSelect&&r)regionSelect.value=r;
     if(typeof window.choose==='function')window.choose(g);
@@ -770,11 +810,13 @@ document.head.append(detailTabsStyle);
 // 頂欄／底部導覽的「我的收藏」呼叫 window.openCollection()（ADR 0045，v0 免登入）：清單可編輯張數／品況／版本／備註、看參考總值、匯出入 JSON 備份、下載 CSV。資料只在這台裝置。
 const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:''};
 const COLLECTION_REASONS={slab:'鑑定卡不計入',none:'尚無參考價快照',choose:'請選擇版本',['no-match']:'所選版本沒有對應的參考價'};
-const collectionItems=()=>CS.itemsFromLegacy(favoriteIds,watchlist,watchlistMeta);
+const collectionItems=()=>CS.itemsFromLegacy([],watchlist,watchlistMeta).filter(item=>item.quantity>0);
 const collectionDialog=()=>$('collectionDialog'),collectionRowEl=id=>[...document.querySelectorAll('#collectionDialog [data-coll-id]')].find(item=>item.dataset.collId===id);
 const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collStatus');if(node)node.textContent=collectionUi.progress};
 const typingInCollection=()=>/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'')&&collectionDialog()?.contains(document.activeElement);
 function finishLabel(key){return key===''?'未指定':(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[key])||key}
+// 這張卡只有一種價格版本時，版本欄預設選它（只是顯示，不寫入；估值本來就會用唯一的版本）。
+function shownFinish(item){return item.finish||CS.soleFinish((collectionUi.prices[item.id]||[]).filter(price=>!price.stale))}
 function finishChoices(item){const seen=new Set(),keys=['',...(collectionUi.prices[item.id]||[]).map(price=>price.variant).filter(Boolean),...COMMON_FINISHES];if(item.finish&&!keys.some(key=>CS.finishKey(key)===CS.finishKey(item.finish)))keys.push(item.finish);return keys.filter(key=>!seen.has(CS.finishKey(key))&&seen.add(CS.finishKey(key)))}
 // 伺服器把超過 7 天的快照標 stale:true（與詳細頁同規則）：估值只用新鮮的；過期的仍在 collectionUi.prices 裡，只在各卡列標「已過期」。
 function collectionValuation(){const fresh={};for(const [id,list] of Object.entries(collectionUi.prices))fresh[id]=list.filter(price=>!price.stale);return CS.valuate(collectionItems().map(item=>({...item,quantity:item.quantity||1})),fresh)}
@@ -797,7 +839,8 @@ function valueHtml(valuation){
   const fx=collectionUi.priceMeta?.exchangeRates,sums=Object.entries(CS.PROVIDER_LABELS).filter(([key])=>valuation.byProvider[key]).map(([key,label])=>{const row=valuation.byProvider[key];return `<li><span>${e(label)} 參考價小計</span><b>約 NT$ ${Math.round(row.twd).toLocaleString()}</b><small>${row.entries} 款${row.missingFx?`；${row.missingFx} 款缺匯率未換算`:''}</small></li>`}).join('');
   return `<h3>參考總值</h3>${sums?`<ul class="coll-sums">${sums}</ul>`:'<p>目前沒有可計入的參考價。</p>'}<p class="meta">${valuation.counted}／${valuation.total} 款有參考價${valuation.uncounted.length?`；其餘 ${valuation.uncounted.length} 款未計入（原因標在各卡）`:''}。${valuation.dateFrom?`快照日期 ${e(valuation.dateFrom)}${valuation.dateTo!==valuation.dateFrom?` 至 ${e(valuation.dateTo)}`:''}。`:''}不同來源不相加；品況不調整價格。${fx?.source==='fallback'?'匯率為備用值，僅供概略。':fx?.updatedAt?`匯率日期 ${e(fx.updatedAt)}。`:''}</p><p class="meta">${e(collectionUi.priceMeta?.note||'參考價不是成交價或台灣行情。')}</p>`;
 }
-function recentSeriesCount(){try{const raw=JSON.parse(localStorage.getItem('cardscope-band-recent')||'[]');return Array.isArray(raw)?raw.length:0}catch{return 0}}
+// 「涵蓋遊戲」：收藏裡不同遊戲的數量（卡片資料還沒補齊的不算）。
+function collectionGameCount(){return new Set(collectionIds().map(id=>watchlistMeta[id]?.game).filter(Boolean)).size}
 function refreshCollectionValue(){
   const valuation=collectionValuation(),host=$('collValue');if(host)host.innerHTML=valueHtml(valuation);
   collectionItems().forEach(item=>{const cell=collectionRowEl(item.id)?.querySelector('.coll-price');if(cell)cell.innerHTML=rowPriceHtml(item,valuation)});
@@ -805,30 +848,31 @@ function refreshCollectionValue(){
   const total=$('collTotal');if(total)total.textContent=`共 ${idsCount} 款、${cardsCount} 張`;
   const statIds=$('collStatIds');if(statIds)statIds.textContent=String(idsCount);
   const statCards=$('collStatCards');if(statCards)statCards.textContent=String(cardsCount);
+  const statGames=$('collStatGames');if(statGames)statGames.textContent=String(collectionGameCount());
   const statPriced=$('collStatPriced');if(statPriced)statPriced.textContent=String(valuation.counted||0);
   const binderTotal=$('collBinderTotal');if(binderTotal)binderTotal.textContent=`已擁有 ${cardsCount} 張卡 ›`;
 }
 // Alt-art versions can share region, set and number; add the id only when the label alone would not tell them apart.
-function choiceLabels(choices){const labels=choices.map(choice=>[choice.cardId,[rn(choice.region),choice.set,choice.number,choice.rarity,choice.variant].filter(Boolean).join(' · ')]);return labels.map(([cardId,label])=>[cardId,labels.filter(row=>row[1]===label).length>1?`${label} · ${cardId}`:label])}
+function choiceLabels(choices,gameId){const labels=choices.map(choice=>[choice.cardId,[rn(choice.region,gameId),choice.set,choice.number,choice.rarity,choice.variant].filter(Boolean).join(' · ')]);return labels.map(([cardId,label])=>[cardId,labels.filter(row=>row[1]===label).length>1?`${label} · ${cardId}`:label])}
 function collectionRowHtml(item,valuation){
   const meta=watchlistMeta[item.id]||{},known=!!meta.v,title=known?name(meta):collectionUi.failed.has(item.id)?`查無這張卡的資料（${item.id}）`:`卡片資料載入中（${item.id}）`,qty=item.quantity||1,id=e(item.id);
-  const facts=known?[meta.officialCardNumber||'卡號待補',meta.rarity?rarityMarkup(meta.rarity,meta.game):'稀有度待補'].join(' · '):'',badges=known?`${meta.region?`<span class="badge">${e(rn(meta.region))}</span>`:''}${meta.version?`<span class="badge variant-badge">${e(meta.version)}</span>`:''}${meta.ambiguous?'<span class="badge">版本待確認</span>':''}`:'';
-  const pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[]).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
-  return `<li class="coll-item" data-coll-id="${id}"><div class="coll-art">${known&&meta.image?resilientImage(meta.image,title,'圖片來源尚未收錄'):missingImageMarkup('')}</div><div class="coll-main"><b class="coll-name">${e(title)}</b><div class="meta">${facts}</div><div class="coll-badges">${badges}</div><div class="coll-price">${rowPriceHtml(item,valuation)}</div></div>${pick}<div class="coll-fields"><label>張數<input type="number" inputmode="numeric" min="1" max="999" step="1" value="${qty}" data-coll-field="quantity"></label><label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([key,label])=>`<option value="${e(key)}"${key===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>版本<select data-coll-field="finish">${finishChoices(item).map(key=>`<option value="${e(key)}"${CS.finishKey(key)===CS.finishKey(item.finish)?' selected':''}>${e(finishLabel(key))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label></div><div class="coll-actions"><button type="button" data-collection-open="${id}">查看</button><button type="button" data-coll-remove="${id}" aria-label="從我的收藏移除${e(title)}">移除</button></div></li>`;
+  const facts=known?[meta.officialCardNumber||'卡號待補',meta.rarity?rarityMarkup(meta.rarity,meta.game):'稀有度待補'].join(' · '):'',badges=known?`${meta.region?`<span class="badge">${e(rn(meta.region,meta.game))}</span>`:''}${meta.version?`<span class="badge variant-badge">${e(meta.version)}</span>`:''}${meta.ambiguous?'<span class="badge">版本待確認</span>':''}`:'';
+  const pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[],meta.game).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
+  return `<li class="coll-item" data-coll-id="${id}"><div class="coll-art">${known&&meta.image?resilientImage(meta.image,title,'圖片來源尚未收錄'):missingImageMarkup('')}</div><div class="coll-main"><b class="coll-name">${e(title)}</b><div class="meta">${facts}</div><div class="coll-badges">${badges}</div><div class="coll-price">${rowPriceHtml(item,valuation)}</div></div>${pick}<div class="coll-fields"><label>張數<input type="number" inputmode="numeric" min="1" max="999" step="1" value="${qty}" data-coll-field="quantity"></label><label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([key,label])=>`<option value="${e(key)}"${key===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>版本<select data-coll-field="finish">${finishChoices(item).map(key=>`<option value="${e(key)}"${CS.finishKey(key)===CS.finishKey(shownFinish(item))?' selected':''}>${e(finishLabel(key))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label></div><div class="coll-actions"><button type="button" data-collection-open="${id}">查看</button><button type="button" data-coll-remove="${id}" aria-label="從我的收藏移除${e(title)}">移除</button></div></li>`;
 }
 function renderCollection(){
-  const dialog=collectionDialog();if(!dialog)return;const items=collectionItems(),valuation=collectionValuation(),idsCount=collectionIds().length,cardsCount=collectionTotal(),recentCount=recentSeriesCount();
-  const overviewHtml=`<div class="coll-stats-grid" aria-label="收藏統計摘要"><div class="coll-stat"><b id="collStatIds">${idsCount}</b><span>收藏款數</span></div><div class="coll-stat"><b id="collStatCards">${cardsCount}</b><span>收藏總張數</span></div><div class="coll-stat"><b id="collStatRecent">${recentCount}</b><span>最近瀏覽系列</span></div><div class="coll-stat"><b id="collStatPriced">${valuation.counted||0}</b><span>已估值款數</span></div></div><button type="button" class="coll-binder-banner" data-coll-binder><span class="coll-binder-left"><img src="/assets/brand/web/rabbit-success-160.webp" alt=""><span class="coll-binder-copy"><b>TCG 收藏冊</b><small>本機免登入 · 即時估值與清單管理</small></span></span><span class="coll-binder-right" id="collBinderTotal">已擁有 ${cardsCount} 張卡 ›</span></button>`;
+  const dialog=collectionDialog();if(!dialog)return;const items=collectionItems(),valuation=collectionValuation(),idsCount=collectionIds().length,cardsCount=collectionTotal(),gameCount=collectionGameCount();
+  const overviewHtml=`<div class="coll-stats-grid" aria-label="收藏統計摘要"><div class="coll-stat"><b id="collStatIds">${idsCount}</b><span>收藏款數</span></div><div class="coll-stat"><b id="collStatCards">${cardsCount}</b><span>收藏總張數</span></div><div class="coll-stat"><b id="collStatGames">${gameCount}</b><span>涵蓋遊戲</span></div><div class="coll-stat"><b id="collStatPriced">${valuation.counted||0}</b><span>已估值款數</span></div></div><button type="button" class="coll-binder-banner" data-coll-binder><span class="coll-binder-left"><img src="/assets/brand/web/rabbit-success-160.webp" alt=""><span class="coll-binder-copy"><b>TCG 收藏冊</b><small>本機免登入 · 即時估值與清單管理</small></span></span><span class="coll-binder-right" id="collBinderTotal">已擁有 ${cardsCount} 張卡 ›</span></button>`;
   dialog.innerHTML=`<div class="coll"><header><h2 id="collectionTitle" tabindex="-1">我的收藏</h2><button type="button" data-collection-close aria-label="關閉我的收藏">×</button></header>${overviewHtml}<p class="coll-local" role="note"><b>只存在這台裝置</b>：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期「匯出備份」。</p>${items.length?`<p class="meta" id="collTotal">共 ${idsCount} 款、${cardsCount} 張</p><section class="coll-value" id="collValue" aria-label="參考總值">${valueHtml(valuation)}</section><ul class="coll-list" id="collList">${items.map(item=>collectionRowHtml(item,valuation)).join('')}</ul>`:'<div class="state">還沒有收藏。在卡片上按星號或「＋」就會出現在這裡；也可以匯入之前的備份。</div>'}<div class="coll-tools"><button type="button" data-coll-export${items.length?'':' disabled'}>匯出備份（JSON）</button><button type="button" data-coll-import>匯入備份</button><input type="file" id="collFile" accept="application/json,.json" hidden><button type="button" id="collectionCsv"${items.length?'':' disabled'}>下載清單 CSV</button><button type="button" data-coll-explore>探索加卡</button></div><p class="meta" id="collStatus" role="status" aria-live="polite">${e(collectionUi.progress)}</p></div>`;
   const csv=$('collectionCsv');if(csv)csv.onclick=downloadWatchlistCsv;
 }
 const rerenderCollection=()=>{if(collectionDialog()?.open&&!typingInCollection())renderCollection()};
-function refreshGrid(){renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true)}
+function refreshGrid(){renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true);renderDetailCollect()}
 
 // 把 items 寫回三個既有 localStorage 鍵；畫面快照（名稱、圖、地區）依 id 沿用。
 function applyItems(items){
-  const old={...watchlistMeta};favoriteIds.clear();Object.keys(watchlist).forEach(key=>delete watchlist[key]);Object.keys(watchlistMeta).forEach(key=>delete watchlistMeta[key]);
-  items.forEach(item=>{if(item.favorite)favoriteIds.add(item.id);if(item.quantity>0)watchlist[item.id]=item.quantity;watchlistMeta[item.id]={...old[item.id],id:item.id,canonicalId:item.canonicalId||old[item.id]?.canonicalId||'',condition:item.condition,finish:item.finish,note:item.note}});
+  const old={...watchlistMeta};Object.keys(watchlist).forEach(key=>delete watchlist[key]);Object.keys(watchlistMeta).forEach(key=>delete watchlistMeta[key]);
+  items.forEach(item=>{const quantity=CS.collectedQuantity(item);if(quantity>0)watchlist[item.id]=quantity;watchlistMeta[item.id]={...old[item.id],id:item.id,canonicalId:item.canonicalId||old[item.id]?.canonicalId||'',condition:item.condition,finish:item.finish,note:item.note}});
   if(!persistCollection())collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），這次的變更關掉頁面後會消失；請先匯出備份。');
 }
 
@@ -878,7 +922,7 @@ function onCollectionField(input){
 function removeCollectionItem(id){
   const meta=watchlistMeta[id],title=meta?.v?name(meta):id;
   if(!confirm(`從「我的收藏」移除 ${title}？品況、版本與備註也會一併刪除。`))return;
-  favoriteIds.delete(id);delete watchlist[id];delete watchlistMeta[id];persistCollection();refreshGrid();renderCollection();$('collectionTitle')?.focus();collectionStatus(`已移除 ${title}。`);
+  delete watchlist[id];delete watchlistMeta[id];persistCollection();refreshGrid();renderCollection();$('collectionTitle')?.focus();collectionStatus(`已移除 ${title}。`);
 }
 function installCollectionDialog(){
   let dialog=collectionDialog();if(dialog)return dialog;
