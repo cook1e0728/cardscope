@@ -1,5 +1,9 @@
 import { normalizeCardNameRecord, normalizeRarityRecord, normalizeRarityValue } from './normalize.mjs';
 import { syncHaikyuu, syncWeissFrieren } from './official-ip-sync.mjs';
+import { readFileSync } from 'node:fs';
+// 遊戲王熱門卡的台灣常用叫法（非官方中文名，只作搜尋別名；ADR 0052 Q8）。每日同步會重寫 search_text，所以在這裡一併帶入，不必同步後重跑腳本。
+const YUGIOH_ZH_ALIASES=(()=>{try{const file=JSON.parse(readFileSync(new URL('../data/yugioh-zh-aliases.json',import.meta.url),'utf8'));return new Map((file.entries||[]).map(entry=>[String(entry.nameEn||'').toLowerCase(),entry.aliases||[]]))}catch{return new Map()}})();
+export const yugiohZhAliasTerms=name=>{const aliases=YUGIOH_ZH_ALIASES.get(String(name||'').toLowerCase())||[];return [...new Set(aliases.flatMap(alias=>[alias.trim(),alias.trim().replace(/[\s\-・·]/g,'')]).filter(Boolean))]};
 
 const SOURCE_URLS={
   pokemontcg:'https://docs.pokemontcg.io/',
@@ -304,7 +308,7 @@ async function syncYugioh(db){
       const descriptorsByCard=batch.map(c=>({c,descriptors:yugiohPrintingDescriptors(c)}));
       const cardRows=[],printings=[],batchNames=[];
       for(const {c,descriptors} of descriptorsByCard){
-        const baseId=`yugioh-ygoprodeck-${c.id}`,baseRarity=c.card_sets?.[0]?.set_rarity,baseCard={id:baseId,canonical_id:`yugioh-ygoprodeck-${c.id}`,game_id:'yugioh',series_id:seriesByName.get(c.card_sets?.[0]?.set_name)||null,official_card_number:String(c.id),...cardRarityFields('yugioh',baseRarity),name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[c.archetype].filter(Boolean),source:provider,provider_id:String(c.id),search_text:searchText(c.name,c.id,c.archetype,(c.card_sets||[]).flatMap(s=>[s.set_name,s.set_code,s.set_rarity])),metadata:rarityMetadata('yugioh',baseRarity,{type:c.type||null,race:c.race||null,attribute:c.attribute||null}),updated_at:new Date().toISOString()};
+        const baseId=`yugioh-ygoprodeck-${c.id}`,baseRarity=c.card_sets?.[0]?.set_rarity,baseCard={id:baseId,canonical_id:`yugioh-ygoprodeck-${c.id}`,game_id:'yugioh',series_id:seriesByName.get(c.card_sets?.[0]?.set_name)||null,official_card_number:String(c.id),...cardRarityFields('yugioh',baseRarity),name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[c.archetype].filter(Boolean),source:provider,provider_id:String(c.id),search_text:searchText(c.name,c.id,c.archetype,(c.card_sets||[]).flatMap(s=>[s.set_name,s.set_code,s.set_rarity]),yugiohZhAliasTerms(c.name)),metadata:rarityMetadata('yugioh',baseRarity,{type:c.type||null,race:c.race||null,attribute:c.attribute||null}),updated_at:new Date().toISOString()};
         cardRows.push(baseCard);batchNames.push(...cardNameRows(baseCard,{source:provider,sourceUrl:`https://db.ygoprodeck.com/card/?search=${encodeURIComponent(c.name)}`}));
         for(const descriptor of descriptors){
           const variantToken=yugiohVariantToken(descriptor),providerId=`${c.id}:${descriptor.setCode}:${descriptor.rarity||'unknown'}:${descriptor.imageId||descriptor.imageUrl||descriptor.imageIndex}`;
