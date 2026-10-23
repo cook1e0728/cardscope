@@ -250,6 +250,17 @@ html.look-clean .notice,html.look-clean .notice[data-state="info"],html.look-cle
 html.look-clean .cards-state.error,html.look-clean .notice[data-state="error"]{background:#FBEDEB}
 html.look-clean .sk-card{padding:0;border:0;border-radius:0;background:transparent}
 html.look-clean .sk-art{border-radius:var(--lc-r-sm);background:#E7E0D1}
+/* 詳細頁載入骨架：卡圖框＋幾條文字；減少動態或暫停動態時不閃爍 */
+html.look-clean .dsk{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:var(--s5);padding:var(--s2) 0}
+html.look-clean .dsk-art,html.look-clean .dsk-line{display:block;border-radius:var(--lc-r-md);background:#E7E0D1}
+html.look-clean .dsk-art{width:100%;aspect-ratio:63/88}
+html.look-clean .dsk-line{height:14px;margin:0 0 14px}
+html.look-clean .dsk-line.t{width:70%;height:28px;margin-bottom:20px}
+html.look-clean .dsk-line.m{width:92%}
+html.look-clean .dsk-line.s{width:48%}
+@media(prefers-reduced-motion:no-preference){html.look-clean:not([data-cs-paused]) .dsk-art,html.look-clean:not([data-cs-paused]) .dsk-line{animation:dsk-pulse 1.4s ease-in-out infinite}}
+@keyframes dsk-pulse{50%{opacity:.5}}
+@media(max-width:760px){html.look-clean .dsk{grid-template-columns:minmax(0,1fr);justify-items:center}html.look-clean .dsk-art{width:min(62%,220px)}html.look-clean .dsk-text{width:100%}}
 html.look-clean .suggest-chip{min-height:44px;border:1px solid var(--lc-ink);border-radius:999px}
 
 /* 遊戲頁下方的行情區 */
@@ -498,3 +509,37 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
 
 /* 詳細頁關閉鈕：手機緊湊版的卡圖區塊會疊在它上面，點不到（2026-10-22 冒煙測試發現）。 */
 #close{z-index:10}
+
+/* 空搜尋提示（3 秒，aria-live）；價格功能停用說明；手機「更多工具」收合 */
+html.look-clean .search-hint{margin:0;font-size:13px;line-height:1.4;color:#A12A1E}
+html.look-clean .search-hint:not(:empty){margin-top:var(--s2)}
+html.look-clean .top>.search-hint{position:absolute;top:100%;right:var(--s3);left:var(--s3);margin:0;padding:0;text-align:right;color:#fff;pointer-events:none}
+html.look-clean .top>.search-hint:not(:empty){padding:var(--s1) var(--s3);margin:var(--s1) 0 0 auto;width:fit-content;border-radius:999px;background:#A12A1E;box-shadow:0 2px 8px #0003}
+html.look-clean .price-note:not([hidden]){display:block;margin-top:var(--s1);overflow:hidden;font-size:12px;line-height:1.4;color:var(--lc-ink-2);text-overflow:ellipsis;white-space:nowrap}
+html.look-clean #cardsSection:has(#cards .search-empty) #cardTools{display:none!important}
+@media(max-width:760px){
+  html.look-clean .cs-more{flex:0 0 100%;width:100%;border-top:1px solid var(--lc-hair)}
+  html.look-clean .cs-more>summary{display:flex;align-items:center;min-height:44px;font-size:14px;font-weight:500;color:var(--lc-ink-2);cursor:pointer}
+  html.look-clean .cs-more .watchlist-summary{padding-top:0;border-top:0}
+  /* 頂欄：遊戲／版本選擇器收窄（不用原生箭頭、不放 Logo），搜尋框在 390 寬至少約 150px */
+  html.look-clean .mobile-scope-pill img{display:none}
+  html.look-clean .mobile-scope-pill select,html.look-clean .mobile-region-pill select{appearance:none;-webkit-appearance:none;padding:0;font-size:13px}
+  html.look-clean .mobile-scope-pill:after,html.look-clean .mobile-region-pill:after{content:"▾";margin:0 2px;font-size:10px;color:var(--lc-ink-2);pointer-events:none}
+  html.look-clean .top .search{padding-left:var(--s2)}
+  html.look-clean .top .search input{padding:0 var(--s1)}
+  /* 第一張卡盡量在第一屏：稀有度直選改成一排橫向捲動、篩選鈕單行、商品橫幅縮小 */
+  html.look-clean .card-tools,html.look-clean body[data-view="game"] .card-tools{row-gap:var(--s2)}
+  html.look-clean .rarity-bento-box{padding:8px 8px 8px 12px}
+  html.look-clean .rarity-bento-head{margin-bottom:6px}
+  html.look-clean .rarity-bento-title span,html.look-clean .rarity-hud-Jump{display:none}
+  html.look-clean .rarity-pills{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(104px,max-content);padding-bottom:2px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+  html.look-clean .filter-sheet-toggle{flex-direction:row;align-items:center;gap:var(--s2);min-height:44px;padding:0 var(--s3)}
+  html.look-clean .filter-sheet-toggle span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  html.look-clean .selected-product,html.look-clean .selected-product.open{gap:var(--s3);margin-top:var(--s3);padding-top:var(--s3)}
+  html.look-clean .selected-product-art,html.look-clean .selected-product-art .band-tile-art{width:64px;height:64px}
+  html.look-clean .selected-product h2{margin-top:0;font-size:20px}
+  /* 篩選摘要的數字已在標題下方的「共 N 張」，手機不重複 */
+  html.look-clean .filter-summary{display:none}
+  html.look-clean body[data-view="game"] .channels{padding:var(--s2) 0 var(--s1)}
+  html.look-clean body[data-view="game"] .series-band-head{padding-block:var(--s1)}
+}

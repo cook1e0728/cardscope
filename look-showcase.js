@@ -216,17 +216,34 @@
   function maybeAutoStart(){
     let done=false;try{done=!!localStorage.getItem(DONE)}catch{}
     if(done||!landing())return;
+    // 等四個導覽目標都出現（最多 3 秒）再開始，總步數一開始就定下來，不會從「1／3」跳成「1／4」
+    const t0=Date.now();
     setTimeout(()=>{
-      const t0=Date.now(),tick=()=>{
+      const tick=()=>{
         if(tour||!landing()||$('#modal.open'))return;
-        if(!firstVis('#channels .channel,#mobileQuickGrid .mqg-tile')&&Date.now()-t0<3000)return setTimeout(tick,150);
+        if((!firstVis('#channels .channel,#mobileQuickGrid .mqg-tile')||stepDefs().length<4)&&Date.now()-t0<3000)return setTimeout(tick,150);
         startTour();
       };tick();
     },1400);
   }
 
+  /* ---------- 5. 手機：我的收藏列與「下載清單 CSV」收進「更多工具」，卡牆往上提；頂欄 placeholder 縮短 ---------- */
+  function foldTools(){
+    const s=$('#watchlistSummary');if(!s)return;
+    const mq=matchMedia('(max-width:760px)'),sync=()=>{
+      const d=s.closest('.cs-more');
+      if(mq.matches&&!d){const n=el('details','cs-more'),cards=$('#cards');(cards||s).after(n);n.append(el('summary','','更多工具：我的收藏、下載清單'),s)} // 手機放在卡牆下方
+      else if(!mq.matches&&d){$('#cardTools')?.append(s);d.remove()} // 桌面不包，版面維持原樣
+    };
+    sync();mq.addEventListener('change',sync);
+  }
+  function shortPlaceholder(){
+    const q=$('#q');if(!q)return;const full=q.placeholder,mq=matchMedia('(max-width:760px)'),sync=()=>{q.placeholder=mq.matches?'搜尋卡名或卡號':full};
+    sync();mq.addEventListener('change',sync);
+  }
+
   function init(){
-    splitTitle();syncNav();
+    splitTitle();syncNav();foldTools();shortPlaceholder();
     // 重看導覽：桌面在「版本」那一列，手機在標題小卡內
     const mk=(cls)=>{const b=el('button',cls,'✦ 重看導覽');b.type='button';b.classList.add('cs1-replay');b.onclick=()=>startTour();return b};
     $('.browse-regions')?.append(mk(''));
@@ -237,4 +254,5 @@
   }
   ready(()=>{try{init()}catch(e){}});
   window.csPreview1={startTour,closeTour};
+  window.csStartTour=()=>startTour();
 })();

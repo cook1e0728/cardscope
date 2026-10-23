@@ -119,6 +119,8 @@
   }
   async function restore(state=readLocation()){
     restoring=true;openedFromList=false;
+    // 分享連結直接開卡：先開詳細頁（只等卡片 API），列表在背後照常還原
+    const earlyCard=state.card&&typeof originalOpenCard==='function'&&!node('modal')?.classList.contains('open')?originalOpenCard(state.card).then(installDetailShare).catch(()=>{}):null;
     try{
       await waitFor(()=>Array.isArray(C?.games)&&C.games.length>0).catch(()=>{});
       if(node('browseRegion'))node('browseRegion').value=state.region;
@@ -136,7 +138,7 @@
       if(state.game!=='all'&&state.rarity&&state.rarity!=='all'&&cardFilters.rarity!==state.rarity){cardFilters.rarity=state.rarity;if(node('rarityFilter'))node('rarityFilter').value=state.rarity;if(typeof loadCardsPage==='function')await loadCardsPage(true);await waitFor(()=>!browse?.loading).catch(()=>{})}
       while(state.game!=='all'&&state.pages>1&&browse?.hasMore&&Math.ceil(number(browse.offset,0)/PAGE_SIZE)<state.pages)await loadCardsPage(false);
       if(state.query&&typeof window.search==='function')await window.search();
-      if(state.card&&typeof originalOpenCard==='function'){await originalOpenCard(state.card);installDetailShare()}
+      if(state.card&&typeof originalOpenCard==='function'){if(earlyCard)await earlyCard;else{await originalOpenCard(state.card);installDetailShare()}}
       else closeDetail();
       requestAnimationFrame(()=>window.scrollTo({top:state.scrollY,behavior:'auto'}));
     }finally{

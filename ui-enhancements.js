@@ -569,7 +569,9 @@ function installRarityPills(){
     strip.hidden=hide;box.hidden=hide;
     const parsed=options.map(parseRarityOption);
     const totalSum=parsed.reduce((acc,item)=>acc+(Number(String(item.count).replace(/,/g,''))||0),0);
-    if(parsed[0]&&parsed[0].value==='all'&&totalSum>0)parsed[0].count=totalSum.toLocaleString();
+    // 「全部」用伺服器的總數（含稀有度待補），和上方「共 N 張」一致
+    const serverTotal=Number(typeof browse!=='undefined'&&browse?.total);
+    if(parsed[0]&&parsed[0].value==='all'&&(serverTotal||totalSum)>0)parsed[0].count=(serverTotal||totalSum).toLocaleString();
     const cur=parsed.find(item=>item.value===select.value)||parsed[0]||{code:'全部卡片',count:''};
     head.innerHTML=`<div class="rarity-bento-title"><b>稀有度直選</b><span>免展開 · 點擊即換</span></div><div class="rarity-bento-actions"><button type="button" class="rarity-hud-Jump" data-open-hud="1">${hudManuallyOpened?'隱藏拇指盤':'✦ 底部拇指盤'}</button>${select.value!=='all'?'<button type="button" class="rarity-bento-reset" data-rarity-reset="all">重置全部</button>':''}</div>`;
     if(next!==signature){
