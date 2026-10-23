@@ -1,0 +1,124 @@
+/* 首頁預覽第 5 版「極簡聚焦」：克制、教學放進版面、最少動態。
+   四件事：①兔子左側的三步驟上手卡（手機為快速入口上方的三顆膠囊）②標題解碼＋介紹淡入（只播一次）
+   ③不彈窗的「?」信標導覽 ④頂欄扁平圖示按鈕＋底部圖示 dock。選定後與 home-v5.js 一起處理。
+   動畫只用 transform／opacity；prefers-reduced-motion 或 html[data-cs-paused] 時全部靜止。 */
+
+html.preview-v5{
+  --v5-bg:#1B1733;--v5-bg2:#24203F;--v5-line:#3B3560;--v5-line2:#6A62A0;
+  --v5-ink:#F6F1E6;--v5-ink2:#C9C1DA;--v5-ink3:#A49CBB;--v5-gold:#E7BA4C;
+  --v5-i-search:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m16.2 16.2 4.3 4.3'/%3E%3C/svg%3E");
+  --v5-i-browse:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='6.5' height='6.5' rx='1.5'/%3E%3Crect x='13.5' y='4' width='6.5' height='6.5' rx='1.5'/%3E%3Crect x='4' y='13.5' width='6.5' height='6.5' rx='1.5'/%3E%3Crect x='13.5' y='13.5' width='6.5' height='6.5' rx='1.5'/%3E%3C/svg%3E");
+  --v5-i-coll:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 4.5h10v15l-5-3.6-5 3.6z'/%3E%3C/svg%3E");
+}
+
+/* ===== ④-a 頂欄：圖示＋文字的扁平按鈕 ===== */
+html.preview-v5 .nav button{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:0;border-radius:10px;background:transparent;color:#1F1B16;font-size:15px;font-weight:500;line-height:1;cursor:pointer;transition:background-color .15s ease-out}
+html.preview-v5 body[data-view="landing"] .nav button{color:#E4DEF0}
+html.preview-v5 .nav button:hover{background:rgba(31,27,22,.08)}
+html.preview-v5 body[data-view="landing"] .nav button:hover{background:rgba(231,186,76,.16);color:#fff}
+html.preview-v5 .nav button[aria-current]{font-weight:700;box-shadow:inset 0 -3px 0 #B8820E}
+html.preview-v5 body[data-view="landing"] .nav button[aria-current]{color:#fff;box-shadow:inset 0 -3px 0 var(--v5-gold)}
+html.preview-v5 .nav button[aria-current]::before{background:#B8820E}
+html.preview-v5 body[data-view="landing"] .nav button[aria-current]::before{background:var(--v5-gold)}
+/* 圖示用 mask＋currentColor，不動 HTML；三個按鈕共用 */
+html.preview-v5 :is(.nav,nav.bottom) button::before{content:"";flex:none;width:18px;height:18px;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+html.preview-v5 :is(.nav,nav.bottom) [data-nav="search"]{--ic:var(--v5-i-search)}
+html.preview-v5 :is(.nav,nav.bottom) [data-nav="browse"]{--ic:var(--v5-i-browse)}
+html.preview-v5 :is(.nav,nav.bottom) [data-nav="collection"]{--ic:var(--v5-i-coll)}
+
+/* ===== ④-b 底部精簡 dock（桌面置中、離底 16px；手機滿寬）===== */
+html.preview-v5 nav.bottom{display:flex;position:fixed;left:0;right:0;bottom:16px;width:max-content;height:auto;margin-inline:auto;padding:6px;gap:4px;z-index:20;border:1px solid var(--v5-line);border-radius:18px;background:var(--v5-bg);box-shadow:0 12px 28px -8px rgba(0,0,0,.5)}
+html.preview-v5 nav.bottom button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:88px;min-height:52px;padding:6px 10px 10px;border:0;border-radius:12px;background:transparent;color:var(--v5-ink2);font:500 12px/1.1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background-color .15s ease-out}
+html.preview-v5 nav.bottom button:hover{background:#2A2548}
+html.preview-v5 nav.bottom button::before{width:22px;height:22px}
+html.preview-v5 nav.bottom button b,html.preview-v5 nav.bottom button img{display:none}
+html.preview-v5 nav.bottom button span{line-height:1.1}
+html.preview-v5 nav.bottom button[aria-current]{color:var(--v5-ink);font-weight:700}
+html.preview-v5 nav.bottom button[aria-current]::before{background:var(--v5-gold)}
+html.preview-v5 nav.bottom button[aria-current]::after{content:"";position:absolute;left:50%;bottom:3px;width:20px;height:3px;margin-left:-10px;border-radius:2px;background:var(--v5-gold)}
+html.preview-v5 nav.bottom button:focus-visible{outline:2px solid var(--v5-ink);outline-offset:-3px}
+html.preview-v5 body{padding-bottom:96px}
+
+/* ===== ② 進場：標題解碼（視覺層 aria-hidden，原文保留）與介紹淡入 ===== */
+html.preview-v5 .hero-intro h1{position:relative}
+html.preview-v5 .v5-ov{position:absolute;left:0;top:0;white-space:nowrap;pointer-events:none}
+html.preview-v5 .v5-c{display:inline-block;width:.98em;text-align:center}
+html.preview-v5 .v5-c[data-s]{font-family:'Space Grotesk','Noto Sans TC',sans-serif;font-weight:700;color:var(--v5-gold)}
+html.preview-v5 .v5-dec .v5-real{color:transparent}
+@keyframes v5-show{to{opacity:1}}
+@keyframes v5-fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:no-preference){
+  /* JS 還沒接手前先藏住標題，避免先閃出正確字；JS 失效時 1.2 秒後自動顯示 */
+  html.preview-v5:not([data-cs-paused]):not(.v5-ready) body[data-view="landing"] .hero-intro h1{opacity:0;animation:v5-show 0s linear 1.2s forwards}
+  html.preview-v5:not([data-cs-paused]):not(.v5-done) body[data-view="landing"] .hero-intro p{animation:v5-fade .45s cubic-bezier(.23,1,.32,1) .35s both}
+}
+
+/* ===== ① 三步驟上手（桌面：兔子左側／搜尋與範例之下；手機：快速入口上方三顆膠囊）===== */
+html.preview-v5 .v5-steps,html.preview-v5 .v5-pills{display:none}
+html.preview-v5 #channels,html.preview-v5 .mobile-quick-grid{scroll-margin-top:88px}
+@media (min-width:761px){
+  html.preview-v5 body[data-view="landing"] .hero{grid-template-rows:auto auto 1fr auto}
+  html.preview-v5 body[data-view="landing"] .hero>.hero-art{grid-row:1/5}
+  html.preview-v5 body[data-view="landing"] .hero>.v5-steps{display:grid;grid-column:1;grid-row:4;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:var(--s5,24px)}
+  html.preview-v5 .v5-steps-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--v5-ink3);font-size:13px;font-weight:500;letter-spacing:.04em}
+  html.preview-v5 .v5-steps-head b{font-weight:500}
+  html.preview-v5 .v5-replay{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:var(--v5-gold);font:500 13px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background-color .15s ease-out}
+  html.preview-v5 .v5-replay:hover{background:rgba(231,186,76,.14)}
+  html.preview-v5 .v5-replay i{display:grid;place-items:center;width:18px;height:18px;border:1.5px solid currentColor;border-radius:50%;font:700 11px/1 'Space Grotesk',sans-serif;font-style:normal}
+  html.preview-v5 .v5-step{display:grid;grid-template-columns:28px minmax(0,1fr);gap:2px 12px;align-items:start;align-content:center;min-height:88px;padding:14px;border:1px solid var(--v5-line);border-radius:12px;background:transparent;color:var(--v5-ink);text-align:left;font-family:inherit;cursor:pointer;transition:background-color .15s ease-out,border-color .15s ease-out}
+  html.preview-v5 .v5-step:hover{background:var(--v5-bg2);border-color:var(--v5-line2)}
+  html.preview-v5 .v5-step .v5-n{grid-row:1/3;display:grid;place-items:center;width:28px;height:28px;border:1.5px solid var(--v5-gold);border-radius:50%;color:var(--v5-gold);font:700 14px/1 'Space Grotesk',sans-serif}
+  html.preview-v5 .v5-step .v5-t{font-size:15px;font-weight:700;line-height:1.35}
+  html.preview-v5 .v5-step .v5-h{font-size:13px;line-height:1.4;color:var(--v5-ink3)}
+  html.preview-v5 .v5-step .v5-s{display:none}
+}
+@media (max-width:760px){
+  html.preview-v5 body[data-view="landing"] .v5-pills{display:flex;align-items:center;gap:6px;margin:20px 0 8px}
+  html.preview-v5 .v5-pill{flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 6px;border:1px solid var(--v5-line);border-radius:999px;background:var(--v5-bg);color:var(--v5-ink);font:500 13px/1 'Noto Sans TC',sans-serif;white-space:nowrap;cursor:pointer}
+  html.preview-v5 .v5-pill .v5-n{flex:none;display:grid;place-items:center;width:20px;height:20px;border:1.5px solid var(--v5-gold);border-radius:50%;color:var(--v5-gold);font:700 12px/1 'Space Grotesk',sans-serif}
+  html.preview-v5 .v5-pill .v5-s{overflow:hidden;text-overflow:ellipsis}
+  html.preview-v5 .v5-pill:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px;box-shadow:0 0 0 4px #1B1733}
+  html.preview-v5 .v5-pills .v5-replay{flex:none;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1.5px solid #1B1733;border-radius:50%;background:transparent;color:#1B1733;font:700 15px/1 'Space Grotesk',sans-serif;cursor:pointer}
+  html.preview-v5 .v5-pills .v5-replay i{font-style:normal}
+  html.preview-v5 .v5-pills .v5-replay span{display:none}
+  html.preview-v5 .v5-pills .v5-replay:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px;box-shadow:0 0 0 4px #1B1733}
+  html.preview-v5 .v5-steps-head,html.preview-v5 .v5-step .v5-t,html.preview-v5 .v5-step .v5-h{display:none}
+
+  @media (max-width:360px){html.preview-v5 .v5-pill{gap:4px;padding:0 4px;font-size:12px}html.preview-v5 .v5-pill .v5-n{width:18px;height:18px;font-size:11px}}
+  html.preview-v5 nav.bottom{left:0;right:0;bottom:0;width:auto;height:calc(62px + env(safe-area-inset-bottom));margin:0;padding:0 0 env(safe-area-inset-bottom);gap:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-width:1px 0 0;border-radius:0;box-shadow:0 -8px 20px -10px rgba(0,0,0,.4)}
+  html.preview-v5 nav.bottom button{min-width:0;min-height:62px;border-radius:0;padding:6px 4px 12px}
+  html.preview-v5 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+}
+
+/* ===== ③ 導覽：金色「?」信標與小提示（不彈窗、不遮罩）===== */
+html.preview-v5 .v5-bc{position:fixed;left:0;top:0;z-index:30;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:transparent;cursor:pointer;will-change:transform}
+html.preview-v5 .v5-bc[hidden]{display:none}
+html.preview-v5 body:not([data-view="landing"]) :is(.v5-bc,.v5-pop){display:none}
+html.preview-v5 .v5-dot{position:relative;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--v5-gold);color:var(--v5-bg);font:700 15px/1 'Space Grotesk',sans-serif;box-shadow:0 0 0 2px var(--v5-bg),0 0 0 3px rgba(246,241,230,.9)}
+html.preview-v5 .v5-ring{position:absolute;left:9px;top:9px;width:26px;height:26px;border:2px solid var(--v5-gold);border-radius:50%;opacity:0;pointer-events:none}
+html.preview-v5 .v5-bc:focus-visible{outline:none}
+html.preview-v5 .v5-bc:focus-visible .v5-dot{box-shadow:0 0 0 3px var(--v5-bg),0 0 0 6px var(--v5-ink)}
+@keyframes v5-pulse{from{transform:scale(1);opacity:.75}to{transform:scale(2.1);opacity:0}}
+@media (prefers-reduced-motion:no-preference){
+  html.preview-v5:not([data-cs-paused]) .v5-bc:not(.v5-still) .v5-ring{animation:v5-pulse 1.5s ease-out 3}
+  html.preview-v5:not([data-cs-paused]) .v5-pop{animation:v5-fade .15s ease-out}
+}
+html.preview-v5 .v5-pop{position:fixed;left:0;top:0;z-index:40;box-sizing:border-box;padding:14px 14px 10px;border:1px solid var(--v5-line2);border-radius:14px;background:var(--v5-bg);color:var(--v5-ink);box-shadow:0 16px 36px -8px rgba(0,0,0,.55);font-family:'Noto Sans TC',sans-serif}
+html.preview-v5 .v5-pop[hidden]{display:none}
+html.preview-v5 .v5-pop:focus{outline:none}
+html.preview-v5 .v5-pop b{display:block;font-size:15px;font-weight:700;line-height:1.35}
+html.preview-v5 .v5-pop p{margin:4px 0 0;font-size:14px;line-height:1.5;color:var(--v5-ink2)}
+html.preview-v5 .v5-pop small{display:block;margin-top:8px;font-size:12px;color:var(--v5-ink3)}
+html.preview-v5 .v5-pop-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+html.preview-v5 .v5-pop-actions button{min-height:44px;padding:0 14px;border:0;border-radius:10px;font:700 14px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background-color .15s ease-out}
+html.preview-v5 .v5-ok{background:var(--v5-gold);color:var(--v5-bg)}
+html.preview-v5 .v5-ok:hover{background:#F2CB66}
+html.preview-v5 .v5-skip{background:transparent;color:var(--v5-ink2);font-weight:500!important}
+html.preview-v5 .v5-skip:hover{background:var(--v5-bg2);color:var(--v5-ink)}
+html.preview-v5 .v5-pop button:focus-visible{outline:2px solid var(--v5-ink);outline-offset:2px}
+
+/* 減少動態／暫停動態：全部靜止，導覽仍可用 */
+@media (prefers-reduced-motion:reduce){
+  html.preview-v5 :is(.nav button,nav.bottom button,.v5-step,.v5-replay,.v5-pop-actions button){transition:none}
+}
+html.preview-v5[data-cs-paused] :is(.nav button,nav.bottom button,.v5-step,.v5-replay,.v5-pop-actions button){transition:none}

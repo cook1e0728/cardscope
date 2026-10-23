@@ -1,0 +1,151 @@
+/* 首頁預覽第 2 版「打字機／跨語言」：同一張卡多語搜尋示範、打字機標題、右下步驟卡導覽、分段控制頂欄＋實心底部橫條。
+   所有選擇器都以 html.preview-v2 開頭；動畫只用 transform／opacity；減少動態與 data-cs-paused 時全部靜止。 */
+
+html.preview-v2{--v2-gold:#E7BA4C;--v2-night:#16132A;--v2-deep:#1B1733;--v2-face:#24203F;--v2-line:#3B3560;--v2-line2:#4A4470;--v2-ink:#F6F1E6;--v2-ink2:#C9C1DA;--v2-ink3:#A49CBB;--v2-ease:cubic-bezier(.23,1,.32,1);--v2-bar:62px}
+
+.v2-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+
+/* ---- 1. 標題打字機（視覺層 aria-hidden，原文字留在 .v2-sr）＋介紹文字逐行淡入 ---- */
+html.preview-v2 .v2-tw{display:inline}
+html.preview-v2 .v2-rest{visibility:hidden}
+html.preview-v2 .v2-cur{display:inline-block;position:relative;width:0;height:1em;vertical-align:-.1em}
+html.preview-v2 .v2-cur::before{content:"";position:absolute;left:2px;top:.08em;bottom:.04em;width:.07em;min-width:3px;background:var(--v2-cur,var(--v2-gold))}
+html.preview-v2 .v2-cur[hidden]{display:none}
+html.preview-v2 .v2-line{display:block}
+@keyframes v2-blink2{0%{opacity:1}25%{opacity:0}50%{opacity:1}75%{opacity:0}100%{opacity:0}}
+@keyframes v2-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes v2-failsafe{to{opacity:1}}
+@media (prefers-reduced-motion:no-preference){
+  html.preview-v2:not([data-cs-paused]) .v2-cur.is-done{animation:v2-blink2 .9s linear forwards}
+  html.preview-v2:not([data-cs-paused]) .v2-line{animation:v2-rise .4s var(--v2-ease) var(--d,.4s) both}
+  /* JS 還沒接手前先藏起標題與說明，避免閃一下；JS 失敗時 1.3 秒後自動顯示 */
+  html.preview-v2:not(.v2-ready) body[data-view="landing"] .hero-intro>*{opacity:0;animation:v2-failsafe 0s 1.3s forwards}
+}
+
+/* ---- 2. 跨語言示範面板 ---- */
+html.preview-v2 .v2-demo{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px 14px;box-sizing:border-box;min-width:0;padding:14px;border:1px solid var(--v2-line);border-radius:16px;background:var(--v2-face);color:var(--v2-ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .15s ease-out,transform .15s var(--v2-ease)}
+html.preview-v2 .v2-demo:hover{border-color:#6A62A0}
+html.preview-v2 .v2-demo:active{transform:scale(.99)}
+html.preview-v2 .v2-demo:focus-visible{outline:3px solid var(--v2-ink);outline-offset:3px}
+html.preview-v2 .v2-demo-input{grid-column:1;display:flex;align-items:center;gap:8px;min-width:0;height:40px;padding:0 12px;border:1px solid var(--v2-line2);border-radius:10px;background:var(--v2-night);font:500 16px/1 'Space Grotesk','Noto Sans TC',sans-serif;color:var(--v2-ink);white-space:nowrap;overflow:hidden}
+html.preview-v2 .v2-demo-input b{flex:none;color:var(--v2-ink3);font-weight:400}
+html.preview-v2 .v2-demo-typed{min-width:0;overflow:hidden;text-overflow:clip}
+html.preview-v2 .v2-demo .v2-cur{flex:none;height:1.1em;vertical-align:baseline;margin-left:-6px}
+html.preview-v2 .v2-demo-chips{grid-column:1;display:flex;flex-wrap:wrap;gap:6px}
+html.preview-v2 .v2-chip{display:inline-flex;align-items:center;padding:3px 10px;border:1px solid var(--v2-line2);border-radius:999px;color:var(--v2-ink3);font:500 13px/1.4 'Space Grotesk','Noto Sans TC',sans-serif;white-space:nowrap;transition:color .2s ease-out,background-color .2s ease-out,border-color .2s ease-out}
+html.preview-v2 .v2-chip::before{content:"✓";margin-right:3px;opacity:0;transition:opacity .2s ease-out}
+html.preview-v2 .v2-chip.is-on{border-color:var(--v2-gold);background:rgba(231,186,76,.14);color:var(--v2-ink)}
+html.preview-v2 .v2-chip.is-on::before{opacity:1}
+html.preview-v2 .v2-demo-cap{grid-column:1;font-size:13px;line-height:1.4;color:var(--v2-ink2);opacity:0;transition:opacity .3s ease-out}
+html.preview-v2 .v2-demo-art{grid-column:2;grid-row:1/4;display:block;width:92px;aspect-ratio:5/7;border-radius:6px;background:var(--v2-night);outline:1px solid var(--v2-line2);overflow:hidden;opacity:0;transform:translateY(8px) scale(.96);transition:opacity .35s ease-out,transform .35s var(--v2-ease)}
+html.preview-v2 .v2-demo-art img{display:block;width:100%;height:100%;object-fit:contain}
+html.preview-v2 .v2-demo[data-found] .v2-demo-cap{opacity:1}
+html.preview-v2 .v2-demo[data-found] .v2-demo-art{opacity:1;transform:none}
+html.preview-v2 .v2-demo.no-img{grid-template-columns:minmax(0,1fr)}
+html.preview-v2 .v2-demo.no-img .v2-demo-art{display:none}
+/* 靜止版：三個詞並列，不打字 */
+html.preview-v2 .v2-demo[data-static] .v2-demo-input{display:none}
+html.preview-v2 .v2-demo[data-static] .v2-chip{border-color:var(--v2-gold);color:var(--v2-ink)}
+html.preview-v2 .v2-demo[data-static] .v2-chip::before{display:none}
+html.preview-v2 .v2-demo[data-static] .v2-demo-art,html.preview-v2 .v2-demo[data-static] .v2-demo-cap,html.preview-v2 .v2-demo[data-static] .v2-chip{transition:none}
+
+@media (min-width:761px){
+  /* 窄桌面：示範面板成一條橫帶，放在範例列下方、遊戲入口上方（兔子卡跨 1～3 列，第 4 列是空的） */
+  html.preview-v2 body[data-view="landing"] #hero>.v2-demo{grid-column:1/-1;grid-row:4;justify-self:stretch;width:100%;grid-template-columns:minmax(0,340px) auto;justify-content:start;margin-top:var(--s5,24px)}
+  html.preview-v2 body[data-view="landing"] #hero>.v2-demo .v2-demo-input{max-width:none}
+  html.preview-v2 body[data-view="landing"] #hero>.v2-demo .v2-demo-art{width:84px}
+  html.preview-v2 body[data-view="landing"] #hero .hero-intro h1{font-size:clamp(40px,4.6vw,64px)}
+}
+@media (min-width:1280px){
+  /* 寬桌面：面板放在標題與介紹文字右側（兔子圖左邊的空白）；標題欄寬度讓出面板 */
+  html.preview-v2 body[data-view="landing"] #hero>.v2-demo{grid-column:1;grid-row:1;justify-self:end;align-self:start;width:320px;margin-top:var(--s2,8px)}
+  html.preview-v2 body[data-view="landing"] #hero>.v2-demo .v2-demo-input{max-width:none}
+  html.preview-v2 body[data-view="landing"] #hero>.hero-intro{max-width:calc(100% - 344px)}
+}
+
+/* ---- 3. 頂欄：分段控制（搜尋／圖鑑／我的收藏） ---- */
+html.preview-v2 body .top .nav{display:flex;align-items:center;gap:2px;margin-left:auto;padding:3px;border:1px solid var(--lc-line,#857D6E);border-radius:14px;background:#ECE6D8}
+html.preview-v2 body .top .nav button{min-width:44px;min-height:44px;padding:0 20px;border:0;border-radius:11px;background:transparent;color:#4A443A;font:500 15px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background-color .15s ease-out,color .15s ease-out}
+html.preview-v2 body .top .nav button:hover{background:#DDD5C4;color:#1F1B16;border:0}
+html.preview-v2 body .top .nav button[aria-current="page"]{background:#1F1B16;color:#fff;font-weight:700}
+html.preview-v2 body .top .nav button:focus-visible{outline:3px solid #1F1B16;outline-offset:2px}
+html.preview-v2 body[data-view="landing"] .top .nav{border-color:var(--v2-line);background:var(--v2-face)}
+html.preview-v2 body[data-view="landing"] .top .nav button{color:var(--v2-ink2)}
+html.preview-v2 body[data-view="landing"] .top .nav button:hover{background:#2E2950;color:var(--v2-ink)}
+html.preview-v2 body[data-view="landing"] .top .nav button[aria-current="page"]{background:var(--v2-gold);color:var(--v2-deep)}
+html.preview-v2 body[data-view="landing"] .top .nav button:focus-visible{outline-color:var(--v2-ink)}
+
+/* ---- 4. 底部實心橫條（桌面與手機都顯示；選中格上方金色指示條會滑動） ---- */
+html.preview-v2 body{--v2-pad:max(0px,calc((100% - 560px)/2))}
+html.preview-v2 body .bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;position:fixed;left:0;right:0;bottom:0;z-index:6;box-sizing:border-box;height:calc(var(--v2-bar) + env(safe-area-inset-bottom));padding:0 var(--v2-pad) env(safe-area-inset-bottom);background:var(--v2-night);border-top:1px solid var(--v2-line)}
+html.preview-v2 body[data-view] .bottom{border-top:1px solid var(--v2-line)}
+html.preview-v2 body .bottom button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;padding:4px 0;border:0;border-radius:0;background:transparent;color:var(--v2-ink2);font:500 12px/1.1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background-color .15s ease-out,color .15s ease-out}
+html.preview-v2 body .bottom button b,html.preview-v2 body[data-view] .bottom b{display:grid;place-items:center;width:24px;height:24px;margin:0;color:inherit;font-size:19px;line-height:1;font-weight:400}
+html.preview-v2 body .bottom button:hover{background:#1F1B3A;color:var(--v2-ink)}
+html.preview-v2 body .bottom button[aria-current="page"]{color:var(--v2-ink);font-weight:700}
+html.preview-v2 body .bottom button:focus-visible{outline:3px solid var(--v2-ink);outline-offset:-4px}
+html.preview-v2 .bottom .v2-ind{position:absolute;top:-1px;left:var(--v2-pad);width:calc((100% - 2*var(--v2-pad))/3);height:3px;pointer-events:none;transform:translateX(calc(var(--v2-i,0)*100%));transition:transform 260ms var(--v2-ease),opacity .15s ease-out}
+html.preview-v2 .bottom .v2-ind::before{content:"";display:block;height:100%;margin:0 22%;border-radius:0 0 3px 3px;background:var(--v2-gold)}
+html.preview-v2 .bottom .v2-ind[data-on="0"]{opacity:0}
+@media (min-width:761px){
+  html.preview-v2 body{padding-bottom:calc(var(--v2-bar) + env(safe-area-inset-bottom))}
+  html.preview-v2 body .bottom button{flex-direction:row;gap:10px;font-size:15px}
+  html.preview-v2 .cs-motion-toggle{bottom:calc(var(--v2-bar) + 16px + env(safe-area-inset-bottom))}
+}
+
+/* ---- 5. 導覽步驟卡（無遮罩）＋金色描邊 ---- */
+html.preview-v2 .v2-tour{position:fixed;z-index:8;right:24px;bottom:calc(var(--v2-bar) + 24px + env(safe-area-inset-bottom));box-sizing:border-box;width:340px;max-width:calc(100vw - 24px);padding:0 18px 14px;border:1px solid var(--v2-line2);border-radius:16px;background:var(--v2-deep);color:var(--v2-ink);box-shadow:0 18px 40px -12px rgba(0,0,0,.55);overflow:hidden;animation:none}
+html.preview-v2 .v2-tour:focus{outline:none}
+html.preview-v2 .v2-tour-bar{height:4px;margin:0 -18px 14px;background:var(--v2-line)}
+html.preview-v2 .v2-tour-bar i{display:block;height:100%;background:var(--v2-gold);transform-origin:0 50%;transform:scaleX(var(--p,.25));transition:transform .3s var(--v2-ease)}
+html.preview-v2 .v2-tour-n{margin:0 0 4px;color:var(--v2-gold);font:700 12px/1.4 'Space Grotesk','Noto Sans TC',sans-serif;letter-spacing:.04em}
+html.preview-v2 .v2-tour h2{margin:0 0 4px;color:var(--v2-ink);font:700 18px/1.3 'Chiron Hei HK','Noto Sans TC',sans-serif}
+html.preview-v2 .v2-tour-b{margin:0;color:var(--v2-ink2);font-size:14px;line-height:1.55}
+html.preview-v2 .v2-tour-act{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+html.preview-v2 .v2-tour-act button{min-width:44px;min-height:44px;padding:0 18px;border:1px solid var(--v2-line2);border-radius:999px;background:transparent;color:var(--v2-ink2);font:500 14px/1 'Noto Sans TC',sans-serif;cursor:pointer}
+html.preview-v2 .v2-tour-act button:hover{background:#2E2950;color:var(--v2-ink)}
+html.preview-v2 .v2-tour-act button[data-v2="next"]{border-color:var(--v2-gold);background:var(--v2-gold);color:var(--v2-deep);font-weight:700}
+html.preview-v2 .v2-tour-act button[data-v2="next"]:hover{background:#F2CB66}
+html.preview-v2 .v2-tour-act button:focus-visible{outline:3px solid var(--v2-ink);outline-offset:2px}
+html.preview-v2 .v2-ring{position:fixed;z-index:7;left:0;top:0;box-sizing:border-box;border:3px solid var(--v2-gold);border-radius:14px;box-shadow:0 0 0 2px var(--v2-deep),inset 0 0 0 2px var(--v2-deep);pointer-events:none;will-change:translate}
+html.preview-v2 .v2-ring[hidden]{display:none}
+@keyframes v2-pulse{0%{transform:scale(1.07);opacity:.2}55%{transform:scale(1);opacity:1}75%{transform:scale(1.025)}100%{transform:scale(1);opacity:1}}
+@keyframes v2-card-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){
+  html.preview-v2:not([data-cs-paused]) .v2-ring.is-pulse{animation:v2-pulse .6s var(--v2-ease) 1}
+  html.preview-v2:not([data-cs-paused]) .v2-tour{animation:v2-card-in .25s var(--v2-ease) both}
+}
+
+/* 重看導覽入口 */
+html.preview-v2 .v2-replay{display:inline-flex;align-items:center;gap:6px;min-width:44px;min-height:44px;margin:var(--s2,8px) 0 0;padding:0 16px;border:1px solid var(--v2-line2);border-radius:999px;background:transparent;color:var(--v2-ink2);font:500 14px/1 'Noto Sans TC',sans-serif;cursor:pointer}
+html.preview-v2 .v2-replay:hover{background:#2E2950;color:var(--v2-ink)}
+html.preview-v2 .v2-replay:focus-visible{outline:3px solid var(--v2-ink);outline-offset:2px}
+@media (min-width:761px){html.preview-v2 body[data-view="landing"] #hero>.v2-replay{grid-column:1/-1;justify-self:start}}
+
+/* ---- 手機（≤760px） ---- */
+@media (max-width:760px){
+  /* 標題縮成一行顯示（原本手機版把整個介紹區藏起來），只留標題給打字機；說明文字維持隱藏以保住第一屏空間 */
+  html.preview-v2 body[data-view="landing"] #hero .hero-intro{display:block;padding:var(--s2,8px) 0 0}
+  html.preview-v2 body[data-view="landing"] #hero .hero-intro h1{margin:0;font:700 22px/1.25 'Chiron Hei HK','Noto Sans TC',sans-serif;letter-spacing:-.01em;color:#1F1B16;--v2-cur:#1F1B16}
+  html.preview-v2 body[data-view="landing"] #hero .hero-intro p{display:none}
+  /* 搜尋框在頂欄，示範面板放在其正下方的一行精簡版 */
+  html.preview-v2 body[data-view="landing"] #hero>.v2-demo{width:100%;grid-template-columns:minmax(0,1fr) 40px;gap:2px 12px;align-items:center;margin-top:var(--s2,8px);padding:10px 12px;min-height:64px;border-radius:14px;background:var(--v2-deep)}
+  html.preview-v2 .v2-demo-input{height:30px;padding:0 10px;font-size:15px;border-radius:8px}
+  html.preview-v2 .v2-demo-chips{display:none}
+  html.preview-v2 .v2-demo-cap{font-size:12px}
+  html.preview-v2 .v2-demo-art{width:40px;grid-row:1/3;align-self:center}
+  html.preview-v2 .v2-demo[data-static] .v2-demo-chips{display:flex;gap:4px}
+  html.preview-v2 .v2-demo[data-static] .v2-chip{padding:2px 8px;font-size:12px}
+  html.preview-v2 body[data-view="landing"] #hero>.v2-replay{display:flex;margin:var(--s3,12px) 0 0;border-color:#857D6E;color:#4A443A}
+  html.preview-v2 body[data-view="landing"] #hero>.v2-replay:hover{background:#ECE6D8;color:#1F1B16}
+  html.preview-v2 body[data-view="landing"] #hero>.v2-replay:focus-visible{outline-color:#1F1B16}
+  html.preview-v2 .v2-tour{right:12px;left:12px;width:auto;max-width:none;bottom:calc(var(--v2-bar) + 12px + env(safe-area-inset-bottom))}
+}
+
+@media (prefers-reduced-motion:reduce){
+  html.preview-v2 .v2-demo,html.preview-v2 .v2-chip,html.preview-v2 .v2-chip::before,html.preview-v2 .v2-demo-cap,html.preview-v2 .v2-demo-art,html.preview-v2 .bottom .v2-ind,html.preview-v2 .v2-tour-bar i,html.preview-v2 body .top .nav button,html.preview-v2 body .bottom button{transition:none}
+}
+html.preview-v2[data-cs-paused] .v2-demo,html.preview-v2[data-cs-paused] .v2-chip,html.preview-v2[data-cs-paused] .v2-chip::before,html.preview-v2[data-cs-paused] .v2-demo-cap,html.preview-v2[data-cs-paused] .v2-demo-art,html.preview-v2[data-cs-paused] .bottom .v2-ind,html.preview-v2[data-cs-paused] .v2-tour-bar i{transition:none}
+
+/* 只在首頁出現（遊戲頁的 hero 仍會顯示遊戲入口，示範面板與重看導覽不該跟著出現） */
+html.preview-v2 body:not([data-view="landing"]) .v2-demo,html.preview-v2 body:not([data-view="landing"]) .v2-replay{display:none}

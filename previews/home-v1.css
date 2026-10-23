@@ -1,0 +1,158 @@
+/* 首頁預覽第 1 版「星圖」：安靜的星空延伸。兔子左邊是一串漂浮卡片組成的星座，標題逐字升起，聚光燈導覽，玻璃膠囊 dock。
+   所有選擇器以 html.preview-v1 開頭；動畫只用 transform／opacity，且都包在 no-preference＋未暫停的閘門內。 */
+
+html.preview-v1{
+  --cs1-bg:#1B1733;--cs1-bg2:#16132A;--cs1-face:#24203F;--cs1-line:#4A4470;--cs1-ink:#F6F1E6;--cs1-ink2:#C9C1DA;--cs1-gold:#E7BA4C;
+  --cs1-ease:cubic-bezier(.16,1,.3,1);
+  --cs1-stars:
+    radial-gradient(circle 1.6px at 6% 12%,rgba(246,241,230,.8) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 14% 78%,rgba(246,241,230,.55) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.3px at 23% 36%,rgba(246,241,230,.4) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.8px at 31% 90%,rgba(231,186,76,.6) 0,rgba(231,186,76,0) 100%),
+    radial-gradient(circle 1.2px at 42% 8%,rgba(246,241,230,.6) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 48% 60%,rgba(246,241,230,.35) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.5px at 57% 22%,rgba(246,241,230,.7) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.2px at 64% 84%,rgba(246,241,230,.5) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.9px at 71% 46%,rgba(231,186,76,.55) 0,rgba(231,186,76,0) 100%),
+    radial-gradient(circle 1.2px at 78% 10%,rgba(246,241,230,.6) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 86% 70%,rgba(246,241,230,.4) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.4px at 93% 30%,rgba(246,241,230,.6) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 97% 92%,rgba(246,241,230,.45) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(ellipse 52% 60% at 66% 40%,rgba(106,98,160,.26) 0,rgba(106,98,160,0) 100%);
+  --cs1-i-search:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.3' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M16 16l5 5'/%3E%3C/svg%3E");
+  --cs1-i-grid:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linejoin='round'%3E%3Crect x='3.5' y='3.5' width='7' height='7' rx='1.8'/%3E%3Crect x='13.5' y='3.5' width='7' height='7' rx='1.8'/%3E%3Crect x='3.5' y='13.5' width='7' height='7' rx='1.8'/%3E%3Crect x='13.5' y='13.5' width='7' height='7' rx='1.8'/%3E%3C/svg%3E");
+  --cs1-i-mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linejoin='round'%3E%3Cpath d='M6.5 3.5h11v17L12 16.2 6.5 20.5z'/%3E%3C/svg%3E");
+}
+
+/* ===== 1. 標題進場（文字一開始就在 DOM；JS 只把每個字包進 aria-hidden 視覺層，h1 以 aria-label 保留完整名稱） ===== */
+html.preview-v1 .hero-intro{position:relative;isolation:isolate}
+html.preview-v1 .hero-intro::before,html.preview-v1 .hero-intro::after{content:"";position:absolute;z-index:-1;inset:-30px -12px -18px -12px;pointer-events:none;opacity:.22}
+html.preview-v1 .hero-intro::before{background-image:
+  radial-gradient(circle 2.6px at 4% 22%,#F6F1E6 0,rgba(246,241,230,0) 100%),
+  radial-gradient(circle 2px at 38% 8%,#E7BA4C 0,rgba(231,186,76,0) 100%),
+  radial-gradient(circle 2.4px at 74% 16%,#F6F1E6 0,rgba(246,241,230,0) 100%)}
+html.preview-v1 .hero-intro::after{background-image:
+  radial-gradient(circle 2.2px at 17% 4%,#F6F1E6 0,rgba(246,241,230,0) 100%),
+  radial-gradient(circle 2.8px at 56% 30%,#E7BA4C 0,rgba(231,186,76,0) 100%),
+  radial-gradient(circle 2px at 92% 40%,#F6F1E6 0,rgba(246,241,230,0) 100%)}
+@keyframes cs1-rise{from{opacity:0;transform:translateY(.5em)}to{opacity:1;transform:none}}
+@keyframes cs1-fade{from{opacity:0}to{opacity:1}}
+@keyframes cs1-show{to{opacity:1}}
+@keyframes cs1-twinkle{0%{opacity:0;transform:scale(.6)}35%{opacity:1;transform:scale(1.15)}100%{opacity:.22;transform:none}}
+@keyframes cs1-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:no-preference){
+  /* JS 還沒包好字以前先藏起來，避免閃一下原文；1.5 秒後無論如何都顯示（保底） */
+  html.preview-v1:not([data-cs-paused]):not(.cs1-play) body[data-view="landing"] .hero-intro{opacity:0;animation:cs1-show 0s linear 1.5s forwards}
+  html.preview-v1.cs1-play:not([data-cs-paused]) .hero-intro .cs1-ch{display:inline-block;animation:cs1-rise .56s var(--cs1-ease) both;animation-delay:calc(var(--i)*40ms)}
+  html.preview-v1.cs1-play:not([data-cs-paused]) .hero-intro p{animation:cs1-fade .6s ease-out .52s both}
+  html.preview-v1.cs1-play:not([data-cs-paused]) .hero-intro::before{animation:cs1-twinkle 1.1s ease-out .3s both}
+  html.preview-v1.cs1-play:not([data-cs-paused]) .hero-intro::after{animation:cs1-twinkle 1.1s ease-out .62s both}
+  html.preview-v1.cs1-play:not([data-cs-paused]) .cs1-fan{animation:cs1-fade .8s ease-out .6s both}
+  html.preview-v1:not([data-cs-paused]) .cs1-card{animation:cs1-float 6s ease-in-out infinite;animation-delay:calc(var(--i)*-1.2s)}
+}
+
+/* ===== 2. 桌面：兔子左邊的星座 ===== */
+html.preview-v1 .cs1-fan,html.preview-v1 .cs1-strip,html.preview-v1 .cs1-replay.cs1-replay-m{display:none}
+@media (min-width:761px){
+  html.preview-v1 body[data-view="landing"] .hero{position:relative;isolation:isolate}
+  html.preview-v1 body[data-view="landing"] .hero::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background-image:var(--cs1-stars)}
+  html.preview-v1 body[data-view="landing"] .browse-regions{align-items:center}
+  html.preview-v1 .cs1-replay{margin-left:auto}
+}
+@media (min-width:1200px){
+  html.preview-v1 body[data-view="landing"] .hero>.cs1-fan{grid-column:auto;display:block;position:absolute;z-index:1;top:32px;right:328px;width:300px;height:400px;pointer-events:none}
+  html.preview-v1 body[data-view="landing"] .hero>.home-search{max-width:560px}
+}
+html.preview-v1 .cs1-fan svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+html.preview-v1 .cs1-fan line{stroke:rgba(231,186,76,.42);stroke-width:1}
+html.preview-v1 .cs1-fan circle{fill:#E7BA4C;opacity:.85}
+html.preview-v1 .cs1-fan circle.cs1-halo{fill:#E7BA4C;opacity:.16}
+html.preview-v1 .cs1-card{position:absolute;left:var(--x);top:var(--y);width:var(--w);aspect-ratio:63/88;padding:0;border:1px solid rgba(246,241,230,.3);border-radius:8px;background:var(--cs1-face);overflow:hidden;pointer-events:auto;cursor:pointer;rotate:var(--r);box-shadow:0 14px 28px -10px rgba(0,0,0,.65);transition:scale .2s ease-out}
+html.preview-v1 .cs1-card img{display:block;width:100%;height:100%;object-fit:cover}
+html.preview-v1 .cs1-card:active{scale:.97}
+html.preview-v1 .cs1-card:focus-visible{outline:3px solid #F6F1E6;outline-offset:3px;z-index:2}
+@media (hover:hover){html.preview-v1 .cs1-card:hover{scale:1.06;z-index:2}}
+
+/* 重看導覽 */
+html.preview-v1 .cs1-replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 16px;border:1px solid rgba(246,241,230,.38);border-radius:999px;background:transparent;color:#F6F1E6;font:500 14px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background .18s ease-out,transform .12s}
+html.preview-v1 .cs1-replay:hover{background:rgba(246,241,230,.12)}
+html.preview-v1 .cs1-replay:active{transform:scale(.97)}
+html.preview-v1 .cs1-replay:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px}
+
+/* ===== 3. 頂欄：帶圖示的半透明描邊膠囊（桌面；手機頂欄沒有 nav，改用 dock） ===== */
+html.preview-v1 body .top .nav{gap:10px}
+html.preview-v1 body .top .nav button{display:inline-flex;align-items:center;gap:8px;min-width:44px;min-height:44px;padding:0 16px 0 13px;border:1px solid rgba(246,241,230,.34);border-radius:999px;background:rgba(246,241,230,.06);color:#F6F1E6;font-size:15px;font-weight:500;line-height:1;transition:background .18s ease-out,border-color .18s ease-out,transform .12s}
+html.preview-v1 body .top .nav button::before{content:"";width:18px;height:18px;flex:none;background:currentColor;-webkit-mask:var(--cs1-i-search) center/contain no-repeat;mask:var(--cs1-i-search) center/contain no-repeat}
+html.preview-v1 body .top .nav button[data-nav="browse"]::before{-webkit-mask-image:var(--cs1-i-grid);mask-image:var(--cs1-i-grid)}
+html.preview-v1 body .top .nav button[data-nav="collection"]::before{-webkit-mask-image:var(--cs1-i-mark);mask-image:var(--cs1-i-mark)}
+html.preview-v1 body .top .nav button:hover{background:rgba(246,241,230,.14);border-color:rgba(246,241,230,.6)}
+html.preview-v1 body .top .nav button:active{transform:scale(.97)}
+html.preview-v1 body .top .nav button:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px}
+html.preview-v1 body .top .nav button[aria-current="page"]{border-color:var(--cs1-gold);font-weight:700}
+html.preview-v1 body .top .nav button[aria-current="page"]::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--cs1-gold);flex:none}
+/* 遊戲頁頂欄是淺色底 */
+html.preview-v1 body[data-view="game"] .top .nav button{border-color:rgba(31,27,22,.42);background:rgba(31,27,22,.04);color:#1F1B16}
+html.preview-v1 body[data-view="game"] .top .nav button:hover{background:rgba(31,27,22,.1);border-color:#1F1B16}
+html.preview-v1 body[data-view="game"] .top .nav button:focus-visible{outline-color:#1F1B16}
+html.preview-v1 body[data-view="game"] .top .nav button[aria-current="page"]{border-color:#1F1B16;border-width:2px}
+html.preview-v1 body[data-view="game"] .top .nav button[aria-current="page"]::after{background:#A87200}
+
+/* ===== 4. 底部玻璃膠囊 dock（桌面置中 ≤480px；手機滿寬貼底） ===== */
+html.preview-v1 body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+html.preview-v1 nav.bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;position:fixed;z-index:6;left:50%;right:auto;bottom:16px;width:min(480px,calc(100vw - 32px));height:64px;padding:0 6px;transform:translateX(-50%);border:1px solid rgba(246,241,230,.22);border-radius:999px;background:rgba(27,23,51,.8);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 12px 32px rgba(10,8,24,.4),inset 0 1px 0 rgba(255,255,255,.12)}
+html.preview-v1 nav.bottom button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:44px;min-height:44px;margin:0;padding:6px 0 10px;border:0;border-radius:999px;background:none;color:#C9C1DA;font-size:12px;font-weight:500;line-height:1.1;transition:color .18s ease-out,transform .12s}
+html.preview-v1 nav.bottom button:active{transform:scale(.96)}
+html.preview-v1 nav.bottom button:hover{color:#F6F1E6}
+html.preview-v1 nav.bottom button:focus-visible{outline:2px solid #F6F1E6;outline-offset:-4px}
+html.preview-v1 nav.bottom button b{display:block;width:22px;height:22px;margin:0;font-size:0;line-height:0;background:currentColor;-webkit-mask:var(--cs1-i-search) center/contain no-repeat;mask:var(--cs1-i-search) center/contain no-repeat}
+html.preview-v1 nav.bottom button[data-nav="browse"] b{-webkit-mask-image:var(--cs1-i-grid);mask-image:var(--cs1-i-grid)}
+html.preview-v1 nav.bottom .bottom-profile img{display:block;width:22px;height:22px;margin:0;opacity:.85}
+html.preview-v1 nav.bottom button[aria-current="page"],html.preview-v1 nav.bottom button.bottom-profile:hover{color:#F6F1E6}
+html.preview-v1 nav.bottom button[aria-current="page"]{font-weight:700}
+html.preview-v1 nav.bottom button[aria-current="page"]::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--cs1-gold)}
+/* 暫停動態開關在中等寬度會和 dock 重疊 → 往上抬 */
+@media (min-width:761px) and (max-width:1000px){html.preview-v1 .cs-motion-toggle{bottom:92px}}
+
+/* ===== 手機（≤760px）：標題區改成深色星空小卡，含 3 張迷你卡帶；dock 滿寬貼底 ===== */
+@media (max-width:760px){
+  html.preview-v1 body[data-view="landing"] .hero>.hero-intro{display:block;margin:0 0 12px;padding:16px 16px 8px;border-radius:20px;background-color:var(--cs1-bg);background-image:var(--cs1-stars);color:var(--cs1-ink)}
+  html.preview-v1 body[data-view="landing"] .hero-intro h1{margin:0 0 6px;font:700 26px/1.2 'Chiron Hei HK','Noto Sans TC',sans-serif;letter-spacing:-.01em;color:var(--cs1-ink)}
+  html.preview-v1 body[data-view="landing"] .hero-intro p{margin:0;font-size:13.5px;line-height:1.55;color:var(--cs1-ink2)}
+  html.preview-v1 body[data-view="landing"] .cs1-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));justify-items:center;align-items:center;position:relative;height:116px;margin:10px 0 0}
+  html.preview-v1 .cs1-strip::before{content:"";position:absolute;left:10%;right:10%;top:50%;border-top:1px dashed rgba(231,186,76,.5)}
+  html.preview-v1 .cs1-strip .cs1-card{position:relative;left:auto;top:auto;width:66px}
+  html.preview-v1 .cs1-strip .cs1-card:nth-child(1){margin-top:14px}
+  html.preview-v1 .cs1-strip .cs1-card:nth-child(2){margin-top:-12px}
+  html.preview-v1 .cs1-strip .cs1-card:nth-child(3){margin-top:10px}
+  html.preview-v1 body[data-view="landing"] .cs1-replay.cs1-replay-m{display:inline-flex;margin:0 0 8px}
+  html.preview-v1 body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  html.preview-v1 nav.bottom{left:0;right:0;bottom:0;width:auto;height:calc(62px + env(safe-area-inset-bottom));padding:0 8px env(safe-area-inset-bottom);transform:none;border-width:1px 0 0;border-radius:20px 20px 0 0;background:rgba(27,23,51,.9)}
+}
+
+/* ===== 5. 導覽：聚光燈遮罩＋說明卡 ===== */
+html.preview-v1 .cs1-tour{position:fixed;inset:0;z-index:2147483000;overflow:hidden}
+html.preview-v1 .cs1-tour-shade{position:absolute;inset:0}
+html.preview-v1 .cs1-tour-spot{position:absolute;pointer-events:none;border-radius:16px;box-shadow:0 0 0 2px var(--cs1-gold),0 0 0 100vmax rgba(14,11,30,.74)}
+html.preview-v1 .cs1-tour-card{position:absolute;box-sizing:border-box;width:min(340px,calc(100vw - 24px));padding:14px 16px 12px;border:1px solid var(--cs1-line);border-radius:18px;background:var(--cs1-face);color:var(--cs1-ink);font-family:'Noto Sans TC',system-ui,sans-serif;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+html.preview-v1 .cs1-tour-card:focus{outline:none}
+html.preview-v1 .cs1-tour-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+html.preview-v1 .cs1-tour-head img{width:44px;height:44px;flex:none;border-radius:50%;object-fit:cover;border:2px solid var(--cs1-gold);background:var(--cs1-bg2)}
+html.preview-v1 .cs1-tour-step{margin:0;font-size:12px;font-weight:500;color:var(--cs1-ink2)}
+html.preview-v1 .cs1-tour-title{margin:0;font:700 18px/1.3 'Chiron Hei HK','Noto Sans TC',sans-serif;color:var(--cs1-ink)}
+html.preview-v1 .cs1-tour-text{margin:6px 0 12px;font-size:14px;line-height:1.6;color:var(--cs1-ink2)}
+html.preview-v1 .cs1-tour-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html.preview-v1 .cs1-dots{display:flex;align-items:center;gap:6px}
+html.preview-v1 .cs1-dots i{width:7px;height:7px;border-radius:999px;background:var(--cs1-line)}
+html.preview-v1 .cs1-dots i.on{width:20px;background:var(--cs1-gold)}
+html.preview-v1 .cs1-tour-btns{display:flex;gap:6px}
+html.preview-v1 .cs1-tour-btns button{min-width:64px;min-height:44px;padding:0 14px;border-radius:999px;font:700 14px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background .18s ease-out,transform .12s}
+html.preview-v1 .cs1-tour-btns button:active{transform:scale(.97)}
+html.preview-v1 .cs1-tour-btns button:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px}
+html.preview-v1 .cs1-skip{border:1px solid var(--cs1-line);background:transparent;color:var(--cs1-ink)}
+html.preview-v1 .cs1-skip:hover{background:#2E2950}
+html.preview-v1 .cs1-next{border:0;background:var(--cs1-gold);color:#1B1733}
+html.preview-v1 .cs1-next:hover{background:#F2CB66}
+html.preview-v1 .cs1-next:focus-visible{outline-color:#F6F1E6;box-shadow:0 0 0 2px var(--cs1-face)}
+@media (prefers-reduced-motion:no-preference){
+  html.preview-v1:not([data-cs-paused]) .cs1-tour-card,html.preview-v1:not([data-cs-paused]) .cs1-tour-spot{animation:cs1-fade .22s ease-out both}
+}

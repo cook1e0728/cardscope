@@ -415,7 +415,9 @@ async function runPhaseTwoChecks(browser){
     await installFixtures(calm,makeFixtureState(fixtureCatalog()));
     await calm.goto(baseUrl,{waitUntil:'domcontentloaded'});
     await waitForVisible(calm.locator('#channels .channel').first(),'reduced motion: IP navigation did not render');
-    const durations=await calm.locator('#channels .channel').first().evaluate(item=>getComputedStyle(item).transitionDuration.split(',').map(value=>parseFloat(value)*(value.trim().endsWith('ms')?1:1000)));
+    // The channel row is re-rendered after data loads; a detached element reports an empty style (NaN), so wait and query fresh.
+    await calm.waitForLoadState('networkidle');
+    const durations=await calm.evaluate(()=>getComputedStyle(document.querySelector('#channels .channel')).transitionDuration.split(',').map(value=>parseFloat(value)*(value.trim().endsWith('ms')?1:1000)));
     assert.ok(durations.every(ms=>ms<=1),`reduced motion: channel transitions still run (${durations.join(', ')} ms)`);
     // Nothing keeps moving: the hero mascot float, card fade-ins and skeleton pulses all stop.
     await calm.waitForTimeout(300);
