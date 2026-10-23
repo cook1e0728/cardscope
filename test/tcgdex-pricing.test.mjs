@@ -162,7 +162,9 @@ async function listenOnFreePort(httpServer) {
 const close = httpServer => new Promise(resolve => httpServer.close(resolve));
 
 function ygoprodeckBody(names) {
-  return { data: names.map((name, index) => ({ id: 1000 + index, name, type: 'Normal Monster', card_images: [{ image_url_small: 'https://example.invalid/x.jpg' }], card_prices: [{ cardmarket_price: '1.50', tcgplayer_price: '2.00', ebay_price: '3', amazon_price: '4', coolstuffinc_price: '5' }] })) };
+  return { data: names.map((name, index) => ({ id: 1000 + index, name, type: 'Normal Monster', card_images: [{ image_url_small: 'https://example.invalid/x.jpg' }], card_prices: [{ cardmarket_price: '1.50', tcgplayer_price: '2.00', ebay_price: '3', amazon_price: '4', coolstuffinc_price: '5' }],
+    // card_prices above is the cross-printing lowest and must never be shown; only these per-printing set prices may be.
+    card_sets: [{ set_name: 'LOB', set_code: 'LOB-EN001', set_rarity: 'Ultra Rare', set_rarity_code: '(UR)', set_price: '12.34' }, { set_name: 'LOB', set_code: 'LOB-EN001', set_rarity: 'Secret Rare', set_rarity_code: '(ScR)', set_price: '45.00' }, { set_name: 'LOB', set_code: 'LOB-EN002', set_rarity: 'Common', set_rarity_code: '(C)', set_price: '0' }, { set_name: 'LOB JP', set_code: 'LOB-JP001', set_rarity: 'Ultra Rare', set_rarity_code: '(UR)', set_price: '9.99' }] })) };
 }
 
 test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket prices; other cards and non-exact Yu-Gi-Oh! names get none', async () => {
@@ -177,7 +179,11 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     'pokemon-official-ja-sv5k-080-v2': { ...base, id: 'pokemon-official-ja-sv5k-080-v2', game: 'pokemon', nameZh: null, nameJa: 'ゴース', printings: [printing('pokemon-official-ja-sv5k-080-v2', 'pokemon-card-official-jp', '2', { localSetCode: 'SV5K', localCardNumber: '080', nameJa: 'ゴース' })] },
     'pokemon-pokemontcg-sv3pt5-6': { ...base, id: 'pokemon-pokemontcg-sv3pt5-6', game: 'pokemon', nameZh: null, nameJa: null, nameEn: 'Charizard ex', officialCardNumber: '6', printings: [printing('pokemon-pokemontcg-sv3pt5-6', 'pokemontcg', 'sv3pt5-6', { region: 'US', language: 'en-US', localSetCode: 'sv3pt5', localCardNumber: '6' })] },
     'yugioh-dm': { ...base, id: 'yugioh-dm', game: 'yugioh', nameZh: '黑魔導', nameJa: null, nameEn: 'Dark Magician', printings: [] },
-    'yugioh-bewd': { ...base, id: 'yugioh-bewd', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [] }
+    // Per-printing price: a US printing matches by set code + rarity; JP, a rarity YGOPRODeck lacks and a zero set_price get nothing.
+    'yugioh-bewd-jp': { ...base, id: 'yugioh-bewd-jp', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [printing('yugioh-bewd-jp', 'x', 'p', { region: 'JP', localCardNumber: 'LOB-JP001', rarity: 'Ultra Rare' })] },
+    'yugioh-bewd-rarity': { ...base, id: 'yugioh-bewd-rarity', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [printing('yugioh-bewd-rarity', 'x', 'p', { region: 'US', language: 'en-US', localCardNumber: 'LOB-EN001', rarity: 'Common' })] },
+    'yugioh-bewd-zero': { ...base, id: 'yugioh-bewd-zero', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [printing('yugioh-bewd-zero', 'x', 'p', { region: 'US', language: 'en-US', localCardNumber: 'LOB-EN002', rarity: 'Common' })] },
+    'yugioh-bewd': { ...base, id: 'yugioh-bewd', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [printing('yugioh-bewd', 'x', 'p', { region: 'US', language: 'en-US', localSetCode: 'LOB', localCardNumber: 'LOB-EN001', rarity: 'UR' })] }
   };
   const mockSupabase = createServer((req, res) => {
     const url = new URL(req.url, 'http://mock-supabase'), table = url.pathname.split('/').at(-1);
@@ -226,6 +232,7 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     assert.equal(tcgdex[0].priceTwd, Math.round(0.2 / 0.0275), 'EUR converted with the ExchangeRate-API rate');
     assert.equal(tcgdex[0].sourceUrl, 'https://api.tcgdex.net/v2/ja/cards/SV6a-039');
     assert.equal(tcgdex[0].idProduct, 773788);
+    assert.deepEqual(tcgdex.map(r => r.region), ['JP', 'JP'], 'every price names the printing it belongs to');
     assert.equal(pokemon.meta.exchangeRates.source, 'ExchangeRate-API');
     assert.equal(pokemon.meta.exchangeRates.updatedAt, '2026-10-09');
     assert.equal(pokemon.meta.priceTypes.market, '平台參考價');
@@ -245,14 +252,16 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     const us = await market('pokemon-pokemontcg-sv3pt5-6');
     assert.deepEqual(us.records.map(r => [r.market, r.variant, r.priceType, r.amount, r.currency, r.providerCardId, r.language]), [['TCGplayer', 'holofoil', 'market', 7.92, 'USD', 'sv03.5-006', 'en-US'], ['TCGplayer', 'holofoil', 'listing', 5.75, 'USD', 'sv03.5-006', 'en-US']]);
     assert.equal(us.records[0].cardName, 'Charizard ex');
+    assert.deepEqual(us.records.map(r => r.region), ['US', 'US']);
 
     const noExact = await market('yugioh-dm');
     assert.deepEqual(noExact.records, [], 'no exact-name match: no price, and never the first search result');
 
     const exact = await market('yugioh-bewd');
-    assert.deepEqual(exact.records.map(r => [r.market, r.amount, r.currency, r.scope]), [['Cardmarket', 1.5, 'EUR', 'cross-printing-lowest'], ['TCGplayer', 2, 'USD', 'cross-printing-lowest']]);
+    assert.deepEqual(exact.records.map(r => [r.market, r.amount, r.currency, r.scope, r.region, r.setCode, r.rarity]), [['YGOPRODeck', 12.34, 'USD', 'printing-set-price', 'US', 'LOB-EN001', 'Ultra Rare']], 'rarity UR matches the (UR) code; the 1.5 EUR / 2 USD cross-printing lowest is never shown');
     assert.equal(exact.records[0].cardName, 'Blue-Eyes White Dragon');
-    assert.equal(exact.records[0].priceTwd, Math.round(1.5 / 0.0275));
+    assert.equal(exact.records[0].priceTwd, Math.round(12.34 / 0.031));
+    for (const id of ['yugioh-bewd-jp', 'yugioh-bewd-rarity', 'yugioh-bewd-zero']) assert.deepEqual((await market(id)).records, [], `${id}: no per-printing price, so none shown`);
   } finally {
     if (app && app.exitCode === null && app.signalCode === null) await new Promise(resolve => { app.once('exit', resolve); app.kill(); });
     await close(mockSupabase);

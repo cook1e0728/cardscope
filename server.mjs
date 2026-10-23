@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { searchYgoProDeck } from './providers/ygoprodeck.mjs';
+import { matchYgoprodeckSet, searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createPriceSnapshotController } from './providers/price-snapshot.mjs';
 import { createArchiveReader, createArchiveStorage, createPriceArchiveController, mergeSnapshotRows } from './providers/price-archive.mjs';
@@ -92,7 +92,7 @@ async function proxyOnePieceImage(res,value){
 const providerStatus=()=>({
   justtcg:{enabled:false,capability:'已停用，不再作為搜尋或卡盒資料依賴'},
   ebay:{enabled:false,capability:'已停用，不再自動查詢掛牌資料'},
-  ygoprodeck:{enabled:true,capability:'免費遊戲王卡片資料與跨平台最低參考價（24 小時快取；圖片需自行保存）'},
+  ygoprodeck:{enabled:true,capability:'免費遊戲王卡片資料與各版本 set price 參考價（24 小時快取；圖片需自行保存）'},
   kapaipai:{enabled:false,capability:'等待公開頁面結構與存取方式確認'},
   snkrdunk:{enabled:false,capability:'等待公開頁面結構與存取方式確認'},
   yuyutei:{enabled:Boolean(process.env.SCRAPE_SECRET),capability:'遊々亭買取行情；建議每日排程一次'},
@@ -926,7 +926,7 @@ async function loadCardFromDatabase(cardId){
 const CARD_CACHE_TTL_MS=600000,CARD_CACHE_MAX=500,cardCache=new Map();
 function loadCardCached(cardId){const hit=cardCache.get(cardId);if(hit&&(hit.pending||Date.now()-hit.at<CARD_CACHE_TTL_MS))return hit.promise;const entry={pending:true,at:0,promise:null};entry.promise=loadCardFromDatabase(cardId).then(value=>{entry.pending=false;entry.at=Date.now();if(!value)cardCache.delete(cardId);return value},error=>{cardCache.delete(cardId);throw error});cardCache.set(cardId,entry);while(cardCache.size>CARD_CACHE_MAX)cardCache.delete(cardCache.keys().next().value);return entry.promise}
 async function getCard(cardId){const fromDatabase=supabaseConfigured()?loadCardCached(cardId).catch(()=>null):Promise.resolve(null),catalog=await loadCatalog(),card=catalog.cards.find(c=>c.id===cardId);if(card)return {catalog,card};const found=await fromDatabase;return found?structuredClone(found):{catalog,card:null}}
-async function yuyuteiMarket(card,fx){if(!supabaseConfigured()||!card.officialCardNumber)return [];const esc=v=>String(v).replace(/[\\%_*(),.]/g,'\\$&'),params=new URLSearchParams({select:'cardName:card_name,cardNumber:card_number,rarity,price,currency,cardUrl:card_url,imageUrl:image_url,setCode:set_code,setName:set_name,scrapedAt:scraped_at',card_number:`eq.${esc(card.officialCardNumber)}`,order:'scraped_at.desc',limit:'10'}),rows=await supabaseFetch(`/jp_buyback_prices?${params}`);return (rows||[]).map(r=>withTwd(normalizeMarketRecord({provider:'yuyutei',market:'JP',cardId:card.id,cardName:r.cardName,cardNumber:r.cardNumber,setCode:r.setCode,rarity:r.rarity,language:'ja-JP',priceType:'buyback',amount:r.price,currency:r.currency,imageUrl:r.imageUrl,sourceUrl:r.cardUrl,observedAt:r.scrapedAt}),fx))}
+async function yuyuteiMarket(card,fx){if(!supabaseConfigured()||!card.officialCardNumber)return [];const esc=v=>String(v).replace(/[\\%_*(),.]/g,'\\$&'),params=new URLSearchParams({select:'cardName:card_name,cardNumber:card_number,rarity,price,currency,cardUrl:card_url,imageUrl:image_url,setCode:set_code,setName:set_name,scrapedAt:scraped_at',card_number:`eq.${esc(card.officialCardNumber)}`,order:'scraped_at.desc',limit:'10'}),rows=await supabaseFetch(`/jp_buyback_prices?${params}`);return (rows||[]).map(r=>({...withTwd(normalizeMarketRecord({provider:'yuyutei',market:'JP',cardId:card.id,cardName:r.cardName,cardNumber:r.cardNumber,setCode:r.setCode,rarity:r.rarity,language:'ja-JP',priceType:'buyback',amount:r.price,currency:r.currency,imageUrl:r.imageUrl,sourceUrl:r.cardUrl,observedAt:r.scrapedAt}),fx),region:'JP'}))}
 // ADR 0037: series where official-import JP cards were checked against TCGdex (unique card numbers, Japanese names present). Evidence: docs/evidence/pokemon-jp/tcgdex-pricing-official-match-20261013.json
 // ADR 0038: US (PokemonTCG) series mapped to TCGdex English sets by card-by-card comparison. Evidence: docs/evidence/pokemon-us/tcgdex-en-match-20261013.json
 const TCGDEX_EN_SET_MAP=JSON.parse(await readFile(new URL('./data/tcgdex-en-set-map.json',import.meta.url),'utf8')).sets;
@@ -934,9 +934,14 @@ const TCGDEX_EN_SET_MAP=JSON.parse(await readFile(new URL('./data/tcgdex-en-set-
 function tcgdexLookups(card){const seen=new Map();for(const x of [card,...(card.printings||[])]){const l=tcgdexLookupForPrinting(x,card,{enSetMap:TCGDEX_EN_SET_MAP});if(l&&!seen.has(`${l.language}:${l.id}`))seen.set(`${l.language}:${l.id}`,l)}return [...seen.values()].slice(0,3)}
 async function unifiedMarket(card){
   const fx=await getTwdRates(),tasks=sourceDisplayDenied('yuyutei')?[]:[['yuyutei',()=>yuyuteiMarket(card,fx)]];
-  if(card.game==='yugioh')tasks.push(['ygoprodeck',async()=>{const wanted=String(card.nameEn||'').trim().toLowerCase();if(!wanted)return [];const found=await searchYgoProDeck(card.nameEn,{limit:20}),match=found.find(x=>String(x.name).trim().toLowerCase()===wanted);if(!match)return [];return [['Cardmarket',match.referencePrices.cardmarketEur,'EUR'],['TCGplayer',match.referencePrices.tcgplayerUsd,'USD']].filter(([,amount])=>amount!=null).map(([market,amount,currency])=>withTwd(normalizeMarketRecord({provider:'ygoprodeck',market,cardId:card.id,providerCardId:match.providerCardId,cardName:match.name,cardNumber:card.officialCardNumber,priceType:'market',amount,currency,observedAt:match.observedAt}),fx)).map(r=>({...r,scope:'cross-printing-lowest'}))}]);
+  // 只顯示「這個 printing」的價：YGOPRODeck 的 card_prices 是跨版本最低價，不能當單一版本的價；改用 card_sets[].set_price，依 printing 卡號＋稀有度精確配對，配不到就不顯示（日版 -JP 一律不配）。
+  // set_price 的來源平台 YGOPRODeck 文件只寫「$ value」，所以標「YGOPRODeck 參考價（USD）」，不稱 TCGplayer 或成交價。
+  if(card.game==='yugioh')tasks.push(['ygoprodeck',async()=>{const wanted=String(card.nameEn||'').trim().toLowerCase();if(!wanted)return [];const found=await searchYgoProDeck(card.nameEn,{limit:20}),match=found.find(x=>String(x.name).trim().toLowerCase()===wanted);if(!match)return [];
+    const printings=card.printings?.length?card.printings.map(p=>({number:p.localCardNumber,rarity:p.rarity,region:p.region})):[{number:card.officialCardNumber,rarity:card.rarity,region:card.region}],seen=new Set(),rows=[];
+    for(const p of printings){if(p.region==='JP')continue;const set=matchYgoprodeckSet(match.sets,p),key=set&&`${set.setCode}|${set.rarity}`;if(!set||seen.has(key))continue;seen.add(key);rows.push({...withTwd(normalizeMarketRecord({provider:'ygoprodeck',market:'YGOPRODeck',cardId:card.id,providerCardId:match.providerCardId,cardName:match.name,cardNumber:set.setCode,setCode:set.setCode,rarity:set.rarity,priceType:'market',amount:set.setPriceUsd,currency:'USD',observedAt:match.observedAt}),fx),region:p.region||null,scope:'printing-set-price'})}
+    if(!rows.length)rows.notice='沒有這個版本的 YGOPRODeck set price；不顯示跨版本最低價。';return rows}]);
   // ADR 0036/0037: tcgdex-ja printings by provider_id; official-import JP printings only in checked series and only when TCGdex's Japanese name matches. No TW or US mapping. The registry switch stops it.
-  if(card.game==='pokemon'&&catalogCollectionAllowed('tcgdexPricing')){const lookups=tcgdexLookups(card);if(lookups.length)tasks.push(['tcgdex',async()=>(await Promise.all(lookups.map(x=>(x.language==='en'?fetchTcgdexPricingEn:fetchTcgdexPricing)(x.id,{expectedName:x.expectedName}).then(rows=>rows.map(r=>({...r,en:x.language==='en'})))))).flat().map(r=>({...withTwd(normalizeMarketRecord({provider:r.provider,market:r.market,cardId:card.id,providerCardId:r.providerCardId,cardName:r.en?(card.nameEn||card.nameZh):(card.nameJa||card.nameZh),cardNumber:card.officialCardNumber,language:r.en?'en-US':'ja-JP',priceType:r.priceType,amount:r.amount,currency:r.currency,sourceUrl:r.sourceUrl,observedAt:r.observedAt}),fx),variant:r.variant,idProduct:r.idProduct}))])}
+  if(card.game==='pokemon'&&catalogCollectionAllowed('tcgdexPricing')){const lookups=tcgdexLookups(card);if(lookups.length)tasks.push(['tcgdex',async()=>(await Promise.all(lookups.map(x=>(x.language==='en'?fetchTcgdexPricingEn:fetchTcgdexPricing)(x.id,{expectedName:x.expectedName}).then(rows=>rows.map(r=>({...r,en:x.language==='en'})))))).flat().map(r=>({...withTwd(normalizeMarketRecord({provider:r.provider,market:r.market,cardId:card.id,providerCardId:r.providerCardId,cardName:r.en?(card.nameEn||card.nameZh):(card.nameJa||card.nameZh),cardNumber:card.officialCardNumber,language:r.en?'en-US':'ja-JP',priceType:r.priceType,amount:r.amount,currency:r.currency,sourceUrl:r.sourceUrl,observedAt:r.observedAt}),fx),variant:r.variant,idProduct:r.idProduct,region:r.en?'US':'JP'}))])}
   const settled=await Promise.all(tasks.map(async([source,run])=>{try{return {source,status:'ok',data:await run()}}catch(error){return {source,status:'unavailable',error:error.message}}})),records=settled.flatMap(x=>Array.isArray(x.data)?x.data:[]);
   return {records,sources:settled.map(x=>({source:x.source,status:x.status,error:x.error||null,notice:x.data?.notice||null})),meta:{exchangeRates:fx,priceTypes:{listing:'最低掛牌價',buyback:'店家買取／回收',market:'平台參考價',sale:'可驗證成交',user_report:'使用者回報（未驗證）'},warning:'不同價格性質不混算中位價；目前沒有可靠成交來源時，不顯示成交價或交易量。'}}
 }
@@ -945,14 +950,16 @@ async function unifiedMarket(card){
 const PRICE_HISTORY_DAYS=180,PRICE_HISTORY_TTL_MS=3600000,PRICE_HISTORY_CACHE_MAX=300,PRICE_HISTORY_IDS_MAX=30,priceHistoryCache=new Map();
 // ADR 0046：30 天前的列在私有 Storage bucket `price-archive`（分片 gzip JSON），讀取時與資料庫的列合併成同一份資料；沒有設定 Supabase 就沒有封存。
 const archiveStorage=createArchiveStorage(),archiveReader=createArchiveReader({storage:archiveStorage});
-const PRICE_HISTORY_NOTE='參考價為 Cardmarket／TCGplayer 的平台參考價（經 TCGdex 轉供），不是成交價或台灣行情；新台幣以今日匯率換算，歷史點位不代表當時匯率。';
+// 來源名稱依資料實際有的列出：TCGdex 現在不回 TCGplayer，快照裡的 TCGplayer 只到舊日期，不寫死兩個平台。
+const PRICE_SOURCE_LABELS={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'};
+const priceHistoryNote=series=>{const names=[...new Set((series||[]).map(x=>PRICE_SOURCE_LABELS[x.provider]).filter(Boolean))];return `參考價為${names.length?` ${names.join('／')} 的`:''}平台參考價（經 TCGdex 轉供），不是成交價或台灣行情；新台幣以今日匯率換算，歷史點位不代表當時匯率。`};
 function priceHistoryCardIds(card,requestedId){return [...new Set([requestedId,card?.id,...(card?.printings||[]).map(p=>p.cardId)].filter(id=>typeof id==='string'&&id))].slice(0,PRICE_HISTORY_IDS_MAX)}
 function buildPriceHistory(rows,{card,requestedId,fx,now=Date.now()}){
   const groups=new Map(),regionOf=cardId=>(card?.printings||[]).find(p=>p.cardId===cardId)?.region||(card?.id===cardId?card.region:null)||null;
   for(const row of rows||[]){const amount=Number(row.amount);if(!row?.card_id||!row.snapshot_date||!Number.isFinite(amount))continue;const key=JSON.stringify([row.card_id,row.provider,row.variant||'',row.currency]);let group=groups.get(key);if(!group){group={cardId:row.card_id,region:regionOf(row.card_id),provider:row.provider,variant:row.variant||'',currency:row.currency,points:[]};groups.set(key,group)}group.points.push({date:String(row.snapshot_date).slice(0,10),amount,amountTwd:amountToTwd(amount,row.currency,fx)})}
   const series=[...groups.values()].map(g=>({...g,points:g.points.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)}));
   const cmp=(x,y)=>x<y?-1:x>y?1:0;series.sort((a,b)=>(b.cardId===requestedId)-(a.cardId===requestedId)||b.points.length-a.points.length||cmp(b.points.at(-1).date,a.points.at(-1).date)||cmp(a.cardId+a.provider+a.variant,b.cardId+b.provider+b.variant));
-  return {series,meta:{exchangeRates:fx,note:PRICE_HISTORY_NOTE,windowDays:PRICE_HISTORY_DAYS,from:new Date(now-PRICE_HISTORY_DAYS*86400000).toISOString().slice(0,10),generatedAt:new Date(now).toISOString()}};
+  return {series,meta:{exchangeRates:fx,note:priceHistoryNote(series),windowDays:PRICE_HISTORY_DAYS,from:new Date(now-PRICE_HISTORY_DAYS*86400000).toISOString().slice(0,10),generatedAt:new Date(now).toISOString()}};
 }
 async function loadPriceHistory(card,requestedId){
   const ids=priceHistoryCardIds(card,requestedId),from=new Date(Date.now()-PRICE_HISTORY_DAYS*86400000).toISOString().slice(0,10);
@@ -965,10 +972,10 @@ async function loadPriceHistory(card,requestedId){
 // 一小時快取（以請求的卡片 ID 為鍵、合併同時的請求）；失敗不快取。
 function priceHistoryCached(card,requestedId){const hit=priceHistoryCache.get(requestedId);if(hit&&(hit.pending||Date.now()-hit.at<PRICE_HISTORY_TTL_MS))return hit.promise;const entry={pending:true,at:0,promise:null};entry.promise=loadPriceHistory(card,requestedId).then(value=>{entry.pending=false;entry.at=Date.now()-(value.meta?.archiveUnavailable?PRICE_HISTORY_TTL_MS-60000:0);return value},error=>{priceHistoryCache.delete(requestedId);throw error});priceHistoryCache.set(requestedId,entry);while(priceHistoryCache.size>PRICE_HISTORY_CACHE_MAX)priceHistoryCache.delete(priceHistoryCache.keys().next().value);return entry.promise}
 async function priceHistoryResponse(requestedId){
-  let loaded=null;try{loaded=await getCard(requestedId)}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:PRICE_HISTORY_NOTE,generatedAt:new Date().toISOString()}}}}
+  let loaded=null;try{loaded=await getCard(requestedId)}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:priceHistoryNote([]),generatedAt:new Date().toISOString()}}}}
   if(!loaded?.card)return {status:404,body:{error:'找不到這張卡'}};
-  if(!supabaseConfigured())return {status:200,body:{series:[],meta:{note:PRICE_HISTORY_NOTE,windowDays:PRICE_HISTORY_DAYS,generatedAt:new Date().toISOString()}}};
-  try{return {status:200,body:await priceHistoryCached(loaded.card,requestedId)}}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:PRICE_HISTORY_NOTE,windowDays:PRICE_HISTORY_DAYS,generatedAt:new Date().toISOString()}}}}
+  if(!supabaseConfigured())return {status:200,body:{series:[],meta:{note:priceHistoryNote([]),windowDays:PRICE_HISTORY_DAYS,generatedAt:new Date().toISOString()}}};
+  try{return {status:200,body:await priceHistoryCached(loaded.card,requestedId)}}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:priceHistoryNote([]),windowDays:PRICE_HISTORY_DAYS,generatedAt:new Date().toISOString()}}}}
 }
 
 const ALLOWED_PLATFORMS=['卡拍拍','露天拍賣','蝦皮購物','露天/蝦皮以外的台灣賣場','其他'];const ALLOWED_CURRENCIES=['TWD','USD','JPY','EUR'];const MAX_PRICE=5000000;const reportRateLimit=new Map();const PUBLIC_SELECT='id,cardName:card_name,cardId:card_id,game,platform,currency,price,condition,note,tradedAt:traded_at,createdAt:created_at,status';

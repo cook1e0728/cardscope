@@ -1,12 +1,15 @@
 // 參考價走勢（ADR 0042）：把 /api/cards/:id/price-history 畫成新台幣階梯折線（內嵌 SVG，不用外部圖表函式庫）。
-// 只畫平台參考價（Cardmarket／TCGplayer），不是成交價或台灣行情；每條線只屬於一張實體卡＋來源＋版本，不合併。
+// 只畫平台參考價（標題列出實際有紀錄的來源），不是成交價或台灣行情；每條線只屬於一張實體卡＋來源＋版本，不合併。
 // 狀態不只靠顏色：每條線有不同線型與標記形狀，並附圖例與文字摘要表。沒有持續動畫。
 (root=>{
   const MAX_LINES=3,DAY_MS=86400000;
   const REGIONS={JP:'日版',TW:'台版',US:'美版',KR:'韓版',CN:'陸版',ASIA:'亞洲英文版'};
   const SOURCES={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'};
   const DASHES=['','7 4','2 4'],SHAPES=['circle','square','triangle'];
-  const TITLE='參考價走勢（Cardmarket／TCGplayer，換算新台幣）';
+  // 來源名稱依資料實際有的列出（TCGdex 已不再回 TCGplayer，不寫死兩個平台）。
+  const sourceNames=series=>[...new Set((Array.isArray(series)?series:[]).map(item=>SOURCES[item?.provider]).filter(Boolean))];
+  const titleFor=series=>{const names=sourceNames(series);return `參考價走勢（${names.length?names.join('／')+'，':''}換算新台幣）`};
+  const TITLE=titleFor([]);
   const NOTE='平台參考價，不是成交價或台灣行情；新台幣以今日匯率換算，歷史點位不代表當時匯率。階梯線代表價格維持到下一筆紀錄；只在價格變動約 2% 以上或滿 7 天時才新增紀錄。';
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const dateMs=value=>{const text=String(value||''),match=/^(\d{4})-(\d{2})-(\d{2})/.exec(text);return match?Date.UTC(+match[1],+match[2]-1,+match[3]):NaN};
@@ -66,26 +69,26 @@
       grid=y.ticks.map((tick,i)=>`<line class="pt-grid" x1="${left}" y1="${py(tick).toFixed(1)}" x2="${width-right}" y2="${py(tick).toFixed(1)}"/><text class="pt-axis" x="${left-8}" y="${(py(tick)+4).toFixed(1)}" text-anchor="end">${esc(yLabels[i])}</text>`).join(''),
       xTicks=width>=420&&t1-t0>=2*DAY_MS?[[t0,'start'],[Math.round((t0+(t1-t0)/2)/DAY_MS)*DAY_MS,'middle'],[t1,'end']]:[[t0,'start'],[t1,'end']],
       xAxis=xTicks.map(([ms,anchor])=>`<text class="pt-axis" x="${px(ms).toFixed(1)}" y="${height-10}" text-anchor="${anchor}">${dateText(ms)}</text>`).join(''),
-      title=`參考價走勢圖（新台幣階梯折線，Cardmarket／TCGplayer）`,desc=`新台幣，${dateText(t0)} 至 ${dateText(t1)}。${summaryText(lines)}。`,
+      title=`參考價走勢圖（新台幣階梯折線${sourceNames(lines).length?'，'+sourceNames(lines).join('／'):''}）`,desc=`新台幣，${dateText(t0)} 至 ${dateText(t1)}。${summaryText(lines)}。`,
       paths=lines.map((line,index)=>{
         const pts=line.points,d=pts.map((p,i)=>i===0?`M${px(p.ms).toFixed(1)} ${py(p.twd).toFixed(1)}`:`H${px(p.ms).toFixed(1)}V${py(p.twd).toFixed(1)}`).join('');
         return `<g class="pt-s${index+1}"><path class="pt-line pt-d${index}" d="${d}"${DASHES[index]?` stroke-dasharray="${DASHES[index]}"`:''}/>${pts.map(p=>markerSvg(SHAPES[index],px(p.ms),py(p.twd),`${line.label}｜${dateText(p.ms)}｜${money(p.twd)}`)).join('')}</g>`}).join('');
     return `<svg class="pt-chart" role="img" aria-label="${esc(title)}" aria-labelledby="${id}-t ${id}-d" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><title id="${id}-t">${esc(title)}</title><desc id="${id}-d">${esc(desc)}</desc>${grid}${xAxis}${paths}</svg>`;
   }
   function legendHtml(lines){return `<ul class="pt-legend" aria-label="圖例">${lines.map((line,index)=>`<li>${keySvg(index)}<span>${esc(line.label)}</span></li>`).join('')}</ul>`}
-  function tableHtml(lines){
-    return `<div class="pt-table-wrap"><table class="pt-table"><caption class="pt-sr">${esc(TITLE)}文字摘要</caption><thead><tr><th scope="col">線條</th><th scope="col">最舊紀錄</th><th scope="col">最新紀錄</th><th scope="col">最新原幣</th></tr></thead><tbody>${lines.map(line=>{const a=line.points[0],b=line.points.at(-1);return `<tr><th scope="row">${esc(line.label)}</th><td>${dateText(a.ms)}<br><b>${money(a.twd)}</b></td><td>${dateText(b.ms)}<br><b>${money(b.twd)}</b></td><td>${b.amount==null?'—':original(b.amount,line.currency)}</td></tr>`}).join('')}</tbody></table></div>`;
+  function tableHtml(lines,title=TITLE){
+    return `<div class="pt-table-wrap"><table class="pt-table"><caption class="pt-sr">${esc(title)}文字摘要</caption><thead><tr><th scope="col">線條</th><th scope="col">最舊紀錄</th><th scope="col">最新紀錄</th><th scope="col">最新原幣</th></tr></thead><tbody>${lines.map(line=>{const a=line.points[0],b=line.points.at(-1);return `<tr><th scope="row">${esc(line.label)}</th><td>${dateText(a.ms)}<br><b>${money(a.twd)}</b></td><td>${dateText(b.ms)}<br><b>${money(b.twd)}</b></td><td>${b.amount==null?'—':original(b.amount,line.currency)}</td></tr>`}).join('')}</tbody></table></div>`;
   }
   // 純函式：整個小節的 HTML。history 是 API 回應（{series,meta}）或 null（讀取失敗）。
   function sectionHtml(history,options={}){
-    const head=`<h3>${esc(TITLE)}</h3><p class="meta">${esc(NOTE)}</p>`;
+    const title=titleFor(history?.series),head=`<h3>${esc(title)}</h3><p class="meta">${esc(NOTE)}</p>`;
     if(!history||history.meta?.unavailable)return `${head}<div class="state" role="status">參考價走勢暫時無法讀取，不影響其他資料；重新開啟這個分頁會再試一次。</div>`;
     const p=plan(history,options);
     if(!p.lines.length){
       return head+(p.recorded?`<div class="state">已開始記錄（自 ${esc(p.firstDate)}），累積兩筆以上才畫走勢。</div>`:'<div class="state">尚未有參考價紀錄。</div>');
     }
     const extra=[p.omitted?`另有 ${p.omitted} 條線未畫出（圖上最多 3 條，不同卡片、來源、版本不合併）。`:'',p.sparse?`另有 ${p.sparse} 條線只有一筆紀錄，累積兩筆以上才畫走勢。`:''].filter(Boolean);
-    return `${head}${legendHtml(p.lines)}<div class="pt-chart-wrap">${chartSvg(p.lines,options)}</div>${tableHtml(p.lines)}${extra.length?`<p class="meta">${extra.map(esc).join('<br>')}</p>`:''}`;
+    return `${head}${legendHtml(p.lines)}<div class="pt-chart-wrap">${chartSvg(p.lines,options)}</div>${tableHtml(p.lines,title)}${extra.length?`<p class="meta">${extra.map(esc).join('<br>')}</p>`:''}`;
   }
 
   // 瀏覽器端：打開市場分頁時才請求；失敗時下次再點會重試；寬度隨容器重畫（不做動畫）。
@@ -102,5 +105,5 @@
     if(history&&typeof root.ResizeObserver==='function'){let timer=0;new root.ResizeObserver(()=>{if(Math.abs((slot.clientWidth||0)-Number(slot.dataset.ptWidth||0))<8)return;root.clearTimeout(timer);timer=root.setTimeout(draw,120)}).observe(slot)}
   }
 
-  root.PriceTrend={TITLE,NOTE,MAX_LINES,esc,plan,chartSvg,sectionHtml,load};
+  root.PriceTrend={TITLE,titleFor,NOTE,MAX_LINES,esc,plan,chartSvg,sectionHtml,load};
 })(typeof window!=='undefined'?window:globalThis);

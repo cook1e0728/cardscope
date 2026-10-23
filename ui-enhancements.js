@@ -776,15 +776,18 @@ const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collS
 const typingInCollection=()=>/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'')&&collectionDialog()?.contains(document.activeElement);
 function finishLabel(key){return key===''?'未指定':(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[key])||key}
 function finishChoices(item){const seen=new Set(),keys=['',...(collectionUi.prices[item.id]||[]).map(price=>price.variant).filter(Boolean),...COMMON_FINISHES];if(item.finish&&!keys.some(key=>CS.finishKey(key)===CS.finishKey(item.finish)))keys.push(item.finish);return keys.filter(key=>!seen.has(CS.finishKey(key))&&seen.add(CS.finishKey(key)))}
-function collectionValuation(){return CS.valuate(collectionItems().map(item=>({...item,quantity:item.quantity||1})),collectionUi.prices)}
+// 伺服器把超過 7 天的快照標 stale:true（與詳細頁同規則）：估值只用新鮮的；過期的仍在 collectionUi.prices 裡，只在各卡列標「已過期」。
+function collectionValuation(){const fresh={};for(const [id,list] of Object.entries(collectionUi.prices))fresh[id]=list.filter(price=>!price.stale);return CS.valuate(collectionItems().map(item=>({...item,quantity:item.quantity||1})),fresh)}
 function reasonText(id,reason){return watchlistMeta[id]?.ambiguous?'請先選擇卡片版本':COLLECTION_REASONS[reason]||''}
 function rowPriceHtml(item,valuation){
   const state=collectionUi.pricesState,entry=valuation.perEntry[item.id];
   if(watchlistMeta[item.id]?.ambiguous)return '<span class="coll-skip">未計入：請先選擇卡片版本</span>';
   if(state==='loading'||state==='idle')return '<span class="meta">查詢參考價中…</span>';
   if(state==='error'||!entry)return '';
-  if(!entry.counted.length)return `<span class="coll-skip">未計入：${e(reasonText(item.id,entry.reason))}</span>`;
-  return entry.counted.map(({provider,price,qty})=>`<span class="coll-price-line">${e(CS.PROVIDER_LABELS[provider])} 參考價 ${e(price.currency)} ${Number(price.amount).toLocaleString()}${Number.isFinite(price.amountTwd)?`（約 NT$ ${price.amountTwd.toLocaleString()}${qty>1?` × ${qty}`:''}）`:''} · ${e(price.snapshotDate)}</span>`).join('')+(entry.needsFinish?'<span class="coll-skip">另一來源有多個版本：選擇版本後才計入</span>':'');
+  const priceLine=(provider,price,qty,stale)=>`<span class="${stale?'coll-skip':'coll-price-line'}">${e(CS.PROVIDER_LABELS[provider])} 參考價 ${e(price.currency)} ${Number(price.amount).toLocaleString()}${Number.isFinite(price.amountTwd)?`（約 NT$ ${price.amountTwd.toLocaleString()}${qty>1&&!stale?` × ${qty}`:''}）`:''} · ${e(price.snapshotDate)}${stale?' · <b>已過期</b>，不計入':''}</span>`,counted=new Set(entry.counted.map(x=>x.provider)),seen=new Set(),
+    stale=(collectionUi.prices[item.id]||[]).filter(price=>price.stale&&!counted.has(price.provider)&&(!item.finish||CS.finishKey(price.variant)===CS.finishKey(item.finish))&&!seen.has(price.provider)&&seen.add(price.provider)).map(price=>priceLine(price.provider,price,1,true)).join('');
+  if(!entry.counted.length)return `<span class="coll-skip">未計入：${e(stale?'參考價已過期（超過 7 天）':reasonText(item.id,entry.reason))}</span>${stale}`;
+  return entry.counted.map(({provider,price,qty})=>priceLine(provider,price,qty,false)).join('')+stale+(entry.needsFinish?'<span class="coll-skip">另一來源有多個版本：選擇版本後才計入</span>':'');
 }
 function valueHtml(valuation){
   const state=collectionUi.pricesState;

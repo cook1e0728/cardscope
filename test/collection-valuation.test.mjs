@@ -46,12 +46,18 @@ test('latest row per card+provider+variant, TWD conversion, cards without rows g
   assert.deepEqual(out.cards.map(c => c.cardId), ['a', 'b', 'c']);
   assert.deepEqual(out.cards[0].prices, [
     { provider: 'cardmarket', variant: 'holo', currency: 'EUR', amount: 5.5, amountTwd: 220, snapshotDate: '2026-10-15' },
-    { provider: 'cardmarket', variant: 'reverse', currency: 'EUR', amount: 2, amountTwd: 80, snapshotDate: '2026-10-10' },
+    { provider: 'cardmarket', variant: 'reverse', currency: 'EUR', amount: 2, amountTwd: 80, snapshotDate: '2026-10-10', stale: true },
     { provider: 'tcgplayer', variant: 'holofoil', currency: 'USD', amount: 10, amountTwd: 320, snapshotDate: '2026-10-12' }
   ]);
-  assert.deepEqual(out.cards[1].prices, [{ provider: 'tcgplayer', variant: '', currency: 'USD', amount: 3, amountTwd: 96, snapshotDate: '2026-10-05' }]);
+  assert.deepEqual(out.cards[1].prices, [{ provider: 'tcgplayer', variant: '', currency: 'USD', amount: 3, amountTwd: 96, snapshotDate: '2026-10-05', stale: true }], 'older than 7 days: still returned, flagged so the front end shows 已過期 and leaves it out of the total');
   assert.deepEqual(out.cards[2].prices, [], 'no snapshot: the front end shows 未計入');
   assert.equal(out.meta.truncated, false);
+  assert.match(out.meta.note, /Cardmarket／TCGplayer 的平台參考價/);
+  assert.match(out.meta.note, /超過 7 天的標「已過期」/);
+  assert.match(buildReferencePrices([rows[0]], ['a'], { fx, amountToTwd, now: Date.parse('2026-10-19T00:00:00Z') }).meta.note, /為 Cardmarket 的平台參考價/, 'only the sources that have data are named');
+  const edge = id => buildReferencePrices([{ card_id: 'a', provider: 'cardmarket', variant: '', currency: 'EUR', snapshot_date: id, amount: 1 }], ['a'], { fx, amountToTwd, now: Date.parse('2026-10-19T00:00:00Z') }).cards[0].prices[0];
+  assert.equal(edge('2026-10-12').stale, undefined, 'exactly 7 days is still fresh, as on the detail page');
+  assert.equal(edge('2026-10-11').stale, true);
   assert.equal(out.meta.exchangeRates.source, 'ExchangeRate-API');
   assert.match(out.meta.note, /不是成交價/);
   assert.equal(buildReferencePrices(new Array(REFERENCE_ROW_LIMIT).fill({}), ['a'], { fx, amountToTwd }).meta.truncated, true);

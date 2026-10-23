@@ -21,7 +21,7 @@ const options = { regionLabel: region => ({ JP: '日版', US: '美版' }[region]
 
 test('chart section: no records, one point and unavailable each get their own text', () => {
   const none = PriceTrend.sectionHtml({ series: [], meta: {} }, options);
-  assert.match(none, /參考價走勢（Cardmarket／TCGplayer，換算新台幣）/);
+  assert.match(none, /<h3>參考價走勢（換算新台幣）<\/h3>/, 'no series: no source named');
   assert.match(none, /尚未有參考價紀錄/);
   assert.doesNotMatch(none, /<svg/);
   const one = PriceTrend.sectionHtml({ series: [line({ points: [pt('2026-10-01', 100)] })], meta: {} }, options);
@@ -31,6 +31,12 @@ test('chart section: no records, one point and unavailable each get their own te
   assert.match(down, /暫時無法讀取/);
   assert.match(PriceTrend.sectionHtml(null, options), /暫時無法讀取/);
   assert.match(none, /不是成交價或台灣行情/);
+});
+
+test('chart title names only the sources that have records', () => {
+  assert.equal(PriceTrend.titleFor([line()]), '參考價走勢（Cardmarket，換算新台幣）');
+  assert.equal(PriceTrend.titleFor([line(), line({ provider: 'tcgplayer' }), line({ provider: 'unknown' })]), '參考價走勢（Cardmarket／TCGplayer，換算新台幣）');
+  assert.doesNotMatch(PriceTrend.sectionHtml({ series: [line()], meta: {} }, options), /TCGplayer/);
 });
 
 test('chart section: two or more points draw a step line with title, description, legend and a text table', () => {
@@ -194,6 +200,7 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
     assert.deepEqual(series[0].points.map(p => [p.date, p.amount, p.amountTwd]), [[daysAgo(100), 4, 160], [daysAgo(10), 5.5, 220]], 'EUR at 1/0.025 = 40 NT$ per EUR (today\'s rate)');
     assert.deepEqual(series[2].points.map(p => p.amountTwd), [320, 384, 416], 'USD at 32 NT$');
     assert.equal(meta.exchangeRates.source, 'ExchangeRate-API');
+    assert.match(meta.note, /Cardmarket／TCGplayer 的平台參考價/, 'the fixture has both sources');
     assert.match(meta.note, /今日匯率/);
     assert.match(meta.note, /不是成交價或台灣行情/);
     assert.equal(meta.windowDays, 180);
