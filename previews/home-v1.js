@@ -48,11 +48,12 @@
       return [...first,...rows.filter(c=>!first.includes(c))].slice(0,CAP[g]+1);
     }).catch(()=>[])));
     const cand=[0,1,2,3].flatMap(k=>lists.map(l=>l[k]).filter(Boolean)),ok=await Promise.all(cand.map(c=>loads(c.src))),count={},out=[];
-    cand.forEach((c,i)=>{if(ok[i]&&out.length<5&&(count[c.game]||0)<CAP[c.game]){count[c.game]=(count[c.game]||0)+1;out.push(c)}});
+    cand.forEach((c,i)=>{if(ok[i]&&out.length<4&&(count[c.game]||0)<CAP[c.game]){count[c.game]=(count[c.game]||0)+1;out.push(c)}});
     return out;
   }
-  // 320×420 的星軌區：從兔子左下逆時針往上繞成「C」，越遠越小、越斜（cx,cy 為卡片中心；d 為視差深度）
-  const POS=[{cx:236,cy:264,w:120,r:6,d:1},{cx:126,cy:270,w:96,r:-4,d:.8},{cx:56,cy:190,w:80,r:-9,d:.6},{cx:62,cy:98,w:68,r:-14,d:.45},{cx:128,cy:38,w:56,r:-18,d:.3}];
+  // 580×380 的「手牌」區：兔子卡居中在最前，4 張卡像握在手上的牌往兩側展開（cx,cy 為卡片中心）
+  const ZONE={w:580,h:380},RABBIT={cx:290,cy:190,w:210};
+  const POS=[{cx:410,cy:196,w:150,r:9},{cx:170,cy:196,w:150,r:-9},{cx:504,cy:232,w:136,r:18},{cx:76,cy:232,w:136,r:-18}];
   const SPARKLE='M0-6L1.4-1.4 6 0 1.4 1.4 0 6-1.4 1.4-6 0-1.4-1.4Z';
   // 通過各點的平滑曲線（Catmull-Rom 轉三次貝茲）
   const smooth=pts=>pts.reduce((d,p,i)=>{
@@ -62,9 +63,9 @@
   },'');
   /* 兔子形象圖：進場跳進來、星星閃爍、偶爾一道流星、游標傾斜卡面與光澤（這是 CardScope 自己的插畫，不是卡圖） */
   const lively=()=>matchMedia('(prefers-reduced-motion:no-preference)').matches&&!root.hasAttribute('data-cs-paused');
-  function runComet(comet){if(!lively())return;comet.classList.remove('go');void comet.offsetWidth;comet.classList.add('go')}
-  function animateRabbit(comet){
-    const art=$('.hero-art'),img=art?.querySelector('img');if(!art||!img||art.querySelector('.cs1-tilt'))return;
+  function runComet(comet){if(!comet||!lively())return;comet.classList.remove('go');void comet.offsetWidth;comet.classList.add('go')}
+  function decorateRabbit(art){
+    const img=art.querySelector('img');if(!img||art.querySelector('.cs1-tilt'))return;
     const tilt=el('span','cs1-tilt');img.before(tilt);tilt.append(img,el('span','cs1-sheen'));
     // 星點落在星空處，避開兔子本體
     [[18,14,0],[72,8,.9],[88,30,1.7],[10,46,2.4],[30,70,.5],[84,84,1.3],[16,90,3]].forEach(([x,y,d])=>{const t=el('span','cs1-twinkle');t.style.cssText=`left:${x}%;top:${y}%;--d:${d}s`;tilt.append(t)});
@@ -75,9 +76,8 @@
       raf=requestAnimationFrame(()=>{raf=0;const r=art.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
         tilt.style.setProperty('--tx',((x-.5)*12).toFixed(2)+'deg');tilt.style.setProperty('--ty',((.5-y)*10).toFixed(2)+'deg');tilt.style.setProperty('--sx',(x*100).toFixed(1)+'%');tilt.style.setProperty('--sy',(y*100).toFixed(1)+'%')});
     });
-    art.addEventListener('pointerenter',()=>{if(fine.matches)runComet(comet)});
+    art.addEventListener('pointerenter',()=>{if(fine.matches)runComet($('.cs1-comet'))});
     art.addEventListener('pointerleave',()=>{['--tx','--ty'].forEach(k=>tilt.style.setProperty(k,'0deg'))});
-    if(root.classList.contains('cs1-play'))setTimeout(()=>runComet(comet),1500);
   }
   let lastCard=null;
   function openCard(c,btn){
@@ -89,41 +89,50 @@
     b.type='button';b.setAttribute('aria-label',`開啟 ${c.name||'這張卡'}（${GAME_NAME[c.game]||''}${c.rarity?' '+c.rarity:''}）的卡片詳細資料`);b.style.setProperty('--i',i);
     if(pos){
       const h=pos.w*88/63;
-      b.style.setProperty('--x',(pos.cx-pos.w/2)+'px');b.style.setProperty('--y',(pos.cy-h/2)+'px');b.style.setProperty('--w',pos.w+'px');b.style.setProperty('--r',pos.r+'deg');b.style.setProperty('--d',pos.d);
-      // 進場從兔子的位置（星軌區右側）飛出
-      b.style.setProperty('--fx',(330-pos.cx)+'px');b.style.setProperty('--fy',(250-pos.cy)+'px');b.style.zIndex=String(10-i);
+      b.style.setProperty('--x',(pos.cx-pos.w/2)+'px');b.style.setProperty('--y',(pos.cy-h/2)+'px');b.style.setProperty('--w',pos.w+'px');b.style.setProperty('--r',pos.r+'deg');
+      // 進場：從兔子卡背後收成一疊，再像發牌一樣往兩側攤開
+      b.style.setProperty('--fx',(RABBIT.cx-pos.cx)+'px');b.style.setProperty('--fy',(RABBIT.cy-pos.cy)+'px');b.style.setProperty('--fr',(-pos.r)+'deg');
+      b.style.zIndex=String(4-Math.floor(i/2));
     }
     cap.setAttribute('aria-hidden','true');
     im.src=c.src;im.alt='';im.decoding='async';f.append(im);b.append(f,cap);b.onclick=()=>openCard(c,b);return b;
   }
   function buildCards(cards){
-    const hero=$('#hero'),intro=$('.hero-intro');
+    const hero=$('#hero'),intro=$('.hero-intro'),art=$('.hero-art');
     if(!hero||!intro||$('.cs1-fan'))return;
-    const real=cards.length>=3,pos=POS.slice(0,real?cards.length:POS.length);
+    const real=cards.length>=2;
     const NS='http://www.w3.org/2000/svg',fan=el('div','cs1-fan'),svg=doc.createElementNS(NS,'svg');
-    if(real){fan.setAttribute('role','group');fan.setAttribute('aria-label','精選高稀有度卡片')}else fan.setAttribute('aria-hidden','true');
-    svg.setAttribute('viewBox','0 0 320 420');svg.setAttribute('aria-hidden','true');
-    // 星軌從兔子的彗尾接出來，經過每張卡，最後在遠處收成一顆星
-    const pts=[[326,236],...pos.map(p=>[p.cx,p.cy]),[188,6]];
-    svg.innerHTML=`<defs><linearGradient id="cs1-trail" gradientUnits="userSpaceOnUse" x1="326" y1="236" x2="150" y2="0"><stop offset="0" stop-color="#E7BA4C" stop-opacity=".75"/><stop offset="1" stop-color="#E7BA4C" stop-opacity=".08"/></linearGradient></defs>`
+    if(real){fan.setAttribute('role','group');fan.setAttribute('aria-label','精選高稀有度卡片')}
+    svg.setAttribute('viewBox',`0 0 ${ZONE.w} ${ZONE.h}`);svg.setAttribute('aria-hidden','true');
+    // 一道星軌像皇冠一樣跨過整手牌的上緣，左右各收成一顆星
+    const pts=[[8,128],[96,62],[200,24],[290,6],[380,24],[484,62],[572,128]];
+    svg.innerHTML=`<defs><linearGradient id="cs1-trail" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${ZONE.w}" y2="0"><stop offset="0" stop-color="#E7BA4C" stop-opacity=".1"/><stop offset=".5" stop-color="#E7BA4C" stop-opacity=".8"/><stop offset="1" stop-color="#E7BA4C" stop-opacity=".1"/></linearGradient></defs>`
       +`<path class="cs1-trail" d="${smooth(pts)}" pathLength="1"/>`
-      +pts.slice(0,-1).map((p,i)=>{const q=pts[i+1];return`<path class="cs1-spark" style="--i:${i}" d="${SPARKLE}" transform="translate(${(p[0]+q[0])/2} ${(p[1]+q[1])/2}) scale(${(1-i*.12).toFixed(2)})"/>`}).join('')
-      +`<path class="cs1-spark cs1-spark-end" style="--i:${pts.length}" d="${SPARKLE}" transform="translate(188 6) scale(1.3)"/>`;
-    // 一顆光點沿星軌從兔子跑出去（載入時一次、游標移到兔子上再一次）
+      +pts.map((p,i)=>`<path class="cs1-spark${i===3?' cs1-spark-end':''}" style="--i:${Math.abs(i-3)}" d="${SPARKLE}" transform="translate(${p[0]} ${p[1]}) scale(${i===3?1.5:1-Math.abs(i-3)*.15})"/>`).join('');
     const comet=el('span','cs1-comet');comet.style.offsetPath=`path("${smooth(pts)}")`;
-    fan.append(svg,comet);if(real)cards.forEach((c,i)=>fan.append(cardBtn(c,i,POS[i])));hero.append(fan);
-    animateRabbit(comet);
+    fan.append(svg,comet);
+    if(real)cards.forEach((c,i)=>fan.append(cardBtn(c,i,POS[i])));
+    hero.append(fan);
+    // 兔子卡在寬螢幕時搬進手牌區當主角，窄一點就放回原位
+    if(art){
+      const home=art.parentElement,next=art.nextSibling,wide=matchMedia('(min-width:1200px)');
+      const place=()=>{if(wide.matches){if(art.parentElement!==fan)fan.append(art)}else if(art.parentElement!==home)home.insertBefore(art,next)};
+      place();wide.addEventListener('change',place);decorateRabbit(art);
+    }
+    if(root.classList.contains('cs1-play'))setTimeout(()=>runComet(comet),1700);
     if(!real)return;
-    // 精確指標的桌面：游標移動時近的卡多移一點，遠的少移（視差）
-    const fine=matchMedia('(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
-    let raf=0;
+    // 精確指標的桌面：游標移動時整手牌跟著輕微偏移（視差）
+    const fine=matchMedia('(hover:hover) and (pointer:fine)');let raf=0;
     hero.addEventListener('pointermove',e=>{
-      if(!fine.matches||root.hasAttribute('data-cs-paused')||raf)return;
+      if(!fine.matches||!lively()||raf)return;
       raf=requestAnimationFrame(()=>{raf=0;const r=hero.getBoundingClientRect();fan.style.setProperty('--px',((e.clientX-r.left)/r.width*2-1).toFixed(3));fan.style.setProperty('--py',((e.clientY-r.top)/r.height*2-1).toFixed(3))});
     });
     hero.addEventListener('pointerleave',()=>{fan.style.setProperty('--px',0);fan.style.setProperty('--py',0)});
     const strip=el('div','cs1-strip');strip.setAttribute('role','group');strip.setAttribute('aria-label','精選高稀有度卡片');
-    cards.slice(0,3).forEach((c,i)=>strip.append(cardBtn(c,i)));
+    // 手機和桌面同一個構圖：兔子卡居中、兩側各一張
+    const bunny=el('span','cs1-card cs1-strip-rabbit'),bf=el('span','cs1-float'),bi=el('img');
+    bunny.setAttribute('aria-hidden','true');bunny.style.setProperty('--i',1);bi.src='/assets/brand/web/rabbit-explore.webp';bi.alt='';bf.append(bi);bunny.append(bf);
+    strip.append(cardBtn(cards[0],0),bunny,cardBtn(cards[1],2));
     intro.append(strip,$('.cs1-replay-m')||'');
     // 關閉詳細頁後焦點回到被點的卡
     const m=$('#modal');
