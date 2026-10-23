@@ -26,57 +26,80 @@
     doc.querySelectorAll('[data-nav]').forEach(b=>b.dataset.nav===cur?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   }
 
-  /* ---------- 3. 卡片星座 ---------- */
+  /* ---------- 3. 卡片星軌：沿兔子的彗尾，由近到遠排成一道弧 ---------- */
+  const GAME_NAME={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'芙莉蓮',haikyuu:'排球少年'};
   const imgOf=c=>{
     const u=c.imageUrl||c.printings?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl;if(!u)return'';
     try{const x=new URL(u,location.origin);if(['asia-tc.onepiece-cardgame.com','asia-en.onepiece-cardgame.com'].includes(x.hostname)&&x.pathname.startsWith('/images/cardlist/card/'))return'/api/images/onepiece?url='+encodeURIComponent(x.href)}catch{}
     return u;
   };
+  // 航海王、Weiß Schwarz 官方圖本身印著 SAMPLE 浮水印，放在展示位不好看 → 不選
+  const sampled=u=>/onepiece-cardgame\.com|ws-tcg\.com|\/api\/images\/onepiece/.test(u);
   const nameOf=c=>String(c.nameZh||c.nameJa||c.nameEn||c.name||'').replace(/\s*\[[^\]]*\]$/,'');
-  const loads=src=>new Promise(res=>{const i=new Image(),t=setTimeout(()=>res(false),5000);i.onload=()=>{clearTimeout(t);res(true)};i.onerror=()=>{clearTimeout(t);res(false)};i.src=src});
+  const loads=src=>new Promise(res=>{const i=new Image(),t=setTimeout(()=>res(false),5000);i.onload=()=>{clearTimeout(t);res(i.naturalWidth>40)};i.onerror=()=>{clearTimeout(t);res(false)};i.src=src});
   async function pickCards(){
-    const rows=await Promise.all(['pokemon','onepiece','yugioh','weiss-schwarz','haikyuu'].map(g=>fetch(`/api/cards?game=${g}&limit=12`).then(r=>r.ok?r.json():null).then(j=>(j?.data||[]).filter(c=>imgOf(c)).slice(0,2).map(c=>({id:c.id,game:g,name:nameOf(c),src:imgOf(c)}))).catch(()=>[])));
-    const cand=[0,1].flatMap(k=>rows.map(r=>r[k]).filter(Boolean)).slice(0,8),ok=await Promise.all(cand.map(c=>loads(c.src)));
+    const lists=await Promise.all(['pokemon','yugioh','haikyuu','onepiece','weiss-schwarz'].map(g=>fetch(`/api/cards?game=${g}&limit=40&sort=rarity-desc`).then(r=>r.ok?r.json():null).then(j=>{
+      // 同一 IP 每種稀有度只取一張，避免兩張長得一樣的全金卡並排
+      const seen=new Set();
+      return (j?.data||[]).map(c=>({id:c.id,game:g,name:nameOf(c),rarity:String(c.rarity||'').trim(),src:imgOf(c)})).filter(c=>c.src&&!sampled(c.src)&&!seen.has(c.rarity)&&seen.add(c.rarity));
+    }).catch(()=>[])));
+    // 各 IP 輪流取最高稀有度；第一張（離兔子最近、最大）是寶可夢的最高稀有度
+    const cand=[0,1,2].flatMap(k=>lists.map(l=>l[k]).filter(Boolean)).slice(0,9),ok=await Promise.all(cand.map(c=>loads(c.src)));
     return cand.filter((c,i)=>ok[i]).slice(0,5);
   }
-  // 桌面扇形座標（300×400 的星座區，沿兔子的彗尾往左下，避開搜尋框）；連線兩兩相接
-  const POS=[{x:190,y:0,w:100,r:5},{x:96,y:96,w:92,r:-4},{x:40,y:196,w:84,r:6},{x:140,y:282,w:78,r:-5},{x:232,y:236,w:62,r:4}];
-  const LINKS=[[0,1],[1,2],[1,3],[3,4],[0,4]];
+  // 320×420 的星軌區：從兔子左下逆時針往上繞成「C」，越遠越小、越斜（cx,cy 為卡片中心；d 為視差深度）
+  const POS=[{cx:236,cy:264,w:120,r:6,d:1},{cx:126,cy:270,w:96,r:-4,d:.8},{cx:56,cy:190,w:80,r:-9,d:.6},{cx:62,cy:98,w:68,r:-14,d:.45},{cx:128,cy:38,w:56,r:-18,d:.3}];
+  const SPARKLE='M0-6L1.4-1.4 6 0 1.4 1.4 0 6-1.4 1.4-6 0-1.4-1.4Z';
+  // 通過各點的平滑曲線（Catmull-Rom 轉三次貝茲）
+  const smooth=pts=>pts.reduce((d,p,i)=>{
+    if(!i)return`M${p[0]} ${p[1]}`;
+    const a=pts[i-2]||pts[i-1],b=pts[i-1],c=p,e=pts[i+1]||p;
+    return d+` C${b[0]+(c[0]-a[0])/6} ${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6} ${c[1]-(e[1]-b[1])/6} ${c[0]} ${c[1]}`;
+  },'');
   let lastCard=null;
   function openCard(c,btn){
     lastCard=btn;
     if(typeof window.openCard==='function')window.openCard(c.id);else location.href=`/?game=${encodeURIComponent(c.game)}&card=${encodeURIComponent(c.id)}`;
   }
   function cardBtn(c,i,pos){
-    const b=el('button','cs1-card'),im=el('img');
-    b.type='button';b.setAttribute('aria-label',`開啟${c.name||'這張卡'}的卡片詳細資料`);b.style.setProperty('--i',i);
-    if(pos){b.style.setProperty('--x',pos.x+'px');b.style.setProperty('--y',pos.y+'px');b.style.setProperty('--w',pos.w+'px');b.style.setProperty('--r',pos.r+'deg')}
-    else b.style.setProperty('--r',[-5,3,-3][i]+'deg');
-    im.src=c.src;im.alt='';im.decoding='async';b.append(im);b.onclick=()=>openCard(c,b);return b;
+    const b=el('button','cs1-card'),f=el('span','cs1-float'),im=el('img'),cap=el('span','cs1-cap',[GAME_NAME[c.game],c.rarity].filter(Boolean).join(' · '));
+    b.type='button';b.setAttribute('aria-label',`開啟 ${c.name||'這張卡'}（${GAME_NAME[c.game]||''}${c.rarity?' '+c.rarity:''}）的卡片詳細資料`);b.style.setProperty('--i',i);
+    if(pos){
+      const h=pos.w*88/63;
+      b.style.setProperty('--x',(pos.cx-pos.w/2)+'px');b.style.setProperty('--y',(pos.cy-h/2)+'px');b.style.setProperty('--w',pos.w+'px');b.style.setProperty('--r',pos.r+'deg');b.style.setProperty('--d',pos.d);
+      // 進場從兔子的位置（星軌區右側）飛出
+      b.style.setProperty('--fx',(330-pos.cx)+'px');b.style.setProperty('--fy',(250-pos.cy)+'px');b.style.zIndex=String(10-i);
+    }
+    cap.setAttribute('aria-hidden','true');
+    im.src=c.src;im.alt='';im.decoding='async';f.append(im);b.append(f,cap);b.onclick=()=>openCard(c,b);return b;
   }
   function buildCards(cards){
     const hero=$('#hero'),intro=$('.hero-intro');
     if(!hero||!intro||$('.cs1-fan'))return;
-    const real=cards.length>=3,n=real?cards.length:POS.length; // 沒有足夠真實卡圖時只畫星點與星座線
+    const real=cards.length>=3,pos=POS.slice(0,real?cards.length:POS.length);
     const NS='http://www.w3.org/2000/svg',fan=el('div','cs1-fan'),svg=doc.createElementNS(NS,'svg');
-    if(real){fan.setAttribute('role','group');fan.setAttribute('aria-label','精選卡片')}else fan.setAttribute('aria-hidden','true');
-    svg.setAttribute('viewBox','0 0 300 400');svg.setAttribute('aria-hidden','true');
-    const mid=i=>[POS[i].x+POS[i].w/2,POS[i].y+POS[i].w*88/63/2];
-    LINKS.filter(([a,b])=>a<n&&b<n).forEach(([a,b])=>{
-      const[x1,y1]=mid(a),[x2,y2]=mid(b),l=doc.createElementNS(NS,'line'),d=doc.createElementNS(NS,'circle');
-      l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);
-      d.setAttribute('cx',(x1+x2)/2);d.setAttribute('cy',(y1+y2)/2);d.setAttribute('r',2.4);svg.append(l,d);
-    });
-    if(!real)POS.forEach((_,i)=>{
-      const[x,y]=mid(i),h=doc.createElementNS(NS,'circle'),s=doc.createElementNS(NS,'circle');
-      h.setAttribute('class','cs1-halo');h.setAttribute('r',9);s.setAttribute('r',3.4);[h,s].forEach(c=>{c.setAttribute('cx',x);c.setAttribute('cy',y);svg.append(c)});
-    });
+    if(real){fan.setAttribute('role','group');fan.setAttribute('aria-label','精選高稀有度卡片')}else fan.setAttribute('aria-hidden','true');
+    svg.setAttribute('viewBox','0 0 320 420');svg.setAttribute('aria-hidden','true');
+    // 星軌從兔子的彗尾接出來，經過每張卡，最後在遠處收成一顆星
+    const pts=[[326,236],...pos.map(p=>[p.cx,p.cy]),[188,6]];
+    svg.innerHTML=`<defs><linearGradient id="cs1-trail" gradientUnits="userSpaceOnUse" x1="326" y1="236" x2="150" y2="0"><stop offset="0" stop-color="#E7BA4C" stop-opacity=".75"/><stop offset="1" stop-color="#E7BA4C" stop-opacity=".08"/></linearGradient></defs>`
+      +`<path class="cs1-trail" d="${smooth(pts)}" pathLength="1"/>`
+      +pts.slice(0,-1).map((p,i)=>{const q=pts[i+1];return`<path class="cs1-spark" style="--i:${i}" d="${SPARKLE}" transform="translate(${(p[0]+q[0])/2} ${(p[1]+q[1])/2}) scale(${(1-i*.12).toFixed(2)})"/>`}).join('')
+      +`<path class="cs1-spark cs1-spark-end" style="--i:${pts.length}" d="${SPARKLE}" transform="translate(188 6) scale(1.3)"/>`;
     fan.append(svg);if(real)cards.forEach((c,i)=>fan.append(cardBtn(c,i,POS[i])));hero.append(fan);
     if(!real)return;
-    const strip=el('div','cs1-strip');strip.setAttribute('role','group');strip.setAttribute('aria-label','精選卡片');
+    // 精確指標的桌面：游標移動時近的卡多移一點，遠的少移（視差）
+    const fine=matchMedia('(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
+    let raf=0;
+    hero.addEventListener('pointermove',e=>{
+      if(!fine.matches||root.hasAttribute('data-cs-paused')||raf)return;
+      raf=requestAnimationFrame(()=>{raf=0;const r=hero.getBoundingClientRect();fan.style.setProperty('--px',((e.clientX-r.left)/r.width*2-1).toFixed(3));fan.style.setProperty('--py',((e.clientY-r.top)/r.height*2-1).toFixed(3))});
+    });
+    hero.addEventListener('pointerleave',()=>{fan.style.setProperty('--px',0);fan.style.setProperty('--py',0)});
+    const strip=el('div','cs1-strip');strip.setAttribute('role','group');strip.setAttribute('aria-label','精選高稀有度卡片');
     cards.slice(0,3).forEach((c,i)=>strip.append(cardBtn(c,i)));
     intro.append(strip,$('.cs1-replay-m')||'');
-    // 關閉詳細頁後焦點回到被點的星座卡
+    // 關閉詳細頁後焦點回到被點的卡
     const m=$('#modal');
     if(m)new MutationObserver(()=>{if(!m.classList.contains('open')&&lastCard&&doc.activeElement===doc.body){lastCard.focus({preventScroll:true});lastCard=null}}).observe(m,{attributes:true,attributeFilter:['class']});
   }
