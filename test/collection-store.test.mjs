@@ -12,7 +12,7 @@ const item = (over = {}) => ({ id: 'tw-1', canonicalId: 'pokemon-1', favorite: f
 const backup = items => JSON.stringify({ app: 'cardscope-collection', version: 1, exportedAt: '2026-10-19T00:00:00.000Z', items });
 
 test('import validator: whole-file problems reject, bad items are skipped and counted, ids stay strings', () => {
-  for (const text of ['', '   ', 'not json', '[]', '"x"', 'null', JSON.stringify({ app: 'other', version: 1, items: [] }), JSON.stringify({ app: 'cardscope-collection', version: 2, items: [] }), JSON.stringify({ app: 'cardscope-collection', version: 1 }), JSON.stringify({ app: 'cardscope-collection', version: 1, items: {} })]) {
+  for (const text of ['', '   ', 'not json', '[]', '"x"', 'null', JSON.stringify({ app: 'other', version: 1, items: [] }), JSON.stringify({ app: 'cardscope-collection', version: 3, items: [] }), JSON.stringify({ app: 'cardscope-collection', version: 1 }), JSON.stringify({ app: 'cardscope-collection', version: 1, items: {} })]) {
     assert.ok(CS.parseBackup(text).error, `rejects ${text.slice(0, 30)}`);
   }
   assert.ok(CS.parseBackup('x'.repeat(CS.LIMITS.fileMaxChars + 1)).error, 'size cap');
@@ -36,7 +36,7 @@ test('export then import round trip keeps every field; merging twice never doubl
   const file = JSON.stringify(CS.exportBackup(items, new Date('2026-10-19T00:00:00Z')));
   assert.deepEqual(CS.parseBackup(file).items, items);
   assert.equal(JSON.parse(file).app, 'cardscope-collection');
-  assert.equal(JSON.parse(file).version, 1);
+  assert.equal(JSON.parse(file).version, 2);
   const first = CS.mergeItems([], items);
   assert.deepEqual([first.added, first.merged], [2, 0]);
   const again = CS.mergeItems(first.items, items);
@@ -121,7 +121,7 @@ test('wiring: store loads before the UI, keys are the physical card id, the dial
   assert.match(ui, /<label>版本<select/);
   assert.match(ui, /downloadFile\(`cardscope-collection-/, 'JSON export');
   assert.match(ui, /id="collectionCsv"/, 'CSV export stays');
-  assert.match(ui, /type="file" id="collFile" accept="application\/json,\.json" hidden/);
+  assert.match(ui, /type="file" id="collFile" accept="application\/json,\.json,text\/csv,\.csv" hidden/);
 });
 
 test('favorites unification: a star becomes quantity 1 once, existing counts stay, nothing is mutated or lost', () => {

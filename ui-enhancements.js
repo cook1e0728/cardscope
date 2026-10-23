@@ -104,7 +104,7 @@ function physicalIdOf(card){const id=String(cardOpenId(card));return id===String
 function entryKey(card){const key=physicalIdOf(card);return[key,String(card.id)].find(item=>watchQuantity(item)>0)||key}
 function cardSnapshot(card,key){
   const printing=(card.printings||[]).find(p=>String(p.cardId)===String(key))||null;
-  return{id:String(key),canonicalId:String(card.canonicalId||card.id||''),game:cardGameId(card)||'',nameZh:card.nameZh||'',nameEn:card.nameEn||'',nameJa:card.nameJa||'',nameKo:card.nameKo||'',officialCardNumber:card.officialCardNumber||printing?.localCardNumber||'',rarity:printing?.rarity||card.rarity||'',region:printing?.region||card.region||card.printings?.[0]?.region||'',version:printing?.metadata?.variantName||card.metadata?.variantName||'',image:(printing?.imageUrl&&!printing.imageRehostRequired?printing.imageUrl:image(card))||''};
+  return{id:String(key),canonicalId:String(card.canonicalId||card.id||''),game:cardGameId(card)||'',...(printing?.seriesId||card.seriesId?{seriesId:printing?.seriesId||card.seriesId}:{}),nameZh:card.nameZh||'',nameEn:card.nameEn||'',nameJa:card.nameJa||'',nameKo:card.nameKo||'',officialCardNumber:card.officialCardNumber||printing?.localCardNumber||'',rarity:printing?.rarity||card.rarity||'',region:printing?.region||card.region||card.printings?.[0]?.region||'',version:printing?.metadata?.variantName||card.metadata?.variantName||'',image:(printing?.imageUrl&&!printing.imageRehostRequired?printing.imageUrl:image(card))||''};
 }
 function persistCollection(){return[uiLocal.set('cardscope-watchlist',JSON.stringify(watchlist)),uiLocal.set('cardscope-watchlist-meta',JSON.stringify(watchlistMeta))].every(Boolean)}
 // 舊 ☆ 清單只在第一次載入時搬成數量 1（已有數量的不變）。舊鍵原封不動留作備份；數量寫入成功才記下已搬移，失敗下次載入再搬，不會遺失。
@@ -123,7 +123,7 @@ function touchMeta(key){
 
 const cardscopeBaseFilteredCards=typeof filteredCards==='function'?filteredCards:null;
 if(cardscopeBaseFilteredCards){
-  filteredCards=function(rows){const result=cardscopeBaseFilteredCards(rows);return favoritesOnly?result.filter(card=>isFavorite(entryKey(card))):result};
+  filteredCards=function(rows){const result=cardscopeBaseFilteredCards(rows);const owned=favoritesOnly?result.filter(card=>isFavorite(entryKey(card))):result;return missingOnlyActive()?owned.filter(card=>!isFavorite(entryKey(card))):owned};
 }
 
 function missingImageMarkup(message='圖片來源尚未收錄'){
@@ -146,9 +146,9 @@ function resilientImage(src,alt,message,options={}){
   src=typeof displayImageUrl==='function'?displayImageUrl(src):src;
   if(!src)return missingImageMarkup(message);
   const sample=options.embeddedSample||options.suppressOverlay?'':`<span class="card-sample-watermark" aria-hidden="true">SAMPLE</span>`;
-  // 第一張載入失敗時依序改用其他版本的圖（例如台灣官方站維護時改用日版圖），與放大檢視一致
+  // 第一次載入失敗先隔 1.5 秒用同網址（加 retry=1）重試一次（官方站偶爾回 503）；還失敗才依序改用其他版本的圖（例如台灣官方站維護時改用日版圖），與放大檢視一致
   const fallbacks=[...new Set((options.fallbacks||[]).map(url=>typeof displayImageUrl==='function'?displayImageUrl(url):url).filter(url=>url&&url!==src))];
-  return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy"${fallbacks.length?` data-fallbacks="${e(JSON.stringify(fallbacks))}"`:''} onerror="const next=JSON.parse(this.dataset.fallbacks||'[]');if(next.length){this.dataset.fallbacks=JSON.stringify(next.slice(1));this.src=next[0];return}this.hidden=true;this.nextElementSibling.hidden=false;const sample=this.parentElement.querySelector('.card-sample-watermark');if(sample)sample.hidden=true"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span>${sample}`;
+  return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy"${fallbacks.length?` data-fallbacks="${e(JSON.stringify(fallbacks))}"`:''} onload="this.style.visibility=''" onerror="if(!this.dataset.retried){this.dataset.retried='1';this.style.visibility='hidden';const img=this;setTimeout(()=>{img.src=img.src+(img.src.includes('?')?'&':'?')+'retry=1'},1500);return}const next=JSON.parse(this.dataset.fallbacks||'[]');if(next.length){this.dataset.fallbacks=JSON.stringify(next.slice(1));this.src=next[0];return}this.hidden=true;this.nextElementSibling.hidden=false;const sample=this.parentElement.querySelector('.card-sample-watermark');if(sample)sample.hidden=true"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span>${sample}`;
 }
 
 function installViewToggle(){
@@ -208,10 +208,10 @@ cards=function(rows,keepSource=false){
   cardDisplayState='ready';
   if(!keepSource){currentCardRows=rows;refreshRarityOptions(rows)}
   const shown=filteredCards(currentCardRows),host=$('cards');host.classList.toggle('list-view',cardViewMode==='list');host.classList.toggle('rarity-view',cardViewMode==='rarity');drawViewButtons();
-  $('filterSummary').textContent=`目前載入 ${currentCardRows.length.toLocaleString()} 張，篩選後 ${shown.length.toLocaleString()} 張${favoritesOnly?'；目前只看我的收藏':''}；價格僅採可驗證買取資料`;
+  $('filterSummary').textContent=`目前載入 ${currentCardRows.length.toLocaleString()} 張，篩選後 ${shown.length.toLocaleString()} 張${favoritesOnly?'；目前只看我的收藏':''}${missingOnlyActive()?'；目前只看缺的卡':''}；價格僅採可驗證買取資料`;
   host.innerHTML=renderCardRows(shown);
   if(typeof primeCardImages==='function')primeCardImages(host.dataset.cardscopeGame||game,browse);
-  activateCardActions(host);renderFavoritesControl();renderWatchlistSummary();
+  activateCardActions(host);renderFavoritesControl();renderWatchlistSummary();renderSeriesProgress();
 };
 
 function renderFavoritesControl(){
@@ -254,6 +254,31 @@ function watchlistTotals(){
 // 「我的收藏」= 數量 > 0 的卡；款數與總張數在網格、摘要與收藏視窗用同一組函式。
 function collectionIds(){return Object.keys(watchlist).filter(id=>watchQuantity(id)>0)}
 function collectionTotal(){return collectionIds().reduce((sum,id)=>sum+watchQuantity(id),0)}
+// 系列集卡進度（圖鑑系列頁）。已收藏 = 這台裝置收藏中屬於該系列的卡（同一張的多張複本只算一張）；共 = 伺服器回報的系列卡數（browse.total，沒有稀有度篩選時才記下）。
+// 舊收藏沒存 seriesId 時改用目前卡牆上的卡 id 比對（只比得到已載入的頁），並順手補存 seriesId；開過該系列就不再有這個限制。
+let missingOnly=false,missingOnlySeries='';
+const seriesTotals=new Map(),seriesTotalFailed=new Set();
+function seriesWall(){return typeof browse!=='undefined'&&typeof game!=='undefined'&&game!=='all'&&!!browse.seriesId&&!(typeof activeSearch!=='undefined'&&activeSearch)}
+function missingOnlyActive(){return missingOnly&&seriesWall()&&browse.seriesId===missingOnlySeries}
+function seriesProgressState(){
+  if(!seriesWall())return null;
+  const sid=browse.seriesId;
+  if(cardFilters.rarity==='all'&&browse.rows.length&&browse.total>0)seriesTotals.set(sid,browse.total);
+  const total=seriesTotals.get(sid);if(!total)return null;
+  const keys=browse.rows.map(entryKey);let changed=false;
+  keys.forEach(key=>{if(watchQuantity(key)>0&&!watchlistMeta[key]?.seriesId){watchlistMeta[key]={...watchlistMeta[key],id:key,seriesId:sid};changed=true}});
+  if(changed)persistCollection();
+  return{hasMore:browse.hasMore,...CS.seriesProgress(CS.ownedInSeries(collectionItems(),sid,keys),total)};
+}
+const progressBar=(p,label)=>`<div class="series-progress-bar" role="progressbar" aria-label="${e(label)}" aria-valuemin="0" aria-valuemax="${p.total}" aria-valuenow="${p.owned}"><i style="width:${p.percent}%"></i></div>`;
+function renderSeriesProgress(){
+  const host=$('seriesProgress');if(!host)return;
+  const p=seriesProgressState();
+  if(!p){host.hidden=true;host.innerHTML='';return}
+  const active=missingOnlyActive();
+  host.hidden=false;
+  host.innerHTML=`<div class="series-progress-row"><b>集卡進度</b><span>已收藏 ${p.owned} / 共 ${p.total} 張（${p.percent}%）</span><button type="button" id="missingOnly" class="favorites-filter${active?' on':''}" aria-pressed="${active}">只看缺的卡（${p.missing}）</button></div>${progressBar(p,'本系列集卡進度')}${active&&p.hasMore?'<small class="meta">只篩選已載入的卡；還有卡沒載入，按「載入更多卡片」才會看到其餘缺的卡。</small>':''}`;
+}
 function renderWatchlistSummary(){
   const host=$('watchlistSummary');if(!host)return;
   const entries=watchlistEntries(),totals=watchlistTotals(),verified=[...totals].map(([currency,amount])=>`${e(currency)} ${amount.toLocaleString()}`).join(' ／ ');
@@ -264,15 +289,16 @@ function renderWatchlistSummary(){
 function csvCell(value){let text=String(value??'');if(/^[\s]*[=+@-]/.test(text))text="'"+text;return `"${text.replace(/"/g,'""')}"`}
 function downloadWatchlistCsv(){
   const items=collectionItems();if(!items.length)return;
-  const header=['卡片 ID','名稱','原名','官方卡號','稀有度','數量','已驗證價格幣別','已驗證單價','已驗證小計','品況','版本','備註','作品層 ID'];
-  const rows=items.map(item=>{const id=item.id,quantity=item.quantity||1,card=cardForWatch(id),price=card&&!card.__watchlistSnapshot&&priceFor(card),amount=price&&Number(price.price),valid=Number.isFinite(amount)&&price.currency,known=card&&(!card.__watchlistSnapshot||card.v);return[id,known?name(card):'卡片資料待載入',known?original(card):'',known?(card.__watchlistSnapshot?card.officialCardNumber:cardNumberLabel(card)):'',known?(card.__watchlistSnapshot?card.rarity:cardRarityLabel(card)):'',quantity,valid?price.currency:'',valid?amount:'',valid?amount*quantity:'',CS.CONDITIONS.find(([key])=>key===item.condition)?.[1]||'',item.finish,item.note,item.canonicalId].map(csvCell).join(',')});
+  const header=['卡片 ID','名稱','原名','官方卡號','稀有度','數量','已驗證價格幣別','已驗證單價','已驗證小計','品況','版本','備註','作品層 ID','系列 ID','遊戲','地區'];
+  const rows=items.map(item=>{const id=item.id,quantity=item.quantity||1,card=cardForWatch(id),price=card&&!card.__watchlistSnapshot&&priceFor(card),amount=price&&Number(price.price),valid=Number.isFinite(amount)&&price.currency,known=card&&(!card.__watchlistSnapshot||card.v);return[id,known?name(card):'卡片資料待載入',known?original(card):'',known?(card.__watchlistSnapshot?card.officialCardNumber:cardNumberLabel(card)):'',known?(card.__watchlistSnapshot?card.rarity:cardRarityLabel(card)):'',quantity,valid?price.currency:'',valid?amount:'',valid?amount*quantity:'',CS.CONDITIONS.find(([key])=>key===item.condition)?.[1]||'',item.finish,item.note,item.canonicalId,item.seriesId||'',item.game||'',item.region||''].map(csvCell).join(',')});
   downloadFile('cardscope-watchlist.csv','text/csv;charset=utf-8',`\uFEFF${[header.map(csvCell).join(','),...rows].join('\r\n')}`);
 }
 
 function installCardUtilities(){
   const tools=$('cardTools');if(!tools||$('favoritesOnly'))return;
   const favoriteButton=document.createElement('button');favoriteButton.type='button';favoriteButton.id='favoritesOnly';favoriteButton.className='favorites-filter';favoriteButton.setAttribute('aria-pressed',String(favoritesOnly));favoriteButton.onclick=()=>{favoritesOnly=!favoritesOnly;uiLocal.set('cardscope-favorites-only',favoritesOnly?'1':'0');cards(currentCardRows,true)};
-  const summary=document.createElement('div');summary.id='watchlistSummary';summary.className='watchlist-summary';tools.append(favoriteButton,summary);renderFavoritesControl();renderWatchlistSummary();
+  const summary=document.createElement('div');summary.id='watchlistSummary';summary.className='watchlist-summary';const progress=document.createElement('div');progress.id='seriesProgress';progress.className='series-progress';progress.hidden=true;progress.onclick=event=>{if(!event.target.closest('#missingOnly'))return;missingOnly=!missingOnlyActive();missingOnlySeries=browse.seriesId;cards(currentCardRows,true)};
+  tools.append(favoriteButton,summary,progress);renderFavoritesControl();renderWatchlistSummary();renderSeriesProgress();
 }
 
 function cardTextBlock(card){
@@ -808,11 +834,14 @@ const detailTabsStyle=document.createElement('style');
 detailTabsStyle.textContent=`.detail-tabs [hidden]{display:none!important}.rarity-code{text-decoration:none;cursor:help}.rarity-full{font-size:12px}.detail-meta{margin:0 0 14px}
 .collection-dialog{width:min(760px,calc(100vw - 16px));max-height:calc(100dvh - 16px);padding:0;border:1px solid var(--rule,#d9d1c0);border-radius:14px;background:#fff;color:inherit}.collection-dialog::backdrop{background:#0008}.coll{display:grid;gap:12px;padding:16px}.coll header{display:flex;align-items:center;justify-content:space-between;gap:12px}.coll h2{margin:0;font-size:20px}.coll header button{min-width:44px}.coll h3{margin:0 0 6px;font-size:16px}.coll-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px 8px;border:1px solid var(--rule,#d9d1c0);border-radius:10px;background:#FBF9F4;text-align:center}.coll-stat{display:grid;gap:2px;min-width:0}.coll-stat b{font-size:18px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}.coll-stat span{font-size:11px;color:var(--ink-2,#5a5348);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.coll-binder-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;padding:10px 14px;border:1.5px solid #D49B1B;border-radius:12px;background:linear-gradient(135deg,#1F1B16 0%,#2B2A26 100%);color:#FFF8E7;text-align:left;cursor:pointer;box-sizing:border-box}.coll-binder-left{display:flex;align-items:center;gap:10px;min-width:0}.coll-binder-left img{width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid #D49B1B;flex:none}.coll-binder-copy{display:grid;gap:2px;min-width:0}.coll-binder-copy b{font-size:15px;color:#FFF8E7}.coll-binder-copy small{font-size:11px;color:#E7BA4C}.coll-binder-right{font-size:13px;font-weight:700;color:#E7BA4C;white-space:nowrap;font-variant-numeric:tabular-nums}.coll-local{margin:0;padding:10px 12px;border-radius:8px;background:var(--paper-2,#f8f5ee);border:1px solid var(--rule,#d9d1c0);font-size:14px}.coll-value{padding:10px 12px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-value p{margin:6px 0 0}.coll-sums{display:grid;gap:6px;margin:0;padding:0;list-style:none}.coll-sums li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.coll-sums b{font-size:18px}.coll-sums small{color:var(--ink-2,#5a5348)}.coll-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.coll-item{content-visibility:auto;contain-intrinsic-size:auto 220px;display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 12px;padding:10px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-art{position:relative;width:64px;aspect-ratio:5/7;overflow:hidden;border-radius:6px;background:var(--paper-2,#f8f5ee)}.coll-art .card-sample-watermark{font-size:9px;letter-spacing:.04em}.coll-art img{width:100%;height:100%;object-fit:contain}.coll-art .image-fallback{font-size:11px}.coll-main{min-width:0;overflow-wrap:anywhere}.coll-name{display:block}.coll-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.coll-price{display:grid;gap:2px;margin-top:6px;font-size:13px}.coll-skip{color:var(--ink-2,#5a5348)}.coll-fields,.coll-pick,.coll-actions{grid-column:1/-1}.coll-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.coll-fields label,.coll-pick{display:grid;gap:2px;font-size:13px;font-weight:700}.coll-fields input,.coll-fields select,.coll-pick select{width:100%;font:inherit;font-weight:400}.coll-note-field{grid-column:1/-1}.coll-actions,.coll-tools{display:flex;flex-wrap:wrap;gap:8px}.coll-actions{justify-content:flex-end}@media(min-width:720px){.coll-fields{grid-template-columns:90px repeat(2,minmax(0,1fr))}}@media(max-width:520px){.coll{padding:12px}.coll-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.coll-tools button{width:100%;min-height:44px}}`;
 document.head.append(detailTabsStyle);
+const seriesProgressStyle=document.createElement('style');
+seriesProgressStyle.textContent=`.series-progress{display:grid;gap:8px;flex:1 1 100%;width:100%;margin-top:8px;padding:10px 12px;border:1px solid #D9D1C0;border-radius:10px;background:#FBF9F4;color:#1F1B16;box-sizing:border-box}.series-progress[hidden]{display:none}.series-progress-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}.series-progress-row span{font-variant-numeric:tabular-nums}.series-progress #missingOnly{min-height:44px;margin-left:auto}.series-progress-bar{height:10px;border-radius:999px;background:#E6DFCE;overflow:hidden}.series-progress-bar i{display:block;height:100%;border-radius:999px;background:#1F1B16}.coll-series-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.coll-series-list li{display:grid;gap:4px}.coll-series-name{font-weight:700;overflow-wrap:anywhere}.coll-series-count{font-size:13px;color:#5A5348;font-variant-numeric:tabular-nums}.coll-import{display:grid;gap:8px;padding:12px;border:2px solid #D49B1B;border-radius:10px;background:#FFF8E7;color:#1F1B16}.coll-import h3,.coll-import p{margin:0}.coll-import ul{margin:6px 0 0;padding-left:20px}.coll-import summary{min-height:44px;display:flex;align-items:center;cursor:pointer}.coll-replace{display:flex;align-items:center;gap:8px;min-height:44px}.coll-replace input{width:20px;height:20px;flex:none}.coll-import-actions{display:flex;flex-wrap:wrap;gap:8px}.coll-import-actions button{min-height:44px}`;
+document.head.append(seriesProgressStyle);
 
 // 頂欄／底部導覽的「我的收藏」呼叫 window.openCollection()（ADR 0045，v0 免登入）：清單可編輯張數／品況／版本／備註、看參考總值、匯出入 JSON 備份、下載 CSV。資料只在這台裝置。
-const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:''};
+const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:'',pending:null};
 const COLLECTION_REASONS={slab:'鑑定卡不計入',none:'尚無參考價快照',choose:'請選擇版本',['no-match']:'所選版本沒有對應的參考價'};
-const collectionItems=()=>CS.itemsFromLegacy([],watchlist,watchlistMeta).filter(item=>item.quantity>0);
+function collectionItems(){return CS.itemsFromLegacy([],watchlist,watchlistMeta).filter(item=>item.quantity>0)}
 const collectionDialog=()=>$('collectionDialog'),collectionRowEl=id=>[...document.querySelectorAll('#collectionDialog [data-coll-id]')].find(item=>item.dataset.collId===id);
 const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collStatus');if(node)node.textContent=collectionUi.progress};
 const typingInCollection=()=>/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'')&&collectionDialog()?.contains(document.activeElement);
@@ -862,10 +891,33 @@ function collectionRowHtml(item,valuation){
   const pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[],meta.game).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
   return `<li class="coll-item" data-coll-id="${id}"><div class="coll-art">${known&&meta.image?resilientImage(meta.image,title,'圖片來源尚未收錄'):missingImageMarkup('')}</div><div class="coll-main"><b class="coll-name">${e(title)}</b><div class="meta">${facts}</div><div class="coll-badges">${badges}</div><div class="coll-price">${rowPriceHtml(item,valuation)}</div></div>${pick}<div class="coll-fields"><label>張數<input type="number" inputmode="numeric" min="1" max="999" step="1" value="${qty}" data-coll-field="quantity"></label><label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([key,label])=>`<option value="${e(key)}"${key===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>版本<select data-coll-field="finish">${finishChoices(item).map(key=>`<option value="${e(key)}"${CS.finishKey(key)===CS.finishKey(shownFinish(item))?' selected':''}>${e(finishLabel(key))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label></div><div class="coll-actions"><button type="button" data-collection-open="${id}">查看</button><button type="button" data-coll-remove="${id}" aria-label="從我的收藏移除${e(title)}">移除</button></div></li>`;
 }
+function seriesLabel(seriesId){const row=(typeof C!=='undefined'&&C.series||[]).find(item=>item.id===seriesId);return row?`${titleName(row)||seriesId}${row.region?`（${rn(row.region,row.game)}）`:''}`:seriesId}
+function collectionSeriesHtml(){
+  const {rows,seriesCount,unknown}=CS.seriesBreakdown(collectionItems(),10),note=unknown?`<p class="meta">另有 ${unknown} 款還沒有系列資料；打開該系列的卡牆（圖鑑 → 系列）就會自動補上。</p>`:'';
+  if(!rows.length)return note;
+  return `<h3>各系列進度${seriesCount>rows.length?`（前 ${rows.length} 名，共 ${seriesCount} 個系列）`:''}</h3><ul class="coll-series-list">${rows.map(row=>{const total=seriesTotals.get(row.seriesId),p=total&&CS.seriesProgress(row.owned,total),label=seriesLabel(row.seriesId);return `<li><span class="coll-series-name">${e(label)}</span><span class="coll-series-count">${p?`已收藏 ${p.owned} / 共 ${p.total} 張（${p.percent}%）`:`已收藏 ${row.owned} 張（${seriesTotalFailed.has(row.seriesId)?'總數暫時查不到':'總數查詢中…'}）`}</span>${p?progressBar(p,`${label} 集卡進度`):''}</li>`}).join('')}</ul>${note}`;
+}
+// 前 10 名系列的卡數各查一次（limit=1 只取 meta.total）；查不到的不擋畫面。
+async function loadSeriesTotals(){
+  const todo=CS.seriesBreakdown(collectionItems(),10).rows.filter(row=>!seriesTotals.has(row.seriesId)&&!seriesTotalFailed.has(row.seriesId));if(!todo.length)return;
+  await Promise.all(todo.map(async row=>{
+    try{
+      const gameId=row.game||(C.series||[]).find(item=>item.id===row.seriesId)?.game,response=await fetch('/api/cards?'+new URLSearchParams({game:gameId,series:row.seriesId,limit:'1',offset:'0',region:'all',rarity:'all',sort:'number-asc'})),total=Number((await response.json()).meta?.total);
+      if(!response.ok||!(total>0))throw Error('no total');seriesTotals.set(row.seriesId,total);
+    }catch{seriesTotalFailed.add(row.seriesId)}
+  }));
+  const host=$('collSeries');if(host)host.innerHTML=collectionSeriesHtml();
+}
+// 匯入預覽：確認前不動既有收藏。
+function importPreviewHtml(){
+  const pending=collectionUi.pending;if(!pending)return '';
+  const {parsed,replace}=pending,plan=CS.planImport(collectionItems(),parsed.items,replace),bad=parsed.problems,empty=!parsed.items.length,nothing=!plan.added&&!plan.updated&&!plan.removed;
+  return `<section class="coll-import" id="collImport" aria-label="匯入預覽"><h3>匯入預覽</h3><p class="meta">${e(pending.fileName)}（${parsed.format==='csv'?'CSV':'JSON 備份'}，共 ${parsed.rows} 筆資料）。按下確認前不會改動你的收藏；同一張卡取較大的數量，不會相加，重複匯入不會翻倍。</p><p class="coll-import-counts" role="status"><b>將新增 ${plan.added} 筆、更新 ${plan.updated} 筆、略過 ${bad.length} 筆格式錯誤</b>${replace?`；移除目前有、檔案裡沒有的 ${plan.removed} 筆`:''}${plan.unchanged?`（另有 ${plan.unchanged} 筆內容相同，不變）`:''}</p>${bad.length?`<details><summary>看略過的原因（${bad.length>20?'前 20 筆':`${bad.length} 筆`}）</summary><ul>${bad.slice(0,20).map(({index,reason})=>`<li>第 ${index} 筆：${e(reason)}</li>`).join('')}</ul></details>`:''}${empty?'<p class="coll-skip">檔案裡沒有可匯入的資料。</p>':''}<label class="coll-replace"><input type="checkbox" data-coll-replace${replace?' checked':''}${empty?' disabled':''}> 以匯入檔取代全部（目前的收藏會被刪除，會再問一次）</label><div class="coll-import-actions"><button type="button" data-coll-import-confirm${empty||nothing?' disabled':''}>${replace?'取代全部收藏':'確認匯入'}</button><button type="button" data-coll-import-cancel>取消</button></div></section>`;
+}
 function renderCollection(){
   const dialog=collectionDialog();if(!dialog)return;const items=collectionItems(),valuation=collectionValuation(),idsCount=collectionIds().length,cardsCount=collectionTotal(),gameCount=collectionGameCount();
   const overviewHtml=`<div class="coll-stats-grid" aria-label="收藏統計摘要"><div class="coll-stat"><b id="collStatIds">${idsCount}</b><span>收藏款數</span></div><div class="coll-stat"><b id="collStatCards">${cardsCount}</b><span>收藏總張數</span></div><div class="coll-stat"><b id="collStatGames">${gameCount}</b><span>涵蓋遊戲</span></div><div class="coll-stat"><b id="collStatPriced">${valuation.counted||0}</b><span>已估值款數</span></div></div><button type="button" class="coll-binder-banner" data-coll-binder><span class="coll-binder-left"><img src="/assets/brand/web/rabbit-success-160.webp" alt=""><span class="coll-binder-copy"><b>TCG 收藏冊</b><small>本機免登入 · 即時估值與清單管理</small></span></span><span class="coll-binder-right" id="collBinderTotal">已擁有 ${cardsCount} 張卡 ›</span></button>`;
-  dialog.innerHTML=`<div class="coll"><header><h2 id="collectionTitle" tabindex="-1">我的收藏</h2><button type="button" data-collection-close aria-label="關閉我的收藏">×</button></header>${overviewHtml}<p class="coll-local" role="note"><b>只存在這台裝置</b>：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期「匯出備份」。</p>${items.length?`<p class="meta" id="collTotal">共 ${idsCount} 款、${cardsCount} 張</p><section class="coll-value" id="collValue" aria-label="參考總值">${valueHtml(valuation)}</section><ul class="coll-list" id="collList">${items.map(item=>collectionRowHtml(item,valuation)).join('')}</ul>`:'<div class="state">還沒有收藏。在卡片上按星號或「＋」就會出現在這裡；也可以匯入之前的備份。</div>'}<div class="coll-tools"><button type="button" data-coll-export${items.length?'':' disabled'}>匯出備份（JSON）</button><button type="button" data-coll-import>匯入備份</button><input type="file" id="collFile" accept="application/json,.json" hidden><button type="button" id="collectionCsv"${items.length?'':' disabled'}>下載清單 CSV</button><button type="button" data-coll-explore>探索加卡</button></div><p class="meta" id="collStatus" role="status" aria-live="polite">${e(collectionUi.progress)}</p></div>`;
+  dialog.innerHTML=`<div class="coll"><header><h2 id="collectionTitle" tabindex="-1">我的收藏</h2><button type="button" data-collection-close aria-label="關閉我的收藏">×</button></header>${overviewHtml}<p class="coll-local" role="note"><b>只存在這台裝置</b>：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期「匯出備份」。</p>${importPreviewHtml()}${items.length?`<section class="coll-series" id="collSeries" aria-label="各系列集卡進度">${collectionSeriesHtml()}</section><p class="meta" id="collTotal">共 ${idsCount} 款、${cardsCount} 張</p><section class="coll-value" id="collValue" aria-label="參考總值">${valueHtml(valuation)}</section><ul class="coll-list" id="collList">${items.map(item=>collectionRowHtml(item,valuation)).join('')}</ul>`:'<div class="state">還沒有收藏。在卡片上按星號或「＋」就會出現在這裡；也可以匯入之前的備份。</div>'}<div class="coll-tools"><button type="button" data-coll-export${items.length?'':' disabled'}>匯出 JSON</button><button type="button" data-coll-import>匯入 JSON／CSV</button><input type="file" id="collFile" accept="application/json,.json,text/csv,.csv" hidden><button type="button" id="collectionCsv"${items.length?'':' disabled'}>下載清單 CSV</button><button type="button" data-coll-explore>探索加卡</button></div><p class="meta" id="collStatus" role="status" aria-live="polite">${e(collectionUi.progress)}</p></div>`;
   const csv=$('collectionCsv');if(csv)csv.onclick=downloadWatchlistCsv;
 }
 const rerenderCollection=()=>{if(collectionDialog()?.open&&!typingInCollection())renderCollection()};
@@ -874,8 +926,16 @@ function refreshGrid(){renderWatchlistSummary();if($('cards')&&typeof currentCar
 // 把 items 寫回三個既有 localStorage 鍵；畫面快照（名稱、圖、地區）依 id 沿用。
 function applyItems(items){
   const old={...watchlistMeta};Object.keys(watchlist).forEach(key=>delete watchlist[key]);Object.keys(watchlistMeta).forEach(key=>delete watchlistMeta[key]);
-  items.forEach(item=>{const quantity=CS.collectedQuantity(item);if(quantity>0)watchlist[item.id]=quantity;watchlistMeta[item.id]={...old[item.id],id:item.id,canonicalId:item.canonicalId||old[item.id]?.canonicalId||'',condition:item.condition,finish:item.finish,note:item.note}});
-  if(!persistCollection())collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），這次的變更關掉頁面後會消失；請先匯出備份。');
+  items.forEach(item=>{const quantity=CS.collectedQuantity(item);if(quantity>0)watchlist[item.id]=quantity;watchlistMeta[item.id]={...old[item.id],id:item.id,canonicalId:item.canonicalId||old[item.id]?.canonicalId||'',condition:item.condition,finish:item.finish,note:item.note,...Object.fromEntries(['seriesId','game','region'].filter(key=>item[key]).map(key=>[key,item[key]]))}});
+  const saved=persistCollection();
+  if(!saved)collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），這次的變更關掉頁面後會消失；請先匯出備份。');
+  return saved;
+}
+// 匯入一次寫入：儲存失敗就把原本的收藏放回去，不會留下一半的收藏。
+function commitItems(items){
+  const before=[JSON.stringify(watchlist),JSON.stringify(watchlistMeta)];
+  if(applyItems(items))return true;
+  [watchlist,watchlistMeta].forEach((target,at)=>{Object.keys(target).forEach(key=>delete target[key]);Object.assign(target,JSON.parse(before[at]))});persistCollection();return false;
 }
 
 // 舊資料搬移：收藏鍵可能是作品層 ID（搜尋、詳細頁）或實體卡 ID（圖鑑）。逐筆向 /api/cards/:id 查，換成實體卡 ID 並補快照；
@@ -905,14 +965,22 @@ async function loadCollectionPrices(){
 function downloadFile(filename,type,text){const url=URL.createObjectURL(new Blob([text],{type})),link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),0)}
 async function importCollectionFile(file){
   if(!file)return;
-  if(file.size>CS.LIMITS.fileMaxChars*3){collectionStatus('檔案過大（上限 1 MB），沒有匯入。');return}
-  let text='';try{text=await file.text()}catch{collectionStatus('讀不到這個檔案。');return}
-  const parsed=CS.parseBackup(text);if(parsed.error){collectionStatus(`沒有匯入：${parsed.error}。`);return}
-  const merged=CS.mergeItems(collectionItems(),parsed.items);
-  if(merged.items.length>CS.LIMITS.itemsMax){collectionStatus(`合併後會超過 ${CS.LIMITS.itemsMax} 款上限，沒有匯入。`);return}
-  applyItems(merged.items);refreshGrid();renderCollection();
-  collectionStatus(`已匯入：新增 ${merged.added} 款、合併 ${merged.merged} 款${parsed.skipped?`、略過 ${parsed.skipped} 筆格式不符`:''}。`);
-  collectionUi.pricesState='idle';await resolveCollection();await loadCollectionPrices();rerenderCollection();
+  if(file.size>CS.LIMITS.fileMaxChars){collectionStatus('沒有匯入：檔案過大（上限 2 MB）。既有收藏沒有變動。');return}
+  let text='';try{text=await file.text()}catch{collectionStatus('讀不到這個檔案。既有收藏沒有變動。');return}
+  const parsed=CS.parseImport(text);
+  if(parsed.error){collectionUi.pending=null;renderCollection();collectionStatus(`沒有匯入：${parsed.error}。既有收藏沒有變動。`);return}
+  collectionUi.pending={parsed,fileName:file.name,replace:false};collectionStatus('');renderCollection();$('collImport')?.scrollIntoView({block:'nearest'});
+}
+async function confirmCollectionImport(){
+  const pending=collectionUi.pending;if(!pending)return;
+  const existing=collectionItems(),plan=CS.planImport(existing,pending.parsed.items,pending.replace),skipped=pending.parsed.problems.length;
+  if(!pending.parsed.items.length)return collectionStatus('檔案裡沒有可匯入的資料，沒有變動。');
+  if(plan.items.length>CS.LIMITS.itemsMax)return collectionStatus(`匯入後會超過 ${CS.LIMITS.itemsMax.toLocaleString('en-US')} 款上限，沒有匯入。`);
+  if(pending.replace&&!confirm(`這會刪除目前的 ${existing.length} 款收藏，只留下匯入檔的 ${plan.items.length} 款，無法復原。真的要取代全部嗎？`))return;
+  if(!commitItems(plan.items))return collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），匯入已取消，既有收藏沒有變動。');
+  collectionUi.pending=null;refreshGrid();renderCollection();
+  collectionStatus(`已匯入：新增 ${plan.added} 筆、更新 ${plan.updated} 筆${plan.removed?`、移除 ${plan.removed} 筆`:''}${skipped?`、略過 ${skipped} 筆格式錯誤`:''}。`);
+  collectionUi.pricesState='idle';await resolveCollection();await loadCollectionPrices();rerenderCollection();loadSeriesTotals();
 }
 function onCollectionField(input){
   const row=input.closest('[data-coll-id]'),id=row?.dataset.collId,field=input.dataset.collField;if(!id||!field)return;
@@ -935,12 +1003,15 @@ function installCollectionDialog(){
     const remove=target.closest('[data-coll-remove]');if(remove)return removeCollectionItem(remove.dataset.collRemove);
     if(target.closest('[data-coll-binder]')){const list=$('collList')||$('collValue');if(list)return list.scrollIntoView({behavior:'smooth',block:'start'});dialog.close();return typeof browse==='function'&&browse()}
     if(target.closest('[data-coll-explore]')){dialog.close();return typeof browse==='function'&&browse()}
-    if(target.closest('[data-coll-export]'))return downloadFile(`cardscope-collection-${new Date().toISOString().slice(0,10)}.json`,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(collectionItems()),null,2));
+    if(target.closest('[data-coll-export]'))return downloadFile(`cardscope-collection-${new Date().toISOString().slice(0,10)}.json`,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(collectionItems())));
     if(target.closest('[data-coll-import]'))return $('collFile')?.click();
+    if(target.closest('[data-coll-import-confirm]'))return confirmCollectionImport();
+    if(target.closest('[data-coll-import-cancel]')){collectionUi.pending=null;renderCollection();return collectionStatus('已取消匯入，收藏沒有變動。')}
   });
   dialog.addEventListener('input',event=>{if(event.target.dataset?.collField)onCollectionField(event.target)});
   dialog.addEventListener('change',event=>{
     const target=event.target;
+    if(target.dataset?.collReplace!==undefined&&collectionUi.pending){collectionUi.pending.replace=target.checked;renderCollection();$('collImport')?.querySelector('[data-coll-replace]')?.focus();return}
     if(target.id==='collFile'){const file=target.files?.[0];target.value='';importCollectionFile(file);return}
     if(target.dataset?.collField==='quantity')target.value=String(watchQuantity(target.closest('[data-coll-id]')?.dataset.collId)||1);
     if(target.dataset?.collPick&&target.value){const from=target.dataset.collPick,items=collectionItems(),item=items.find(row=>row.id===from);if(!item)return;applyItems(CS.mergeItems(items.filter(row=>row.id!==from),[{...item,id:target.value}]).items);refreshGrid();renderCollection();resolveCollection().then(()=>loadCollectionPrices()).then(rerenderCollection)}
@@ -948,8 +1019,8 @@ function installCollectionDialog(){
   return dialog;
 }
 function openCollection(){
-  const dialog=installCollectionDialog();collectionUi.prices={};collectionUi.pricesState='idle';collectionUi.progress='';
-  renderCollection();if(!dialog.open)dialog.showModal();
+  const dialog=installCollectionDialog();collectionUi.prices={};collectionUi.pricesState='idle';collectionUi.progress='';collectionUi.pending=null;
+  renderCollection();if(!dialog.open)dialog.showModal();loadSeriesTotals();
   if(collectionItems().length)resolveCollection().then(changed=>{if(changed){refreshGrid();rerenderCollection()}return loadCollectionPrices()});
 }
 window.openCollection=openCollection;

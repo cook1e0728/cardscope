@@ -75,8 +75,8 @@ test('one count everywhere: 款數 and 張數 come from quantity only, so the fi
   assert.equal(c.run('collectionTotal()'), 3);
   assert.doesNotMatch(ui, /favoriteIds/, 'no second star list is kept');
   assert.match(ui, /control\.textContent=`只看我的收藏（\$\{collectionIds\(\)\.length\}）`/);
-  assert.match(ui, /filteredCards=function\(rows\)\{const result=cardscopeBaseFilteredCards\(rows\);return favoritesOnly\?result\.filter\(card=>isFavorite\(entryKey\(card\)\)\)/);
-  assert.match(ui, /const collectionItems=\(\)=>CS\.itemsFromLegacy\(\[\],watchlist,watchlistMeta\)\.filter\(item=>item\.quantity>0\)/);
+  assert.match(ui, /filteredCards=function\(rows\)\{const result=cardscopeBaseFilteredCards\(rows\);const owned=favoritesOnly\?result\.filter\(card=>isFavorite\(entryKey\(card\)\)\)/);
+  assert.match(ui, /function collectionItems\(\)\{return CS\.itemsFromLegacy\(\[\],watchlist,watchlistMeta\)\.filter\(item=>item\.quantity>0\)\}/);
   assert.match(ui, /const quantity=CS\.collectedQuantity\(item\);if\(quantity>0\)watchlist\[item\.id\]=quantity/, 'importing an old star-only backup gives quantity 1');
 });
 
