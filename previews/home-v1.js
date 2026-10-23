@@ -37,15 +37,19 @@
   const sampled=u=>/onepiece-cardgame\.com|ws-tcg\.com|\/api\/images\/onepiece/.test(u);
   const nameOf=c=>String(c.nameZh||c.nameJa||c.nameEn||c.name||'').replace(/\s*\[[^\]]*\]$/,'');
   const loads=src=>new Promise(res=>{const i=new Image(),t=setTimeout(()=>res(false),5000);i.onload=()=>{clearTimeout(t);res(i.naturalWidth>40)};i.onerror=()=>{clearTimeout(t);res(false)};i.src=src});
+  // 航海王、芙莉蓮只有印著 SAMPLE 的官方圖，所以只從這三個 IP 選；排球少年同角色的各稀有度是同一張圖 → 最多一張
+  const CAP={pokemon:3,yugioh:3,haikyuu:1};
   async function pickCards(){
-    const lists=await Promise.all(['pokemon','yugioh','haikyuu','onepiece','weiss-schwarz'].map(g=>fetch(`/api/cards?game=${g}&limit=40&sort=rarity-desc`).then(r=>r.ok?r.json():null).then(j=>{
-      // 同一 IP 每種稀有度只取一張，避免兩張長得一樣的全金卡並排
-      const seen=new Set();
-      return (j?.data||[]).map(c=>({id:c.id,game:g,name:nameOf(c),rarity:String(c.rarity||'').trim(),src:imgOf(c)})).filter(c=>c.src&&!sampled(c.src)&&!seen.has(c.rarity)&&seen.add(c.rarity));
+    const lists=await Promise.all(Object.keys(CAP).map(g=>fetch(`/api/cards?game=${g}&limit=40&sort=rarity-desc`).then(r=>r.ok?r.json():null).then(j=>{
+      // 同名（同角色、多半同一張圖）只留最高稀有度；稀有度沒出現過的排前面，避免兩張長得一樣的全金卡並排
+      const names=new Set(),rars=new Set();
+      const rows=(j?.data||[]).map(c=>({id:c.id,game:g,name:nameOf(c),rarity:String(c.rarity||'').trim(),src:imgOf(c)})).filter(c=>c.src&&!sampled(c.src)&&!names.has(c.name)&&names.add(c.name));
+      const first=rows.filter(c=>!rars.has(c.rarity)&&rars.add(c.rarity));
+      return [...first,...rows.filter(c=>!first.includes(c))].slice(0,CAP[g]+1);
     }).catch(()=>[])));
-    // 各 IP 輪流取最高稀有度；第一張（離兔子最近、最大）是寶可夢的最高稀有度
-    const cand=[0,1,2].flatMap(k=>lists.map(l=>l[k]).filter(Boolean)).slice(0,9),ok=await Promise.all(cand.map(c=>loads(c.src)));
-    return cand.filter((c,i)=>ok[i]).slice(0,5);
+    const cand=[0,1,2,3].flatMap(k=>lists.map(l=>l[k]).filter(Boolean)),ok=await Promise.all(cand.map(c=>loads(c.src))),count={},out=[];
+    cand.forEach((c,i)=>{if(ok[i]&&out.length<5&&(count[c.game]||0)<CAP[c.game]){count[c.game]=(count[c.game]||0)+1;out.push(c)}});
+    return out;
   }
   // 320×420 的星軌區：從兔子左下逆時針往上繞成「C」，越遠越小、越斜（cx,cy 為卡片中心；d 為視差深度）
   const POS=[{cx:236,cy:264,w:120,r:6,d:1},{cx:126,cy:270,w:96,r:-4,d:.8},{cx:56,cy:190,w:80,r:-9,d:.6},{cx:62,cy:98,w:68,r:-14,d:.45},{cx:128,cy:38,w:56,r:-18,d:.3}];
@@ -56,6 +60,25 @@
     const a=pts[i-2]||pts[i-1],b=pts[i-1],c=p,e=pts[i+1]||p;
     return d+` C${b[0]+(c[0]-a[0])/6} ${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6} ${c[1]-(e[1]-b[1])/6} ${c[0]} ${c[1]}`;
   },'');
+  /* 兔子形象圖：進場跳進來、星星閃爍、偶爾一道流星、游標傾斜卡面與光澤（這是 CardScope 自己的插畫，不是卡圖） */
+  const lively=()=>matchMedia('(prefers-reduced-motion:no-preference)').matches&&!root.hasAttribute('data-cs-paused');
+  function runComet(comet){if(!lively())return;comet.classList.remove('go');void comet.offsetWidth;comet.classList.add('go')}
+  function animateRabbit(comet){
+    const art=$('.hero-art'),img=art?.querySelector('img');if(!art||!img||art.querySelector('.cs1-tilt'))return;
+    const tilt=el('span','cs1-tilt');img.before(tilt);tilt.append(img,el('span','cs1-sheen'));
+    // 星點落在星空處，避開兔子本體
+    [[18,14,0],[72,8,.9],[88,30,1.7],[10,46,2.4],[30,70,.5],[84,84,1.3],[16,90,3]].forEach(([x,y,d])=>{const t=el('span','cs1-twinkle');t.style.cssText=`left:${x}%;top:${y}%;--d:${d}s`;tilt.append(t)});
+    tilt.append(el('span','cs1-shoot'));
+    const fine=matchMedia('(hover:hover) and (pointer:fine)');let raf=0;
+    art.addEventListener('pointermove',e=>{
+      if(!fine.matches||!lively()||raf)return;
+      raf=requestAnimationFrame(()=>{raf=0;const r=art.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+        tilt.style.setProperty('--tx',((x-.5)*12).toFixed(2)+'deg');tilt.style.setProperty('--ty',((.5-y)*10).toFixed(2)+'deg');tilt.style.setProperty('--sx',(x*100).toFixed(1)+'%');tilt.style.setProperty('--sy',(y*100).toFixed(1)+'%')});
+    });
+    art.addEventListener('pointerenter',()=>{if(fine.matches)runComet(comet)});
+    art.addEventListener('pointerleave',()=>{['--tx','--ty'].forEach(k=>tilt.style.setProperty(k,'0deg'))});
+    if(root.classList.contains('cs1-play'))setTimeout(()=>runComet(comet),1500);
+  }
   let lastCard=null;
   function openCard(c,btn){
     lastCard=btn;
@@ -86,7 +109,10 @@
       +`<path class="cs1-trail" d="${smooth(pts)}" pathLength="1"/>`
       +pts.slice(0,-1).map((p,i)=>{const q=pts[i+1];return`<path class="cs1-spark" style="--i:${i}" d="${SPARKLE}" transform="translate(${(p[0]+q[0])/2} ${(p[1]+q[1])/2}) scale(${(1-i*.12).toFixed(2)})"/>`}).join('')
       +`<path class="cs1-spark cs1-spark-end" style="--i:${pts.length}" d="${SPARKLE}" transform="translate(188 6) scale(1.3)"/>`;
-    fan.append(svg);if(real)cards.forEach((c,i)=>fan.append(cardBtn(c,i,POS[i])));hero.append(fan);
+    // 一顆光點沿星軌從兔子跑出去（載入時一次、游標移到兔子上再一次）
+    const comet=el('span','cs1-comet');comet.style.offsetPath=`path("${smooth(pts)}")`;
+    fan.append(svg,comet);if(real)cards.forEach((c,i)=>fan.append(cardBtn(c,i,POS[i])));hero.append(fan);
+    animateRabbit(comet);
     if(!real)return;
     // 精確指標的桌面：游標移動時近的卡多移一點，遠的少移（視差）
     const fine=matchMedia('(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
