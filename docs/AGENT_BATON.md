@@ -46,6 +46,10 @@
 - 測試抓到的真問題（已修，`look-clean.css`）：手機詳細頁「×」關閉鈕被卡圖區塊蓋住點不到 → `#close{z-index:10}`；頂欄搜尋鈕 38px、稀有度直選「拇指盤」鈕 28px → 都改 44px。
 - 本機跑法：無 Supabase 環境啟動 `PORT=4202 node server.mjs`，再 `CI=true CARDSCOPE_URL=http://127.0.0.1:4202 PLAYWRIGHT_CHANNEL=msedge node scripts/beta-browser-smoke.mjs`，全部通過；Node 522/522。
 
+## 航海王「台版」更名（2026-10-23）
+- 航海王台灣官方站（asia-tc）的卡圖全是日文印刷（亞洲發行的日文版），台灣沒有繁中印刷的航海王卡。資料庫仍存 `region=TW`、`language=zh-Hant-TW`（未改資料），介面一律顯示「亞洲日文版」：`index.html` 的 `rn(region,game)`、`series-band.js` 的 `regionText`、`server.mjs` 的 `regionLabel(...,game)`；手機快速入口「航海王繁中」改「航海王日文」。之後若要改資料層的 language，需另寫 migration。
+- 深色展示櫃上的單卡推送：卡名、IP、卡號改成米白／淡紫（`look-clean.css`）。
+
 ## 首頁「星圖手牌」定案（2026-10-23，ADR 0051）
 - 使用者選 5 版預覽的第 1 版並要求重新構圖：兔子卡居中、4 張自動挑選的最高稀有度卡排成手牌扇形、首次聚光燈導覽、頂欄膠囊按鈕＋桌面也有底部玻璃 dock。檔案 `look-showcase.css`／`look-showcase.js`；`previews/` 與預覽載入器已刪除。
 - 使用者確認卡片要「自動挑最新稀有的」，不要固定清單。航海王、芙莉蓮因官方圖有 SAMPLE 浮水印不選。

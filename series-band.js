@@ -9,7 +9,8 @@
   let bandSearch=null,searchSummary={here:0,others:[],label:''};
   const fold=value=>String(value||'').toLowerCase().normalize('NFKC').replace(/[\s・·._:：'’"\-<>\[\]「」｜|]/g,'');
   const bandTab={},recentKey='cardscope-band-recent',regionOrder=['JP','TW','US','ASIA','KR','CN'];
-  const regionLabel={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲英文版'};
+  // 航海王的台灣官方站賣的是日文印刷的卡（亞洲發行），不是繁中版
+  const regionLabel={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲英文版'},regionText=(r,g=game)=>r==='TW'&&g==='onepiece'?'亞洲日文版':regionLabel[r];
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const today=()=>new Date().toISOString().slice(0,10);
   const regionSelect=()=>document.getElementById('browseRegion');
@@ -68,9 +69,9 @@
   // auto: the page opened this series as the game's default view, so it is not remembered as 最近瀏覽 and the page does not scroll.
   async function openSeries(item,{auto=false}={}){
     if(!auto)remember(item.id);resetRarityFilter();clearProduct();
-    browse.product={...item,seriesId:item.id,versionLabel:regionLabel[item.region]};browse.seriesId=item.id;
+    browse.product={...item,seriesId:item.id,versionLabel:regionText(item.region,item.game)};browse.seriesId=item.id;
     const box=document.getElementById('selectedProduct');box.classList.add('open');
-    const art=cover(item);box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionLabel[item.region]||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
+    const art=cover(item);box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionText(item.region,item.game)||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
     if(!auto)scrollBelowHeader(box);
     await loadCardsPage(true);render();if(!auto)window.announceBrowse?.(true);
   }
@@ -124,7 +125,7 @@
     if(!tabBar){tabBar=document.createElement('div');tabBar.className='series-band-tabs home-latest-tabs';tabBar.setAttribute('role','tablist');tabBar.setAttribute('aria-label','最新系列快速分類');rail.before(tabBar)}
     tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
     tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(!btn)return;homeTab=btn.dataset.homeTab;renderHome()};
-    rail.innerHTML=(list.length?mascotNewTile(list[0]):'')+list.map(item=>tile('series',item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionLabel[item.region]||item.region||''].filter(Boolean).join(' '))).join('');
+    rail.innerHTML=(list.length?mascotNewTile(list[0]):'')+list.map(item=>tile('series',item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionText(item.region,item.game)||item.region||''].filter(Boolean).join(' '))).join('');
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
@@ -194,7 +195,7 @@
     // The same names in this IP's other regions: offered as one-click switches so a region-limited search is never a dead end.
     const perRegion={};if(needles.length)for(const item of [...(C.series||[]),...(P||[])])if(item.game===game&&item.region&&matches(item))perRegion[item.region]=(perRegion[item.region]||0)+1;
     const elsewhere=needles.length?regions.filter(id=>id!==region&&perRegion[id]).map(id=>[id,perRegion[id]]):[];
-    searchSummary={here:found.length,others:elsewhere,label:regionLabel[region]||''};
+    searchSummary={here:found.length,others:elsewhere,label:regionText(region)||''};
     // [id, text, hint, count, unit]: the count comes from lists already in memory (no extra request); unit feeds the screen-reader label.
     const tabs=[...(found.length||elsewhere.length?[['search',`搜尋：${bandSearch.query}`,'',found.length,'項']]:[]),['latest','全部系列','',series.length,'個系列'],...(seen.length?[['recent','最近瀏覽','',seen.length,'個系列']]:[]),...categories.map(item=>[`product:${item.id}`,label(item),item.description,item.rows.length,'項商品']),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label,'',bucket.items.length,'個系列'])];
     let active=bandTab[game]||'latest';if(!tabs.some(([id])=>id===active))active='latest';bandTab[game]=active;
@@ -208,10 +209,10 @@
     else list=byDate(buckets.find(bucket=>`group:${bucket.label}`===active)?.items||[]);
     const key=`${game}|${region}|${active}|${list.length}`,keep=band.dataset.key===key?band.querySelector('.series-band-rail')?.scrollLeft||0:0;
     band.dataset.key=key;
-    band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionLabel[id]||id)}</button>`).join('')}</div></div>`
+    band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionText(id)||id)}</button>`).join('')}</div></div>`
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
-      +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionLabel[id]||id)} ${count} 項</button>`).join('')}</div>`:'')
-      +`<div class="series-band-rail" role="tabpanel">${(list.length?(newest?mascotNewTile(newest):'')+list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join(''):'')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionLabel[region]||'')}沒有符合的系列或商品。`:`${esc(regionLabel[region]||'')}目前沒有收錄這一類。`}</p>`}</div>`;
+      +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionText(id)||id)} ${count} 項</button>`).join('')}</div>`:'')
+      +`<div class="series-band-rail" role="tabpanel">${(list.length?(newest?mascotNewTile(newest):'')+list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join(''):'')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionText(region)||'')}沒有符合的系列或商品。`:`${esc(regionText(region)||'')}目前沒有收錄這一類。`}</p>`}</div>`;
     band.querySelector('.series-band-rail').scrollLeft=keep;
     const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     band.onclick=event=>{

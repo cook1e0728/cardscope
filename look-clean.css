@@ -483,6 +483,9 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .browse-regions select{background:#24203F;color:#F3EEE3;border-color:#6A62A0}
   html.look-clean .home-latest{margin-top:var(--s6);padding:var(--s6) 0 0;border-top:1px solid #3B3560}
   html.look-clean .home-latest h2{color:#F6F1E6}
+  /* 單卡推送在深色展示櫃上：卡名、IP、卡號原本是淺底用的深字，改成米白／淡紫（對比 ≥4.5:1） */
+  html.look-clean body[data-view="landing"] #homeCardsPreview .card h3{color:#F6F1E6}
+  html.look-clean body[data-view="landing"] #homeCardsPreview .card .ip-badge,html.look-clean body[data-view="landing"] #homeCardsPreview .card .card-no,html.look-clean body[data-view="landing"] #homeCardsPreview .card .favorite-toggle{color:#C9C1DA}
   html.look-clean .home-latest .home-latest-tabs button{color:#C9C1DA}
   html.look-clean .home-latest .home-latest-tabs button.on{color:#F6F1E6;border-bottom-color:#E7BA4C}
   html.look-clean .home-latest .band-tile-name{color:#F6F1E6}
