@@ -112,7 +112,7 @@ html.look-clean .home-latest .series-band-rail{padding-top:var(--s4)}
 html.look-clean .home-cards-preview{margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--lc-hair)}
 html.look-clean .home-cards-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);margin-bottom:var(--s3)}
 html.look-clean .home-cards-head h3{margin:0;font-family:var(--lc-display);font-size:18px;font-weight:700;color:var(--lc-ink)}
-html.look-clean .home-cards-more{min-height:44px;padding:0 var(--s3);border:0;border-radius:999px;background:transparent;color:#B8820E;font-size:13px;font-weight:700;cursor:pointer}
+html.look-clean .home-cards-more{min-height:44px;padding:0 var(--s3);border:0;border-radius:999px;background:transparent;color:#8A6100;font-size:13px;font-weight:700;cursor:pointer}
 html.look-clean .home-cards-more:hover{background:#F3EEE3}
 html.look-clean .home-preview-ips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 html.look-clean .home-preview-ip{min-height:32px;padding:0 10px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;color:var(--lc-ink-2);font-size:12px;font-weight:700;cursor:pointer}
@@ -151,7 +151,8 @@ html.look-clean .band-tile.is-mascot-new .band-tile-code{font-weight:700;color:#
 html.look-clean .band-tile-art.is-type{border:0;background:var(--lc-sleeve)}
 html.look-clean .band-tile-art.is-type:before{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
 html.look-clean .band-tile-flag{left:var(--s2);top:var(--s2);padding:2px var(--s2);border-radius:999px;background:var(--ip);color:var(--ip-on);font-size:12px;font-weight:700;letter-spacing:.04em}
-html.look-clean .band-tile-flag.is-new{background:var(--ip);color:var(--ip-on)}
+/* NEW 一律用統一的新品紅（PRODUCT_PLAN 第 5 節）；跟 IP 主色時對比只有約 3:1 */
+html.look-clean .band-tile-flag.is-new{background:var(--new);color:var(--new-on)}
 html.look-clean .band-tile-name{margin-top:var(--s2);min-height:2.8em;font-size:14px;font-weight:500;line-height:1.4;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip}
 html.look-clean .band-tile-code{margin-top:2px;color:var(--lc-ink-2);font:500 13px/1.3 var(--lc-num);font-variant-numeric:tabular-nums}
 html.look-clean .band-tile[aria-current] .band-tile-art{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--ip);border-color:transparent}
@@ -483,6 +484,7 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .browse-regions select{background:#24203F;color:#F3EEE3;border-color:#6A62A0}
   html.look-clean .home-latest{margin-top:var(--s6);padding:var(--s6) 0 0;border-top:1px solid #3B3560}
   html.look-clean .home-latest h2{color:#F6F1E6}
+  html.look-clean body[data-view="landing"] .home-latest .series-band-tabs .count{color:#A49CBB}
   /* 單卡推送在深色展示櫃上：卡名、IP、卡號原本是淺底用的深字，改成米白／淡紫（對比 ≥4.5:1） */
   html.look-clean body[data-view="landing"] #homeCardsPreview .card h3{color:#F6F1E6}
   html.look-clean body[data-view="landing"] #homeCardsPreview .card .ip-badge,html.look-clean body[data-view="landing"] #homeCardsPreview .card .card-no,html.look-clean body[data-view="landing"] #homeCardsPreview .card .favorite-toggle{color:#C9C1DA}
