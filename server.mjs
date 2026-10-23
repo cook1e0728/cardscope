@@ -11,7 +11,7 @@ import { REFERENCE_BODY_MAX_BYTES, buildReferencePrices, referenceQueryParams, v
 import { normalizeMarketRecord, withTwd, RARITY_RANKINGS, rarityCanonicalCode as normalizeRarityCanonicalCode, rarityDisplayLabel as normalizeRarityDisplayLabel, rarityRank as normalizeRarityRank, rarityToken as normalizeRarityToken, rarityDefinition as normalizeRarityDefinition } from './providers/normalize.mjs';
 import { auditCatalogLinks, catalogProvidersNeedingSync, localizeProductName, refreshBrowseKeys, syncCatalog } from './providers/catalog-sync.mjs';
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
-import { parseSearchQuery, printingMatchesRarity, rarityMatchValues } from './providers/search-query.mjs';
+import { foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './providers/search-query.mjs';
 import { normalizeProduct } from './providers/products.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
@@ -829,9 +829,11 @@ const postgrestLike=s=>String(s||'').replace(/[\\%_*(),.]/g,'').trim();
 const chineseNumber=t=>{if(/^\d+$/.test(t))return Number(t);const d={一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9},m=t.match(/^([一二三四五六七八九])?(十)?([一二三四五六七八九])?$/);if(!m||(!m[2]&&(!m[1]||m[3])))return null;return m[2]?(m[1]?d[m[1]]:1)*10+(m[3]?d[m[3]]:0):d[m[1]]};
 const anniversaryTerms=term=>{const m=String(term).normalize('NFKC').replace(/\s+/g,'').match(/^(\d{1,3}|[一二三四五六七八九十]{1,3})(?:th|周年|週年|thanniversary|anniversary)$/i),n=m&&chineseNumber(m[1]);if(!n)return [];const original=String(term).toLowerCase();return [`${n}th`,`${n}周年`,`${n}週年`].filter(v=>v.toLowerCase()!==original)};
 // Every term the database search tries for a query: the query, a mapped alias, markup and anniversary variants.
-const searchQueryTerms=rawQuery=>{const mapped=externalAliasIndex.get(normalizeSearch(rawQuery))?.query;return [...new Set([rawQuery,mapped].filter(Boolean).map(postgrestLike).filter(Boolean).flatMap(term=>[term,...sourceMarkupTerms(term),...anniversaryTerms(term),...cardNumberTerms(term)]))]};
-// 「SV6a 090」（系列代碼、空格、卡號）在資料裡寫成「SV6a-090」；也查這種寫法（兩位數以下另補成三位數）。
-const cardNumberTerms=term=>{const m=String(term).trim().match(/^([a-z]{1,4}\d{0,3}[a-z]?)\s+(\d{1,4})$/i);if(!m)return [];const spellings=[`${m[1]}-${m[2]}`];if(m[2].length<3)spellings.push(`${m[1]}-${m[2].padStart(3,'0')}`);return spellings.filter(v=>v.toLowerCase()!==String(term).toLowerCase())};
+// rawQuery may be an array (the database's own spellings of the query, see foldedNameSpans); the alias mapping follows the first one.
+const searchQueryTerms=rawQuery=>{const raws=[].concat(rawQuery),mapped=externalAliasIndex.get(normalizeSearch(raws[0]))?.query;return [...new Set([...raws,mapped].filter(Boolean).map(postgrestLike).filter(Boolean).flatMap(term=>[term,...sourceMarkupTerms(term),...anniversaryTerms(term),...cardNumberTerms(term)]))]};
+// 「SV6a 090」（系列代碼、空格、卡號）在資料裡寫成「SV6a-090」；「OP-17-118」寫成「OP17-118」、「BETB EN060」寫成「BETB-EN060」。
+// 分隔符號（空白、連字號）一律視為同一種：除了最後一段以外接起來當系列代碼，再以 - 接卡號；卡號是 1–2 位數時另補成三位數。
+const cardNumberTerms=term=>{const text=String(term).trim(),tokens=text.split(/[\s\-‐-―]+/).filter(Boolean),head=tokens.slice(0,-1).join(''),last=tokens.at(-1)||'';if(tokens.length<2||tokens.length>3||!tokens.every(t=>/^[a-z0-9]+$/i.test(t))||!/^[a-z]{1,5}\d{0,3}[a-z]?$/i.test(head)||!/^[a-z]{0,3}\d{1,4}$/i.test(last))return [];const spellings=[`${head}-${last}`];if(/^\d{1,2}$/.test(last))spellings.push(`${head}-${last.padStart(3,'0')}`);return spellings.filter(v=>v.toLowerCase()!==text.toLowerCase())};
 const sourceMarkupTerms=term=>{if(term.includes('<'))return [];const variants=[];for(let i=term.indexOf('的');i>0&&i<term.length-1&&variants.length<3;i=term.indexOf('的',i+1))variants.push(`<${term.slice(0,i+1)}>${term.slice(i+1)}`);return variants};
 // Repeated searches within a minute reuse the answer (same freshness as the catalog cache); at most 200 queries, least recently used dropped first.
 // Catalog data only changes in batch imports, so a 10-minute search result cache is safe; 200 entries stay within a few tens of MB.
@@ -848,6 +850,19 @@ const cardMatchRank=(card,needles)=>{const names=[card.nameZh,card.nameJa,card.n
 // database is busy, and the heavier fallback queries would only time out in turn (seen chaining to 30 s+
 // in the Render logs); give up so /api/search answers from the loaded catalog with databaseSearch 'unavailable'.
 const searchTimedOut=error=>/57014|statement timeout|aborted due to timeout|TimeoutError/i.test(`${error?.name||''} ${error?.message||error||''}`);
+// A search that found nothing is retried with the database's own spelling when only spaces, middle dots or hyphens differ (日向翔陽 -> 日向 翔陽, OP-17-118 -> OP17-118):
+// search_fold_names (migration 20261023140000) lists names whose folded form contains the folded query; we cut the matching span out of each. Fewer than 3 folded characters has no trigram index, so no retry.
+async function foldedNameSpans(name){
+  const folded=foldSearch(name);if(folded.length<3)return [];
+  try{const rows=await supabaseFetch('/rpc/search_fold_names',{method:'POST',body:JSON.stringify({p_fold:folded,p_limit:5})});return [...new Set((Array.isArray(rows)?rows:[]).map(row=>foldedSpan(row?.name,folded)).filter(span=>span&&span.toLowerCase()!==String(name).trim().toLowerCase()))].slice(0,3)}
+  catch(error){console.error('search fold retry failed',error.message);return []}
+}
+// Typo help for a search with no result: search_name_suggestion (migration 20261023150000, pg_trgm on the card names) returns the closest name, or NULL when nothing is close. Called only on zero results.
+async function suggestCardName(name,region){
+  const query=String(name||'').trim();if(query.length<3)return null;
+  try{const value=await supabaseFetch('/rpc/search_name_suggestion',{method:'POST',body:JSON.stringify({p_q:query,p_region:region==='ALL'?null:region})}),text=typeof value==='string'?value.trim():'';return text&&text.toLowerCase()!==query.toLowerCase()?{q:text,reason:'相近的卡名'}:null}
+  catch(error){console.error('search name suggestion failed',error.message);return null}
+}
 async function searchCatalogDatabase(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT,{offset=0,rarities=[]}={}){
   const rarityValues=rarityMatchValues(rarities),filtered=region!=='ALL'||rarityValues.length>0;
   if(!supabaseConfigured())return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
@@ -1086,28 +1101,36 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(url.pathname==='/api/search'&&req.method==='GET'){
     // ADR 0044 Q6/Q7: rarity codes and version words in the query become filters (parsed), the rest is the card name; results are one page (offset/limit) with the real total.
     const rawQ=(url.searchParams.get('q')||'').trim().slice(0,100),regionParam=(url.searchParams.get('region')||'all').toUpperCase(),parsedQuery=parseSearchQuery(rawQ),region=regionParam!=='ALL'?regionParam:(parsedQuery.region||'ALL'),searchName=parsedQuery.name,rarities=parsedQuery.rarities,rarityValues=rarityMatchValues(rarities);
-    const limit=Math.min(Math.max(Math.floor(Number(url.searchParams.get('limit')))||SEARCH_RESULT_LIMIT,1),SEARCH_PAGE_MAX),offset=Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),parsed={q:rawQ,name:searchName,rarities,region:regionParam!=='ALL'?null:parsedQuery.region};
+    const limit=Math.min(Math.max(Math.floor(Number(url.searchParams.get('limit')))||SEARCH_RESULT_LIMIT,1),SEARCH_PAGE_MAX),offset=Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),parsed={q:rawQ,name:searchName,rarities,region:regionParam!=='ALL'?null:parsedQuery.region,...(parsedQuery.rarityOnly?{rarityOnly:true}:{})};
     const searchCacheKey=[regionParam,rawQ,searchName,rarities.join(','),parsed.region||'',offset,limit].join('|'),cachedSearch=recallSearch(searchCacheKey);if(cachedSearch)return json(res,200,cachedSearch,{'Server-Timing':'cache;desc="hit", total;dur=0'});
+    // A bare rarity code (SAR, UR 日版) names no card: say so instead of matching it against card names, and offer a working example.
+    if(parsedQuery.rarityOnly){let example=rarityOnlyExample(rarities);
+    // Only offer the example when it really has results (皮卡丘 MUR does not).
+    if(example){const check=parseSearchQuery(example);try{if(!supabaseConfigured()||!(await searchCatalogDatabase(check.name,'ALL',1,{rarities:check.rarities})).cards.length)example=null}catch{example=null}}
+    const body={data:[],meta:{source:'rarity-only',architecture:'canonical-card-with-printings',match:'rarity-only',resultLimit:limit,mayHaveMore:false,queryTerms:[],total:0,offset,limit,hasMore:false,parsed,suggestion:example?{q:example,reason:'稀有度請搭配卡名一起搜'}:null,hint:{kind:'rarity-only',message:'只輸入稀有度無法判斷是哪一張卡，請加上卡名'+(example?`，例如「${example}」`:'')+'。'}}};rememberSearch(searchCacheKey,body);return json(res,200,body)}
     const q=normalizeSearch(searchName),searchStarted=performance.now(),databasePending=supabaseConfigured()?searchCatalogDatabase(searchName,region,limit,{offset,rarities}).then(value=>({value,doneAt:performance.now()}),error=>({error})):null,catalog=await loadCatalog(),catalogDoneAt=performance.now(),seriesById=new Map(catalog.series.map(s=>[s.id,s])),nameValues=c=>[c.nameZh,c.nameJa,c.nameEn,c.nameKo,...(c.aliases||[]),...(c.printings||[]).flatMap(p=>[p.nameZh,p.nameJa,p.nameEn,p.nameKo])];
     const found=catalog.cards.filter(c=>{if(region!=='ALL'&&c.region!==region&&!c.printings?.some(p=>p.region===region))return false;const series=[seriesById.get(c.seriesId)||{},...(c.printings||[]).map(p=>seriesById.get(p.seriesId)||{})],values=[...nameValues(c),c.officialCardNumber,...(c.printings||[]).flatMap(p=>[p.localSetCode,p.localCardNumber]),...series.flatMap(s=>[s.officialCode,s.nameZh,s.nameJa,s.nameEn,s.nameKo,...(s.aliases||[])])];return !q||values.some(v=>normalizeSearch(v).includes(q))}),exact=q?found.filter(c=>nameValues(c).some(v=>normalizeSearch(v)===q)):[];
     // Local-catalog answers (no database, or the database has nothing) apply the parsed filters to printings too, then page and rank like the database ones.
     const localNeedles=searchQueryTerms(searchName).map(normalizeSearch),narrowing=rarityValues.length>0||(regionParam==='ALL'&&Boolean(parsedQuery.region)),narrowLocal=list=>narrowing?list.map(c=>({...c,printings:(c.printings||[]).filter(p=>(region==='ALL'||p.region===region)&&printingMatchesRarity(p,rarityValues))})).filter(c=>c.printings.length):list,withRank=list=>list.map(c=>c.matchRank===undefined?{...c,matchRank:cardMatchRank(c,localNeedles)}:c);
     const pageLocal=list=>{const items=narrowLocal(list);return {data:withRank(items.slice(offset,offset+limit)),total:items.length}};
-    const withPaging=(meta,data,total,suggestion=null)=>{const hasMore=offset+data.length<total;return {data,meta:{...meta,resultLimit:limit,mayHaveMore:hasMore,queryTerms:searchQueryTerms(searchName),total,offset,limit,hasMore,parsed,suggestion}}};
+    const gameHint=gameHintFor(searchName),withPaging=(meta,data,total,suggestion=null)=>{const hasMore=offset+data.length<total;return {data,meta:{...meta,resultLimit:limit,mayHaveMore:hasMore,queryTerms:searchQueryTerms(searchName),total,offset,limit,hasMore,parsed,suggestion,...(gameHint?{gameHint:gameHint.gameId,franchiseHint:gameHint.franchiseId}:{})}}};
+    // The database's answer as one page: its own page when it paged, otherwise merged with the exact local matches; no database hits -> the loaded catalog.
+    const settle=db=>{if(db.cards.length>0&&db.paged)return {data:db.cards,total:db.total};if(db.cards.length>0){const merged=offset?db.cards:narrowLocal(canonicalizeCatalog({...catalog,cards:[...exact,...db.cards]}).cards);return {data:withRank(merged.slice(0,limit)),total:Math.max(db.total||0,offset+merged.length)}}const page=pageLocal(exact.length?exact:found);return {data:page.data,total:page.total}};
     if(!supabaseConfigured()){
       const page=pageLocal(exact.length?exact:found);
       return json(res,200,withPaging({source:catalog.source,architecture:'canonical-card-with-printings',match:exact.length?'exact-name':'substring'},page.data,page.total))
     }
     try{
-      const settled=await databasePending;if(settled.error)throw settled.error;const database=settled.value,timing=Object.entries({catalog:catalogDoneAt-searchStarted,db:settled.doneAt-searchStarted,...database.timings,total:performance.now()-searchStarted}).map(([name,ms])=>`${name};dur=${Math.round(ms)}`).join(', '),hasDatabaseMatches=database.cards.length>0;
-      let data,total;
-      if(hasDatabaseMatches&&database.paged){data=database.cards;total=database.total}
-      else if(hasDatabaseMatches){const merged=offset?database.cards:narrowLocal(canonicalizeCatalog({...catalog,cards:[...exact,...database.cards]}).cards);data=withRank(merged.slice(0,limit));total=Math.max(database.total||0,offset+merged.length)}
-      else{const page=pageLocal(exact.length?exact:found);data=page.data;total=page.total}
+      const settled=await databasePending;if(settled.error)throw settled.error;let database=settled.value,hasDatabaseMatches=database.cards.length>0,{data,total}=settle(database),matchedAs=null,retryMs=0;
+      // Nothing found: retry once with the database's own spelling (spaces, middle dots, hyphens ignored); the paging, ranking and rarity filters are the normal path again.
+      if(total===0){const retryStarted=performance.now(),spans=await foldedNameSpans(searchName);if(spans.length){try{const again=await searchCatalogDatabase(spans,region,limit,{offset,rarities});if(again.cards.length){database=again;hasDatabaseMatches=true;({data,total}=settle(again));matchedAs=spans}}catch(error){console.error('search fold retry failed',error.message)}}retryMs=performance.now()-retryStarted}
+      const timing=Object.entries({catalog:catalogDoneAt-searchStarted,db:settled.doneAt-searchStarted,...database.timings,...(retryMs?{retry:retryMs}:{}),total:performance.now()-searchStarted}).map(([name,ms])=>`${name};dur=${Math.round(ms)}`).join(', ');
       // Nothing found with the parsed filters: say whether the name alone would have results.
       let suggestion=null;
       if(total===0&&(rarities.length||parsed.region)){try{const nameOnly=await searchCatalogDatabase(searchName,regionParam,1);if(nameOnly.cards.length)suggestion={q:searchName,reason:'name-only'}}catch(error){console.error('search suggestion failed',error.message)}}
-      const searchBody=withPaging({source:hasDatabaseMatches?'supabase-search':catalog.source,architecture:'canonical-card-with-printings',match:hasDatabaseMatches?(database.matchedSeries?'database-series':exact.length?'exact-name+database-substring':'database-substring'):(exact.length?'exact-name':'substring'),databaseSearch:database.searched?'available':'skipped',searchScope:hasDatabaseMatches?'bounded-database-query':'loaded-catalog-only',candidateCount:database.candidateCount,candidateLimit:database.candidateLimit},data,total,suggestion);rememberSearch(searchCacheKey,searchBody);return json(res,200,searchBody,{'Server-Timing':timing})
+      // Still nothing (typo?): offer the closest card name; an IP name that has no cards of its own (排球少年) is not a typo.
+      if(total===0&&!suggestion&&!gameHint)suggestion=await suggestCardName(searchName,region);
+      const searchBody=withPaging({...(matchedAs?{matchedAs}:{}),source:hasDatabaseMatches?'supabase-search':catalog.source,architecture:'canonical-card-with-printings',match:hasDatabaseMatches?(database.matchedSeries?'database-series':exact.length?'exact-name+database-substring':'database-substring'):(exact.length?'exact-name':'substring'),databaseSearch:database.searched?'available':'skipped',searchScope:hasDatabaseMatches?'bounded-database-query':'loaded-catalog-only',candidateCount:database.candidateCount,candidateLimit:database.candidateLimit},data,total,suggestion);rememberSearch(searchCacheKey,searchBody);return json(res,200,searchBody,{'Server-Timing':timing})
     }catch(error){
       console.error('catalog search failed',error.message);
       const page=pageLocal(exact.length?exact:found);

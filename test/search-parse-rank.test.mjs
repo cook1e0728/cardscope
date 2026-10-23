@@ -15,8 +15,12 @@ test('parseSearchQuery 拆出稀有度與版本詞，其餘當卡名',()=>{
   assert.deepEqual(parse('pikachu jp sar ur'),{name:'pikachu',rarities:['SAR','UR'],region:'JP'});
   assert.deepEqual(parse('Pikachu Special Illustration Rare'),{name:'Pikachu',rarities:['SAR'],region:null},'多字別名也認');
   assert.deepEqual(parse('Secret Rare Blue-Eyes'),{name:'Blue-Eyes',rarities:['Secret Rare'],region:null},'同一個詞在別的遊戲是正式代碼時對應到它自己');
-  // 不解析：只有條件沒有卡名、卡號、字母夾在字裡、容易誤判的單字母／常見名字
-  for(const plain of ['SAR','SAR 日版','SV6a 090','Pikachu','Charizard','Ace Sabo','R 噴火龍','none 皮卡丘','SARX','桃歹郎SAR','','  '])assert.deepEqual(parse(plain),{name:plain.trim(),rarities:[],region:null},`不解析：${plain}`);
+  // 整串只有稀有度代碼（可帶版本詞）：標成 rarityOnly，卡名留空
+  assert.deepEqual(parse('SAR'),{name:'',rarities:['SAR'],region:null,rarityOnly:true});
+  assert.deepEqual(parse('ur 日版'),{name:'',rarities:['UR'],region:'JP',rarityOnly:true});
+  assert.deepEqual(parse('SEC　SAR'),{name:'',rarities:['SEC','SAR'],region:null,rarityOnly:true});
+  // 不解析：只有版本詞、卡號、字母夾在字裡、容易誤判的單字母／常見名字
+  for(const plain of ['日版','SV6a 090','Pikachu','Charizard','Ace Sabo','R 噴火龍','none 皮卡丘','SARX','桃歹郎SAR','','  '])assert.deepEqual(parse(plain),{name:plain.trim(),rarities:[],region:null},`不解析：${plain}`);
 });
 
 test('稀有度拼法展開與 printing 比對',()=>{
@@ -108,8 +112,9 @@ test('「桃歹郎ex SAR」拆成卡名＋稀有度篩選，只留 SAR 的 print
     const withParam=await search({q:'魯夫 台版',region:'JP'});
     assert.equal(calls[2].p_region,'JP','region 參數優先');
     assert.deepEqual(withParam.body.meta.parsed,{q:'魯夫 台版',name:'魯夫',rarities:[],region:null});
-    await search({q:'SAR'});
-    assert.deepEqual([calls[3].p_patterns[0],calls[3].p_rarities],['%SAR%',null],'只有稀有度代碼時照舊當一般查詢');
+    const bare=await search({q:'SAR'});
+    assert.deepEqual([calls.length,calls[3].p_patterns[0],calls[3].p_limit],[4,'%皮卡丘%',1],'只有稀有度代碼時不拿代碼比對卡名，只查一筆範例是否有結果');
+    assert.deepEqual([bare.body.data,bare.body.meta.total,bare.body.meta.parsed.rarityOnly,bare.body.meta.hint.kind],[[],0,true,'rarity-only']);
   });
 });
 

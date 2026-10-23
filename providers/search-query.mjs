@@ -1,5 +1,6 @@
 // 自然語句搜尋（ADR 0044 Q6）：把「桃歹郎ex SAR」「魯夫 台版」拆成卡名＋稀有度＋版本。
 // 只認獨立的詞（以空白分隔），只認 data/rarity-rankings.json 的稀有度代碼與別名和下列版本詞；其餘一律當卡名，不猜。
+import { readFileSync } from 'node:fs';
 import { RARITY_RANKINGS } from './normalize.mjs';
 
 const VERSION_WORDS = new Map([['日版', 'JP'], ['日文版', 'JP'], ['JP', 'JP'], ['台版', 'TW'], ['TW', 'TW'], ['美版', 'US'], ['US', 'US'], ['韓版', 'KR'], ['KR', 'KR']]);
@@ -30,7 +31,8 @@ const phraseRules = [...new Map([...aliasPhrases, ...codePhrases].map(([phrase, 
   .map(([phrase, code]) => [new RegExp(`(?<![A-Za-z0-9])${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+')}(?![A-Za-z0-9])`, 'i'), code]);
 const CODE_WORDS = new Set([...spellings.keys()].filter(code => CODE_WORD.test(code) && !AMBIGUOUS_CODES.has(code)));
 
-// 回傳 {q, name, rarities, region}；沒有拆出任何條件，或拆完沒有卡名時，原樣當一般查詢（name＝原查詢）。
+// 回傳 {q, name, rarities, region}；沒有拆出任何條件時，原樣當一般查詢（name＝原查詢）。
+// 整串只有稀有度代碼（可再加版本詞，例如「SAR」「UR 日版」）時回傳 {name:'', rarities, region, rarityOnly:true}：沒有卡名無法判斷是哪一張，不拿代碼去比對卡名。
 export function parseSearchQuery(query) {
   const q = String(query ?? '').trim(), plain = { q, name: q, rarities: [], region: null };
   if (!q) return plain;
@@ -46,7 +48,8 @@ export function parseSearchQuery(query) {
     else kept.push(token);
   }
   const name = kept.join(' ');
-  if (!name || (!rarities.length && !region)) return plain;
+  if (!rarities.length && (!name || !region)) return plain;
+  if (!name) return { q, name: '', rarities: [...new Set(rarities)], region, rarityOnly: true };
   return { q, name, rarities: [...new Set(rarities)], region };
 }
 
@@ -54,3 +57,41 @@ export function parseSearchQuery(query) {
 export const rarityMatchValues = codes => [...new Set((codes || []).flatMap(code => [...(spellings.get(code) || [String(code).toLowerCase()])]))];
 // printing 的 rarity 或 rarityCode 是否在拼法陣列內（與資料庫端的比對一致）。
 export const printingMatchesRarity = (printing, values) => !values.length || [printing?.rarityCode, printing?.rarity].some(v => v && values.includes(String(v).toLowerCase()));
+
+// 稀有度代碼單獨搜尋時給的範例查詢：代碼所屬的第一個遊戲（寶可夢、航海王、遊戲王）配一個該遊戲的常見卡名；其他遊戲不給範例。
+const EXAMPLE_NAMES = { pokemon: '皮卡丘', onepiece: '魯夫', yugioh: '黑魔導女孩' };
+export function rarityOnlyExample(rarities) {
+  const code = (rarities || [])[0];
+  if (!code) return null;
+  for (const [game, name] of Object.entries(EXAMPLE_NAMES)) {
+    const system = RARITY_RANKINGS.systems?.[game];
+    if (system && ((system.canonicalCodes || []).includes(code) || (system.aliases || {})[code])) return `${name} ${code}`;
+  }
+  return null;
+}
+
+// 與資料庫 tcg_search_fold 同一個折疊（小寫、NFKC、去空白／中點／連字號等），伺服器的 normalizeSearch 也是這個規則。
+export const foldSearch = value => String(value ?? '').toLocaleLowerCase().normalize('NFKC').replace(/[\s・·._:：'’"\-<>\[\]​-‍⁠﻿]/g,'');
+// 資料庫卡名 name 折疊後含有 folded 時，回傳 name 裡對應的原文片段（保留裡面的空白與中點）；沒有則 null。
+export function foldedSpan(name, folded) {
+  const chars = [...String(name ?? '')], owner = [];
+  let text = '';
+  chars.forEach((char, index) => { const part = foldSearch(char); for (let i = 0; i < part.length; i++) owner.push(index); text += part });
+  const at = folded ? text.indexOf(folded) : -1;
+  return at < 0 ? null : chars.slice(owner[at], owner[at + folded.length - 1] + 1).join('');
+}
+
+// 搜尋詞等於某個 IP（作品）名稱或別名時回傳它所屬的遊戲，給前端導向該遊戲；只收 status=active 且有範圍的項目（planned 沒有資料）。
+const TAXONOMY = JSON.parse(readFileSync(new URL('../data/game-taxonomy.json', import.meta.url), 'utf8'));
+const hintIndex = new Map();
+for (const system of TAXONOMY.systems || []) {
+  if (system.id === 'all' || system.status !== 'active') continue;
+  for (const name of [system.nameZh, system.nameOriginal, system.nameEn]) if (foldSearch(name)) hintIndex.set(foldSearch(name), { gameId: system.id, franchiseId: null });
+}
+for (const system of TAXONOMY.systems || []) {
+  for (const franchise of system.franchises || []) {
+    if (franchise.status !== 'active' || !franchise.scope?.gameId) continue;
+    for (const name of [franchise.nameZh, franchise.nameOriginal, ...(franchise.aliases || [])]) if (foldSearch(name)) hintIndex.set(foldSearch(name), { gameId: franchise.scope.gameId, franchiseId: franchise.id });
+  }
+}
+export const gameHintFor = query => hintIndex.get(foldSearch(query)) || null;
