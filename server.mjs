@@ -58,9 +58,9 @@ const catalogCoverageCache = createBoundedSnapshotCache({ttlMs:SNAPSHOT_TTL_MS,m
 const TREND_CACHE_MS = 5 * 60 * 1000;
 const trendCache = {data:null,expiresAt:0,promise:null};
 
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'};
+const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.webmanifest':'application/manifest+json'};
 // 只公開前端需要的檔案：根目錄的 .js／.css／index.html、assets/、前端讀的兩個 data 檔；server.mjs、providers、docs 等一律 404。
-const PUBLIC_STATIC=/^\/(?:[a-z0-9-]+\.(?:js|css)|index\.html|googlefb9a9f93e94c056f\.html|assets\/(?:[\w.-]+\/)*[\w.-]+\.(?:png|jpe?g|webp|svg|ico|woff2?)|data\/(?:rarity-rankings|game-taxonomy)\.json)$/;
+const PUBLIC_STATIC=/^\/(?:[a-z0-9-]+\.(?:js|css)|manifest\.webmanifest|index\.html|googlefb9a9f93e94c056f\.html|assets\/(?:[\w.-]+\/)*[\w.-]+\.(?:png|jpe?g|webp|svg|ico|woff2?)|data\/(?:rarity-rankings|game-taxonomy)\.json)$/;
 const SECURITY_HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'SAMEORIGIN','Strict-Transport-Security':'max-age=15552000'};
 // 目錄類回應每份 1–3 MB：讓瀏覽器 1 分鐘內重用、5 分鐘內先用舊的再背景更新，免得每次換頁重抓。
 const SHORT_CACHE={'Cache-Control':'public, max-age=60, stale-while-revalidate=300'};
@@ -1159,7 +1159,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/'){const seoTarget=seoRequestTarget(url);if(seoTarget)return serveSeoIndex(res,seoTarget)}
   let pathname=url.pathname==='/'?'/index.html':url.pathname;if(!PUBLIC_STATIC.test(pathname))return json(res,404,{error:'Not found'});const file=normalize(join(root,pathname));if(!file.startsWith(root))return json(res,403,{error:'Forbidden'});try{const content=await readFile(file),ext=extname(file),headers={'Content-Type':types[ext]||'application/octet-stream',...SECURITY_HEADERS};
     // html/js/css: always revalidate (no-cache) with a content ETag, so a deploy reaches browsers at once and an unchanged file is a 304. Images keep their existing handling.
-    if(['.html','.js','.css'].includes(ext)){const etag=`"${createHash('sha1').update(content).digest('hex')}"`;headers['Cache-Control']='no-cache';headers.ETag=etag;if(String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}
+    if(['.html','.js','.css','.webmanifest'].includes(ext)){const etag=`"${createHash('sha1').update(content).digest('hex')}"`;headers['Cache-Control']='no-cache';headers.ETag=etag;if(String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}
     res.writeHead(200,headers);res.end(content)}catch{json(res,404,{error:'Not found'})}
 };
 // 任何未預期的例外只讓這一個請求失敗，不讓整個服務崩潰（2026-10-23 審查：壞掉的 % 編碼曾讓程序結束）。

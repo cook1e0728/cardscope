@@ -1,0 +1,16 @@
+{
+  "name": "CardScope 卡牌圖鑑",
+  "short_name": "CardScope",
+  "description": "用中、日、英文名稱搜尋寶可夢、遊戲王、航海王等 TCG 卡牌，依系列與稀有度瀏覽。",
+  "lang": "zh-Hant",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#16132A",
+  "background_color": "#EDE8DE",
+  "icons": [
+    { "src": "/assets/brand/web/pwa-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/brand/web/pwa-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/brand/web/pwa-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
