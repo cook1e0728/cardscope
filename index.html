@@ -257,7 +257,7 @@ async function init(){
   channels();productCategories();
   const rarityTask=get('/data/rarity-rankings.json').then(body=>{rarityRankings=body;window.CARD_SCOPE_RARITY_RANKINGS=body;refreshRarityOptions(currentCardRows)}).catch(()=>{});
   const catalogTask=get('/api/catalog').then(body=>{C=body.data;window.catalogPartial=Boolean(body.meta?.fallbackReason);render();catalogState='ready';updateStatus();if(window.catalogPartial)retryCatalog(1)}).catch(error=>{catalogState='error';catalogError=error.message;updateStatus()});
-  const productTask=get('/api/products').then(body=>{P=body.data||[];S=body.series||[];productCategory=productCategoryFilterValue(productCategoryId);productCategories();series();productsState='ready';updateStatus()}).catch(()=>{productsState='error';$('series').innerHTML='<p class="meta">商品來源暫時無法回應，仍可使用卡片搜尋。</p>';updateStatus()});
+  const productTask=get('/api/products').then(body=>{P=body.data||[];S=body.series||[];productCategory=productCategoryFilterValue(productCategoryId);productCategories();series();productsState='ready';updateStatus();/* 系列磚借用商品盒圖；目錄若比商品先到，系列列要重畫才有圖 */if(game==='all')window.renderHomeLatest?.();else window.renderSeriesBand?.()}).catch(()=>{productsState='error';$('series').innerHTML='<p class="meta">商品來源暫時無法回應，仍可使用卡片搜尋。</p>';updateStatus()});
   get('/api/catalog/coverage').then(body=>{coverage=body.data;coverageState='ready';updateStatus()}).catch(()=>{coverageState='error';updateStatus()});
   await Promise.allSettled([rarityTask,catalogTask,productTask]);
 }

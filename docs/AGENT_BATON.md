@@ -46,6 +46,12 @@
 - 測試抓到的真問題（已修，`look-clean.css`）：手機詳細頁「×」關閉鈕被卡圖區塊蓋住點不到 → `#close{z-index:10}`；頂欄搜尋鈕 38px、稀有度直選「拇指盤」鈕 28px → 都改 44px。
 - 本機跑法：無 Supabase 環境啟動 `PORT=4202 node server.mjs`，再 `CI=true CARDSCOPE_URL=http://127.0.0.1:4202 PLAYWRIGHT_CHANNEL=msedge node scripts/beta-browser-smoke.mjs`，全部通過；Node 522/522。
 
+## 首頁 5 版預覽（2026-10-23，Claude Code 規劃＋5 位 Sonnet 員工）— 等使用者選版
+- 網址 `?preview=1～5`（`?preview=0` 關閉；選擇存在 sessionStorage），上方有切換列（數字鍵切換、R 重播動畫與導覽）。檔案全在 `previews/`，`index.html` 只多一段載入器（註明選定後整段移除）。
+- 每版都做：兔子圖左側空白的內容、標題與介紹進場動畫、首次進站導覽（localStorage `cs-tour-vN-done`）、頂欄按鈕化＋桌面也有底部導覽列（沿用 `nav.bottom`），手機同步。1 星圖（卡圖星座＋聚光燈導覽＋玻璃 dock）、2 打字機（噴火龍→Charizard→リザードン 示範＋步驟卡＋滿寬橫條）、3 卡冊（日台美版對照扇＋兔子泡泡導覽＋索引頁籤）、4 霓虹（統計＋最新系列輪播＋歡迎投影片＋懸浮膠囊）、5 聚焦（三步驟上手卡＋「?」信標＋圖示 dock）。
+- 選定後：把該版併進 `look-clean.css`／正式 JS、寫 ADR、刪 `previews/` 與 `index.html` 載入器。
+- 同輪修正：首頁系列磚 M6a／MF／OP-17 只顯示代碼 → 這些磚的圖借自商品盒圖，`/api/products` 比目錄晚到時系列列沒重畫；商品載入後改呼叫 `renderHomeLatest`／`renderSeriesBand`（`index.html`）。另外官方圖單次失敗先重試一次（`series-band.js`）。冒煙測試減少動態檢查偶發 NaN（讀到被重繪脫離的元素）已修。
+
 ## 無障礙驗收（2026-10-23，Claude Code）
 - 以 Playwright 在桌面 1440、手機 390、200% 縮放（640×400）與 320px 重排下，掃首頁／遊戲頁／我的收藏／詳細頁：Tab 走訪、焦點可見與對比、只能用滑鼠點的元素、橫向溢出、關閉鈕可點、減少動態下仍在跑的動畫。
 - 修正（`look-clean.css`）：桌面首頁深色展示櫃上的焦點框是深灰（約 1.5:1，幾乎看不見）→ 改米白；選中的遊戲格本來就有金框，焦點落在上面分不出來 → 改向內米白粗框；首頁大搜尋鈕（金底）焦點框改深色；手機稀有度快選盤（深底）焦點框改米白。
@@ -56,6 +62,7 @@
 - 依 impeccable 與 ui-ux-pro-max 做 5 版預覽，使用者選第 3 版「夜間展示櫃」→ ADR 0050，樣式併入 `look-clean.css` 末段（≥761px），預覽開關與 `home-preview.css` 已移除；手機首屏不變。
 
 ## 下一步（唯一，具體到檔案與指令）
+- 等使用者從首頁 5 版預覽選版（見上方），再併入正式樣式。
 - 10-24 後確認排球少年 HV-P04／HV-D04 卡圖自動補上（`/api/search?q=HV-P04&limit=200`）。10-23 查：卡已在（HV-P04 100 張、HV-D04 13 張，搜尋上限可能截斷），但 0 張有圖；CI `000f8ad` Beta reliability 已綠。
 
 ## 卡住的地方／需要規劃方決策
