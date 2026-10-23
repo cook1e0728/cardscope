@@ -108,11 +108,17 @@
 
   const originalOpenCard=window.openCard;
   if(typeof originalOpenCard==='function')window.openCard=async id=>{
-    saveScroll();if(!restoring)writeUrl('push',{card:id});const result=await originalOpenCard(id);installDetailShare();return result;
+    saveScroll();if(!restoring){writeUrl('push',{card:id});openedFromList=true}const result=await originalOpenCard(id);installDetailShare();return result;
   };
 
+  // 從列表點開的卡，關閉時退回上一筆歷史（按返回鍵就離開列表，不會重開這張卡）；從分享連結直接進來的，只把 card 參數拿掉。
+  let openedFromList=false,skipRestore=false;
+  function closeDetailWithHistory(){
+    closeDetail();
+    if(openedFromList){openedFromList=false;skipRestore=true;history.back()}else writeUrl('replace',{card:''});
+  }
   async function restore(state=readLocation()){
-    restoring=true;
+    restoring=true;openedFromList=false;
     try{
       await waitFor(()=>Array.isArray(C?.games)&&C.games.length>0).catch(()=>{});
       if(node('browseRegion'))node('browseRegion').value=state.region;
@@ -126,6 +132,8 @@
       window.cardscopeEntry=state.game!=='all'&&(state.series||state.view==='all')?{series:state.series,all:!state.series&&state.view==='all'}:null;
       await originalChoose?.(state.game);
       await waitFor(()=>!browse?.loading).catch(()=>{});
+      // 換遊戲時 choose 會把稀有度重設成全部；網址指定了稀有度就再套用一次
+      if(state.game!=='all'&&state.rarity&&state.rarity!=='all'&&cardFilters.rarity!==state.rarity){cardFilters.rarity=state.rarity;if(node('rarityFilter'))node('rarityFilter').value=state.rarity;if(typeof loadCardsPage==='function')await loadCardsPage(true);await waitFor(()=>!browse?.loading).catch(()=>{})}
       while(state.game!=='all'&&state.pages>1&&browse?.hasMore&&Math.ceil(number(browse.offset,0)/PAGE_SIZE)<state.pages)await loadCardsPage(false);
       if(state.query&&typeof window.search==='function')await window.search();
       if(state.card&&typeof originalOpenCard==='function'){await originalOpenCard(state.card);installDetailShare()}
@@ -140,19 +148,18 @@
   node('go')?.addEventListener('click',()=>setTimeout(()=>writeUrl('push',{query:node('q')?.value?.trim()||'',card:'',pages:1}),0));
   node('q')?.addEventListener('keydown',event=>{if(event.key==='Enter')setTimeout(()=>writeUrl('push',{query:node('q')?.value?.trim()||'',card:'',pages:1}),0)});
   node('loadMore')?.addEventListener('click',()=>setTimeout(()=>writeUrl('replace'),0));
-  node('close')?.addEventListener('click',()=>{if(!restoring){closeDetail();writeUrl('push',{card:''})}});
-  node('modal')?.addEventListener('click',event=>{if(event.target===node('modal')&&!restoring){closeDetail();writeUrl('push',{card:''})}});
+  node('close')?.addEventListener('click',()=>{if(!restoring)closeDetailWithHistory()});
+  node('modal')?.addEventListener('click',event=>{if(event.target===node('modal')&&!restoring)closeDetailWithHistory()});
   document.addEventListener('keydown',event=>{
     if(event.key!=='Escape'||restoring||node('cardZoom')?.classList.contains('open')||!node('modal')?.classList.contains('open'))return;
     event.preventDefault();
-    closeDetail();
-    writeUrl('push',{card:''});
+    closeDetailWithHistory();
   },true);
   // index.html announces a browse view the page picked (newest series) or the user chose (series tile, 全部卡片), and searches it started itself (example chips, cancelled conditions).
   document.addEventListener('cardscope:browse',event=>{if(!restoring)writeUrl(event.detail?.push?'push':'replace',{pages:1,card:'',query:''})});
   document.addEventListener('cardscope:search',event=>{if(!restoring)writeUrl('push',{query:event.detail?.q||'',card:'',pages:1})});
   window.addEventListener('beforeunload',saveScroll);
-  window.addEventListener('popstate',()=>restore(readLocation()));
+  window.addEventListener('popstate',()=>{if(skipRestore){skipRestore=false;return}return restore(readLocation())});
   if('scrollRestoration'in history)history.scrollRestoration='manual';
   moveSecondaryContent();
   restore(readLocation());
