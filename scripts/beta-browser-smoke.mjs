@@ -103,7 +103,9 @@ function makeFixtureState(catalog){
   };
 }
 
-async function installFixtures(page,state){
+async function installFixtures(page,state,{returning=true}={}){
+  // The first-visit tour (look-showcase.js) would cover the page; these flows act as a returning visitor.
+  if(returning)await page.addInitScript(()=>{try{localStorage.setItem('cs-tour-done','1')}catch{}});
   await page.route('**/api/**',async route=>{
     const requestUrl=new URL(route.request().url());
     const pathname=requestUrl.pathname;
@@ -126,6 +128,8 @@ async function installFixtures(page,state){
     }
     if(pathname==='/api/cards'){
       const game=requestUrl.searchParams.get('game')||'';
+      // The landing showcase (look-showcase.js) samples each IP's rarest cards; keep it out of the browse-failure bookkeeping.
+      if(requestUrl.searchParams.get('sort')==='rarity-desc'&&!requestUrl.searchParams.has('series'))return responseBody(route,{data:cardsForGame(game),meta:{source:'beta-browser-fixture'}});
       const attempt=(state.cardAttempts.get(game)||0)+1;
       state.cardAttempts.set(game,attempt);
       state.cardRequests.push({game,attempt,offset:requestUrl.searchParams.get('offset')||'0',rarity:requestUrl.searchParams.get('rarity')||'all'});
@@ -424,7 +428,18 @@ async function runPhaseTwoChecks(browser){
     const running=await calm.evaluate(()=>document.getAnimations().filter(animation=>animation.playState==='running').map(animation=>`${animation.animationName||animation.transitionProperty}@${animation.effect?.target?.className||''}`));
     assert.deepEqual(running,[],'reduced motion: animations still running');
   }finally{await calm.close()}
-  return {viewport:'phase-two',checks:['share','recent','slow-network','reduced-motion']};
+
+  // First visit: the guided tour opens on its own, Escape closes it and it stays closed.
+  const visitor=await browser.newPage({viewport:{width:1440,height:1000}});
+  try{
+    await installFixtures(visitor,makeFixtureState(fixtureCatalog()),{returning:false});
+    await visitor.goto(baseUrl,{waitUntil:'domcontentloaded'});
+    await waitForVisible(visitor.locator('.cs1-tour'),'first visit: the guided tour did not open');
+    await visitor.keyboard.press('Escape');
+    await visitor.locator('.cs1-tour').waitFor({state:'detached',timeout:5000});
+    assert.equal(await visitor.evaluate(()=>localStorage.getItem('cs-tour-done')),'1','closing the tour should remember it');
+  }finally{await visitor.close()}
+  return {viewport:'phase-two',checks:['share','recent','slow-network','reduced-motion','first-visit-tour']};
 }
 
 const launchOptions={headless:true};

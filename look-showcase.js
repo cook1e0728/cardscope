@@ -1,8 +1,7 @@
-// 首頁預覽第 1 版「星圖」：兔子左邊的卡片星座、標題逐字進場、聚光燈導覽、頂欄／dock 的目前頁標記。
-// 只動 DOM 與 previews/home-v1.css；不碰原本程式。卡片只用 /api/cards 的真實回應，沒有圖就不顯示。
+// 首頁「星圖手牌」（ADR 0051）：兔子卡居中的高稀有度手牌、標題進場、首次導覽、頂欄按鈕與底部 dock。樣式在 look-showcase.css。卡片只用 /api/cards 的真實回應，沒有圖就不顯示。
 (()=>{
   const doc=document,root=doc.documentElement,$=s=>doc.querySelector(s);
-  const DONE='cs-tour-v1-done';
+  const DONE='cs-tour-done';
   const landing=()=>doc.body?.dataset.view==='landing';
   const vis=e=>!!e&&e.getClientRects().length>0;
   const el=(tag,cls,text)=>{const n=doc.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n};

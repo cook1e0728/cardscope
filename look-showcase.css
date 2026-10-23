@@ -1,0 +1,208 @@
+/* 首頁「星圖手牌」（ADR 0051，2026-10-23 使用者從 5 版預覽選定第 1 版）：兔子卡居中、高稀有度卡排成手牌扇形，標題逐字升起，首次聚光燈導覽，頂欄膠囊按鈕＋底部玻璃 dock。
+   所有選擇器以 html.look-clean 開頭；動畫只用 transform／opacity，且都包在 no-preference＋未暫停的閘門內。 */
+
+html.look-clean{
+  --cs1-bg:#1B1733;--cs1-bg2:#16132A;--cs1-face:#24203F;--cs1-line:#4A4470;--cs1-ink:#F6F1E6;--cs1-ink2:#C9C1DA;--cs1-gold:#E7BA4C;
+  --cs1-ease:cubic-bezier(.16,1,.3,1);
+  --cs1-stars:
+    radial-gradient(circle 1.6px at 6% 12%,rgba(246,241,230,.8) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 14% 78%,rgba(246,241,230,.55) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.3px at 23% 36%,rgba(246,241,230,.4) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.8px at 31% 90%,rgba(231,186,76,.6) 0,rgba(231,186,76,0) 100%),
+    radial-gradient(circle 1.2px at 42% 8%,rgba(246,241,230,.6) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 48% 60%,rgba(246,241,230,.35) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.5px at 57% 22%,rgba(246,241,230,.7) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.2px at 64% 84%,rgba(246,241,230,.5) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.9px at 71% 46%,rgba(231,186,76,.55) 0,rgba(231,186,76,0) 100%),
+    radial-gradient(circle 1.2px at 78% 10%,rgba(246,241,230,.6) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 86% 70%,rgba(246,241,230,.4) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.4px at 93% 30%,rgba(246,241,230,.6) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(circle 1.1px at 97% 92%,rgba(246,241,230,.45) 0,rgba(246,241,230,0) 100%),
+    radial-gradient(ellipse 52% 60% at 66% 40%,rgba(106,98,160,.26) 0,rgba(106,98,160,0) 100%);
+  --cs1-i-search:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.3' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='M16 16l5 5'/%3E%3C/svg%3E");
+  --cs1-i-grid:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linejoin='round'%3E%3Crect x='3.5' y='3.5' width='7' height='7' rx='1.8'/%3E%3Crect x='13.5' y='3.5' width='7' height='7' rx='1.8'/%3E%3Crect x='3.5' y='13.5' width='7' height='7' rx='1.8'/%3E%3Crect x='13.5' y='13.5' width='7' height='7' rx='1.8'/%3E%3C/svg%3E");
+  --cs1-i-mark:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linejoin='round'%3E%3Cpath d='M6.5 3.5h11v17L12 16.2 6.5 20.5z'/%3E%3C/svg%3E");
+}
+
+/* ===== 1. 標題進場（文字一開始就在 DOM；JS 只把每個字包進 aria-hidden 視覺層，h1 以 aria-label 保留完整名稱） ===== */
+html.look-clean .hero-intro{position:relative;isolation:isolate}
+html.look-clean .hero-intro::before,html.look-clean .hero-intro::after{content:"";position:absolute;z-index:-1;inset:-30px -12px -18px -12px;pointer-events:none;opacity:.22}
+html.look-clean .hero-intro::before{background-image:
+  radial-gradient(circle 2.6px at 4% 22%,#F6F1E6 0,rgba(246,241,230,0) 100%),
+  radial-gradient(circle 2px at 38% 8%,#E7BA4C 0,rgba(231,186,76,0) 100%),
+  radial-gradient(circle 2.4px at 74% 16%,#F6F1E6 0,rgba(246,241,230,0) 100%)}
+html.look-clean .hero-intro::after{background-image:
+  radial-gradient(circle 2.2px at 17% 4%,#F6F1E6 0,rgba(246,241,230,0) 100%),
+  radial-gradient(circle 2.8px at 56% 30%,#E7BA4C 0,rgba(231,186,76,0) 100%),
+  radial-gradient(circle 2px at 92% 40%,#F6F1E6 0,rgba(246,241,230,0) 100%)}
+@keyframes cs1-rise{from{opacity:0;transform:translateY(.5em)}to{opacity:1;transform:none}}
+@keyframes cs1-fade{from{opacity:0}to{opacity:1}}
+@keyframes cs1-show{to{opacity:1}}
+@keyframes cs1-twinkle{0%{opacity:0;transform:scale(.6)}35%{opacity:1;transform:scale(1.15)}100%{opacity:.22;transform:none}}
+@keyframes cs1-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes cs1-arrive{from{opacity:0;transform:translate(var(--fx),var(--fy)) rotate(var(--fr)) scale(.9)}to{opacity:1;transform:none}}
+@keyframes cs1-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes cs1-spark{0%{opacity:0;scale:.2}45%{opacity:1;scale:1.5}100%{opacity:.75;scale:1}}
+@media (prefers-reduced-motion:no-preference){
+  /* JS 還沒包好字以前先藏起來，避免閃一下原文；1.5 秒後無論如何都顯示（保底） */
+  html.look-clean:not([data-cs-paused]):not(.cs1-play) body[data-view="landing"] .hero-intro{opacity:0;animation:cs1-show 0s linear 1.5s forwards}
+  html.look-clean.cs1-play:not([data-cs-paused]) .hero-intro .cs1-ch{display:inline-block;animation:cs1-rise .56s var(--cs1-ease) both;animation-delay:calc(var(--i)*40ms)}
+  html.look-clean.cs1-play:not([data-cs-paused]) .hero-intro p{animation:cs1-fade .6s ease-out .52s both}
+  html.look-clean.cs1-play:not([data-cs-paused]) .hero-intro::before{animation:cs1-twinkle 1.1s ease-out .3s both}
+  html.look-clean.cs1-play:not([data-cs-paused]) .hero-intro::after{animation:cs1-twinkle 1.1s ease-out .62s both}
+  /* 星軌：線先畫出來，卡片依序從兔子飛出，星點各閃一次；之後只剩與兔子同節奏的 4px 漂浮 */
+  html.look-clean.cs1-play:not([data-cs-paused]) .cs1-trail{stroke-dasharray:1;animation:cs1-draw 1.1s cubic-bezier(.23,1,.32,1) .35s both}
+  html.look-clean.cs1-play:not([data-cs-paused]) .cs1-spark{animation:cs1-spark .9s ease-out both;animation-delay:calc(.55s + var(--i)*110ms)}
+  html.look-clean.cs1-play:not([data-cs-paused]) .cs1-fan .cs1-float{animation:cs1-arrive .7s var(--cs1-ease) both,cs1-float 6s ease-in-out infinite;animation-delay:calc(.75s + var(--i)*90ms),calc(1.8s + var(--i)*.5s)}
+  html.look-clean:not(.cs1-play):not([data-cs-paused]) .cs1-fan .cs1-float{animation:cs1-float 6s ease-in-out calc(var(--i)*-1.2s) infinite}
+  html.look-clean:not([data-cs-paused]) .cs1-fan .cs1-card{transition:translate .5s cubic-bezier(.23,1,.32,1),scale .2s ease-out,rotate .2s ease-out,opacity .2s ease-out}
+  html.look-clean.cs1-play:not([data-cs-paused]) .cs1-strip .cs1-float{animation:cs1-rise .5s var(--cs1-ease) both;animation-delay:calc(.5s + var(--i)*70ms)}
+}
+
+/* ===== 2. 桌面：兔子左邊的星座 ===== */
+html.look-clean .cs1-fan,html.look-clean .cs1-strip,html.look-clean .cs1-replay.cs1-replay-m{display:none}
+@media (min-width:761px){
+  html.look-clean body[data-view="landing"] .hero{position:relative;isolation:isolate}
+  html.look-clean body[data-view="landing"] .hero::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background-image:var(--cs1-stars)}
+  html.look-clean body[data-view="landing"] .browse-regions{align-items:center}
+  html.look-clean .cs1-replay{margin-left:auto}
+}
+@media (min-width:1200px){
+  /* 手牌區佔第二欄、往左延伸；高度撐住前三列，兔子卡搬進來當主角 */
+  html.look-clean body[data-view="landing"] .hero>.cs1-fan{display:block;position:relative;z-index:1;grid-column:2;grid-row:1/4;justify-self:end;align-self:center;width:580px;height:380px;margin:0;pointer-events:none;transform-origin:right center}
+  html.look-clean body[data-view="landing"] .cs1-fan>.hero-art{position:absolute;left:185px;top:44px;width:210px;margin:0;z-index:6}
+  html.look-clean body[data-view="landing"] .hero>.home-search{max-width:520px}
+}
+@media (min-width:1200px) and (max-width:1379px){
+  html.look-clean body[data-view="landing"] .hero>.cs1-fan{scale:.8}
+  html.look-clean body[data-view="landing"] .hero>.home-search,html.look-clean body[data-view="landing"] .hero>.home-examples{max-width:430px}
+  html.look-clean body[data-view="landing"] .hero>.home-examples{flex-wrap:wrap}
+}
+html.look-clean .cs1-fan{--px:0;--py:0}
+html.look-clean .cs1-fan svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+html.look-clean .cs1-trail{fill:none;stroke:url(#cs1-trail);stroke-width:1.4;stroke-linecap:round}
+html.look-clean .cs1-spark{fill:#F6E7B8;opacity:.75;transform-box:fill-box;transform-origin:center}
+html.look-clean .cs1-spark-end{fill:#E7BA4C;opacity:.9}
+/* 卡片：CardScope 自己的深色卡套框＋金色細線（不在卡圖上加假閃卡效果）；越遠越暗 */
+html.look-clean .cs1-card{position:absolute;left:var(--x);top:var(--y);width:var(--w);aspect-ratio:63/88;padding:0;border:0;background:none;pointer-events:auto;cursor:pointer;rotate:var(--r);translate:calc(var(--px)*8px) calc(var(--py)*6px)}
+html.look-clean .cs1-float{display:block;width:100%;height:100%;padding:3px;box-sizing:border-box;border-radius:9px;background:linear-gradient(150deg,#4A4470,#16132A 70%);box-shadow:0 0 0 1px rgba(231,186,76,.38),0 18px 30px -12px rgba(0,0,0,.75)}
+html.look-clean .cs1-card img{display:block;width:100%;height:100%;object-fit:cover;border-radius:6px}
+html.look-clean .cs1-fan .cs1-card:first-of-type .cs1-float{box-shadow:0 0 0 1.5px rgba(231,186,76,.7),0 22px 34px -12px rgba(0,0,0,.8)}
+html.look-clean .cs1-cap{position:absolute;left:50%;top:calc(100% + 8px);translate:-50% 0;padding:4px 9px;border:1px solid rgba(231,186,76,.45);border-radius:999px;background:#16132A;color:#F6F1E6;font:600 11.5px/1.2 'Noto Sans TC',sans-serif;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .16s ease-out}
+html.look-clean .cs1-card:active{scale:.97}
+html.look-clean .cs1-card:focus-visible{outline:none}
+html.look-clean .cs1-card:focus-visible .cs1-float{outline:3px solid #F6F1E6;outline-offset:3px}
+/* 指到或聚焦的卡轉正、放大、變亮並顯示 IP 與稀有度；其他卡退後 */
+/* 像從手牌抽出一張：往上抬、轉正一半、浮到兔子卡前面 */
+html.look-clean .cs1-fan .cs1-card:is(:hover,:focus-visible){translate:0 -26px;rotate:calc(var(--r)*.4);scale:1.06;z-index:20!important}
+html.look-clean .cs1-card:is(:hover,:focus-visible) .cs1-cap{opacity:1}
+html.look-clean .cs1-fan:has(.cs1-card:is(:hover,:focus-visible)) .cs1-card:not(:hover):not(:focus-visible){opacity:.6}
+
+/* 重看導覽 */
+html.look-clean .cs1-replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 16px;border:1px solid rgba(246,241,230,.38);border-radius:999px;background:transparent;color:#F6F1E6;font:500 14px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background .18s ease-out,transform .12s}
+html.look-clean .cs1-replay:hover{background:rgba(246,241,230,.12)}
+html.look-clean .cs1-replay:active{transform:scale(.97)}
+html.look-clean .cs1-replay:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px}
+
+/* ===== 3. 頂欄：帶圖示的半透明描邊膠囊（桌面；手機頂欄沒有 nav，改用 dock） ===== */
+html.look-clean body .top .nav{gap:10px}
+html.look-clean body .top .nav button{display:inline-flex;align-items:center;gap:8px;min-width:44px;min-height:44px;padding:0 16px 0 13px;border:1px solid rgba(246,241,230,.34);border-radius:999px;background:rgba(246,241,230,.06);color:#F6F1E6;font-size:15px;font-weight:500;line-height:1;transition:background .18s ease-out,border-color .18s ease-out,transform .12s}
+html.look-clean body .top .nav button::before{content:"";width:18px;height:18px;flex:none;background:currentColor;-webkit-mask:var(--cs1-i-search) center/contain no-repeat;mask:var(--cs1-i-search) center/contain no-repeat}
+html.look-clean body .top .nav button[data-nav="browse"]::before{-webkit-mask-image:var(--cs1-i-grid);mask-image:var(--cs1-i-grid)}
+html.look-clean body .top .nav button[data-nav="collection"]::before{-webkit-mask-image:var(--cs1-i-mark);mask-image:var(--cs1-i-mark)}
+html.look-clean body .top .nav button:hover{background:rgba(246,241,230,.14);border-color:rgba(246,241,230,.6)}
+html.look-clean body .top .nav button:active{transform:scale(.97)}
+html.look-clean body .top .nav button:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px}
+html.look-clean body .top .nav button[aria-current="page"]{border-color:var(--cs1-gold);font-weight:700}
+html.look-clean body .top .nav button[aria-current="page"]::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--cs1-gold);flex:none}
+/* 遊戲頁頂欄是淺色底 */
+html.look-clean body[data-view="game"] .top .nav button{border-color:rgba(31,27,22,.42);background:rgba(31,27,22,.04);color:#1F1B16}
+html.look-clean body[data-view="game"] .top .nav button:hover{background:rgba(31,27,22,.1);border-color:#1F1B16}
+html.look-clean body[data-view="game"] .top .nav button:focus-visible{outline-color:#1F1B16}
+html.look-clean body[data-view="game"] .top .nav button[aria-current="page"]{border-color:#1F1B16;border-width:2px}
+html.look-clean body[data-view="game"] .top .nav button[aria-current="page"]::after{background:#A87200}
+
+/* ===== 4. 底部玻璃膠囊 dock（桌面置中 ≤480px；手機滿寬貼底） ===== */
+html.look-clean body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+html.look-clean nav.bottom{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;position:fixed;z-index:6;left:50%;right:auto;bottom:16px;width:min(480px,calc(100vw - 32px));height:64px;padding:0 6px;transform:translateX(-50%);border:1px solid rgba(246,241,230,.22);border-radius:999px;background:rgba(27,23,51,.8);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 12px 32px rgba(10,8,24,.4),inset 0 1px 0 rgba(255,255,255,.12)}
+html.look-clean nav.bottom button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:44px;min-height:44px;margin:0;padding:6px 0 10px;border:0;border-radius:999px;background:none;color:#C9C1DA;font-size:12px;font-weight:500;line-height:1.1;transition:color .18s ease-out,transform .12s}
+html.look-clean nav.bottom button:active{transform:scale(.96)}
+html.look-clean nav.bottom button:hover{color:#F6F1E6}
+html.look-clean nav.bottom button:focus-visible{outline:2px solid #F6F1E6;outline-offset:-4px}
+html.look-clean nav.bottom button b{display:block;width:22px;height:22px;margin:0;font-size:0;line-height:0;background:currentColor;-webkit-mask:var(--cs1-i-search) center/contain no-repeat;mask:var(--cs1-i-search) center/contain no-repeat}
+html.look-clean nav.bottom button[data-nav="browse"] b{-webkit-mask-image:var(--cs1-i-grid);mask-image:var(--cs1-i-grid)}
+html.look-clean nav.bottom .bottom-profile img{display:block;width:22px;height:22px;margin:0;opacity:.85}
+html.look-clean nav.bottom button[aria-current="page"],html.look-clean nav.bottom button.bottom-profile:hover{color:#F6F1E6}
+html.look-clean nav.bottom button[aria-current="page"]{font-weight:700}
+html.look-clean nav.bottom button[aria-current="page"]::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--cs1-gold)}
+/* 暫停動態開關在中等寬度會和 dock 重疊 → 往上抬 */
+@media (min-width:761px) and (max-width:1000px){html.look-clean .cs-motion-toggle{bottom:92px}}
+
+/* ===== 手機（≤760px）：標題區改成深色星空小卡，含 3 張迷你卡帶；dock 滿寬貼底 ===== */
+@media (max-width:760px){
+  html.look-clean body[data-view="landing"] .hero>.hero-intro{display:block;margin:0 0 12px;padding:16px 16px 8px;border-radius:20px;background-color:var(--cs1-bg);background-image:var(--cs1-stars);color:var(--cs1-ink)}
+  html.look-clean body[data-view="landing"] .hero-intro h1{margin:0 0 6px;font:700 26px/1.2 'Chiron Hei HK','Noto Sans TC',sans-serif;letter-spacing:-.01em;color:var(--cs1-ink)}
+  html.look-clean body[data-view="landing"] .hero-intro p{margin:0;font-size:13.5px;line-height:1.55;color:var(--cs1-ink2)}
+  html.look-clean body[data-view="landing"] .cs1-strip{display:flex;justify-content:center;align-items:center;height:156px;margin:12px 0 4px}
+  html.look-clean .cs1-strip .cs1-card{position:relative;left:auto;top:auto;width:82px;filter:none}
+  html.look-clean .cs1-strip .cs1-card:nth-child(1){rotate:-10deg;translate:14px 10px;z-index:1}
+  html.look-clean .cs1-strip .cs1-card:nth-child(2){width:100px;z-index:2}
+  html.look-clean .cs1-strip .cs1-card:nth-child(2) .cs1-float{box-shadow:0 0 0 1.5px rgba(231,186,76,.75),0 14px 24px -10px rgba(0,0,0,.8)}
+  html.look-clean .cs1-strip .cs1-card:nth-child(3){rotate:10deg;translate:-14px 10px;z-index:1}
+  html.look-clean .cs1-strip .cs1-cap{display:none}
+  html.look-clean .cs1-strip-rabbit{cursor:default}
+  html.look-clean .cs1-strip-rabbit img{object-position:50% 36%}
+  html.look-clean body[data-view="landing"] .cs1-replay.cs1-replay-m{display:inline-flex;margin:0 0 8px}
+  html.look-clean body{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  html.look-clean nav.bottom{left:0;right:0;bottom:0;width:auto;height:calc(62px + env(safe-area-inset-bottom));padding:0 8px env(safe-area-inset-bottom);transform:none;border-width:1px 0 0;border-radius:20px 20px 0 0;background:rgba(27,23,51,.9)}
+}
+
+/* ===== 5. 導覽：聚光燈遮罩＋說明卡 ===== */
+html.look-clean .cs1-tour{position:fixed;inset:0;z-index:2147483000;overflow:hidden}
+html.look-clean .cs1-tour-shade{position:absolute;inset:0}
+html.look-clean .cs1-tour-spot{position:absolute;pointer-events:none;border-radius:16px;box-shadow:0 0 0 2px var(--cs1-gold),0 0 0 100vmax rgba(14,11,30,.74)}
+html.look-clean .cs1-tour-card{position:absolute;box-sizing:border-box;width:min(340px,calc(100vw - 24px));padding:14px 16px 12px;border:1px solid var(--cs1-line);border-radius:18px;background:var(--cs1-face);color:var(--cs1-ink);font-family:'Noto Sans TC',system-ui,sans-serif;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+html.look-clean .cs1-tour-card:focus{outline:none}
+html.look-clean .cs1-tour-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+html.look-clean .cs1-tour-head img{width:44px;height:44px;flex:none;border-radius:50%;object-fit:cover;border:2px solid var(--cs1-gold);background:var(--cs1-bg2)}
+html.look-clean .cs1-tour-step{margin:0;font-size:12px;font-weight:500;color:var(--cs1-ink2)}
+html.look-clean .cs1-tour-title{margin:0;font:700 18px/1.3 'Chiron Hei HK','Noto Sans TC',sans-serif;color:var(--cs1-ink)}
+html.look-clean .cs1-tour-text{margin:6px 0 12px;font-size:14px;line-height:1.6;color:var(--cs1-ink2)}
+html.look-clean .cs1-tour-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+html.look-clean .cs1-dots{display:flex;align-items:center;gap:6px}
+html.look-clean .cs1-dots i{width:7px;height:7px;border-radius:999px;background:var(--cs1-line)}
+html.look-clean .cs1-dots i.on{width:20px;background:var(--cs1-gold)}
+html.look-clean .cs1-tour-btns{display:flex;gap:6px}
+html.look-clean .cs1-tour-btns button{min-width:64px;min-height:44px;padding:0 14px;border-radius:999px;font:700 14px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background .18s ease-out,transform .12s}
+html.look-clean .cs1-tour-btns button:active{transform:scale(.97)}
+html.look-clean .cs1-tour-btns button:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px}
+html.look-clean .cs1-skip{border:1px solid var(--cs1-line);background:transparent;color:var(--cs1-ink)}
+html.look-clean .cs1-skip:hover{background:#2E2950}
+html.look-clean .cs1-next{border:0;background:var(--cs1-gold);color:#1B1733}
+html.look-clean .cs1-next:hover{background:#F2CB66}
+html.look-clean .cs1-next:focus-visible{outline-color:#F6F1E6;box-shadow:0 0 0 2px var(--cs1-face)}
+@media (prefers-reduced-motion:no-preference){
+  html.look-clean:not([data-cs-paused]) .cs1-tour-card,html.look-clean:not([data-cs-paused]) .cs1-tour-spot{animation:cs1-fade .22s ease-out both}
+}
+
+/* ===== 兔子形象圖動態（桌面）：跳進來、星星閃、流星、游標傾斜與光澤；光點沿星軌跑出去 ===== */
+@keyframes cs1-leap{from{opacity:0;transform:translate(48px,-18px) rotate(5deg) scale(.94)}}
+@keyframes cs1-tw{0%,100%{opacity:0;scale:.3}50%{opacity:.95;scale:1}}
+@keyframes cs1-shoot{0%{opacity:0;translate:0 0}2%{opacity:1}9%,100%{opacity:0;translate:-150px 80px}}
+@keyframes cs1-run{0%{offset-distance:0%;opacity:0}8%,82%{opacity:1}100%{offset-distance:100%;opacity:0}}
+html.look-clean .cs1-tilt,html.look-clean .cs1-sheen,html.look-clean .cs1-twinkle,html.look-clean .cs1-shoot{display:none}
+@media (min-width:761px){
+  html.look-clean body[data-view="landing"] .hero-art{pointer-events:auto}
+  html.look-clean .cs1-tilt{display:block;position:relative;width:100%;height:100%;border-radius:14px;overflow:hidden;transform:perspective(900px) rotateX(var(--ty,0deg)) rotateY(var(--tx,0deg));transition:transform .5s cubic-bezier(.23,1,.32,1)}
+  html.look-clean .cs1-sheen{display:block;position:absolute;inset:0;background:radial-gradient(circle at var(--sx,50%) var(--sy,30%),rgba(255,255,255,.2),rgba(255,255,255,0) 46%);opacity:0;transition:opacity .3s ease-out;pointer-events:none}
+  html.look-clean .hero-art:hover .cs1-sheen{opacity:1}
+  html.look-clean .cs1-twinkle{display:block;position:absolute;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;background:#FFF6DA;clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%);opacity:.5;pointer-events:none}
+  html.look-clean .cs1-shoot{display:block;position:absolute;left:66%;top:10%;width:84px;height:2px;border-radius:2px;background:linear-gradient(90deg,#fff,rgba(255,255,255,0));rotate:-28deg;transform-origin:left center;opacity:0;pointer-events:none}
+}
+html.look-clean .cs1-comet{position:absolute;left:0;top:0;width:9px;height:9px;border-radius:50%;background:#FFF3C8;box-shadow:0 0 10px 3px rgba(231,186,76,.75),0 0 22px 8px rgba(231,186,76,.25);offset-anchor:center;offset-rotate:0deg;opacity:0;pointer-events:none;z-index:30}
+@media (prefers-reduced-motion:no-preference){
+  html.look-clean.cs1-play:not([data-cs-paused]) body[data-view="landing"] .cs1-tilt{animation:cs1-leap .7s var(--cs1-ease) .1s backwards}
+  html.look-clean:not([data-cs-paused]) .cs1-twinkle{animation:cs1-tw 3.6s ease-in-out var(--d) infinite}
+  html.look-clean:not([data-cs-paused]) .cs1-shoot{animation:cs1-shoot 11s ease-out 2.2s infinite}
+  html.look-clean:not([data-cs-paused]) .cs1-comet.go{animation:cs1-run 1.7s cubic-bezier(.45,0,.2,1) both}
+}
