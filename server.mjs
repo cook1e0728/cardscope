@@ -199,8 +199,10 @@ async function cachedBrowseRows(key,loader,ttlMs=BROWSE_CACHE_MS){
 function clearBrowseCache(){browseCache.clear()}
 function normalizeBrowseRegion(value){const region=String(value||'').trim().toUpperCase();return !region||region==='ALL'?null:region}
 function normalizeBrowseRarity(value){const rarity=String(value||'').trim();return !rarity||rarity.toLowerCase()==='all'?null:rarity}
-// Catalog rows carry no price (market prices are looked up per card), so a price sort always fell back to number order, but through the slow whole-game path (>90 s on JP). It is now plain number order.
-function normalizeBrowseSort(value){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc']).has(sort)?sort:'number-asc'}
+// Catalog rows carry no price, so for most games a price sort is plain number order (the page sorts the loaded rows itself, from the buyback list).
+// Pokemon pages carry the newest Cardmarket reference price (price_snapshots), so only Pokemon may sort by it, in the database (browse_cards_priced) or, inside a series, here.
+const BROWSE_PRICE_SORTS=new Set(['price-asc','price-desc']);
+function normalizeBrowseSort(value,game=null){const sort=String(value||'number-asc').trim().toLowerCase();return new Set(['number-asc','number-desc','release-asc','release-desc','rarity-asc','rarity-desc','name-asc','name-desc']).has(sort)||(game==='pokemon'&&BROWSE_PRICE_SORTS.has(sort))?sort:'number-asc'}
 function browseToken(value){return normalizeSearch(value).replace(/[^\p{L}\p{N}]/gu,'')}
 function rarityRankingToken(value){return normalizeRarityToken(value)}
 function rarityDefinition(game){return normalizeRarityDefinition(game)}
@@ -237,9 +239,11 @@ function browseRelease(card){return card?.printings?.map(p=>p.releaseDate).filte
 const BROWSE_LOCALE='en-US',browseNumberCollator=new Intl.Collator(BROWSE_LOCALE,{numeric:true,sensitivity:'base'}),browseIdCollator=new Intl.Collator(BROWSE_LOCALE),browseNameCollator=new Intl.Collator(BROWSE_LOCALE,{sensitivity:'base'});
 // Cards that print no number (ADR 0026) arrive in official list order from browse_series_cards; keep that order among them.
 const notPrinted=card=>card?.metadata?.numberStatus==='not-printed';
-function browseCompare(a,b,sort,order=null){
+function browseCompare(a,b,sort,order=null,prices=null){
   const number=()=>browseNumberCollator.compare(browseNumber(a),browseNumber(b))||(order&&notPrinted(a)&&notPrinted(b)?order.get(a)-order.get(b):0)||browseIdCollator.compare(String(a.id),String(b.id));
   if(sort==='number-desc')return -number();
+  // Price sorts (Pokemon): a card with a reference price comes before one without, in either direction; equal prices fall back to number order.
+  if(BROWSE_PRICE_SORTS.has(sort)){const pa=prices?.get(a.id),pb=prices?.get(b.id);if((pa==null)!==(pb==null))return pa==null?1:-1;if(pa!=null&&pa!==pb)return sort==='price-desc'?pb-pa:pa-pb;return number()}
   if(sort==='release-asc'||sort==='release-desc'){const value=browseIdCollator.compare(String(browseRelease(a)),String(browseRelease(b)))||number();return sort==='release-desc'?-value:value}
   if(sort==='rarity-asc'||sort==='rarity-desc')return compareBrowseRarity(a,b,sort.endsWith('desc')?'desc':'asc')||number();
   if(sort==='name-asc'||sort==='name-desc'){const value=browseNameCollator.compare(String(a.nameZh||a.nameEn||a.nameJa||a.id),String(b.nameZh||b.nameEn||b.nameJa||b.id))||number();return sort==='name-desc'?-value:value}
@@ -268,11 +272,11 @@ function buildBrowseFacets(rows,printingByCard){
   }
   return {...facets,rarityLabels};
 }
-function buildBrowsePage(rows,{region=null,rarity=null,seriesId=null,sort='number-asc',limit=60,offset=0,printingByCard=new Map(),imageByCard=new Map(),facetStatus='complete'}={}){
+function buildBrowsePage(rows,{region=null,rarity=null,seriesId=null,sort='number-asc',limit=60,offset=0,printingByCard=new Map(),imageByCard=new Map(),facetStatus='complete',priceByCard=null}={}){
   const regionToken=region?String(region).toUpperCase():null;
   const baseMatching=rows.filter(card=>{const printings=printingByCard.get(card.id)||[];if(seriesId&&card.seriesId!==seriesId&&!printings.some(printing=>printing.seriesId===seriesId))return false;if(regionToken&&!browseValues(card,printings,'region').some(value=>String(value).toUpperCase()===regionToken))return false;return true});
   const matching=baseMatching.filter(card=>{const printings=printingByCard.get(card.id)||[];const cardRarityToken=rarity?rarityCanonicalToken(card?.game,rarity):null;return !cardRarityToken||browseValues(card,printings,'rarity').some(value=>rarityCanonicalToken(card?.game,value)===cardRarityToken)}).map(card=>hydrateBrowseCard(card,printingByCard,imageByCard));
-  const order=new Map(matching.map((row,index)=>[row,index]));matching.sort((a,b)=>browseCompare(a,b,sort,order));
+  const order=new Map(matching.map((row,index)=>[row,index]));matching.sort((a,b)=>browseCompare(a,b,sort,order,priceByCard));
   const take=Math.min(Math.max(Number(limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(offset)||0,0),page=matching.slice(skip,skip+take);
   return {data:page,total:matching.length,hasMore:skip+page.length<matching.length,facets:buildBrowseFacets(baseMatching,printingByCard),facetStatus,limit:take,offset:skip};
 }
@@ -283,6 +287,31 @@ async function loadDatabaseImages(cardIds=[]){
     const legacy='id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
     return loadDatabaseRelationsForCards('card_images',BROWSE_IMAGE_SELECT,cardIds,{legacySelect:legacy});
   });
+}
+// Newest Cardmarket reference price per card (price_snapshots through price_reference_best, migration 20261024090000: EUR, at most 7 days old, one variant per card, never 0).
+// Cached like browse rows; waits at most REFERENCE_PRICE_WAIT_MS and never throws: a failure only means the cards go out without a price.
+const REFERENCE_PRICE_TTL_MS=10*60*1000,REFERENCE_PRICE_WAIT_MS=1500;
+function referencePriceFromRow(row){const amount=Number(row?.amount),date=String(row?.snapshot_date||'').slice(0,10);if(!row?.card_id||!Number.isFinite(amount)||amount<=0||row.currency!=='EUR'||!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;return {amount,currency:row.currency,source:'cardmarket',variant:row.variant||'',observedAt:row.observed_at||`${date}T00:00:00.000Z`,snapshotDate:date}}
+async function loadReferencePrices(ids){
+  const unique=[...new Set((ids||[]).filter(id=>typeof id==='string'&&id))].sort(),prices=new Map();
+  if(!unique.length||!supabaseConfigured())return prices;
+  const key=`refprice:${createHash('sha1').update(unique.join('|')).digest('hex')}`;let timer;
+  try{
+    const rows=await Promise.race([cachedBrowseRows(key,()=>supabaseFetch('/rpc/price_reference_best',{method:'POST',body:JSON.stringify({p_ids:unique})}),REFERENCE_PRICE_TTL_MS),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('REFERENCE_PRICE_TIMEOUT')),REFERENCE_PRICE_WAIT_MS)})]);
+    for(const row of Array.isArray(rows)?rows:[]){const price=referencePriceFromRow(row);if(price)prices.set(row.card_id,price)}
+  }catch(error){console.error('reference price lookup failed; cards go out without it',error.message)}
+  finally{clearTimeout(timer)}
+  return prices;
+}
+async function attachReferencePrices(cards){
+  const prices=await loadReferencePrices((cards||[]).map(card=>card.id));
+  for(const card of cards||[]){const price=prices.get(card.id);if(price)card.referencePrice=price}
+  return cards;
+}
+// Price sort inside one series (a few hundred cards): the amounts are looked up here and handed to buildBrowsePage.
+async function seriesPriceMap(cards,sort){
+  if(!BROWSE_PRICE_SORTS.has(sort))return null;
+  return new Map([...await loadReferencePrices(cards.map(card=>card.id))].map(([id,price])=>[id,price.amount]));
 }
 // A region alone is filtered inside browse_cards_page (game pages always browse one region); rarity and series are not.
 function databaseFastBrowseEligible({region=null,rarity=null,seriesId=null,sort='number-asc'}={}){
@@ -365,7 +394,7 @@ async function browseDatabaseSeriesCards(game,options={}){
     const siblingUrls=new Map();
     for(const image of Array.isArray(rpc.siblingImages)?rpc.siblingImages:[]){if(!browseHasUsableImage(image))continue;const list=siblingUrls.get(image.groupId)||[];if(!list.includes(image.imageUrl))list.push(image.imageUrl);siblingUrls.set(image.groupId,list)}
     for(const card of rpc.cards){const urls=siblingUrls.get(card.canonicalId||card.id);if(urls?.length)card.fallbackImageUrls=urls.slice(0,3)}
-    const page=buildBrowsePage(rpc.cards,{...options,printingByCard,imageByCard,facetStatus:'complete'});mark('page',started);
+    const priceByCard=await seriesPriceMap(rpc.cards,options.sort);started=performance.now();const page=buildBrowsePage(rpc.cards,{...options,printingByCard,imageByCard,facetStatus:'complete',priceByCard});mark('page',started);
     return {...page,errors:{printings:null,images:null},timings};
   }
   const printingParams=new URLSearchParams({select:BROWSE_PRINTING_SELECT,series_id:`eq.${safeSeries}`,order:'local_card_number.asc,id.asc'}),printings=await supabaseFetchAll(`/tcg_printings?${printingParams}`),cardIds=[...new Set((printings||[]).map(printing=>printing.cardId).filter(Boolean))];
@@ -379,7 +408,7 @@ async function browseDatabaseSeriesCards(game,options={}){
   }
   const imageResult=await loadDatabaseImages(cardIds).then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error})),printingByCard=buildPrintingIndex(printings),imageByCard=new Map();
   for(const image of imageResult.rows){const list=imageByCard.get(image.cardId)||[];list.push(image);imageByCard.set(image.cardId,list)}
-  const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:'complete'});
+  const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:'complete',priceByCard:await seriesPriceMap(cards,options.sort)});
   return {...result,errors:{printings:null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
 }
 async function browseDatabaseCards(game,options){
@@ -416,13 +445,16 @@ async function loadBrowseRarityMap(game,{refresh=false}={}){
   });
 }
 async function browseDatabaseCardsFiltered(game,options={}){
-  const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),sort=normalizeBrowseSort(options.sort),region=normalizeBrowseRegion(options.region);
+  const safeGame=String(game).replace(/[^a-z0-9-]/gi,''),take=Math.min(Math.max(Number(options.limit)||60,1),BROWSE_PAGE_MAX),skip=Math.max(Number(options.offset)||0,0),sort=normalizeBrowseSort(options.sort,safeGame),region=normalizeBrowseRegion(options.region),priceSort=BROWSE_PRICE_SORTS.has(sort);
   // An empty token means "no rarity filter", as in buildBrowsePage.
   const token=options.rarity?rarityCanonicalToken(safeGame,options.rarity):'';
   for(let attempt=0;;attempt++){
     const rmap=await loadBrowseRarityMap(safeGame,{refresh:attempt>0}),pageKey=`rpc:browse_cards_filtered:${safeGame}|${region||''}|${token}|${sort}|${take}|${skip}`,facetKey=`rpc:browse_cards_facets:${safeGame}|${region||''}`;
     // The page first (it gets the database to itself); facets only describe the game and are optional: if they cannot be had in time the page still goes out with facets deferred, as the number-order pages already do.
-    const page=await cachedBrowseRows(pageKey,()=>withBrowseHeavySlot(()=>browseRpc('browse_cards_filtered',{p_game:safeGame,p_region:region||null,p_token:token||null,p_sort:sort,p_limit:take,p_offset:skip,p_rmap:rmap})));
+    // Price order (Pokemon): browse_cards_priced puts cards with a Cardmarket reference price first, the rest after them; if it fails the page falls back to number order instead of an error.
+    let page;
+    try{page=await cachedBrowseRows(pageKey,()=>withBrowseHeavySlot(()=>priceSort?browseRpc('browse_cards_priced',{p_game:safeGame,p_region:region||null,p_token:token||null,p_desc:sort==='price-desc',p_limit:take,p_offset:skip,p_rmap:rmap}):browseRpc('browse_cards_filtered',{p_game:safeGame,p_region:region||null,p_token:token||null,p_sort:sort,p_limit:take,p_offset:skip,p_rmap:rmap})))}
+    catch(error){if(!priceSort||error.code==='BROWSE_BUSY')throw error;console.error('price-sorted browse failed; using number order',error.message);return browseDatabaseCardsFiltered(game,{...options,sort:'number-asc'})}
     let facets=null;
     // After a failed facet call the next minute skips it instead of making every page wait out the timeout again.
     if(Date.now()-(browseFacetFailures.get(facetKey)||0)>=60000)try{facets=await cachedBrowseRows(facetKey,()=>withBrowseHeavySlot(()=>browseRpc('browse_cards_facets',{p_game:safeGame,p_region:region||null,p_rmap:rmap})),BROWSE_FACET_TTL_MS);if(!facets||typeof facets.rarity!=='object')facets=null}
@@ -947,8 +979,32 @@ async function yuyuteiMarket(card,fx){if(!supabaseConfigured()||!card.officialCa
 const TCGDEX_EN_SET_MAP=JSON.parse(await readFile(new URL('./data/tcgdex-en-set-map.json',import.meta.url),'utf8')).sets;
 // 與每日參考價快照共用同一套查詢規則（providers/tcgdex-pricing.mjs 的 tcgdexLookupForPrinting）。
 function tcgdexLookups(card){const seen=new Map();for(const x of [card,...(card.printings||[])]){const l=tcgdexLookupForPrinting(x,card,{enSetMap:TCGDEX_EN_SET_MAP});if(l&&!seen.has(`${l.language}:${l.id}`))seen.set(`${l.language}:${l.id}`,l)}return [...seen.values()].slice(0,3)}
+// 跨版本價格對照（詳細頁「價格」分頁，只並列、不排名、不加總、不混來源與價格種類）。每個 printing（一個 tcg_cards 列）一組，prices 只放「這個 printing」自己的價格：
+//  * 該 printing 自己的每日參考價快照（price_snapshots，只取 7 天內）永遠屬於它；
+//  * 即時行情（records，只帶地區）只在同一地區只有一個 printing 時才能確定屬於它；同地區有多個 printing 就不掛，避免把別版的價格放到這一版。
+// 即時行情與快照來源相同（同一平台＋variant）時只留即時的一筆。沒有任何價格的版本 prices 為空，由介面寫「目前沒有可靠價格」。
+const VERSION_REGION_ORDER=['JP','TW','US','KR','ASIA'],SNAPSHOT_SOURCE_NAMES={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'};
+function buildVersionPrices(card,records=[],snapshotCards=[],{fx=null}={}){
+  const printings=new Map();
+  for(const p of card?.printings||[])if(p?.cardId&&!printings.has(p.cardId))printings.set(p.cardId,p);
+  if(!printings.size&&card?.id)printings.set(card.id,{cardId:card.id,region:card.region,language:card.language,localCardNumber:card.officialCardNumber});
+  const perRegion=new Map();for(const p of printings.values())perRegion.set(p.region||'',(perRegion.get(p.region||'')||0)+1);
+  const snapshots=new Map((snapshotCards||[]).map(entry=>[entry.cardId,entry.prices||[]])),order=region=>{const index=VERSION_REGION_ORDER.indexOf(region);return index<0?VERSION_REGION_ORDER.length:index};
+  const text=(a,b)=>a<b?-1:a>b?1:0;
+  return [...printings.values()].sort((a,b)=>order(a.region)-order(b.region)||text(String(a.localCardNumber||''),String(b.localCardNumber||''))||text(String(a.cardId),String(b.cardId))).map(p=>{
+    const live=perRegion.get(p.region||'')===1?(records||[]).filter(r=>r?.region===p.region&&Number.isFinite(Number(r.amount))).map(r=>({provider:r.provider,source:r.provider==='yuyutei'?'遊々亭':(r.market||r.provider),priceType:r.priceType,variant:r.variant||'',currency:r.currency,amount:Number(r.amount),amountTwd:r.priceTwd??amountToTwd(r.amount,r.currency,fx),observedAt:r.observedAt||null,origin:'market'})):[];
+    const has=new Set(live.filter(r=>r.priceType==='market').map(r=>`${r.source}|${r.variant}`));
+    const snapshot=(snapshots.get(p.cardId)||[]).filter(r=>!r.stale&&SNAPSHOT_SOURCE_NAMES[r.provider]&&!has.has(`${SNAPSHOT_SOURCE_NAMES[r.provider]}|${r.variant||''}`)).map(r=>({provider:r.provider,source:SNAPSHOT_SOURCE_NAMES[r.provider],priceType:'market',variant:r.variant||'',currency:r.currency,amount:r.amount,amountTwd:r.amountTwd??null,observedAt:r.snapshotDate?`${r.snapshotDate}T00:00:00.000Z`:null,origin:'snapshot'}));
+    return {cardId:p.cardId,region:p.region||null,language:p.language||null,localSetCode:p.localSetCode||null,localCardNumber:p.localCardNumber||null,variantName:p.metadata?.variantName||null,prices:[...live,...snapshot].sort((a,b)=>text(a.source,b.source)||text(a.priceType,b.priceType)||text(a.variant,b.variant))};
+  });
+}
+// Snapshots of every printing of the card (the same read as the collection valuation); a failure only means the table falls back to the live records.
+async function loadVersionSnapshots(card,fx){
+  const ids=priceHistoryCardIds(card,card?.id);if(card?.game!=='pokemon'||ids.length<2||!supabaseConfigured())return [];
+  try{return buildReferencePrices(await supabaseFetch(`/price_snapshots?${new URLSearchParams(referenceQueryParams(ids))}`),ids,{fx,amountToTwd}).cards}catch(error){console.error('version price snapshots failed',error.message);return []}
+}
 async function unifiedMarket(card){
-  const fx=await getTwdRates(),tasks=sourceDisplayDenied('yuyutei')?[]:[['yuyutei',()=>yuyuteiMarket(card,fx)]];
+  const fx=await getTwdRates(),snapshotsPending=loadVersionSnapshots(card,fx),tasks=sourceDisplayDenied('yuyutei')?[]:[['yuyutei',()=>yuyuteiMarket(card,fx)]];
   // 只顯示「這個 printing」的價：YGOPRODeck 的 card_prices 是跨版本最低價，不能當單一版本的價；改用 card_sets[].set_price，依 printing 卡號＋稀有度精確配對，配不到就不顯示（日版 -JP 一律不配）。
   // set_price 的來源平台 YGOPRODeck 文件只寫「$ value」，所以標「YGOPRODeck 參考價（USD）」，不稱 TCGplayer 或成交價。
   if(card.game==='yugioh')tasks.push(['ygoprodeck',async()=>{const wanted=String(card.nameEn||'').trim().toLowerCase();if(!wanted)return [];const found=await searchYgoProDeck(card.nameEn,{limit:20}),match=found.find(x=>String(x.name).trim().toLowerCase()===wanted);if(!match)return [];
@@ -958,7 +1014,7 @@ async function unifiedMarket(card){
   // ADR 0036/0037: tcgdex-ja printings by provider_id; official-import JP printings only in checked series and only when TCGdex's Japanese name matches. No TW or US mapping. The registry switch stops it.
   if(card.game==='pokemon'&&catalogCollectionAllowed('tcgdexPricing')){const lookups=tcgdexLookups(card);if(lookups.length)tasks.push(['tcgdex',async()=>(await Promise.all(lookups.map(x=>(x.language==='en'?fetchTcgdexPricingEn:fetchTcgdexPricing)(x.id,{expectedName:x.expectedName}).then(rows=>rows.map(r=>({...r,en:x.language==='en'})))))).flat().map(r=>({...withTwd(normalizeMarketRecord({provider:r.provider,market:r.market,cardId:card.id,providerCardId:r.providerCardId,cardName:r.en?(card.nameEn||card.nameZh):(card.nameJa||card.nameZh),cardNumber:card.officialCardNumber,language:r.en?'en-US':'ja-JP',priceType:r.priceType,amount:r.amount,currency:r.currency,sourceUrl:r.sourceUrl,observedAt:r.observedAt}),fx),variant:r.variant,idProduct:r.idProduct,region:r.en?'US':'JP'}))])}
   const settled=await Promise.all(tasks.map(async([source,run])=>{try{return {source,status:'ok',data:await run()}}catch(error){return {source,status:'unavailable',error:error.message}}})),records=settled.flatMap(x=>Array.isArray(x.data)?x.data:[]);
-  return {records,sources:settled.map(x=>({source:x.source,status:x.status,error:x.error||null,notice:x.data?.notice||null})),meta:{exchangeRates:fx,priceTypes:{listing:'最低掛牌價',buyback:'店家買取／回收',market:'平台參考價',sale:'可驗證成交',user_report:'使用者回報（未驗證）'},warning:'不同價格性質不混算中位價；目前沒有可靠成交來源時，不顯示成交價或交易量。'}}
+  return {records,versions:buildVersionPrices(card,records,await snapshotsPending,{fx}),sources:settled.map(x=>({source:x.source,status:x.status,error:x.error||null,notice:x.data?.notice||null})),meta:{exchangeRates:fx,priceTypes:{listing:'最低掛牌價',buyback:'店家買取／回收',market:'平台參考價',sale:'可驗證成交',user_report:'使用者回報（未驗證）'},warning:'不同價格性質不混算中位價；目前沒有可靠成交來源時，不顯示成交價或交易量。'}}
 }
 
 // ADR 0042：參考價走勢（public.price_snapshots，只存平台參考價）。同作品層的實體卡各自成線；每條線只屬於一張實體卡＋來源＋variant，不合併。台幣以今日匯率換算。
@@ -1097,7 +1153,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(url.pathname==='/api/providers/justtcg/search'){const q=(url.searchParams.get('q')||'').trim(),game=url.searchParams.get('game')||'';if(q.length<2)return json(res,400,{error:'請輸入至少兩個字元'});try{return json(res,200,await justTcg('/cards',{q,game,limit:'10',priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/justtcg/cards'){const cardId=url.searchParams.get('cardId');if(!cardId)return json(res,400,{error:'請提供 cardId'});try{return json(res,200,await justTcg('/cards',{cardId,priceHistoryDuration:'30d'}))}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/providers/ebay/search'){const q=(url.searchParams.get('q')||'').trim(),marketplace=(url.searchParams.get('marketplace')||'EBAY_US').toUpperCase();if(!q)return json(res,400,{error:'請提供 q'});if(!EBAY_MARKETPLACES.has(marketplace))return json(res,400,{error:'不支援的 eBay marketplace'});try{return json(res,200,{data:await searchEbay(q,marketplace),meta:{marketplace,cacheHours:24}})}catch(e){return json(res,e.message==='EBAY_NOT_CONFIGURED'?503:502,{error:e.message})}}
-  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort')),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors}},{'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){return json(res,e.code==='BROWSE_BUSY'?503:502,{error:e.message},e.code==='BROWSE_BUSY'?{'Retry-After':'5'}:{})}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}})}
+  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort'),requestedGame),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});if(requestedGame==='pokemon')await attachReferencePrices(page.data);return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors}},{'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){return json(res,e.code==='BROWSE_BUSY'?503:502,{error:e.message},e.code==='BROWSE_BUSY'?{'Retry-After':'5'}:{})}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}})}
   if(url.pathname==='/api/search'&&req.method==='GET'){
     // ADR 0044 Q6/Q7: rarity codes and version words in the query become filters (parsed), the rest is the card name; results are one page (offset/limit) with the real total.
     const rawQ=(url.searchParams.get('q')||'').trim().slice(0,100),regionParam=(url.searchParams.get('region')||'all').toUpperCase(),parsedQuery=parseSearchQuery(rawQ),region=regionParam!=='ALL'?regionParam:(parsedQuery.region||'ALL'),searchName=parsedQuery.name,rarities=parsedQuery.rarities,rarityValues=rarityMatchValues(rarities);
@@ -1191,6 +1247,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 

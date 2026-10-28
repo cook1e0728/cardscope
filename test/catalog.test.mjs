@@ -663,8 +663,9 @@ test('the default browse page comes from browse_cards_page in one call',async()=
     assert.deepEqual(bodies[1],{p_game:'pokemon',p_limit:2,p_offset:0,p_desc:false,p_region:'JP'});
     assert.equal(wholeGame()-before,0,'a region page loads no whole-game rows');
     // Old links with a buyback price sort: rows carry no price, so it is number order through the same fast path (it used to load the whole game, >90 s on JP).
-    await (await fetch(`http://127.0.0.1:${appPort}/api/cards?game=pokemon&limit=2&offset=0&region=TW&rarity=all&sort=price-desc`)).json();
-    assert.deepEqual(bodies[2],{p_game:'pokemon',p_limit:2,p_offset:0,p_desc:false,p_region:'TW'});
+    // (Pokemon price sorts have their own database function; see test/reference-price.test.mjs. This one checks a game with no list-wide price.)
+    await (await fetch(`http://127.0.0.1:${appPort}/api/cards?game=yugioh&limit=2&offset=0&region=TW&rarity=all&sort=price-desc`)).json();
+    assert.deepEqual(bodies[2],{p_game:'yugioh',p_limit:2,p_offset:0,p_desc:false,p_region:'TW'});
     assert.equal(wholeGame()-before,0,'a price sort loads no whole-game rows');
   }finally{
     if(app&&app.exitCode===null&&app.signalCode===null)await new Promise(resolve=>{app.once('exit',resolve);app.kill()});
