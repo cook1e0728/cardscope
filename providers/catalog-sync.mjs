@@ -397,7 +397,10 @@ export async function refreshBrowseKeys(db,{games=null,attempts=3}={}){
   const stale=await db('/rpc/browse_keys_stale',{method:'POST',body:'{}'}),targets=(Array.isArray(stale)?stale:[]).filter(game=>!games||games.includes(game)),results={};
   const call=(name,game)=>db(`/rpc/${name}`,{method:'POST',body:JSON.stringify({p_game:game})});
   for(const game of targets){
-    for(let attempt=1;attempt<=attempts;attempt++){try{const built=await call('browse_refresh_keys_build',game),published=await call('browse_refresh_keys_publish',game);results[game]={built,published,attempts:attempt};break}catch(error){results[game]={error:error.message,attempts:attempt}}}
+    for(let attempt=1;attempt<=attempts;attempt++){let built;try{built=await call('browse_refresh_keys_build',game)}catch(error){results[game]={error:error.message,attempts:attempt};continue}
+      // A publish cut by the 20 s limit (Pokemon needs ~25 s) is not retried with a new build: the database cron job browse-keys-publish (migration 20261028120000) publishes the pending generation at :25.
+      try{results[game]={built,published:await call('browse_refresh_keys_publish',game),attempts:attempt}}catch(error){results[game]={built,publishDeferred:true,error:error.message,attempts:attempt}}
+      break}
   }
   return results;
 }

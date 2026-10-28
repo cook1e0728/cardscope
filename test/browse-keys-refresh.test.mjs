@@ -96,3 +96,19 @@ test('the new tables and functions are reachable by service_role only', () => {
   for (const fn of ['browse_refresh_keys(text, boolean)', 'browse_refresh_keys_build(text)', 'browse_refresh_keys_publish(text)', 'browse_keys_stale()', 'browse_keys_fresh(text)'])
     assert.ok(migration.includes(`grant execute on function public.${fn} to service_role;`), fn);
 });
+
+test('a publish cut by the request limit is left to the database cron job instead of rebuilding again', async () => {
+  const calls = [];
+  const db = async (path, options = {}) => {
+    const name = path.replace('/rpc/', ''), body = options.body ? JSON.parse(options.body) : {};
+    calls.push(name);
+    if (name === 'browse_keys_stale') return ['pokemon'];
+    if (name === 'browse_refresh_keys_build') return { game: body.p_game, cards: 3 };
+    throw new Error('SUPABASE_500:canceling statement due to statement timeout');
+  };
+  const result = await refreshBrowseKeys(db);
+  assert.deepEqual(calls, ['browse_keys_stale', 'browse_refresh_keys_build', 'browse_refresh_keys_publish']);
+  assert.equal(result.pokemon.publishDeferred, true);
+  const cron = await readFile(new URL('../supabase/migrations/20261028120000_browse_keys_publish_cron.sql', import.meta.url), 'utf8');
+  assert.match(cron, /cron\.schedule\('browse-keys-publish'/);
+});
