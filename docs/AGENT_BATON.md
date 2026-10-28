@@ -13,7 +13,7 @@
 
 ## 下次要確認
 - 正式站：寶可夢卡牆「Cardmarket 參考」小標、價格排序、詳細頁對照表；手機首頁 CLS（漲幅區本機無資料無法量）；瀏覽器主控台的 CSP Report-Only 違規。
-- `/api/cards?game=pokemon&series=pokemon-base1-us` 回 0 張（地區正確仍為 0，疑資料或 API 問題，未查）。
+- 10-29 已處理「系列 0 張」：5 個沒有印刷版本的空系列（8-31 示範資料 `pokemon-base1-us`、`yugioh-qccu-jp` 與其 3 張示範卡；YGOPRODeck 沒有卡用到的 ADC1／DPC5／YUCB）已由 migration `20261029090000` 刪除並登記，備份在 `docs/evidence/cleanup-20261029/`；遊戲王同步改成只建立有卡用到的系列。部署後確認 `/api/catalog` 與 `sitemaps/series.xml` 不再列出這 5 個。
 - 盤點剩餘：#16 系列／稀有度網址載入後捲到卡牆；13 處端點回傳 `e.message`；`today()` 用 UTC；`/api/jp-prices`、`/api/portfolio` 是否刪除；CSP 轉強制。
 
 ## 卡住的地方／需要規劃方決策
