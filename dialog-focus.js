@@ -19,7 +19,7 @@
         return;
       }
       const target=returnTarget?.()||opener;opener=null;
-      if(target&&target.isConnected!==false&&typeof target.focus==='function')target.focus();
+      if(target&&target.isConnected!==false&&typeof target.focus==='function')target.focus({preventScroll:true});
     };
     modal.syncDialogFocus=sync;
     if(typeof MutationObserver==='function')new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['class']});

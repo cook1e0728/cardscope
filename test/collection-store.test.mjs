@@ -116,10 +116,10 @@ test('wiring: store loads before the UI, keys are the physical card id, the dial
   assert.match(ui, /function removeCollectionItem\(id\)\{[^}]*confirm\(/, 'removal asks first');
   assert.doesNotMatch(ui, /api\.tcgdex\.net/, 'no external price call from the browser');
   for (const field of ['quantity', 'condition', 'finish', 'note']) assert.match(ui, new RegExp(`data-coll-field="${field}"`));
-  assert.match(ui, /<label>張數<input/);
+  assert.match(ui, /<label class="coll-qty">張數<input/);
   assert.match(ui, /<label>品況<select/);
   assert.match(ui, /<label>版本<select/);
-  assert.match(ui, /downloadFile\(`cardscope-collection-/, 'JSON export');
+  assert.match(ui, /filename=`cardscope-collection-[^`]*\.json`;downloadFile\(filename,/, 'JSON export');
   assert.match(ui, /id="collectionCsv"/, 'CSV export stays');
   assert.match(ui, /type="file" id="collFile" accept="application\/json,\.json,text\/csv,\.csv" hidden/);
 });
@@ -148,4 +148,12 @@ test('sole finish: a card with one price version has it as the default version, 
   assert.equal(CS.soleFinish([row('cardmarket', 'holo'), row('tcgplayer', '')]), '', 'a blank variant next to a named one is not "one version"');
   assert.equal(CS.soleFinish([]), '');
   assert.equal(CS.soleFinish(undefined), '');
+});
+
+test('collection dialog: backup buttons sit above the list, export says what it saved, and the edit fields fold away', () => {
+  assert.ok(ui.indexOf('class="coll-top"') > 0 && ui.indexOf('class="coll-top"') < ui.indexOf('id="collList"'), 'backup buttons come before the list');
+  assert.ok(ui.indexOf('id="collStatus"') < ui.indexOf('id="collList"'), 'the status line is next to the buttons, not at the bottom');
+  assert.match(ui, /collectionStatus\(`已匯出 \$\{items\.length\} 款、\$\{collectionTotal\(\)\} 張，備份檔 \$\{filename\}/);
+  assert.match(ui, /<details class="coll-edit"[^>]*><summary>編輯品況・版本・備註<\/summary>/, 'condition, finish and note are folded; quantity stays on the row');
+  assert.match(ui, /collectionUi\.editOpen=new Set\(/, 'an opened edit panel survives a re-render');
 });

@@ -33,7 +33,7 @@ test('稀有度：長名稱換成代碼、全名放 title，NONE 顯示無標記
 
 test('格子、清單、分組標題與收錄版本都經由稀有度代碼顯示', () => {
   assert.match(ui, /rarityHtml=cardRarityMarkup\(card\)/);
-  assert.match(ui, /<span>\$\{rarityHtml\}<\/span><span class="badge">/);
+  assert.match(ui, /<span>\$\{rarityHtml\}<\/span>\$\{versionMarkup\}/);
   assert.match(ui, /data-tier="\$\{rarityTier\(rarity\)\}">\$\{rarityHtml\}<\/span>/);
   assert.match(ui, /rarityMarkup\(rarity,gameId\)\|\|e\(rarity\)/);
   assert.match(ui, /<dt>稀有度<\/dt><dd>\$\{rarities\}/);

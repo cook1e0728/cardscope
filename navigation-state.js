@@ -107,8 +107,9 @@
   };
 
   const originalOpenCard=window.openCard;
-  if(typeof originalOpenCard==='function')window.openCard=async id=>{
-    saveScroll();if(!restoring){writeUrl('push',{card:id});openedFromList=true}const result=await originalOpenCard(id);installDetailShare();return result;
+  // 只有「從列表第一次打開」才新增歷史；已開著時換上一張／下一張只改網址，關閉時才能一步退回列表。切換版本（keepPosition）不動網址，網址仍指向列表中的那張卡。
+  if(typeof originalOpenCard==='function')window.openCard=async(id,options)=>{
+    saveScroll();if(!restoring&&!options?.keepPosition){const open=node('modal')?.classList.contains('open');writeUrl(open?'replace':'push',{card:id});if(!open)openedFromList=true}const result=await originalOpenCard(id,options);installDetailShare();return result;
   };
 
   // 從列表點開的卡，關閉時退回上一筆歷史（按返回鍵就離開列表，不會重開這張卡）；從分享連結直接進來的，只把 card 參數拿掉。
@@ -119,11 +120,14 @@
   }
   async function restore(state=readLocation()){
     restoring=true;openedFromList=false;
+    // 貼網址／重新整理帶搜尋、又沒有存過捲動位置：讓 search() 把畫面捲到結果；有存過位置（返回、重新整理）就以它為準，search() 不要再捲。
+    const landOnResults=Boolean(state.query)&&!state.scrollY&&history.state?.scrollY==null;window.cardscopeKeepScroll=!landOnResults;
     // 分享連結直接開卡：先開詳細頁（只等卡片 API），列表在背後照常還原
     const earlyCard=state.card&&typeof originalOpenCard==='function'&&!node('modal')?.classList.contains('open')?originalOpenCard(state.card).then(installDetailShare).catch(()=>{}):null;
     try{
       await waitFor(()=>Array.isArray(C?.games)&&C.games.length>0).catch(()=>{});
-      if(node('browseRegion'))node('browseRegion').value=state.region;
+      // 系列深連結（sitemap、分享）常沒帶 region：用該系列自己的地區，否則會套預設地區而顯示 0 張。
+      if(node('browseRegion'))node('browseRegion').value=state.region!=='all'?state.region:(state.series&&(C.series||[]).find(row=>row.id===state.series)?.region)||'all';
       cardFilters.rarity=state.rarity;cardFilters.price=state.price;cardFilters.sort=state.sort;
       if(node('priceFilter'))node('priceFilter').value=state.price;
       if(node('cardSort'))node('cardSort').value=state.sort;
@@ -140,9 +144,9 @@
       if(state.query&&typeof window.search==='function')await window.search();
       if(state.card&&typeof originalOpenCard==='function'){if(earlyCard)await earlyCard;else{await originalOpenCard(state.card);installDetailShare()}}
       else closeDetail();
-      requestAnimationFrame(()=>window.scrollTo({top:state.scrollY,behavior:'auto'}));
+      if(!landOnResults)requestAnimationFrame(()=>window.scrollTo({top:state.scrollY,behavior:'auto'}));
     }finally{
-      restoring=false;writeUrl('replace',{card:state.card||''});
+      window.cardscopeKeepScroll=false;restoring=false;writeUrl('replace',{card:state.card||''});
     }
   }
 

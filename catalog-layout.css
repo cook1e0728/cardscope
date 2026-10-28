@@ -230,3 +230,16 @@ body[data-view="game"] #trendsSection:empty{display:none}
   /* backdrop-filter would make the tools the containing block of the fixed sheet. */
   .card-tools{backdrop-filter:none}
 }
+/* Layout shift: blocks that arrive after first paint get their height up front, and what sits below them is kept past the fold,
+   so the catalog / cards arriving later never pushes visible content. Heights were measured (desktop / phone) from the real blocks.
+   Phone landing: the hero grows from ~100px to ~1300px as the strip, quick grid and latest rail arrive. */
+@media(max-width:760px){body[data-view="landing"] .hero{min-height:100dvh}}
+/* Game page (look-showcase.js adds cs-no-hold-* when a block is not coming: view=all URL, or still absent after 8s): series band (inserted by series-band.js once the catalog loads), the auto-opened series panel, and the cards section. */
+html:not(.cs-no-hold-band) body[data-view="game"] .hero:not(:has(#seriesBand))::after{content:"";display:block;height:327px}
+html:not(.cs-no-hold-panel) body[data-view="game"] #selectedProduct:empty{display:block;min-height:166px}
+body[data-view="game"] #cardsSection>.title{min-height:55px}
+body[data-view="game"] #cards{min-height:calc(100dvh - 400px);align-content:start}
+@media(max-width:760px){
+  html:not(.cs-no-hold-band) body[data-view="game"] .hero:not(:has(#seriesBand))::after{height:261px}
+  html:not(.cs-no-hold-panel) body[data-view="game"] #selectedProduct:empty{min-height:140px}
+}

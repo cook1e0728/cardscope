@@ -164,3 +164,20 @@ test('a game page opens on a series or the full list, 48 cards at a time',async(
   assert.doesNotMatch(requests[2],/series=/);
   assert.equal(h.run('browse.all'),true);
 });
+test('a filter changed while a page is loading reloads with the latest filter; only 載入更多 is dropped',async()=>{
+  const pending=[],answer=(index,id)=>pending[index]({ok:true,json:async()=>({data:[{id,game:'pokemon'}],meta:{hasMore:true,total:1}})});
+  const h=harness(()=>new Promise(resolve=>pending.push(resolve)));
+  h.run("game='pokemon'");
+  const first=h.run('loadCardsPage(true)');
+  h.run("cardFilters.rarity='SAR'");const second=h.run('loadCardsPage(true)');
+  h.run("cardFilters.rarity='AR'");const third=h.run('loadCardsPage(true)');
+  assert.equal(pending.length,3,'each filter change sends its own request');
+  await h.run('loadCardsPage(false)');
+  assert.equal(pending.length,3,'載入更多 while loading is still ignored');
+  answer(0,'sar-old');await first;answer(1,'ar-old');await second;
+  assert.equal(h.run('browse.loading'),true,'stale answers neither finish nor clear the newest load');
+  answer(2,'ar-new');await third;
+  assert.equal(h.run('currentCardRows.map(row=>row.id).join()'),'ar-new');
+  assert.equal(h.run('browse.loading'),false);
+  assert.equal(h.node('loadMore').disabled,false);
+});

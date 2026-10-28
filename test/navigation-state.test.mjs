@@ -9,8 +9,8 @@ const [navigation,ui,html]=await Promise.all([
   readFile(new URL('../index.html',import.meta.url),'utf8')
 ]);
 
-function navigationHarness(initialSearch='?game=pokemon&region=JP&rarity=SR&price=priced&sort=price-desc&q=luffy&pages=2&card=pk-1'){
-  const location={origin:'http://localhost',pathname:'/',search:initialSearch,hash:''},historyCalls=[],documentListeners=new Map(),windowListeners=new Map(),nodes=new Map();
+function navigationHarness(initialSearch='?game=pokemon&region=JP&rarity=SR&price=priced&sort=price-desc&q=luffy&pages=2&card=pk-1',catalogSeries=[]){
+  const location={origin:'http://localhost',pathname:'/',search:initialSearch,hash:'',get href(){return this.origin+this.pathname+this.search+this.hash}},historyCalls=[],documentListeners=new Map(),windowListeners=new Map(),nodes=new Map();
   const initialParams=new URLSearchParams(initialSearch);
   const classList=()=>{
     const values=new Set();
@@ -36,9 +36,9 @@ function navigationHarness(initialSearch='?game=pokemon&region=JP&rarity=SR&pric
     addEventListener(type,handler){const handlers=documentListeners.get(type)||[];handlers.push(handler);documentListeners.set(type,handlers)}
   };
   const applyUrl=url=>{const parsed=new URL(url,location.origin);location.pathname=parsed.pathname;location.search=parsed.search;location.hash=parsed.hash};
-  const history={state:{scrollY:0},replaceState(state,unused,url){this.state=state;historyCalls.push({method:'replace',url});applyUrl(url)},pushState(state,unused,url){this.state=state;historyCalls.push({method:'push',url});applyUrl(url)}};
+  const history={state:{scrollY:0},replaceState(state,unused,url){this.state=state;historyCalls.push({method:'replace',url});applyUrl(url)},pushState(state,unused,url){this.state=state;historyCalls.push({method:'push',url});applyUrl(url)},back(){historyCalls.push({method:'back'})}};
   const context=vm.createContext({document,history,location,URL,URLSearchParams,console,setTimeout,clearTimeout,requestAnimationFrame:callback=>{callback();return 1},window:null,
-    C:{games:[{id:'pokemon',nameZh:'寶可夢'}]},game:initialParams.get('game')||'all',browse:{seriesId:'',offset:Number(initialParams.get('pages')||1)>1?96:0,loading:false,hasMore:false},
+    C:{games:[{id:'pokemon',nameZh:'寶可夢'}],series:catalogSeries},game:initialParams.get('game')||'all',browse:{seriesId:'',offset:Number(initialParams.get('pages')||1)>1?96:0,loading:false,hasMore:false},
     cardFilters:{rarity:initialParams.get('rarity')||'all',price:initialParams.get('price')||'all',sort:initialParams.get('sort')||'number-asc'},
     openCalls:[],chooseCalls:[]});
   context.window=context;
@@ -145,4 +145,44 @@ test('the browse and search announcements from index.html update the URL',async(
   assert.match(navigation,/addEventListener\('cardscope:search'/);
   assert.match(html,/new CustomEvent\('cardscope:browse'/);
   assert.match(html,/new CustomEvent\('cardscope:search'/);
+});
+
+test('a series deep link without region takes the series own region from the catalog, not the default region',async()=>{
+  const tw=navigationHarness('?game=pokemon&series=pokemon-tcgdex-tw-sv8a',[{id:'pokemon-tcgdex-tw-sv8a',region:'TW'}]);
+  await tw.flush();
+  assert.equal(tw.nodes.get('browseRegion').value,'TW');
+  assert.equal(new URL(tw.historyCalls.at(-1).url,'http://localhost').searchParams.get('region'),'TW','the rewritten URL carries the region');
+  const explicit=navigationHarness('?game=pokemon&region=JP&series=pokemon-tcgdex-tw-sv8a',[{id:'pokemon-tcgdex-tw-sv8a',region:'TW'}]);
+  await explicit.flush();
+  assert.equal(explicit.nodes.get('browseRegion').value,'JP','an explicit region wins');
+  const unknown=navigationHarness('?game=pokemon&series=nope',[{id:'pokemon-tcgdex-tw-sv8a',region:'TW'}]);
+  await unknown.flush();
+  assert.equal(unknown.nodes.get('browseRegion').value,'all','a series the catalog does not know leaves the region alone');
+});
+
+test('opening a card from the list pushes one history entry; next/previous replace it, switching version leaves the URL, and closing steps back once',async()=>{
+  const h=navigationHarness('?game=pokemon&region=JP&series=s1');
+  await h.flush();
+  const pushes=()=>h.historyCalls.filter(call=>call.method==='push').length,card=()=>new URL(h.context.location.href).searchParams.get('card');
+  await h.run("openCard('a')");
+  assert.equal(pushes(),1);assert.equal(card(),'a');
+  await h.run("openCard('b')");
+  assert.equal(pushes(),1,'stepping to another card does not add history');assert.equal(card(),'b');
+  await h.run("openCard('t',{keepPosition:true})");
+  assert.equal(card(),'b','the version switch keeps the list position in the URL');
+  h.nodes.get('close').dispatchEvent({type:'click'});
+  assert.equal(h.historyCalls.filter(call=>call.method==='back').length,1,'one Back returns to the list');
+  const shared=navigationHarness('?game=pokemon&region=JP&card=x');
+  await shared.flush();
+  await shared.run("openCard('y')");
+  assert.equal(shared.historyCalls.filter(call=>call.method==='push').length,0,'a shared-link card steps without pushing');
+  shared.nodes.get('close').dispatchEvent({type:'click'});
+  assert.equal(shared.historyCalls.filter(call=>call.method==='back').length,0);
+  assert.equal(new URL(shared.context.location.href).searchParams.has('card'),false,'closing drops the card from the URL');
+});
+
+test('openCard ignores an answer that arrives after a newer card was requested',()=>{
+  assert.match(ui,/const version=\+\+detailRequestVersion,stale=\(\)=>version!==detailRequestVersion/);
+  const body=ui.match(/openCard=async function[^]*?window\.openCard=openCard/)[0];
+  assert.equal((body.match(/if\(stale\(\)\)return/g)||[]).length,3,'checked after the card answer, after the market/report answers, and in the catch');
 });

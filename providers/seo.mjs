@@ -35,11 +35,11 @@ export function normalizeBaseUrl(value) {
 }
 
 // Canonical URLs keep only the identity parameters: the same card or series is one page however it was reached.
-export function canonicalUrl(baseUrl, { game, card, series } = {}) {
+export function canonicalUrl(baseUrl, { game, card, series, region } = {}) {
   const base = normalizeBaseUrl(baseUrl), params = new URLSearchParams();
   if (game) params.set('game', game);
   if (card) params.set('card', card);
-  else if (series) params.set('series', series);
+  else if (series) { params.set('series', series); if (region) params.set('region', region); }
   const query = params.toString();
   return `${base}/${query ? `?${query}` : ''}`;
 }
@@ -120,7 +120,7 @@ export function seriesSeo({ series, game = null, baseUrl = DEFAULT_BASE_URL, pri
   const release = text(series.releaseDate).slice(0, 10), count = Number(printingCount);
   const facts = [release ? `發售日 ${release}` : '', Number.isFinite(count) && count > 0 ? `共收錄 ${count} 個卡片版本` : ''].filter(Boolean).join('，');
   const description = describe(`${label}${code && code !== label ? `（${code}）` : ''}是${gameLabel}${region}的卡牌系列${facts ? `，${facts}` : ''}。`);
-  const canonical = canonicalUrl(base, { game: gameId || undefined, series: series.id });
+  const canonical = canonicalUrl(base, { game: gameId || undefined, series: series.id, region: text(series.region) || undefined });
   const crumbs = [{ name: '首頁', url: `${base}/` }];
   if (gameId) crumbs.push({ name: gameLabel, url: canonicalUrl(base, { game: gameId }) });
   crumbs.push({ name: label, url: canonical });
@@ -215,5 +215,5 @@ export function cardSitemapEntries(baseUrl, groups) {
 }
 export function seriesSitemapEntries(baseUrl, rows) {
   return rows.filter(row => row?.id && row.game_id && [row.name_zh, row.name_ja, row.name_en, row.name_ko, row.official_code].some(name => text(name)))
-    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)).map(row => ({ loc: canonicalUrl(baseUrl, { game: row.game_id, series: row.id }), lastmod: dateOnly(row.updated_at) }));
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)).map(row => ({ loc: canonicalUrl(baseUrl, { game: row.game_id, series: row.id, region: text(row.region) || undefined }), lastmod: dateOnly(row.updated_at) }));
 }

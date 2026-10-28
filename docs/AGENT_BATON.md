@@ -1,30 +1,23 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-10-28（台灣）｜更新者：Claude Code（筆電 → 轉交桌電）
+> 上次更新：2026-10-28 晚（台灣）｜更新者：Claude Code（桌電）
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
-- `main`＝`claude/binder-theme-preview`＝`ff69ba2`，工作目錄乾淨，`npm test` 574/574。
-- 剛完成：五面向盤點（資安、完善度、效率、BUG、體驗），總表 `docs/AUDIT_20261028.md`、詳細報告 `docs/audit-20261028/`。只盤點，尚未修任何項目。
+- 2026-10-28 晚：盤點 #1–#14、#16、#17 已修並上線（處理狀態見 `docs/AUDIT_20261028.md`），`npm test` 606/606，煙霧測試通過。
+- 資料庫 384 MB；排程 `browse-keys-publish` 每小時 :25 成功；價格快照 10-28 19:34 起恢復執行。
 
-## 2026-10-28 桌電補記
-- 已提交 10-24 中斷的「寶可夢卡牆參考價＋價格排序＋跨版本價格對照」（migration `20261024090000` 先前已套用並登記；`npm test` 591）。部署後要在正式站抽查寶可夢系列卡牆的「Cardmarket 參考」小標、價格排序與詳細頁對照表。價格快照自 10-24 因 440 MB 煞車停跑，7 天窗口過後（約 10-30）小標會全部消失，需先處理盤點 #2。
-
-## 盤點 #1 #2 已完成（2026-10-28，使用者同意）
-- #1：寶可夢排序鍵已在資料庫端直接發布（gen 261，56,273 張），`browse_keys_fresh('pokemon')=true`；正式站寶可夢篩選／排序未快取約 1.2–1.6 s（原 3–6 s）。根因：寶可夢 publish 約 25 s，超過 PostgREST 20 s 上限，10-23 起每小時失敗。修法：資料庫排程 `browse-keys-publish`（pg_cron，每小時 :25，migration `20261028120000`，已套用並登記）發布待發布世代；伺服器端 publish 逾時不再重建（`providers/catalog-sync.mjs` 的 `publishDeferred`）。
-- #2：`VACUUM FULL browse_card_keys_mat` 98 MB → 21 MB，資料庫 460 MB → 383 MB，低於 440 MB 煞車線，每日價格快照下一輪應恢復（要確認 `catalog_sync_runs` 的 price-snapshot 不再是 skipped）。
-
-
-等使用者選要先修哪一批（總表「建議先做」#1–#17）。建議分法：
-- 不需同意、可直接派 worker 修：#3 刪第三方代理路由、#4 刪 `POST /api/reports`、#5 卡牆載入中篩選卡死（`index.html` `loadCardsPage`）、#6 系列深連結與 sitemap 補 `region`、#7 覆蓋率逾時不當 0、#8 字型子集化與「全部遊戲」圖、#9 展示區預載與 coverage 瘦身、#10 CLS、#11 安全標頭全回應＋CSP Report-Only、#12 offset 上限與 rarity 白名單、#13 詳細頁三個導覽 bug。寫入檔案多數重疊在 `server.mjs`／`index.html`／`ui-enhancements.js`，分封包時注意不要兩個 worker 改同一檔。
-- 需使用者同意：#3 在 Render 移除 JustTCG／eBay 金鑰、#15 首頁副標文案、Render 區域。
+## 下次要確認
+- 正式站：寶可夢卡牆「Cardmarket 參考」小標、價格排序、詳細頁對照表；手機首頁 CLS（漲幅區本機無資料無法量）；瀏覽器主控台的 CSP Report-Only 違規。
+- `/api/cards?game=pokemon&series=pokemon-base1-us` 回 0 張（地區正確仍為 0，疑資料或 API 問題，未查）。
+- 盤點剩餘：#16 系列／稀有度網址載入後捲到卡牆；13 處端點回傳 `e.message`；`today()` 用 UTC；`/api/jp-prices`、`/api/portfolio` 是否刪除；CSP 轉強制。
 
 ## 卡住的地方／需要規劃方決策
-- 上列「需使用者同意」各項。
+- 需使用者同意：#3 在 Render 移除 `JUSTTCG_API_KEY`、`EBAY_CLIENT_ID`、`EBAY_CLIENT_SECRET`；#15 首頁副標文案；Render 區域；Q7 七龍珠超 Fusion World。
 
 ## 本機檔案（不在 git，換電腦不會帶過去）
 - `.env.local`：`SUPABASE_ACCESS_TOKEN`（`scripts/run-sql.mjs` 用），每台電腦各自建立。
@@ -32,5 +25,5 @@
 - 這台的 Claude Code 工作階段在 `cardscope` 上一層開啟時，讀不到 `cardscope/.claude/agents/sonnet-worker.md`；改用通用 agent＋`model: sonnet`、`effort: high`，並把 sonnet-worker 規則貼進封包。
 
 ## 開始前必須重新核對
-- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 574。
+- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 606。
 - 之後要等的事：排球少年 HV-P04／HV-D04 卡圖（10-23 時 0 張有圖）；皇巢／晴れる屋2 價格詢問（約 10-27 若未回覆要問使用者）；約 11-14 第一次刪除封存快照（ADR 0046）。使用者決定目前不花額外金錢。

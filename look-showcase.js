@@ -126,6 +126,10 @@
     if(root.classList.contains('cs1-play'))setTimeout(()=>runComet(comet),1700);
     return fan;
   }
+  // 手牌區只在首頁桌面寬度（≥1200px）才看得到：遊戲頁與手機不挑卡、不預載候選圖（省約 4 MB）；之後進到首頁或把視窗拉寬才補挑，只挑一次
+  // 延後 300ms 再確認：開遊戲頁網址時 render() 會短暫閃過 landing，不能因此就挑卡
+  let fanLoaded=false,fanTimer=0;
+  function loadFan(){clearTimeout(fanTimer);if(!fanLoaded)fanTimer=setTimeout(()=>{if(fanLoaded||!landing()||!matchMedia('(min-width:1200px)').matches)return;fanLoaded=true;pickCards().then(addCards).catch(()=>{})},300)}
   function addCards(cards){
     const hero=$('#hero'),intro=$('.hero-intro'),fan=$('.cs1-fan');
     if(!hero||!intro||!fan||cards.length<2||fan.querySelector('.cs1-card'))return;
@@ -248,8 +252,11 @@
     const mk=(cls)=>{const b=el('button',cls,'✦ 重看導覽');b.type='button';b.classList.add('cs1-replay');b.onclick=()=>startTour();return b};
     $('.browse-regions')?.append(mk(''));
     $('.hero-intro')?.append(mk('cs1-replay-m'));
-    new MutationObserver(syncNav).observe(doc.body,{attributes:true,attributeFilter:['data-view']});
-    buildFan();pickCards().then(addCards).catch(()=>{});
+    new MutationObserver(()=>{syncNav();loadFan()}).observe(doc.body,{attributes:true,attributeFilter:['data-view']});matchMedia('(min-width:1200px)').addEventListener('change',loadFan);
+    buildFan();loadFan();
+    // catalog-layout.css 替遊戲頁預留系列列與系列面板的高度；不會出現時（全部卡片網址、或 8 秒後仍沒出現）收回，避免留白
+    if(/[?&]view=all\b/.test(location.search))root.classList.add('cs-no-hold-panel');
+    setTimeout(()=>{if(!$('#seriesBand'))root.classList.add('cs-no-hold-band');if(!$('#selectedProduct')?.firstChild)root.classList.add('cs-no-hold-panel')},8000);
     maybeAutoStart();
   }
   ready(()=>{try{init()}catch(e){}});

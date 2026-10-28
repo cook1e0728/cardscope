@@ -40,6 +40,8 @@ test('canonical keeps only game and card, whatever else the request carried', ()
   assert.equal(seo().canonical, `${BASE}/?game=pokemon&card=pokemon-tcgdex-ja-sv6a-090`);
   assert.equal(canonicalUrl(BASE, { game: 'pokemon', card: 'a b&c', series: 'ignored-when-card' }), `${BASE}/?game=pokemon&card=a+b%26c`);
   assert.equal(canonicalUrl(BASE, { game: 'yugioh', series: 's1' }), `${BASE}/?game=yugioh&series=s1`);
+  assert.equal(canonicalUrl(BASE, { game: 'pokemon', series: 's1', region: 'TW' }), `${BASE}/?game=pokemon&series=s1&region=TW`, 'a series link names its region, or the front end falls back to the game default region');
+  assert.equal(canonicalUrl(BASE, { game: 'pokemon', card: 'c1', region: 'TW' }), `${BASE}/?game=pokemon&card=c1`, 'a card link never carries a region');
   assert.equal(canonicalUrl(BASE, {}), `${BASE}/`);
   assert.equal(normalizeBaseUrl('https://example.test/some/path/'), 'https://example.test');
   assert.equal(normalizeBaseUrl('javascript:alert(1)'), DEFAULT_BASE_URL);
@@ -73,7 +75,7 @@ test('JSON-LD is a BreadcrumbList home > game > series > card, with no Product o
 test('series pages get a title, description, canonical and breadcrumb of their own', () => {
   const result = seriesSeo({ series, baseUrl: BASE, printingCount: 106 });
   assert.equal(result.title, '黑夜漫遊者 SV6a｜寶可夢日版系列卡表｜CardScope');
-  assert.equal(result.canonical, `${BASE}/?game=pokemon&series=pokemon-tcgdex-ja-sv6a`);
+  assert.equal(result.canonical, `${BASE}/?game=pokemon&series=pokemon-tcgdex-ja-sv6a&region=JP`);
   assert.match(result.description, /黑夜漫遊者（SV6a）是寶可夢日版的卡牌系列，發售日 2024-06-07，共收錄 106 個卡片版本/);
   assert.ok(chars(result.description) >= 80 && chars(result.description) <= 150);
   assert.deepEqual(result.jsonLd[0].itemListElement.map(item => item.name), ['首頁', '寶可夢', '黑夜漫遊者']);
@@ -152,7 +154,7 @@ Object.assign(cardRows[1], { canonical_id: 'group-a', updated_at: '2026-10-01T00
 Object.assign(cardRows[2], { canonical_id: 'group-a', updated_at: '2026-10-14T08:19:19+00:00' });
 Object.assign(cardRows[3], { name_zh: '', name_ja: null, name_en: '   ', name_ko: null });
 const EXPECTED_CARD_URLS = 2100 - 1 - 1; // one nameless row, and two rows sharing one canonical page
-const seriesRows = [{ id: 'pokemon-tcgdex-ja-sv6a', game_id: 'pokemon', official_code: 'SV6a', name_zh: '黑夜漫遊者', updated_at: '2026-10-02T00:00:00+00:00', name_ja: null, name_en: null, name_ko: null }, { id: 'yugioh-x', game_id: 'yugioh', official_code: null, name_zh: null, name_ja: null, name_en: 'X Set', name_ko: null, updated_at: '2026-10-03T00:00:00+00:00' }, { id: 'ghost', game_id: 'pokemon', official_code: null, name_zh: null, name_ja: null, name_en: null, name_ko: null, updated_at: '2026-10-03T00:00:00+00:00' }];
+const seriesRows = [{ id: 'pokemon-tcgdex-ja-sv6a', game_id: 'pokemon', region: 'JP', official_code: 'SV6a', name_zh: '黑夜漫遊者', updated_at: '2026-10-02T00:00:00+00:00', name_ja: null, name_en: null, name_ko: null }, { id: 'yugioh-x', game_id: 'yugioh', region: 'US', official_code: null, name_zh: null, name_ja: null, name_en: 'X Set', name_ko: null, updated_at: '2026-10-03T00:00:00+00:00' }, { id: 'ghost', game_id: 'pokemon', official_code: null, name_zh: null, name_ja: null, name_en: null, name_ko: null, updated_at: '2026-10-03T00:00:00+00:00' }];
 const detail = (cardRow, seriesRow = series) => ({ cards: [cardRow], series: [seriesRow], games: [{ id: cardRow.game, nameZh: '寶可夢' }] });
 const detailBase = { canonicalId: null, seriesId: series.id, officialCardNumber: '090', nameEn: null, nameKo: null, aliases: [], metadata: {} };
 const fixtureCards = {
@@ -215,7 +217,7 @@ after(async () => {
   if (mock.server) { mock.server.closeAllConnections(); await new Promise(resolve => mock.server.close(resolve)); }
 });
 
-const get = async path => { const response = await fetch(`http://127.0.0.1:${appPort}${path}`); return { status: response.status, type: response.headers.get('content-type'), body: await response.text() }; };
+const get = async path => { const response = await fetch(`http://127.0.0.1:${appPort}${path}`); return { status: response.status, type: response.headers.get('content-type'), headers: response.headers, body: await response.text() }; };
 const head = body => body.slice(0, body.indexOf('</head>'));
 
 test('HTTP: a card URL gets its own title, description, canonical, Open Graph, JSON-LD and noscript summary', async () => {
@@ -255,7 +257,7 @@ test('HTTP: a series URL gets a series title and canonical', async () => {
   const page = await get('/?game=pokemon&series=pokemon-tcgdex-ja-sv6a&region=JP');
   assert.equal(page.status, 200);
   assert.match(head(page.body), /<title>黑夜漫遊者 SV6a｜寶可夢日版系列卡表｜CardScope<\/title>/);
-  assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=pokemon&amp;series=pokemon-tcgdex-ja-sv6a">/);
+  assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=pokemon&amp;series=pokemon-tcgdex-ja-sv6a&amp;region=JP">/);
   assert.match(head(page.body), /共收錄 106 個卡片版本/);
   assert.match(page.body, /<noscript><section aria-label="系列摘要">/);
 });
@@ -269,6 +271,20 @@ test('HTTP: a card or series that does not exist is a 404 with the normal page a
     assert.match(head(page.body), /<meta name="robots" content="noindex">/);
     assert.match(head(page.body), /<title>CardScope｜TCG 卡牌圖鑑<\/title>/);
   }
+});
+
+test('HTTP: every kind of response carries the security headers; pages also carry the report-only CSP', async () => {
+  for (const path of ['/', '/?game=pokemon&card=no-such-card', '/?game=pokemon&series=pokemon-tcgdex-ja-sv6a', '/robots.txt', '/sitemaps/pages.xml', '/no-such-file', '/api/providers']) {
+    const { headers } = await get(path);
+    assert.equal(headers.get('x-content-type-options'), 'nosniff', path);
+    assert.equal(headers.get('x-frame-options'), 'SAMEORIGIN', path);
+    assert.equal(headers.get('referrer-policy'), 'strict-origin-when-cross-origin', path);
+    assert.ok(headers.get('strict-transport-security'), path);
+    assert.equal(headers.has('content-security-policy-report-only'), !path.startsWith('/api/'), path);
+  }
+  const csp = (await get('/')).headers.get('content-security-policy-report-only');
+  assert.ok(csp.includes('https://images.pokemontcg.io'));
+  assert.equal((await get('/')).headers.has('content-security-policy'), false, 'report-only: nothing is blocked yet');
 });
 
 test('HTTP: a database failure or a slow database serves the original page with 200', async () => {
@@ -341,7 +357,7 @@ test('HTTP: a failed sitemap build is a 503 and is not cached; concurrent reques
 
   const series = await get('/sitemaps/series.xml');
   assert.equal(series.status, 200);
-  assert.deepEqual([...series.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/?game=pokemon&series=pokemon-tcgdex-ja-sv6a', 'https://seo.example.test/?game=yugioh&series=yugioh-x']);
+  assert.deepEqual([...series.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/?game=pokemon&series=pokemon-tcgdex-ja-sv6a&region=JP', 'https://seo.example.test/?game=yugioh&series=yugioh-x&region=US']);
   assert.match(series.body, /<lastmod>2026-10-02<\/lastmod>/);
   assert.equal(mock.sitemapPages, 3, 'the built sitemap is served from the cache');
 });
