@@ -151,3 +151,21 @@ test('新函式不存在時退回四參數版本：第一頁照舊、matchRank �
     assert.equal(calls.slice(before).filter(body=>'p_offset' in body).length,0,'新函式缺席一段時間內不再重試');
   });
 });
+
+test('offset 超過結果數：資料是空的但 total 仍是資料庫的真實總數，hasMore 為 false',async()=>{
+  await withApp((call,respond,body)=>respond(body.p_offset>=100?answer([],91):answer([card('c1')],91)),async({search})=>{
+    const past=await search({q:'測試獸',offset:'200'});
+    assert.deepEqual([past.status,past.body.data,past.body.meta.total,past.body.meta.offset,past.body.meta.hasMore],[200,[],91,200,false]);
+  });
+});
+
+test('卡號後多一個單字母（OP05-001 R）查無時，去掉它有結果就給 suggestion',async()=>{
+  await withApp((call,respond,body)=>respond(body.p_needles.some(n=>/ r$/i.test(n))?answer([],0):answer([card('c1',{nameZh:'薩波',officialCardNumber:'OP05-001'})],1)),async({search})=>{
+    const none=await search({q:'OP05-001 R'});
+    assert.deepEqual([none.body.data,none.body.meta.total,none.body.meta.suggestion.q],[[],0,'OP05-001']);
+    assert.equal((await search({q:'OP05-001'})).body.meta.suggestion,null);
+  });
+  await withApp((call,respond)=>respond(answer([],0)),async({search})=>{
+    assert.equal((await search({q:'OP05-001 R'})).body.meta.suggestion,null,'去掉後也沒有結果就不建議');
+  });
+});

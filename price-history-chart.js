@@ -85,7 +85,7 @@
     if(!history||history.meta?.unavailable)return `${head}<div class="state" role="status">參考價走勢暫時無法讀取，不影響其他資料；重新開啟這個分頁會再試一次。</div>`;
     const p=plan(history,options);
     if(!p.lines.length){
-      return head+(p.recorded?`<div class="state">已開始記錄（自 ${esc(p.firstDate)}），累積兩筆以上才畫走勢。</div>`:'<div class="state">尚未有參考價紀錄。</div>');
+      return head+(p.recorded?`<div class="state">已開始記錄（自 ${esc(p.firstDate)}），累積兩筆以上才畫走勢。</div>`:(options.noSource?'<div class="state">這個遊戲目前尚未接入價格來源，沒有走勢可看。</div>':'<div class="state">尚未有參考價紀錄。</div>'));
     }
     const extra=[p.omitted?`另有 ${p.omitted} 條線未畫出（圖上最多 3 條，不同卡片、來源、版本不合併）。`:'',p.sparse?`另有 ${p.sparse} 條線只有一筆紀錄，累積兩筆以上才畫走勢。`:''].filter(Boolean);
     return `${head}${legendHtml(p.lines)}<div class="pt-chart-wrap">${chartSvg(p.lines,options)}</div>${tableHtml(p.lines,title)}${extra.length?`<p class="meta">${extra.map(esc).join('<br>')}</p>`:''}`;

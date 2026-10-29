@@ -122,6 +122,8 @@
     restoring=true;openedFromList=false;
     // 貼網址／重新整理帶搜尋、又沒有存過捲動位置：讓 search() 把畫面捲到結果；有存過位置（返回、重新整理）就以它為準，search() 不要再捲。
     const landOnResults=Boolean(state.query)&&!state.scrollY&&history.state?.scrollY==null;window.cardscopeKeepScroll=!landOnResults;
+    // 系列／稀有度網址同理：沒有存過位置時，載入完成後捲到卡牆（固定頂欄下方），不要停在首屏頂端。
+    const landOnSeries=!state.query&&!state.card&&state.game!=='all'&&Boolean(state.series||state.rarity!=='all')&&!state.scrollY&&history.state?.scrollY==null;
     // 分享連結直接開卡：先開詳細頁（只等卡片 API），列表在背後照常還原
     const earlyCard=state.card&&typeof originalOpenCard==='function'&&!node('modal')?.classList.contains('open')?originalOpenCard(state.card).then(installDetailShare).catch(()=>{}):null;
     try{
@@ -144,7 +146,8 @@
       if(state.query&&typeof window.search==='function')await window.search();
       if(state.card&&typeof originalOpenCard==='function'){if(earlyCard)await earlyCard;else{await originalOpenCard(state.card);installDetailShare()}}
       else closeDetail();
-      if(!landOnResults)requestAnimationFrame(()=>window.scrollTo({top:state.scrollY,behavior:'auto'}));
+      if(landOnSeries)requestAnimationFrame(()=>window.scrollBelowHeader?.(node('cardsTitle')));
+      else if(!landOnResults)requestAnimationFrame(()=>window.scrollTo({top:state.scrollY,behavior:'auto'}));
     }finally{
       window.cardscopeKeepScroll=false;restoring=false;writeUrl('replace',{card:state.card||''});
     }

@@ -66,7 +66,7 @@ test('價格分頁只放比價內容（走勢移到走勢分頁），並說明�
   const market = ui.match(/detailPanel\('market',true,[^]*?\$\{detailPanel\('trend'/)[0];
   assert.match(market, /<h3>跨市場比價<\/h3>/);
   assert.match(market, /不是成交價或台灣行情；新台幣為換算參考/);
-  assert.match(market, /marketBlock\(m\)/);
+  assert.match(market, /marketBlock\(m,c\.game\)/);
   assert.doesNotMatch(market, /price-trend/);
 });
 

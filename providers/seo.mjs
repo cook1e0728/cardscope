@@ -111,6 +111,16 @@ export function cardSeo({ card, series = null, game = null, baseUrl = DEFAULT_BA
   };
 }
 
+// 首頁與遊戲頁（?game=X）：標題、描述、canonical 與預設分享圖；沒有 summary，所以不產生 noscript 摘要。
+const HOME_DESCRIPTION = 'CardScope 收錄寶可夢、遊戲王、航海王等 TCG 卡牌，可用中、日、英文名稱搜尋，並依系列與稀有度瀏覽。';
+export function homeSeo({ gameId = '', baseUrl = DEFAULT_BASE_URL } = {}) {
+  const base = normalizeBaseUrl(baseUrl), label = gameId ? gameName(gameId) : '';
+  return {
+    kind: 'home', title: label ? `${label}卡牌圖鑑｜${SITE_NAME}` : `${SITE_NAME}｜TCG 卡牌圖鑑`, description: label ? describe(`${label}卡牌圖鑑，依系列、稀有度與版本瀏覽。`) : HOME_DESCRIPTION,
+    canonical: canonicalUrl(base, { game: gameId || undefined }), image: defaultImage(base), imageAlt: `${SITE_NAME} 標誌`, imageIsCardArt: false, jsonLd: [], summary: null
+  };
+}
+
 export function seriesSeo({ series, game = null, baseUrl = DEFAULT_BASE_URL, printingCount = null } = {}) {
   if (!series?.id) return null;
   const base = normalizeBaseUrl(baseUrl), label = seriesName(series);
@@ -149,6 +159,7 @@ export function seoHeadTags(seo) {
 
 // The same facts a visitor sees in the detail view, for visitors and crawlers that run without JavaScript. Never hidden by CSS.
 export function seoNoscript(seo) {
+  if (!seo.summary) return '';
   const items = seo.summary.lines.map(([label, value]) => `<li>${escapeHtml(label)}：${escapeHtml(value)}</li>`).join('');
   return `<noscript><section aria-label="${escapeHtml(seo.kind === 'card' ? '卡片摘要' : '系列摘要')}"><h2>${escapeHtml(seo.summary.heading)}</h2><ul>${items}</ul></section></noscript>`;
 }

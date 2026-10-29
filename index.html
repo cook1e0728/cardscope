@@ -40,6 +40,12 @@ function setNoticeState(kind,message,retry){
   notice.retry=typeof retry==='function'?retry:null;
   notice.onclick=event=>{if(event.target?.closest?.('[data-action="retry"]')&&typeof notice.retry==='function')notice.retry()};
 }
+// 斷線或伺服器冷啟動時瀏覽器丟的是英文 TypeError（Failed to fetch）或 JSON 解析錯誤：換成白話繁中；後端自己回的中文錯誤照舊顯示。
+function failText(prefix,error){return['TypeError','SyntaxError','AbortError'].includes(error?.name)?'連線失敗，請稍後再試':prefix+(error?.message||'')}
+window.failText=failText;
+// 篩選摘要的價格說明：寶可夢卡牆顯示的是 Cardmarket 歐元參考價（不是台灣買取價）；其餘 IP 只採可驗證買取資料。
+function priceScopeNote(){return game==='pokemon'?'卡牆價格為 Cardmarket 歐元參考價，不是台灣買取價':'價格僅採可驗證買取資料'}
+window.priceScopeNote=priceScopeNote;
 function invalidateBrowseRequest(){browseRequestVersion+=1;if(browse)browse.loading=false;return browseRequestVersion}
 function browseRequestIsCurrent(state,version,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort){
   return state===browse&&version===browseRequestVersion&&game===selectedGame&&$('browseRegion')?.value===selectedRegion&&cardFilters.rarity===selectedRarity&&cardFilters.price===selectedPrice&&cardFilters.sort===selectedSort;
@@ -83,7 +89,7 @@ function rarityMatches(gameId,raw,selected){return selected==='all'||rarityCanon
 // Pokemon sorts by the Cardmarket reference price the server attaches (referencePrice, EUR only, so amounts compare); other games by the buyback list. Cards without a price keep the server's order after the priced ones.
 const sortPrice=c=>c.game==='pokemon'?c.referencePrice?.amount:priceFor(c)?.price;
 function filteredCards(rows){let data=rows.filter(regionMatches).filter(c=>cardFilters.rarity==='all'||cardRarities(c).some(raw=>rarityMatches(game,raw,cardFilters.rarity))).filter(c=>cardFilters.price==='all'||(cardFilters.price==='priced'?Boolean(priceFor(c)):!priceFor(c))),sort=cardFilters.sort;return [...data].sort((a,b)=>sort==='number-desc'?numberKey(b).localeCompare(numberKey(a),undefined,{numeric:true}):sort==='release-desc'?String(cardRelease(b)).localeCompare(String(cardRelease(a)))||numberKey(a).localeCompare(numberKey(b),undefined,{numeric:true}):sort==='rarity-desc'?compareCardsByRarity(a,b,'desc'):sort==='rarity-asc'?compareCardsByRarity(a,b,'asc'):sort==='price-asc'?(sortPrice(a)??Infinity)-(sortPrice(b)??Infinity):sort==='price-desc'?(sortPrice(b)??-Infinity)-(sortPrice(a)??-Infinity):numberKey(a).localeCompare(numberKey(b),undefined,{numeric:true}))}
-function cards(rows,keepSource=false){if(!keepSource){currentCardRows=rows;refreshRarityOptions(rows)}let shown=filteredCards(currentCardRows);$('filterSummary').textContent=`目前載入 ${currentCardRows.length.toLocaleString()} 張，篩選後 ${shown.length.toLocaleString()} 張；價格僅採可驗證買取資料`;$('cards').innerHTML=shown.length?shown.map(c=>{let price=priceFor(c);return`<article class="card" onclick="openCard('${e(c.id)}')"><div class="art">${art(c)}</div><h3>${e(name(c))}</h3><div class="meta">${e(c.officialCardNumber||c.printings?.[0]?.localCardNumber||(c.metadata?.numberStatus==='not-printed'?'未印卡號':''))} · ${e(rarityText(c.rarity||c.printings?.[0]?.rarity)||'稀有度待補')}</div>${price?`<div class="card-price">${e(price.currency)} ${Number(price.price).toLocaleString()} 買取</div>`:''}<span class="badge">${e(rn(c.region||c.printings?.[0]?.region,c.game))}</span></article>`}).join(''):'<p>目前沒有符合條件的卡片；若是尚未發售商品，代表官方尚未公開卡表。</p>'}
+function cards(rows,keepSource=false){if(!keepSource){currentCardRows=rows;refreshRarityOptions(rows)}let shown=filteredCards(currentCardRows);$('filterSummary').textContent=`目前載入 ${currentCardRows.length.toLocaleString()} 張，篩選後 ${shown.length.toLocaleString()} 張；${priceScopeNote()}`;$('cards').innerHTML=shown.length?shown.map(c=>{let price=priceFor(c);return`<article class="card" onclick="openCard('${e(c.id)}')"><div class="art">${art(c)}</div><h3>${e(name(c))}</h3><div class="meta">${e(c.officialCardNumber||c.printings?.[0]?.localCardNumber||(c.metadata?.numberStatus==='not-printed'?'未印卡號':''))} · ${e(rarityText(c.rarity||c.printings?.[0]?.rarity)||'稀有度待補')}</div>${price?`<div class="card-price">${e(price.currency)} ${Number(price.price).toLocaleString()} 買取</div>`:''}<span class="badge">${e(rn(c.region||c.printings?.[0]?.region,c.game))}</span></article>`}).join(''):'<p>目前沒有符合條件的卡片；若是尚未發售商品，代表官方尚未公開卡表。</p>'}
 const CARD_IMAGE_PREFETCH_COUNT=24,CARD_IMAGE_PRIORITY_COUNT=12;
 function primeCardImages(scope,state){const host=$('cards');if(!host||state&&state!==browse||scope&&scope!=='search'&&scope!==game)return;if(!host.dataset)host.dataset={};if(scope&&host.dataset.cardscopeGame!==scope)return;if(typeof host.querySelectorAll!=='function')return;[...host.querySelectorAll('.card .art img')].slice(0,CARD_IMAGE_PREFETCH_COUNT).forEach((img,index)=>{if(!img.src)return;img.dataset.cardscopeGame=scope||game;img.loading='eager';if(index<CARD_IMAGE_PRIORITY_COUNT)img.fetchPriority='high'})}
 function markCardImageScope(scope,state){const host=$('cards');if(!host)return;if(!host.dataset)host.dataset={};host.dataset.cardscopeGame=scope||game;primeCardImages(scope,state)}
@@ -145,18 +151,19 @@ async function loadCardsPage(reset=false){
     const cachedEntries=rarityFacetCache.get(scopeKey)||[],rarityValues=canonicalRarityOptions(selectedGame,[...cachedEntries,...facetEntries,...legacyRarityValues],state.rows),raritySelect=$('rarityFilter');
     if(rarityValues.length)renderRarityOptions(rarityValues);
     // 稀有度分組只算有稀有度的卡，所以「全部」會比總張數少；把差額（稀有度待補）講清楚。
-    const unknownRarity=Number(state.facets?.rarity?.unknown)||0,rarityGap=unknownRarity?`（其中 ${unknownRarity.toLocaleString()} 張稀有度待補，不在稀有度分組內）`:'';
-    $('filterSummary').textContent=`完整圖鑑符合 ${state.total.toLocaleString()} 張，目前顯示 ${state.rows.length.toLocaleString()} 張${rarityGap}；價格僅採可驗證買取資料`;
+    // 分組數是整個系列的（不受稀有度篩選影響）；選了某個稀有度時，結果本來就不含待補的卡，不能再說「其中 N 張」。
+    const unknownRarity=selectedRarity==='all'?Number(state.facets?.rarity?.unknown)||0:0,rarityGap=unknownRarity?`（其中 ${unknownRarity.toLocaleString()} 張稀有度待補，不在稀有度分組內）`:'';
+    $('filterSummary').textContent=`完整圖鑑符合 ${state.total.toLocaleString()} 張，目前顯示 ${state.rows.length.toLocaleString()} 張${rarityGap}；${priceScopeNote()}`;
     $('cardsTitle').textContent=cardsHeading(state);
     $('cardsMeta').textContent=`共 ${state.total.toLocaleString()} 張，已顯示 ${state.rows.length.toLocaleString()} 張${rarityGap}`;syncCardsMode();
     button.style.display=state.hasMore?'block':'none';setNoticeState(state.rows.length?'ready':'empty',state.rows.length?'':'目前沒有符合條件的卡片；若是尚未發售商品，代表官方尚未公開卡表。');
   }catch(error){
     if(browseRequestIsCurrent(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort)){
-      const message='載入失敗：'+error.message;setCardDisplayState('error',message);setNoticeState('error',message,()=>loadCardsPage(true));
+      const message=failText('載入失敗：',error);setCardDisplayState('error',message);setNoticeState('error',message,()=>loadCardsPage(true));if(reset)$('cardsMeta').textContent='載入失敗';
     }
   }finally{
     if(browseRequestIsCurrent(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort)){
-      state.loading=false;button.disabled=false;button.textContent='載入更多卡片';
+      state.loading=false;button.disabled=false;button.textContent='載入更多卡片';document.documentElement?.classList.add('cs-tools-ready');
     }
   }
 }
@@ -168,7 +175,7 @@ async function loadGameCards(id,entry=window.cardscopeEntry,quiet=false){if(game
   if(entry?.series&&!item){browse.seriesId=entry.series;await loadCardsPage(true);return done()}
   if(item&&window.openBandSeries){await window.openBandSeries(item,{auto:true});return done()}
   if(!entry?.all&&hasCatalogSeries()&&window.openLatestSeries&&await window.openLatestSeries()){if(game===id)return done();return}
-  if(game!==id)return;browse.all=true;await loadCardsPage(true);done();
+  if(game!==id)return;browse.all=true;document.documentElement?.classList.add('cs-no-hold-tools');await loadCardsPage(true);done();
 }
 // Heading and mode button of the cards section: series name (or "全部卡片") plus the switch to the other view.
 // 系列／商品標題：沒有中文名就顯示原名，不用卡片的「中文名稱待補｜」佔位字樣。
@@ -199,11 +206,14 @@ async function openProduct(id){let p=P.find(x=>x.id===id);if(!p)return;if(game!=
   // A search started by the page itself (example chip, suggestion, cancelled condition): fill both boxes, record the URL, then run it.
   function searchFor(q){q=String(q||'').trim();if(!q)return;$('q').value=q;const hero=$('heroQ');if(hero)hero.value=q;announceSearch(q);return search(q)}
   window.searchFor=searchFor;
+  // 伺服器的 suggestion.reason 可能是英文代碼：已知的轉中文，未知的純英文代碼不顯示；中文說明照原樣。
+  const SUGGEST_REASONS={'name-only':'只搜卡名，不加稀有度或版本'},suggestReason=value=>{const text=String(value||'').trim();return SUGGEST_REASONS[text]||(/^[ -~]*$/.test(text)?'':text)};
   function emptySearchMarkup(q,meta){
     const suggestion=meta?.suggestion&&meta.suggestion.q?meta.suggestion:null,hintGame=meta?.gameHint&&G(meta.gameHint).id?G(meta.gameHint):null;
     // 搜的是 IP 名稱（例：排球少年）：直接帶去該遊戲圖鑑
     const gameLink=hintGame?`<p><button type="button" class="suggest-chip" data-open-game="${e(hintGame.id)}">前往${e(hintGame.nameZh||hintGame.name||hintGame.id)}圖鑑 ›</button></p>`:'';
-    return `<div class="cards-state empty search-empty" role="status"><b>找不到「${e(q)}」的結果</b>${gameLink}${suggestion?`<p>試試：<button type="button" class="suggest-chip" data-search="${e(suggestion.q)}">${e(suggestion.q)}</button>${suggestion.reason?`<span class="meta"> ${e(suggestion.reason)}</span>`:''}</p>`:''}<ul><li>只搜卡名，先不加稀有度或版本。</li><li>改用日文或英文原名，或卡號寫法（例如 SV6a 090）。</li></ul></div>`;
+    if(meta?.hint?.kind==='symbols-only'&&meta.hint.message)return `<div class="cards-state empty search-empty" role="status"><b>${e(meta.hint.message)}</b><ul><li>卡名（例如 噴火龍）、卡號（例如 SV6a 090）或系列名稱都可以。</li></ul></div>`;
+    return `<div class="cards-state empty search-empty" role="status"><b>找不到「${e(q)}」的結果</b>${gameLink}${suggestion?`<p>試試：<button type="button" class="suggest-chip" data-search="${e(suggestion.q)}">${e(suggestion.q)}</button>${suggestReason(suggestion.reason)?`<span class="meta"> ${e(suggestReason(suggestion.reason))}</span>`:''}</p>`:''}<ul><li>只搜卡名，先不加稀有度或版本。</li><li>改用日文或英文原名，或卡號寫法（例如 SV6a 090）。</li></ul></div>`;
   }
   async function search(again,more){
     const previous=more?activeSearch:null,q=more?previous?.q:String(typeof again==='string'?again:$('q').value).trim(),button=$('loadMore');if(!q)return;
@@ -233,16 +243,18 @@ async function openProduct(id){let p=P.find(x=>x.id===id);if(!p)return;if(game!=
       if(fromBox)$('cardsTitle').focus?.({preventScroll:true});
     }catch(error){
       if(!current())return;
-      if(more){button.disabled=false;button.textContent='載入更多結果';return setNoticeState('error','載入更多失敗：'+error.message,()=>search(null,true))}
-      setCardDisplayState('error','搜尋失敗：'+error.message);setNoticeState('error','搜尋失敗：'+error.message,()=>search(q));
+      if(more){button.disabled=false;button.textContent='載入更多結果';return setNoticeState('error',failText('載入更多失敗：',error),()=>search(null,true))}
+      const message=failText('搜尋失敗：',error);setCardDisplayState('error',message);setNoticeState('error',message,()=>search(q));$('cardsMeta').textContent='搜尋失敗';
     }
   }
 const MARKET_VARIANTS={normal:'普通版',holo:'閃卡 Holo',reverse:'逆閃 Reverse',firstEdition:'初版',wPromo:'促銷版',holofoil:'閃卡 Holo',reverseHolofoil:'逆閃 Reverse','reverse-holofoil':'逆閃 Reverse','1st-edition-holofoil':'初版閃卡','1st-edition-normal':'初版','unlimited-holofoil':'無限版閃卡','1stEditionHolofoil':'初版閃卡','1stEditionNormal':'初版',unlimitedHolofoil:'無限版閃卡',unlimited:'無限版'},MARKET_REGION_NOTES={Cardmarket:'Cardmarket 為歐洲市場參考價換算新台幣，不是台灣行情。',TCGplayer:'TCGplayer 為美國市場參考價換算新台幣，不是台灣行情。',YGOPRODeck:'YGOPRODeck 參考價為美元計價、來源平台未標示，不是成交價或台灣行情。'};
 function marketDate(v){const d=new Date(v);return Number.isNaN(d.getTime())?'':d.toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'})}
 // Market records: NT$ is the main figure; source, price type, variant, original amount and observation date stay as text (not colour) beneath it.
-function marketBlock(m){
+// 目前只有寶可夢（Cardmarket 參考價）與遊戲王（YGOPRODeck set price）有價格來源；其餘 IP 的「沒有價格」是來源問題，不是這張卡的問題。
+function noPriceSource(g){const id=g&&typeof g==='object'?g.id:g;return Boolean(id)&&!['pokemon','yugioh'].includes(id)}
+function marketBlock(m,gameId){
   const meta=m?.meta||{},types=meta.priceTypes||{},fx=meta.exchangeRates||{},records=Array.isArray(m?.records)?m.records:[],head=`<p class="meta">${e(meta.warning||'不同價格性質不混算。')}</p>`;
-  if(!records.length)return head+'<div class="state">目前沒有這個版本的可靠價格，不以假價格補空白。</div>';
+  if(!records.length)return head+(noPriceSource(gameId)?'<div class="state">這個遊戲目前尚未接入價格來源，所以沒有價格可看；不以假價格補空白。</div>':'<div class="state">目前沒有這個版本的可靠價格，不以假價格補空白。</div>');
   let gaps=0;const fmt=(n,cur)=>n==null||!Number.isFinite(Number(n))?'—':Number(n).toLocaleString('en-US',cur==='JPY'?{maximumFractionDigits:0}:{minimumFractionDigits:2,maximumFractionDigits:2}),rows=records.map(r=>{
     const twd=r.priceTwd!=null&&Number.isFinite(Number(r.priceTwd)),orig=`${e(r.currency)} ${fmt(r.amount,r.currency)}`,source=r.provider==='yuyutei'?'遊々亭':(r.market||r.provider),variant=r.variant?(MARKET_VARIANTS[r.variant]||r.variant):'',seen=marketDate(r.observedAt),
       printingText=r.region?rn(r.region):r.language?ln(r.language):'未標示',parts=[`來源：${e(source)}`,`對應版本：${e(printingText)}${r.setCode?`（${e(r.setCode)}${r.rarity?` ${e(r.rarity)}`:''}）`:''}`,`性質：${e(types[r.priceType]||r.priceType)}`,variant&&`版本：${e(variant)}`,twd?`原幣 ${orig}`:`無法換算新台幣，僅顯示原幣`,seen&&`觀測 <time datetime="${e(r.observedAt)}">${e(seen)}</time>`].filter(Boolean);
@@ -270,7 +282,7 @@ async function init(){
   const updateStatus=()=>{const summary=catalogStatusSummary({catalog:C,coverage,catalogState,coverageState,productsState,productsCount:P.length,catalogError}),status=$('status'),betaStatus=$('betaDataStatus'),betaUpdated=$('betaUpdatedAt'),betaCoverage=$('betaCoverageSummary');if(status)status.textContent=summary.status;if(betaStatus)betaStatus.textContent=summary.betaStatus;if(betaUpdated)betaUpdated.textContent=`${summary.updatedLabel} · ${summary.sourceLabel}`;if(betaCoverage)betaCoverage.textContent=summary.betaCoverage};
   channels();productCategories();
   const rarityTask=get('/data/rarity-rankings.json').then(body=>{rarityRankings=body;window.CARD_SCOPE_RARITY_RANKINGS=body;refreshRarityOptions(currentCardRows)}).catch(()=>{});
-  const catalogTask=get('/api/catalog').then(body=>{C=body.data;window.catalogPartial=Boolean(body.meta?.fallbackReason);/* 網址帶遊戲時交給 restore() 的 choose() 渲染，避免先閃一次首頁版面造成位移 */if(game!=='all'||document.body.dataset.game==='all')render();catalogState='ready';updateStatus();if(window.catalogPartial)retryCatalog(1)}).catch(error=>{catalogState='error';catalogError=error.message;updateStatus()});
+  const catalogTask=get('/api/catalog').then(body=>{C=body.data;window.catalogPartial=Boolean(body.meta?.fallbackReason);/* 網址帶遊戲時交給 restore() 的 choose() 渲染，避免先閃一次首頁版面造成位移 */if(game!=='all'||document.body.dataset.game==='all')render();catalogState='ready';updateStatus();if(window.catalogPartial)retryCatalog(1)}).catch(error=>{catalogState='error';catalogError=failText('',error);updateStatus()});
   const productTask=get('/api/products').then(body=>{P=body.data||[];S=body.series||[];productCategory=productCategoryFilterValue(productCategoryId);productCategories();series();productsState='ready';updateStatus();/* 系列磚借用商品盒圖；目錄若比商品先到，系列列要重畫才有圖 */if(game==='all')window.renderHomeLatest?.();else window.renderSeriesBand?.()}).catch(()=>{productsState='error';$('series').innerHTML='<p class="meta">商品來源暫時無法回應，仍可使用卡片搜尋。</p>';updateStatus()});
   window.coverageOnce().then(body=>{coverage=body.data;coverageState='ready';updateStatus()}).catch(()=>{coverageState='error';updateStatus()});
   await Promise.allSettled([rarityTask,catalogTask,productTask]);

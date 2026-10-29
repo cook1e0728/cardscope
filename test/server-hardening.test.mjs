@@ -119,3 +119,52 @@ test('coverage: the public report carries counts, not the provider id list',asyn
     for(const field of ['chineseNames','rarities','displayableImages','coverage','fields','metricStatus','baseline','linkAudit'])assert.ok(field in game,field);
   });
 });
+
+test('database errors reach the log, not the response: a generic message or a code',async()=>{
+  const database=(req,res)=>{res.writeHead(500,{'Content-Type':'application/json'});res.end('{"message":"relation secret_table column secret_col does not exist"}')};
+  await withServer('leak',{database},async base=>{
+    for(const path of ['/api/catalog/sync-status','/api/catalog/image-status']){
+      const response=await fetch(base+path),text=await response.text();
+      assert.equal(response.status,502,path);
+      assert.equal(JSON.parse(text).error,'資料暫時無法讀取',path);
+      assert.equal(/secret|SUPABASE/i.test(text),false,path);
+    }
+    const catalog=await (await fetch(base+'/api/catalog')).json();
+    assert.equal(catalog.meta.fallbackReason,'UPSTREAM_UNAVAILABLE');
+    assert.equal(/secret|SUPABASE/i.test(JSON.stringify(catalog.meta)+catalog.data.fallbackReason),false);
+  });
+});
+
+test('/api/jp-prices and /api/portfolio are gone; unknown paths are a 404 page, /api/ stays JSON',async()=>{
+  await withServer('gone',{},async base=>{
+    for(const path of ['/api/jp-prices?cardName=pikachu','/api/portfolio'])assert.equal((await fetch(base+path)).status,404,path);
+    const page=await fetch(base+'/nonexistent');
+    assert.equal(page.status,404);
+    assert.match(page.headers.get('content-type'),/^text\/html/);
+    assert.match(await page.text(),/href="\/"/);
+    assert.match((await fetch(base+'/api/nonexistent')).headers.get('content-type'),/^application\/json/);
+  });
+});
+
+test('a query of only symbols finds nothing instead of listing sample cards',async()=>{
+  await withServer('symbols',{},async base=>{
+    for(const q of ['.','_','%25','..%20_%20','%EF%BC%8E'])assert.equal((await (await fetch(base+'/api/search?q='+q)).json()).data.length,0,q);
+    const response=await fetch(base+'/api/search?q=.'),body=await response.json();
+    assert.deepEqual([response.status,body.data,body.meta.total,body.meta.hasMore,body.meta.hint.kind],[200,[],0,false,'symbols-only']);
+    assert.equal((await (await fetch(base+'/api/search?q=%E7%9A%AE%E5%8D%A1%E4%B8%98')).json()).meta.hint,undefined);
+  });
+});
+
+test('card list, search and detail answers can be cached for a minute; errors and prices cannot',async()=>{
+  await withServer('cache',{},async base=>{
+    const cacheable=/^public, max-age=60, stale-while-revalidate=300$/;
+    assert.match((await fetch(base+'/api/cards?game=pokemon&limit=2')).headers.get('cache-control'),cacheable);
+    assert.equal((await fetch(base+'/api/cards?game=bogus')).headers.get('cache-control'),'no-store');
+    assert.match((await fetch(base+'/api/search?q=SAR')).headers.get('cache-control'),cacheable);
+    const list=(await (await fetch(base+'/api/cards?game=pokemon&limit=1')).json()).data;
+    const detail=await fetch(base+'/api/cards/'+encodeURIComponent(list[0].id));
+    assert.match(detail.headers.get('cache-control'),cacheable);
+    assert.equal((await fetch(base+'/api/cards/no-such-card')).headers.get('cache-control'),'no-store');
+    assert.equal((await fetch(base+'/api/cards/'+encodeURIComponent(list[0].id)+'/price-history')).headers.get('cache-control'),'no-store');
+  });
+});

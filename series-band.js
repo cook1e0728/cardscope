@@ -12,7 +12,9 @@
   // 航海王的台灣官方站賣的是日文印刷的卡（亞洲發行），不是繁中版
   const regionLabel={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲英文版'},regionText=(r,g=game)=>r==='TW'&&g==='onepiece'?'亞洲日文版':regionLabel[r];
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const today=()=>new Date().toISOString().slice(0,10);
+  // 發售日以台灣日期為準：UTC 在台灣 00:00–08:00 還是前一天，會把當天發售的系列標成即將發售。
+  const taipeiDate=(daysAgo=0)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(Date.now()-daysAgo*864e5);window.taipeiDate=taipeiDate;
+  const today=()=>taipeiDate();
   const regionSelect=()=>document.getElementById('browseRegion');
   function recent(){try{return JSON.parse(localStorage.getItem(recentKey)||'[]')}catch{return[]}}
   function remember(id){try{localStorage.setItem(recentKey,JSON.stringify([id,...recent().filter(x=>x!==id)].slice(0,12)))}catch{}}
@@ -65,7 +67,7 @@
       +`<b class="band-tile-name">最新系列</b><span class="band-tile-code">NEW</span></button>`;
   }
   // Released in the last 90 days: shown as a NEW badge on the series' own tile.
-  const recentSince=()=>new Date(Date.now()-90*864e5).toISOString().slice(0,10);
+  const recentSince=()=>taipeiDate(90);
   // auto: the page opened this series as the game's default view, so it is not remembered as 最近瀏覽 and the page does not scroll.
   async function openSeries(item,{auto=false}={}){
     if(!auto)remember(item.id);resetRarityFilter();clearProduct();

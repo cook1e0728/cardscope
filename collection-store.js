@@ -106,6 +106,7 @@
   // Import preview input: a CardScope JSON backup or CSV. Every check runs here, before anything is written; bad rows are skipped with the reason.
   function parseImport(text){
     if(typeof text!=='string'||!text.trim())return{error:'檔案是空的'};
+    text=text.replace(/^﻿/,''); // 記事本／Excel 存的 UTF-8 檔開頭有 BOM，JSON.parse 會失敗
     if(text.length>LIMITS.fileMaxChars)return{error:'檔案過大（上限 2 MB）'};
     const format=text.trimStart()[0]==='{'?'json':'csv',file=format==='json'?readBackupJson(text):readBackupCsv(text);
     if(file.error)return file;

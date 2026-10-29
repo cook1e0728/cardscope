@@ -20,8 +20,10 @@
   }
 
   /* ---------- 2. 目前頁標記（頂欄與 dock）：landing＝搜尋、game＝圖鑑 ---------- */
+  // 首頁的「搜尋」「圖鑑」是同一頁內的捲動：被點的那個兩處（頂欄與 dock）一起亮；開著我的收藏對話框時亮「我的收藏」。
+  let picked=null;
   function syncNav(){
-    const cur={landing:'search',game:'browse'}[doc.body.dataset.view];
+    const view=doc.body.dataset.view,cur=doc.querySelector('dialog.collection-dialog[open]')?'collection':view==='game'?'browse':view==='landing'?picked||'search':undefined;
     doc.querySelectorAll('[data-nav]').forEach(b=>b.dataset.nav===cur?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   }
 
@@ -252,11 +254,13 @@
     const mk=(cls)=>{const b=el('button',cls,'✦ 重看導覽');b.type='button';b.classList.add('cs1-replay');b.onclick=()=>startTour();return b};
     $('.browse-regions')?.append(mk(''));
     $('.hero-intro')?.append(mk('cs1-replay-m'));
-    new MutationObserver(()=>{syncNav();loadFan()}).observe(doc.body,{attributes:true,attributeFilter:['data-view']});matchMedia('(min-width:1200px)').addEventListener('change',loadFan);
+    new MutationObserver(()=>{picked=null;syncNav();loadFan()}).observe(doc.body,{attributes:true,attributeFilter:['data-view']});
+    new MutationObserver(syncNav).observe(doc.body,{subtree:true,attributes:true,attributeFilter:['open']});doc.addEventListener('close',syncNav,true);
+    doc.querySelectorAll('[data-nav="search"],[data-nav="browse"]').forEach(b=>b.addEventListener('click',()=>{picked=b.dataset.nav;syncNav()}));matchMedia('(min-width:1200px)').addEventListener('change',loadFan);
     buildFan();loadFan();
     // catalog-layout.css 替遊戲頁預留系列列與系列面板的高度；不會出現時（全部卡片網址、或 8 秒後仍沒出現）收回，避免留白
     if(/[?&]view=all\b/.test(location.search))root.classList.add('cs-no-hold-panel');
-    setTimeout(()=>{if(!$('#seriesBand'))root.classList.add('cs-no-hold-band');if(!$('#selectedProduct')?.firstChild)root.classList.add('cs-no-hold-panel')},8000);
+    setTimeout(()=>{root.classList.add('cs-tools-ready');if(!$('#seriesBand'))root.classList.add('cs-no-hold-band');if(!$('#selectedProduct')?.firstChild)root.classList.add('cs-no-hold-panel')},8000);
     maybeAutoStart();
   }
   ready(()=>{try{init()}catch(e){}});

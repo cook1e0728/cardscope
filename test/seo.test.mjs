@@ -297,12 +297,37 @@ test('HTTP: a database failure or a slow database serves the original page with 
   assert.ok(Date.now() - started < 3500, `answered after the 1.5 s limit (${Date.now() - started} ms), not after the database`);
 });
 
-test('HTTP: without card or series the page is exactly the original, and other parameters change nothing', async () => {
-  for (const path of ['/', '/?game=pokemon', '/?game=yugioh&region=JP&sort=rarity-desc&q=x&pages=2']) {
+test('HTTP: the home page and game pages get a canonical, og:image and (games) their own title; sub-pages with view and other parameters stay as they are', async () => {
+  const home = await get('/');
+  assert.equal(home.status, 200);
+  assert.match(head(home.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/">/);
+  assert.match(head(home.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/rabbit-hero\.webp">/);
+  assert.match(head(home.body), /<title>CardScope｜TCG 卡牌圖鑑<\/title>/);
+  assert.equal(home.body.includes('<noscript>'), indexHtml.includes('<noscript>'), 'no card summary is added to the home page');
+  assert.equal((home.body.match(/rel="canonical"/g) || []).length, 1);
+  for (const path of ['/?game=yugioh&region=JP&sort=rarity-desc&q=x&pages=2', '/?game=yugioh']) {
     const page = await get(path);
     assert.equal(page.status, 200, path);
-    assert.equal(page.body, indexHtml, path);
+    assert.match(head(page.body), /<title>遊戲王卡牌圖鑑｜CardScope<\/title>/, path);
+    assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=yugioh">/, path);
+    assert.match(head(page.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/rabbit-hero\.webp">/, path);
   }
+  assert.match(head((await get('/?game=bogus')).body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/">/, 'an unknown game is the home page');
+  for (const path of ['/?view=about', '/?game=pokemon&view=about', '/index.html']) assert.equal((await get(path)).body, indexHtml, path);
+});
+
+test('HTTP: an unknown path is a Chinese 404 page with a link home; /api/ stays JSON', async () => {
+  for (const path of ['/nonexistent', '/some/missing/page', '/favicon.ico']) {
+    const page = await get(path);
+    assert.equal(page.status, 404, path);
+    assert.match(page.type, /^text\/html/, path);
+    assert.match(page.body, /<a href="\/">/, path);
+    assert.equal(page.headers.get('x-content-type-options'), 'nosniff', path);
+  }
+  const api = await get('/api/no-such-route');
+  assert.equal(api.status, 404);
+  assert.match(api.type, /^application\/json/);
+  assert.deepEqual(JSON.parse(api.body), { error: 'Not found' });
 });
 
 test('HTTP: /robots.txt allows everything but /api/ and names the sitemap index', async () => {

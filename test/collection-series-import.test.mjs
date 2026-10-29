@@ -32,6 +32,8 @@ test('import JSON: quantity 1–999 integers only, every rejected row says why, 
   assert.deepEqual(CS.parseImport(file([{ id: 'h', quantity: 1, seriesId: 5, game: 'bad game!', region: 'x'.repeat(50) }])).items[0], own('h'));
   // v1 files still import; an unknown version or app is refused as a whole
   assert.equal(CS.parseImport(file([{ id: 'v1', quantity: 1 }], 1)).items.length, 1);
+  // a UTF-8 BOM in front (Notepad, Excel) must not break the JSON backup
+  assert.equal(CS.parseImport('﻿' + file([{ id: 'bom', quantity: 2 }])).items[0].quantity, 2);
   for (const text of [file([], 3), JSON.stringify({ app: 'other', version: 2, items: [] }), '{ nope', '', '   ', JSON.stringify({ app: 'cardscope-collection', version: 2 })]) assert.ok(CS.parseImport(text).error, text.slice(0, 30));
   assert.equal(CS.parseImport(file([{ id: 'dup', quantity: 1 }, { id: 'dup', quantity: 5, note: 'n' }])).items[0].quantity, 5, 'the same card twice in one file keeps the larger quantity');
 });
