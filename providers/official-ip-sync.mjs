@@ -117,23 +117,22 @@ export function fwSeriesRow(category, nameJa = null) {
  */
 export function fwCatalogRows({ categories, jaCategories = [], categoryCards, rarityByKey, jaNameByNo }) {
   const jaByCode = new Map(jaCategories.map(category => [category.code, category.name])), codes = new Set(categories.map(category => category.code));
+  // 平行版（_p1、_p2）和航海王一樣各自是一張卡（id 加 -p1），canonical_id 指回基本卡；同卡號同版本在多個收錄彈出現時是同一張卡的多筆版本。
   const entries = new Map(), printings = [];
   for (const category of categories) for (const item of categoryCards.get(category.id) || []) {
-    const entry = entries.get(item.cardNo) || { cardNo: item.cardNo, nameZh: item.name, firstCode: category.code, printings: [] };
-    entries.set(item.cardNo, entry);
-    const key = `${item.cardNo}${item.variant}`, rarity = rarityByKey.get(key) || null;
-    entry.printings.push({ variant: item.variant, rarity });
-    printings.push({ card_id: `dragonball-fw-${lower(item.cardNo)}`, series_id: `dragonball-fw-${lower(category.code)}`, region: 'TW', language: 'zh-TW', local_set_code: category.code, local_card_number: item.cardNo,
+    const key = `${item.cardNo}${item.variant}`, rarity = rarityByKey.get(key) || null, cardId = `dragonball-fw-${lower(item.cardNo)}${item.variant ? `-${lower(item.variant.replace(/^_/, ''))}` : ''}`;
+    if (!entries.has(key)) entries.set(key, { key, cardId, cardNo: item.cardNo, nameZh: item.name, firstCode: category.code, rarity });
+    printings.push({ card_id: cardId, series_id: `dragonball-fw-${lower(category.code)}`, region: 'TW', language: 'zh-TW', local_set_code: category.code, local_card_number: item.cardNo,
       rarity, image_url: item.image, source_url: `${FW_LIST}detail.php?card_no=${item.cardNo}${item.variant ? `&p=${item.variant}` : ''}`, source: FW_SOURCE, provider_id: key,
       image_rehost_required: false, image_rights_status: 'not-provided', metadata: { imageLanguage: 'ja-JP', variant: item.variant || null }, data_status: 'incomplete' });
   }
   const cards = [...entries.values()].map(entry => {
     const prefix = entry.cardNo.split('-')[0], code = codes.has(prefix) ? prefix : prefix === 'FP' && codes.has('PR') ? 'PR' : entry.firstCode;
-    const nameJa = jaNameByNo.get(entry.cardNo) || null, id = `dragonball-fw-${lower(entry.cardNo)}`;
-    return { id, canonical_id: id, game_id: 'dragonball-fw', series_id: `dragonball-fw-${lower(code)}`, official_card_number: entry.cardNo,
-      rarity: (entry.printings.find(p => !p.variant && p.rarity) || entry.printings.find(p => p.rarity))?.rarity || null,
+    const nameJa = jaNameByNo.get(entry.cardNo) || null;
+    return { id: entry.cardId, canonical_id: `dragonball-fw-${lower(entry.cardNo)}`, game_id: 'dragonball-fw', series_id: `dragonball-fw-${lower(code)}`, official_card_number: entry.cardNo,
+      rarity: entry.rarity,
       name_ja: nameJa, name_zh: entry.nameZh, name_en: null, name_ko: null, aliases: [...new Set([entry.nameZh, nameJa].filter(Boolean))],
-      source: FW_SOURCE, provider_id: entry.cardNo, search_text: [entry.nameZh, nameJa, entry.cardNo].filter(Boolean).join(' '),
+      source: FW_SOURCE, provider_id: entry.key, search_text: [entry.nameZh, nameJa, entry.cardNo].filter(Boolean).join(' '),
       metadata: { ip: 'dragonball', displayNameLanguage: 'zh-TW' }, data_status: 'verified' };
   });
   return { series: categories.map(category => fwSeriesRow(category, jaByCode.get(category.code) || null)), cards, printings };

@@ -111,22 +111,27 @@ const fwSources = () => ({
   jaNameByNo: new Map([['FB01-001', '孫悟空'], ['FB01-005', '亀仙人'], ['FP-001', '孫悟空']])
 });
 
-test('七龍珠超：一個卡號一張卡，每個卡號＋版本一個版本，掛在列出它的收錄彈', () => {
+test('七龍珠超：平行版和航海王一樣各自一張卡（-p1），canonical 指回基本卡；版本掛在列出它的收錄彈', () => {
   const { series, cards, printings } = fwCatalogRows(fwSources());
   assert.deepEqual(series.map(s => [s.id, s.official_code, s.name_ja]), [['dragonball-fw-fb01', 'FB01', 'ブースターパック　覚醒の鼓動'], ['dragonball-fw-sb01', 'SB01', null], ['dragonball-fw-pr', 'PR', null]]);
   assert.ok(series.every(s => s.game_id === 'dragonball-fw' && s.region === 'TW' && s.source === 'dbs-fw-official'));
   assert.deepEqual(cards.map(c => [c.id, c.series_id, c.rarity, c.name_ja]), [
     ['dragonball-fw-fb01-001', 'dragonball-fw-fb01', 'L', '孫悟空'],
+    ['dragonball-fw-fb01-001-p1', 'dragonball-fw-fb01', 'SCR', '孫悟空'],
     ['dragonball-fw-fb01-005', 'dragonball-fw-fb01', 'C', '亀仙人'],
     ['dragonball-fw-e-42', 'dragonball-fw-sb01', null, null],
-    ['dragonball-fw-fp-001', 'dragonball-fw-pr', 'PR', '孫悟空']
+    ['dragonball-fw-fp-001', 'dragonball-fw-pr', 'PR', '孫悟空'],
+    ['dragonball-fw-fb01-005-p1', 'dragonball-fw-fb01', 'PR', '亀仙人']
   ]);
+  assert.equal(cards.find(c => c.id === 'dragonball-fw-fb01-001-p1').canonical_id, 'dragonball-fw-fb01-001');
+  const keys = printings.map(p => [p.card_id, p.region, p.language, p.local_set_code, p.local_card_number].join('|'));
+  assert.equal(new Set(keys).size, keys.length, '版本唯一鍵不重複');
   assert.deepEqual(printings.map(p => [p.provider_id, p.series_id, p.rarity]), [
     ['FB01-001', 'dragonball-fw-fb01', 'L'], ['FB01-001_p1', 'dragonball-fw-fb01', 'SCR'], ['FB01-005', 'dragonball-fw-sb01', 'C'], ['E-42', 'dragonball-fw-sb01', null],
     ['FP-001', 'dragonball-fw-pr', 'PR'], ['FB01-005_p1', 'dragonball-fw-pr', 'PR']
   ]);
   const promoVariant = printings.find(p => p.provider_id === 'FB01-005_p1');
-  assert.equal(promoVariant.card_id, 'dragonball-fw-fb01-005');
+  assert.equal(promoVariant.card_id, 'dragonball-fw-fb01-005-p1');
   assert.equal(promoVariant.local_set_code, 'PR');
   assert.equal(promoVariant.source_url, 'https://www.dbs-cardgame.com/fw/asia-tc/cardlist/detail.php?card_no=FB01-005&p=_p1');
   assert.equal(promoVariant.image_url, 'https://www.dbs-cardgame.com/fw/images/cards/card/jp/FB01-005_p1.webp');
