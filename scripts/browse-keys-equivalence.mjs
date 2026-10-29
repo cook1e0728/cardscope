@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { rarityCanonicalCode, rarityRank, rarityToken } from '../providers/normalize.mjs';
 
-const GAMES = ['pokemon', 'yugioh', 'onepiece', 'weiss-schwarz', 'haikyuu'];
+const GAMES = ['pokemon', 'yugioh', 'onepiece', 'weiss-schwarz', 'haikyuu', 'dragonball-fw'];
 const SORTS = ['number-asc', 'number-desc', 'name-asc', 'name-desc', 'release-asc', 'release-desc', 'rarity-desc', 'rarity-asc'];
 const [command = 'list', ...rest] = process.argv.slice(2);
 const option = (name, fallback) => { const i = rest.indexOf(`--${name}`); return i === -1 ? fallback : rest[i + 1]; };

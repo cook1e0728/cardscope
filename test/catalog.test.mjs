@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { catalogProvidersNeedingSync, localizePokemonName, localizeProductName, onePieceSetKey, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
+import { catalogProvidersNeedingSync, syncCatalog, localizePokemonName, localizeProductName, onePieceSetKey, parseOnePieceCards, parseOnePieceProducts, parseOnePieceSeries, parsePokemonSpeciesNames } from '../providers/catalog-sync.mjs';
 import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 import { catalogCollectionAllowed, imageCollectionAllowed, imageRightsAllowDisplay, sourceDisplayDenied, sourcePolicySummary } from '../providers/source-policy.mjs';
 
@@ -104,7 +104,8 @@ test('catalog cooldown treats an active provider run as covered',async()=>{
     {provider:'onepiece-official-tw',status:'completed',metadata:{twCards:0}},
     {provider:'ygoprodeck',status:'completed',metadata:{}},
     {provider:'haikyu-official',status:'completed',metadata:{}},
-    {provider:'weiss-schwarz-official',status:'running',metadata:{}}
+    {provider:'weiss-schwarz-official',status:'running',metadata:{}},
+    {provider:'dbs-fw-official',status:'completed',metadata:{}}
   ]},72);
   assert.match(requestedPath,/status=in\.\(completed,running\)/);
   assert.deepEqual(providers,['onepiece']);
@@ -112,19 +113,27 @@ test('catalog cooldown treats an active provider run as covered',async()=>{
 
 test('a run left running by a restart stops counting as covered after six hours',async()=>{
   const at=hours=>new Date(Date.now()-hours*3600000).toISOString();
-  const runs=async()=>[{provider:'pokemontcg',status:'completed',metadata:{},started_at:at(1)},{provider:'onepiece-official-tw',status:'completed',metadata:{twCards:5},started_at:at(1)},{provider:'ygoprodeck',status:'running',metadata:{},started_at:at(30)},{provider:'haikyu-official',status:'completed',metadata:{},started_at:at(1)},{provider:'weiss-schwarz-official',status:'completed',metadata:{},started_at:at(1)}];
+  const runs=async()=>[{provider:'pokemontcg',status:'completed',metadata:{},started_at:at(1)},{provider:'onepiece-official-tw',status:'completed',metadata:{twCards:5},started_at:at(1)},{provider:'ygoprodeck',status:'running',metadata:{},started_at:at(30)},{provider:'haikyu-official',status:'completed',metadata:{},started_at:at(1)},{provider:'weiss-schwarz-official',status:'completed',metadata:{},started_at:at(1)},{provider:'dbs-fw-official',status:'completed',metadata:{},started_at:at(1)}];
   assert.deepEqual(await catalogProvidersNeedingSync(runs,72),['yugioh']);
   const fresh=async()=>[...(await runs()).filter(row=>row.provider!=='ygoprodeck'),{provider:'ygoprodeck',status:'running',metadata:{},started_at:at(2)}];
   assert.deepEqual(await catalogProvidersNeedingSync(fresh,72),[]);
 });
 
 test('scheduled sync leaves TCGdex zh-tw out unless explicitly opted in',async()=>{
-  const runs=async()=>[{provider:'pokemontcg',status:'completed',metadata:{}},{provider:'ygoprodeck',status:'completed',metadata:{}},{provider:'onepiece-official-tw',status:'completed',metadata:{twCards:5}},{provider:'haikyu-official',status:'completed',metadata:{}},{provider:'weiss-schwarz-official',status:'completed',metadata:{}}];
+  const runs=async()=>[{provider:'pokemontcg',status:'completed',metadata:{}},{provider:'ygoprodeck',status:'completed',metadata:{}},{provider:'onepiece-official-tw',status:'completed',metadata:{twCards:5}},{provider:'haikyu-official',status:'completed',metadata:{}},{provider:'weiss-schwarz-official',status:'completed',metadata:{}},{provider:'dbs-fw-official',status:'completed',metadata:{}}];
   assert.deepEqual(await catalogProvidersNeedingSync(runs,72),[]);
   assert.deepEqual(await catalogProvidersNeedingSync(runs,72,{includeTcgdexTw:true}),['pokemonZhTw']);
-  // ADR 0034：排球少年、芙莉蓮沒有最近的同步紀錄時排入定時同步。
-  const withoutIps=async()=>(await runs()).filter(row=>!['haikyu-official','weiss-schwarz-official'].includes(row.provider));
-  assert.deepEqual(await catalogProvidersNeedingSync(withoutIps,72),['haikyuu','weissFrieren']);
+  // ADR 0034、0052 Q7：排球少年、芙莉蓮、七龍珠超沒有最近的同步紀錄時排入定時同步。
+  const withoutIps=async()=>(await runs()).filter(row=>!['haikyu-official','weiss-schwarz-official','dbs-fw-official'].includes(row.provider));
+  assert.deepEqual(await catalogProvidersNeedingSync(withoutIps,72),['haikyuu','weissFrieren','dragonballFw']);
+});
+
+test('syncCatalog routes dragonballFw to the Fusion World sync and its source policy is enabled',async()=>{
+  const paths=[];
+  const result=await syncCatalog(async path=>{paths.push(path);throw new Error('stop')},{providers:['dragonballFw']});
+  assert.equal(paths[0],'/catalog_sync_runs');
+  assert.equal(result.dragonballFw.error,'stop');
+  assert.equal(catalogCollectionAllowed('dragonballFw'),true);
 });
 
 test('price filters stay honest when no verified database source is configured',async()=>{
@@ -133,8 +142,8 @@ test('price filters stay honest when no verified database source is configured',
   assert.equal(meta.source,'yuyutei-buyback');
 });
 
-test('all five IP navigation images are local and served as SVG',async()=>{
-  for(const name of ['pokemon','onepiece','yugioh','haikyuu','frieren']){
+test('all six IP navigation images are local and served as SVG',async()=>{
+  for(const name of ['pokemon','onepiece','yugioh','haikyuu','frieren','dragonball-fw']){
     const response=await fetch(`http://127.0.0.1:${port}/assets/ip-${name}.svg`);
     assert.equal(response.status,200);
     assert.match(response.headers.get('content-type')||'',/^image\/svg\+xml/);
@@ -151,7 +160,7 @@ test('product feed never promotes a single card as a box or series image',{timeo
   assert.ok(data.every(item=>PRODUCT_CATEGORIES.includes(item.catalogCategory)));
   assert.equal(meta.productCount,data.length);
   assert.equal(meta.seriesCount,series.length);
-  for(const game of ['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz']){
+  for(const game of ['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz','dragonball-fw']){
     assert.equal(meta.productCountsByGame[game],data.filter(item=>item.game===game).length);
     assert.equal(meta.seriesCountsByGame[game],series.filter(item=>item.game===game).length);
     assert.equal(meta.productImageCountsByGame[game],data.filter(item=>item.game===game&&item.imageUrl).length);

@@ -35,7 +35,7 @@ test('migration: only new functions, Cardmarket EUR within 7 days, service role 
 test('only Pokemon may sort by price; every other game keeps number order', () => {
   assert.equal(normalizeBrowseSort('price-desc', 'pokemon'), 'price-desc');
   assert.equal(normalizeBrowseSort('PRICE-ASC', 'pokemon'), 'price-asc');
-  for (const game of ['onepiece', 'yugioh', 'haikyuu', null]) assert.equal(normalizeBrowseSort('price-desc', game), 'number-asc', String(game));
+  for (const game of ['onepiece', 'yugioh', 'haikyuu', 'dragonball-fw', null]) assert.equal(normalizeBrowseSort('price-desc', game), 'number-asc', String(game));
   assert.equal(normalizeBrowseSort('name-asc', 'onepiece'), 'name-asc');
   assert.equal(normalizeBrowseSort('bogus', 'pokemon'), 'number-asc');
 });

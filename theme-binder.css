@@ -9,6 +9,7 @@ body[data-game="onepiece"],[data-ip="onepiece"]{--ip:#1A1A1A;--ip-ink:#1A1A1A;--
 body[data-game="yugioh"],[data-ip="yugioh"]{--ip:#A3121F;--ip-ink:#A3121F;--tint:#C8102E;--band:linear-gradient(135deg,#7A0A15 0%,#A3121F 55%,#C8102E 100%);--band-on:#fff;--logo:url(/assets/ip-logos/yugioh.png)}
 body[data-game="frieren"],body[data-game="weiss-schwarz"],[data-ip="frieren"],[data-ip="weiss-schwarz"]{--ip:#2E4170;--ip-ink:#2E4170;--tint:#2E4170;--band:linear-gradient(135deg,#16233F 0%,#22335A 55%,#2E4170 100%);--band-on:#fff;--logo:url(/assets/ip-logos/weiss-schwarz.png)}
 body[data-game="haikyuu"],[data-ip="haikyuu"]{--ip:#A63F07;--ip-ink:#A63F07;--tint:#DF600E;--band:linear-gradient(135deg,#8F3606 0%,#B8480A 55%,#DF600E 100%);--band-on:#fff;--logo:url(/assets/ip-logos/haikyuu.svg)}
+body[data-game="dragonball-fw"],[data-ip="dragonball-fw"]{--ip:#0A6670;--ip-ink:#0A6670;--tint:#1596A3;--band:linear-gradient(135deg,#063F47 0%,#0A6670 55%,#1596A3 100%);--band-on:#fff;--logo:url(/assets/ip-logos/dragonball-fw.png)}
 
 body{background:var(--paper);color:var(--ink);font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif}
 .top{background:var(--paper-2);border-bottom:1px solid var(--rule)}
@@ -122,6 +123,7 @@ body[data-view="landing"] .channel[data-ip]:nth-child(3) .channel-art:before{ani
 body[data-view="landing"] .channel[data-ip]:nth-child(4) .channel-art:before{animation-delay:1.05s}
 body[data-view="landing"] .channel[data-ip]:nth-child(5) .channel-art:before{animation-delay:1.4s}
 body[data-view="landing"] .channel[data-ip]:nth-child(6) .channel-art:before{animation-delay:1.75s}
+body[data-view="landing"] .channel[data-ip]:nth-child(7) .channel-art:before{animation-delay:2.1s}
 body[data-view="landing"] .channel[data-ip]:nth-child(1) .channel-art:before{animation-delay:0s}
 @media(prefers-reduced-motion:reduce){body[data-view="landing"] .channel[data-ip] .channel-art,body[data-view="landing"] .channel[data-ip] .channel-art:before{animation:none}body[data-view="landing"] .channel[data-ip] .channel-art:before{opacity:0}}
 

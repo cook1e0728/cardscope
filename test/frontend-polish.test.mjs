@@ -38,7 +38,7 @@ test('price copy: games without a price source say so; Pokemon summary says Card
   assert.match(vm.runInContext('priceScopeNote()', context), /Cardmarket 歐元參考價，不是台灣買取價/);
   context.game = 'onepiece';
   assert.match(vm.runInContext('priceScopeNote()', context), /價格僅採可驗證買取資料/);
-  assert.equal(vm.runInContext("noPriceSource('onepiece')&&noPriceSource({id:'haikyuu'})&&!noPriceSource('pokemon')&&!noPriceSource('yugioh')&&!noPriceSource(undefined)", context), true);
+  assert.equal(vm.runInContext("noPriceSource('onepiece')&&noPriceSource({id:'haikyuu'})&&noPriceSource('dragonball-fw')&&!noPriceSource('pokemon')&&!noPriceSource('yugioh')&&!noPriceSource(undefined)", context), true);
   assert.match(vm.runInContext("marketBlock({records:[],meta:{}},'onepiece')", context), /尚未接入價格來源/);
   assert.match(vm.runInContext("marketBlock({records:[],meta:{}},'pokemon')", context), /目前沒有這個版本的可靠價格/);
 });

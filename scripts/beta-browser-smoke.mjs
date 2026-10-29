@@ -19,15 +19,16 @@ const viewports=[
   {name:'mobile-430',width:430,height:932},
   {name:'desktop',width:1440,height:1000}
 ];
-const gameIds=['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz'];
+const gameIds=['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz','dragonball-fw'];
 const gameLabels={
   pokemon:'寶可夢',
   onepiece:'航海王',
   yugioh:'遊戲王',
   haikyuu:'排球少年',
-  'weiss-schwarz':'葬送的芙莉蓮'
+  'weiss-schwarz':'葬送的芙莉蓮',
+  'dragonball-fw':'七龍珠超'
 };
-const gameCodes={pokemon:'SV',onepiece:'OP',yugioh:'YS',haikyuu:'HV','weiss-schwarz':'S'};
+const gameCodes={pokemon:'SV',onepiece:'OP',yugioh:'YS',haikyuu:'HV','weiss-schwarz':'S','dragonball-fw':'DB'};
 const healthySvg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700"><rect width="500" height="700" rx="24" fill="#fff"/><rect x="14" y="14" width="472" height="672" rx="18" fill="#7edbd2" stroke="#171717" stroke-width="12"/><rect x="45" y="58" width="410" height="505" fill="#ffe46c"/><text x="250" y="630" text-anchor="middle" font-size="30" font-family="sans-serif">BETA FIXTURE</text></svg>';
 
 const sleep=milliseconds=>new Promise(resolveSleep=>setTimeout(resolveSleep,milliseconds));
@@ -38,7 +39,7 @@ const responseBody=(route,body,status=200)=>route.fulfill({
 });
 
 function gameDefinition(id){
-  return {id,nameZh:gameLabels[id],nameEn:id==='pokemon'?'Pokémon':id==='onepiece'?'ONE PIECE':id==='yugioh'?'Yu-Gi-Oh!':id==='haikyuu'?'Haikyuu!!':'Weiß Schwarz'};
+  return {id,nameZh:gameLabels[id],nameEn:id==='pokemon'?'Pokémon':id==='onepiece'?'ONE PIECE':id==='yugioh'?'Yu-Gi-Oh!':id==='haikyuu'?'Haikyuu!!':id==='dragonball-fw'?'Dragon Ball Super Card Game Fusion World':'Weiß Schwarz'};
 }
 
 function makeCard(game,index,rarity,nameSuffix,imageState='ok'){
@@ -245,7 +246,7 @@ async function runViewport(browser,viewport){
     // Phones search from the header capsule (#q); the large landing form is desktop-only.
     try{await waitForVisible(page.locator('#homeSearch:visible, #q:visible').first(),'the landing search box did not render')}
     catch(error){throw new Error(`${error.message}; pageErrors=${pageErrors.join(' | ')}; cards=${await page.locator('#cards').innerText().catch(()=>'<unavailable>')}`,{cause:error})}
-    assert.equal(new Set(await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(id=>id&&id!=='all'))).size,5,`${viewport.name} should show five IP entry tiles`);
+    assert.equal(new Set(await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(id=>id&&id!=='all'))).size,6,`${viewport.name} should show six IP entry tiles`);
     assert.equal(await page.locator('#cards .game-entry').count(),0,`${viewport.name} the landing keeps only one game chooser`);
     assert.equal(await page.locator('.home-examples [data-example]').count()>=3,true,`${viewport.name} should show search examples`);
     const channelIds=[];

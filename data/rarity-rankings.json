@@ -270,6 +270,34 @@
         ["極"],
         ["極P"]
       ]
+    },
+    "dragonball-fw": {
+      "sourceUrl": "https://www.dbs-cardgame.com/fw/asia-tc/cardlist/",
+      "evidenceUrls": [
+        "https://www.dbs-cardgame.com/fw/asia-tc/cardlist/"
+      ],
+      "orderingNoteZh": "官方卡表的稀有度篩選選項為 L、C、UC、R、SR、SCR、PR；官方沒有公布高低順序。CardScope 依常見強度排 SCR、SR、L、R、UC、C，推廣卡 PR 放最後；此排序僅用於圖鑑導覽，不代表價格。",
+      "canonicalCodes": ["SCR", "SR", "L", "R", "UC", "C", "PR"],
+      "canonicalLabels": {},
+      "aliases": {},
+      "highToLow": [
+        ["SCR"],
+        ["SR"],
+        ["L"],
+        ["R"],
+        ["UC"],
+        ["C"],
+        ["PR"]
+      ],
+      "lowToHigh": [
+        ["PR"],
+        ["C"],
+        ["UC"],
+        ["R"],
+        ["L"],
+        ["SR"],
+        ["SCR"]
+      ]
     }
   }
 }

@@ -184,6 +184,34 @@
       ]
     },
     {
+      "id": "dragonball-fw",
+      "kind": "card-game-system",
+      "status": "active",
+      "nameZh": "七龍珠超 Fusion World",
+      "nameOriginal": "DRAGON BALL SUPER CARD GAME FUSION WORLD",
+      "nameEn": "Dragon Ball Super Card Game Fusion World",
+      "languages": ["繁體中文"],
+      "regions": ["TW"],
+      "categoryVisual": {
+        "path": "/assets/ip-logos/dragonball-fw.png",
+        "kind": "official-logo",
+        "official": true,
+        "usage": "game-navigation",
+        "source": "https://www.dbs-cardgame.com/fw/renewal01/images/common/logo_fw_b.png"
+      },
+      "franchises": [
+        {
+          "id": "dragonball",
+          "nameZh": "七龍珠超",
+          "nameOriginal": "ドラゴンボール超",
+          "nameEn": "Dragon Ball Super",
+          "aliases": ["七龍珠", "Dragon Ball", "DRAGON BALL", "ドラゴンボール", "Fusion World", "フュージョンワールド"],
+          "status": "active",
+          "scope": {"mode": "system", "gameId": "dragonball-fw"}
+        }
+      ]
+    },
+    {
       "id": "union-arena",
       "kind": "card-game-system",
       "status": "planned",

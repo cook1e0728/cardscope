@@ -15,7 +15,7 @@ test.after(async () => {
   await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 });
 
-const games = ['pokemon', 'onepiece', 'yugioh', 'weiss-schwarz', 'haikyuu'];
+const games = ['pokemon', 'onepiece', 'yugioh', 'weiss-schwarz', 'haikyuu', 'dragonball-fw'];
 const token = value => String(value ?? '').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g, '').replace(/[^\p{L}\p{N}+]/gu, '');
 
 // fetch refuses the Fetch standard's "bad ports" (6000, 6665-6669, 10080, ...), which the OS may hand out.
@@ -79,7 +79,7 @@ function coverageDatabaseHandler({cards,printings,images,requests=[],mode=null})
   };
 }
 
-test('all five IP rarity definitions expose reversible high/low groups', () => {
+test('all six IP rarity definitions expose reversible high/low groups', () => {
   for (const game of games) {
     const definition = rankings.systems[game];
     assert.ok(definition, `${game} rarity definition is missing`);

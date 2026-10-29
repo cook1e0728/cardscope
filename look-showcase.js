@@ -28,7 +28,7 @@
   }
 
   /* ---------- 3. 卡片星軌：沿兔子的彗尾，由近到遠排成一道弧 ---------- */
-  const GAME_NAME={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'芙莉蓮',haikyuu:'排球少年'};
+  const GAME_NAME={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'芙莉蓮',haikyuu:'排球少年','dragonball-fw':'七龍珠超'};
   const imgOf=c=>{
     const u=c.imageUrl||c.printings?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl;if(!u)return'';
     try{const x=new URL(u,location.origin);if(['asia-tc.onepiece-cardgame.com','asia-en.onepiece-cardgame.com'].includes(x.hostname)&&x.pathname.startsWith('/images/cardlist/card/'))return'/api/images/onepiece?url='+encodeURIComponent(x.href)}catch{}

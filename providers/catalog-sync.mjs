@@ -1,5 +1,5 @@
 import { normalizeCardNameRecord, normalizeRarityRecord, normalizeRarityValue } from './normalize.mjs';
-import { syncHaikyuu, syncWeissFrieren } from './official-ip-sync.mjs';
+import { syncDragonballFw, syncHaikyuu, syncWeissFrieren } from './official-ip-sync.mjs';
 import { readFileSync } from 'node:fs';
 // 遊戲王熱門卡的台灣常用叫法（非官方中文名，只作搜尋別名；ADR 0052 Q8）。每日同步會重寫 search_text，所以在這裡一併帶入，不必同步後重跑腳本。
 const YUGIOH_ZH_ALIASES=(()=>{try{const file=JSON.parse(readFileSync(new URL('../data/yugioh-zh-aliases.json',import.meta.url),'utf8'));return new Map((file.entries||[]).map(entry=>[String(entry.nameEn||'').toLowerCase(),entry.aliases||[]]))}catch{return new Map()}})();
@@ -389,7 +389,7 @@ export async function catalogProvidersNeedingSync(db,maxAgeHours=72,{includeTcgd
   const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,status,metadata,started_at&status=in.(completed,running)&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),
     // A run interrupted by a restart stays 'running' forever; after STALE_RUN_HOURS it no longer counts as covered.
     staleBefore=Date.now()-STALE_RUN_HOURS*3600000,live=(rows||[]).filter(row=>row.status!=='running'||!row.started_at||Date.parse(row.started_at)>=staleBefore),
-    covered=new Set(live.filter(row=>row.status==='running'||row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',...(includeTcgdexTw?{pokemonZhTw:'tcgdex-zh-tw'}:{}),onepiece:'onepiece-official-tw',yugioh:'ygoprodeck',haikyuu:'haikyu-official',weissFrieren:'weiss-schwarz-official'};return Object.entries(providerNames).filter(([,stored])=>!covered.has(stored)).map(([runtime])=>runtime);
+    covered=new Set(live.filter(row=>row.status==='running'||row.provider!=='onepiece-official-tw'||Number(row.metadata?.twCards)>0).map(row=>row.provider)),providerNames={pokemon:'pokemontcg',...(includeTcgdexTw?{pokemonZhTw:'tcgdex-zh-tw'}:{}),onepiece:'onepiece-official-tw',yugioh:'ygoprodeck',haikyuu:'haikyu-official',weissFrieren:'weiss-schwarz-official',dragonballFw:'dbs-fw-official'};return Object.entries(providerNames).filter(([,stored])=>!covered.has(stored)).map(([runtime])=>runtime);
 }
 
 export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalogProvidersNeedingSync(db,maxAgeHours)).length>0}
@@ -411,7 +411,7 @@ export async function refreshBrowseKeys(db,{games=null,attempts=3}={}){
 
 export async function syncCatalog(db,{providers=['pokemon','onepiece','yugioh'],maxPokemonPages=Infinity}={}){
   const results={};
-  for(const provider of providers){try{results[provider]=provider==='pokemon'?await syncPokemon(db,{maxPages:maxPokemonPages}):provider==='pokemonZhTw'?await syncPokemonZhTw(db):provider==='onepiece'?await syncOnePiece(db):provider==='haikyuu'?await syncHaikyuu(db):provider==='weissFrieren'?await syncWeissFrieren(db):await syncYugioh(db)}catch(error){results[provider]={error:error.message}}}
+  for(const provider of providers){try{results[provider]=provider==='pokemon'?await syncPokemon(db,{maxPages:maxPokemonPages}):provider==='pokemonZhTw'?await syncPokemonZhTw(db):provider==='onepiece'?await syncOnePiece(db):provider==='haikyuu'?await syncHaikyuu(db):provider==='weissFrieren'?await syncWeissFrieren(db):provider==='dragonballFw'?await syncDragonballFw(db):await syncYugioh(db)}catch(error){results[provider]={error:error.message}}}
   // Whatever the providers wrote (even partly, after an error) is picked up by the key rebuild; a failure here only leaves the slow live query in place.
   try{const keys=await refreshBrowseKeys(db);if(Object.keys(keys).length)results.browseKeys=keys}catch(error){results.browseKeys={error:error.message}}
   return results;

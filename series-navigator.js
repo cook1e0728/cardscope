@@ -1,4 +1,4 @@
-const seriesRegionRank={JP:0,TW:1,US:2,CN:3,KR:4,ASIA:5},seriesGameLabel={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'芙莉蓮',haikyuu:'排球少年'},seriesGroupState={},trendBySet=new Map();
+const seriesRegionRank={JP:0,TW:1,US:2,CN:3,KR:4,ASIA:5},seriesGameLabel={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'芙莉蓮',haikyuu:'排球少年','dragonball-fw':'七龍珠超'},seriesGroupState={},trendBySet=new Map();
 let trendRows=[],trendMeta={};
 const safeLocal={get(key,fallback){try{return localStorage.getItem(key)||fallback}catch{return fallback}},set(key,value){try{localStorage.setItem(key,value)}catch{}}};
 let seriesSort=safeLocal.get('cardscope-series-sort','latest');

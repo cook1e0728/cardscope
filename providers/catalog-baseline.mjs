@@ -5,7 +5,8 @@ export const REQUIRED_GAME_IDS = Object.freeze([
   'onepiece',
   'yugioh',
   'weiss-schwarz',
-  'haikyuu'
+  'haikyuu',
+  'dragonball-fw'
 ]);
 
 const BASELINE_KINDS = new Set(['official-total', 'provider-total', 'unknown']);

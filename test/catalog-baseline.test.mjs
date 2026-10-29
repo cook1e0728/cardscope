@@ -8,7 +8,7 @@ import {
   validateCatalogBaselineRegistry
 } from '../providers/catalog-baseline.mjs';
 
-const games = ['pokemon', 'onepiece', 'yugioh', 'weiss-schwarz', 'haikyuu'];
+const games = ['pokemon', 'onepiece', 'yugioh', 'weiss-schwarz', 'haikyuu', 'dragonball-fw'];
 
 function clone(value) {
   return structuredClone(value);
@@ -46,7 +46,7 @@ function approvedRegistry({ regions = ['US'], series = [], providerId = 'fixture
   return fixture;
 }
 
-test('registry includes all five IPs and keeps unverified denominators unknown/null', () => {
+test('registry includes all six IPs and keeps unverified denominators unknown/null', () => {
   assert.deepEqual(CATALOG_BASELINE_REGISTRY.games.map(game => game.gameId), games);
   for (const game of CATALOG_BASELINE_REGISTRY.games) {
     assert.equal(game.baseline.kind, 'unknown');

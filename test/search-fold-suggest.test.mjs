@@ -24,6 +24,7 @@ test('稀有度單獨搜尋的範例與 IP 名稱提示',()=>{
   assert.deepEqual(gameHintFor('ハイキュー'),{gameId:'haikyuu',franchiseId:'haikyuu'});
   assert.deepEqual(gameHintFor('芙莉蓮'),{gameId:'weiss-schwarz',franchiseId:'frieren'});
   assert.deepEqual(gameHintFor('葬送のフリーレン'),{gameId:'weiss-schwarz',franchiseId:'frieren'});
+  assert.deepEqual(gameHintFor('七龍珠超'),{gameId:'dragonball-fw',franchiseId:'dragonball'});
   assert.equal(gameHintFor('Re:Zero'),null,'planned 的作品還沒有資料，不導');
   for(const q of ['魯夫','噴火龍','黑魔導女孩','排球少年 日向',''])assert.equal(gameHintFor(q),null,q);
 });

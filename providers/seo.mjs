@@ -7,7 +7,7 @@ export const DEFAULT_IMAGE_PATH = '/assets/brand/web/rabbit-hero.webp';
 export const DEFAULT_IMAGE_SIZE = { width: 860, height: 860 };
 export const SITEMAP_MAX_URLS = 40000;
 
-const GAME_NAMES = { pokemon: '寶可夢', onepiece: '航海王', yugioh: '遊戲王', haikyuu: '排球少年', 'weiss-schwarz': 'Weiß Schwarz' };
+const GAME_NAMES = { pokemon: '寶可夢', onepiece: '航海王', yugioh: '遊戲王', haikyuu: '排球少年', 'weiss-schwarz': 'Weiß Schwarz', 'dragonball-fw': '七龍珠超 Fusion World' };
 const REGION_LABELS = { JP: '日版', TW: '台版', US: '美版', CN: '陸版', KR: '韓版', ASIA: '亞洲版' };
 const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com', 'asia-en.onepiece-cardgame.com']);
 const DESCRIPTION_TAIL = 'CardScope 提供卡圖與版本對照，可用中、日、英文名稱查詢。';

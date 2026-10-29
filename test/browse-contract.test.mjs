@@ -132,6 +132,8 @@ test('rarity order is game-specific in both directions and keeps unknown values 
   assert.ok(h.run("compareRarityLabels('yugioh','Ghost Rare','Common','desc')")<0);
   assert.ok(h.run("compareRarityLabels('weiss-schwarz','SEC+','SEC','desc')")<0);
   assert.ok(h.run("compareRarityLabels('haikyuu','SP','C','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('dragonball-fw','SCR','C','desc')")<0);
+  assert.ok(h.run("compareRarityLabels('dragonball-fw','PR','C','desc')")>0);
   assert.ok(h.run("compareRarityLabels('pokemon','尚待對照','C','desc')")>0);
   assert.ok(h.run("compareRarityLabels('pokemon','尚待對照','C','asc')")>0);
 });

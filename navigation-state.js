@@ -1,7 +1,7 @@
 (()=>{
   // Same page size as index.html's CARDS_PAGE_SIZE (the first screen is 48 cards).
   const PAGE_SIZE=typeof CARDS_PAGE_SIZE==='number'?CARDS_PAGE_SIZE:48;
-  const allowedGames=new Set(['all','pokemon','onepiece','yugioh','haikyuu','weiss-schwarz']);
+  const allowedGames=new Set(['all','pokemon','onepiece','yugioh','haikyuu','weiss-schwarz','dragonball-fw']);
   const allowedRegions=new Set(['all','JP','TW','US','CN','KR','ASIA']);
   const allowedSorts=new Set(['number-asc','number-desc','rarity-desc','rarity-asc','price-asc','price-desc','release-desc']);
   const allowedPrices=new Set(['all','priced','unpriced']);

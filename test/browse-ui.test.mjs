@@ -102,7 +102,7 @@ test('removed gameFilters is not referenced by homepage scripts',()=>{
 test('IP navigation uses explicitly non-official CardScope artwork',async()=>{
   const switcher=await readFile(new URL('../game-switcher.js',import.meta.url),'utf8');
   assert.doesNotMatch(switcher,/非官方分類圖/,'official logos are labelled as logos, not as unofficial art');
-  for(const id of ['pokemon','onepiece','yugioh','haikyuu','frieren']){
+  for(const id of ['pokemon','onepiece','yugioh','haikyuu','frieren','dragonball-fw']){
     const svg=await readFile(new URL(`../assets/ip-${id}.svg`,import.meta.url),'utf8');
     assert.match(svg,/CardScope 自製/);
     assert.doesNotMatch(svg,/OFFICIAL CARD GAME|TRADING CARD GAME/);

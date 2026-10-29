@@ -343,7 +343,7 @@ test('HTTP: pages.xml needs no database', async () => {
   const pages = await get('/sitemaps/pages.xml');
   assert.equal(pages.status, 200);
   assert.match(pages.type, /^application\/xml/);
-  assert.deepEqual([...pages.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/', ...['pokemon', 'onepiece', 'yugioh', 'haikyuu', 'weiss-schwarz'].map(game => `https://seo.example.test/?game=${game}`)]);
+  assert.deepEqual([...pages.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/', ...['pokemon', 'onepiece', 'yugioh', 'haikyuu', 'weiss-schwarz', 'dragonball-fw'].map(game => `https://seo.example.test/?game=${game}`)]);
 });
 
 test('HTTP: a failed sitemap build is a 503 and is not cached; concurrent requests share one build; keyset paging covers every card once', async () => {

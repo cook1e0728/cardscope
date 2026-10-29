@@ -46,3 +46,10 @@ test('parallel treatments remain distinct from their base rarities', () => {
   }
 });
 
+test('Fusion World rarity vocabulary matches the official filter and keeps its order reversible', () => {
+  const fw = rankings.systems['dragonball-fw'];
+  assert.deepEqual([...fw.canonicalCodes].sort(), ['C', 'L', 'PR', 'R', 'SCR', 'SR', 'UC']);
+  assert.deepEqual(fw.highToLow.map(group => group[0]), ['SCR', 'SR', 'L', 'R', 'UC', 'C', 'PR']);
+  assert.deepEqual(fw.lowToHigh.map(group => group[0]), [...fw.highToLow.map(group => group[0])].reverse());
+  for (const code of fw.canonicalCodes) assert.equal(rarityCanonicalCode('dragonball-fw', code), code);
+});

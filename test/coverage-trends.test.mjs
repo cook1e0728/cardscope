@@ -25,7 +25,7 @@ test('public coverage reports explicit field denominators for all five IPs witho
   assert.equal(body.data.expectedTotals.status,'unknown');
   assert.deepEqual(body.data.coveredGames.sort(),['onepiece','pokemon','yugioh']);
   assert.ok(Object.hasOwn(body.data,'freshness'));
-  for(const gameId of ['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz']){
+  for(const gameId of ['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz','dragonball-fw']){
     const game=body.data.games[gameId];
     assert.ok(game,`${gameId} coverage is missing`);
     assert.ok(game.baseline,`${gameId} baseline status is missing`);
