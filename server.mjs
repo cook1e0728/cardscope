@@ -59,8 +59,8 @@ const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charse
 // 只公開前端需要的檔案：根目錄的 .js／.css／index.html、assets/、前端讀的兩個 data 檔；server.mjs、providers、docs 等一律 404。
 const PUBLIC_STATIC=/^\/(?:[a-z0-9-]+\.(?:js|css)|manifest\.webmanifest|index\.html|googlefb9a9f93e94c056f\.html|assets\/(?:[\w.-]+\/)*[\w.-]+\.(?:png|jpe?g|webp|svg|ico|woff2?)|data\/(?:rarity-rankings|game-taxonomy)\.json)$/;
 const SECURITY_HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'SAMEORIGIN','Strict-Transport-Security':'max-age=15552000'};
-// 第一階段只回報不擋（Report-Only）：首頁有 inline script 與 onclick 屬性，先看瀏覽器主控台有哪些違規，改成 nonce／事件委派後再轉成強制。圖片主機清單來自正式庫 image_url 去重。
-const CSP_REPORT_ONLY="default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://www.pokemon-card.com https://asia.pokemon-card.com https://images.pokemontcg.io https://*.supabase.co https://*.onepiece-cardgame.com https://assets.tcgdex.net https://images.ygoprodeck.com https://images.scrydex.com https://ws-tcg.com https://www.takaratomy.co.jp; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'";
+// 強制：仍允許 inline script 與 onclick 屬性（unsafe-inline），擋的是外部腳本、未列出的圖片主機、被嵌入框架。10-30 正式站各遊戲與地區頁、詳細頁實測 0 違規。新增卡圖來源時要把主機加進 img-src，否則圖片會被擋。
+const CSP="default-src 'self'; script-src 'self' 'unsafe-inline'; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://www.pokemon-card.com https://asia.pokemon-card.com https://images.pokemontcg.io https://*.supabase.co https://*.onepiece-cardgame.com https://assets.tcgdex.net https://images.ygoprodeck.com https://images.scrydex.com https://ws-tcg.com https://www.takaratomy.co.jp; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'";
 // 目錄類回應每份 1–3 MB：讓瀏覽器 1 分鐘內重用、5 分鐘內先用舊的再背景更新，免得每次換頁重抓。
 const SHORT_CACHE={'Cache-Control':'public, max-age=60, stale-while-revalidate=300'};
 const json = (res,status,body,headers={})=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});res.end(JSON.stringify(body));};
@@ -1212,7 +1212,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
 const server=createServer((req,res)=>{
   // 先設在 res 上，每一種回應（SEO 頁、sitemap、robots、圖片代理、404、錯誤）寫標頭時都會帶上，不必各處手寫。
   for(const [name,value] of Object.entries(SECURITY_HEADERS))res.setHeader(name,value);
-  if(!String(req.url).startsWith('/api/'))res.setHeader('Content-Security-Policy-Report-Only',CSP_REPORT_ONLY);
+  if(!String(req.url).startsWith('/api/'))res.setHeader('Content-Security-Policy',CSP);
   handleRequest(req,res).catch(error=>{
   const badInput=error instanceof URIError||error?.code==='ERR_INVALID_URL';
   if(!badInput)console.error('request failed',req.method,String(req.url).slice(0,200),error?.stack||error);

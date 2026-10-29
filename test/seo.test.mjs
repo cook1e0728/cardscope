@@ -273,18 +273,18 @@ test('HTTP: a card or series that does not exist is a 404 with the normal page a
   }
 });
 
-test('HTTP: every kind of response carries the security headers; pages also carry the report-only CSP', async () => {
+test('HTTP: every kind of response carries the security headers; pages also carry the enforced CSP', async () => {
   for (const path of ['/', '/?game=pokemon&card=no-such-card', '/?game=pokemon&series=pokemon-tcgdex-ja-sv6a', '/robots.txt', '/sitemaps/pages.xml', '/no-such-file', '/api/providers']) {
     const { headers } = await get(path);
     assert.equal(headers.get('x-content-type-options'), 'nosniff', path);
     assert.equal(headers.get('x-frame-options'), 'SAMEORIGIN', path);
     assert.equal(headers.get('referrer-policy'), 'strict-origin-when-cross-origin', path);
     assert.ok(headers.get('strict-transport-security'), path);
-    assert.equal(headers.has('content-security-policy-report-only'), !path.startsWith('/api/'), path);
+    assert.equal(headers.has('content-security-policy'), !path.startsWith('/api/'), path);
   }
-  const csp = (await get('/')).headers.get('content-security-policy-report-only');
+  const csp = (await get('/')).headers.get('content-security-policy');
   assert.ok(csp.includes('https://images.pokemontcg.io'));
-  assert.equal((await get('/')).headers.has('content-security-policy'), false, 'report-only: nothing is blocked yet');
+  assert.equal((await get('/')).headers.has('content-security-policy-report-only'), false, 'enforced, not report-only');
 });
 
 test('HTTP: a database failure or a slow database serves the original page with 200', async () => {
