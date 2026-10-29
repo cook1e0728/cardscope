@@ -24,7 +24,7 @@
 - 首頁 <title>／description 在 `providers/seo.mjs` 的 homeSeo 有一份，改 index.html 文案要同步；Chiron Hei HK 用 text= 子集化，改首頁大標或導覽小卡標題要同步 text=。
 
 ## 卡住的地方／需要規劃方決策
-- （無）#3 Render 舊金鑰已由使用者於 10-30 刪除。帳號內另有暫停中的新加坡服務 `cardscope-1`（10-02 建立，接同一 repo），不用的話可在後台刪除。
+- （無）#3 Render 舊金鑰已由使用者於 10-30 刪除。暫停中的新加坡服務 `cardscope-1` 也已刪除，Render 只剩正式服務 `cardscope`（Ohio）。
 
 ## 本機檔案（不在 git，換電腦不會帶過去）
 - `.env.local`：`SUPABASE_ACCESS_TOKEN`（`scripts/run-sql.mjs` 用），每台電腦各自建立。
