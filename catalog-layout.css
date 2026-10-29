@@ -247,8 +247,9 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
 @media(max-width:760px){
   html:not(.cs-no-hold-band) body[data-view="game"] .hero:not(:has(#seriesBand))::after{height:261px}
   html:not(.cs-no-hold-panel) body[data-view="game"] #selectedProduct:empty{min-height:94px}
-  html:not(.cs-no-hold-tools):not(.cs-no-hold-panel) body[data-view="game"] #cardsSection>.title{min-height:136px;justify-content:flex-start;align-content:flex-start}
-  html:not(.cs-no-hold-tools):not(.cs-no-hold-panel) body[data-view="game"] #cardsSection>.title>div:first-child{min-height:74px}
+  /* 標題區只在第一批卡回來前預留（長名稱時「全部卡片」按鈕會換行到 136px）；回來後收回，短名稱的系列才不會留下一塊空白。 */
+  html:not(.cs-no-hold-tools):not(.cs-no-hold-panel):not(.cs-tools-ready) body[data-view="game"] #cardsSection>.title{min-height:136px;justify-content:flex-start;align-content:flex-start}
+  html:not(.cs-no-hold-tools):not(.cs-no-hold-panel):not(.cs-tools-ready) body[data-view="game"] #cardsSection>.title>div:first-child{min-height:74px}
   /* 手機篩選列：集卡進度（約 115px）與稀有度快選（約 92px）在第一批卡回來才出現，先預留最終高度，卡牆才不會被推下去；沒有系列進度的頁面（全部卡片網址、index.html 的 browse.all）加 cs-no-hold-tools 收回。 */
   html:not(.cs-no-hold-tools):not(.cs-no-hold-panel) body[data-view="game"] #cardTools{min-height:329px;align-content:flex-start}
 }
