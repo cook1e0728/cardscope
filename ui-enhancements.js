@@ -820,13 +820,13 @@ function installMobileQuickGrid(){
   const channelsEl=$('channels'),regionSelect=$('browseRegion');
   if(!channelsEl||$('mobileQuickGrid'))return;
   const grid=document.createElement('div');grid.id='mobileQuickGrid';grid.className='mobile-quick-grid';grid.setAttribute('role','group');grid.setAttribute('aria-label','手機快速探索入口');
+  // 10 格＝手機 5 欄剛好兩排；導覽改由標題小卡的「重看導覽」進入（加入七龍珠超後拿掉原本補空位的新手導覽格）。
   const items=[
     {game:'pokemon',region:'JP',label:'寶可夢日文',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
     {game:'pokemon',region:'TW',label:'寶可夢繁中',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
     {game:'pokemon',region:'US',label:'寶可夢美版',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
     {game:'onepiece',region:'ASIA',label:'航海王英文',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
     {game:'onepiece',region:'TW',label:'航海王日文',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
-    {game:'all',region:'all',label:'新手導覽',logo:'/assets/brand/web/rabbit-profile-96.webp',tag:'重看',hot:false,action:'tour'},
     {game:'yugioh',region:'US',label:'遊戲王美版',logo:'/assets/ip-logos/yugioh.png',tag:'收錄中',hot:false},
     {game:'weiss-schwarz',region:'JP',label:'芙莉蓮日文',logo:'/assets/ip-logos/weiss-schwarz.png',tag:'熱門收錄',hot:false},
     {game:'haikyuu',region:'JP',label:'排球少年日文',logo:'/assets/ip-logos/haikyuu.svg',tag:'收錄中',hot:false},
@@ -849,7 +849,6 @@ function installMobileQuickGrid(){
   grid.onclick=event=>{
     const btn=event.target.closest('.mqg-tile');if(!btn)return;
     if(btn.dataset.mqgAction==='collection'&&typeof window.openCollection==='function')return window.openCollection();
-    if(btn.dataset.mqgAction==='tour')return window.csStartTour?.();
     const g=btn.dataset.mqgGame,r=btn.dataset.mqgRegion;
     if(regionSelect&&r)regionSelect.value=r;
     if(typeof window.choose==='function')window.choose(g);

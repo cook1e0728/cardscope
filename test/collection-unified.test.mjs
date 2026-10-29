@@ -172,9 +172,11 @@ test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the 
 });
 
 // --- phone quick grid
-test('手機快速入口: the half-empty 遊戲王日文 tile is a 新手導覽 action that calls csStartTour', () => {
+test('手機快速入口: 10 tiles fill two rows of five; the tour is reached from 重看導覽, not a filler tile', () => {
   assert.doesNotMatch(ui, /label:'遊戲王日文'/);
-  assert.match(ui, /\{game:'all',region:'all',label:'新手導覽',logo:'[^']+',tag:'重看',hot:false,action:'tour'\}/);
-  assert.match(ui, /if\(btn\.dataset\.mqgAction==='tour'\)return window\.csStartTour\?\.\(\);/);
+  assert.doesNotMatch(ui, /label:'新手導覽'/);
+  const items = ui.slice(ui.indexOf('const items=['), ui.indexOf('];', ui.indexOf('const items=[')));
+  assert.equal((items.match(/\{game:'/g) || []).length, 10);
+  assert.match(readFileSync(new URL('../look-showcase.js', import.meta.url), 'utf8'), /重看導覽/);
   assert.match(ui, /label:'遊戲王美版'/, 'the US tile stays');
 });
