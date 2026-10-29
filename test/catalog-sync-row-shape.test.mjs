@@ -132,3 +132,41 @@ test('sync upserts skip rows that already hold the same values',async()=>{
   assert.match(requested,/provider_id=in\./);
   assert.deepEqual(kept.map(row=>row.provider_id),['p2'],'a same provider id from another source does not count');
 });
+
+test('Yu-Gi-Oh sync skips cards without TCG sets and only creates series that cards use (set names compared case-insensitively)',async()=>{
+  const originalFetch=globalThis.fetch;
+  const apiSets=[
+    {set_name:'Burst of Destiny',set_code:'BODE',num_of_cards:2,tcg_date:'2023-11-03'},
+    {set_name:"Yu-Gi-Oh! 5D's Tag Force 5 promotional cards",set_code:'TF05',num_of_cards:3,tcg_date:'2010-09-16'},
+    {set_name:'Adidas collaboration card',set_code:'ADC1',num_of_cards:1,tcg_date:'2024-02-14'}
+  ];
+  const apiCards=[
+    {id:1,name:'Printed Card',type:'Effect Monster',card_sets:[{set_name:'Burst of Destiny',set_code:'BODE-EN001',set_rarity:'Common'}],card_images:[{id:1,image_url_small:'https://images.ygoprodeck.com/images/cards_small/1.jpg'}]},
+    {id:2,name:'Promo Card',type:'Spell Card',card_sets:[{set_name:"Yu-Gi-Oh! 5D's Tag Force 5 Promotional Cards",set_code:'TF05-EN001',set_rarity:'Super Rare'}],card_images:[{id:2}]},
+    {id:3,name:'OCG Only Card',type:'Trap Card',card_images:[{id:3}]}
+  ];
+  const posted=new Map();
+  globalThis.fetch=async input=>{
+    const url=String(typeof input==='string'?input:input.url);
+    const body=url.includes('cardsets.php')?apiSets:url.includes('cardinfo.php')?{data:apiCards}:null;
+    if(!body)throw new Error(`Unexpected provider request: ${url}`);
+    return new Response(JSON.stringify(body),{status:200,headers:{'Content-Type':'application/json'}});
+  };
+  try{
+    const result=await syncCatalog(async(path,options={})=>{
+      if(path==='/catalog_sync_runs'&&options.method==='POST')return[{id:'sync-test'}];
+      if(options.method==='POST'&&path.includes('?on_conflict=')){const table=path.slice(0,path.indexOf('?'));posted.set(table,[...(posted.get(table)||[]),...JSON.parse(options.body)])}
+      return[];
+    },{providers:['yugioh']});
+    assert.equal(result.yugioh.seen,3,JSON.stringify(result.yugioh));
+    assert.equal(result.yugioh.metadata.skippedWithoutSets,1);
+    assert.deepEqual(posted.get('/tcg_series').map(row=>row.official_code).sort(),['BODE','TF05']);
+    assert.deepEqual(posted.get('/tcg_cards').map(row=>row.id).sort(),['yugioh-ygoprodeck-1','yugioh-ygoprodeck-2']);
+    const printings=posted.get('/tcg_printings');
+    assert.ok(printings.every(row=>row.series_id),JSON.stringify(printings.map(row=>[row.local_card_number,row.series_id])));
+    assert.equal(printings.find(row=>row.local_card_number==='TF05-EN001').series_id,'yugioh-ygoprodeck-tf05');
+    assert.ok(!printings.some(row=>row.local_set_code==='unspecified'));
+  }finally{
+    globalThis.fetch=originalFetch;
+  }
+});
