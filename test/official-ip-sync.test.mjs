@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { fwCatalogRows, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwRarities, syncDragonballFw, syncHaikyuu, syncWeissFrieren, weissCardRows, weissSetCode } from '../providers/official-ip-sync.mjs';
+import { fwCatalogRows, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwProducts, parseFwRarities, syncDragonballFw, syncHaikyuu, syncWeissFrieren, weissCardRows, weissSetCode } from '../providers/official-ip-sync.mjs';
 
 const haikyuuItem = (ID, card_no, name, extra = {}) => ({ ID: String(ID), card_no, name, name_ruby: 'ひなた しょうよう', product_type: card_no.split('-').slice(0, 2).join('-'), vobarity: 'P', image_end: 'P', category: 'CHARACTER', position: 'MB', affiliation: '烏野·1年', ...extra });
 
@@ -104,7 +104,7 @@ const fwSources = () => ({
   jaCategories: [{ id: '5', code: 'FB01', name: 'ブースターパック　覚醒の鼓動' }],
   categoryCards: new Map([
     ['1', parseFwCards(fwPage([['FB01-001', '', '孫悟空'], ['FB01-001', '_p1', '孫悟空']]))],
-    ['2', parseFwCards(fwPage([['FB01-005', '', '龜仙人'], ['E-42', '', '能量標記']]))],
+    ['2', parseFwCards(fwPage([['FB01-005', '', '龜仙人'], ['E-42', '', '能量標記'], ['E01-01', '', '能量標記']]))],
     ['9', parseFwCards(fwPage([['FP-001', '', '孫悟空'], ['FB01-005', '_p1', '龜仙人']]))]
   ]),
   rarityByKey: new Map([['FB01-001', 'L'], ['FB01-001_p1', 'SCR'], ['FB01-005', 'C'], ['FB01-005_p1', 'PR'], ['FP-001', 'PR']]),
@@ -119,7 +119,8 @@ test('七龍珠超：平行版和航海王一樣各自一張卡（-p1），canon
     ['dragonball-fw-fb01-001', 'dragonball-fw-fb01', 'L', '孫悟空'],
     ['dragonball-fw-fb01-001-p1', 'dragonball-fw-fb01', 'SCR', '孫悟空'],
     ['dragonball-fw-fb01-005', 'dragonball-fw-fb01', 'C', '亀仙人'],
-    ['dragonball-fw-e-42', 'dragonball-fw-sb01', null, null],
+    ['dragonball-fw-e-42', 'dragonball-fw-sb01', '能量標記', null],
+    ['dragonball-fw-e01-01', 'dragonball-fw-sb01', '能量標記', null],
     ['dragonball-fw-fp-001', 'dragonball-fw-pr', 'PR', '孫悟空'],
     ['dragonball-fw-fb01-005-p1', 'dragonball-fw-fb01', 'PR', '亀仙人']
   ]);
@@ -127,7 +128,7 @@ test('七龍珠超：平行版和航海王一樣各自一張卡（-p1），canon
   const keys = printings.map(p => [p.card_id, p.region, p.language, p.local_set_code, p.local_card_number].join('|'));
   assert.equal(new Set(keys).size, keys.length, '版本唯一鍵不重複');
   assert.deepEqual(printings.map(p => [p.provider_id, p.series_id, p.rarity]), [
-    ['FB01-001', 'dragonball-fw-fb01', 'L'], ['FB01-001_p1', 'dragonball-fw-fb01', 'SCR'], ['FB01-005', 'dragonball-fw-sb01', 'C'], ['E-42', 'dragonball-fw-sb01', null],
+    ['FB01-001', 'dragonball-fw-fb01', 'L'], ['FB01-001_p1', 'dragonball-fw-fb01', 'SCR'], ['FB01-005', 'dragonball-fw-sb01', 'C'], ['E-42', 'dragonball-fw-sb01', '能量標記'], ['E01-01', 'dragonball-fw-sb01', '能量標記'],
     ['FP-001', 'dragonball-fw-pr', 'PR'], ['FB01-005_p1', 'dragonball-fw-pr', 'PR']
   ]);
   const promoVariant = printings.find(p => p.provider_id === 'FB01-005_p1');
@@ -139,11 +140,19 @@ test('七龍珠超：平行版和航海王一樣各自一張卡（-p1），canon
   assert.equal(promoVariant.image_rehost_required, false);
 });
 
+const fwProducts = `<ul class="prpductList"><li class="prpductListItem cardCol"><a href="https://www.dbs-cardgame.com/fw/asia-tc/products/01_422.html" class="cardLink"><div class="cardThumb"><img class="lazy" src="/fw/images/products/item/noimage2.webp" data-src="/fw/bccard/asia-tc/news/2026/07/13/x/FB11_jp.png" alt=""></div><div class="cardDetail"><h3 class="cardText">補充包 BRIGHTNESS OF HOPE [FB11]</h3><div class="cardInfo"><dl class="cardInfoBox"><dt class="cardInfoTit">發售日期</dt><dd class="cardInfoTxt">2026.9.12</dd></dl></div></div></a></li>
+<li class="prpductListItem cardCol"><a href="#" class="cardLink"><div class="cardThumb"><img class="lazy" data-src="/fw/x/sleeve.png" alt=""></div><div class="cardDetail"><h3 class="cardText">官方卡套01</h3><div class="cardInfo"><dl class="cardInfoBox"><dt class="cardInfoTit">發售日期</dt><dd class="cardInfoTxt">2024.02.16</dd></dl></div></div></a></li></ul>`;
+
+test('七龍珠超：商品頁只取帶系列代碼的商品，補發售日與包裝圖', () => {
+  assert.deepEqual(parseFwProducts(fwProducts), [{ code: 'FB11', name: '補充包 BRIGHTNESS OF HOPE [FB11]', releaseDate: '2026-09-12', image: 'https://www.dbs-cardgame.com/fw/bccard/asia-tc/news/2026/07/13/x/FB11_jp.png' }]);
+});
+
 function fwFetch({ emptyCategory = null } = {}) {
   const seen = [];
   const fetchText = async url => {
     seen.push(url);
     const u = new URL(url);
+    if (u.pathname.endsWith('/products/')) return u.searchParams.get('page') === '1' ? fwProducts : '<ul class="prpductList"></ul>';
     if (!u.searchParams.has('category[0]') && !u.searchParams.has('rarity[0]')) return fixture('fw-cardlist-root.html');
     if (u.searchParams.has('category[0]')) return u.searchParams.get('category[0]') === emptyCategory ? '<ul></ul>' : fwPage([[`FB11-${u.searchParams.get('category[0]').slice(-3)}`, '', '孫悟空']]);
     return fwPage(u.searchParams.get('rarity[0]') === 'L' ? ['011', '201', '108', '901'].map(n => ['FB11-' + n, '', '孫悟空']) : [['FB11-011', '_p1', '孫悟空']]);
@@ -162,8 +171,8 @@ test('七龍珠超同步：只新增資料庫沒有的列，紀錄為 dbs-fw-off
   assert.equal(runs.at(-1).body.status, 'completed');
   assert.equal(stats.metadata.cards, 4);
   assert.equal(stats.metadata.officialCount, 4);
-  assert.ok(seen.every(url => url.startsWith('https://www.dbs-cardgame.com/fw/asia-tc/cardlist/') || url.startsWith('https://www.dbs-cardgame.com/fw/jp/cardlist/')));
-  assert.equal(seen.length, 1 + 1 + 4 + 3 * 2, '根頁、日文根頁、4 個收錄彈、3 個稀有度各查中日文');
+  assert.ok(seen.every(url => /^https:\/\/www\.dbs-cardgame\.com\/fw\/(asia-tc|jp)\/cardlist\/|^https:\/\/www\.dbs-cardgame\.com\/fw\/asia-tc\/products\//.test(url)));
+  assert.equal(seen.length, 1 + 1 + 4 + 3 * 2 + 2, '根頁、日文根頁、4 個收錄彈、3 個稀有度各查中日文、商品頁 2 頁（第 2 頁沒有新商品就停）');
 });
 
 test('七龍珠超同步：某個收錄彈解析不到卡時停止並記為失敗，不寫入', async () => {

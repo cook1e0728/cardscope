@@ -276,8 +276,8 @@
       "evidenceUrls": [
         "https://www.dbs-cardgame.com/fw/asia-tc/cardlist/"
       ],
-      "orderingNoteZh": "官方卡表的稀有度篩選選項為 L、C、UC、R、SR、SCR、PR；官方沒有公布高低順序。CardScope 依常見強度排 SCR、SR、L、R、UC、C，推廣卡 PR 放最後；此排序僅用於圖鑑導覽，不代表價格。",
-      "canonicalCodes": ["SCR", "SR", "L", "R", "UC", "C", "PR"],
+      "orderingNoteZh": "官方卡表的稀有度篩選選項為 L、C、UC、R、SR、SCR、PR；官方沒有公布高低順序。CardScope 依常見強度排 SCR、SR、L、R、UC、C，推廣卡 PR 放最後；能量標記（E- 開頭）官方沒有稀有度，另列一組放在最後方便篩選。此排序僅用於圖鑑導覽，不代表價格。",
+      "canonicalCodes": ["SCR", "SR", "L", "R", "UC", "C", "PR", "能量標記"],
       "canonicalLabels": {},
       "aliases": {},
       "highToLow": [
@@ -287,9 +287,11 @@
         ["R"],
         ["UC"],
         ["C"],
-        ["PR"]
+        ["PR"],
+        ["能量標記"]
       ],
       "lowToHigh": [
+        ["能量標記"],
         ["PR"],
         ["C"],
         ["UC"],

@@ -12,6 +12,9 @@ export const FRIEREN_TITLE = '147';
 export const FW_SOURCE = 'dbs-fw-official';
 export const FW_LIST = 'https://www.dbs-cardgame.com/fw/asia-tc/cardlist/';
 export const FW_LIST_JP = 'https://www.dbs-cardgame.com/fw/jp/cardlist/';
+export const FW_PRODUCTS = 'https://www.dbs-cardgame.com/fw/asia-tc/products/';
+// 能量標記（E-、E01- 等開頭）官方沒有稀有度；給一個導覽用的分組，不顯示成「稀有度待補」。
+export const FW_ENERGY_RARITY = '能量標記';
 const PAGE_DELAY_MS = 1100;
 const HAIKYUU_PER_PAGE = 20;
 
@@ -105,9 +108,17 @@ export function parseFwCards(html) {
     cardNo, variant: variant || '', name: decodeEntities(alt).replace(/^\S+\s*/, ''), image: new URL(src, FW_LIST).href }));
 }
 
-export function fwSeriesRow(category, nameJa = null) {
+/** 商品頁的每個商品 → { code, name, releaseDate: YYYY-MM-DD, image }；只留名稱帶 [代碼] 的商品（卡套等周邊沒有代碼）。 */
+export function parseFwProducts(html) {
+  return [...String(html).matchAll(/<li class="prpductListItem[\s\S]*?data-src="([^"]+)"[\s\S]*?class="cardText">([^<]*)<[\s\S]*?class="cardInfoTxt">\s*(\d{4})\.(\d{1,2})\.(\d{1,2})/g)].map(([, src, name, y, m, d]) => {
+    const code = decodeEntities(name).match(/\[\s*([A-Z]+\d+)\s*\]/)?.[1];
+    return code && { code, name: decodeEntities(name).trim(), releaseDate: `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`, image: new URL(src, FW_PRODUCTS).href };
+  }).filter(Boolean);
+}
+
+export function fwSeriesRow(category, nameJa = null, product = null) {
   return { id: `dragonball-fw-${lower(category.code)}`, game_id: 'dragonball-fw', official_code: category.code, name_ja: nameJa, name_zh: category.name, name_en: null, name_ko: null,
-    region: 'TW', language: 'zh-TW', release_date: null, aliases: [category.code], source_url: `${FW_LIST}?search=true&category%5B0%5D=${category.id}`, image_url: null, image_kind: null,
+    region: 'TW', language: 'zh-TW', release_date: product?.releaseDate || null, aliases: [category.code], source_url: `${FW_LIST}?search=true&category%5B0%5D=${category.id}`, image_url: product?.image || null, image_kind: product?.image ? 'series-logo' : null,
     source: FW_SOURCE, provider_id: category.id, metadata: { ip: 'dragonball' } };
 }
 
@@ -115,12 +126,13 @@ export function fwSeriesRow(category, nameJa = null) {
  * 各收錄彈卡表（categoryCards: 收錄彈 id → parseFwCards 結果）、稀有度頁（rarityByKey: `卡號+版本` → 稀有度）與日文卡表（jaNameByNo: 卡號 → 日文名）→ 系列、卡片、版本列。
  * 一個卡號是一張卡；每個「卡號＋版本」是一個版本，掛在列出它的收錄彈（例如 FB01 的推廣平行版掛在推廣卡）。卡片的所屬系列：卡號開頭的代碼若是系列，否則 FP 歸推廣卡，其餘取第一個列出它的收錄彈。
  */
-export function fwCatalogRows({ categories, jaCategories = [], categoryCards, rarityByKey, jaNameByNo }) {
+export function fwCatalogRows({ categories, jaCategories = [], categoryCards, rarityByKey, jaNameByNo, products = [] }) {
+  const productByCode = new Map(products.map(product => [product.code, product]));
   const jaByCode = new Map(jaCategories.map(category => [category.code, category.name])), codes = new Set(categories.map(category => category.code));
   // 平行版（_p1、_p2）和航海王一樣各自是一張卡（id 加 -p1），canonical_id 指回基本卡；同卡號同版本在多個收錄彈出現時是同一張卡的多筆版本。
   const entries = new Map(), printings = [];
   for (const category of categories) for (const item of categoryCards.get(category.id) || []) {
-    const key = `${item.cardNo}${item.variant}`, rarity = rarityByKey.get(key) || null, cardId = `dragonball-fw-${lower(item.cardNo)}${item.variant ? `-${lower(item.variant.replace(/^_/, ''))}` : ''}`;
+    const key = `${item.cardNo}${item.variant}`, rarity = rarityByKey.get(key) || (/^E\d*-/.test(item.cardNo) ? FW_ENERGY_RARITY : null), cardId = `dragonball-fw-${lower(item.cardNo)}${item.variant ? `-${lower(item.variant.replace(/^_/, ''))}` : ''}`;
     if (!entries.has(key)) entries.set(key, { key, cardId, cardNo: item.cardNo, nameZh: item.name, firstCode: category.code, rarity });
     printings.push({ card_id: cardId, series_id: `dragonball-fw-${lower(category.code)}`, region: 'TW', language: 'zh-TW', local_set_code: category.code, local_card_number: item.cardNo,
       rarity, image_url: item.image, source_url: `${FW_LIST}detail.php?card_no=${item.cardNo}${item.variant ? `&p=${item.variant}` : ''}`, source: FW_SOURCE, provider_id: key,
@@ -135,7 +147,7 @@ export function fwCatalogRows({ categories, jaCategories = [], categoryCards, ra
       source: FW_SOURCE, provider_id: entry.key, search_text: [entry.nameZh, nameJa, entry.cardNo].filter(Boolean).join(' '),
       metadata: { ip: 'dragonball', displayNameLanguage: 'zh-TW' }, data_status: 'verified' };
   });
-  return { series: categories.map(category => fwSeriesRow(category, jaByCode.get(category.code) || null)), cards, printings };
+  return { series: categories.map(category => fwSeriesRow(category, jaByCode.get(category.code) || null, productByCode.get(category.code) || null)), cards, printings };
 }
 
 // ---- 共用：只新增 ----
@@ -283,9 +295,16 @@ export async function collectDragonballFw({ fetchText = officialText, delay = PA
     for (const item of tw) rarityByKey.set(`${item.cardNo}${item.variant}`, rarity);
     for (const item of parseFwCards(await get(`${FW_LIST_JP}${query}`))) if (!jaNameByNo.has(item.cardNo)) jaNameByNo.set(item.cardNo, item.name);
   }
-  const rows = fwCatalogRows({ categories, jaCategories, categoryCards, rarityByKey, jaNameByNo });
+  // 商品頁只用來補系列發售日與包裝圖；讀到沒有新商品的頁就停（上限 15 頁）。
+  const products = new Map();
+  for (let page = 1; page <= 15; page++) {
+    const found = parseFwProducts(await get(`${FW_PRODUCTS}?page=${page}`)).filter(product => !products.has(product.code));
+    if (!found.length) break;
+    for (const product of found) products.set(product.code, product);
+  }
+  const rows = fwCatalogRows({ categories, jaCategories, categoryCards, rarityByKey, jaNameByNo, products: [...products.values()] });
   const unrated = rows.printings.filter(printing => !printing.rarity).length;
-  // 能量標記（E- 開頭）本來沒有稀有度；超過兩成沒有稀有度表示篩選頁改版，不寫入。
+  // 能量標記已給導覽分組；其餘超過兩成沒有稀有度表示篩選頁改版，不寫入。
   if (only === null && unrated > rows.printings.length * 0.2) throw new Error(`FW_RARITY_COVERAGE:${unrated}/${rows.printings.length}`);
   return { ...rows, unrated, missingJa: rows.cards.filter(card => !card.name_ja).length };
 }
