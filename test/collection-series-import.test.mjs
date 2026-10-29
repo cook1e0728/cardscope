@@ -225,30 +225,4 @@ test('import dialog wiring: preview before writing, replace needs the checkbox a
   assert.match(ui, /CS\.seriesBreakdown\(collectionItems\(\),10\)/);
 });
 
-test('card image: the first failure waits 1.5 s and retries the same URL with retry=1, only then the fallbacks, then 圖片待補', () => {
-  const sandbox = vm.createContext({ e: esc, displayImageUrl: url => url, missingImageMarkup: () => '<span>none</span>' });
-  vm.runInContext(between('function resilientImage', 'function installViewToggle'), sandbox);
-  const markup = vm.runInContext("resilientImage('https://asia.pokemon-card.com/tw/card-img/a.png','測試卡','待補',{fallbacks:['/jp.png','/jp2.png']})", sandbox);
-  const handler = markup.match(/onerror="([^"]*)"/)[1];
-  assert.match(markup, /onload="this\.style\.visibility=''"/);
-  const timers = [];
-  const run = img => new Function('setTimeout', handler).call(img, (fn, ms) => timers.push([fn, ms]));
-  const img = { src: 'https://asia.pokemon-card.com/tw/card-img/a.png', dataset: { fallbacks: JSON.stringify(['/jp.png', '/jp2.png']) }, style: {}, hidden: false, nextElementSibling: { hidden: true }, parentElement: { querySelector: () => null } };
-  run(img);
-  assert.equal(img.dataset.retried, '1');
-  assert.equal(img.src, 'https://asia.pokemon-card.com/tw/card-img/a.png', 'not swapped yet: it waits first');
-  assert.deepEqual([timers.length, timers[0][1]], [1, 1500]);
-  assert.equal(img.style.visibility, 'hidden', 'no broken-image icon while waiting');
-  timers[0][0]();
-  assert.equal(img.src, 'https://asia.pokemon-card.com/tw/card-img/a.png?retry=1');
-  run(img);
-  assert.equal(img.src, '/jp.png', 'the retry failed too: the existing fallback list takes over');
-  assert.equal(timers.length, 1, 'no second retry');
-  run(img); run(img);
-  assert.equal(img.src, '/jp2.png');
-  assert.deepEqual([img.hidden, img.nextElementSibling.hidden], [true, false], 'everything failed: 圖片待補 is shown');
-  // a URL that already has a query string gets &retry=1
-  const withQuery = { ...img, src: 'https://x/api/images/onepiece?url=a', dataset: {}, hidden: false, style: {}, nextElementSibling: { hidden: true } };
-  run(withQuery); timers.at(-1)[0]();
-  assert.equal(withQuery.src, 'https://x/api/images/onepiece?url=a&retry=1');
-});
+// card image retry/fallback behaviour is covered in test/csp-strict.test.mjs (it is now a delegated data-img-error handler, not an inline onerror)

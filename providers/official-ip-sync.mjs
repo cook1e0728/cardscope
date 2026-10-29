@@ -1,4 +1,4 @@
-// ADR 0034、0052 Q7：七龍珠超 Fusion World 同樣依此規則。
+// ADR 0034、0052 Q7：七龍珠超 Fusion World 同樣依此規則。唯一例外：七龍珠超會把既有列「目前是 null」的系列發售日／包裝圖與卡片日文名補上（fillFwBlanks），不覆蓋任何已有的值。
 // ADR 0034：排球少年（TAKARA TOMY 官方卡表）與葬送的芙莉蓮（Weiß Schwarz 官方卡表）的定時同步。
 // 使用者接受未確認條款的風險；只收文字事實與官方圖片網址（外連，不轉存）。
 // 只新增官方有而資料庫沒有的系列、卡片與版本；既有列（含手動整理的中文別名、系列中文名）一律不改，
@@ -177,10 +177,10 @@ async function insertOnly(db, path, rows, onConflict) {
   return rows.length;
 }
 
-async function storedRows(db, path, source, select) {
+async function storedRows(db, path, source, select, filter = '') {
   const rows = [];
   for (let offset = 0; ; offset += 1000) {
-    const page = await db(`${path}?select=${select}&source=eq.${source}&order=id&limit=1000&offset=${offset}`);
+    const page = await db(`${path}?select=${select}&source=eq.${source}${filter}&order=id&limit=1000&offset=${offset}`);
     if (!Array.isArray(page)) throw new Error(`STORED_ROWS_UNAVAILABLE:${path}`);
     rows.push(...page);
     if (page.length < 1000) return rows;
@@ -202,6 +202,47 @@ async function writeNew(db, { source, series, cards, printings }) {
   written += await insertOnly(db, '/tcg_printings', newPrintings, 'source,provider_id');
   return { written, newSeries: newSeries.map(row => row.id), newCards: newCards.map(row => row.id), newPrintings: newPrintings.length,
     differences: officialDifferences(cards, storedCards).slice(0, 50), storedSeries };
+}
+
+/**
+ * 七龍珠超「補空白」：只把官方這次讀到的值寫進既有列「目前是 null」的欄位，絕不覆蓋已有的值（含手動整理的）。
+ * 系列：release_date、image_url（連同 image_kind）；卡片：name_ja（並補進 aliases、search_text）。每筆 patch 帶 guard，伺服器端再擋一次 null 條件，避免與並行寫入互相覆蓋。
+ */
+export function fwFillPatches({ series, cards }, storedSeries, storedCards) {
+  const seriesById = new Map(series.map(row => [row.id, row])), cardById = new Map(cards.map(row => [row.id, row]));
+  const seriesPatches = [], cardPatches = [];
+  for (const stored of storedSeries) {
+    const row = seriesById.get(stored.id);
+    if (!row) continue;
+    if (stored.release_date == null && row.release_date) seriesPatches.push({ id: stored.id, guard: 'release_date=is.null', body: { release_date: row.release_date } });
+    if (stored.image_url == null && row.image_url) seriesPatches.push({ id: stored.id, guard: 'image_url=is.null', body: { image_url: row.image_url, ...(stored.image_kind == null && row.image_kind ? { image_kind: row.image_kind } : {}) } });
+  }
+  for (const stored of storedCards) {
+    const row = cardById.get(stored.id);
+    if (!row?.name_ja || stored.name_ja != null) continue;
+    const plain = [row.name_zh, row.official_card_number].filter(Boolean).join(' ');
+    cardPatches.push({ id: stored.id, guard: 'name_ja=is.null', body: { name_ja: row.name_ja, aliases: [...new Set([...(stored.aliases || []), row.name_ja])],
+      search_text: !stored.search_text || stored.search_text === plain ? row.search_text : stored.search_text.includes(row.name_ja) ? stored.search_text : `${stored.search_text} ${row.name_ja}` } });
+  }
+  return { seriesPatches, cardPatches };
+}
+
+/** 逐筆 PATCH（每筆值不同，無法合併成一個請求）；少量並行，首次補日文名約數百筆，之後幾乎為零。 */
+async function patchRows(db, path, patches, concurrency = 6) {
+  const queue = [...patches];
+  await Promise.all(Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
+    for (let patch; (patch = queue.shift());) await db(`${path}?id=eq.${encodeURIComponent(patch.id)}&${patch.guard}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(patch.body) });
+  }));
+  return patches.length;
+}
+
+async function fillFwBlanks(db, rows) {
+  const [storedSeries, storedCards] = await Promise.all([
+    storedRows(db, '/tcg_series', FW_SOURCE, 'id,release_date,image_url,image_kind', '&or=(release_date.is.null,image_url.is.null)'),
+    storedRows(db, '/tcg_cards', FW_SOURCE, 'id,name_ja,aliases,search_text', '&name_ja=is.null')
+  ]);
+  const { seriesPatches, cardPatches } = fwFillPatches(rows, storedSeries, storedCards);
+  return { filledSeries: await patchRows(db, '/tcg_series', seriesPatches), filledJa: await patchRows(db, '/tcg_cards', cardPatches) };
 }
 
 async function startRun(db, provider) {
@@ -295,6 +336,13 @@ export async function collectDragonballFw({ fetchText = officialText, delay = PA
     for (const item of tw) rarityByKey.set(`${item.cardNo}${item.variant}`, rarity);
     for (const item of parseFwCards(await get(`${FW_LIST_JP}${query}`))) if (!jaNameByNo.has(item.cardNo)) jaNameByNo.set(item.cardNo, item.name);
   }
+  // 沒有稀有度的卡（能量標記等）不在稀有度篩選頁裡；再用日文各收錄彈卡表（依系列代碼對應）補日文名，已有的不覆蓋。日文站沒有該收錄彈就略過。
+  const jaIdByCode = new Map(jaCategories.map(category => [category.code, category.id]));
+  for (const category of categories) {
+    const jaId = jaIdByCode.get(category.code);
+    if (!jaId) continue;
+    for (const item of parseFwCards(await get(`${FW_LIST_JP}?search=true&category%5B0%5D=${jaId}`))) if (!jaNameByNo.has(item.cardNo)) jaNameByNo.set(item.cardNo, item.name);
+  }
   // 商品頁只用來補系列發售日與包裝圖；讀到沒有新商品的頁就停（上限 15 頁）。
   const products = new Map();
   for (let page = 1; page <= 15; page++) {
@@ -314,9 +362,10 @@ export async function syncDragonballFw(db, { fetchText = officialText, delay = P
   try {
     const rows = await collectDragonballFw({ fetchText, delay });
     const result = await writeNew(db, { source: FW_SOURCE, series: rows.series, cards: rows.cards, printings: rows.printings });
+    const filled = await fillFwBlanks(db, rows);
     stats.seen = rows.printings.length;
-    stats.written = result.written;
-    stats.metadata = { officialCount: rows.printings.length, cards: rows.cards.length, images: rows.printings.filter(printing => printing.image_url).length, unratedPrintings: rows.unrated, cardsWithoutJa: rows.missingJa,
+    stats.written = result.written + filled.filledSeries + filled.filledJa;
+    stats.metadata = { officialCount: rows.printings.length, cards: rows.cards.length, images: rows.printings.filter(printing => printing.image_url).length, unratedPrintings: rows.unrated, cardsWithoutJa: rows.missingJa, filledSeries: filled.filledSeries, filledJa: filled.filledJa,
       newSeries: result.newSeries, newCards: result.newCards, newPrintings: result.newPrintings, differences: result.differences, basis: 'ADR 0052 Q7' };
     await finishRun(db, runId, 'completed', stats);
     return stats;

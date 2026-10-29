@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { fwCatalogRows, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwProducts, parseFwRarities, syncDragonballFw, syncHaikyuu, syncWeissFrieren, weissCardRows, weissSetCode } from '../providers/official-ip-sync.mjs';
+import { collectDragonballFw, fwCatalogRows, fwFillPatches, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwProducts, parseFwRarities, syncDragonballFw, syncHaikyuu, syncWeissFrieren, weissCardRows, weissSetCode } from '../providers/official-ip-sync.mjs';
 
 const haikyuuItem = (ID, card_no, name, extra = {}) => ({ ID: String(ID), card_no, name, name_ruby: 'ひなた しょうよう', product_type: card_no.split('-').slice(0, 2).join('-'), vobarity: 'P', image_end: 'P', category: 'CHARACTER', position: 'MB', affiliation: '烏野·1年', ...extra });
 
@@ -29,14 +29,15 @@ test('芙莉蓮：卡號決定系列代碼，試玩牌組為 -TD', () => {
 });
 
 function mockDb(stored) {
-  const posts = [], runs = [];
+  const posts = [], runs = [], patches = [];
   const db = async (path, options = {}) => {
     if (path.startsWith('/catalog_sync_runs')) { runs.push({ path, method: options.method, body: options.body && JSON.parse(options.body) }); return options.method === 'POST' ? [{ id: 1 }] : null; }
+    if (options.method === 'PATCH') { patches.push({ path, body: JSON.parse(options.body) }); return null; }
     if (options.method === 'POST') { posts.push({ path, prefer: options.headers?.Prefer, rows: JSON.parse(options.body) }); return null; }
     const table = path.split('?')[0], offset = Number(new URL(`http://x${path}`).searchParams.get('offset') || 0);
     return offset ? [] : (stored[table] || []);
   };
-  return { db, posts, runs };
+  return { db, posts, runs, patches };
 }
 
 test('排球少年同步只新增資料庫沒有的卡，既有卡不寫入，官方值不同只回報', async () => {
@@ -147,14 +148,17 @@ test('七龍珠超：商品頁只取帶系列代碼的商品，補發售日與�
   assert.deepEqual(parseFwProducts(fwProducts), [{ code: 'FB11', name: '補充包 BRIGHTNESS OF HOPE [FB11]', releaseDate: '2026-09-12', image: 'https://www.dbs-cardgame.com/fw/bccard/asia-tc/news/2026/07/13/x/FB11_jp.png' }]);
 });
 
-function fwFetch({ emptyCategory = null } = {}) {
+function fwFetch({ emptyCategory = null, energy = false } = {}) {
   const seen = [];
   const fetchText = async url => {
     seen.push(url);
     const u = new URL(url);
     if (u.pathname.endsWith('/products/')) return u.searchParams.get('page') === '1' ? fwProducts : '<ul class="prpductList"></ul>';
     if (!u.searchParams.has('category[0]') && !u.searchParams.has('rarity[0]')) return fixture('fw-cardlist-root.html');
-    if (u.searchParams.has('category[0]')) return u.searchParams.get('category[0]') === emptyCategory ? '<ul></ul>' : fwPage([[`FB11-${u.searchParams.get('category[0]').slice(-3)}`, '', '孫悟空']]);
+    if (u.searchParams.has('category[0]')) {
+      const id = u.searchParams.get('category[0]'), jp = u.pathname.includes('/fw/jp/');
+      return id === emptyCategory ? '<ul></ul>' : fwPage([[`FB11-${id.slice(-3)}`, '', jp ? '日文類別名' : '孫悟空'], ...(energy && id.endsWith('901') ? [['E-42', '', jp ? 'エナジーマーカー' : '能量標記']] : [])]);
+    }
     return fwPage(u.searchParams.get('rarity[0]') === 'L' ? ['011', '201', '108', '901'].map(n => ['FB11-' + n, '', '孫悟空']) : [['FB11-011', '_p1', '孫悟空']]);
   };
   return { fetchText, seen };
@@ -172,7 +176,7 @@ test('七龍珠超同步：只新增資料庫沒有的列，紀錄為 dbs-fw-off
   assert.equal(stats.metadata.cards, 4);
   assert.equal(stats.metadata.officialCount, 4);
   assert.ok(seen.every(url => /^https:\/\/www\.dbs-cardgame\.com\/fw\/(asia-tc|jp)\/cardlist\/|^https:\/\/www\.dbs-cardgame\.com\/fw\/asia-tc\/products\//.test(url)));
-  assert.equal(seen.length, 1 + 1 + 4 + 3 * 2 + 2, '根頁、日文根頁、4 個收錄彈、3 個稀有度各查中日文、商品頁 2 頁（第 2 頁沒有新商品就停）');
+  assert.equal(seen.length, 1 + 1 + 4 + 3 * 2 + 4 + 2, '根頁、日文根頁、4 個收錄彈、3 個稀有度各查中日文、4 個日文收錄彈、商品頁 2 頁（第 2 頁沒有新商品就停）');
 });
 
 test('七龍珠超同步：某個收錄彈解析不到卡時停止並記為失敗，不寫入', async () => {
@@ -181,4 +185,57 @@ test('七龍珠超同步：某個收錄彈解析不到卡時停止並記為失�
   await assert.rejects(syncDragonballFw(db, { fetchText, delay: 0 }), /FW_CATEGORY_EMPTY:596201/);
   assert.equal(posts.length, 0);
   assert.equal(runs.at(-1).body.status, 'failed');
+});
+
+test('七龍珠超：沒有稀有度的卡（能量標記）用日文收錄彈卡表補日文名，稀有度頁已有的日文名不被覆蓋；日文收錄彈依系列代碼對應', async () => {
+  const { fetchText, seen } = fwFetch({ energy: true });
+  const rows = await collectDragonballFw({ fetchText, delay: 0 });
+  const energy = rows.cards.find(c => c.official_card_number === 'E-42');
+  assert.deepEqual([energy.rarity, energy.name_ja, energy.aliases, energy.search_text], ['能量標記', 'エナジーマーカー', ['能量標記', 'エナジーマーカー'], '能量標記 エナジーマーカー E-42']);
+  assert.equal(rows.cards.find(c => c.official_card_number === 'FB11-011').name_ja, '孫悟空', '稀有度頁的日文名優先');
+  assert.equal(rows.missingJa, 0);
+  assert.ok(seen.some(url => url.includes('/fw/jp/cardlist/?search=true&category%5B0%5D=596901')));
+});
+
+const fwStoredRows = rows => ({ series: rows.series, cards: rows.cards });
+
+test('七龍珠超補空白：只補目前是 null 的系列發售日／包裝圖與卡片日文名，已有的值一律不動', () => {
+  const rows = fwCatalogRows({ ...fwSources(), products: [{ code: 'FB01', releaseDate: '2024-11-22', image: 'https://img/fb01.png' }, { code: 'SB01', releaseDate: '2025-01-01', image: 'https://img/sb01.png' }] });
+  const { seriesPatches, cardPatches } = fwFillPatches(fwStoredRows(rows), [
+    { id: 'dragonball-fw-fb01', release_date: null, image_url: null, image_kind: null },
+    { id: 'dragonball-fw-sb01', release_date: '2025-02-02', image_url: null, image_kind: null },
+    { id: 'dragonball-fw-pr', release_date: null, image_url: 'https://manual/pr.png', image_kind: 'series-logo' },
+    { id: 'dragonball-fw-gone', release_date: null, image_url: null }
+  ], [
+    { id: 'dragonball-fw-fb01-001', name_ja: null, aliases: ['孫悟空', '悟空'], search_text: '孫悟空 FB01-001' },
+    { id: 'dragonball-fw-fb01-005', name_ja: '手動日文名', aliases: [], search_text: '' },
+    { id: 'dragonball-fw-e-42', name_ja: null, aliases: [], search_text: '' },
+    { id: 'dragonball-fw-fp-001', name_ja: null, aliases: ['孫悟空'], search_text: '手動整理的搜尋字 孫悟空' }
+  ]);
+  assert.deepEqual(seriesPatches, [
+    { id: 'dragonball-fw-fb01', guard: 'release_date=is.null', body: { release_date: '2024-11-22' } },
+    { id: 'dragonball-fw-fb01', guard: 'image_url=is.null', body: { image_url: 'https://img/fb01.png', image_kind: 'series-logo' } },
+    { id: 'dragonball-fw-sb01', guard: 'image_url=is.null', body: { image_url: 'https://img/sb01.png', image_kind: 'series-logo' } }
+  ]);
+  assert.deepEqual(cardPatches.map(p => [p.id, p.guard, p.body]), [
+    ['dragonball-fw-fb01-001', 'name_ja=is.null', { name_ja: '孫悟空', aliases: ['孫悟空', '悟空'], search_text: '孫悟空 孫悟空 FB01-001' }],
+    ['dragonball-fw-fp-001', 'name_ja=is.null', { name_ja: '孫悟空', aliases: ['孫悟空'], search_text: '手動整理的搜尋字 孫悟空' }]
+  ], '手動日文名不覆蓋；官方沒有日文名的卡不動；搜尋字已有日文名就不重複');
+});
+
+test('七龍珠超同步：補空白以 PATCH 寫入並帶 is.null 條件，數量記在執行紀錄；沒有可補的就不送 PATCH', async () => {
+  const { fetchText } = fwFetch({ energy: true });
+  const stored = { '/tcg_series': [{ id: 'dragonball-fw-fb11', release_date: null, image_url: null, image_kind: null }], '/tcg_cards': [{ id: 'dragonball-fw-e-42', name_ja: null, aliases: ['能量標記'], search_text: '能量標記 E-42' }], '/tcg_printings': [] };
+  const first = mockDb(stored);
+  const stats = await syncDragonballFw(first.db, { fetchText, delay: 0 });
+  assert.deepEqual(first.patches.map(p => [p.path, p.body]), [
+    ['/tcg_series?id=eq.dragonball-fw-fb11&release_date=is.null', { release_date: '2026-09-12' }],
+    ['/tcg_series?id=eq.dragonball-fw-fb11&image_url=is.null', { image_url: 'https://www.dbs-cardgame.com/fw/bccard/asia-tc/news/2026/07/13/x/FB11_jp.png', image_kind: 'series-logo' }],
+    ['/tcg_cards?id=eq.dragonball-fw-e-42&name_ja=is.null', { name_ja: 'エナジーマーカー', aliases: ['能量標記', 'エナジーマーカー'], search_text: '能量標記 エナジーマーカー E-42' }]
+  ]);
+  assert.deepEqual([stats.metadata.filledSeries, stats.metadata.filledJa], [2, 1]);
+  const second = mockDb({ '/tcg_series': [{ id: 'dragonball-fw-fb11', release_date: '2026-01-01', image_url: 'https://manual', image_kind: 'series-logo' }], '/tcg_cards': [{ id: 'dragonball-fw-e-42', name_ja: 'x' }], '/tcg_printings': [] });
+  const again = await syncDragonballFw(second.db, { fetchText: fwFetch({ energy: true }).fetchText, delay: 0 });
+  assert.equal(second.patches.length, 0);
+  assert.deepEqual([again.metadata.filledSeries, again.metadata.filledJa], [0, 0]);
 });

@@ -3,7 +3,7 @@
 const VERSION = 'cardscope-shell-v1';
 const SHELL_URLS = ['/', '/assets/brand/web/rabbit-offline.webp', '/assets/brand/web/pwa-icon-192.png'];
 const SHELL_PATH = /^\/(?:[a-z0-9-]+\.(?:js|css)|assets\/brand\/web\/[\w.-]+\.(?:png|webp)|assets\/[\w./-]*\.(?:png|webp|svg|woff2?))$/;
-const OFFLINE_HTML = '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CardScope 離線</title><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#EDE8DE;color:#16132A;font:16px/1.6 system-ui,\'Noto Sans TC\',sans-serif;text-align:center"><main style="padding:24px"><img src="/assets/brand/web/rabbit-offline.webp" alt="" width="160" style="max-width:50vw;height:auto" onerror="this.remove()"><h1 style="font-size:20px;margin:12px 0 6px">目前離線</h1><p style="margin:0">已收藏的卡仍保存在這台裝置。連上網路後再重新整理即可。</p></main>';
+const OFFLINE_HTML = '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CardScope 離線</title><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#EDE8DE;color:#16132A;font:16px/1.6 system-ui,\'Noto Sans TC\',sans-serif;text-align:center"><main style="padding:24px"><img src="/assets/brand/web/rabbit-offline.webp" alt="" width="160" style="max-width:50vw;height:auto"><h1 style="font-size:20px;margin:12px 0 6px">目前離線</h1><p style="margin:0">已收藏的卡仍保存在這台裝置。連上網路後再重新整理即可。</p></main>';
 
 self.addEventListener('install', event => {
   // addAll would fail the whole install on one 404; best-effort per URL instead.

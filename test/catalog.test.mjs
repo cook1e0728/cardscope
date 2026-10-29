@@ -239,7 +239,7 @@ test('frontend exposes seven shared product categories and maps legacy labels',a
   ]);
   for(const [legacy,id] of [['原盒','sealed'],['特典卡','promo'],['周邊道具','accessories']])assert.equal(productMatchesCategory({catalogCategory:legacy},id),true,`${legacy} should map to ${id}`);
   assert.match(html,/PRODUCT_CATEGORY_DEFINITIONS\.map\(category=>/);
-  assert.match(html,/onclick="chooseProductCategory\('\$\{category\.id\}'\)"/);
+  assert.match(html,/data-do="chooseProductCategory" data-arg="\$\{e\(category\.id\)\}"/);
 });
 
 test('Pokemon cards keep their edition image but display official Traditional Chinese species names',()=>{

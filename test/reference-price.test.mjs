@@ -32,6 +32,18 @@ test('migration: only new functions, Cardmarket EUR within 7 days, service role 
   assert.match(migration, /'unmapped'/, '稀有度對照表缺值時回報，伺服器重建後重試');
 });
 
+test('migration 20261030150000: reference window widened to 14 days, still latest-per-variant, same signature and grants, nothing else touched', async () => {
+  const windowMigration = await readFile(new URL('../supabase/migrations/20261030150000_price_reference_window.sql', import.meta.url), 'utf8');
+  assert.deepEqual([...windowMigration.matchAll(/create or replace function public\.(\w+)\(([^)]*)\)/g)].map(match => [match[1], match[2]]), [['price_reference_best', 'p_ids text[] default null']]);
+  assert.doesNotMatch(windowMigration, /create (unique )?index|create table|alter table|drop |insert |update |delete /i);
+  assert.equal([...windowMigration.matchAll(/snapshot_date >= current_date - 14/g)].length, 2, '兩個分支（指定 id、整張表）都用 14 天');
+  assert.doesNotMatch(windowMigration, /current_date - 7/);
+  assert.equal([...windowMigration.matchAll(/m\.provider = 'cardmarket'/g)].length, 2);
+  assert.match(windowMigration, /max\(m\.snapshot_date\)/, '每個 variant 取最新一列（先找最新日期再用主鍵回表）');
+  assert.match(windowMigration, /case l\.variant when 'normal' then 0 when '' then 1 when 'holo' then 2 when 'reverse' then 3 else 4 end/, 'variant 優先序不變');
+  assert.match(windowMigration, /revoke all on function public\.price_reference_best\(text\[\]\) from public, anon, authenticated;\s*grant execute on function public\.price_reference_best\(text\[\]\) to service_role;/);
+});
+
 test('only Pokemon may sort by price; every other game keeps number order', () => {
   assert.equal(normalizeBrowseSort('price-desc', 'pokemon'), 'price-desc');
   assert.equal(normalizeBrowseSort('PRICE-ASC', 'pokemon'), 'price-asc');

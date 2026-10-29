@@ -66,7 +66,7 @@ test('card image falls back to the other versions before showing 圖片待補',(
   const h=createHarness(undefined,true);
   const markup=h.run("resilientImage('/tw.png','測試卡','圖片待補',{fallbacks:['/tw.png','/jp.png','/jp.png']})");
   assert.match(markup,/data-fallbacks="\[&quot;\/jp\.png&quot;\]"/);
-  assert.match(markup,/this\.src=next\[0\]/);
+  assert.match(markup,/data-img-error="card"/);
   assert.doesNotMatch(h.run("resilientImage('/tw.png','測試卡','圖片待補')"),/data-fallbacks/);
 });
 

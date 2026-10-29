@@ -54,7 +54,7 @@
   function tile(kind,item,extra=''){
     const imageUrl=kind==='series'?cover(item):item.imageUrl,name=kind==='product'?productName(item):seriesName(item),code=item.officialCode||'',upcoming=item.releaseDate&&item.releaseDate>today(),fresh=!upcoming&&item.releaseDate&&item.releaseDate>=recentSince();
     // 官方站（pokemon-card.com、onepiece-cardgame.com）偶爾單次載入失敗：先隔 1.5 秒重試一次，仍失敗才改成代碼磚。
-    const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" onerror="if(!this.dataset.retried){this.dataset.retried='1';const s=this.src;setTimeout(()=>{this.src=s+(s.includes('?')?'&amp;':'?')+'retry=1'},1500);return}this.parentElement.classList.add('is-type');this.remove()">`:'';
+    const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" data-img-error="retry-type">`:'';
     const sub=(extra?extra+' · ':'')+(code||(kind==='product'?item.productSubtype||item.productType||item.releaseDate||'':'代碼待補'));
     return`<button type="button" class="band-tile" data-kind="${kind}" data-id="${esc(item.id)}" data-game="${esc(item.game)}" title="${esc([name,code,item.releaseDate].filter(Boolean).join('・'))}">`
       +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>`
