@@ -13,8 +13,10 @@
 - 資料庫約 384 MB；`browse-keys-publish` 每小時 :25；價格快照每日恢復（10-28 寫入 13,562 筆）。
 
 - 2026-10-30：CSP 改為強制（仍允許 inline，擋外部腳本與未列出的圖片主機；轉強制前正式站各遊戲／地區頁與詳細頁實測 0 違規）。首頁副標改為「寶可夢同一張卡的日版與台版並列對照」（#15）。Render 區域照建議維持現狀（搬遷要重建服務，目前延遲可接受）。
+- 2026-10-30：收錄七龍珠超 Fusion World（`dragonball-fw`，ADR 0052 Q7 使用者同意 risk-accepted）。官方繁中站 27 個系列由 `dbs-fw-official` 定時同步（insert-only）；正式庫 3,167 張卡／3,167 筆版本（平行版各自一張卡、canonical 指回基本卡，與航海王一致）。正式站驗收：遊戲頁、系列頁、詳細頁桌機與手機皆通過，CLS ≤ 0.03、CSP 0 違規。
 
 ## 下次要確認
+- 七龍珠超待改善：162 張「能量標記」（E-）官方沒有稀有度與日文名，卡牆顯示「稀有度待補」；系列沒有發售日與系列圖；系列分頁全落在「其他系列」；官方卡圖帶 SAMPLE 浮水印（未放進首頁展示卡）；手機快速入口變 11 格（3 排）。稀有度高低順序 SCR＞SR＞L＞R＞UC＞C＞PR 為自訂，在 `data/rarity-rankings.json`。
 - CSP 已強制：新增卡圖來源主機時要加進 `server.mjs` 的 `CSP` img-src，否則圖片會被擋。之後若要拿掉 'unsafe-inline'，需把 index.html 的 inline 事件改事件委派並加 nonce。
 - 參考價只收 8 天內快照，每日價格排程若停跑超過一天會掉；桌機卡格最小字級 11px。
 - admin 端點仍回 e.message（需管理密鑰，保留診斷）；`yuyuteiMarket` 的 esc 反斜線跳脫未修（低）。
@@ -22,7 +24,6 @@
 
 ## 卡住的地方／需要規劃方決策
 - 需使用者親自操作：#3 在 Render 後台刪除 `JUSTTCG_API_KEY`、`EBAY_CLIENT_ID`、`EBAY_CLIENT_SECRET`（Render MCP 只能合併或整批取代環境變數，無法單獨刪除）。
-- 需使用者明確同意：Q7 七龍珠超 Fusion World（等同接受新的授權風險，ADR 0052）。
 
 ## 本機檔案（不在 git，換電腦不會帶過去）
 - `.env.local`：`SUPABASE_ACCESS_TOKEN`（`scripts/run-sql.mjs` 用），每台電腦各自建立。
@@ -30,5 +31,5 @@
 - 這台的 Claude Code 工作階段在 `cardscope` 上一層開啟時，讀不到 `cardscope/.claude/agents/sonnet-worker.md`；改用通用 agent＋`model: sonnet`、`effort: high`，並把 sonnet-worker 規則貼進封包。
 
 ## 開始前必須重新核對
-- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 621。
+- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 630。
 - 之後要等的事：排球少年 HV-P04／HV-D04 卡圖（10-23 時 0 張有圖）；皇巢／晴れる屋2 價格詢問（約 10-27 若未回覆要問使用者）；約 11-14 第一次刪除封存快照（ADR 0046）。使用者決定目前不花額外金錢。
