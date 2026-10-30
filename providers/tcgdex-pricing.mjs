@@ -1,6 +1,6 @@
 // ADR 0036: TCGdex relays Cardmarket (EUR) prices on each Japanese card. Live lookup by TCGdex card ID, cached in memory, never stored.
 export const TCGDEX_CARD_ENDPOINT = 'https://api.tcgdex.net/v2/ja/cards';
-export const TCGDEX_PRICING_TTL_MS = 24 * 60 * 60 * 1000;
+export const TCGDEX_PRICING_TTL_MS = 60 * 60 * 1000;
 export const TCGDEX_PRICING_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 export const TCGDEX_REQUEST_TIMEOUT_MS = 8000;
 
