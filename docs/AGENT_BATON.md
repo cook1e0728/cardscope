@@ -47,6 +47,6 @@
 - 這台的 Claude Code 工作階段在 `cardscope` 上一層開啟時，讀不到 `cardscope/.claude/agents/sonnet-worker.md`；改用通用 agent＋`model: sonnet`、`effort: high`，並把 sonnet-worker 規則貼進封包。
 
 ## 開始前必須重新核對
-- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 649。
+- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 650。
 - 10-30 接手核對：排球少年 HV-P04（148）／HV-D04（15）版本全有官方卡圖且網址回 200，此項結案。皇巢／晴れる屋2 至 10-30 仍未回覆（晴れる屋2 只有自動受理信），使用者 10-30 決定放棄：航海王、排球少年、芙莉蓮、遊戲王日版維持無價格，不再追這兩家。
 - 之後要等的事：約 11-14 第一次刪除封存快照（ADR 0046）。使用者決定目前不花額外金錢。

@@ -79,9 +79,9 @@ test('records older than 7 days are dropped, exactly 7 days still counts', () =>
   assert.equal(dropStaleTcgdexPricing(parseTcgdexPricing(sv6a039({ updated: iso(NOW - 7 * DAY) }), 'SV6a-039'), { now: NOW }).length, 2);
 });
 
-test('the fetch is cached for 24 hours, and a record that goes stale inside the cache window is dropped on read', async () => {
+test('the fetch is cached for the TTL, and a record that goes stale inside the cache window is dropped on read', async () => {
   let clock = NOW, calls = 0, lastUrl = null, lastOptions = null;
-  const fetchPricing = createTcgdexPricing({ now: () => clock, fetch: async (url, options) => { calls++; lastUrl = String(url); lastOptions = options; return jsonResponse(sv6a039({ updated: iso(NOW - 6.5 * DAY) })); } });
+  const fetchPricing = createTcgdexPricing({ ttlMs: DAY, now: () => clock, fetch: async (url, options) => { calls++; lastUrl = String(url); lastOptions = options; return jsonResponse(sv6a039({ updated: iso(NOW - 6.5 * DAY) })); } });
   assert.equal((await fetchPricing('SV6a-039')).length, 2);
   assert.equal(lastUrl, 'https://api.tcgdex.net/v2/ja/cards/SV6a-039');
   assert.ok(lastOptions.signal instanceof AbortSignal, 'the request has a timeout');
@@ -94,6 +94,18 @@ test('the fetch is cached for 24 hours, and a record that goes stale inside the 
   clock = NOW + DAY + 1000;
   await fetchPricing('SV6a-039');
   assert.equal(calls, 2, 'the cache expires after 24 hours');
+});
+
+test('by default a current price is refetched after an hour', async () => {
+  let clock = NOW, calls = 0;
+  const fetchPricing = createTcgdexPricing({ now: () => clock, fetch: async () => { calls++; return jsonResponse(sv6a039({ updated: iso(NOW) })); } });
+  await fetchPricing('SV6a-039');
+  clock = NOW + 59 * 60 * 1000;
+  await fetchPricing('SV6a-039');
+  assert.equal(calls, 1);
+  clock = NOW + 61 * 60 * 1000;
+  await fetchPricing('SV6a-039');
+  assert.equal(calls, 2);
 });
 
 test('an unknown card (404) is cached as empty', async () => {
