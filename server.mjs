@@ -1,3 +1,4 @@
+import { marketEventsFor } from './providers/market-events.mjs';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -1032,14 +1033,14 @@ const priceHistoryNote=series=>{const names=[...new Set((series||[]).map(x=>PRIC
 function priceHistoryCardIds(card,requestedId){return [...new Set([requestedId,card?.id,...(card?.printings||[]).map(p=>p.cardId)].filter(id=>typeof id==='string'&&id))].slice(0,PRICE_HISTORY_IDS_MAX)}
 function buildPriceHistory(rows,{card,requestedId,fx,now=Date.now()}){
   const groups=new Map(),regionOf=cardId=>(card?.printings||[]).find(p=>p.cardId===cardId)?.region||(card?.id===cardId?card.region:null)||null;
-  for(const row of rows||[]){const amount=Number(row.amount);if(!row?.card_id||!row.snapshot_date||!Number.isFinite(amount))continue;const key=JSON.stringify([row.card_id,row.provider,row.variant||'',row.currency]);let group=groups.get(key);if(!group){group={cardId:row.card_id,region:regionOf(row.card_id),provider:row.provider,variant:row.variant||'',currency:row.currency,points:[]};groups.set(key,group)}group.points.push({date:String(row.snapshot_date).slice(0,10),amount,amountTwd:amountToTwd(amount,row.currency,fx)})}
+  for(const row of rows||[]){const amount=Number(row.amount);if(!row?.card_id||!row.snapshot_date||!Number.isFinite(amount))continue;const key=JSON.stringify([row.card_id,row.provider,row.variant||'',row.currency]);let group=groups.get(key);if(!group){group={cardId:row.card_id,region:regionOf(row.card_id),provider:row.provider,variant:row.variant||'',currency:row.currency,points:[]};groups.set(key,group)}group.points.push({date:String(row.snapshot_date).slice(0,10),amount,amountTwd:amountToTwd(amount,row.currency,fx),observedAt:row.observed_at||null})}
   const series=[...groups.values()].map(g=>({...g,points:g.points.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)}));
   const cmp=(x,y)=>x<y?-1:x>y?1:0;series.sort((a,b)=>(b.cardId===requestedId)-(a.cardId===requestedId)||b.points.length-a.points.length||cmp(b.points.at(-1).date,a.points.at(-1).date)||cmp(a.cardId+a.provider+a.variant,b.cardId+b.provider+b.variant));
-  return {series,meta:{exchangeRates:fx,note:priceHistoryNote(series),windowDays:PRICE_HISTORY_DAYS,from:new Date(now-PRICE_HISTORY_DAYS*86400000).toISOString().slice(0,10),generatedAt:new Date(now).toISOString()}};
+  const from=new Date(now-PRICE_HISTORY_DAYS*86400000).toISOString().slice(0,10);return {series,meta:{exchangeRates:fx,note:priceHistoryNote(series),windowDays:PRICE_HISTORY_DAYS,from,events:marketEventsFor(card?.game,from,now),generatedAt:new Date(now).toISOString()}};
 }
 async function loadPriceHistory(card,requestedId){
   const ids=priceHistoryCardIds(card,requestedId),from=new Date(Date.now()-PRICE_HISTORY_DAYS*86400000).toISOString().slice(0,10);
-  const [rows,fx]=await Promise.all([supabaseFetchAll(`/price_snapshots?${new URLSearchParams({select:'card_id,provider,variant,currency,snapshot_date,amount',card_id:`in.(${ids.map(id=>`"${id.replaceAll('"','')}"`).join(',')})`,snapshot_date:`gte.${from}`,order:'card_id.asc,provider.asc,variant.asc,snapshot_date.asc'})}`),getTwdRates()]);
+  const [rows,fx]=await Promise.all([supabaseFetchAll(`/price_snapshots?${new URLSearchParams({select:'card_id,provider,variant,currency,snapshot_date,amount,observed_at',card_id:`in.(${ids.map(id=>`"${id.replaceAll('"','')}"`).join(',')})`,snapshot_date:`gte.${from}`,order:'card_id.asc,provider.asc,variant.asc,snapshot_date.asc'})}`),getTwdRates()]);
   // 先讀資料庫再讀封存：封存器是先寫封存、驗證、才刪資料庫的列，這個順序下兩邊至少有一邊有那一列，重複的列以主鍵去除。
   // 封存讀取失敗時退回只有資料庫的列（最近 30 天仍可畫），標 meta.archiveUnavailable，且只快取一分鐘；不假裝是完整資料。
   let archived=[],archiveUnavailable=false;try{archived=await archiveReader.rowsFor(ids,{from})}catch(error){archiveUnavailable=true;console.error('price archive unavailable',error.message)}

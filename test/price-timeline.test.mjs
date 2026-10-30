@@ -54,3 +54,24 @@ test('no usable points means no lines, and the code never writes unescaped label
   assert.match(source, /\$\{esc\(item\.label\)\}/);
   assert.doesNotMatch(source, /\son[a-z]+=/);
 });
+
+test('chart text helpers show the full date, Taipei time and ticks at both ends', () => {
+  assert.equal(T.dayText(Date.UTC(2026, 9, 30)), '2026-10-30（五）');
+  assert.equal(T.sourceTime('2026-10-29T22:54:33Z'), '10-30 06:54');
+  assert.equal(T.sourceTime(null), '');
+  assert.deepEqual(plain(T.dateTicks(0, 10, 3)), [0, 5, 10]);
+  assert.deepEqual(plain(T.dateTicks(0, 1, 5)), [0, 1]);
+});
+
+test('events: in range can be jumped to, later ones are upcoming, others and non-https links drop out', () => {
+  const [one] = T.model({ series: [line()] }, {});
+  const url = 'https://example.com/a';
+  const items = T.eventsIn([{ date: '2026-10-19', url }, { date: '2026-11-06', url }, { date: '2026-10-01', url }, { date: '2026-10-20', url: 'javascript:alert(1)' }], one.days, 0);
+  assert.deepEqual(plain(items.map(item => [item.date, item.index])), [['2026-10-19', 3], ['2026-11-06', -1]]);
+  assert.equal(T.eventsIn([{ date: '2026-10-16', url }], one.days, 2).length, 0);
+});
+
+test('a live price uses its Taipei date', () => {
+  const market = { records: [{ priceType: 'market', market: 'Cardmarket', variant: 'normal', cardId: 'c', amount: 50, priceTwd: 1800, observedAt: '2026-10-29T22:54:33Z' }] };
+  assert.equal(T.dayText(T.model({ series: [line()] }, market)[0].days.at(-1).time), '2026-10-30（五）');
+});

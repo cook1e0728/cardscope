@@ -268,7 +268,9 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
 .ptl-say{min-height:26px;font-size:17px;font-weight:700}.ptl-say.down{color:#1F6F43}.ptl-say.up{color:#C4000F}.ptl-say.flat{color:#5A5348}
 .ptl-held{min-height:20px;font-size:13px;color:#5A5348}
 .ptl-chart{margin-top:8px;touch-action:pan-y;cursor:ew-resize;user-select:none}
-.ptl-chart svg{display:block;width:100%;height:210px;overflow:visible}
+.ptl-chart svg{display:block;width:100%;height:260px;overflow:visible}
+.ptl-grid{stroke:#E2DAC7;stroke-width:1}.ptl-axis{fill:#5A5348;font-size:12px;font-variant-numeric:tabular-nums}.ptl-tip{fill:#211C17}.ptl-tip-text{fill:#fff;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}.ptl-event-line{stroke:#8A4B00;stroke-width:1.5;stroke-dasharray:4 3}.ptl-event{fill:#8A4B00;stroke:#fff;stroke-width:1.5}
+.ptl-events h4{margin:14px 0 6px;font-size:14px}.ptl-events ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}.ptl-events li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px}.ptl-events p{margin:6px 0 0;font-size:13px;color:#5A5348}.ptl-event-day{min-height:40px;padding:0 12px;border:0;border-radius:20px;background:#FBF0DC;color:#8A4B00;font:inherit;font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer}.ptl-event-day.on{background:#8A4B00;color:#fff}.ptl-event-day.soon{display:inline-flex;align-items:center;cursor:default}
 .ptl-area{fill:#EFE9DB}.ptl-line{fill:none;stroke:#211C17;stroke-width:3;stroke-linejoin:round}.ptl-past{fill:none;stroke:#C4000F;stroke-width:4;stroke-linejoin:round}.ptl-guide{stroke:#C4000F;stroke-width:2}.ptl-dot{fill:#C4000F;stroke:#fff;stroke-width:3}.ptl-rec{fill:#211C17}
 .ptl-controls{display:flex;align-items:center;gap:12px;margin-top:8px}
 .ptl-play{flex:none;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:#211C17;color:#fff;display:grid;place-items:center;cursor:pointer;transition:transform .1s}.ptl-play:active{transform:scale(.93)}.ptl-play svg{display:block;width:20px;height:20px}
@@ -289,6 +291,6 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
   /* 手機：詳細頁的大卡會捲走，時間軸上方另放小卡和價格釘住，拖動時兩個都看得到 */
   .ptl-head{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:34% 1fr;gap:12px;align-items:center;background:#fff;padding:6px 0}
   .ptl-mini{display:block;width:100%;height:auto;border-radius:4.5%/3.3%;transition:transform .25s ease-out}
-  .ptl-big{font-size:34px}.ptl-say{font-size:14px}.ptl-when{font-size:13px}.ptl-held{font-size:12px}.ptl-chart svg{height:170px}
+  .ptl-big{font-size:34px}.ptl-say{font-size:14px}.ptl-when{font-size:13px}.ptl-held{font-size:12px}.ptl-chart svg{height:220px}
 }
 @media(prefers-reduced-motion:reduce){.detail-art img,.ptl-mini,.ptl-play,.ptl-chip{transition:none}}
