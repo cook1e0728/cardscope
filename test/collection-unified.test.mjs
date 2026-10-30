@@ -83,7 +83,7 @@ test('one count everywhere: 款數 and 張數 come from quantity only, so the fi
 test('collection window: region names follow the game, and the meaningless 最近瀏覽系列 stat is replaced by 涵蓋遊戲', () => {
   assert.match(ui, /rn\(meta\.region,meta\.game\)/);
   assert.match(ui, /choiceLabels\(meta\.choices\|\|\[\],meta\.game\)/);
-  assert.match(ui, /bindPriceTrend\(c\.game\)/);
+  assert.match(ui, /bindPriceTrend\(c\.game,m\)/);
   assert.doesNotMatch(ui, /最近瀏覽系列|collStatRecent|recentSeriesCount/);
   const c = collection({ watchlist: { a: 1, b: 2, c: 1 } });
   c.sandbox.watchlistMeta = { a: { game: 'pokemon' }, b: { game: 'onepiece' }, c: {} };

@@ -315,7 +315,6 @@ html.look-clean .detail .rarity-code{font-family:var(--lc-num);font-weight:700}
 html.look-clean .source-link,html.look-clean body[data-view="game"] .source-link{align-self:flex-start;min-height:44px;
 display:inline-flex;align-items:center;margin-top:var(--s4);padding:0 var(--s5);border-radius:999px;background:var(--lc-ink);color:#fff;font-weight:700}
 html.look-clean .market-price b{font:700 22px/1.2 var(--lc-num);font-variant-numeric:tabular-nums}
-html.look-clean .pt-table td,html.look-clean .pt-table th{font-variant-numeric:tabular-nums}
 
 /* ===== 頁尾與使用說明：去掉盒子，只留分隔線與留白 ===== */
 html.look-clean .feature-tour{margin-top:var(--s7);padding:0;border:0;border-top:1px solid var(--lc-hair);border-radius:0;background:transparent;box-shadow:none}

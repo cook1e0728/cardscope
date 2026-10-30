@@ -40,18 +40,18 @@ test('格子、清單、分組標題與收錄版本都經由稀有度代碼顯�
   assert.doesNotMatch(ui, /\$\{e\(rarity\)\}<\/span>/, '不再直接輸出原文稀有度');
 });
 
-test('分頁：資訊／價格／走勢三個，使用者回報先隱藏，沒有成交趨勢分頁', () => {
+test('分頁：資訊／價格兩個（走勢在價格分頁內），使用者回報先隱藏', () => {
   const tabs = run(`detailTabsMarkup()`), labels = [...tabs.matchAll(/<button[^>]*>([^<]*)<\/button>/g)].map(match => match[1]);
-  assert.deepEqual(labels, ['資訊', '價格', '走勢', '使用者回報']);
+  assert.deepEqual(labels, ['資訊', '價格', '使用者回報']);
   assert.match(tabs, /role="tablist"/);
-  assert.equal((tabs.match(/role="tab"/g) || []).length, 4);
+  assert.equal((tabs.match(/role="tab"/g) || []).length, 3);
   assert.match(tabs, /id="detail-tab-info"[^>]*aria-selected="true"[^>]*tabindex="0"/, '選中的分頁在 Tab 順序內');
   assert.match(tabs, /id="detail-tab-market"[^>]*aria-selected="false"[^>]*tabindex="-1"/, '其餘用方向鍵（roving tabindex）');
   assert.match(tabs, /data-detail-tab="reports"[^>]*hidden/);
   assert.doesNotMatch(tabs, /成交趨勢|跨市場比價/);
   assert.match(run(`detailPanel('reports',false,'x')`), /hidden/, '回報面板即使傳入不隱藏也維持隱藏');
   assert.match(run(`detailPanel('info',false,'x')`), /^<section role="tabpanel" id="detail-panel-info" aria-labelledby="detail-tab-info" tabindex="0" data-detail-panel="info">x<\/section>$/);
-  assert.match(run(`detailPanel('trend',true,'x')`), /data-detail-panel="trend" hidden>/);
+  assert.match(run(`detailPanel('market',true,'x')`), /data-detail-panel="market" hidden>/);
 });
 
 test('分頁鍵盤操作：左右鍵、Home、End 移動並啟用，並且不會同時換卡', () => {
@@ -62,12 +62,12 @@ test('分頁鍵盤操作：左右鍵、Home、End 移動並啟用，並且不會
   assert.match(ui, /document\.addEventListener\('keydown',event=>\{if\(event\.defaultPrevented\)return;/);
 });
 
-test('價格分頁只放比價內容（走勢移到走勢分頁），並說明是參考價', () => {
-  const market = ui.match(/detailPanel\('market',true,[^]*?\$\{detailPanel\('trend'/)[0];
-  assert.match(market, /<h3>跨市場比價<\/h3>/);
-  assert.match(market, /不是成交價或台灣行情；新台幣為換算參考/);
+test('價格分頁：互動走勢在上、明細收合在下，並說明是參考價', () => {
+  const market = ui.match(/detailPanel\('market',true,[^]*?\$\{detailPanel\('reports'/)[0];
+  assert.ok(market.indexOf('data-price-trend') < market.indexOf('<details class="ptl-details">'));
+  assert.match(market, /不是成交價或台灣行情/);
   assert.match(market, /marketBlock\(m,c\.game\)/);
-  assert.doesNotMatch(market, /price-trend/);
+  assert.match(market, /versionPriceTable\(m,/);
 });
 
 test('資訊分頁：系列名（含版本與代碼）、資料來源名稱、更新時間；缺的標示待補', () => {

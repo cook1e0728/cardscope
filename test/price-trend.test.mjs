@@ -6,98 +6,9 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import vm from 'node:vm';
 import { encodeShard, shardOf, shortDigest } from '../providers/price-archive.mjs';
 
-// ADR 0042: reference-price trend. Front-end SVG builder (pure functions) and GET /api/cards/:id/price-history over HTTP with a fake Supabase.
-
-const chartSource = await readFile(new URL('../price-history-chart.js', import.meta.url), 'utf8');
-const sandbox = { window: {} };
-vm.runInNewContext(chartSource, sandbox);
-const { PriceTrend } = sandbox.window;
-const pt = (date, amountTwd, amount = amountTwd / 35) => ({ date, amount, amountTwd });
-const line = (over = {}) => ({ cardId: 'card-jp', region: 'JP', provider: 'cardmarket', variant: 'holo', currency: 'EUR', points: [pt('2026-09-01', 100), pt('2026-09-20', 140), pt('2026-10-10', 120)], ...over });
-const options = { regionLabel: region => ({ JP: '日版', US: '美版' }[region] || region), variantLabel: variant => ({ holo: '閃卡 Holo' }[variant] || variant), width: 600, id: 'pt-test' };
-
-test('chart section: no records, one point and unavailable each get their own text', () => {
-  const none = PriceTrend.sectionHtml({ series: [], meta: {} }, options);
-  assert.match(none, /<h3>參考價走勢（換算新台幣）<\/h3>/, 'no series: no source named');
-  assert.match(none, /尚未有參考價紀錄/);
-  assert.doesNotMatch(none, /<svg/);
-  const one = PriceTrend.sectionHtml({ series: [line({ points: [pt('2026-10-01', 100)] })], meta: {} }, options);
-  assert.match(one, /已開始記錄（自 2026-10-01），累積兩筆以上才畫走勢/);
-  assert.doesNotMatch(one, /<svg/);
-  const down = PriceTrend.sectionHtml({ series: [], meta: { unavailable: 'x' } }, options);
-  assert.match(down, /暫時無法讀取/);
-  assert.match(PriceTrend.sectionHtml(null, options), /暫時無法讀取/);
-  assert.match(none, /不是成交價或台灣行情/);
-});
-
-test('chart title names only the sources that have records', () => {
-  assert.equal(PriceTrend.titleFor([line()]), '參考價走勢（Cardmarket，換算新台幣）');
-  assert.equal(PriceTrend.titleFor([line(), line({ provider: 'tcgplayer' }), line({ provider: 'unknown' })]), '參考價走勢（Cardmarket／TCGplayer，換算新台幣）');
-  assert.doesNotMatch(PriceTrend.sectionHtml({ series: [line()], meta: {} }, options), /TCGplayer/);
-});
-
-test('chart section: two or more points draw a step line with title, description, legend and a text table', () => {
-  const html = PriceTrend.sectionHtml({ series: [line()], meta: {} }, options);
-  assert.match(html, /<svg class="pt-chart" role="img"/);
-  assert.match(html, /<title id="pt-test-t">參考價走勢圖/);
-  assert.match(html, /aria-label="參考價走勢圖/);
-  assert.match(html, /<desc id="pt-test-d">新台幣，2026-09-01 至 2026-10-10。日版 · Cardmarket · 閃卡 Holo：2026-09-01 NT\$ 100，2026-10-10 NT\$ 120/);
-  const path = html.match(/<path class="pt-line pt-d0" d="([^"]+)"/)[1];
-  assert.match(path, /^M[\d.]+ [\d.]+H[\d.]+V[\d.]+H[\d.]+V[\d.]+$/, 'horizontal then vertical: the previous value carries to the next point');
-  assert.equal((html.match(/<svg class="pt-chart"[^]*?<\/svg>/)[0].match(/<circle class="pt-mark"/g) || []).length, 3, 'one marker per record, with a hover title');
-  assert.match(html, /<title>日版 · Cardmarket · 閃卡 Holo｜2026-09-20｜NT\$ 140<\/title>/);
-  assert.match(html, /<ul class="pt-legend"[^]*日版 · Cardmarket · 閃卡 Holo/);
-  assert.match(html, /<table class="pt-table"[^]*<th scope="row">日版 · Cardmarket · 閃卡 Holo<\/th><td>2026-09-01<br><b>NT\$ 100<\/b><\/td><td>2026-10-10<br><b>NT\$ 120<\/b><\/td><td>EUR 3\.43<\/td>/);
-  assert.doesNotMatch(html, /animate|transition/);
-});
-
-test('chart: up to three lines, told apart by dash and marker shape rather than colour alone; the rest are counted', () => {
-  const four = ['a', 'b', 'c', 'd'].map(id => line({ cardId: `card-${id}`, variant: id }));
-  const plan = PriceTrend.plan({ series: four }, options);
-  assert.equal(plan.lines.length, 3);
-  assert.equal(plan.omitted, 1);
-  const html = PriceTrend.sectionHtml({ series: four }, options);
-  assert.match(html, /另有 1 條線未畫出/);
-  assert.match(html, /class="pt-line pt-d0"/);
-  assert.match(html, /class="pt-line pt-d1"[^>]*stroke-dasharray="7 4"/);
-  assert.match(html, /class="pt-line pt-d2"[^>]*stroke-dasharray="2 4"/);
-  assert.match(html, /<rect class="pt-mark"/);
-  assert.match(html, /<polygon class="pt-mark"/);
-  assert.equal((html.match(/<li><svg class="pt-key/g) || []).length, 3, 'legend has one key per drawn line');
-  assert.doesNotMatch(html, /pt-d3/);
-});
-
-test('chart: lines of different cards or versions never merge; identical labels get the card id', () => {
-  const same = [line({ cardId: 'card-jp' }), line({ cardId: 'card-jp-2' }), line({ cardId: 'card-us', region: 'US', provider: 'tcgplayer', variant: 'holofoil' })];
-  const plan = PriceTrend.plan({ series: same }, options);
-  assert.deepEqual(Array.from(plan.lines, l => l.label), ['日版 · Cardmarket · 閃卡 Holo（card-jp）', '日版 · Cardmarket · 閃卡 Holo（card-jp-2）', '美版 · TCGplayer · holofoil']);
-});
-
-test('chart: points without an NT$ value are dropped, one-point lines are noted, and a single usable point does not draw', () => {
-  const noRate = line({ points: [{ date: '2026-09-01', amount: 5, amountTwd: null }, pt('2026-10-01', 100)] });
-  const html = PriceTrend.sectionHtml({ series: [noRate, line({ cardId: 'card-x' })], meta: {} }, options);
-  assert.equal((html.match(/<path class="pt-line/g) || []).length, 1);
-  assert.match(html, /另有 1 條線只有一筆紀錄/);
-});
-
-test('chart: same-value and narrow charts still produce valid geometry', () => {
-  const flat = line({ points: [pt('2026-09-01', 100), pt('2026-09-08', 100)] });
-  const svg = PriceTrend.chartSvg(PriceTrend.plan({ series: [flat] }, options).lines, { width: 320, id: 'n' });
-  assert.match(svg, /viewBox="0 0 320 250"/, 'the viewBox equals the container width, so 12px text stays 12px on a phone');
-  assert.doesNotMatch(svg, /NaN|Infinity/);
-  assert.equal((svg.match(/text-anchor="middle"/g) || []).length, 0, 'narrow charts keep only the two end dates');
-  assert.equal(PriceTrend.chartSvg([], {}), '');
-});
-
-test('chart: labels, ids and dates from the API are escaped', () => {
-  const evil = line({ cardId: '"><img src=x onerror=alert(1)>', region: '<b>JP</b>', provider: '<script>', variant: '"x"' });
-  const html = PriceTrend.sectionHtml({ series: [evil, { ...evil }] , meta: {} }, { width: 500, id: '"><x' });
-  assert.doesNotMatch(html, /<img|<script|<b>JP|onerror=alert\(1\)>/);
-  assert.match(html, /&lt;script&gt;/);
-});
+// ADR 0042: reference-price trend. GET /api/cards/:id/price-history over HTTP with a fake Supabase.
 
 // --- GET /api/cards/:id/price-history over HTTP, with a fake Supabase and a stubbed exchange-rate host ---
 
@@ -239,12 +150,11 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
   }
 });
 
-test('detail page wiring: the trend panel holds the slot that loads only when the 走勢 tab is opened', async () => {
+test('detail page wiring: the price panel holds the slot that loads only when the 價格 tab is opened', async () => {
   const [ui, html] = await Promise.all(['../ui-enhancements.js', '../index.html'].map(path => readFile(new URL(path, import.meta.url), 'utf8')));
-  assert.match(ui, /detailPanel\('trend',true,`<div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div>`\)/);
-  assert.match(ui, /\[data-detail-tab="trend"\]/);
-  assert.doesNotMatch(ui.match(/detailPanel\('market',true,[^]*?\$\{detailPanel\('trend'/)[0], /data-price-trend/, 'the price panel no longer carries the trend');
-  assert.match(ui, /tab\.addEventListener\('click',\(\)=>window\.PriceTrend\.load\(slot/);
-  assert.ok(html.indexOf('/price-history-chart.js') > 0 && html.indexOf('/price-history-chart.js') < html.indexOf('/ui-enhancements.js'));
+  assert.match(ui, /detailPanel\('market',true,`<div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div>/);
+  assert.match(ui, /\[data-detail-tab="market"\]/);
+  assert.match(ui, /tab\.addEventListener\('click',\(\)=>\{[^]*?window\.PriceTimeline\.load\(slot/);
+  assert.ok(html.indexOf('/price-timeline.js') > 0 && html.indexOf('/price-timeline.js') < html.indexOf('/ui-enhancements.js'));
   assert.doesNotMatch(ui.match(/openCard=async function[^]*?window\.openCard=openCard/)[0], /price-history'/, 'the detail request itself never asks for the trend');
 });

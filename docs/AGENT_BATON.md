@@ -22,8 +22,10 @@
 
 - 2026-10-30 下午：TCGdex 會把不同的卡對到同一個 Cardmarket idProduct（已確認 base3-19／4、xyp XY202／XY95、neo2-22／3、smp SM57／SM80，價格完全相同）。新增 `price_product_links`（migration `20261031100000`，已套用；每日快照順手記錄）與 `price_products_shared`；`price_movers` 排除共用的卡，`/market` 回 `meta.sharedPriceCardIds`，詳細頁價格分頁顯示一句提醒。目前表內只有手動寫入的那 8 張。
 
+- 2026-10-30 晚間：詳細頁「價格」與「走勢」合併成一個分頁，改互動時間軸（`price-timeline.js`，取代已刪除的 `price-history-chart.js`）：可拖圖表或滑桿選日期、播放、範圍切換、跳到跌最多／最高／最低；打開分頁時自動播一次（減少動態或暫停動態時不播）。沒紀錄的日子沿用前一筆並標明；走勢相同的版本併成一個選項；停更的來源不列；低於 €0.1 的最低賣價不顯示。原比價內容收進「這個價格怎麼來的？各版本明細」，沒有走勢資料時自動展開。桌機卡片欄放大到 340px，手機時間軸上方有小卡和價格固定。
+
 ## 下次要確認
-- 共用商品：下一輪完整快照（約 10-31 晚間跑完）後查 `select count(*) from price_products_shared(null)`、`price_movers` 執行時間（手動 8 張時約 1.4 秒）；走勢分頁還沒有提醒，等價格與走勢合併時一起做。
+- 共用商品：下一輪完整快照（約 10-31 晚間跑完）後查 `select count(*) from price_products_shared(null)`、`price_movers` 執行時間（手動 8 張時約 1.4 秒）。
 - 參考價波動：Cardmarket trend 常與 low／avg30 差很多（皮卡丘 XY202 trend 1735、low 7）；是否顯示 avg30 要改 ADR 0036，待使用者決定。
 - 漲跌榜：漲幅前 20 目前全是 ≥ +266% 的老卡／推廣卡（成交稀少），且有幾組不同卡號共用同一個 Cardmarket 價格（如 xyp XY202 與 XY95），疑似 TCGdex 對應錯誤，未處理。資料累積到幾個月後再評估門檻。
 - 七龍珠超：系列發售日與包裝圖取自官方商品頁（推廣卡 PR 沒有發售日）；能量標記另列「能量標記」稀有度分組；系列分組為補充包／特別補充包／起始牌組／推廣卡。仍待：官方卡圖帶 SAMPLE 浮水印（未放進首頁展示卡）。稀有度順序 SCR＞SR＞L＞R＞UC＞C＞PR＞能量標記為自訂，在 `data/rarity-rankings.json`。
@@ -42,6 +44,6 @@
 - 這台的 Claude Code 工作階段在 `cardscope` 上一層開啟時，讀不到 `cardscope/.claude/agents/sonnet-worker.md`；改用通用 agent＋`model: sonnet`、`effort: high`，並把 sonnet-worker 規則貼進封包。
 
 ## 開始前必須重新核對
-- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 639。
+- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 641。
 - 10-30 接手核對：排球少年 HV-P04（148）／HV-D04（15）版本全有官方卡圖且網址回 200，此項結案。皇巢／晴れる屋2 至 10-30 仍未回覆（晴れる屋2 只有自動受理信），使用者 10-30 決定放棄：航海王、排球少年、芙莉蓮、遊戲王日版維持無價格，不再追這兩家。
 - 之後要等的事：約 11-14 第一次刪除封存快照（ADR 0046）。使用者決定目前不花額外金錢。
