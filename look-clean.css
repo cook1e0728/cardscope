@@ -585,3 +585,26 @@ html.look-clean .coll-edit .coll-fields{padding-bottom:4px}
   html.look-clean .coll-series,html.look-clean .coll-value{order:2}
   html.look-clean .coll-list,html.look-clean #collTotal{order:1}
 }
+
+/* ===== 頂部搜尋鈕與遊戲頁商標牆（2026-10-30 使用者選 B 版）：等寬格放大官方商標，去掉標題列與切換列之間的空白 ===== */
+html.look-clean .top .search,html.look-clean body[data-view] .top .search{height:48px;padding-block:0;padding-right:0;overflow:hidden}
+html.look-clean .top .search button{align-self:stretch;width:56px;min-width:56px;height:auto;min-height:0;border-radius:0}
+html.look-clean body[data-view="game"] .hero{padding-top:0}
+html.look-clean body[data-view="game"] .channels{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:var(--s2);padding:var(--s3) 0;overflow:visible}
+html.look-clean body[data-view="game"] .channels:empty{min-height:116px}
+html.look-clean body[data-view="game"] .channel[data-ip],html.look-clean body[data-view="game"] .channel[data-ip]:not(.on){display:grid;justify-items:center;align-content:start;gap:6px;min-width:0;min-height:0;padding:var(--s3) 6px 10px;border:0;border-radius:4px;background:#fff;white-space:normal}
+html.look-clean body[data-view="game"] .channel[data-ip]:not(.on):hover{background:#F3EEE3;transform:none}
+html.look-clean body[data-view="game"] .channel[data-ip].on{min-height:0;border:0;background:#fff;box-shadow:inset 0 -6px 0 var(--ip)}
+html.look-clean body[data-view="game"] .channel[data-ip] .channel-art,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art{display:block;width:100%;height:44px;border-radius:0;background:transparent}
+html.look-clean body[data-view="game"] .channel[data-ip] .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art img{display:block;box-sizing:border-box;width:100%;height:44px;max-width:none;max-height:none;padding:0;border-radius:0;background:transparent;object-fit:contain}
+html.look-clean body[data-view="game"] .channel[data-ip] .channel-tag{display:none}
+/* 品牌兔是白色的，放在白格上要轉成深色 */
+html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art img{filter:brightness(0)}
+html.look-clean body[data-view="game"] .channel[data-ip].on b{color:var(--ip-ink);font-weight:900}
+@media(max-width:760px){
+  html.look-clean body[data-view="game"] .channels{grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr));padding:var(--s2) 0}
+  html.look-clean body[data-view="game"] .channels:empty{min-height:168px}
+  html.look-clean body[data-view="game"] .channel[data-ip],html.look-clean body[data-view="game"] .channel[data-ip]:not(.on){padding:var(--s2) 3px;gap:var(--s1)}
+  html.look-clean body[data-view="game"] .channel[data-ip] b{font-size:12px;line-height:1.25}
+  html.look-clean body[data-view="game"] .channel[data-ip] .channel-art,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art,html.look-clean body[data-view="game"] .channel[data-ip] .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art img{height:30px}
+}
