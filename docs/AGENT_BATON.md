@@ -1,7 +1,7 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-10-30 下午（台灣）｜更新者：Claude Code（桌電）
+> 上次更新：2026-10-31 凌晨（台灣）｜更新者：Claude Code（桌電）
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
@@ -27,6 +27,8 @@
 - 2026-10-30 晚間：時間軸圖表加價格軸、日期軸、跟著游標的日期價格標籤；讀數顯示完整日期與來源更新時間（台北）。事件來自手動維護的 `providers/market-events.mjs`（只收官方來源、整個遊戲層級），經 `/price-history` 的 `meta.events` 送出；目前只有寶可夢 2 筆，沒有單卡新聞來源。
 
 - 2026-10-30 晚間：時價與時事補齊（ADR 0054）。詳細頁「現在行情」加近 7／30 天平均與比較句；首頁、遊戲頁加「卡牌時事」（`market-events.js`、`/api/market-events`），資料是手動官方消息＋`tcg_series` 發售日。自動新聞與單卡新聞未做。
+
+- 2026-10-31 凌晨：查明參考價差異：TCGdex 依地區解析到不同主機，更新時間不同，Render 走北美主機，時價最多可能晚約一天（ADR 0054 末節）。沒有改程式。
 
 ## 下次要確認
 - 共用商品：下一輪完整快照（約 10-31 晚間跑完）後查 `select count(*) from price_products_shared(null)`、`price_movers` 執行時間（手動 8 張時約 1.4 秒）。
