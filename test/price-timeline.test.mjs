@@ -75,3 +75,14 @@ test('a live price uses its Taipei date', () => {
   const market = { records: [{ priceType: 'market', market: 'Cardmarket', variant: 'normal', cardId: 'c', amount: 50, priceTwd: 1800, observedAt: '2026-10-29T22:54:33Z' }] };
   assert.equal(T.dayText(T.model({ series: [line()] }, market)[0].days.at(-1).time), '2026-10-30（五）');
 });
+
+test('current price compares with the 30-day average in plain words', () => {
+  assert.equal(T.versusAverage(100, null), '');
+  assert.equal(T.versusAverage(102, 100), '和近 30 天平均差不多');
+  assert.match(T.versusAverage(161, 100), /貴 61%/);
+  assert.equal(T.versusAverage(80, 100), '比近 30 天平均便宜 20%');
+  const market = { records: [{ priceType: 'market', market: 'Cardmarket', variant: 'normal', cardId: 'c', amount: 50, priceTwd: 1800, avg7: 40, avg30: 0.01, observedAt: '2026-10-22T01:00:00Z' }] };
+  const [one] = T.model({ series: [line()] }, market);
+  assert.equal(one.avg7, 1440);
+  assert.equal(one.avg30, null);
+});

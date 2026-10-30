@@ -26,9 +26,10 @@
 
 - 2026-10-30 晚間：時間軸圖表加價格軸、日期軸、跟著游標的日期價格標籤；讀數顯示完整日期與來源更新時間（台北）。事件來自手動維護的 `providers/market-events.mjs`（只收官方來源、整個遊戲層級），經 `/price-history` 的 `meta.events` 送出；目前只有寶可夢 2 筆，沒有單卡新聞來源。
 
+- 2026-10-30 晚間：時價與時事補齊（ADR 0054）。詳細頁「現在行情」加近 7／30 天平均與比較句；首頁、遊戲頁加「卡牌時事」（`market-events.js`、`/api/market-events`），資料是手動官方消息＋`tcg_series` 發售日。自動新聞與單卡新聞未做。
+
 ## 下次要確認
 - 共用商品：下一輪完整快照（約 10-31 晚間跑完）後查 `select count(*) from price_products_shared(null)`、`price_movers` 執行時間（手動 8 張時約 1.4 秒）。
-- 參考價波動：Cardmarket trend 常與 low／avg30 差很多（皮卡丘 XY202 trend 1735、low 7）；是否顯示 avg30 要改 ADR 0036，待使用者決定。
 - 漲跌榜：漲幅前 20 目前全是 ≥ +266% 的老卡／推廣卡（成交稀少），且有幾組不同卡號共用同一個 Cardmarket 價格（如 xyp XY202 與 XY95），疑似 TCGdex 對應錯誤，未處理。資料累積到幾個月後再評估門檻。
 - 七龍珠超：系列發售日與包裝圖取自官方商品頁（推廣卡 PR 沒有發售日）；能量標記另列「能量標記」稀有度分組；系列分組為補充包／特別補充包／起始牌組／推廣卡。仍待：官方卡圖帶 SAMPLE 浮水印（未放進首頁展示卡）。稀有度順序 SCR＞SR＞L＞R＞UC＞C＞PR＞能量標記為自訂，在 `data/rarity-rankings.json`。
 - 七龍珠超同步的「補空欄位」PATCH（PostgREST `or=(…is.null)`、`name_ja=is.null`）只在 mock 測試驗過；下一次自動同步（約 11-02，72 小時一次）後看 `catalog_sync_runs` 的 dbs-fw-official 是否 completed、metadata.filledSeries／filledJa。
@@ -46,6 +47,6 @@
 - 這台的 Claude Code 工作階段在 `cardscope` 上一層開啟時，讀不到 `cardscope/.claude/agents/sonnet-worker.md`；改用通用 agent＋`model: sonnet`、`effort: high`，並把 sonnet-worker 規則貼進封包。
 
 ## 開始前必須重新核對
-- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 644。
+- `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 649。
 - 10-30 接手核對：排球少年 HV-P04（148）／HV-D04（15）版本全有官方卡圖且網址回 200，此項結案。皇巢／晴れる屋2 至 10-30 仍未回覆（晴れる屋2 只有自動受理信），使用者 10-30 決定放棄：航海王、排球少年、芙莉蓮、遊戲王日版維持無價格，不再追這兩家。
 - 之後要等的事：約 11-14 第一次刪除封存快照（ADR 0046）。使用者決定目前不花額外金錢。

@@ -26,7 +26,8 @@
     const records=Array.isArray(market?.records)?market.records:[],find=(item,type)=>records.find(r=>r.priceType===type&&r.market===SOURCES[item.provider]?.market&&(r.variant||'')===(item.variant||'')&&(!r.cardId||r.cardId===item.cardId));
     let lines=(Array.isArray(history?.series)?history.series:[]).map(item=>{
       const current=find(item,'market'),low=find(item,'listing'),points=linePoints(item,current),amount=Number(points.at(-1)?.amount),lowAmount=Number(low?.amount);
-      return {cardId:item.cardId,region:item.region,provider:item.provider,variants:[item.variant||''],points,low:low&&lowAmount>=MIN_LOW&&low.priceTwd!=null?Number(low.priceTwd):null,gap:low&&lowAmount>=MIN_LOW&&amount/lowAmount>=GAP_RATIO?Math.round(amount/lowAmount):0,currency:item.currency,observedAt:current?.observedAt||null};
+      const rate=Number(current?.priceTwd)/Number(current?.amount),average=value=>Number(value)>=MIN_LOW&&rate>0?Math.round(Number(value)*rate):null;
+      return {avg7:average(current?.avg7),avg30:average(current?.avg30),cardId:item.cardId,region:item.region,provider:item.provider,variants:[item.variant||''],points,low:low&&lowAmount>=MIN_LOW&&low.priceTwd!=null?Number(low.priceTwd):null,gap:low&&lowAmount>=MIN_LOW&&amount/lowAmount>=GAP_RATIO?Math.round(amount/lowAmount):0,currency:item.currency,observedAt:current?.observedAt||null};
     }).filter(line=>line.points.length);
     if(lines.some(line=>line.points.length>=2))lines=lines.filter(line=>line.points.length>=2);
     const newest=Math.max(...lines.map(line=>line.points.at(-1).time),0);
@@ -63,6 +64,8 @@
   // 純函式：範圍選項（資料夠長才出現）。
   const rangeOptions=count=>[count>8&&{days:7,label:'近 7 天'},count>31&&{days:30,label:'近 30 天'},count>8&&{days:0,label:'全部'}].filter(Boolean);
 
+  // 純函式：最新價和近 30 天平均相比的白話句；差不到 5% 算差不多。
+  function versusAverage(twd,avg30){if(!avg30)return '';const pct=Math.round((twd-avg30)/avg30*100);return Math.abs(pct)<5?'和近 30 天平均差不多':pct>0?`比近 30 天平均貴 ${pct}%，可能剛被拉高，別只看這個數字`:`比近 30 天平均便宜 ${-pct}%`}
   // 純函式：事件分成圖上範圍內（可跳過去）和最新一天之後（即將發生）。
   function eventsIn(events,days,start){const items=[];for(const event of Array.isArray(events)?events:[]){const time=ms(event?.date);if(!Number.isFinite(time)||!/^https:\/\//.test(String(event.url||'')))continue;const index=days.findIndex(day=>day.time===time);if(index>=start)items.push({...event,index});else if(time>days.at(-1).time)items.push({...event,index:-1})}return items}
   // 純函式：X 軸日期刻度的位置，頭尾都有、不重複。
@@ -96,12 +99,13 @@
     function stop(){root.clearInterval(timer);timer=0;$('play').innerHTML=PLAY;$('play').setAttribute('aria-label','播放價格變化')}
     function play(){if(timer)return stop();if(index>=last())select(start);$('play').innerHTML=PAUSE;$('play').setAttribute('aria-label','暫停');timer=root.setInterval(()=>{if(!slot.isConnected||index>=last())return stop();select(index+1,true)},Math.max(120,Math.min(420,5000/line.days.length)))}
     function jumps(){$('jumps').innerHTML=highlights(line.days,start).map(item=>`<button type="button" class="ptl-chip ptl-jump" data-i="${item.index}">${esc(item.text)}</button>`).join('')}
-    function listEvents(){const items=eventsIn(events,line.days,start);$('events').innerHTML=items.length?`<h4>同期的官方消息</h4><ul>${items.map(item=>`<li>${item.index>=0?`<button type="button" class="ptl-event-day" data-i="${item.index}">${esc(item.date.slice(5))}</button>`:`<span class="ptl-event-day soon">${esc(item.date.slice(5))} 即將</span>`}<span>${esc(item.title)}</span><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.source)}</a></li>`).join('')}</ul><p>整個遊戲的消息，不是這張卡專屬，也不代表造成圖上的漲跌。</p>`:''}
+    function listEvents(){const items=eventsIn(events,line.days,start);$('events').innerHTML=items.length?`<h4>同期時事</h4><ul>${items.map(item=>`<li>${item.index>=0?`<button type="button" class="ptl-event-day" data-i="${item.index}">${esc(item.date.slice(5))}</button>`:`<span class="ptl-event-day soon">${esc(item.date.slice(5))} 即將</span>`}<span>${esc(item.title)}</span><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.source)}</a></li>`).join('')}</ul><p>整個遊戲或系列的消息，不是這張卡專屬，也不代表造成圖上的漲跌。</p>`:''}
     function setRange(days){stop();const target=days?Math.max(0,last()-days):0;start=target;$('range').min=start;$('endA').textContent=md(line.days[start].time);jumps();listEvents();root.cancelAnimationFrame(zoom);const from=shownStart,t0=root.performance.now();const anim=t=>{const k=off?1:Math.min((t-t0)/320,1);shownStart=from+(target-from)*(1-(1-k)**3);select(index);if(k<1)zoom=root.requestAnimationFrame(anim)};zoom=root.requestAnimationFrame(anim)}
     function setLine(next){
       stop();line=next;start=0;shownStart=0;const hasTrend=line.days.length>1;$('trend').hidden=!hasTrend;$('short').hidden=hasTrend;
       const source=SOURCES[line.provider]||{seller:'',plain:line.provider};
-      $('low').innerHTML=(line.low!=null?`<div class="ptl-low"><span>${esc(source.seller)}賣家目前最低賣</span><span>${esc(ntd(line.low))}</span></div>`:'')+(line.gap?`<div class="ptl-warn">最低賣價和參考價差約 ${line.gap} 倍，這個數字可能不太準，兩個一起看。</div>`:'');
+      const latest=line.days.at(-1).twd,now=[['最新參考價',latest],['近 7 天平均',line.avg7],['近 30 天平均',line.avg30],[`${source.seller}賣家最低賣`,line.low]].filter(item=>item[1]!=null),versus=versusAverage(latest,line.avg30);
+      $('low').innerHTML=`<div class="ptl-now"><h4>現在行情</h4><dl>${now.map(item=>`<div><dt>${esc(item[0])}</dt><dd>${esc(ntd(item[1]))}</dd></div>`).join('')}</dl>${versus?`<p>${esc(versus)}</p>`:''}${line.avg30?'<small>平均是 Cardmarket 提供的數字，它沒有公開是否只算成交。</small>':''}</div>`+(line.gap?`<div class="ptl-warn">最低賣價和參考價差約 ${line.gap} 倍，這個數字可能不太準，兩個一起看。</div>`:'');
       $('plain').textContent=`這是${source.plain}的價格換算，不是台灣賣場價，也不是實際成交價。`;
       $('range').min=0;$('range').max=last();$('endA').textContent=md(line.days[0].time);$('endZ').textContent=md(line.days.at(-1).time);
       const ranges=rangeOptions(line.days.length);$('ranges').innerHTML=ranges.map((item,i)=>`<button type="button" class="ptl-chip${i===ranges.length-1?' on':''}" data-days="${item.days}">${esc(item.label)}</button>`).join('');
@@ -142,5 +146,5 @@
     mount(slot,lines,{...options,events:history.meta?.events});
   }
 
-  root.PriceTimeline={model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,dayText,sourceTime,load};
+  root.PriceTimeline={versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,dayText,sourceTime,load};
 })(typeof window!=='undefined'?window:globalThis);

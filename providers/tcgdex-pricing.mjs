@@ -28,7 +28,7 @@ export function tcgdexEnCardId(entry, number, providerId = null) {
   return pad ? `${entry.tcgdex}-${value.replace(/\d+/, digits => digits.padStart(Number(pad[1]), '0'))}` : null;
 }
 
-// Cardmarket trend -> market (platform reference price), low -> listing (lowest asking price). The avg* fields are never read (ADR 0036).
+// Cardmarket trend -> market (platform reference price), low -> listing (lowest asking price). avg7/avg30 ride on the market record as a steadier second reading (ADR 0054); other avg* fields are never read.
 // The 7-day freshness rule is not applied here: it runs on every read (dropStaleTcgdexPricing), so a cached record cannot outlive it.
 // ADR 0038: TCGplayer (USD) marketPrice -> market, lowPrice -> listing, per finish (normal, holofoil, reverseHolofoil, ...); mid/high/directLow are never read.
 const observedAtOf = updated => { const value = clean(updated); return value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null; };
@@ -53,7 +53,7 @@ export function parseTcgdexPricing(card, providerCardId = card?.id, { language =
       };
       for (const [field, priceType] of [['trend', 'market'], ['low', 'listing']]) {
         const amount = positive(pricing[field]);
-        if (amount != null) records.push({ ...common, priceType, amount });
+        if (amount != null) records.push({ ...common, priceType, amount, ...(priceType === 'market' ? { avg7: positive(pricing.avg7), avg30: positive(pricing.avg30) } : {}) });
       }
     }
     const tcgplayer = variant?.pricing?.tcgplayer, tpObservedAt = tcgplayer && typeof tcgplayer === 'object' && clean(tcgplayer.unit)?.toUpperCase() === 'USD' ? observedAtOf(tcgplayer.updated) : null;

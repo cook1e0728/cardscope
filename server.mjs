@@ -1,4 +1,4 @@
-import { marketEventsFor } from './providers/market-events.mjs';
+import { marketEventsFor, catalogEventsFrom, mergeMarketEvents } from './providers/market-events.mjs';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -1044,10 +1044,23 @@ async function loadPriceHistory(card,requestedId){
   // 先讀資料庫再讀封存：封存器是先寫封存、驗證、才刪資料庫的列，這個順序下兩邊至少有一邊有那一列，重複的列以主鍵去除。
   // 封存讀取失敗時退回只有資料庫的列（最近 30 天仍可畫），標 meta.archiveUnavailable，且只快取一分鐘；不假裝是完整資料。
   let archived=[],archiveUnavailable=false;try{archived=await archiveReader.rowsFor(ids,{from})}catch(error){archiveUnavailable=true;console.error('price archive unavailable',error.message)}
-  const body=buildPriceHistory(mergeSnapshotRows(rows,archived),{card,requestedId,fx});if(archiveUnavailable)body.meta.archiveUnavailable=true;return body;
+  const body=buildPriceHistory(mergeSnapshotRows(rows,archived),{card,requestedId,fx});body.meta.events=mergeMarketEvents(body.meta.events,(await loadCatalogEvents().catch(()=>[])).filter(event=>event.game===card?.game&&event.date>=from));if(archiveUnavailable)body.meta.archiveUnavailable=true;return body;
 }
 // 一小時快取（以請求的卡片 ID 為鍵、合併同時的請求）；失敗不快取。
 function priceHistoryCached(card,requestedId){const hit=priceHistoryCache.get(requestedId);if(hit&&(hit.pending||Date.now()-hit.at<PRICE_HISTORY_TTL_MS))return hit.promise;const entry={pending:true,at:0,promise:null};entry.promise=loadPriceHistory(card,requestedId).then(value=>{entry.pending=false;entry.at=Date.now()-(value.meta?.archiveUnavailable?PRICE_HISTORY_TTL_MS-60000:0);return value},error=>{priceHistoryCache.delete(requestedId);throw error});priceHistoryCache.set(requestedId,entry);while(priceHistoryCache.size>PRICE_HISTORY_CACHE_MAX)priceHistoryCache.delete(priceHistoryCache.keys().next().value);return entry.promise}
+// 時事：手動維護的官方消息＋目錄裡的新系列發售日（既有同步會自動更新）；一小時快取，失敗不快取。
+const CATALOG_EVENTS_TTL_MS=3600000,HOME_EVENTS_PAST_DAYS=45;let catalogEventsCache=null;
+function loadCatalogEvents(now=Date.now()){
+  if(catalogEventsCache&&now-catalogEventsCache.at<CATALOG_EVENTS_TTL_MS)return catalogEventsCache.promise;
+  const day=offset=>new Date(now+offset*86400000).toISOString().slice(0,10),entry={at:now,promise:null};
+  entry.promise=supabaseFetch(`/tcg_series?select=game_id,region,release_date,name_zh,name_ja,name_en,source_url&release_date=gte.${day(-PRICE_HISTORY_DAYS)}&release_date=lte.${day(60)}&order=release_date.asc&limit=500`).then(catalogEventsFrom).catch(error=>{catalogEventsCache=null;throw error});
+  catalogEventsCache=entry;return entry.promise;
+}
+async function marketEventsResponse(game,now=Date.now()){
+  const from=new Date(now-HOME_EVENTS_PAST_DAYS*86400000).toISOString().slice(0,10),catalog=await loadCatalogEvents(now).catch(error=>{console.error('catalog events unavailable',error.message);return []});
+  const events=mergeMarketEvents(marketEventsFor(null,from,now),catalog.filter(event=>event.date>=from)).filter(event=>!game||event.game===game);
+  return {data:events,meta:{note:'發售日與官方消息，不代表會影響價格。',generatedAt:new Date(now).toISOString()}};
+}
 // 參考價漲跌榜（/api/price-movers）：資料庫函式 price_movers 算好排名，這裡只換算新台幣；一小時快取、合併同時的請求，失敗不快取。
 const PRICE_MOVERS_TTL_MS=3600000,PRICE_MOVERS_DAYS=14,PRICE_MOVERS_MIN_EUR=5;let priceMoversCache=null;
 function buildPriceMovers(rows,fx,now=Date.now()){
@@ -1162,6 +1175,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
     }catch(e){return failJson(res,502,'buyback prices failed',e)}
   }
   if(url.pathname==='/api/products'&&req.method==='GET'){try{const catalog=await loadProductSets();return json(res,200,{data:catalog.products,series:catalog.series,meta:productFeedMeta(catalog)},SHORT_CACHE)}catch(e){return failJson(res,502,'products failed',e)}}
+  if(url.pathname==='/api/market-events'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});return json(res,200,await marketEventsResponse(url.searchParams.get('game')||null),SHORT_CACHE)}
   if(url.pathname==='/api/price-movers'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:{up:[],down:[]},meta:{unavailable:'not-configured'}});try{return json(res,200,await loadPriceMovers(),SHORT_CACHE)}catch(e){console.error('price movers failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
   if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort'),requestedGame),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(rarity&&!BROWSE_RARITY_FORMAT.test(rarity))return json(res,400,{error:'稀有度格式不正確'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});if(requestedGame==='pokemon')await attachReferencePrices(page.data);return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors}},{...SHORT_CACHE,'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){if(e.code==='BROWSE_BUSY')return json(res,503,{error:e.message},{'Retry-After':'5'});if(e.code==='BROWSE_REFUSED')return json(res,502,{error:e.message});return failJson(res,502,'browse failed',e)}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}},catalog.fallbackReason?{}:SHORT_CACHE)}
