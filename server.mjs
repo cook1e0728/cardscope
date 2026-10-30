@@ -1045,6 +1045,21 @@ async function loadPriceHistory(card,requestedId){
 }
 // 一小時快取（以請求的卡片 ID 為鍵、合併同時的請求）；失敗不快取。
 function priceHistoryCached(card,requestedId){const hit=priceHistoryCache.get(requestedId);if(hit&&(hit.pending||Date.now()-hit.at<PRICE_HISTORY_TTL_MS))return hit.promise;const entry={pending:true,at:0,promise:null};entry.promise=loadPriceHistory(card,requestedId).then(value=>{entry.pending=false;entry.at=Date.now()-(value.meta?.archiveUnavailable?PRICE_HISTORY_TTL_MS-60000:0);return value},error=>{priceHistoryCache.delete(requestedId);throw error});priceHistoryCache.set(requestedId,entry);while(priceHistoryCache.size>PRICE_HISTORY_CACHE_MAX)priceHistoryCache.delete(priceHistoryCache.keys().next().value);return entry.promise}
+// 參考價漲跌榜（/api/price-movers）：資料庫函式 price_movers 算好排名，這裡只換算新台幣；一小時快取、合併同時的請求，失敗不快取。
+const PRICE_MOVERS_TTL_MS=3600000,PRICE_MOVERS_DAYS=14,PRICE_MOVERS_MIN_EUR=5;let priceMoversCache=null;
+function buildPriceMovers(rows,fx,now=Date.now()){
+  const up=[],down=[];
+  for(const row of rows||[]){const from=Number(row.from_amount),to=Number(row.to_amount),change=Number(row.change_percent);if(!row?.card_id||!Number.isFinite(from)||!Number.isFinite(to)||!Number.isFinite(change))continue;
+    (row.direction==='up'?up:down).push({cardId:row.card_id,name:row.name_zh||row.name_ja||row.card_number||row.card_id,nameJa:row.name_ja||null,cardNumber:row.card_number||null,seriesCode:row.series_code||null,seriesName:row.series_name||null,imageUrl:row.image_url||null,variant:row.variant||'',currency:row.currency,changePercent:change,
+      from:{date:String(row.from_date).slice(0,10),amount:from,amountTwd:amountToTwd(from,row.currency,fx)},to:{date:String(row.to_date).slice(0,10),amount:to,amountTwd:amountToTwd(to,row.currency,fx)}})}
+  return {data:{up,down},meta:{provider:'cardmarket',windowDays:PRICE_MOVERS_DAYS,minAmount:PRICE_MOVERS_MIN_EUR,currency:'EUR',note:'Cardmarket 平台參考價（經 TCGdex 轉供）的變動，不是成交價、買取價或台灣行情，也不代表能賺到的價差；新台幣以今日匯率換算。',generatedAt:new Date(now).toISOString()}};
+}
+function loadPriceMovers(){
+  if(priceMoversCache&&(priceMoversCache.pending||Date.now()-priceMoversCache.at<PRICE_MOVERS_TTL_MS))return priceMoversCache.promise;
+  const entry={pending:true,at:0,promise:null};
+  entry.promise=Promise.all([supabaseFetch('/rpc/price_movers',{method:'POST',body:JSON.stringify({p_days:PRICE_MOVERS_DAYS,p_min:PRICE_MOVERS_MIN_EUR,p_limit:20})}),getTwdRates()]).then(([rows,fx])=>{entry.pending=false;entry.at=Date.now();return buildPriceMovers(rows,fx)},error=>{priceMoversCache=null;throw error});
+  priceMoversCache=entry;return entry.promise;
+}
 async function priceHistoryResponse(requestedId){
   let loaded=null;try{loaded=await getCard(requestedId)}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:priceHistoryNote([]),generatedAt:new Date().toISOString()}}}}
   if(!loaded?.card)return {status:404,body:{error:'找不到這張卡'}};
@@ -1144,6 +1159,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
     }catch(e){return failJson(res,502,'buyback prices failed',e)}
   }
   if(url.pathname==='/api/products'&&req.method==='GET'){try{const catalog=await loadProductSets();return json(res,200,{data:catalog.products,series:catalog.series,meta:productFeedMeta(catalog)},SHORT_CACHE)}catch(e){return failJson(res,502,'products failed',e)}}
+  if(url.pathname==='/api/price-movers'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:{up:[],down:[]},meta:{unavailable:'not-configured'}});try{return json(res,200,await loadPriceMovers(),SHORT_CACHE)}catch(e){console.error('price movers failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
   if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort'),requestedGame),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(rarity&&!BROWSE_RARITY_FORMAT.test(rarity))return json(res,400,{error:'稀有度格式不正確'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});if(requestedGame==='pokemon')await attachReferencePrices(page.data);return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors}},{...SHORT_CACHE,'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){if(e.code==='BROWSE_BUSY')return json(res,503,{error:e.message},{'Retry-After':'5'});if(e.code==='BROWSE_REFUSED')return json(res,502,{error:e.message});return failJson(res,502,'browse failed',e)}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}},catalog.fallbackReason?{}:SHORT_CACHE)}
   if(url.pathname==='/api/search'&&req.method==='GET'){
@@ -1246,6 +1262,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { buildPriceMovers, buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 
