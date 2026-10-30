@@ -30,3 +30,12 @@ test('movers markup uses delegated actions and the migration stays service-role 
   const sql = await readFile(new URL('../supabase/migrations/20261031090000_price_movers.sql', import.meta.url), 'utf8');
   assert.match(sql, /revoke all on function public\.price_movers\(integer, numeric, integer\) from public, anon, authenticated/);
 });
+
+test('cards sharing a Cardmarket product leave the movers and get a note on the detail page', async () => {
+  const sql = await readFile(new URL('../supabase/migrations/20261031100000_price_product_links.sql', import.meta.url), 'utf8');
+  assert.match(sql, /l\.card_id not in \(select public\.price_products_shared\(null\)\)/);
+  assert.match(sql, /coalesce\(cb\.canonical_id, cb\.id\) <> coalesce\(ca\.canonical_id, ca\.id\)/, 'the same card under two catalog rows is not a shared product');
+  assert.match(sql, /alter table public\.price_product_links enable row level security/);
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /meta\.sharedPriceCardIds\?\.length/);
+});

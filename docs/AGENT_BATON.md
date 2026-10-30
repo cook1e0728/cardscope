@@ -20,7 +20,11 @@
 
 - 2026-10-30 下午：遊戲頁頂部改「商標牆」（使用者從五版預覽選 B）：七格等寬放大官方商標、手機 4 欄兩列，去掉標題列下方 48px 空白；搜尋鈕改 SVG 圖示、56 寬貼齊右側。樣式在 `look-clean.css` 檔尾；首頁（landing）的遊戲格未改。
 
+- 2026-10-30 下午：TCGdex 會把不同的卡對到同一個 Cardmarket idProduct（已確認 base3-19／4、xyp XY202／XY95、neo2-22／3、smp SM57／SM80，價格完全相同）。新增 `price_product_links`（migration `20261031100000`，已套用；每日快照順手記錄）與 `price_products_shared`；`price_movers` 排除共用的卡，`/market` 回 `meta.sharedPriceCardIds`，詳細頁價格分頁顯示一句提醒。目前表內只有手動寫入的那 8 張。
+
 ## 下次要確認
+- 共用商品：下一輪完整快照（約 10-31 晚間跑完）後查 `select count(*) from price_products_shared(null)`、`price_movers` 執行時間（手動 8 張時約 1.4 秒）；走勢分頁還沒有提醒，等價格與走勢合併時一起做。
+- 參考價波動：Cardmarket trend 常與 low／avg30 差很多（皮卡丘 XY202 trend 1735、low 7）；是否顯示 avg30 要改 ADR 0036，待使用者決定。
 - 漲跌榜：漲幅前 20 目前全是 ≥ +266% 的老卡／推廣卡（成交稀少），且有幾組不同卡號共用同一個 Cardmarket 價格（如 xyp XY202 與 XY95），疑似 TCGdex 對應錯誤，未處理。資料累積到幾個月後再評估門檻。
 - 七龍珠超：系列發售日與包裝圖取自官方商品頁（推廣卡 PR 沒有發售日）；能量標記另列「能量標記」稀有度分組；系列分組為補充包／特別補充包／起始牌組／推廣卡。仍待：官方卡圖帶 SAMPLE 浮水印（未放進首頁展示卡）。稀有度順序 SCR＞SR＞L＞R＞UC＞C＞PR＞能量標記為自訂，在 `data/rarity-rankings.json`。
 - 七龍珠超同步的「補空欄位」PATCH（PostgREST `or=(…is.null)`、`name_ja=is.null`）只在 mock 測試驗過；下一次自動同步（約 11-02，72 小時一次）後看 `catalog_sync_runs` 的 dbs-fw-official 是否 completed、metadata.filledSeries／filledJa。

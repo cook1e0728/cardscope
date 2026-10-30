@@ -186,7 +186,7 @@ export async function runPriceSnapshot(options = {}) {
       for (let i = 0; i < page.items.length && !stopReason; i += chunkSize) {
         const chunk = page.items.slice(i, i + chunkSize);
         const pricing = { ja: createTcgdexPricing({ language: 'ja', fetch: throttledFetch, now, timeoutMs }), en: createTcgdexPricing({ language: 'en', fetch: throttledFetch, now, timeoutMs }) };
-        const found = [], foundBelow = [];
+        const found = [], foundBelow = [], productLinks = new Map();
         let done = 0;
         for (const item of chunk) {
           if (signal?.aborted) { stopReason = 'ABORTED'; break; }
@@ -216,6 +216,8 @@ export async function runPriceSnapshot(options = {}) {
           done++;
           if (stats.requests > before) { consecutiveFailures = 0; consecutiveBackoffs = 0; }
           if (lastStatus === 404) { stats.skipped.notFound++; continue; }
+          const productId = records.find(record => record.market === 'Cardmarket' && record.idProduct != null)?.idProduct;
+          if (productId != null) productLinks.set(item.cardId, { card_id: item.cardId, product_id: productId, updated_at: new Date(now()).toISOString() });
           const { rows, below, belowThreshold } = snapshotRowsFromRecords(item.cardId, records, today);
           stats.belowThreshold += belowThreshold;
           if (!rows.length && !belowThreshold) stats.skipped.noPrice++;
@@ -242,6 +244,8 @@ export async function runPriceSnapshot(options = {}) {
             stats.written += batch.length;
           }
         }
+        // 共用商品的判斷資料（price_products_shared）；寫失敗不影響價格快照本身。
+        if (productLinks.size) { try { await db('/price_product_links?on_conflict=card_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([...productLinks.values()]) }); } catch (error) { log.warn?.('price product links failed', error.message); } }
         if (done) stats.cursor = chunk[done - 1].cursor;
         await heartbeat();
         if (++chunksDone % brakeCheckChunks === 0) await brakeCheck();

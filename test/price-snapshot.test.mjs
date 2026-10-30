@@ -476,3 +476,16 @@ test('the controller does not start a round while the archiver is running', asyn
   assert.equal(state.runs.length, 1);
   await controller.dispose();
 });
+
+test('each priced card records its Cardmarket product id, and a failed write does not stop the snapshot', async () => {
+  const clock = makeClock(), state = fakeDb({ printings: [printing(1)], clock }), tcgdex = fakeTcgdex(clock, { 'SV6a-001': { name: '名前1', trend: 10 } });
+  const db = state.db;
+  state.db = async (path, options) => { if (path.startsWith('/price_product_links')) { state.calls.push({ path, body: options.body }); throw new Error('links down'); } return db(path, options); };
+  const result = await runPriceSnapshot(baseOptions(clock, state, tcgdex));
+  assert.equal(result.status, 'completed');
+  assert.equal(result.written, 1);
+  const call = state.calls.find(c => c.path.startsWith('/price_product_links'));
+  const [link] = JSON.parse(call.body);
+  assert.equal(link.product_id, 1);
+  assert.ok(link.card_id);
+});
