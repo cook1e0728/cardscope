@@ -177,11 +177,10 @@ const IP_ENTRY='#channels .channel:visible, .mobile-quick-grid .mqg-tile:visible
 async function clickIp(page,id){
   const tile=page.locator(`.mobile-quick-grid .mqg-tile[data-ip="${id}"]:not([data-mqg-action]):visible`).first();
   if(await tile.count()){await tile.click();return;}
-  const channels=page.locator('#channels .channel');
-  for(let index=0;index<await channels.count();index+=1){
-    const onclick=await channels.nth(index).getAttribute('onclick');
-    if(onclick?.includes(`'${id}'`)){await channels.nth(index).click();return;}
-  }
+  const channel=page.locator(`#channels .channel[data-ip="${id}"]:visible`).first();
+  if(await channel.count()){await channel.click();return;}
+  const mobileSelect=page.locator('#mobileGameSelect:visible');
+  if(await mobileSelect.count()){await mobileSelect.selectOption(id);return;}
   const switchButton=page.locator('.game-switch');
   if(await switchButton.count()){
     await switchButton.click();
@@ -307,7 +306,9 @@ async function runViewport(browser,viewport){
     if(await marketTab.count()){
       await marketTab.click();
       await waitForVisible(page.locator('#modal.open [data-detail-panel="market"]'),'optional market panel did not open');
-      assert.match(await page.locator('#modal.open [data-detail-panel="market"]').innerText(),/沒有可靠|市場|不可用|待補/);
+      // 價格走勢是打開分頁後才請求，要等讀取結束再看內容。
+      await page.waitForFunction(()=>!document.querySelector('#modal.open [data-price-trend]')?.textContent.includes('正在讀取價格紀錄'));
+      assert.match(await page.locator('#modal.open [data-detail-panel="market"]').innerText(),/沒有可靠|市場|不可用|待補|暫時無法讀取/);
     }
     await page.locator('#close').click();
     await page.waitForFunction(()=>!new URL(location.href).searchParams.has('card'));
