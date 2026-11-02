@@ -275,10 +275,11 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     assert.deepEqual(noExact.records, [], 'no exact-name match: no price, and never the first search result');
 
     const exact = await market('yugioh-bewd');
-    assert.deepEqual(exact.records.map(r => [r.market, r.amount, r.currency, r.scope, r.region, r.setCode, r.rarity]), [['YGOPRODeck', 12.34, 'USD', 'printing-set-price', 'US', 'LOB-EN001', 'Ultra Rare']], 'rarity UR matches the (UR) code; the 1.5 EUR / 2 USD cross-printing lowest is never shown');
+    assert.deepEqual(exact.records.map(r => [r.market, r.amount, r.currency, r.scope, r.region, r.setCode, r.rarity]), [['YGOPRODeck', 12.34, 'USD', 'printing-set-price', 'US', 'LOB-EN001', 'Ultra Rare']], 'rarity UR matches the (UR) code; the 1.5 EUR / 2 USD cross-printing lowest is not added beside it');
     assert.equal(exact.records[0].cardName, 'Blue-Eyes White Dragon');
     assert.equal(exact.records[0].priceTwd, Math.round(12.34 / 0.031));
-    for (const id of ['yugioh-bewd-jp', 'yugioh-bewd-rarity', 'yugioh-bewd-zero']) assert.deepEqual((await market(id)).records, [], `${id}: no per-printing price, so none shown`);
+    assert.deepEqual((await market('yugioh-bewd-jp')).records, [], 'JP only: the global lowest is not an OCG price, so none shown');
+    for (const id of ['yugioh-bewd-rarity', 'yugioh-bewd-zero']) assert.deepEqual((await market(id)).records.map(r => [r.market, r.amount, r.currency, r.scope, r.region ?? null]), [['TCGplayer', 2, 'USD', 'cross-version-lowest', null], ['Cardmarket', 1.5, 'EUR', 'cross-version-lowest', null]], `${id}: no per-printing price, so the labelled cross-version lowest`);
   } finally {
     if (app && app.exitCode === null && app.signalCode === null) await new Promise(resolve => { app.once('exit', resolve); app.kill(); });
     await close(mockSupabase);

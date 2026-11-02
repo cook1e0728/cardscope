@@ -60,6 +60,12 @@ export async function searchYgoProDeck(query,{limit=10}={}){
 }
 
 
+// 單一版本都查不到 set price 時的退路：YGOPRODeck 彙整的平台跨版本最低價。一定要標成跨版本，不能當成某個版本的價格。
+export function crossVersionLowestPrices(match){
+  const prices=match?.referencePrices||{};
+  return [['TCGplayer',prices.tcgplayerUsd,'USD'],['Cardmarket',prices.cardmarketEur,'EUR']].filter(([,amount])=>amount!=null).map(([market,amount,currency])=>({market,amount,currency}));
+}
+
 const rarityKey=value=>String(value||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 // 依該 printing 的卡號（set code）＋稀有度，從 card_sets 精確配對 set_price（YGOPRODeck 文件只寫「$ value」，不標平台）。
 // 沒有稀有度時只在該卡號唯一一筆才配；同卡號同稀有度有多筆但價格不同、或配不到，一律回 null，不猜。

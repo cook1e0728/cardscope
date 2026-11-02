@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { matchYgoprodeckSet } from '../providers/ygoprodeck.mjs';
+import { matchYgoprodeckSet, crossVersionLowestPrices } from '../providers/ygoprodeck.mjs';
 
 // Market data names the printing it belongs to; Yu-Gi-Oh! shows only a per-printing set price; collection totals skip prices older than 7 days.
 
@@ -25,6 +25,17 @@ test('YGOPRODeck set price: exact set code + rarity (name or code), never a gues
   assert.equal(matchYgoprodeckSet(sets, { number: '', rarity: 'UR' }), null);
   assert.equal(matchYgoprodeckSet(undefined, { number: 'LOB-EN001' }), null);
   assert.equal(matchYgoprodeckSet([set('A-1', 'Rare', '(R)', 1), set('A-1', 'Rare', '(R)', 2)], { number: 'A-1', rarity: 'Rare' }), null, 'same code and rarity with different prices: not guessed');
+});
+
+test('YGOPRODeck cross-version fallback keeps only real platform prices and says it is not this printing', () => {
+  assert.deepEqual(crossVersionLowestPrices({ referencePrices: { tcgplayerUsd: 0.15, cardmarketEur: 0.14, ebayUsd: 4.95 } }), [{ market: 'TCGplayer', amount: 0.15, currency: 'USD' }, { market: 'Cardmarket', amount: 0.14, currency: 'EUR' }]);
+  assert.deepEqual(crossVersionLowestPrices({ referencePrices: { tcgplayerUsd: null, cardmarketEur: 0.14 } }), [{ market: 'Cardmarket', amount: 0.14, currency: 'EUR' }]);
+  assert.deepEqual(crossVersionLowestPrices({}), []);
+  const context = vm.createContext({ e: escapeHtml, rn: region => region, ln: language => language });
+  vm.runInContext(slice(html, 'const MARKET_VARIANTS=', 'async function openCard'), context);
+  const out = context.marketBlock({ meta: { priceTypes: { market: '平台參考價' } }, records: [{ provider: 'ygoprodeck', market: 'TCGplayer', priceType: 'market', currency: 'USD', amount: 0.15, priceTwd: 5, scope: 'cross-version-lowest' }] });
+  assert.match(out, /跨版本最低參考價/);
+  assert.match(out, /對應版本：跨版本，不是這個版本的價格/);
 });
 
 test('market rows name the printing they belong to, and an empty list says there is no price for this version', () => {

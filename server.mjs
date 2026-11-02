@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { matchYgoprodeckSet, searchYgoProDeck } from './providers/ygoprodeck.mjs';
+import { crossVersionLowestPrices, matchYgoprodeckSet, searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createPriceSnapshotController } from './providers/price-snapshot.mjs';
 import { createArchiveReader, createArchiveStorage, createPriceArchiveController, mergeSnapshotRows } from './providers/price-archive.mjs';
@@ -1022,12 +1022,12 @@ async function loadVersionSnapshots(card,fx){
 }
 async function unifiedMarket(card){
   const fx=await getTwdRates(),snapshotsPending=loadVersionSnapshots(card,fx),tasks=sourceDisplayDenied('yuyutei')?[]:[['yuyutei',()=>yuyuteiMarket(card,fx)]];
-  // 只顯示「這個 printing」的價：YGOPRODeck 的 card_prices 是跨版本最低價，不能當單一版本的價；改用 card_sets[].set_price，依 printing 卡號＋稀有度精確配對，配不到就不顯示（日版 -JP 一律不配）。
+  // 優先顯示「這個 printing」的價：card_sets[].set_price 依 printing 卡號＋稀有度精確配對（日版 -JP 一律不配）。一個版本都配不到時才退回 card_prices 的跨版本最低價，並標明不是這個版本的價格，也不掛到版本對照表；只有日版的卡不退回，那是 TCG 價格，不是 OCG 行情。
   // set_price 的來源平台 YGOPRODeck 文件只寫「$ value」，所以標「YGOPRODeck 參考價（USD）」，不稱 TCGplayer 或成交價。
   if(card.game==='yugioh')tasks.push(['ygoprodeck',async()=>{const wanted=String(card.nameEn||'').trim().toLowerCase();if(!wanted)return [];const found=await searchYgoProDeck(card.nameEn,{limit:20}),match=found.find(x=>String(x.name).trim().toLowerCase()===wanted);if(!match)return [];
     const printings=card.printings?.length?card.printings.map(p=>({number:p.localCardNumber,rarity:p.rarity,region:p.region})):[{number:card.officialCardNumber,rarity:card.rarity,region:card.region}],seen=new Set(),rows=[];
     for(const p of printings){if(p.region==='JP')continue;const set=matchYgoprodeckSet(match.sets,p),key=set&&`${set.setCode}|${set.rarity}`;if(!set||seen.has(key))continue;seen.add(key);rows.push({...withTwd(normalizeMarketRecord({provider:'ygoprodeck',market:'YGOPRODeck',cardId:card.id,providerCardId:match.providerCardId,cardName:match.name,cardNumber:set.setCode,setCode:set.setCode,rarity:set.rarity,priceType:'market',amount:set.setPriceUsd,currency:'USD',observedAt:match.observedAt}),fx),region:p.region||null,scope:'printing-set-price'})}
-    if(!rows.length)rows.notice='沒有這個版本的 YGOPRODeck set price；不顯示跨版本最低價。';return rows}]);
+    if(!rows.length){rows.notice='沒有這個版本的 YGOPRODeck set price；改顯示跨版本最低參考價。';if(printings.some(p=>p.region!=='JP'))for(const price of crossVersionLowestPrices(match))rows.push({...withTwd(normalizeMarketRecord({provider:'ygoprodeck',market:price.market,cardId:card.id,providerCardId:match.providerCardId,cardName:match.name,priceType:'market',amount:price.amount,currency:price.currency,observedAt:match.observedAt}),fx),scope:'cross-version-lowest'})}return rows}]);
   // ADR 0036/0037: tcgdex-ja printings by provider_id; official-import JP printings only in checked series and only when TCGdex's Japanese name matches. No TW or US mapping. The registry switch stops it.
   if(card.game==='pokemon'&&catalogCollectionAllowed('tcgdexPricing')){const lookups=tcgdexLookups(card);if(lookups.length)tasks.push(['tcgdex',async()=>(await Promise.all(lookups.map(x=>(x.language==='en'?fetchTcgdexPricingEn:fetchTcgdexPricing)(x.id,{expectedName:x.expectedName}).then(rows=>rows.map(r=>({...r,en:x.language==='en'})))))).flat().map(r=>({...withTwd(normalizeMarketRecord({provider:r.provider,market:r.market,cardId:card.id,providerCardId:r.providerCardId,cardName:r.en?(card.nameEn||card.nameZh):(card.nameJa||card.nameZh),cardNumber:card.officialCardNumber,language:r.en?'en-US':'ja-JP',priceType:r.priceType,amount:r.amount,currency:r.currency,sourceUrl:r.sourceUrl,observedAt:r.observedAt}),fx),variant:r.variant,idProduct:r.idProduct,avg7:r.avg7,avg30:r.avg30,region:r.en?'US':'JP'}))])}
   const settled=await Promise.all(tasks.map(async([source,run])=>{try{return {source,status:'ok',data:await run()}}catch(error){return {source,status:'unavailable',error:publicReason(`market source ${source} failed`,error)}}})),records=settled.flatMap(x=>Array.isArray(x.data)?x.data:[]);
