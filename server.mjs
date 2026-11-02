@@ -29,7 +29,7 @@ const port = Number(process.env.PORT || 4173);
 const jpyToTwdFallback = Number(process.env.JPY_TO_TWD || 0.22);
 const usdToTwdFallback = Number(process.env.USD_TO_TWD || 32);
 const FX_CACHE_MS = 24 * 60 * 60 * 1000;
-const MARKET_CACHE_MS = 24 * 60 * 60 * 1000;
+const MARKET_CACHE_MS = 5 * 60 * 1000;
 const fxCache = { data:null, expiresAt:0 };
 const CATALOG_GAME_IDS = new Set(['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz','dragonball-fw']);
 const CATALOG_REGION_IDS = new Set(['JP','TW','US','CN','KR','ASIA']);
@@ -50,10 +50,12 @@ const RELATION_QUERY_MAX_BYTES = 8 * 1024;
 const RELATION_QUERY_CONCURRENCY = 4;
 const RELATION_SCAN_PAGE_SIZE = 1000;
 const SNAPSHOT_TTL_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_CACHE_MS) || BROWSE_CACHE_MS);
-const SNAPSHOT_MAX_STALE_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_MAX_STALE_MS) || 30 * 60 * 1000);
+const SNAPSHOT_MAX_STALE_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_MAX_STALE_MS) || 24 * 60 * 60 * 1000);
 // The health and coverage snapshots take 10-15 s on the database: serve the last one while one background load refreshes it.
 const catalogHealthCache = createBoundedSnapshotCache({ttlMs:SNAPSHOT_TTL_MS,maxStaleMs:SNAPSHOT_MAX_STALE_MS,serveStaleWhileRevalidate:true});
-const catalogCoverageCache = createBoundedSnapshotCache({ttlMs:SNAPSHOT_TTL_MS,maxStaleMs:SNAPSHOT_MAX_STALE_MS,serveStaleWhileRevalidate:true});
+// 覆蓋率每次重算要整庫掃描（正式站曾量到 125 秒），資料又很少變：一小時才背景重算一次。
+const COVERAGE_TTL_MS = Math.max(1000, Number(process.env.CATALOG_SNAPSHOT_CACHE_MS) || 60 * 60 * 1000);
+const catalogCoverageCache = createBoundedSnapshotCache({ttlMs:COVERAGE_TTL_MS,maxStaleMs:SNAPSHOT_MAX_STALE_MS,serveStaleWhileRevalidate:true});
 const TREND_CACHE_MS = 5 * 60 * 1000;
 const trendCache = {data:null,expiresAt:0,promise:null};
 
@@ -825,11 +827,12 @@ function canonicalizeCatalog(catalog){
 // database instance; catalog data only changes in batch imports. Callers get a clone because they canonicalize/mutate it.
 const CATALOG_CACHE_TTL_MS=Number(process.env.CATALOG_CACHE_TTL_MS??600000);
 let catalogCache={value:null,at:0,pending:null};
-async function loadCatalog(){
+function loadCatalogShared(){
   const refresh=()=>{if(!catalogCache.pending)catalogCache.pending=loadCatalogUncached().then(value=>{if(!value.fallbackReason)catalogCache={value,at:Date.now(),pending:null};else catalogCache.pending=null;return value},error=>{catalogCache.pending=null;throw error});return catalogCache.pending};
-  if(catalogCache.value){if(Date.now()-catalogCache.at>=CATALOG_CACHE_TTL_MS)refresh().catch(error=>console.error('catalog refresh failed',error.message));return structuredClone(catalogCache.value)}
-  return structuredClone(await refresh());
+  if(catalogCache.value){if(Date.now()-catalogCache.at>=CATALOG_CACHE_TTL_MS)refresh().catch(error=>console.error('catalog refresh failed',error.message));return Promise.resolve(catalogCache.value)}
+  return refresh();
 }
+const loadCatalog=async()=>structuredClone(await loadCatalogShared());
 async function loadCatalogUncached(){
   const fallback=await loadFallbackCatalog();
   if(!supabaseConfigured())return canonicalizeCatalog({...fallback,source:'catalog.json'});
@@ -985,7 +988,7 @@ async function loadCardFromDatabase(cardId){
 // The detail page and its market tab ask for the same card at once: share the database load and keep it briefly.
 const CARD_CACHE_TTL_MS=600000,CARD_CACHE_MAX=500,cardCache=new Map();
 function loadCardCached(cardId){const hit=cardCache.get(cardId);if(hit&&(hit.pending||Date.now()-hit.at<CARD_CACHE_TTL_MS))return hit.promise;const entry={pending:true,at:0,promise:null};entry.promise=loadCardFromDatabase(cardId).then(value=>{entry.pending=false;entry.at=Date.now();if(!value)cardCache.delete(cardId);return value},error=>{cardCache.delete(cardId);throw error});cardCache.set(cardId,entry);while(cardCache.size>CARD_CACHE_MAX)cardCache.delete(cardCache.keys().next().value);return entry.promise}
-async function getCard(cardId){const fromDatabase=supabaseConfigured()?loadCardCached(cardId).catch(()=>null):Promise.resolve(null),catalog=await loadCatalog(),card=catalog.cards.find(c=>c.id===cardId);if(card)return {catalog,card};const found=await fromDatabase;return found?structuredClone(found):{catalog,card:null}}
+async function getCard(cardId){const fromDatabase=supabaseConfigured()?loadCardCached(cardId).catch(()=>null):Promise.resolve(null),shared=await loadCatalogShared();if(shared.cards.some(c=>c.id===cardId)){const catalog=structuredClone(shared);return {catalog,card:catalog.cards.find(c=>c.id===cardId)}}const found=await fromDatabase;return found?structuredClone(found):{catalog:shared,card:null}}
 // eq. takes the value literally (URLSearchParams does the URL encoding); the old ilike-style backslash escaping made card numbers containing . _ % never match.
 async function yuyuteiMarket(card,fx){if(!supabaseConfigured()||!card.officialCardNumber)return [];const params=new URLSearchParams({select:'cardName:card_name,cardNumber:card_number,rarity,price,currency,cardUrl:card_url,imageUrl:image_url,setCode:set_code,setName:set_name,scrapedAt:scraped_at',card_number:`eq.${card.officialCardNumber}`,order:'scraped_at.desc',limit:'10'}),rows=await supabaseFetch(`/jp_buyback_prices?${params}`);return (rows||[]).map(r=>({...withTwd(normalizeMarketRecord({provider:'yuyutei',market:'JP',cardId:card.id,cardName:r.cardName,cardNumber:r.cardNumber,setCode:r.setCode,rarity:r.rarity,language:'ja-JP',priceType:'buyback',amount:r.price,currency:r.currency,imageUrl:r.imageUrl,sourceUrl:r.cardUrl,observedAt:r.scrapedAt}),fx),region:'JP'}))}
 // ADR 0037: series where official-import JP cards were checked against TCGdex (unique card numbers, Japanese names present). Evidence: docs/evidence/pokemon-jp/tcgdex-pricing-official-match-20261013.json
@@ -1033,6 +1036,10 @@ async function unifiedMarket(card){
   return {records,versions:buildVersionPrices(card,records,await snapshotsPending,{fx}),sources:settled.map(x=>({source:x.source,status:x.status,error:x.error||null,notice:x.data?.notice||null})),meta:{sharedPriceCardIds,exchangeRates:fx,priceTypes:{listing:'最低掛牌價',buyback:'店家買取／回收',market:'平台參考價',sale:'可驗證成交',user_report:'使用者回報（未驗證）'},warning:'不同價格性質不混算中位價；目前沒有可靠成交來源時，不顯示成交價或交易量。'}}
 }
 
+// 詳細頁的價格分頁：同一張卡短時間內不重查；有來源失敗的結果不快取，下次重試。
+const MARKET_CACHE_MAX=300,marketCache=new Map();
+function unifiedMarketCached(card){const hit=marketCache.get(card.id);if(hit&&(hit.pending||Date.now()-hit.at<MARKET_CACHE_MS))return hit.promise;const entry={pending:true,at:0,promise:null};entry.promise=unifiedMarket(card).then(value=>{entry.pending=false;entry.at=Date.now();if(value.sources.some(source=>source.status!=='ok'))marketCache.delete(card.id);return value},error=>{marketCache.delete(card.id);throw error});marketCache.set(card.id,entry);while(marketCache.size>MARKET_CACHE_MAX)marketCache.delete(marketCache.keys().next().value);return entry.promise}
+
 // ADR 0042：參考價走勢（public.price_snapshots，只存平台參考價）。同作品層的實體卡各自成線；每條線只屬於一張實體卡＋來源＋variant，不合併。台幣以今日匯率換算。
 const PRICE_HISTORY_DAYS=180,PRICE_HISTORY_TTL_MS=3600000,PRICE_HISTORY_CACHE_MAX=300,PRICE_HISTORY_IDS_MAX=30,priceHistoryCache=new Map();
 // ADR 0046：30 天前的列在私有 Storage bucket `price-archive`（分片 gzip JSON），讀取時與資料庫的列合併成同一份資料；沒有設定 Supabase 就沒有封存。
@@ -1072,7 +1079,7 @@ async function marketEventsResponse(game,now=Date.now()){
   return {data:events,meta:{note:'發售日與官方消息，不代表會影響價格。',generatedAt:new Date(now).toISOString()}};
 }
 // 參考價漲跌榜（/api/price-movers）：資料庫函式 price_movers 算好排名，這裡只換算新台幣；一小時快取、合併同時的請求，失敗不快取。
-const PRICE_MOVERS_TTL_MS=3600000,PRICE_MOVERS_DAYS=14,PRICE_MOVERS_MIN_EUR=5;let priceMoversCache=null;
+const PRICE_MOVERS_TTL_MS=3600000,PRICE_MOVERS_DAYS=14,PRICE_MOVERS_MIN_EUR=5,priceMoversCache=createBoundedSnapshotCache({ttlMs:PRICE_MOVERS_TTL_MS,maxStaleMs:24*60*60*1000,serveStaleWhileRevalidate:true});
 function buildPriceMovers(rows,fx,now=Date.now()){
   const up=[],down=[];
   for(const row of rows||[]){const from=Number(row.from_amount),to=Number(row.to_amount),change=Number(row.change_percent);if(!row?.card_id||!Number.isFinite(from)||!Number.isFinite(to)||!Number.isFinite(change))continue;
@@ -1080,11 +1087,9 @@ function buildPriceMovers(rows,fx,now=Date.now()){
       from:{date:String(row.from_date).slice(0,10),amount:from,amountTwd:amountToTwd(from,row.currency,fx)},to:{date:String(row.to_date).slice(0,10),amount:to,amountTwd:amountToTwd(to,row.currency,fx)}})}
   return {data:{up,down},meta:{provider:'cardmarket',windowDays:PRICE_MOVERS_DAYS,minAmount:PRICE_MOVERS_MIN_EUR,currency:'EUR',note:'Cardmarket 平台參考價（經 TCGdex 轉供）的變動，不是成交價、買取價或台灣行情，也不代表能賺到的價差；新台幣以今日匯率換算。',generatedAt:new Date(now).toISOString()}};
 }
-function loadPriceMovers(){
-  if(priceMoversCache&&(priceMoversCache.pending||Date.now()-priceMoversCache.at<PRICE_MOVERS_TTL_MS))return priceMoversCache.promise;
-  const entry={pending:true,at:0,promise:null};
-  entry.promise=Promise.all([supabaseFetch('/rpc/price_movers',{method:'POST',body:JSON.stringify({p_days:PRICE_MOVERS_DAYS,p_min:PRICE_MOVERS_MIN_EUR,p_limit:20})}),getTwdRates()]).then(([rows,fx])=>{entry.pending=false;entry.at=Date.now();return buildPriceMovers(rows,fx)},error=>{priceMoversCache=null;throw error});
-  priceMoversCache=entry;return entry.promise;
+async function loadPriceMovers(){
+  const snapshot=await priceMoversCache.get(async()=>{const [rows,fx]=await Promise.all([supabaseFetch('/rpc/price_movers',{method:'POST',body:JSON.stringify({p_days:PRICE_MOVERS_DAYS,p_min:PRICE_MOVERS_MIN_EUR,p_limit:20})}),getTwdRates()]);return buildPriceMovers(rows,fx)});
+  return snapshot.data;
 }
 async function priceHistoryResponse(requestedId){
   let loaded=null;try{loaded=await getCard(requestedId)}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:priceHistoryNote([]),generatedAt:new Date().toISOString()}}}}
@@ -1233,7 +1238,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
       return json(res,200,withPaging({source:catalog.source,architecture:'canonical-card-with-printings',match:exact.length?'exact-name':'substring',databaseSearch:'unavailable',searchScope:'loaded-catalog-only'},page.data,page.total))
     }
   }
-  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11));if(tail.endsWith('/price-history')){const result=await priceHistoryResponse(tail.slice(0,-14));return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7),{card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarket(card)})}const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null;return json(res,200,{data:{...card,series,game},meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason?{}:SHORT_CACHE)}
+  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11));if(tail.endsWith('/price-history')){const result=await priceHistoryResponse(tail.slice(0,-14));return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7),{card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarketCached(card)})}const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null;return json(res,200,{data:{...card,series,game},meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason?{}:SHORT_CACHE)}
   if(url.pathname==='/api/reports/meta')return json(res,200,{data:{platforms:ALLOWED_PLATFORMS,currencies:ALLOWED_CURRENCIES,maxPrice:MAX_PRICE}});
   // ADR 0045：免登入收藏的參考總值。最多 100 張卡、一次查詢 price_snapshots、不打外部來源。
   if(url.pathname==='/api/prices/reference'&&req.method==='POST'){let body;try{body=await readJsonBody(req,REFERENCE_BODY_MAX_BYTES)}catch(error){return json(res,error.message==='BODY_TOO_LARGE'?413:400,{error:error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤'})}const v=validateReferenceRequest(body);if(v.error)return json(res,400,{error:v.error});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{const [rows,fx]=await Promise.all([supabaseFetch(`/price_snapshots?${new URLSearchParams(referenceQueryParams(v.ids))}`),getTwdRates()]);return json(res,200,{data:buildReferencePrices(rows,v.ids,{fx,amountToTwd})})}catch{return json(res,502,{error:'參考價查詢失敗'})}}

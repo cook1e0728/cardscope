@@ -197,7 +197,9 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     'yugioh-bewd-zero': { ...base, id: 'yugioh-bewd-zero', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [printing('yugioh-bewd-zero', 'x', 'p', { region: 'US', language: 'en-US', localCardNumber: 'LOB-EN002', rarity: 'Common' })] },
     'yugioh-bewd': { ...base, id: 'yugioh-bewd', game: 'yugioh', nameZh: '青眼白龍', nameJa: null, nameEn: 'blue-eyes white dragon', printings: [printing('yugioh-bewd', 'x', 'p', { region: 'US', language: 'en-US', localSetCode: 'LOB', localCardNumber: 'LOB-EN001', rarity: 'UR' })] }
   };
+  let supabaseRequests = 0;
   const mockSupabase = createServer((req, res) => {
+    supabaseRequests++;
     const url = new URL(req.url, 'http://mock-supabase'), table = url.pathname.split('/').at(-1);
     let raw = '';
     req.on('data', chunk => { raw += chunk; });
@@ -238,6 +240,9 @@ test('market endpoint: tcgdex-ja Pokemon cards get NT$-converted Cardmarket pric
     const market = async id => { const response = await fetch(`http://127.0.0.1:${appPort}/api/cards/${id}/market`); assert.equal(response.status, 200); return (await response.json()).data; };
 
     const pokemon = await market('pokemon-tcgdex-ja-sv6a-039');
+    const requestsAfterFirst = supabaseRequests;
+    await market('pokemon-tcgdex-ja-sv6a-039');
+    assert.equal(supabaseRequests, requestsAfterFirst, 'a repeat within the cache window does not query the database again');
     assert.deepEqual(pokemon.sources.map(s => [s.source, s.status]).sort(), [['tcgdex', 'ok']], 'Yuyu-tei declined reuse (registry: denied), so its stored rows are not queried');
     const tcgdex = pokemon.records.filter(r => r.provider === 'tcgdex');
     assert.deepEqual(tcgdex.map(r => [r.priceType, r.amount, r.currency, r.variant, r.market]), [['market', 0.2, 'EUR', 'holo', 'Cardmarket'], ['listing', 0.03, 'EUR', 'holo', 'Cardmarket']]);
