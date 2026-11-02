@@ -142,3 +142,8 @@ test('the platform comparison uses the live price, the same as the chart', () =>
   assert.equal(summary.recent[0].twd, 'NT$ 90');
   assert.equal(summary.recent[0].original, '€3.00');
 });
+
+test('the graded link searches eBay sold listings for the card and number', () => {
+  assert.equal(T.gradedSearchUrl('Espeon', '48'), 'https://www.ebay.com/sch/i.html?_nkw=Espeon%2048%20PSA%2010&LH_Sold=1&LH_Complete=1');
+  assert.match(T.gradedSearchUrl('Espeon', ''), /_nkw=Espeon%20PSA%2010&/);
+});
