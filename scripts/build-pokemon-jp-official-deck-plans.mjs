@@ -19,7 +19,7 @@ try {
   const [cachePath, productsPath, metaPath, existingPath, outDir] = args;
   const flag = name => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
   if (!cachePath || !productsPath || !metaPath || !existingPath || !outDir || !flag('--series')) throw new Error('ARGUMENTS_REQUIRED');
-  const actor = flag('--actor') ?? 'claude-code-local:aa26488931';
+  const actor = flag('--actor') ?? 'claude-code-local:owner';
   const read = path => JSON.parse(readFileSync(path, 'utf8'));
   const [cache, products, meta, existing] = [cachePath, productsPath, metaPath, existingPath].map(read);
   mkdirSync(outDir, { recursive: true });

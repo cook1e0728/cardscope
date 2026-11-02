@@ -19,7 +19,7 @@ try {
   const flag = name => many(name)[0] ?? null;
   const cachePaths = [...many('--cache'), ...many('--era-cache')];
   if (!existingPath || !outDir || !cachePaths.length) throw new Error('ARGUMENTS_REQUIRED');
-  const actor = flag('--actor') ?? 'claude-code-local:aa26488931';
+  const actor = flag('--actor') ?? 'claude-code-local:owner';
   const eraCodes = new Set((flag('--era-rarity-codes') ?? 'C,U,R,RR,SR,UR').split(','));
   const eraCaches = new Set(many('--era-cache'));
   const existing = JSON.parse(readFileSync(existingPath, 'utf8'));

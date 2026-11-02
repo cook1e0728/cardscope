@@ -460,7 +460,7 @@
   - `6376758`：整個遊戲頁帶 IP 色（`--tint` 淡色紙底、頂欄 4px 線、搜尋鈕、區塊標題左標記、選中／hover、卡套 hover 外框、最高稀有度貼紙用 `--ip-2`、詳細視窗頂緣、手機底部導覽）；首頁（全部遊戲）維持中性。分頁籤加 `data-ip`（`index.html`）。小字用加深的 `--ip-ink`。
   - `07afc44`：使用者給卡拍拍式的官方 Logo 牆參考，要「Logo 漸層底色＋可辨識但不侵權的圖案」。做法：漸層只取各 IP Logo 的配色（`--band`／`--band-on`），圖案是 CardScope 自繪的通用物件剪影（`--motif`，CSS mask 的 data URI SVG；寶可夢閃電、航海王指南針、遊戲王三張卡扇＋星、芙莉蓮翻開的書＋星芒、排球少年排球，題材同 `assets/ip-*.svg`）；**不使用官方 Logo 字形、精靈球、草帽海賊旗、千年積木**（主方案第 3 節：無權利依據只用非官方導覽圖）。套用在遊戲頁大標題色帶（右側放大半透明剪影）、遊戲頁分頁籤（全部上漸層＋小剪影，選中者較高並接色帶）、首頁分類卡（漸層＋大剪影取代舊插圖）。配色改動：寶可夢由紅改 Logo 黃（色帶）＋藍（`--ip` 按鈕），遊戲王由紫改 Logo 紅＋金。所有文字組合（含漸層兩端）≥ 4.5:1，最低寶可夢深藍字配 `#F5A800` 4.84。Node 320/320。已截圖確認寶可夢、遊戲王、首頁；航海王、芙莉蓮、排球少年只核算對比、未看畫面。
   - 等使用者回覆三件事：(1) 剪影題材是否合適；(2) 寶可夢黃藍、遊戲王紅金是否接受；(3) 分頁籤全部上色會不會太花（替代：只有選中者上色）。
-  - 預覽啟動：桌電 App 用上層 `C:\Users\99wye\Documents\CardScope\.claude\launch.json` 的 `design-preview`（`cardscope/scripts/preview-proxy.mjs 4300`，本機檔、不在 repo）；或照上一點指令手動跑。注意：此電腦的 `python` 是 Windows Store 空殼，不能用來改檔。
+  - 預覽啟動：桌電 App 用上層 `<本機工作夾>\.claude\launch.json` 的 `design-preview`（`cardscope/scripts/preview-proxy.mjs 4300`，本機檔、不在 repo）；或照上一點指令手動跑。注意：此電腦的 `python` 是 Windows Store 空殼，不能用來改檔。
 - 下一步：依使用者觀察的回饋調整；確定後再處理字重與文案（例如「探索你的卡牌宇宙」），合併前更新主方案第 5 節的風格規定，合併後部署。
 
 ### 依序執行 57：遊戲導覽改用官方 Logo（ADR 0028，2026-10-08，桌電，預覽分支）
@@ -620,7 +620,7 @@
 - 遊戲王參考價：找不到完全同名（不分大小寫）就不顯示，標示「跨版本最低參考價」。
 - 美版系列清單改讀 `PokemonTCG/pokemon-tcg-data` 的 `sets/en.json`（176 個系列與正式庫一致）；靜態檔總數比卡片檔少時（svp：75 對 165 張）總數改記未知（`totalsStale`）。`server.mjs` 仍有兩處打 `api.pokemontcg.io`：162 行搜尋（失敗只顯示來源不可用）、590 行 `loadPokemonSets()`，2027-03 前要改。
 - 部署 `5391ccd`、`e3b0133`、`39f3e8f`；Node 351/351。正式站 SV6a-090（SAR）顯示 NT$365（EUR 10.20）／NT$300（EUR 8.39），匯率 2026-10-11。
-- 遊々亭：使用者選擇先詢問。2026-10-11 以使用者 Gmail（aa26488931@gmail.com）寄給 info@yuyu-tei.jp，主旨「買取価格情報の掲載に関するご相談（CardScope）」：說明個人、非營利、無廣告；只取買取價、卡號、卡名、稀有度、時間，一天一次；標示「遊々亭 買取価格」並連回原頁；不轉發、不商用；要求時立即停止並刪除。**回覆前不開啟收集**（`collectionEnabled` 維持 false）。
+- 遊々亭：使用者選擇先詢問。2026-10-11 以使用者 Gmail 寄給 info@yuyu-tei.jp，主旨「買取価格情報の掲載に関するご相談（CardScope）」：說明個人、非營利、無廣告；只取買取價、卡號、卡名、稀有度、時間，一天一次；標示「遊々亭 買取価格」並連回原頁；不轉發、不商用；要求時立即停止並刪除。**回覆前不開啟收集**（`collectionEnabled` 維持 false）。
 
 ### 依序執行 77：遊々亭婉拒（2026-10-13，桌電）
 
@@ -731,7 +731,7 @@
 
 ### 依序執行 94：日版缺漏 4 系列 SC2、S8a-G、DPs-B、EP08（ADR 0012／0026，2026-10-14，桌電，已完成）
 
-- 使用者指定抓取改用 Scrapling／Crawl4AI：桌電裝在 repo 外的 `C:/Users/99wye/Documents/CardScope/.venv-crawl`（Python 3.12、Scrapling 0.4.15、Crawl4AI、Playwright Chromium）。本次用 Scrapling 一般 Fetcher（關閉 stealth 標頭、自訂 UA、單一連線、間隔 1.7 秒），190 個請求、非 200 為 0；原始 HTML 只在 scratchpad，repo 只留文字事實。證據 `docs/evidence/pokemon-jp/official-series/missing4-20261014/`。
+- 使用者指定抓取改用 Scrapling／Crawl4AI：桌電裝在 repo 外的 `<本機工作夾>/.venv-crawl`（Python 3.12、Scrapling 0.4.15、Crawl4AI、Playwright Chromium）。本次用 Scrapling 一般 Fetcher（關閉 stealth 標頭、自訂 UA、單一連線、間隔 1.7 秒），190 個請求、非 200 為 0；原始 HTML 只在 scratchpad，repo 只留文字事實。證據 `docs/evidence/pokemon-jp/official-series/missing4-20261014/`。
 - 查證：SC2（VMAX 対戦トリプルスターターセット的リザードン牌組，2020-12-04）與資料庫 SCS 官方卡片 ID 零重疊，SCS 的シロナ換成マリィ，官方商品頁寫明「カード一部変更」，是不同商品；系列名維持官方原字串「スターターセットVMAX リザードン」（與 SCS 正規化後同名，靠代碼區分，依 ADR 0012 不自組名）。S8a-G（25th ANNIVERSARY GOLDEN BOX，官方只寫冬季發送，發售日留空）15 張，基本雷能量無卡號隔離。DPs-B（拡張パック「破空の激闘」，2008-07-10）92 張有印卡號；解析器容許總數後的促銷編號尾巴（`011 / 092 DPBP#531`）。EP08（エントリーパック’08 DX，2007-11-30）43 張無卡號，走 ADR 0026。
 - 寫入：4 份 gated 計畫（既有函式已接受連字號代碼，無新 migration）＋重播零異動，共 171 張。稀有度依 ADR 0019 只收 C～UR：DPs-B 9 張與 SC2／S8a-G／EP08 全部留空（Printing incomplete），DPs-B verified 83。
 - 中文名 ADR 0013：145 張（2 批＋重播零異動，候選 `derived-names/adr-0013-candidates-missing4-20261014.json`）；剩 26 張無唯一官方中文名。新增 `scripts/build-pokemon-jp-official-unnumbered-plan.mjs`。Node 369/369。注意：ADR 0013 候選查詢要先把日文名限縮在目標卡，全表計算 `jp_name_key` 會超過 Management API 約 100 秒而 524。
@@ -878,7 +878,7 @@
 - 對話長度（使用者 2026-10-06 指示）：上下文用量接近約 70% 時收尾——完成或記錄手上段落、更新本文件、commit／push，並提醒使用者開新對話（新對話說「讀 docs/HANDOFF.md 繼續」）。
 - 工作方式（使用者 2026-10-04 指示，記憶只存在筆電，換機以本段為準）：決策以 grill-with-docs 形式列出設計樹與建議，**不等回覆、直接照建議執行**，寫成 ADR／詞彙表；每個段落完成即 commit、push、快轉合併 `main` 並驗正式站。啟用新資料來源、花錢的設定仍需先問。
 - 新機器準備見 `docs/CROSS_DEVICE_SETUP.md`；本機直連資料庫需 `.env.local` 的 `SUPABASE_ACCESS_TOKEN`（各機自建）。大批寫入注意：Management API 約 100 秒被 Cloudflare 切斷（524）但伺服器端交易仍會跑完並持有鎖，單一請求控制在約 60 秒內（見依序執行 42）。
-- 筆電本機產物（不在 repo、可刪）：`C:\Users\99wye\Documents\CardScope\.claude\launch.json`（App 瀏覽器預覽用）；暫存檔皆在 Claude scratchpad。
+- 筆電本機產物（不在 repo、可刪）：`<本機工作夾>\.claude\launch.json`（App 瀏覽器預覽用）；暫存檔皆在 Claude scratchpad。
 - 正式庫：寶可夢日版 Printing 18,025（262 系列、中文名 15,010；ADR 0024 後 1,980 張與台版同作品層）、台版 12,669（10-04 加 SVOM、SV9／SV10 補號）、美版 20,637；日版實體商品 1,963（ADR 0021）；遊戲王 14,655（09-20 以來首次同步成功）、航海王 4,284、芙莉蓮 751、排球少年 527。
 - 使用者決定（2026-10-04）：(1) 遊戲王中文名先不處理；(2) Supabase 不升級運算規格；(3) Singapore 測試服務已由使用者停用。
 - ADR 0020 已驗收（2026-10-05 18:00 UTC 查）：10-04 10:13 UTC 到期後，正式站至少於 10-05 05:36 UTC 起多次部署重啟，`catalog_sync_runs` 沒有新的 `tcgdex-zh-tw` 紀錄（最後一筆仍是 10-01）。
@@ -939,13 +939,13 @@
 - 分支 `claude/grill-with-docs-4i2eha`（尚未合併 main、未開 PR）；本輪只改文件，無程式變更、Render 無需部署。
 - 執行前複核：正式函式 `prosrc` md5 `d9ce6c66c2704bb304cc2e4100342e10` 與交接一致；SV4a Seed 1/1/1（card md5 `50098b2093bf91ef2fd336c258291024`、printing md5 `c6f030ffab6701f5eda2e77627734c38`）；台版 7,436／美版 20,635；SVLN／`tcgdex-ja` 零碰撞、稽核 0 筆。
 - 正式 dry-run：`replay=false`、planDigest `48f1dbfe08d5775ba2c2b5dc1deaca7f86910721e1f7a346fcbf249913d91b46`、`before` 全 0、`inserted` series 1／cards 22／canonical 22／printings 22；執行後零殘留。
-- 真實匯入（actor `claude-code-local:aa26488931`，2026-10-01 10:08:44 UTC）結果同上；立即重播（10:10:27 UTC）`replay=true`、`inserted` 全 0、`present` 1/22/22。稽核表恰 import、replay 各一筆，digest 相同。
+- 真實匯入（actor `claude-code-local:owner`，2026-10-01 10:08:44 UTC）結果同上；立即重播（10:10:27 UTC）`replay=true`、`inserted` 全 0、`present` 1/22/22。稽核表恰 import、replay 各一筆，digest 相同。
 - 唯讀複核：台版 7,436／美版 20,635 不變；SV4a Seed 兩個 md5 不變；SVLN 22 card／22 canonical／22 printing 全 `data_status='pending'`，圖片、繁中名、稀有度皆 0。
 - 正式網站：`/api/cards?series=pokemon-tcgdex-ja-svln` HTTP 200、22 筆；`/api/search?q=ニンフィア` 命中 `pokemon-tcgdex-ja-svln-005`（`マンタイン` 命中 001）；詳情 `/api/cards/pokemon-tcgdex-ja-svln-005` HTTP 200；永久網址 `/?game=pokemon&card=pokemon-tcgdex-ja-svln-005` 顯示「中文名稱待補｜ニンフィアex」、圖片待補、稀有度待補、日版 SVLN 005。注意 `/api/cards` 不吃 `q`，日文名搜尋要用 `/api/search`。
 
 ### 第二個 pilot：SV6a（已正式匯入，2026-10-01 晚）
 
-- 真實匯入與立即重播皆以 digest 守門 SQL 執行（actor `claude-code-local:aa26488931`）：匯入 `inserted` 1／94／94／94；重播 `replay=true`、零異動、`present` 1/94/94。稽核共 4 筆（SVLN、SV6a 各 import／replay）。
+- 真實匯入與立即重播皆以 digest 守門 SQL 執行（actor `claude-code-local:owner`）：匯入 `inserted` 1／94／94／94；重播 `replay=true`、零異動、`present` 1/94/94。稽核共 4 筆（SVLN、SV6a 各 import／replay）。
 - 唯讀複核：台版 7,436／美版 20,635、SV4a card md5、SVLN cards／printings md5 全與匯入前基準相同；SV6a 94 card／94 canonical／94 printing 全 pending、無圖、無繁中名，printing 稀有度 C28／U20／R7／RR6／AR12／UR10／SAR5／空 6，card 與 printing 稀有度不一致 0。
 - 正式網站：`/api/cards?series=pokemon-tcgdex-ja-sv6a` 94 筆，rarity facets 與上相同（空值顯示 `unknown:6`）；`/api/search?q=モモワロウ` 命中 039 RR／082 UR／090 SAR／092 空，`カシオペア` 命中 061／085／091；永久網址 `/?game=pokemon&card=pokemon-tcgdex-ja-sv6a-090` 顯示 モモワロウex、SAR、日版 SV6a 090。已知限制：搜尋系列名「ナイトワンダラー」無結果（`search_text` 只含卡名與卡號，非本輪問題）；首次搜尋冷啟動約 27 秒。
 

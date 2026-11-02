@@ -143,4 +143,17 @@ export function summarizeImageHealth({ cards = [], printings = [], images = [], 
   };
 }
 
+// 固定時間窗計數；每個時間窗清空一次，記憶體上限就是一分鐘內出現過的 IP 數。
+// shortcut: 計數只在單一程序內，之後開多個執行個體時要改用共用儲存。
+export function createRateLimiter({ limit, windowMs = 60000, now = Date.now }) {
+  const hits = new Map();
+  let windowStart = now();
+  return key => {
+    if (now() - windowStart >= windowMs) { hits.clear(); windowStart = now(); }
+    const count = (hits.get(key) || 0) + 1;
+    hits.set(key, count);
+    return count <= limit;
+  };
+}
+
 export { DEFAULT_SNAPSHOT_TTL_MS, DEFAULT_SNAPSHOT_MAX_STALE_MS };

@@ -5,7 +5,7 @@ set -u
 CODE=$1
 cd "$(dirname "$0")/.."
 SP="${CARDSCOPE_WORK:?set CARDSCOPE_WORK to a work folder holding cards-database/ (pinned archive checkout), existing-jp-rows.json and s-observed-at.txt}"
-D="$SP/s-era/$CODE"; mkdir -p "$D"; ACTOR=${CARDSCOPE_ACTOR:-claude-code-local:aa26488931}
+D="$SP/s-era/$CODE"; mkdir -p "$D"; ACTOR=${CARDSCOPE_ACTOR:-claude-code-local:owner}
 CODE_LC=$(echo "$CODE" | tr 'A-Z' 'a-z')
 die() { echo "STOP $CODE: $*"; exit 1; }
 node scripts/snapshot-pokemon-jp-from-tcgdex-archive.mjs "$SP/cards-database" --series "$CODE" --existing "$SP/existing-jp-rows.json" --observed-at "$(cat $SP/s-observed-at.txt)" > "$D/snapshot.json" || die snapshot

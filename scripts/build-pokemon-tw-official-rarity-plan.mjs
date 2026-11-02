@@ -22,7 +22,7 @@ try {
   const [twPath, cachePath, outDir] = args;
   if (!twPath || !cachePath || !outDir) throw new Error('ARGUMENTS_REQUIRED');
   const option = name => { const index = args.indexOf(`--${name}`); return index === -1 ? null : args[index + 1]; };
-  const actor = option('actor') || 'claude-code-local:aa26488931';
+  const actor = option('actor') || 'claude-code-local:owner';
   const twRows = JSON.parse(readFileSync(twPath, 'utf8'));
   const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
 

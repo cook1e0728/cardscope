@@ -23,7 +23,7 @@ try {
   const [cachePath, namesPath, outDir] = args;
   const flag = name => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
   if (!cachePath || !namesPath || !outDir || !flag('--series')) throw new Error('ARGUMENTS_REQUIRED');
-  const actor = flag('--actor') ?? 'claude-code-local:aa26488931';
+  const actor = flag('--actor') ?? 'claude-code-local:owner';
   const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
   const { expansions } = JSON.parse(readFileSync(namesPath, 'utf8'));
   mkdirSync(outDir, { recursive: true });

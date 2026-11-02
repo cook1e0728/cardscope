@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { matchYgoprodeckSet, searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createPriceSnapshotController } from './providers/price-snapshot.mjs';
@@ -17,7 +17,7 @@ import { foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesR
 import { normalizeProduct } from './providers/products.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
-import { chunkCardIds, createBoundedSnapshotCache, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
+import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
 import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries } from './providers/seo.mjs';
 
 const nativeFetch = globalThis.fetch;
@@ -703,7 +703,17 @@ async function loadCatalogHealth(){
 function adminAuthorized(req){
   const authorization=String(req.headers.authorization||''),bearer=authorization.startsWith('Bearer ')?authorization.slice(7):null;
   const token=req.headers['x-scrape-token']||bearer;
-  return Boolean(process.env.SCRAPE_SECRET&&token===process.env.SCRAPE_SECRET);
+  if(!process.env.SCRAPE_SECRET||typeof token!=='string')return false;
+  const digest=value=>createHash('sha256').update(value).digest();
+  return timingSafeEqual(digest(token),digest(process.env.SCRAPE_SECRET));
+}
+// 公開 API 每個 IP 每分鐘的上限；卡圖一頁就有幾十張，另算一個寬鬆的額度。
+const apiLimiter=createRateLimiter({limit:Number(process.env.API_RATE_LIMIT_PER_MINUTE||240)}),imageLimiter=createRateLimiter({limit:Number(process.env.IMAGE_RATE_LIMIT_PER_MINUTE||1200)});
+// 正式站在 Cloudflare 後面，只有這個標頭無法由訪客偽造（X-Forwarded-For 的第一段可以）。沒有這個標頭時不限流，避免所有人共用同一個額度。
+function rateLimited(req,pathname){
+  const ip=req.headers['cf-connecting-ip'];
+  if(!ip||!pathname.startsWith('/api/')||pathname==='/api/catalog/health'||adminAuthorized(req))return false;
+  return !(pathname.startsWith('/api/images/')?imageLimiter:apiLimiter)(ip);
 }
 async function loadAdminCatalogHealth(){
   const [summary,missingChinese,missingSeries,pendingPrintingImages,pendingCardImages]=await Promise.all([
@@ -1146,6 +1156,7 @@ async function serveSitemap(res,pathname){
 const MEMORY_WARN_BYTES=(Number(process.env.MEMORY_WARN_MB)||380)*1024*1024,inflightRequests=new Set();let memoryWarnedAt=0;
 setInterval(()=>{const m=process.memoryUsage();if(m.rss<MEMORY_WARN_BYTES||Date.now()-memoryWarnedAt<60000)return;memoryWarnedAt=Date.now();console.warn('memory high',JSON.stringify({rssMb:Math.round(m.rss/1048576),heapMb:Math.round(m.heapUsed/1048576),inflight:[...inflightRequests].slice(0,15)}))},2000).unref();
 const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.headers.host}`);const inflightKey=`${req.method} ${url.pathname}${url.search.slice(0,160)} ${String(req.headers['user-agent']||'').slice(0,60)}`;inflightRequests.add(inflightKey);res.once('close',()=>inflightRequests.delete(inflightKey));
+  if(rateLimited(req,url.pathname))return json(res,429,{error:'請求太頻繁，請稍後再試'},{'Retry-After':'60'});
   if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog/image-status'&&req.method==='GET'){try{return json(res,200,{data:await yugiohImageStatus(supabaseFetch)})}catch(e){return failJson(res,502,'image status failed',e)}}
@@ -1227,8 +1238,8 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   // ADR 0045：免登入收藏的參考總值。最多 100 張卡、一次查詢 price_snapshots、不打外部來源。
   if(url.pathname==='/api/prices/reference'&&req.method==='POST'){let body;try{body=await readJsonBody(req,REFERENCE_BODY_MAX_BYTES)}catch(error){return json(res,error.message==='BODY_TOO_LARGE'?413:400,{error:error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤'})}const v=validateReferenceRequest(body);if(v.error)return json(res,400,{error:v.error});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{const [rows,fx]=await Promise.all([supabaseFetch(`/price_snapshots?${new URLSearchParams(referenceQueryParams(v.ids))}`),getTwdRates()]);return json(res,200,{data:buildReferencePrices(rows,v.ids,{fx,amountToTwd})})}catch{return json(res,502,{error:'參考價查詢失敗'})}}
   if(url.pathname==='/api/reports'&&req.method==='GET'){const cardId=url.searchParams.get('cardId'),cardName=url.searchParams.get('cardName'),game=url.searchParams.get('game'),limit=Math.min(Number(url.searchParams.get('limit'))||20,100);if(!cardId&&!cardName)return json(res,400,{error:'請提供 cardId 或 cardName'});if(!supabaseConfigured())return json(res,200,{data:{reports:[],stats:[],total:0},meta:{status:'unavailable',reason:'尚未設定使用者回報資料庫'}});const base=new URLSearchParams();if(cardId)base.set('card_id',`eq.${cardId}`);else base.set('card_name',`ilike.*${cardName}*`);if(game)base.set('game',`eq.${game}`);try{const statsParams=new URLSearchParams(base);statsParams.set('select','currency,price');const recentParams=new URLSearchParams(base);recentParams.set('select',PUBLIC_SELECT);recentParams.set('order','traded_at.desc');recentParams.set('limit',String(limit));const [all,recent]=await Promise.all([supabaseFetch(`/reports?${statsParams}`),supabaseFetch(`/reports?${recentParams}`)]);return json(res,200,{data:{reports:recent,stats:buildStats(all),total:all.length}})}catch{return json(res,502,{error:'資料庫查詢失敗'})}}
-  if(url.pathname==='/api/admin/scrape/yuyutei'&&(req.method==='POST'||req.method==='GET')){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!catalogCollectionAllowed('yuyutei'))return json(res,409,{error:'來源權利尚未確認，已由來源政策暫停自動抓取'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});let targetUrl=url.searchParams.get('url');if(req.method==='POST'){try{targetUrl=(await readJsonBody(req)).url||targetUrl}catch{return json(res,400,{error:'JSON 格式錯誤'})}}if(!targetUrl?.startsWith('https://yuyu-tei.jp/buy/'))return json(res,400,{error:'請提供合法的遊々亭買取頁'});try{const {game,setTitle,cards:found}=await scrapeYuyutei(targetUrl),rows=found.map(c=>({source:'yuyutei',game,set_code:c.setCode,set_name:setTitle,card_code:c.cardCode,card_number:c.number,rarity:c.rarity,card_name:c.name,price:c.price,currency:'JPY',card_url:c.cardUrl,image_url:null,scraped_at:new Date().toISOString()}));for(let i=0;i<rows.length;i+=200)await supabaseFetch('/jp_buyback_prices?on_conflict=source,game,set_code,card_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify(rows.slice(i,i+200))});return json(res,200,{data:{message:'抓取並存檔成功',game,setTitle,count:rows.length}})}catch(e){return json(res,502,{error:`抓取失敗：${e.message}`})}}
-  if(url.pathname==='/api/catalog/sync-status'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[]});try{const data=await supabaseFetch('/catalog_sync_runs?select=provider,scope,status,rowsSeen:rows_seen,rowsWritten:rows_written,error,metadata,startedAt:started_at,finishedAt:finished_at&provider=not.in.(price-snapshot,price-archive)&order=started_at.desc&limit=12');return json(res,200,{data})}catch(e){return failJson(res,502,'sync status failed',e)}}
+  if(url.pathname==='/api/admin/scrape/yuyutei'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!catalogCollectionAllowed('yuyutei'))return json(res,409,{error:'來源權利尚未確認，已由來源政策暫停自動抓取'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});let targetUrl=url.searchParams.get('url');if(req.method==='POST'){try{targetUrl=(await readJsonBody(req)).url||targetUrl}catch{return json(res,400,{error:'JSON 格式錯誤'})}}if(!targetUrl?.startsWith('https://yuyu-tei.jp/buy/'))return json(res,400,{error:'請提供合法的遊々亭買取頁'});try{const {game,setTitle,cards:found}=await scrapeYuyutei(targetUrl),rows=found.map(c=>({source:'yuyutei',game,set_code:c.setCode,set_name:setTitle,card_code:c.cardCode,card_number:c.number,rarity:c.rarity,card_name:c.name,price:c.price,currency:'JPY',card_url:c.cardUrl,image_url:null,scraped_at:new Date().toISOString()}));for(let i=0;i<rows.length;i+=200)await supabaseFetch('/jp_buyback_prices?on_conflict=source,game,set_code,card_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify(rows.slice(i,i+200))});return json(res,200,{data:{message:'抓取並存檔成功',game,setTitle,count:rows.length}})}catch(e){return json(res,502,{error:`抓取失敗：${e.message}`})}}
+  if(url.pathname==='/api/catalog/sync-status'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[]});try{const data=await supabaseFetch('/catalog_sync_runs?select=provider,scope,status,rowsSeen:rows_seen,rowsWritten:rows_written,startedAt:started_at,finishedAt:finished_at&provider=not.in.(price-snapshot,price-archive)&order=started_at.desc&limit=12');return json(res,200,{data})}catch(e){return failJson(res,502,'sync status failed',e)}}
   // ADR 0042：每日參考價快照的狀態、手動觸發與停止。
   if(url.pathname==='/api/admin/price-snapshot'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});return json(res,200,{data:priceSnapshot.status()})}
   if(url.pathname==='/api/admin/price-snapshot/run'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const result=await priceSnapshot.runNow();return json(res,result.started?202:409,{data:result})}
@@ -1256,6 +1267,8 @@ const server=createServer((req,res)=>{
   if(!badInput)console.error('request failed',req.method,String(req.url).slice(0,200),error?.stack||error);
   if(!res.headersSent)json(res,badInput?400:500,{error:badInput?'網址格式錯誤':'伺服器暫時發生錯誤'});else res.end();
 })});
+// 只限制接收請求的時間（擋慢速連線），不影響回應要跑多久。
+server.headersTimeout=20000;server.requestTimeout=30000;
 process.on('unhandledRejection',error=>console.error('unhandled rejection',error?.stack||error));
 
 const priceSnapshot=createPriceSnapshotController({db:supabaseFetch,isBlocked:()=>priceArchive.status().running});

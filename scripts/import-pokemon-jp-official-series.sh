@@ -7,7 +7,7 @@ set -u
 CACHE=$1; META=$2; CODE=$3
 cd "$(dirname "$0")/.."
 SP="${CARDSCOPE_WORK:?set CARDSCOPE_WORK to a work folder}"
-D="$SP/official-series/$CODE"; mkdir -p "$D"; ACTOR=${CARDSCOPE_ACTOR:-claude-code-local:aa26488931}
+D="$SP/official-series/$CODE"; mkdir -p "$D"; ACTOR=${CARDSCOPE_ACTOR:-claude-code-local:owner}
 TW_CACHE=${CARDSCOPE_TW_CACHE:-docs/evidence/pokemon-tw/official-rarity-20261002.json}
 die() { echo "STOP $CODE: $*"; exit 1; }
 node scripts/build-pokemon-jp-official-series-plan.mjs "$CACHE" "$META" "$D" --series "$CODE" --actor "$ACTOR" ${CARDSCOPE_RARITY_CODES:+--rarity-codes "$CARDSCOPE_RARITY_CODES"} > "$D/summary.json" || die plan

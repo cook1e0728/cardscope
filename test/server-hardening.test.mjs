@@ -175,3 +175,22 @@ test('card list, search and detail answers can be cached for a minute; errors an
     assert.equal((await fetch(base+'/api/cards/'+encodeURIComponent(list[0].id)+'/price-history')).headers.get('cache-control'),'no-store');
   });
 });
+
+test('public API is limited per Cloudflare client IP; health, admin and direct requests are not',async()=>{
+  await withServer('limit',{env:{API_RATE_LIMIT_PER_MINUTE:'2',SCRAPE_SECRET:'admin-secret'}},async base=>{
+    const hit=(path,headers={})=>fetch(base+path,{headers:{'cf-connecting-ip':'198.51.100.1',...headers}}).then(res=>res.status);
+    assert.deepEqual([await hit('/api/catalog/sources'),await hit('/api/catalog/sources')],[200,200]);
+    assert.equal(await hit('/api/catalog/sources'),429);
+    assert.equal(await hit('/api/catalog/sources',{'cf-connecting-ip':'198.51.100.2'}),200);
+    assert.equal(await hit('/api/catalog/health'),200);
+    assert.equal(await hit('/api/catalog/sources',{'x-scrape-token':'admin-secret'}),200);
+    assert.equal((await fetch(base+'/api/catalog/sources')).status,200);
+  });
+});
+
+test('admin scrape route refuses GET, and a wrong token gets 401',async()=>{
+  await withServer('admin',{env:{SCRAPE_SECRET:'admin-secret'}},async base=>{
+    assert.equal((await fetch(base+'/api/admin/scrape/yuyutei',{headers:{'x-scrape-token':'admin-secret'}})).status,404);
+    assert.equal((await fetch(base+'/api/admin/scrape/yuyutei',{method:'POST',headers:{'x-scrape-token':'wrong'}})).status,401);
+  });
+});

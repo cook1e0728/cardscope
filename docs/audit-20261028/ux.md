@@ -1,6 +1,6 @@
 # CardScope 使用者體驗盤點（2026-10-28）
 
-範圍：正式站 https://cardscope.onrender.com 實測，桌面 1440x900、手機 390x844（Playwright 無頭 Chromium，已預先寫入 `cs-tour-done` 略過導覽，另測首次導覽）。截圖都在 `C:\Users\99wye\AppData\Local\Temp\claude\C--Users-99wye-Documents-CardScope\fde59f4f-584a-449d-8842-5d174ade57ca\scratchpad\ux\`，下文只寫檔名。
+範圍：正式站 https://cardscope.onrender.com 實測，桌面 1440x900、手機 390x844（Playwright 無頭 Chromium，已預先寫入 `cs-tour-done` 略過導覽，另測首次導覽）。截圖都在 `<本機暫存資料夾>\ux\`，下文只寫檔名。
 方法：impeccable critique 的 Nielsen 十項 0-4 分、認知負荷檢查與 Alex／Jordan／Casey／Riley 人格；ui-ux-pro-max 的 ux-guidelines（導覽、觸控、回饋、空狀態、無結果）與 Directory／Listing 規則（發現速度、隱藏篩選、卡片掃讀）；taste-skill 只取 4.5 互動狀態與 4.7 版面紀律（該 skill 自述不適用 app 畫面，不套其視覺規則）。
 沒有重報：`docs/AUDIT_20261023.md` 已修項目；中央大 SAMPLE 浮水印是使用者決定（HANDOFF 依序執行 113），不列為問題。
 

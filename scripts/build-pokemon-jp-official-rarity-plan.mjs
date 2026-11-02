@@ -25,7 +25,7 @@ try {
   const [printingsPath, cachePath, outDir] = args;
   if (!printingsPath || !cachePath || !outDir) throw new Error('ARGUMENTS_REQUIRED');
   const actorIndex = args.indexOf('--actor');
-  const actor = actorIndex === -1 ? 'claude-code-local:aa26488931' : args[actorIndex + 1];
+  const actor = actorIndex === -1 ? 'claude-code-local:owner' : args[actorIndex + 1];
   const printings = JSON.parse(readFileSync(printingsPath, 'utf8'));
   const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
   const byIdentity = new Map(Object.values(cache.details).filter(d => d.setMark && d.number).map(d => [`${d.setMark}|${d.number}`, d]));

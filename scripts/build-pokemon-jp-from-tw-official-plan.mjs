@@ -17,7 +17,7 @@ try {
   const [jpPath, cachePath, outDir] = args;
   const option = name => { const index = args.indexOf(`--${name}`); return index === -1 ? null : args[index + 1]; };
   if (!jpPath || !cachePath || !outDir || !option('series')) throw new Error('ARGUMENTS_REQUIRED');
-  const actor = option('actor') || 'claude-code-local:aa26488931';
+  const actor = option('actor') || 'claude-code-local:owner';
   const codes = option('series').split(',');
   const jpRows = JSON.parse(readFileSync(jpPath, 'utf8'));
   const cache = JSON.parse(readFileSync(cachePath, 'utf8'));

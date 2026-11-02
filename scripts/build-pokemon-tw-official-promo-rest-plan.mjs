@@ -38,7 +38,7 @@ try {
   const [cachePath, overlayPath, printingsPath, outDir] = args;
   const flag = name => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
   if (!cachePath || !overlayPath || !printingsPath || !outDir || !flag('--series')) throw new Error('ARGUMENTS_REQUIRED');
-  const actor = flag('--actor') ?? 'claude-code-local:aa26488931';
+  const actor = flag('--actor') ?? 'claude-code-local:owner';
   if (actor.includes("'")) throw new Error('ACTOR_QUOTE');
   const cache = JSON.parse(readFileSync(cachePath, 'utf8')), overlay = JSON.parse(readFileSync(overlayPath, 'utf8')), printings = JSON.parse(readFileSync(printingsPath, 'utf8'));
   mkdirSync(outDir, { recursive: true });

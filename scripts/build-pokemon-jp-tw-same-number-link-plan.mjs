@@ -18,7 +18,7 @@ try {
   const [pairsPath, elsewherePath, outDir] = args;
   const flag = name => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
   if (!pairsPath || !elsewherePath || !outDir) throw new Error('ARGUMENTS_REQUIRED');
-  const actor = flag('--actor') ?? 'claude-code-local:aa26488931';
+  const actor = flag('--actor') ?? 'claude-code-local:owner';
   const pairs = JSON.parse(readFileSync(pairsPath, 'utf8'));
   const elsewhere = JSON.parse(readFileSync(elsewherePath, 'utf8')).map(row => row.code);
   const { plans, byCode, misaligned, skipped } = planJpTwSameNumberLinks(pairs, elsewhere);

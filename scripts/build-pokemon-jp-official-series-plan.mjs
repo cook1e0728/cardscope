@@ -21,7 +21,7 @@ try {
   const [cachePath, metaPath, outDir] = args;
   if (!cachePath || !metaPath || !outDir || [cachePath, metaPath, outDir].some(arg => arg.startsWith('--'))) throw new Error('ARGUMENTS_REQUIRED');
   const flag = name => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
-  const actor = flag('--actor') ?? 'claude-code-local:aa26488931';
+  const actor = flag('--actor') ?? 'claude-code-local:owner';
   const cache = JSON.parse(readFileSync(cachePath, 'utf8'));
   const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
   const codes = flag('--series')?.split(',') ?? Object.keys(meta);

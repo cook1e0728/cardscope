@@ -26,7 +26,7 @@ try {
   const [rarityPath, imagesPath, basePath, outDir] = positional;
   const flag = name => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
   if (!rarityPath || !imagesPath || !basePath || !outDir) throw new Error('ARGUMENTS_REQUIRED');
-  const actor = flag('--actor') ?? 'claude-code-local:aa26488931';
+  const actor = flag('--actor') ?? 'claude-code-local:owner';
   const { details } = JSON.parse(readFileSync(rarityPath, 'utf8'));
   const { thumbs } = JSON.parse(readFileSync(imagesPath, 'utf8'));
   const baseCards = JSON.parse(readFileSync(basePath, 'utf8'));
