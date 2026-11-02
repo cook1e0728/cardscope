@@ -86,3 +86,11 @@ test('current price compares with the 30-day average in plain words', () => {
   assert.equal(one.avg7, 1440);
   assert.equal(one.avg30, null);
 });
+
+test('the entrance sweep stays short; pressing play is slower but bounded', () => {
+  assert.equal(T.sweepMs(5, true), 700);
+  assert.equal(T.sweepMs(180, true), 1600);
+  assert.equal(T.sweepMs(2, false), 1800);
+  assert.equal(T.sweepMs(18, false), 4320);
+  assert.equal(T.sweepMs(180, false), 6000);
+});
