@@ -94,3 +94,51 @@ test('the entrance sweep stays short; pressing play is slower but bounded', () =
   assert.equal(T.sweepMs(18, false), 4320);
   assert.equal(T.sweepMs(180, false), 6000);
 });
+
+const day = (date, twd) => ({ time: Date.parse(`${date}T00:00:00Z`), twd });
+
+test('weekly bars start on Monday and monthly bars on the 1st; open, high, low and close come from the days', () => {
+  const days = [day('2026-10-17', 10), day('2026-10-18', 8), day('2026-10-19', 9), day('2026-10-20', 30), day('2026-11-01', 20)];
+  const weeks = plain(T.periodBars(days, 'week'));
+  assert.deepEqual(weeks.map(b => b.key), ['2026-10-12', '2026-10-19', '2026-10-26']);
+  assert.deepEqual([weeks[0].open, weeks[0].high, weeks[0].low, weeks[0].close], [10, 10, 8, 8]);
+  assert.deepEqual(plain(T.periodBars(days, 'month').map(b => [b.key, b.close])), [['2026-10', 30], ['2026-11', 20]]);
+});
+
+test('the moving average stays empty until it has enough days', () => {
+  assert.deepEqual(plain(T.movingAverage([10, 20, 30, 40].map(twd => ({ twd })), 3)), [null, null, 20, 30]);
+});
+
+test('only a threefold move between two records raises the thin-trading warning, and the largest one wins', () => {
+  const points = values => values.map((twd, i) => ({ time: i, twd }));
+  assert.equal(T.biggestJump(points([100, 200, 299])), null);
+  assert.deepEqual(plain(T.biggestJump(points([100, 400, 90, 80]))), { ratio: 400 / 90, time: 2, from: 400, to: 90 });
+});
+
+test('price records read newest first and state the change from the previous record', () => {
+  const rows = plain(T.recordRows([{ time: Date.UTC(2026, 9, 16), twd: 100, amount: 2.5 }, { time: Date.UTC(2026, 9, 20), twd: 50, amount: 1.25, observedAt: '2026-10-19T22:54:00Z' }], 'EUR'));
+  assert.deepEqual(rows.map(r => r.original), ['€1.25', '€2.50']);
+  assert.equal(rows[0].change, '−NT$ 50（−50%）');
+  assert.equal(rows[0].observed, '10-20 06:54');
+  assert.equal(rows[1].change, '第一筆');
+});
+
+test('a platform that stopped updating is listed apart and named in the conclusion', () => {
+  const summary = plain(T.platformSummary({ series: [line(), line({ provider: 'tcgplayer', variant: 'holo', currency: 'USD', points: [pt('2026-10-01', 7000)] })] }, { variantLabel: v => v }));
+  assert.deepEqual(summary.recent.map(r => r.market), ['Cardmarket']);
+  assert.deepEqual(summary.stale.map(r => r.label), ['holo']);
+  assert.equal(summary.text, '目前只有 Cardmarket 是近期價格，TCGplayer 停在 10-01，不能直接比。');
+  assert.equal(plain(T.platformSummary({ series: [line({ variant: '' })] })).recent[0].label, '版本未標示');
+});
+
+test('search links encode the card name', () => {
+  assert.equal(T.searchUrl('cardmarket', 'Mr. Mime & Co'), 'https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=Mr.%20Mime%20%26%20Co');
+  assert.match(T.searchUrl('tcgplayer', 'Espeon'), /^https:\/\/www\.tcgplayer\.com\/search\/pokemon\/product\?q=Espeon$/);
+});
+
+test('the platform comparison uses the live price, the same as the chart', () => {
+  const market = { records: [{ priceType: 'market', market: 'Cardmarket', variant: '', amount: 3, priceTwd: 90, observedAt: '2026-10-20T00:00:00Z' }] };
+  const summary = plain(T.platformSummary({ series: [line({ variant: '', points: [pt('2026-10-01', 70)] })] }, { market }));
+  assert.equal(summary.recent[0].twd, 'NT$ 90');
+  assert.equal(summary.recent[0].original, '€3.00');
+});
