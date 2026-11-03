@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-03：匯率（ExchangeRate-API，台銀有機器人驗證、央行 API 連不上，都不能用）加防呆：新抓的日圓／美元／歐元跟一週內上一筆差超過 5% 就不採用（`fxJump`）；抓不到或被擋時沿用資料庫最後一筆，不再退回寫死的值。搜尋：選了版本搜不到但其他版本有時，`meta.otherRegion` 帶出版本，空結果頁給「改看台版的結果」按鈕（`data-search-region`），不再猜錯字。起因：使用者在日版搜「名偵探皮卡丘」0 筆，那張是台版 SV-P 050；日版卡沒有中文卡名，「名偵探皮卡丘」對不到「名探偵ピカチュウ」（未做）。
 - 2026-11-03：寶可夢日版系列沒有 Cardmarket 價時（221 個系列，例如 M6a；TCGdex 已不收 M6a），改用 TCG API（tcgapi.dev）的 TCGplayer 美元市價當參考價。`providers/tcgapi-pricing.mjs` 啟動 10 分鐘後跑一輪、之後每 24 小時一輪，每輪最多 70 次請求（免費 100 次/天、非商業；回應的 `daily_remaining` 剩 30 以下就停），照 `price_tcgapi_targets` 最久沒補的系列先補；系列以名稱「代號:」對應、卡號取斜線前數字，兩邊都要唯一才寫。寫進 `price_snapshots`（tcgplayer／USD／variant `tcgapi-<printing>`），`price_reference_best` 只在卡沒有 Cardmarket 價時才用（migration 20261103120000）。卡牆標「TCGplayer 參考」與 US$；系列內價格排序先換成歐元再比。Render 環境變數 `TCGAPI_KEY`（使用者已設）。shortcut：整個遊戲的價格排序歐元美元直接比。試查路徑 `/api/tcgapi-probe` 已移除。
 - 2026-11-03：缺圖再補 160 張。158 張 SM／S 時代日版 HR（彩虹）、UR（金）寶可夢卡借用英文版同一張卡的圖：`card_images` 語言 en-US、source `pokemontcg`，rights_note 記錄對應的英文卡號。比對條件是同一組圖鑑編號、同類型（GX／VMAX／無）、彩虹對 Rare Rainbow、金對 Rare Secret、英文版在日版發售後 400 天內，而且只有一個候選。卡圖左下角標「英文版卡圖」（`cardEnglishStandIn`，條件是日版或台版＋images.pokemontcg.io）。S9-095、S9-097 改用 TCGdex 新出的日版圖。刻意沒補的：同一隻有多個候選的（例如白馬／黑馬蕾冠王、雙劍鎧拳的兩種流派、日蝕／黃昏的奈克洛茲瑪，共 22 張）；兩張日版對到同一張英文卡的（S8-119、S8b-280 夢幻 VMAX）；英文版沒有的 25 張；訓練家和能量 125 張（TCGdex 日版沒有英文名，對不上）；M 系列新卡。日版寶可夢還有 250 張沒有圖（含 M6a 46 張，畫面上會借用台版圖）。另：寶可夢系列整個沒有參考價時，價格排序會自動改回依編號，價格選項標「此系列沒有參考價」並停用（`noReferenceSeries`）。
 - 2026-11-03：搜尋框加「×」清除鈕（`#qClear`、`leaveSearch()`）：在遊戲頁清掉搜尋會回到同一個遊戲的卡表，在首頁搜尋才回首頁。Logo 照舊回首頁。輸入框清空後按搜尋鈕也一樣會離開搜尋。已上線。
