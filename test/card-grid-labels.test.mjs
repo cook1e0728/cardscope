@@ -39,3 +39,16 @@ test('one version keeps the plain badge; several versions become 日 台 chips w
   const onepiece=ctx.cardVersionBadges({game:'onepiece',region:'TW',printings:[{region:'TW'},{region:'JP'}]});
   assert.match(onepiece,/aria-label="收錄版本：日版、亞洲日文版"/,'One Piece Taiwan is shown as the Asian Japanese edition');
 });
+
+test('日版／台版寶可夢卡借用英文版圖時標「英文版卡圖」，美版或官方日版圖不標', () => {
+  const context = vm.createContext({ cardGameId: card => card.game });
+  vm.runInContext(ui.slice(ui.indexOf('function cardEnglishStandIn'), ui.indexOf('function cardWatermarkOptions')), context);
+  const run = (card, src) => vm.runInContext('cardEnglishStandIn', context)(card, src);
+  const en = 'https://images.pokemontcg.io/sm35/78_hires.png';
+  assert.equal(run({ game: 'pokemon', region: 'JP' }, en), true);
+  assert.equal(run({ game: 'pokemon', printings: [{ region: 'TW' }] }, en), true);
+  assert.equal(run({ game: 'pokemon', region: 'US' }, en), false);
+  assert.equal(run({ game: 'pokemon', region: 'JP' }, 'https://www.pokemon-card.com/assets/x.jpg'), false);
+  assert.equal(run({ game: 'onepiece', region: 'JP' }, en), false);
+  assert.match(ui, /options\.englishStandIn\?'<span class="card-lang-note"/);
+});

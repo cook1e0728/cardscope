@@ -300,3 +300,5 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
   .ptl-big{font-size:34px}.ptl-say{font-size:14px}.ptl-when{font-size:13px}.ptl-held{font-size:12px}.ptl-chart svg{height:220px}
 }
 @media(prefers-reduced-motion:reduce){.detail-art img,.ptl-mini,.ptl-play,.ptl-chip{transition:none}}
+/* 借用英文版卡圖時的角標：卡面文字跟這個版本不同 */
+.card-lang-note{position:absolute;z-index:4;left:6px;bottom:6px;padding:2px 6px;border-radius:4px;background:#000000b3;color:#fff;font-size:11px;font-weight:700;line-height:1.4}

@@ -150,7 +150,9 @@ function cardIsSigned(card){
   const values=[card?.rarity,...(card?.printings||[]).flatMap(item=>[item.rarity,item.rarityCode,item.rarityLabel,item.metadata?.variantKey,item.metadata?.variantName])].filter(Boolean).join(' ').toUpperCase();
   return /(^|[^A-Z0-9])(SSP|SP|SEC\+?|OFR|AGR|SIGNED|SIGNATURE|AUTOGRAPH)([^A-Z0-9]|$)/.test(values);
 }
-function cardWatermarkOptions(card,src){const embeddedSample=cardHasEmbeddedSample(card,src),signed=cardIsSigned(card);return{embeddedSample,signed,suppressOverlay:signed&&!embeddedSample}}
+// 日版／台版卡沒有自己的圖時，借用同一張英文版卡（同圖鑑編號、同稀有度、唯一候選）的圖；卡面文字不同，要標明。
+function cardEnglishStandIn(card,src){const region=card?.region||card?.printings?.[0]?.region;return cardGameId(card)==='pokemon'&&(region==='JP'||region==='TW')&&/^https:\/\/images\.pokemontcg\.io\//.test(String(src||''))}
+function cardWatermarkOptions(card,src){const embeddedSample=cardHasEmbeddedSample(card,src),signed=cardIsSigned(card);return{embeddedSample,signed,suppressOverlay:signed&&!embeddedSample,englishStandIn:cardEnglishStandIn(card,src)}}
 
 // 卡圖載入事件（markup 的 data-img-error="card"）：error／load 不冒泡，用 document 的 capture 監聽；其他種類的圖在 ui-actions.js。
 function cardImageFailed(img){
@@ -168,7 +170,7 @@ function resilientImage(src,alt,message,options={}){
   const sample=options.embeddedSample||options.suppressOverlay?'':`<span class="card-sample-watermark" aria-hidden="true">SAMPLE</span>`;
   // 第一次載入失敗先隔 1.5 秒用同網址（加 retry=1）重試一次（官方站偶爾回 503）；還失敗才依序改用其他版本的圖（例如台灣官方站維護時改用日版圖），與放大檢視一致
   const fallbacks=[...new Set((options.fallbacks||[]).map(url=>typeof displayImageUrl==='function'?displayImageUrl(url):url).filter(url=>url&&url!==src))];
-  return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy"${fallbacks.length?` data-fallbacks="${e(JSON.stringify(fallbacks))}"`:''} data-img-error="card"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span>${sample}`;
+  return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy"${fallbacks.length?` data-fallbacks="${e(JSON.stringify(fallbacks))}"`:''} data-img-error="card"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span>${sample}${options.englishStandIn?'<span class="card-lang-note" title="這個版本沒有可用的卡圖，暫用英文版同一張卡的圖；卡面文字不同">英文版卡圖</span>':''}`;
 }
 
 function installViewToggle(){
