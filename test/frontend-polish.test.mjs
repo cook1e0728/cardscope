@@ -31,7 +31,7 @@ test('failText: browser network errors become plain Chinese; backend messages st
 });
 
 test('price copy: games without a price source say so; Pokemon summary says Cardmarket EUR reference', () => {
-  const context = vm.createContext({ e: esc, rn: r => r, ln: l => l, game: 'pokemon' });
+  const context = vm.createContext({ e: esc, rn: r => r, ln: l => l, game: 'pokemon', cardFilters: { sort: 'number-asc' }, currentCardRows: [], $: () => null });
   vm.runInContext(slice(html, 'function priceScopeNote', 'window.priceScopeNote'), context);
   vm.runInContext(slice(html, 'function noPriceSource', 'function marketBlock'), context);
   vm.runInContext(slice(html, 'function marketBlock', 'async function openCard').replace(/^[^]*?(?=function marketBlock)/, ''), context);

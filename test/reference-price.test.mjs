@@ -323,3 +323,21 @@ test('version table markup: columns, a plain "no reliable price" row, scrolls in
   assert.match(ui, /\$\{versionPriceTable\(m,/);
   assert.match(server, /versions:buildVersionPrices\(card,records,await snapshotsPending,\{fx\}\)/);
 });
+
+test('sort menu: a Pokemon list with no reference prices says the price sort changes nothing', () => {
+  const run = (sort, rows, game = 'pokemon') => {
+    const note = { hidden: true, textContent: '' };
+    const context = vm.createContext({ game, cardFilters: { sort }, currentCardRows: rows, $: id => (id === 'priceNote' ? note : null) });
+    vm.runInContext(slice(html, 'function referenceSortHint()', 'window.priceScopeNote'), context);
+    return { suffix: vm.runInContext('referenceSortHint()', context), note };
+  };
+  const empty = run('price-desc', [{ id: 'a' }, { id: 'b' }]);
+  assert.match(empty.suffix, /都沒有參考價/);
+  assert.equal(empty.note.hidden, false);
+  assert.equal(run('price-desc', [{ id: 'a', referencePrice: { amount: 1 } }]).note.hidden, true);
+  assert.equal(run('number-asc', [{ id: 'a' }]).suffix, '');
+  assert.equal(run('price-desc', []).suffix, '', '還沒載入時不提示');
+  const other = run('price-desc', [{ id: 'a' }], 'onepiece');
+  assert.equal(other.suffix, '');
+  assert.equal(other.note.hidden, true, '其他遊戲的說明字由 syncPriceControls 決定');
+});
