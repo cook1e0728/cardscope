@@ -93,13 +93,14 @@ function cardRarityMarkup(card){return rarityMarkup(cardRarityRaw(card),cardGame
 function cardNumberLabel(card){return card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||(card.metadata?.numberStatus==='not-printed'?'未印卡號':'卡號待補')}
 function cardPriceLabel(price){return price&&Number.isFinite(Number(price.price))&&price.currency?`${e(price.currency)} ${Number(price.price).toLocaleString()} 買取`:''}
 // 卡牆參考價（只有寶可夢）：browse 回應的 referencePrice＝該 printing 最新一筆 Cardmarket 每日快照（EUR，7 天內）；有 amountTwd 時新台幣大字、原幣小字。照實標「Cardmarket 參考」，滑過／長按（:active）看觀測日期與價格種類；沒有資料就不顯示，不放 0。
-const REFERENCE_SOURCE_NAMES={cardmarket:'Cardmarket'};
-function referenceAmountText(amount,currency){const value=Number(amount);return Number.isFinite(value)?`${currency==='EUR'?'€':currency+' '}${value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`:''}
+// Cardmarket 沒有這張卡的價格時，改用 TCG API 轉來的 TCGplayer 美元市價（多為美國市場上的日版卡行情）。
+const REFERENCE_SOURCE_NAMES={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'};
+function referenceAmountText(amount,currency){const value=Number(amount);return Number.isFinite(value)?`${currency==='EUR'?'€':currency==='USD'?'US$':currency+' '}${value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`:''}
 function cardReferenceMarkup(card,openId){
   const ref=card?.referencePrice,amount=Number(ref?.amount);
-  if(cardGameId(card)!=='pokemon'||!ref||!Number.isFinite(amount)||amount<=0||ref.currency!=='EUR')return '';
+  if(cardGameId(card)!=='pokemon'||!ref||!Number.isFinite(amount)||amount<=0||!(ref.currency==='EUR'||ref.currency==='USD'&&ref.source==='tcgplayer'))return '';
   const source=REFERENCE_SOURCE_NAMES[ref.source]||String(ref.source||'參考來源'),variantKey=String(ref.variant||''),variant=variantKey?(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variantKey])||variantKey:'',seen=typeof marketDate==='function'?marketDate(ref.observedAt):'',
-    tip=`${source} 平台參考價${variant?`（${variant}）`:''}${seen?`，觀測 ${seen}`:''}；不是成交價或台灣行情`,label=`${source} 參考`,original=referenceAmountText(amount,ref.currency),twd=Number(ref.amountTwd),money=Number.isFinite(twd)&&twd>0?`NT$${twd.toLocaleString('en-US')}`:original,text=`${label} ${money===original?money:`約 ${money}（${original}）`}`;
+    tip=`${source} 平台參考價${ref.source==='tcgplayer'?'（美國市場，經 TCG API）':''}${variant?`（${variant}）`:''}${seen?`，觀測 ${seen}`:''}；不是成交價或台灣行情`,label=`${source} 參考`,original=referenceAmountText(amount,ref.currency),twd=Number(ref.amountTwd),money=Number.isFinite(twd)&&twd>0?`NT$${twd.toLocaleString('en-US')}`:original,text=`${label} ${money===original?money:`約 ${money}（${original}）`}`;
   return `<div class="card-price card-reference" data-card-open="${e(openId)}" tabindex="0" role="button" aria-label="${e(text+'，'+tip+'；開啟卡片詳細資料')}"><span class="cr-label">${e(label)}</span> <span class="cr-amount">${e(money)}</span>${money===original?'':`<small class="cr-original">${e(original)}</small>`}<small class="card-reference-tip" aria-hidden="true">${e(tip)}</small></div>`;
 }
 function cardGameLabel(card){const catalogName=G(card.game).nameZh;if(catalogName)return catalogName;return (window.CARD_GAMES||[]).find(item=>item.id===card.game)?.name||card.game||'IP 待補'}

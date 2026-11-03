@@ -26,8 +26,9 @@ export function buildReferencePrices(rows,ids,{fx,amountToTwd,now=Date.now()}){
   for(const row of rows||[]){
     const amount=Number(row?.amount),date=String(row?.snapshot_date||'').slice(0,10);
     if(!row?.card_id||!PROVIDERS.has(row.provider)||!Number.isFinite(amount)||amount<=0||!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
-    const key=JSON.stringify([row.card_id,row.provider,row.variant||'']),hit=latest.get(key);
-    if(!hit||date>hit.snapshotDate)latest.set(key,{cardId:row.card_id,provider:row.provider,variant:row.variant||'',currency:row.currency,amount,amountTwd:amountToTwd(amount,row.currency,fx),snapshotDate:date,...(now-Date.parse(date)>TCGDEX_PRICING_MAX_AGE_MS?{stale:true}:{})});
+    // TCG API 轉來的 TCGplayer 列以 'tcgapi-' 開頭分開存；顯示時跟 TCGdex 的 TCGplayer 列同名，同 variant 取最新一筆。
+    const variant=String(row.variant||'').replace(/^tcgapi-/,''),key=JSON.stringify([row.card_id,row.provider,variant]),hit=latest.get(key);
+    if(!hit||date>hit.snapshotDate)latest.set(key,{cardId:row.card_id,provider:row.provider,variant,currency:row.currency,amount,amountTwd:amountToTwd(amount,row.currency,fx),snapshotDate:date,...(now-Date.parse(date)>TCGDEX_PRICING_MAX_AGE_MS?{stale:true}:{})});
   }
   const byCard=new Map(ids.map(id=>[id,[]]));
   for(const {cardId,...price} of latest.values())byCard.get(cardId)?.push(price);

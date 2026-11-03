@@ -66,6 +66,7 @@ test('referencePrice rows: Cardmarket EUR, positive amounts only, never a zero o
   assert.deepEqual(referencePriceFromRow(row), { amount: 12.3, currency: 'EUR', source: 'cardmarket', variant: 'holo', observedAt: '2026-10-22T22:54:32.744+00:00', snapshotDate: '2026-10-22' });
   assert.equal(referencePriceFromRow({ ...row, observed_at: null }).observedAt, '2026-10-22T00:00:00.000Z', '沒有來源時間就用快照日期');
   for (const bad of [{ amount: 0 }, { amount: null }, { amount: 'x' }, { amount: -1 }, { currency: 'USD' }, { snapshot_date: null }, { card_id: '' }]) assert.equal(referencePriceFromRow({ ...row, ...bad }), null, JSON.stringify(bad));
+  assert.deepEqual(referencePriceFromRow({ ...row, variant: 'tcgapi-holofoil', currency: 'USD', amount: '4.5' }), { amount: 4.5, currency: 'USD', source: 'tcgplayer', variant: 'holofoil', observedAt: row.observed_at, snapshotDate: '2026-10-22' }, 'TCG API 的美元列標成 TCGplayer');
 });
 
 const printing = (cardId, region, extra = {}) => ({ cardId, region, language: { JP: 'ja-JP', TW: 'zh-TW', US: 'en-US' }[region], localSetCode: 'S1', localCardNumber: '001', ...extra });
@@ -276,6 +277,9 @@ test('card wall badge: source and price kind are spelled out, the observation da
   assert.match(twd, /aria-label="Cardmarket 參考 約 NT\$452（€12\.30），/);
   for (const bad of [{ ...card, referencePrice: undefined }, { ...card, game: 'onepiece' }, { ...card, referencePrice: { ...card.referencePrice, amount: 0 } }, { ...card, referencePrice: { ...card.referencePrice, currency: 'USD' } }])
     assert.equal(vm.runInContext(`cardReferenceMarkup(${JSON.stringify(bad)},'p1')`, context), '', JSON.stringify(bad.referencePrice));
+  const usd = vm.runInContext(`cardReferenceMarkup(${JSON.stringify({ ...card, referencePrice: { amount: 4.5, amountTwd: 145, currency: 'USD', source: 'tcgplayer', variant: 'holofoil', observedAt: '2026-11-03T00:00:00Z' } })},'p1')`, context);
+  assert.match(usd, /TCGplayer 參考<\/span> <span class="cr-amount">NT\$145<\/span><small class="cr-original">US\$4\.50<\/small>/, 'Cardmarket 沒有價時改顯示 TCGplayer 美元價');
+  assert.match(usd, /TCGplayer 平台參考價（美國市場，經 TCG API）/);
   assert.match(ui, /referenceMarkup/, 'cardMarkup 的格狀與清單兩種版面都用它');
   assert.equal([...ui.matchAll(/\$\{referenceMarkup/g)].length, 2);
 });

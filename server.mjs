@@ -9,6 +9,7 @@ import { crossVersionLowestPrices, matchYgoprodeckSet, searchYgoProDeck } from '
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createGradedPrices } from './providers/graded-prices.mjs';
 import { createPriceSnapshotController } from './providers/price-snapshot.mjs';
+import { createTcgapiPricing } from './providers/tcgapi-pricing.mjs';
 import { createArchiveReader, createArchiveStorage, createPriceArchiveController, mergeSnapshotRows } from './providers/price-archive.mjs';
 import { REFERENCE_BODY_MAX_BYTES, buildReferencePrices, referenceQueryParams, validateReferenceRequest } from './providers/collection-valuation.mjs';
 import { normalizeMarketRecord, withTwd, RARITY_RANKINGS, rarityCanonicalCode as normalizeRarityCanonicalCode, rarityDisplayLabel as normalizeRarityDisplayLabel, rarityRank as normalizeRarityRank, rarityToken as normalizeRarityToken, rarityDefinition as normalizeRarityDefinition } from './providers/normalize.mjs';
@@ -281,7 +282,8 @@ async function loadDatabaseImages(cardIds=[]){
 // Newest Cardmarket reference price per card (price_snapshots through price_reference_best, migration 20261024090000: EUR, at most 7 days old, one variant per card, never 0).
 // Cached like browse rows; waits at most REFERENCE_PRICE_WAIT_MS and never throws: a failure only means the cards go out without a price.
 const REFERENCE_PRICE_TTL_MS=10*60*1000,REFERENCE_PRICE_WAIT_MS=1500;
-function referencePriceFromRow(row){const amount=Number(row?.amount),date=String(row?.snapshot_date||'').slice(0,10);if(!row?.card_id||!Number.isFinite(amount)||amount<=0||row.currency!=='EUR'||!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;return {amount,currency:row.currency,source:'cardmarket',variant:row.variant||'',observedAt:row.observed_at||`${date}T00:00:00.000Z`,snapshotDate:date}}
+// Cardmarket 歐元；卡沒有 Cardmarket 價時，price_reference_best 改回 TCG API 轉來的 TCGplayer 美元價（variant 'tcgapi-…'，migration 20261103120000）。
+function referencePriceFromRow(row){const amount=Number(row?.amount),date=String(row?.snapshot_date||'').slice(0,10),usd=row?.currency==='USD'&&String(row?.variant||'').startsWith('tcgapi-');if(!row?.card_id||!Number.isFinite(amount)||amount<=0||!(row.currency==='EUR'||usd)||!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;return {amount,currency:row.currency,source:usd?'tcgplayer':'cardmarket',variant:usd?String(row.variant).slice(7):row.variant||'',observedAt:row.observed_at||`${date}T00:00:00.000Z`,snapshotDate:date}}
 async function loadReferencePrices(ids){
   const unique=[...new Set((ids||[]).filter(id=>typeof id==='string'&&id))].sort(),prices=new Map();
   if(!unique.length||!supabaseConfigured())return prices;
@@ -295,14 +297,17 @@ async function loadReferencePrices(ids){
 }
 async function attachReferencePrices(cards){
   const prices=await loadReferencePrices((cards||[]).map(card=>card.id));
-  let eur=null;if(prices.size){try{eur=Number((await getTwdRates()).rates?.EUR)||null}catch(error){console.error('reference price fx failed',error.message)}}
-  for(const card of cards||[]){const price=prices.get(card.id);if(price)card.referencePrice=eur?{...price,amountTwd:Math.round(price.amount*eur)}:price}
+  let rates={};if(prices.size){try{rates=(await getTwdRates()).rates||{}}catch(error){console.error('reference price fx failed',error.message)}}
+  for(const card of cards||[]){const price=prices.get(card.id),rate=Number(rates[price?.currency]);if(price)card.referencePrice=rate>0?{...price,amountTwd:Math.round(price.amount*rate)}:price}
   return cards;
 }
 // Price sort inside one series (a few hundred cards): the amounts are looked up here and handed to buildBrowsePage.
 async function seriesPriceMap(cards,sort){
   if(!BROWSE_PRICE_SORTS.has(sort))return null;
-  return new Map([...await loadReferencePrices(cards.map(card=>card.id))].map(([id,price])=>[id,price.amount]));
+  const prices=await loadReferencePrices(cards.map(card=>card.id));let usdToEur=null;
+  // 歐元與美元混在同一個系列時換成歐元再比；拿不到匯率就只比歐元的卡，美元的排到沒價格那一段。
+  if([...prices.values()].some(price=>price.currency==='USD'))try{const r=(await getTwdRates()).rates||{};usdToEur=Number(r.USD)/Number(r.EUR)||null}catch(error){console.error('series price fx failed',error.message)}
+  return new Map([...prices].flatMap(([id,price])=>price.currency==='EUR'?[[id,price.amount]]:usdToEur?[[id,Math.round(price.amount*usdToEur*100)/100]]:[]));
 }
 // 寶可夢系列裡有參考價的卡數，讓頁面在使用者選價格排序前就知道這個系列能不能照價格排；查詢失敗回 null（不知道），不當成 0。
 async function seriesReferencePricedCount(game,cards){
@@ -1178,8 +1183,6 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(rateLimited(req,url.pathname))return json(res,429,{error:'請求太頻繁，請稍後再試'},{'Retry-After':'60'});
   if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
   if(url.pathname==='/api/graded-prices'&&req.method==='GET')return gradedPrices(res,url.searchParams);
-  // TEMP PROBE (2026-11-03) — remove after checking TCG API responses.
-  if(url.pathname==='/api/tcgapi-probe'&&req.method==='GET'){const path=String(url.searchParams.get('path')||'');if(!/^v1\/(sets|search)(\/\d+(\/cards)?)?\?[\w=&%.-]*$/.test(path)||!process.env.TCGAPI_KEY)return json(res,400,{error:'bad'});try{const r=await fetch('https://api.tcgapi.dev/'+path,{headers:{'X-API-Key':process.env.TCGAPI_KEY}});const text=await r.text();return json(res,200,{status:r.status,body:text.slice(0,12000)})}catch(error){return json(res,502,{error:error.message})}}
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog/image-status'&&req.method==='GET'){try{return json(res,200,{data:await yugiohImageStatus(supabaseFetch)})}catch(e){return failJson(res,502,'image status failed',e)}}
   if(url.pathname==='/api/admin/catalog/cache-images'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!imageCollectionAllowed('yugioh'))return json(res,409,{error:'來源尚未明確允許保存卡圖，圖片快取已暫停'});try{return json(res,200,{data:await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)})})}catch(e){return json(res,502,{error:e.message})}}
@@ -1294,11 +1297,12 @@ server.headersTimeout=20000;server.requestTimeout=30000;
 process.on('unhandledRejection',error=>console.error('unhandled rejection',error?.stack||error));
 
 const priceSnapshot=createPriceSnapshotController({db:supabaseFetch,isBlocked:()=>priceArchive.status().running});
+const tcgapiPricing=createTcgapiPricing({apiKey:process.env.TCGAPI_KEY,db:supabaseFetch});
 // 封存器不和快照輪次、目錄同步同時跑（HANDOFF 99 的 OOM）：快照在跑就延後，目錄同步看 catalog_sync_runs。
 const priceArchive=createPriceArchiveController({db:supabaseFetch,storage:archiveStorage,reader:archiveReader,isBusy:()=>priceSnapshot.status().running,enabled:()=>process.env.PRICE_ARCHIVE_ENABLED!=='false'});
 let sitemapWarm=null,coverageWarm=null;
 server.listen(port,()=>{
-  if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false'){priceSnapshot.start();priceArchive.start()}
+  if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false'){priceSnapshot.start();priceArchive.start();tcgapiPricing.start()}
   console.log(`CardScope is running at http://localhost:${port}`);
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
   if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));

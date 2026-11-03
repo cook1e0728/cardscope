@@ -44,7 +44,7 @@ function setNoticeState(kind,message,retry){
 function failText(prefix,error){return['TypeError','SyntaxError','AbortError'].includes(error?.name)?'連線失敗，請稍後再試':prefix+(error?.message||'')}
 window.failText=failText;
 // 篩選摘要的價格說明：寶可夢卡牆顯示的是 Cardmarket 歐元參考價（不是台灣買取價）；其餘 IP 只採可驗證買取資料。
-function priceScopeNote(){return (game==='pokemon'?'卡牆價格為 Cardmarket 歐元參考價，不是台灣買取價':'價格僅採可驗證買取資料')+referenceSortHint()}
+function priceScopeNote(){return (game==='pokemon'?'卡牆價格為 Cardmarket 歐元參考價（沒有歐洲行情的日版系列改用 TCGplayer 美元市價），不是台灣買取價':'價格僅採可驗證買取資料')+referenceSortHint()}
 // 寶可夢有些系列（例如剛發售的）完全沒有參考價：照價格排序時順序不會變，要在排序欄下說清楚，不然看起來像壞掉。
 // 參考價排序時第一頁一張價格都沒有＝整個系列都沒有（有價的排前面）：記住這個系列，改回依編號排序，價格選項標明並停用，免得選了沒反應。
 const noReferenceSeries=new Set();
