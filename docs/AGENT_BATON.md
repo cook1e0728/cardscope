@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-03：缺圖再補 160 張。158 張 SM／S 時代日版 HR（彩虹）、UR（金）寶可夢卡借用英文版同一張卡的圖：`card_images` 語言 en-US、source `pokemontcg`，rights_note 記錄對應的英文卡號。比對條件是同一組圖鑑編號、同類型（GX／VMAX／無）、彩虹對 Rare Rainbow、金對 Rare Secret、英文版在日版發售後 400 天內，而且只有一個候選。卡圖左下角標「英文版卡圖」（`cardEnglishStandIn`，條件是日版或台版＋images.pokemontcg.io）。S9-095、S9-097 改用 TCGdex 新出的日版圖。刻意沒補的：同一隻有多個候選的（例如白馬／黑馬蕾冠王、雙劍鎧拳的兩種流派、日蝕／黃昏的奈克洛茲瑪，共 22 張）；兩張日版對到同一張英文卡的（S8-119、S8b-280 夢幻 VMAX）；英文版沒有的 25 張；訓練家和能量 125 張（TCGdex 日版沒有英文名，對不上）；M 系列新卡。日版寶可夢還有 250 張沒有圖（含 M6a 46 張，畫面上會借用台版圖）。另：寶可夢系列整個沒有參考價時，價格排序會自動改回依編號，價格選項標「此系列沒有參考價」並停用（`noReferenceSeries`）。
 - 2026-11-03：搜尋框加「×」清除鈕（`#qClear`、`leaveSearch()`）：在遊戲頁清掉搜尋會回到同一個遊戲的卡表，在首頁搜尋才回首頁。Logo 照舊回首頁。輸入框清空後按搜尋鈕也一樣會離開搜尋。已上線。
 - 2026-11-03：卡圖補漏。日版官方來源 171 張卡（DPs-B 92、EP08 43、SC2 21、S8a-G 15）匯入時沒存圖，已從官方詳細頁抓圖寫進 `card_images`（source `pokemon-card-official-jp`，rights_note ADR 0031），正式站 SC2 已確認顯示。剩 373 張 TCGdex 日版卡沒有任何圖：多為 SM／S 時代的 HR、UR、隱藏 SR（例 SM3p 078–082 超夢GX），日本官方卡片搜尋本來就沒收錄，TCGdex 也沒圖，不是資料過舊；要補只能找新來源或用英文版圖對應，尚未處理。M6a 的 AR／SAR 會借用台版官方圖。另：HV-D04 商品圖網址大小寫錯（`hv-d04`→`HV-D04`）已直接改 `tcg_products`；卡牆參考價改新台幣大字、歐元小字（server 在 browse 回應加 `referencePrice.amountTwd`）。
 - 2026-11-03：鑑定卡成交價已上線：寶可夢卡價格分頁的「鑑定卡成交價」區（`providers/graded-prices.mjs`、`/api/graded-prices`、`PriceTimeline.loadGraded`）。英文版用市場紀錄裡唯一的 TCGplayer 編號；沒有時用唯一的日版「系列代號＋卡號」；有多個候選就不查。只顯示 PSA 10/9、BGS 10/9.5、CGC 10/9.5、TAG 10、SGC 10、ACE 10，筆數少於 3 標「筆數少」。快取只在記憶體 24 小時（Render 重啟會重扣點），每天最多 40 次查詢（約 80 credit）。試查路徑已刪除。正式站已確認 SV2a 201（日）與 sv3 125（英）都顯示正確。台版卡若沒有日版版本就不會顯示。之前的實測：
