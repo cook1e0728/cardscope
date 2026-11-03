@@ -327,8 +327,8 @@ test('version table markup: columns, a plain "no reliable price" row, scrolls in
 test('sort menu: a Pokemon list with no reference prices says the price sort changes nothing', () => {
   const run = (sort, rows, game = 'pokemon') => {
     const note = { hidden: true, textContent: '' };
-    const context = vm.createContext({ game, cardFilters: { sort }, currentCardRows: rows, $: id => (id === 'priceNote' ? note : null) });
-    vm.runInContext(slice(html, 'function referenceSortHint()', 'window.priceScopeNote'), context);
+    const context = vm.createContext({ game, browse: {}, cardFilters: { sort }, currentCardRows: rows, $: id => (id === 'priceNote' ? note : null) });
+    vm.runInContext(slice(html, 'const noReferenceSeries', 'window.priceScopeNote'), context);
     return { suffix: vm.runInContext('referenceSortHint()', context), note };
   };
   const empty = run('price-desc', [{ id: 'a' }, { id: 'b' }]);
@@ -340,4 +340,21 @@ test('sort menu: a Pokemon list with no reference prices says the price sort cha
   const other = run('price-desc', [{ id: 'a' }], 'onepiece');
   assert.equal(other.suffix, '');
   assert.equal(other.note.hidden, true, '其他遊戲的說明字由 syncPriceControls 決定');
+});
+
+test('sort menu: a Pokemon series with no reference prices falls back to number order and disables the price options', () => {
+  const note = { hidden: true, textContent: '' }, options = ['number-asc', 'price-asc', 'price-desc'].map(value => ({ value, disabled: false, textContent: '' }));
+  const sort = { value: 'price-desc', options }, cardFilters = { sort: 'price-desc' };
+  const context = vm.createContext({ game: 'pokemon', browse: { seriesId: 's1' }, cardFilters, currentCardRows: [{ id: 'a' }], $: id => ({ priceNote: note, cardSort: sort })[id] || null });
+  vm.runInContext(slice(html, 'const noReferenceSeries', 'window.priceScopeNote'), context);
+  assert.equal(vm.runInContext('referenceSortHint()', context), '');
+  assert.equal(cardFilters.sort, 'number-asc');
+  assert.equal(sort.value, 'number-asc');
+  assert.equal(options[2].disabled, true);
+  assert.match(options[2].textContent, /此系列沒有參考價/);
+  assert.match(note.textContent, /沒有參考價，改依編號排序/);
+  vm.runInContext("referenceSortHint()", context);
+  assert.equal(note.hidden, false, "再畫一次說明仍在");
+  vm.runInContext("browse.seriesId='s2';referenceSortHint()", context);
+  assert.equal(options[2].disabled, false, '換到別的系列就恢復');
 });

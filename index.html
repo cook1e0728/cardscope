@@ -46,7 +46,9 @@ window.failText=failText;
 // 篩選摘要的價格說明：寶可夢卡牆顯示的是 Cardmarket 歐元參考價（不是台灣買取價）；其餘 IP 只採可驗證買取資料。
 function priceScopeNote(){return (game==='pokemon'?'卡牆價格為 Cardmarket 歐元參考價，不是台灣買取價':'價格僅採可驗證買取資料')+referenceSortHint()}
 // 寶可夢有些系列（例如剛發售的）完全沒有參考價：照價格排序時順序不會變，要在排序欄下說清楚，不然看起來像壞掉。
-function referenceSortHint(){const note=$('priceNote'),empty=game==='pokemon'&&String(cardFilters.sort).startsWith('price-')&&currentCardRows.length>0&&!currentCardRows.some(card=>card.referencePrice);if(note){note.textContent=empty?'這些卡目前都沒有參考價，順序不會改變':'此遊戲目前沒有可排序的價格資料';if(game==='pokemon')note.hidden=!empty}return empty?'；這些卡目前都沒有參考價，依價格排序不會改變順序':''}
+// 參考價排序時第一頁一張價格都沒有＝整個系列都沒有（有價的排前面）：記住這個系列，改回依編號排序，價格選項標明並停用，免得選了沒反應。
+const noReferenceSeries=new Set();
+function referenceSortHint(){const note=$('priceNote'),sort=$('cardSort'),series=game==='pokemon'&&browse?.seriesId||'',empty=game==='pokemon'&&String(cardFilters.sort).startsWith('price-')&&currentCardRows.length>0&&!currentCardRows.some(card=>card.referencePrice);if(empty&&series){noReferenceSeries.add(series);cardFilters.sort='number-asc';if(sort)sort.value='number-asc'}const blocked=noReferenceSeries.has(series);if(game==='pokemon')for(const option of sort?.options?[...sort.options]:[])if(String(option.value).startsWith('price-')){option.disabled=blocked;option.textContent=`參考價從${option.value==='price-asc'?'低到高':'高到低'}${blocked?'（此系列沒有參考價）':''}`}if(note){note.textContent=blocked?'這個系列目前沒有參考價，改依編號排序':empty?'這些卡目前都沒有參考價，順序不會改變':'此遊戲目前沒有可排序的價格資料';if(game==='pokemon')note.hidden=!(empty||blocked)}return empty&&!series?'；這些卡目前都沒有參考價，依價格排序不會改變順序':''}
 window.priceScopeNote=priceScopeNote;
 function invalidateBrowseRequest(){browseRequestVersion+=1;if(browse)browse.loading=false;return browseRequestVersion}
 function browseRequestIsCurrent(state,version,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort){
