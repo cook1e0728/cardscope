@@ -8,7 +8,13 @@
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-03：鑑定卡比價進行中。已上 eBay 已售搜尋連結（不存資料）；下一步等使用者申請 PokemonPriceTracker 免費金鑰（`POKEMONPRICETRACKER_API_KEY`，放 Render，不經過 Claude），先實測英文版與日版的卡片對應再決定是否上線。免費方案只限無營收，每日 100 credit，只能開卡時查並快取；來源不透明，要標「第三方彙整，未驗證」。遊々亭已拒絕授權，不再處理。
+- 2026-11-03：鑑定卡比價進行中。已上 eBay 已售搜尋連結（不存資料）。PokemonPriceTracker 金鑰已放 Render（`POKEMONPRICETRACKER_API_KEY`），暫時試查路徑 `/api/graded-probe`（server.mjs，公開、每程序每天 20 次，`limit=3`）已上線，做正式 provider 時刪掉。實測結果：
+  - 英文版用 `tcgPlayerId` 精準對到（151 噴火龍 ex 199 → 517045，我們的 TCGdex `thirdParty.tcgplayer` 有這個 ID）。
+  - 日版用 `language=japanese&set=SV2a&search=201` 精準對到（total=1）；日文卡名搜尋不支援，只會照卡號亂配。
+  - 自由文字搜尋會配錯（`Espeon 48` 回冠軍賽版），正式版只接受 tcgPlayerId 或「系列代號＋卡號且 total=1」，否則不顯示。
+  - 回傳 `ebay.salesByGrade.{psa10,psa9,cgc10,bgs9_5,...}`：count、averagePrice、medianPrice、min/max、lastSaleDate、smartMarketPrice{price,confidence}、salesBySource（ebay/fanatics）。count 的統計期間文件沒寫。
+  - 計費照 `limit` 算：每張卡 2 credit（基本 1＋eBay 1），`limit=3` 就扣 6。正式版用 `limit=1`，每日 100 credit 約 50 張卡，需長快取與每日上限。免費方案歷史價只給 3 天，但鑑定成交彙總照給。
+  免費方案只限無營收；來源不透明，要標「第三方彙整，未驗證」。遊々亭已拒絕授權，不再處理。
 
 - 2026-11-03：價格分頁加每天／每週／每月（週 K、月 K 由每日參考價算，不足 3 個月顯示資料不夠）、近 5／20 天平均線、前一天差與原幣、單筆差 3 倍以上的成交稀少提醒、各平台比價（近期與過期分開，連到平台搜尋頁）、每筆價格紀錄表（`price-timeline.js`）。最低掛牌低於 €0.1 仍不顯示（沿用 MIN_LOW）。全套測試曾有一次 `csp-strict` 失敗，單跑與重跑都過，未查出原因。
 
