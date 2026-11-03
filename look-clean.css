@@ -515,6 +515,8 @@ html.look-clean .search-hint{margin:0;font-size:13px;line-height:1.4;color:#A12A
 html.look-clean .search-hint:not(:empty){margin-top:var(--s2)}
 html.look-clean .top>.search-hint{position:absolute;top:100%;right:var(--s3);left:var(--s3);margin:0;padding:0;text-align:right;color:#fff;pointer-events:none}
 html.look-clean .top>.search-hint:not(:empty){padding:var(--s1) var(--s3);margin:var(--s1) 0 0 auto;width:fit-content;border-radius:999px;background:#A12A1E;box-shadow:0 2px 8px #0003}
+/* 桌機篩選列是橫排：說明字不佔排版高度，排序欄才會和其他篩選欄對齊（手機是直排，照常佔位） */
+@media(min-width:761px){html.look-clean .filter-field:has(>.price-note:not([hidden])){position:relative}html.look-clean .price-note:not([hidden]){position:absolute;top:100%;left:0;right:0}}
 html.look-clean .price-note:not([hidden]){display:block;margin-top:var(--s1);overflow:hidden;font-size:12px;line-height:1.4;color:var(--lc-ink-2);text-overflow:ellipsis;white-space:nowrap}
 html.look-clean #cardsSection:has(#cards .search-empty) #cardTools{display:none!important}
 @media(max-width:760px){
