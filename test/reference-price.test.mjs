@@ -13,7 +13,7 @@ process.env.PORT = String(freePortProbe.address().port);
 await new Promise(resolve => freePortProbe.close(resolve));
 process.env.CATALOG_WARM_ON_START = 'false';
 process.env.CATALOG_SYNC_ON_START = 'false';
-const { buildBrowsePage, buildPrintingIndex, buildVersionPrices, normalizeBrowseSort, referencePriceFromRow, server: importedServer } = await import('../server.mjs');
+const { fxJump, buildBrowsePage, buildPrintingIndex, buildVersionPrices, normalizeBrowseSort, referencePriceFromRow, server: importedServer } = await import('../server.mjs');
 after(() => new Promise(resolve => importedServer.listening ? importedServer.close(resolve) : resolve()));
 
 const [migration, html, ui, server] = await Promise.all(['../supabase/migrations/20261024090000_price_reference_browse.sql', '../index.html', '../ui-enhancements.js', '../server.mjs'].map(path => readFile(new URL(path, import.meta.url), 'utf8')));
@@ -375,4 +375,12 @@ test('sort menu: a Pokemon series with no reference prices falls back to number 
   assert.equal(note.hidden, false, "再畫一次說明仍在");
   vm.runInContext("browse.seriesId='s2';referenceSortHint()", context);
   assert.equal(options[2].disabled, false, '換到別的系列就恢復');
+});
+
+test('exchange rates: a jump over 5% from the last stored rate is treated as a bad feed', () => {
+  const before = { JPY: 0.2065, USD: 32.589, EUR: 36.499 };
+  assert.equal(fxJump(before, { ...before, USD: 33.5 }), null, '2.8% 是正常波動');
+  assert.equal(fxJump(before, { ...before, EUR: 3.6499 }), 'EUR', '少一位數就擋下');
+  assert.equal(fxJump(before, { ...before, JPY: 0.2 / 1.1 }), 'JPY');
+  assert.equal(fxJump(null, before), null, '沒有上一筆就不比');
 });

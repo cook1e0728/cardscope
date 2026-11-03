@@ -56,13 +56,14 @@ test('resolveCollection fills the whole collection in batches of 200 and does no
 });
 
 test('empty search: symbols-only hint is shown; suggestion reason codes are Chinese, unknown English codes are hidden', () => {
-  const context = vm.createContext({ e: esc, G: () => ({}) });
+  const context = vm.createContext({ e: esc, G: () => ({}), rn: r => ({ JP: '日版', TW: '台版' }[r] || r), $: () => ({ value: 'JP' }) });
   vm.runInContext(slice(html, 'const SUGGEST_REASONS', 'async function search('), context);
   const markup = meta => vm.runInContext(`emptySearchMarkup('x',${JSON.stringify(meta)})`, context);
   assert.match(markup({ hint: { kind: 'symbols-only', message: '請輸入卡名、卡號或系列名稱。' } }), /請輸入卡名、卡號或系列名稱。/);
   assert.match(markup({ suggestion: { q: 'OP05-001', reason: 'name-only' } }), /只搜卡名，不加稀有度或版本/);
   assert.match(markup({ suggestion: { q: 'a', reason: '去掉結尾的單一字母' } }), /去掉結尾的單一字母/);
   assert.doesNotMatch(markup({ suggestion: { q: 'a', reason: 'some-new-code' } }), /some-new-code/);
+  assert.match(markup({ otherRegion: { region: 'TW' } }), /日版沒有符合的卡；<button type="button" class="suggest-chip" data-search-region="TW">改看台版的結果 ›<\/button>/, '其他版本有結果時給切換鈕');
 });
 
 test('arrow keys do not change the card behind an open zoom view; landing nav and series URLs scroll to the wall', () => {

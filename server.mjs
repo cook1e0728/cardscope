@@ -132,7 +132,7 @@ async function loadStoredTwdRates(){
     const latest=new Map(); for(const row of rows)if(!latest.has(row.currency))latest.set(row.currency,row);
     if(!['JPY','USD','EUR'].every(c=>latest.has(c)))return null;
     const times=[...latest.values()].map(r=>new Date(r.fetched_at).getTime()).filter(Number.isFinite).sort((a,b)=>b-a);
-    if(!times[0]||Date.now()-times[0]>=FX_CACHE_MS)return null;
+    if(!times[0])return null;
     const rates={TWD:1}; for(const [currency,row] of latest){const rate=Number(row.rate_to_twd);if(Number.isFinite(rate)&&rate>0)rates[currency]=rate}
     return {rates,updatedAt:latest.get('JPY')?.rate_date||null,fetchedAt:new Date(times[0]).toISOString(),source:`Supabase cache (${latest.get('JPY')?.source||'unknown'})`};
   }catch{return null}
@@ -145,15 +145,21 @@ async function saveTwdRates(data){
 }
 async function getTwdRates(){
   if(fxCache.data&&fxCache.expiresAt>Date.now())return fxCache.data;
-  if(supabaseConfigured()){const stored=await loadStoredTwdRates();if(stored){fxCache.data=stored;fxCache.expiresAt=Date.now()+Math.max(60000,FX_CACHE_MS-(Date.now()-new Date(stored.fetchedAt).getTime()));return stored}}
-  const fallback={rates:{TWD:1,JPY:jpyToTwdFallback,USD:usdToTwdFallback,EUR:35},updatedAt:null,fetchedAt:new Date().toISOString(),source:'fallback'};
+  const stored=supabaseConfigured()?await loadStoredTwdRates():null,storedAge=stored?Date.now()-new Date(stored.fetchedAt).getTime():Infinity;
+  if(storedAge<FX_CACHE_MS){fxCache.data=stored;fxCache.expiresAt=Date.now()+Math.max(60000,FX_CACHE_MS-storedAge);return stored}
+  // 抓不到或被擋下時沿用資料庫裡最後一次的匯率（再舊也比寫死的值準），完全沒有才用寫死的值。
+  const fallback=stored||{rates:{TWD:1,JPY:jpyToTwdFallback,USD:usdToTwdFallback,EUR:35},updatedAt:null,fetchedAt:new Date().toISOString(),source:'fallback'};
   try{
     // Frankfurter（歐洲央行）沒有新台幣；改用 ExchangeRate-API 的免金鑰端點，條款要求標示來源（前端附連結）。
     const response=await fetch('https://open.er-api.com/v6/latest/TWD'); if(!response.ok)throw new Error(`FX_${response.status}`);
     const body=await response.json(),rates={TWD:1}; if(body.result!=='success')throw new Error('FX_RESULT'); for(const currency of ['JPY','USD','EUR','KRW','HKD']){const value=Number(body.rates?.[currency]);if(Number.isFinite(value)&&value>0)rates[currency]=1/value} if(!['JPY','USD','EUR'].every(c=>rates[c]))throw new Error('FX_INCOMPLETE');
+    const jump=storedAge<FX_JUMP_WINDOW_MS&&fxJump(stored.rates,rates);if(jump)throw new Error(`FX_JUMP_${jump}`);
     const data={rates,updatedAt:body.time_last_update_utc?new Date(body.time_last_update_utc).toISOString().slice(0,10):null,fetchedAt:new Date().toISOString(),source:'ExchangeRate-API'};fxCache.data=data;fxCache.expiresAt=Date.now()+FX_CACHE_MS;saveTwdRates(data).catch(()=>{});return data;
-  }catch{fxCache.data=fallback;fxCache.expiresAt=Date.now()+60*60*1000;return fallback}
+  }catch(error){console.error('fx fetch failed',error.message);fxCache.data=fallback;fxCache.expiresAt=Date.now()+60*60*1000;return fallback}
 }
+// 匯率來源（ExchangeRate-API）沒有 SLA：一週內的上一筆和新抓的比，日圓、美元、歐元任一個變動超過 5% 就當資料出錯，不採用。
+const FX_JUMP_LIMIT=0.05,FX_JUMP_WINDOW_MS=7*24*60*60*1000;
+function fxJump(previous,next){for(const currency of ['JPY','USD','EUR']){const before=Number(previous?.[currency]),after=Number(next?.[currency]);if(before>0&&after>0&&Math.abs(after/before-1)>FX_JUMP_LIMIT)return currency}return null}
 function amountToTwd(amount,currency,fx){const value=Number(amount),rate=Number(fx?.rates?.[currency]);return Number.isFinite(value)&&Number.isFinite(rate)?Math.round(value*rate):null}
 
 
@@ -1250,8 +1256,11 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
       // 卡號後面多一個單字母（OP05-001 R：單字母不是稀有度代碼，只會被當成卡名的一部分）：去掉它若有結果就當建議。
       else if(total===0){const trimmed=searchName.replace(/\s+[A-Za-z]$/,'');if(trimmed&&trimmed!==searchName)try{const base=await searchCatalogDatabase(trimmed,regionParam,1);if(base.cards.length)suggestion={q:trimmed,reason:'去掉結尾的單一字母'}}catch(error){console.error('search suggestion failed',error.message)}}
       // Still nothing (typo?): offer the closest card name; an IP name that has no cards of its own (排球少年) is not a typo.
-      if(total===0&&!suggestion&&!gameHint)suggestion=await suggestCardName(searchName,region);
-      const searchBody=withPaging({...(matchedAs?{matchedAs}:{}),source:hasDatabaseMatches?'supabase-search':catalog.source,architecture:'canonical-card-with-printings',match:hasDatabaseMatches?(database.matchedSeries?'database-series':exact.length?'exact-name+database-substring':'database-substring'):(exact.length?'exact-name':'substring'),databaseSearch:database.searched?'available':'skipped',searchScope:hasDatabaseMatches?'bounded-database-query':'loaded-catalog-only',candidateCount:database.candidateCount,candidateLimit:database.candidateLimit},data,total,suggestion);rememberSearch(searchCacheKey,searchBody);return json(res,200,searchBody,{...SHORT_CACHE,'Server-Timing':timing})
+      // 選了版本卻搜不到：看其他版本有沒有（日版搜「名偵探皮卡丘」，這張卡只有台版），有就告訴使用者切到哪個版本，不再猜錯字。
+      let otherRegion=null;
+      if(total===0&&regionParam!=='ALL'){try{const all=await searchCatalogDatabase(searchName,'ALL',1,{rarities}),hit=all.cards[0],other=hit&&(hit.region!==region?hit.region:hit.printings?.find(p=>p.region&&p.region!==region)?.region);if(other)otherRegion={region:other}}catch(error){console.error('search region hint failed',error.message)}}
+      if(total===0&&!suggestion&&!gameHint&&!otherRegion)suggestion=await suggestCardName(searchName,region);
+      const searchBody=withPaging({...(matchedAs?{matchedAs}:{}),...(otherRegion?{otherRegion}:{}),source:hasDatabaseMatches?'supabase-search':catalog.source,architecture:'canonical-card-with-printings',match:hasDatabaseMatches?(database.matchedSeries?'database-series':exact.length?'exact-name+database-substring':'database-substring'):(exact.length?'exact-name':'substring'),databaseSearch:database.searched?'available':'skipped',searchScope:hasDatabaseMatches?'bounded-database-query':'loaded-catalog-only',candidateCount:database.candidateCount,candidateLimit:database.candidateLimit},data,total,suggestion);rememberSearch(searchCacheKey,searchBody);return json(res,200,searchBody,{...SHORT_CACHE,'Server-Timing':timing})
     }catch(error){
       console.error('catalog search failed',error.message);
       const page=pageLocal(exact.length?exact:found);
@@ -1318,6 +1327,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { buildPriceMovers, buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { fxJump, buildPriceMovers, buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 
