@@ -239,7 +239,7 @@
     $('lines')?.addEventListener('click',event=>{const button=event.target.closest('[data-line]');if(!button)return;for(const chip of $('lines').children){const on=chip===button;chip.classList.toggle('on',on);chip.setAttribute('aria-pressed',String(on))}setLine(lines[Number(button.dataset.line)]);if(!off&&line.days.length>1)play(true)});
     $('pin').addEventListener('click',()=>{stop();pin=pin==null?index:null;select(index)});
     if(typeof root.ResizeObserver==='function')new root.ResizeObserver(draw).observe(chart);
-    if(options.platforms?.recent.length){const {text,recent,stale}=options.platforms,link=row=>options.searchName?`<br><a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'';$('platforms').innerHTML=`<div class="ptl-now"><h4>各平台比價</h4><p>${esc(text)}</p><div class="ptl-table" role="region" aria-label="各平台比價，可捲動" tabindex="0"><table><thead><tr><th scope="col">平台與版本</th><th scope="col">新台幣</th><th scope="col">原幣</th><th scope="col">紀錄日</th></tr></thead><tbody>${recent.map(row=>`<tr><td><b>${esc(row.market)}</b> ${esc(row.label)}${link(row)}</td><td><b>${esc(row.twd)}</b></td><td>${esc(row.original||'—')}</td><td>${esc(md(row.time))}</td></tr>`).join('')}</tbody></table></div>${stale.length?`<h4>過期的舊紀錄，僅供參考</h4><ul class="ptl-stale">${stale.map(row=>`<li>${esc(row.market)} ${esc(row.label)}：${esc(row.twd)}${row.original?`（${esc(row.original)}）`:''}，${esc(md(row.time))} 的紀錄</li>`).join('')}</ul>${[...new Map(stale.map(row=>[row.provider,row])).values()].map(row=>options.searchName?`<a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'').join(' ')}`:''}${options.searchName?`<a href="${esc(gradedSearchUrl(options.searchName,options.cardNumber))}" target="_blank" rel="noopener noreferrer">到 eBay 看 PSA 10 鑑定卡已售紀錄</a>`:''}<small>沒有成交量，也沒有台灣行情和鑑定卡價格；不是買賣建議。</small></div>`}
+    if(options.platforms?.recent.length){const {text,recent,stale}=options.platforms,link=row=>options.searchName?`<br><a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'';$('platforms').innerHTML=`<div class="ptl-now"><h4>各平台比價</h4><p>${esc(text)}</p><div class="ptl-table" role="region" aria-label="各平台比價，可捲動" tabindex="0"><table><thead><tr><th scope="col">平台與版本</th><th scope="col">新台幣</th><th scope="col">原幣</th><th scope="col">紀錄日</th></tr></thead><tbody>${recent.map(row=>`<tr><td><b>${esc(row.market)}</b> ${esc(row.label)}${link(row)}</td><td><b>${esc(row.twd)}</b></td><td>${esc(row.original||'—')}</td><td>${esc(md(row.time))}</td></tr>`).join('')}</tbody></table></div>${stale.length?`<h4>過期的舊紀錄，僅供參考</h4><ul class="ptl-stale">${stale.map(row=>`<li>${esc(row.market)} ${esc(row.label)}：${esc(row.twd)}${row.original?`（${esc(row.original)}）`:''}，${esc(md(row.time))} 的紀錄</li>`).join('')}</ul>${[...new Map(stale.map(row=>[row.provider,row])).values()].map(row=>options.searchName?`<a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'').join(' ')}`:''}${options.searchName?`<a href="${esc(gradedSearchUrl(options.searchName,options.cardNumber))}" target="_blank" rel="noopener noreferrer">到 eBay 看 PSA 10 鑑定卡已售紀錄</a>`:''}<small>沒有成交量，也沒有台灣行情；不是買賣建議。</small></div>`}
     setLine(line);
     // 進場很快掃過一次，停在最新；關閉動態時直接停在最新
     if(!off&&line.days.length>1){select(start);root.setTimeout(()=>{if(slot.isConnected&&!dragging&&!timer&&period==='day'&&index===start)play(true)},300)}
@@ -261,5 +261,29 @@
     mount(slot,lines,{...options,events:history.meta?.events,platforms:platformSummary(history,options),searchName:(Array.isArray(options.market?.records)?options.market.records:[]).find(record=>record.cardName)?.cardName||''});
   }
 
-  root.PriceTimeline={versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,gradedSearchUrl,dayText,sourceTime,load};
+  // 鑑定卡：英文版用 TCGplayer 編號、日版用系列代號＋卡號；有兩個以上候選就不查，避免對錯卡。
+  function gradedQuery(card,market){
+    const ids=[...new Set((Array.isArray(market?.records)?market.records:[]).filter(record=>record.market==='TCGplayer'&&record.idProduct!=null).map(record=>String(record.idProduct)))];
+    if(ids.length===1)return `tcgPlayerId=${encodeURIComponent(ids[0])}`;
+    const jp=[...new Map((card?.printings||[]).filter(printing=>printing.region==='JP'&&printing.localSetCode&&printing.localCardNumber).map(printing=>[`${printing.localSetCode}|${printing.localCardNumber}`,printing])).values()];
+    return !ids.length&&jp.length===1?`set=${encodeURIComponent(jp[0].localSetCode)}&number=${encodeURIComponent(jp[0].localCardNumber)}`:null;
+  }
+  const usd=value=>value==null?'—':`US$${Number(value).toLocaleString('en-US',{maximumFractionDigits:2})}`;
+  function gradedMarkup(data){
+    const notes={'no-match':'找不到能確定是同一張卡的鑑定卡資料，所以不顯示價格。','no-sales':'對到這張卡，但目前沒有鑑定卡成交紀錄。','daily-limit':'今天的鑑定卡查詢次數已用完，明天再試。'};
+    if(data?.status!=='ok')return notes[data?.status]?`<div class="ptl-now"><h4>鑑定卡成交價</h4><p class="meta">${esc(notes[data.status])}</p></div>`:'';
+    return `<div class="ptl-now"><h4>鑑定卡成交價</h4><p class="meta">第三方彙整，未驗證。對到：${esc(data.name)}${data.setName?`（${esc(data.setName)}）`:''}</p><div class="ptl-table" role="region" aria-label="鑑定卡成交價，可捲動" tabindex="0"><table><thead><tr><th scope="col">級別</th><th scope="col">成交中位數</th><th scope="col">美元</th><th scope="col">筆數</th><th scope="col">最低～最高</th><th scope="col">最後成交</th></tr></thead><tbody>${data.grades.map(row=>`<tr><td><b>${esc(row.grade)}</b></td><td><b>${row.medianTwd!=null?`NT$${esc(row.medianTwd.toLocaleString('en-US'))}`:'—'}</b></td><td>${esc(usd(row.medianUsd))}</td><td>${esc(row.count)}</td><td>${esc(usd(row.minUsd))}～${esc(usd(row.maxUsd))}</td><td>${row.lastSaleDate?esc(iso(row.lastSaleDate)):'—'}</td></tr>`).join('')}</tbody></table></div><small>eBay 與 Fanatics 的成交彙整，資料來自 PokemonPriceTracker；筆數的統計期間來源沒有說明，新台幣用今日匯率換算。不是買賣建議。</small></div>`;
+  }
+  async function loadGraded(slot,{card,market,fetchFn=root.fetch.bind(root)}={}){
+    const query=gradedQuery(card,market);
+    if(!slot||!query||slot.dataset.gradedState)return;
+    slot.dataset.gradedState='loading';
+    let body=null;
+    try{const response=await fetchFn(`/api/graded-prices?${query}`);if(response.ok)body=await response.json()}catch{body=null}
+    if(!slot.isConnected)return;
+    slot.dataset.gradedState=body?'done':'';
+    slot.innerHTML=gradedMarkup(body?.data);
+  }
+
+  root.PriceTimeline={gradedQuery,gradedMarkup,loadGraded,versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,gradedSearchUrl,dayText,sourceTime,load};
 })(typeof window!=='undefined'?window:globalThis);
