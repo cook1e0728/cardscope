@@ -166,7 +166,9 @@ test('browse: Pokemon cards carry referencePrice from one price lookup per page;
     const { status, json } = await get('/api/cards?game=pokemon&limit=60');
     assert.equal(status, 200);
     const byId = Object.fromEntries(json.data.map(card => [card.id, card]));
-    assert.deepEqual(byId.p1.referencePrice, { amount: 12.3, currency: 'EUR', source: 'cardmarket', variant: 'holo', observedAt: '2026-10-22T22:00:00+00:00', snapshotDate: '2026-10-22' });
+    const { amountTwd, ...p1Price } = byId.p1.referencePrice;
+    assert.ok(Number.isInteger(amountTwd) && amountTwd > 0, '附上新台幣換算');
+    assert.deepEqual(p1Price, { amount: 12.3, currency: 'EUR', source: 'cardmarket', variant: 'holo', observedAt: '2026-10-22T22:00:00+00:00', snapshotDate: '2026-10-22' });
     assert.ok(!('referencePrice' in byId.p2), '沒有快照就沒有欄位');
     assert.ok(!('referencePrice' in byId.p3), '金額 0 不顯示');
     const lookups = calls.filter(call => call.name === 'price_reference_best');
@@ -255,6 +257,9 @@ test('card wall badge: source and price kind are spelled out, the observation da
   assert.match(out, /aria-label="Cardmarket 參考 €12\.30，/);
   assert.match(out, /class="card-reference-tip" aria-hidden="true">Cardmarket 平台參考價（閃卡 Holo），觀測 2026\/10\/22；不是成交價或台灣行情<\/small>/, '滑過、聚焦或按住時顯示的提示');
   assert.match(out, /data-card-open="p1"/, '點價格也開啟詳細頁');
+  const twd = vm.runInContext(`cardReferenceMarkup(${JSON.stringify({ ...card, referencePrice: { ...card.referencePrice, amountTwd: 452 } })},'p1')`, context);
+  assert.match(twd, /<span class="cr-amount">NT\$452<\/span><small class="cr-original">€12\.30<\/small>/, '新台幣大字在上，原幣小字在下');
+  assert.match(twd, /aria-label="Cardmarket 參考 約 NT\$452（€12\.30），/);
   for (const bad of [{ ...card, referencePrice: undefined }, { ...card, game: 'onepiece' }, { ...card, referencePrice: { ...card.referencePrice, amount: 0 } }, { ...card, referencePrice: { ...card.referencePrice, currency: 'USD' } }])
     assert.equal(vm.runInContext(`cardReferenceMarkup(${JSON.stringify(bad)},'p1')`, context), '', JSON.stringify(bad.referencePrice));
   assert.match(ui, /referenceMarkup/, 'cardMarkup 的格狀與清單兩種版面都用它');

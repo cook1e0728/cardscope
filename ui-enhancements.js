@@ -92,15 +92,15 @@ function cardRarityMarkup(card){return rarityMarkup(cardRarityRaw(card),cardGame
 // DP-era Japanese cards print no number (metadata.numberStatus 'not-printed'); only a missing value is '卡號待補'.
 function cardNumberLabel(card){return card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||(card.metadata?.numberStatus==='not-printed'?'未印卡號':'卡號待補')}
 function cardPriceLabel(price){return price&&Number.isFinite(Number(price.price))&&price.currency?`${e(price.currency)} ${Number(price.price).toLocaleString()} 買取`:''}
-// 卡牆參考價（只有寶可夢）：browse 回應的 referencePrice＝該 printing 最新一筆 Cardmarket 每日快照（EUR，7 天內）。照實標「Cardmarket 參考」，滑過／長按（:active）看觀測日期與價格種類；沒有資料就不顯示，不放 0。
+// 卡牆參考價（只有寶可夢）：browse 回應的 referencePrice＝該 printing 最新一筆 Cardmarket 每日快照（EUR，7 天內）；有 amountTwd 時新台幣大字、原幣小字。照實標「Cardmarket 參考」，滑過／長按（:active）看觀測日期與價格種類；沒有資料就不顯示，不放 0。
 const REFERENCE_SOURCE_NAMES={cardmarket:'Cardmarket'};
 function referenceAmountText(amount,currency){const value=Number(amount);return Number.isFinite(value)?`${currency==='EUR'?'€':currency+' '}${value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`:''}
 function cardReferenceMarkup(card,openId){
   const ref=card?.referencePrice,amount=Number(ref?.amount);
   if(cardGameId(card)!=='pokemon'||!ref||!Number.isFinite(amount)||amount<=0||ref.currency!=='EUR')return '';
   const source=REFERENCE_SOURCE_NAMES[ref.source]||String(ref.source||'參考來源'),variantKey=String(ref.variant||''),variant=variantKey?(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variantKey])||variantKey:'',seen=typeof marketDate==='function'?marketDate(ref.observedAt):'',
-    tip=`${source} 平台參考價${variant?`（${variant}）`:''}${seen?`，觀測 ${seen}`:''}；不是成交價或台灣行情`,label=`${source} 參考`,money=referenceAmountText(amount,ref.currency),text=`${label} ${money}`;
-  return `<div class="card-price card-reference" data-card-open="${e(openId)}" tabindex="0" role="button" aria-label="${e(text+'，'+tip+'；開啟卡片詳細資料')}"><span class="cr-label">${e(label)}</span> <span class="cr-amount">${e(money)}</span><small class="card-reference-tip" aria-hidden="true">${e(tip)}</small></div>`;
+    tip=`${source} 平台參考價${variant?`（${variant}）`:''}${seen?`，觀測 ${seen}`:''}；不是成交價或台灣行情`,label=`${source} 參考`,original=referenceAmountText(amount,ref.currency),twd=Number(ref.amountTwd),money=Number.isFinite(twd)&&twd>0?`NT$${twd.toLocaleString('en-US')}`:original,text=`${label} ${money===original?money:`約 ${money}（${original}）`}`;
+  return `<div class="card-price card-reference" data-card-open="${e(openId)}" tabindex="0" role="button" aria-label="${e(text+'，'+tip+'；開啟卡片詳細資料')}"><span class="cr-label">${e(label)}</span> <span class="cr-amount">${e(money)}</span>${money===original?'':`<small class="cr-original">${e(original)}</small>`}<small class="card-reference-tip" aria-hidden="true">${e(tip)}</small></div>`;
 }
 function cardGameLabel(card){const catalogName=G(card.game).nameZh;if(catalogName)return catalogName;return (window.CARD_GAMES||[]).find(item=>item.id===card.game)?.name||card.game||'IP 待補'}
 // 數量就是收藏：數量 > 0 即「已收藏」，☆ 只是把數量設成 1（或詢問後移除）的快速鍵。
@@ -890,7 +890,7 @@ document.addEventListener('keydown',event=>{if(event.defaultPrevented)return;if(
 const referencePriceStyle=document.createElement('style');
 referencePriceStyle.textContent=`
   .card-reference{position:relative;z-index:2;cursor:pointer;width:fit-content;max-width:100%}
-  .card-reference .cr-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8em;font-weight:500;opacity:.85}.card-reference .cr-amount{display:block;white-space:nowrap}
+  .card-reference .cr-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8em;font-weight:500;opacity:.85}.card-reference .cr-amount{display:block;white-space:nowrap}.card-reference .cr-amount:has(+.cr-original){font-size:1.3em;line-height:1.2}.card-reference .cr-original{display:block;white-space:nowrap;font-size:.8em;font-weight:500;opacity:.75}
   .card-reference:focus-visible{outline:3px solid var(--y,#ffe500);outline-offset:2px}
   .card-reference-tip{display:none;position:absolute;left:0;bottom:calc(100% + 4px);width:max-content;max-width:min(240px,80vw);padding:6px 9px;border-radius:8px;background:#171717;color:#fff;font:500 12px/1.4 system-ui,"Noto Sans TC",sans-serif;white-space:normal;box-shadow:0 2px 8px #0006;pointer-events:none}
   .card-reference:hover .card-reference-tip,.card-reference:focus-visible .card-reference-tip,.card-reference:active .card-reference-tip{display:block}

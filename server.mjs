@@ -295,7 +295,8 @@ async function loadReferencePrices(ids){
 }
 async function attachReferencePrices(cards){
   const prices=await loadReferencePrices((cards||[]).map(card=>card.id));
-  for(const card of cards||[]){const price=prices.get(card.id);if(price)card.referencePrice=price}
+  let eur=null;if(prices.size){try{eur=Number((await getTwdRates()).rates?.EUR)||null}catch(error){console.error('reference price fx failed',error.message)}}
+  for(const card of cards||[]){const price=prices.get(card.id);if(price)card.referencePrice=eur?{...price,amountTwd:Math.round(price.amount*eur)}:price}
   return cards;
 }
 // Price sort inside one series (a few hundred cards): the amounts are looked up here and handed to buildBrowsePage.

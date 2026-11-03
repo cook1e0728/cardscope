@@ -73,7 +73,7 @@
     if(!auto)remember(item.id);resetRarityFilter();clearProduct();
     browse.product={...item,seriesId:item.id,versionLabel:regionText(item.region,item.game)};browse.seriesId=item.id;
     const box=document.getElementById('selectedProduct');box.classList.add('open');
-    const art=cover(item);box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionText(item.region,item.game)||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
+    const art=cover(item);box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="" data-img-error="retry-type">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionText(item.region,item.game)||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
     if(!auto)scrollBelowHeader(box);
     await loadCardsPage(true);render();if(!auto)window.announceBrowse?.(true);
   }
