@@ -609,3 +609,6 @@ html.look-clean body[data-view="game"] .channel[data-ip].on b{color:var(--ip-ink
   html.look-clean body[data-view="game"] .channel[data-ip] b{font-size:12px;line-height:1.25}
   html.look-clean body[data-view="game"] .channel[data-ip] .channel-art,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art,html.look-clean body[data-view="game"] .channel[data-ip] .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art img{height:30px}
 }
+/* 搜尋框的「×」清除鈕：小、透明，跟 IP 色的搜尋鈕區分開 */
+html.look-clean .top .search button.search-clear{align-self:center;width:32px;min-width:32px;height:32px;min-height:32px;margin-right:4px;border-radius:999px;background:transparent;color:var(--lc-ink);font-size:20px;line-height:1;opacity:.6}
+html.look-clean .top .search button.search-clear:hover,html.look-clean .top .search button.search-clear:focus-visible{opacity:1;background:#0000000f}

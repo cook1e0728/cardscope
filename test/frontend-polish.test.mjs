@@ -75,3 +75,15 @@ test('arrow keys do not change the card behind an open zoom view; landing nav an
 test('filter summary: 稀有度待補 is only claimed when no rarity filter narrows the result', () => {
   assert.match(html, /selectedRarity==='all'\?Number\(state\.facets\?\.rarity\?\.unknown\)\|\|0:0/);
 });
+
+test('清除搜尋留在目前遊戲的卡表，首頁搜尋才回首頁', () => {
+  const calls = [], el = id => (el[id] ||= { id, value: 'x', hidden: false });
+  const context = vm.createContext({ $: el, calls, game: 'pokemon', activeSearch: { q: 'x' }, renderGameLanding: () => calls.push('landing'), loadGameCards: (...args) => calls.push(args) });
+  vm.runInContext(`${slice(html, 'function leaveSearch()', '$(\'qClear\').onclick')};leaveSearch()`, context);
+  assert.deepEqual(calls, [['pokemon', null]]);
+  assert.equal(el('q').value, '');
+  assert.equal(el('qClear').hidden, true);
+  assert.equal(vm.runInContext('activeSearch', context), null);
+  vm.runInContext("game='all';leaveSearch()", context);
+  assert.equal(calls.at(-1), 'landing');
+});
