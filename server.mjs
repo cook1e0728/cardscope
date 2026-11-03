@@ -1157,12 +1157,27 @@ async function serveSitemap(res,pathname){
   const body=cardFile?built.cards[Number(cardFile[1])-1]:null;return body?xml(body):json(res,404,{error:'Not found'});
 }
 
+// shortcut: 鑑定卡價格對應試查（PokemonPriceTracker），公開但每個程序每天最多 20 次以免燒光免費額度；確認對應後換成正式 provider 並刪除。
+let gradedProbeDay='',gradedProbeCount=0;
+async function gradedProbe(res,params){
+  const key=process.env.POKEMONPRICETRACKER_API_KEY;if(!key)return json(res,503,{error:'POKEMONPRICETRACKER_API_KEY 未設定'});
+  const day=new Date().toISOString().slice(0,10);if(day!==gradedProbeDay){gradedProbeDay=day;gradedProbeCount=0}
+  if(gradedProbeCount>=20)return json(res,429,{error:'今日試查次數已用完'});
+  const query=new URLSearchParams({includeEbay:'true',days:'90',limit:'3'});
+  for(const name of ['tcgPlayerId','search','set','language'])if(params.get(name))query.set(name,params.get(name).slice(0,80));
+  gradedProbeCount++;
+  try{const response=await fetch(`https://www.pokemonpricetracker.com/api/v2/cards?${query}`,{headers:{Authorization:`Bearer ${key}`,Accept:'application/json'}});
+    const text=await response.text();let body;try{body=JSON.parse(text)}catch{body=text.slice(0,500)}
+    return json(res,200,{upstreamStatus:response.status,used:gradedProbeCount,body})}
+  catch(error){return failJson(res,502,'graded probe failed',error)}
+}
 // 記憶體警戒（2026-10-21 Render 免費方案 512 MB 被 OOM 重啟，免費方案沒有請求紀錄）：RSS 超過門檻時，把當下處理中的請求寫進日誌，下次就知道是哪個請求。
 const MEMORY_WARN_BYTES=(Number(process.env.MEMORY_WARN_MB)||380)*1024*1024,inflightRequests=new Set();let memoryWarnedAt=0;
 setInterval(()=>{const m=process.memoryUsage();if(m.rss<MEMORY_WARN_BYTES||Date.now()-memoryWarnedAt<60000)return;memoryWarnedAt=Date.now();console.warn('memory high',JSON.stringify({rssMb:Math.round(m.rss/1048576),heapMb:Math.round(m.heapUsed/1048576),inflight:[...inflightRequests].slice(0,15)}))},2000).unref();
 const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.headers.host}`);const inflightKey=`${req.method} ${url.pathname}${url.search.slice(0,160)} ${String(req.headers['user-agent']||'').slice(0,60)}`;inflightRequests.add(inflightKey);res.once('close',()=>inflightRequests.delete(inflightKey));
   if(rateLimited(req,url.pathname))return json(res,429,{error:'請求太頻繁，請稍後再試'},{'Retry-After':'60'});
   if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
+  if(url.pathname==='/api/graded-probe'&&req.method==='GET')return gradedProbe(res,url.searchParams);
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog/image-status'&&req.method==='GET'){try{return json(res,200,{data:await yugiohImageStatus(supabaseFetch)})}catch(e){return failJson(res,502,'image status failed',e)}}
   if(url.pathname==='/api/admin/catalog/cache-images'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!imageCollectionAllowed('yugioh'))return json(res,409,{error:'來源尚未明確允許保存卡圖，圖片快取已暫停'});try{return json(res,200,{data:await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)})})}catch(e){return json(res,502,{error:e.message})}}
