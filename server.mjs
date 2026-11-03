@@ -1178,6 +1178,8 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(rateLimited(req,url.pathname))return json(res,429,{error:'請求太頻繁，請稍後再試'},{'Retry-After':'60'});
   if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
   if(url.pathname==='/api/graded-prices'&&req.method==='GET')return gradedPrices(res,url.searchParams);
+  // TEMP PROBE (2026-11-03) — remove after checking TCG API responses.
+  if(url.pathname==='/api/tcgapi-probe'&&req.method==='GET'){const path=String(url.searchParams.get('path')||'');if(!/^v1\/(sets|search)(\/\d+(\/cards)?)?\?[\w=&%.-]*$/.test(path)||!process.env.TCGAPI_KEY)return json(res,400,{error:'bad'});try{const r=await fetch('https://api.tcgapi.dev/'+path,{headers:{'X-API-Key':process.env.TCGAPI_KEY}});const text=await r.text();return json(res,200,{status:r.status,body:text.slice(0,12000)})}catch(error){return json(res,502,{error:error.message})}}
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog/image-status'&&req.method==='GET'){try{return json(res,200,{data:await yugiohImageStatus(supabaseFetch)})}catch(e){return failJson(res,502,'image status failed',e)}}
   if(url.pathname==='/api/admin/catalog/cache-images'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!imageCollectionAllowed('yugioh'))return json(res,409,{error:'來源尚未明確允許保存卡圖，圖片快取已暫停'});try{return json(res,200,{data:await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)})})}catch(e){return json(res,502,{error:e.message})}}
