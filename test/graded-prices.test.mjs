@@ -64,6 +64,7 @@ test('client markup labels the source and escapes text', () => {
   const html = T.gradedMarkup({ status: 'ok', name: '<b>x</b>', setName: 'SV2a', grades: summarizeGrades(jpCard, 32) });
   assert.match(html, /第三方彙整，未驗證/);
   assert.match(html, /NT\$18,368/);
+  assert.match(T.gradedMarkup({ status: 'ok', name: 'x', grades: [{ grade: 'BGS 10', count: 1, medianUsd: 10000, medianTwd: 1 }] }), /筆數少/);
   assert.doesNotMatch(html, /<b>x<\/b>/);
   assert.match(T.gradedMarkup({ status: 'no-match' }), /不顯示價格/);
   assert.equal(T.gradedMarkup({ status: 'not-configured' }), '');

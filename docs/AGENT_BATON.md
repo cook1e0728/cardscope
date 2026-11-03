@@ -8,7 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-03：鑑定卡比價進行中。已上 eBay 已售搜尋連結（不存資料）。PokemonPriceTracker 金鑰已放 Render（`POKEMONPRICETRACKER_API_KEY`），暫時試查路徑 `/api/graded-probe`（server.mjs，公開、每程序每天 20 次，`limit=3`）已上線，做正式 provider 時刪掉。實測結果：
+- 2026-11-03：鑑定卡成交價已上線：寶可夢卡價格分頁的「鑑定卡成交價」區（`providers/graded-prices.mjs`、`/api/graded-prices`、`PriceTimeline.loadGraded`）。英文版用市場紀錄裡唯一的 TCGplayer 編號；沒有時用唯一的日版「系列代號＋卡號」；有多個候選就不查。只顯示 PSA 10/9、BGS 10/9.5、CGC 10/9.5、TAG 10、SGC 10、ACE 10，筆數少於 3 標「筆數少」。快取只在記憶體 24 小時（Render 重啟會重扣點），每天最多 40 次查詢（約 80 credit）。試查路徑已刪除。正式站已確認 SV2a 201（日）與 sv3 125（英）都顯示正確。台版卡若沒有日版版本就不會顯示。之前的實測：
   - 英文版用 `tcgPlayerId` 精準對到（151 噴火龍 ex 199 → 517045，我們的 TCGdex `thirdParty.tcgplayer` 有這個 ID）。
   - 日版用 `language=japanese&set=SV2a&search=201` 精準對到（total=1）；日文卡名搜尋不支援，只會照卡號亂配。
   - 自由文字搜尋會配錯（`Espeon 48` 回冠軍賽版），正式版只接受 tcgPlayerId 或「系列代號＋卡號且 total=1」，否則不顯示。
