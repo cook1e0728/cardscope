@@ -174,7 +174,7 @@ function resilientImage(src,alt,message,options={}){
   if(otherVersion)src=fallbacks.shift();
   if(!src)return missingImageMarkup(message);
   const sample=options.embeddedSample||options.suppressOverlay?'':`<span class="card-sample-watermark" aria-hidden="true">SAMPLE</span>`;
-  const note=options.englishStandIn?'<span class="card-lang-note" title="這個版本沒有可用的卡圖，暫用英文版同一張卡的圖；卡面文字不同">英文版卡圖</span>':otherVersion?'<span class="card-lang-note" title="這個版本沒有可用的卡圖，暫用其他版本同一張卡的圖；卡面文字可能不同">其他版本卡圖</span>':'';
+  const note=/^https:\/\/product-images\.tcgplayer\.com\//.test(src)?'<span class="card-lang-note" title="官方與 TCGdex 都沒有這張卡的圖，暫用 TCGplayer 的商品圖">TCGplayer 卡圖</span>':options.englishStandIn?'<span class="card-lang-note" title="這個版本沒有可用的卡圖，暫用英文版同一張卡的圖；卡面文字不同">英文版卡圖</span>':otherVersion?'<span class="card-lang-note" title="這個版本沒有可用的卡圖，暫用其他版本同一張卡的圖；卡面文字可能不同">其他版本卡圖</span>':'';
   return `<img src="${e(src)}" alt="${e(alt)}" loading="lazy"${fallbacks.length?` data-fallbacks="${e(JSON.stringify(fallbacks))}"`:''} data-img-error="card"><span class="image-fallback unified-image-fallback" hidden><b>圖片待補</b><small>${e(message||'圖片來源尚未收錄')}</small></span>${sample}${note}`;
 }
 

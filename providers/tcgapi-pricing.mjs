@@ -9,7 +9,7 @@ export const TCGAPI_DAILY_REQUESTS = 70;      // 免費 100 次，留 30 次餘�
 export const TCGAPI_PAGE_SIZE = 100;
 export const TCGAPI_INTERVAL_MS = 24 * 60 * 60 * 1000;
 export const TCGAPI_INITIAL_DELAY_MS = 10 * 60 * 1000;
-const TIMEOUT_MS = 20000, REQUEST_GAP_MS = 1200;
+const TIMEOUT_MS = 20000, REQUEST_GAP_MS = 1200, IMAGE_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 
 const leadingNumber = value => { const m = String(value ?? '').trim().match(/^0*(\d+)/); return m ? m[1] : null; };
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -45,8 +45,28 @@ export function matchSetPrices(cards, rows) {
   return out;
 }
 
+// 缺圖的卡 [{id, canonicalId, number}] 對 TCG API 的卡列；同一個卡號只能對到一張圖（不同 printing 同一張商品圖可以）。回傳 card_images 列。
+export function matchSetImages(cards, rows) {
+  const byNumber = new Map();
+  for (const row of rows || []) {
+    if (row?.product_type && row.product_type !== 'Cards') continue;
+    const n = leadingNumber(row?.number), url = String(row?.image_url || '');
+    if (!n || !/^https:\/\/product-images\.tcgplayer\.com\//.test(url)) continue;
+    const seen = byNumber.get(n);
+    byNumber.set(n, seen === undefined || seen === url ? url : null);
+  }
+  const out = [], ours = new Map();
+  for (const card of cards || []) { const n = leadingNumber(card?.number); if (n) ours.set(n, ours.has(n) ? null : card); }
+  for (const [n, card] of ours) {
+    const url = byNumber.get(n);
+    if (!card || !url) continue;
+    out.push({ card_id: card.id, canonical_id: card.canonicalId || card.id, language: 'ja-JP', source: 'tcgplayer', image_url: url, source_url: `https://www.tcgplayer.com/product/${url.match(/\/(\d+)\.jpg$/)?.[1] || ''}`, is_primary: true, image_rights_status: 'not-provided', rights_note: 'TCGplayer 商品圖（經 TCG API）；官方與 TCGdex 都沒有這張卡的圖' });
+  }
+  return out;
+}
+
 export function createTcgapiPricing({ apiKey, db, fetchFn = fetch, now = () => new Date(), dailyRequests = TCGAPI_DAILY_REQUESTS, gapMs = REQUEST_GAP_MS, log = console } = {}) {
-  let timer = null, running = false, last = null;
+  let timer = null, running = false, last = null, lastImageRun = 0;
   async function get(path, budget) {
     if (budget.used >= dailyRequests) throw Object.assign(new Error('TCGAPI_BUDGET'), { code: 'TCGAPI_BUDGET' });
     if (budget.used) await sleep(gapMs);
@@ -70,12 +90,28 @@ export function createTcgapiPricing({ apiKey, db, fetchFn = fetch, now = () => n
   async function runOnce() {
     if (!apiKey || running) return { skipped: !apiKey ? 'not-configured' : 'running' };
     running = true;
-    const budget = { used: 0 }, today = now().toISOString().slice(0, 10), result = { series: 0, written: 0, unmapped: 0, requests: 0, stoppedBy: null };
+    const imagesDue = !lastImageRun || now().getTime() - lastImageRun >= IMAGE_INTERVAL_MS;
+    const budget = { used: 0 }, today = now().toISOString().slice(0, 10), result = { series: 0, written: 0, unmapped: 0, imageSeries: 0, images: 0, requests: 0, stoppedBy: null };
     try {
-      const targets = await db('/rpc/price_tcgapi_targets', { method: 'POST', body: JSON.stringify({ p_limit: 300 }) });
-      if (!Array.isArray(targets) || !targets.length) return result;
+      const [targets, imageTargets] = await Promise.all([
+        db('/rpc/price_tcgapi_targets', { method: 'POST', body: JSON.stringify({ p_limit: 300 }) }),
+        // shortcut: 對不到的系列每次補圖都會再查一遍，所以補圖只在啟動後第一輪與之後每 7 天跑；重啟頻繁時會多查幾次
+        imagesDue ? db('/rpc/image_tcgapi_targets', { method: 'POST', body: JSON.stringify({ p_limit: 300 }) }).catch(error => { log.error('tcgapi image targets failed', error.message); return []; }) : []
+      ]);
+      if (!targets?.length && !imageTargets?.length) return result;
       const setIds = mapSetsByCode(await pages(`sets?game=${TCGAPI_GAME}`, budget));
-      for (const target of targets) {
+      // 缺圖的卡先補（數量有限，補完系列就不再出現），剩下的額度再抓價
+      for (const target of imageTargets || []) {
+        const setId = setIds.get(String(target.official_code || '').toLowerCase());
+        if (!setId) continue;
+        const rows = matchSetImages(target.cards, await pages(`sets/${setId}/cards?type=Cards`, budget));
+        result.imageSeries++;
+        if (!rows.length) continue;
+        await db('/card_images', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(rows) });
+        result.images += rows.length;
+      }
+      if (imagesDue) lastImageRun = now().getTime(); // 額度用完中斷時不記，明天接著補
+      for (const target of targets || []) {
         const setId = setIds.get(String(target.official_code || '').toLowerCase());
         if (!setId) { result.unmapped++; continue; }
         const matched = matchSetPrices(target.cards, await pages(`sets/${setId}/cards?type=Cards`, budget));

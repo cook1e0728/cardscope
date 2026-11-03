@@ -74,6 +74,7 @@ test('card image falls back to the other versions before showing 圖片待補',(
   assert.match(standIn,/data-fallbacks="\[&quot;\/en\.png&quot;\]"/);
   assert.match(standIn,/其他版本卡圖/);
   assert.match(h.run("resilientImage(null,'測試卡','圖片待補')"),/<b>圖片待補<\/b>/);
+  assert.match(h.run("resilientImage('https://product-images.tcgplayer.com/fit-in/400x400/1.jpg','測試卡','圖片待補')"),/TCGplayer 卡圖/);
 });
 
 test('card detail prefers provider high-resolution images before thumbnails',()=>{
