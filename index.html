@@ -48,7 +48,7 @@ function priceScopeNote(){return (game==='pokemon'?'卡牆價格為 Cardmarket �
 // 寶可夢有些系列（例如剛發售的）完全沒有參考價：照價格排序時順序不會變，要在排序欄下說清楚，不然看起來像壞掉。
 // 參考價排序時第一頁一張價格都沒有＝整個系列都沒有（有價的排前面）：記住這個系列，改回依編號排序，價格選項標明並停用，免得選了沒反應。
 const noReferenceSeries=new Set();
-function referenceSortHint(){const note=$('priceNote'),sort=$('cardSort'),series=game==='pokemon'&&browse?.seriesId||'',empty=game==='pokemon'&&String(cardFilters.sort).startsWith('price-')&&currentCardRows.length>0&&!currentCardRows.some(card=>card.referencePrice);if(empty&&series){noReferenceSeries.add(series);cardFilters.sort='number-asc';if(sort)sort.value='number-asc'}const blocked=noReferenceSeries.has(series);if(game==='pokemon')for(const option of sort?.options?[...sort.options]:[])if(String(option.value).startsWith('price-')){option.disabled=blocked;option.textContent=`參考價從${option.value==='price-asc'?'低到高':'高到低'}${blocked?'（此系列沒有參考價）':''}`}if(note){note.textContent=blocked?'這個系列目前沒有參考價，改依編號排序':empty?'這些卡目前都沒有參考價，順序不會改變':'此遊戲目前沒有可排序的價格資料';if(game==='pokemon')note.hidden=!(empty||blocked)}return empty&&!series?'；這些卡目前都沒有參考價，依價格排序不會改變順序':''}
+function referenceSortHint(){const note=$('priceNote'),sort=$('cardSort'),series=game==='pokemon'&&browse?.seriesId||'',empty=game==='pokemon'&&String(cardFilters.sort).startsWith('price-')&&currentCardRows.length>0&&!currentCardRows.some(card=>card.referencePrice);if(empty&&series){noReferenceSeries.add(series);cardFilters.sort='number-asc';if(sort)sort.value='number-asc'}const blocked=noReferenceSeries.has(series);if(game==='pokemon')for(const option of sort?.options?[...sort.options]:[])if(String(option.value).startsWith('price-')){option.disabled=blocked;option.textContent=`參考價從${option.value==='price-asc'?'低到高':'高到低'}${blocked?'（此系列沒有參考價）':''}`}if(note){note.textContent=blocked?'這個系列目前沒有參考價，不能依價格排序':empty?'這些卡目前都沒有參考價，順序不會改變':'此遊戲目前沒有可排序的價格資料';if(game==='pokemon')note.hidden=!(empty||blocked)}return empty&&!series?'；這些卡目前都沒有參考價，依價格排序不會改變順序':''}
 window.priceScopeNote=priceScopeNote;
 function invalidateBrowseRequest(){browseRequestVersion+=1;if(browse)browse.loading=false;return browseRequestVersion}
 function browseRequestIsCurrent(state,version,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort){
@@ -148,6 +148,8 @@ async function loadCardsPage(reset=false){
     if(!browseRequestIsCurrent(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort))return;
     if(!response.ok)throw Error(body.error||'載入失敗');
     state.rows.push(...(body.data||[]).filter(c=>c.game===selectedGame));
+    // 伺服器回報整個系列有幾張有參考價；0 就先擋住價格排序，不等使用者選了才發現。
+    if(typeof noReferenceSeries!=='undefined'&&state.seriesId&&Number.isInteger(body.meta?.referencePriced)){if(body.meta.referencePriced===0)noReferenceSeries.add(state.seriesId);else noReferenceSeries.delete(state.seriesId)}
     state.offset+=Number(body.meta?.limit)||CARDS_PAGE_SIZE;state.hasMore=Boolean(body.meta?.hasMore);state.total=Number(body.meta?.total)||state.rows.length;state.facets=body.meta?.facets||null;
     cards(state.rows);markCardImageScope(selectedGame,state);
     const countedRarities=Object.keys(state.facets?.rarity||{}).filter(value=>value!=='unknown'),legacyRarityValues=[...new Set(countedRarities)],scopeKey=`${selectedGame}|${$('browseRegion')?.value||'all'}|${state.seriesId||''}`,facetEntries=rarityFacetEntries(state.facets);

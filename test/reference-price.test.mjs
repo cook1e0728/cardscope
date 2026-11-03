@@ -241,6 +241,20 @@ test('browse: a price sort inside a series sorts the series here, from one price
   });
 });
 
+test('browse: a Pokemon series page says how many of its cards have a reference price, before any price sort', async () => {
+  const cards = [cardRow('a', '001'), cardRow('b', '002')];
+  const rpc = { printings: cards.flatMap(card => card.printings), cards: cards.map(({ printings, images, ...card }) => card), images: [] };
+  await withServer({ browse_series_cards: () => rpc, price_reference_best: () => [] }, async ({ get }) => {
+    assert.equal((await get('/api/cards?game=pokemon&series=pokemon-s1')).json.meta.referencePriced, 0);
+  });
+  await withServer({ browse_series_cards: () => rpc, price_reference_best: () => [priceRow('b', 3)] }, async ({ get }) => {
+    assert.equal((await get('/api/cards?game=pokemon&series=pokemon-s1')).json.meta.referencePriced, 1);
+  });
+  await withServer({ browse_series_cards: () => rpc, price_reference_best: () => ({ status: 500, body: { message: 'down' } }) }, async ({ get }) => {
+    assert.equal((await get('/api/cards?game=pokemon&series=pokemon-s1')).json.meta.referencePriced, null, '查不到價格時是「不知道」，不是 0');
+  });
+});
+
 // ---------------------------------------------------------------- the pages
 
 const harness = () => {
@@ -352,7 +366,7 @@ test('sort menu: a Pokemon series with no reference prices falls back to number 
   assert.equal(sort.value, 'number-asc');
   assert.equal(options[2].disabled, true);
   assert.match(options[2].textContent, /此系列沒有參考價/);
-  assert.match(note.textContent, /沒有參考價，改依編號排序/);
+  assert.match(note.textContent, /沒有參考價，不能依價格排序/);
   vm.runInContext("referenceSortHint()", context);
   assert.equal(note.hidden, false, "再畫一次說明仍在");
   vm.runInContext("browse.seriesId='s2';referenceSortHint()", context);
