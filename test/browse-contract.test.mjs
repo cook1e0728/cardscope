@@ -68,6 +68,12 @@ test('card image falls back to the other versions before showing 圖片待補',(
   assert.match(markup,/data-fallbacks="\[&quot;\/jp\.png&quot;\]"/);
   assert.match(markup,/data-img-error="card"/);
   assert.doesNotMatch(h.run("resilientImage('/tw.png','測試卡','圖片待補')"),/data-fallbacks/);
+  // 本卡沒有圖：直接顯示其他版本的圖並標示，不先顯示圖片待補
+  const standIn=h.run("resilientImage(null,'測試卡','圖片待補',{fallbacks:['/tw.png','/en.png']})");
+  assert.match(standIn,/<img src="\/tw\.png"/);
+  assert.match(standIn,/data-fallbacks="\[&quot;\/en\.png&quot;\]"/);
+  assert.match(standIn,/其他版本卡圖/);
+  assert.match(h.run("resilientImage(null,'測試卡','圖片待補')"),/<b>圖片待補<\/b>/);
 });
 
 test('card detail prefers provider high-resolution images before thumbnails',()=>{
