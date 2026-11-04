@@ -375,7 +375,8 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .cards .card:not(.card-list) .card-rarity{padding:0 4px;font-size:12px}
   html.look-clean .cards .card:not(.card-list) .card-price{font-size:12px}
   html.look-clean .cards .card:not(.card-list) .card-reference{gap:3px}
-  html.look-clean .cards .card:not(.card-list) .card-reference .cr-var{display:none}
+  html.look-clean .cards .card:not(.card-list) .card-reference .cr-var,html.look-clean .cards .card:not(.card-list) .card-reference .cr-src{display:none}
+  html.look-clean .cards .card:not(.card-list) .card-reference .cr-chg{font-size:10px}
   html.look-clean .cards .card:not(.card-list)>.badge:not(.ip-badge){font-size:12px;padding:0 4px}
   html.look-clean .cards .card:not(.card-list) .watchlist-inline{display:none}
   html.look-clean .cards .card:not(.card-list) .card-actions{position:absolute;top:0;right:0;width:auto;margin:0}
