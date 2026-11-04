@@ -87,8 +87,8 @@ test('芙莉蓮英文版：卡號對回日文卡號，英文推廣卡另建卡',
   assert.equal(weissEnToJpNumber('SFN/S108-E001SSP'), 'SFN/S108-001SSP');
   assert.equal(weissEnToJpNumber('SFN/S108-TE01R'), 'SFN/S108-T01R');
   assert.equal(weissEnToJpNumber('SFN/S108-PE01'), null);
-  const cards = parseWeissEnCards(weissEnItem('SFN/S108-TE01R', '&quot;Mage&quot; Frieren', 'RRR'));
-  assert.deepEqual(cards, [{ cardNo: 'SFN/S108-TE01R', image: 'https://en.ws-tcg.com/wordpress/wp-content/images/cardimages/SFN/S108_TE01R.png', name: '"Mage" Frieren', rarity: 'RRR' }]);
+  const cards = parseWeissEnCards(weissEnItem('SFN/S108-TE01R', '&quot;Mage&quot; Frieren&#039;s', 'RRR'));
+  assert.deepEqual(cards, [{ cardNo: 'SFN/S108-TE01R', image: 'https://en.ws-tcg.com/wordpress/wp-content/images/cardimages/SFN/S108_TE01R.png', name: `"Mage" Frieren's`, rarity: 'RRR' }]);
   const { printings } = weissEnglishRows([{ expansion: { id: '239' }, cards }], [{ id: 'weiss-9', official_card_number: 'SFN/S108-T01R', series_id: 'weiss-frieren-s108-td' }]);
   assert.equal(printings[0].local_set_code, 'S108-TD');
   assert.equal(printings[0].source_url, 'https://en.ws-tcg.com/cardlist/?cardno=SFN%2FS108-TE01R&expansion=239');

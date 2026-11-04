@@ -154,7 +154,7 @@ export async function collectWeissFrierenEn({ fetchText = officialText, delay = 
 // ---- 七龍珠超 Fusion World（繁中官方卡表，圖片為日版印刷）----
 // 卡表頁把一個收錄彈的全部卡一次列出（分頁只在瀏覽器端），稀有度要用 rarity[] 篩選頁取得（詳細頁要逐張請求），所以整個遊戲約 43 個請求。
 
-const decodeEntities = text => String(text).replace(/&(quot|amp|lt|gt|#39);/g, (_, name) => ({ quot: '"', amp: '&', lt: '<', gt: '>', '#39': "'" })[name]).trim();
+const decodeEntities = text => String(text).replace(/&(quot|amp|lt|gt|#\d+);/g, (_, name) => name[0] === '#' ? String.fromCharCode(Number(name.slice(1))) : ({ quot: '"', amp: '&', lt: '<', gt: '>' })[name]).trim();
 
 /** 「用收錄彈縮小範圍」的選項 → [{ id, code, name }]；括號內 `[FB11]` 是系列代碼，推廣卡沒有代碼，用 PR。 */
 export function parseFwCategories(html) {
