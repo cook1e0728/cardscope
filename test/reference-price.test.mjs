@@ -410,10 +410,10 @@ test('migration 20261105120000: one new function, latest row at least p_days old
 
 test('referenceChange: percent rounded to 0.1, under 0.5% is flat, no usable prior means no fields', () => {
   const price = { amount: 10, currency: 'EUR' }, prior = (amount, extra = {}) => ({ amount, currency: 'EUR', snapshot_date: '2026-10-29', ...extra });
-  assert.deepEqual(referenceChange(price, prior(8)), { changePct: 25, changeFrom: '2026-10-29' });
-  assert.deepEqual(referenceChange(price, prior(10.5)), { changePct: -4.8, changeFrom: '2026-10-29' });
-  assert.deepEqual(referenceChange(price, prior(9.97)), { changePct: 0, changeFrom: '2026-10-29' }, '+0.3% 當持平');
-  assert.deepEqual(referenceChange(price, prior(10.04)), { changePct: 0, changeFrom: '2026-10-29' }, '-0.4% 當持平');
+  assert.deepEqual(referenceChange(price, prior(8)), { changePct: 25, changeFrom: '2026-10-29', changeBase: 8 });
+  assert.deepEqual(referenceChange(price, prior(10.5)), { changePct: -4.8, changeFrom: '2026-10-29', changeBase: 10.5 });
+  assert.deepEqual(referenceChange(price, prior(9.97)), { changePct: 0, changeFrom: '2026-10-29', changeBase: 9.97 }, '+0.3% 當持平');
+  assert.deepEqual(referenceChange(price, prior(10.04)), { changePct: 0, changeFrom: '2026-10-29', changeBase: 10.04 }, '-0.4% 當持平');
   assert.equal(referenceChange(price, prior(9.9)).changePct, 1, '+1.01% 不是持平');
   for (const bad of [undefined, prior(0), prior(null), prior(8, { currency: 'USD' }), prior(8, { snapshot_date: null })]) assert.deepEqual(referenceChange(price, bad), {}, JSON.stringify(bad));
 });
@@ -500,6 +500,13 @@ test('detail price row: big NT$ amount, change, source and date, disclaimer, ope
   assert.doesNotMatch(run({ ...base, referencePrice: { ...base.referencePrice, changePct: undefined } }), /dp-chg/);
   assert.match(run({ ...base, referencePrice: { ...base.referencePrice, amountTwd: undefined } }), /<b class="dp-amount">€94\.00<\/b>/, '沒有匯率時顯示原幣');
   for (const bad of [{ ...base, referencePrice: undefined }, { ...base, game: { id: 'onepiece' } }, { ...base, referencePrice: { ...base.referencePrice, amount: 0 } }]) assert.equal(run(bad), '', JSON.stringify(bad.referencePrice));
-  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>\$\{detailPriceMarkup\(c\)\}<div class="detail-collect"/, '價格列在卡名正下方');
+  // 比快照新的同來源、同版本即時價：改用它，漲跌以 changeBase 重算；較舊或版本不同就不採用
+  const live = (records, ref = { ...base.referencePrice, changeBase: 90 }) => vm.runInContext(`detailPriceMarkup(${JSON.stringify({ ...base, referencePrice: ref })},${JSON.stringify(records)})`, context);
+  const rec = over => ({ priceType: 'market', market: 'Cardmarket', variant: 'holo', currency: 'EUR', amount: 99, priceTwd: 12000, observedAt: '2026-11-06T02:00:00Z', ...over });
+  assert.match(live([rec()]), /NT\$ 12,000<\/b><span class="dp-chg cr-up">▲10% 近 7 天<\/span><small class="dp-note">Cardmarket 參考 · 11-06/);
+  assert.match(live([rec({ observedAt: '2026-11-04T00:00:00Z' })]), /NT\$ 11,730/);
+  assert.match(live([rec({ variant: 'normal' })]), /NT\$ 11,730/);
+  assert.doesNotMatch(live([rec()], { ...base.referencePrice, changeBase: undefined }), /dp-chg/, '沒有比較基準就不顯示漲跌');
+  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>\$\{detailPriceMarkup\(c,m\.records\)\}<div class="detail-collect"/, '價格列在卡名正下方');
   assert.match(ui, /querySelector\('\[data-detail-price\]'\)\?\.addEventListener\('click',\(\)=>\{\$\('detail'\)\.querySelector\('\[data-detail-tab="market"\]'\)\?\.click\(\)/, '沿用價格分頁按鈕的點擊，才會觸發 PriceTimeline.load');
 });
