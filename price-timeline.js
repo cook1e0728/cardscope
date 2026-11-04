@@ -2,7 +2,7 @@
 // 只是平台參考價，不是成交價或台灣行情。每條線只屬於一張實體卡＋來源＋版本，不合併；走勢完全相同的版本才併成一個選項。
 // 快照只在價格變動時才寫，沒紀錄的日子沿用前一筆並照實標示，所以線是階梯，不是推測的斜線。
 (root=>{
-  const DAY_MS=86400000,STALE_DAYS=7,MIN_LOW=0.1,GAP_RATIO=3;
+  const DAY_MS=86400000,STALE_DAYS=7,MIN_LOW=0.1,GAP_RATIO=3;let seq=0;
   const SOURCES={cardmarket:{market:'Cardmarket',seller:'歐洲',plain:'歐洲 Cardmarket'},tcgplayer:{market:'TCGplayer',seller:'美國',plain:'美國 TCGplayer'}};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const ms=date=>{const match=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(date||''));return match?Date.UTC(+match[1],+match[2]-1,+match[3]):NaN};
@@ -17,8 +17,10 @@
     const byDate=new Map();
     for(const point of Array.isArray(item?.points)?item.points:[]){const time=ms(point?.date),twd=Number(point?.amountTwd);if(Number.isFinite(time)&&point?.amountTwd!=null&&Number.isFinite(twd)&&twd>0)byDate.set(time,{time,twd,amount:Number(point.amount),observedAt:point.observedAt||null})}
     // 即時價的日期算台北時間，才會和畫面上的來源更新時間同一天
-    const observed=new Date(live?.observedAt||NaN).getTime(),liveTime=Number.isNaN(observed)?NaN:ms(new Date(observed+8*3600000).toISOString()),liveTwd=Number(live?.priceTwd);
-    if(live&&Number.isFinite(liveTime)&&Number.isFinite(liveTwd)&&liveTwd>0&&!(Math.max(0,...byDate.keys())>liveTime))byDate.set(liveTime,{time:liveTime,twd:liveTwd,amount:Number(live.amount),observedAt:live.observedAt});
+    const observed=new Date(live?.observedAt||NaN).getTime(),liveTime=Number.isNaN(observed)?NaN:ms(new Date(observed+8*3600000).toISOString()),liveTwd=Number(live?.priceTwd),top=Math.max(0,...byDate.keys());
+    // 快照日期是 UTC、即時價是台北日：同一筆觀測會差一天，價格相同就不另加一個平盤點
+    const repeat=top>0&&liveTime-top===DAY_MS&&Math.abs(byDate.get(top).amount-Number(live?.amount))<.005;
+    if(live&&Number.isFinite(liveTime)&&Number.isFinite(liveTwd)&&liveTwd>0&&!(top>liveTime)&&!repeat)byDate.set(liveTime,{time:liveTime,twd:liveTwd,amount:Number(live.amount),observedAt:live.observedAt});
     return [...byDate.values()].sort((a,b)=>a.time-b.time);
   }
   const findRecord=(records,item,type)=>records.find(r=>r.priceType===type&&r.market===SOURCES[item.provider]?.market&&(r.variant||'')===(item.variant||'')&&(!r.cardId||r.cardId===item.cardId));
@@ -27,7 +29,7 @@
     const records=Array.isArray(market?.records)?market.records:[],find=(item,type)=>findRecord(records,item,type);
     let lines=(Array.isArray(history?.series)?history.series:[]).map(item=>{
       const current=find(item,'market'),low=find(item,'listing'),points=linePoints(item,current),amount=Number(points.at(-1)?.amount),lowAmount=Number(low?.amount);
-      const rate=Number(current?.priceTwd)/Number(current?.amount),average=value=>Number(value)>=MIN_LOW&&rate>0?Math.round(Number(value)*rate):null;
+      const fx=Number(history?.meta?.exchangeRates?.rates?.[item.currency]),rate=fx>0?fx:Number(current?.priceTwd)/Number(current?.amount),average=value=>Number(value)>=MIN_LOW&&rate>0?Math.round(Number(value)*rate):null;
       return {avg7:average(current?.avg7),avg30:average(current?.avg30),cardId:item.cardId,region:item.region,provider:item.provider,variants:[item.variant||''],points,low:low&&lowAmount>=MIN_LOW&&low.priceTwd!=null?Number(low.priceTwd):null,gap:low&&lowAmount>=MIN_LOW&&amount/lowAmount>=GAP_RATIO?Math.round(amount/lowAmount):0,currency:item.currency,observedAt:current?.observedAt||null};
     }).filter(line=>line.points.length);
     if(lines.some(line=>line.points.length>=2))lines=lines.filter(line=>line.points.length>=2);
@@ -63,7 +65,7 @@
     return [worst>=0&&{index:worst,text:`跌最多的一天 ${md(days[worst].time)}（−${ntd(days[worst-1].twd-days[worst].twd)}）`},days[hi].twd!==days[lo].twd&&{index:hi,text:`最高 ${ntd(days[hi].twd)}`},days[hi].twd!==days[lo].twd&&{index:lo,text:`最低 ${ntd(days[lo].twd)}`}].filter(Boolean);
   }
   // 純函式：範圍選項（資料夠長才出現）。
-  const rangeOptions=count=>[count>8&&{days:7,label:'近 7 天'},count>31&&{days:30,label:'近 30 天'},count>8&&{days:0,label:'全部'}].filter(Boolean);
+  const rangeOptions=count=>[count>8&&{days:7,label:'7 天'},count>31&&{days:30,label:'30 天'},count>91&&{days:90,label:'90 天'},count>8&&{days:0,label:'全部'}].filter(Boolean);
 
   // 純函式：最新價和近 30 天平均相比的白話句；差不到 5% 算差不多。
   function versusAverage(twd,avg30){if(!avg30)return '';const pct=Math.round((twd-avg30)/avg30*100);return Math.abs(pct)<5?'和近 30 天平均差不多':pct>0?`比近 30 天平均貴 ${pct}%，可能剛被拉高，別只看這個數字`:`比近 30 天平均便宜 ${-pct}%`}
@@ -99,11 +101,13 @@
   }
   // 純函式：每筆紀錄，新的在前。
   const recordRows=(points,currency)=>points.map((point,i)=>({date:dayText(point.time),twd:ntd(point.twd),original:original(point.amount,currency),change:i?signed(point.twd-points[i-1].twd,points[i-1].twd):'第一筆',observed:sourceTime(point.observedAt)})).reverse();
+  // 純函式：平台商品頁。TCGplayer 用商品編號；Cardmarket 只收 cardmarket.com 的 https 連結（紀錄的 sourceUrl 多半是 TCGdex 頁，不能標成 Cardmarket）。沒有就回 null，改用搜尋頁。
+  const productUrl=(provider,record)=>provider==='tcgplayer'&&record?.idProduct!=null&&record.idProduct!==''?`https://www.tcgplayer.com/product/${encodeURIComponent(record.idProduct)}`:provider==='cardmarket'&&/^https:\/\/([a-z0-9-]+\.)*cardmarket\.com\//i.test(String(record?.sourceUrl||''))?String(record.sourceUrl):null;
   // 純函式：各平台現況。太久沒更新的價格分開列，不和近期價格放在一起比。
   function platformSummary(history,options={}){
-    const records=Array.isArray(options.market?.records)?options.market.records:[],series=(Array.isArray(history?.series)?history.series:[]).map(item=>{const points=linePoints(item,findRecord(records,item,'market'));return {item,last:points.at(-1)}}).filter(row=>row.last&&SOURCES[row.item.provider]);
+    const records=Array.isArray(options.market?.records)?options.market.records:[],series=(Array.isArray(history?.series)?history.series:[]).map(item=>{const record=findRecord(records,item,'market'),points=linePoints(item,record);return {item,record,last:points.at(-1)}}).filter(row=>row.last&&SOURCES[row.item.provider]);
     const newest=Math.max(...series.map(row=>row.last.time),0),regions=new Set(series.map(row=>row.item.region));
-    const rows=series.map(({item,last})=>({provider:item.provider,market:SOURCES[item.provider].market,label:[regions.size>1&&(options.regionLabel?options.regionLabel(item.region):item.region),item.variant?(options.variantLabel?options.variantLabel(item.variant):item.variant):'版本未標示'].filter(Boolean).join(' · '),twd:ntd(last.twd),original:original(last.amount,item.currency),time:last.time,recent:newest-last.time<STALE_DAYS*DAY_MS}));
+    const rows=series.map(({item,record,last})=>({url:productUrl(item.provider,record),provider:item.provider,market:SOURCES[item.provider].market,label:[regions.size>1&&(options.regionLabel?options.regionLabel(item.region):item.region),item.variant?(options.variantLabel?options.variantLabel(item.variant):item.variant):'版本未標示'].filter(Boolean).join(' · '),twd:ntd(last.twd),original:original(last.amount,item.currency),time:last.time,recent:newest-last.time<STALE_DAYS*DAY_MS}));
     const recent=rows.filter(row=>row.recent),stale=rows.filter(row=>!row.recent),names=[...new Set(recent.map(row=>row.market))],stopped=[...new Set(stale.map(row=>row.market))].filter(name=>!names.includes(name));
     const lastOf=name=>md(Math.max(...stale.filter(row=>row.market===name).map(row=>row.time)));
     const text=stopped.length?`目前只有 ${names.join('、')} 是近期價格，${stopped.map(name=>`${name} 停在 ${lastOf(name)}`).join('、')}，不能直接比。`:names.length>1?`${names.join(' 和 ')} 都有近期價格，但市場不同，只能當參考。`:`目前只有 ${names[0]||'一個平台'} 有近期價格。`;
@@ -117,26 +121,32 @@
   const PLAY='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3l12 7-12 7z" fill="currentColor"/></svg>',PAUSE='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h4v14H5zM11 3h4v14h-4z" fill="currentColor"/></svg>';
 
   function mount(slot,lines,options){
-    const off=motionOff(),notes=options.shared?'<div class="ptl-warn">這張卡的價格和其他卡共用同一筆商品資料，可能不是這張卡自己的價格。</div>':'';
-    let line=lines[0],start=0,shownStart=0,shownLo=0,shownHi=0,index=0,pos=0,dotY=null,pin=null,shown=0,timer=0,tween=0,rest=0,dragging=false,zoom=0,period='day',bars=[],barAt=0;const avgOn={5:true,20:false};
-    slot.innerHTML=`<div class="ptl-head">${options.image?`<img class="ptl-mini" src="${esc(options.image)}" alt="">`:''}<div class="ptl-readout"><div class="ptl-when" data-r="when"></div><div class="ptl-big" data-r="big"></div><div class="ptl-say" data-r="say" aria-live="polite"></div><div class="ptl-held" data-r="prev"></div><div class="ptl-held" data-r="held"></div></div></div><p class="ptl-plain" data-r="plain"></p><div data-r="jump"></div>${lines.length>1?`<div class="ptl-row" data-r="lines" role="group" aria-label="選擇版本">${lines.map((item,i)=>`<button type="button" class="ptl-chip${i?'':' on'}" data-line="${i}" aria-pressed="${!i}">${esc(item.label)}</button>`).join('')}</div>`:''}<div data-r="trend"><div class="ptl-row" data-r="period" role="group" aria-label="圖表範圍"><button type="button" class="ptl-chip on" data-period="day" aria-pressed="true">每天</button><button type="button" class="ptl-chip" data-period="week" aria-pressed="false">每週</button><button type="button" class="ptl-chip" data-period="month" aria-pressed="false">每月</button></div><div class="ptl-short" data-r="barNote" hidden></div><div data-r="chartArea"><div class="ptl-chart" data-r="chart"><svg data-r="svg" aria-hidden="true"><g data-r="base"></g><rect class="ptl-band" data-r="band"/><line class="ptl-pin" data-r="pinLine"/><path class="ptl-past" data-r="past"/><line class="ptl-guide" data-r="guide"/><circle class="ptl-ring" data-r="ring" r="8"/><circle class="ptl-dot" data-r="dot" r="8"/><rect class="ptl-tip" data-r="tip" y="2" height="24" rx="4"/><text class="ptl-tip-text" data-r="tipText" y="19" text-anchor="middle"></text></svg></div><div class="ptl-controls"><button type="button" class="ptl-play" data-r="play"></button><input data-r="range" type="range" aria-label="拖動時間軸選日期"></div><div class="ptl-ends"><span data-r="endA"></span><span data-r="endZ"></span></div><p class="ptl-caption" data-r="caption"></p><details class="ptl-bar-detail" data-r="barOnly" hidden><summary>看這段的最高和最低</summary><p data-r="barText"></p></details></div><div data-r="dayOnly"><div class="ptl-row"><button type="button" class="ptl-chip" data-r="pin" aria-pressed="false"></button></div><div class="ptl-row" data-r="avgs" role="group" aria-label="平均線"></div><div class="ptl-row" data-r="ranges"></div><div class="ptl-row" data-r="jumps"></div></div><div class="ptl-events" data-r="events"></div></div><div data-r="short" class="ptl-short" hidden>才剛開始記錄這張卡的價格，還看不出漲跌。</div><div data-r="low"></div>${notes}<div data-r="platforms"></div><div data-r="records"></div>`;
-    const $=name=>slot.querySelector(`[data-r="${name}"]`),cards=[...(options.cards||[]),slot.querySelector('.ptl-mini')].filter(Boolean),pad={l:66,r:14,t:32,b:26},events=options.events||[];
+    const off=motionOff(),gid=`ptl-fill-${++seq}`,notes=options.shared?'<div class="ptl-warn">這張卡的價格和其他卡共用同一筆商品資料，可能不是這張卡自己的價格。</div>':'';
+    let line=lines[0],start=0,shownStart=0,shownLo=0,shownHi=0,index=0,pos=0,dotY=null,pin=null,shown=0,timer=0,tween=0,dragging=false,zoom=0,period='day',bars=[],barAt=0;const avgOn={5:true,20:false};
+    slot.innerHTML=`<div class="ptl-head">${options.image?`<img class="ptl-mini" src="${esc(options.image)}" alt="">`:''}<div class="ptl-readout"><div class="ptl-when" data-r="when"></div><div class="ptl-big" data-r="big"></div><div class="ptl-say" data-r="say" aria-live="polite"></div><div class="ptl-held" data-r="prev"></div><dl class="ptl-cells"><div><dt>原幣</dt><dd data-r="cOrig"></dd></div><div><dt>來源更新（台北）</dt><dd data-r="cSrc"></dd></div><div><dt>狀態</dt><dd data-r="cState"></dd></div><div><dt>當天事件</dt><dd data-r="cEvent"></dd></div></dl></div></div><p class="ptl-plain" data-r="plain"></p><div data-r="jump"></div><div data-r="trend"><div class="ptl-top">${lines.length>1?`<div class="ptl-lines" data-r="lines" role="group" aria-label="選擇版本">${lines.map((item,i)=>`<button type="button" class="ptl-chip${i?'':' on'}" data-line="${i}" aria-pressed="${!i}">${esc(item.label)}</button>`).join('')}</div>`:''}<div class="ptl-seg" data-r="ranges" role="group" aria-label="時間範圍"></div><div class="ptl-seg" data-r="period" role="group" aria-label="圖表粒度"><button type="button" class="ptl-seg-btn on" data-period="day" aria-pressed="true">每天</button><button type="button" class="ptl-seg-btn" data-period="week" aria-pressed="false">每週</button><button type="button" class="ptl-seg-btn" data-period="month" aria-pressed="false">每月</button></div></div><div class="ptl-short" data-r="barNote" hidden></div><div data-r="chartArea"><div class="ptl-chart" data-r="chart"><svg data-r="svg" aria-hidden="true"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#211C17" stop-opacity=".16"/><stop offset="1" stop-color="#211C17" stop-opacity="0"/></linearGradient></defs><g data-r="base"></g><rect class="ptl-band" data-r="band"/><line class="ptl-pin" data-r="pinLine"/><path class="ptl-past" data-r="past"/><line class="ptl-guide" data-r="guide"/><circle class="ptl-ring" data-r="ring" r="8"/><circle class="ptl-dot" data-r="dot" r="8"/><rect class="ptl-tip" data-r="tip" y="2" height="24" rx="4"/><text class="ptl-tip-text" data-r="tipText" y="19" text-anchor="middle"></text></svg></div><div class="ptl-controls"><button type="button" class="ptl-play" data-r="play"></button><input data-r="range" type="range" aria-label="拖動時間軸選日期"><div class="ptl-avgs" data-r="avgs" role="group" aria-label="平均線"></div><button type="button" class="ptl-chip" data-r="pin" aria-pressed="false"></button></div><p class="ptl-caption" data-r="caption"></p><details class="ptl-bar-detail" data-r="barOnly" hidden><summary>看這段的最高和最低</summary><p data-r="barText"></p></details></div><div class="ptl-events" data-r="events"></div></div><div data-r="short" class="ptl-short" hidden>才剛開始記錄這張卡的價格，還看不出漲跌。</div>${notes}<section class="ptl-now ptl-market"><h4>行情與比價</h4><div data-r="low"></div><div data-r="platforms"></div></section><div data-r="records"></div>`;
+    const $=name=>slot.querySelector(`[data-r="${name}"]`),pad={l:66,r:14,t:32,b:26},events=options.events||[];
     const last=()=>line.days.length-1;
     const domain=()=>{const values=line.days.slice(start).map(d=>d.twd);return [Math.min(...values),Math.max(...values)]};
     const geometry=()=>{const W=$('chart').clientWidth||500,H=$('svg').clientHeight||200,lo=shownLo,hi=shownHi,margin=(hi-lo||hi*.1)*.12;return {W,H,lo,hi,x:i=>pad.l+(W-pad.l-pad.r)*(i-shownStart)/Math.max(last()-shownStart,1),y:v=>pad.t+(H-pad.t-pad.b)*(1-(v-(lo-margin))/((hi+margin)-(lo-margin)))}};
     const attrs=(node,values)=>{for(const key in values)node.setAttribute(key,values[key])};
+    // 讀數小格：固定四格，沒有的寫「—」，高度固定，拖動時版面不會跳
+    const cells=(...texts)=>['cOrig','cSrc','cState','cEvent'].forEach((name,i)=>{const node=$(name);node.textContent=texts[i]||'—';node.title=texts[i]||''});
+    // 提示框寬度優先量實際字寬，量不到（元素隱藏或沒有排版）才退回估算
+    const tipWidth=label=>{const text=$('tipText');text.textContent=label;let width=0;try{width=text.getComputedTextLength()}catch{}return (width>0?width:label.length*7.6)+16};
+    // 範圍內最高、最低點標小圓點與價格，平盤不標；透明大圓是點擊範圍，點了跳到那天
+    const extremes=(g,from)=>{let hi=from,lo=from;for(let i=from;i<=last();i++){if(line.days[i].twd>line.days[hi].twd)hi=i;if(line.days[i].twd<line.days[lo].twd)lo=i}if(line.days[hi].twd===line.days[lo].twd)return '';return [[hi,-9],[lo,17]].map(([i,dy])=>{const x=g.x(i),y=g.y(line.days[i].twd),anchor=x<pad.l+36?'start':x>g.W-pad.r-36?'end':'middle';return `<circle class="ptl-ext" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4"/><text class="ptl-ext-text" x="${x.toFixed(1)}" y="${(y+dy).toFixed(1)}" text-anchor="${anchor}">${esc(ntd(line.days[i].twd))}</text><circle class="ptl-ext-hit" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="14"/>`}).join('')};
     const path=(g,from,to)=>{let d='';for(let i=from;i<=to;i++){const x=g.x(i).toFixed(1),y=g.y(line.days[i].twd).toFixed(1);d+=i===from?`M${x} ${y}`:`L${x} ${g.y(line.days[i-1].twd).toFixed(1)}L${x} ${y}`}return d};
     // 底圖（軸、線、紀錄點）只在範圍或尺寸變動時重畫；播放時每格只動讀數頭，手機才跑得順。
     function drawBase(){
       if(line.days.length<2)return;
       if(period!=='day')return drawBars();
-      const g=geometry(),from=Math.max(0,Math.ceil(shownStart)),whole=path(g,from,last()),base=g.H-pad.b,yTicks=Math.round(g.hi)===Math.round(g.lo)?[g.hi]:[g.hi,(g.hi+g.lo)/2,g.lo],grid=yTicks.map(v=>`<line class="ptl-grid" x1="${pad.l}" x2="${g.W-pad.r}" y1="${g.y(v).toFixed(1)}" y2="${g.y(v).toFixed(1)}"/><text class="ptl-axis" x="${pad.l-6}" y="${(g.y(v)+4).toFixed(1)}" text-anchor="end">${esc(ntd(v))}</text>`).join(''),xTicks=dateTicks(Math.max(from,Math.ceil(shownStart)),last(),g.W<420?4:g.W<640?6:9).map((i,n,all)=>`<text class="ptl-axis" x="${g.x(i).toFixed(1)}" y="${g.H-6}" text-anchor="${n?n===all.length-1?'end':'middle':'start'}">${md(line.days[i].time)}</text>`).join(''),flags=eventsIn(events,line.days,from).filter(event=>event.index>=0).map(event=>{const x=g.x(event.index).toFixed(1);return `<line class="ptl-event-line" x1="${x}" x2="${x}" y1="${pad.t}" y2="${base}"/><path class="ptl-event" d="M${x} ${base-7}l6 7l-6 7l-6-7z"/>`}).join(''),averages=[5,20].filter(n=>avgOn[n]).map(n=>{let d='';movingAverage(line.days,n).forEach((value,i)=>{if(value!=null&&i>=from)d+=`${d?'L':'M'}${g.x(i).toFixed(1)} ${g.y(value).toFixed(1)}`});return d?`<path class="ptl-ma ptl-ma${n}" d="${d}"/>`:''}).join(''),dots=line.days.map((d,i)=>d.fresh&&i>=from?`<circle class="ptl-rec" cx="${g.x(i).toFixed(1)}" cy="${g.y(d.twd).toFixed(1)}" r="3"/>`:'').join('');
-      $('base').innerHTML=`${grid}${xTicks}<path class="ptl-area" d="${whole}L${g.x(last()).toFixed(1)} ${base}L${g.x(from).toFixed(1)} ${base}Z"/><path class="ptl-line" d="${whole}"/>${averages}${dots}${flags}`;
+      const g=geometry(),from=Math.max(0,Math.ceil(shownStart)),whole=path(g,from,last()),base=g.H-pad.b,yTicks=Math.round(g.hi)===Math.round(g.lo)?[g.hi]:[g.hi,(g.hi+g.lo)/2,g.lo],grid=yTicks.map(v=>`<line class="ptl-grid" x1="${pad.l}" x2="${g.W-pad.r}" y1="${g.y(v).toFixed(1)}" y2="${g.y(v).toFixed(1)}"/><text class="ptl-axis" x="${pad.l-6}" y="${(g.y(v)+4).toFixed(1)}" text-anchor="end">${esc(ntd(v))}</text>`).join(''),xTicks=dateTicks(Math.max(from,Math.ceil(shownStart)),last(),g.W<420?4:g.W<640?6:9).map((i,n,all)=>`<text class="ptl-axis" x="${g.x(i).toFixed(1)}" y="${g.H-6}" text-anchor="${n?n===all.length-1?'end':'middle':'start'}">${md(line.days[i].time)}</text>`).join(''),flags=eventsIn(events,line.days,from).filter(event=>event.index>=0).map(event=>{const x=g.x(event.index).toFixed(1);return `<line class="ptl-event-line" x1="${x}" x2="${x}" y1="${pad.t}" y2="${base}"/><path class="ptl-event" d="M${x} ${base-5}l4 5l-4 5l-4-5z"/>`}).join(''),averages=[5,20].filter(n=>avgOn[n]).map(n=>{let d='';movingAverage(line.days,n).forEach((value,i)=>{if(value!=null&&i>=from)d+=`${d?'L':'M'}${g.x(i).toFixed(1)} ${g.y(value).toFixed(1)}`});return d?`<path class="ptl-ma ptl-ma${n}" d="${d}"/>`:''}).join(''),dots=line.days.map((d,i)=>d.fresh&&i>=from?`<circle class="ptl-rec" cx="${g.x(i).toFixed(1)}" cy="${g.y(d.twd).toFixed(1)}" r="3"/>`:'').join('');
+      $('base').innerHTML=`${grid}${xTicks}<path class="ptl-area" fill="url(#${gid})" d="${whole}L${g.x(last()).toFixed(1)} ${base}L${g.x(from).toFixed(1)} ${base}Z"/><path class="ptl-line" d="${whole}"/>${averages}${dots}${flags}${extremes(g,from)}`;
     }
     function drawHead(){
       if(line.days.length<2)return;
       if(period!=='day')return drawBarHead();
-      const g=geometry(),from=Math.max(0,Math.ceil(shownStart)),base=g.H-pad.b,at=Math.max(from,Math.min(last(),Math.floor(pos))),x=g.x(Math.max(pos,from)),y=g.y(line.days[at].twd),day=line.days[index],label=`${md(day.time)}  ${ntd(day.twd)}`,bw=label.length*7.6+16,bx=Math.max(pad.l,Math.min(g.W-pad.r-bw,x-bw/2));
+      const g=geometry(),from=Math.max(0,Math.ceil(shownStart)),base=g.H-pad.b,at=Math.max(from,Math.min(last(),Math.floor(pos))),x=g.x(Math.max(pos,from)),y=g.y(line.days[at].twd),day=line.days[index],label=`${md(day.time)}  ${ntd(day.twd)}`,bw=tipWidth(label),bx=Math.max(pad.l,Math.min(g.W-pad.r-bw,x-bw/2));
       // 播放時圓點追著價格滑過去，線本身仍是階梯；拖動時不延遲，手指到哪就到哪
       dotY=dotY==null||!timer?y:dotY+(y-dotY)*.3;
       attrs($('past'),{d:`${path(g,from,Math.max(from,at))}L${x.toFixed(1)} ${y.toFixed(1)}`});
@@ -154,27 +164,27 @@
     }
     function drawBarHead(){
       const bar=bars[barAt];if(!bar)return;
-      const g=barGeometry(),x=g.x(barAt),y=g.y(bar.close),label=`${md(bar.first)}  ${ntd(bar.close)}`,bw=label.length*7.6+16,bx=Math.max(pad.l,Math.min(g.W-pad.r-bw,x-bw/2));
+      const g=barGeometry(),x=g.x(barAt),y=g.y(bar.close),label=`${md(bar.first)}  ${ntd(bar.close)}`,bw=tipWidth(label),bx=Math.max(pad.l,Math.min(g.W-pad.r-bw,x-bw/2));
       attrs($('past'),{d:''});$('band').style.display=$('pinLine').style.display='none';
       attrs($('guide'),{x1:x.toFixed(1),x2:x.toFixed(1),y1:26,y2:g.H-pad.b});
       for(const name of ['dot','ring'])attrs($(name),{cx:x.toFixed(1),cy:y.toFixed(1)});
       attrs($('tip'),{x:bx.toFixed(1),width:bw.toFixed(1)});attrs($('tipText'),{x:(bx+bw/2).toFixed(1)});$('tipText').textContent=label;
     }
     function selectBar(i){
-      barAt=Math.max(0,Math.min(bars.length-1,i));const bar=bars[barAt],compare=compareText({time:bar.first,twd:bar.open},{time:bar.last,twd:bar.close});
+      if(!bars.length)return;barAt=Math.max(0,Math.min(bars.length-1,i));const bar=bars[barAt],compare=compareText({time:bar.first,twd:bar.open},{time:bar.last,twd:bar.close});
       $('when').textContent=`${period==='month'?'這個月':'這週'} ${md(bar.first)} 到 ${md(bar.last)}`;setNumber(bar.close,true);
-      $('say').className=`ptl-say ${compare.tone}`;$('say').textContent=bar.first===bar.last?'這段只有一天':compare.text;$('prev').textContent='';$('held').textContent='由每日參考價算出，不是真實成交紀錄';
+      $('say').className=`ptl-say ${compare.tone}`;$('say').textContent=bar.first===bar.last?'這段只有一天':compare.text;$('prev').textContent='';cells('','','每日參考價彙整','');
       $('barText').textContent=`開頭 ${ntd(bar.open)} · 最高 ${ntd(bar.high)} · 最低 ${ntd(bar.low)} · 結尾 ${ntd(bar.close)}`;$('range').value=barAt;drawBarHead();
     }
     function setPeriod(next){
       stop();period=next;
       for(const chip of $('period').children){const on=chip.dataset.period===next;chip.classList.toggle('on',on);chip.setAttribute('aria-pressed',String(on))}
       const isDay=next==='day';bars=isDay?[]:periodBars(line.days,next);const enough=isDay||bars.length>=MIN_BARS[next];
-      $('dayOnly').hidden=!isDay;$('barOnly').hidden=isDay;$('play').hidden=!isDay;$('chartArea').hidden=!enough;$('barNote').hidden=enough;
+      for(const name of ['avgs','pin','ranges'])$(name).hidden=!isDay;$('barOnly').hidden=isDay;$('play').hidden=!isDay;$('chartArea').hidden=!enough;$('barNote').hidden=enough;
       if(!enough){$('barNote').textContent=next==='month'?`每月的資料還不夠：目前只有 ${bars.length} 個月，累積到 ${MIN_BARS.month} 個月才會顯示。`:'每週的資料還不夠：目前還不到兩週。';period='day';bars=[];select(last());period=next;return}
-      if(isDay){$('caption').textContent='圓點是當天有新紀錄，其他天沿用前一筆。藍線是平均：實線近 5 天，虛線近 20 天。';$('range').min=start;$('range').max=last();$('endA').textContent=md(line.days[start].time);$('endZ').textContent=md(line.days.at(-1).time);select(last());draw();return}
-      $('caption').textContent=`每根代表${next==='month'?'一個月':'一週'}：粗的部分是頭尾價格，細線是最高和最低，紅色漲、綠色跌。頭尾兩根可能不滿${next==='month'?'一個月':'一週'}。`;
-      $('range').min=0;$('range').max=bars.length-1;$('endA').textContent=md(bars[0].first);$('endZ').textContent=md(bars.at(-1).last);selectBar(bars.length-1);drawBars();
+      if(isDay){$('caption').textContent='圓點是當天有新紀錄，其他天沿用前一筆。藍線是平均：實線近 5 天，虛線近 20 天。圖上標出這段的最高、最低價。';$('range').min=start;$('range').max=last();select(last());draw();return}
+      $('caption').textContent=`每根代表${next==='month'?'一個月':'一週'}：粗的部分是頭尾價格，細線是最高和最低，紅色漲、綠色跌。頭尾兩根可能不滿${next==='month'?'一個月':'一週'}。由每日參考價算出，不是真實成交紀錄。`;
+      $('range').min=0;$('range').max=bars.length-1;selectBar(bars.length-1);drawBars();
     }
     const draw=()=>{drawBase();drawHead()};
     // 價格變動的那天讓圓點擴散一圈，看得出「這裡動了」；關閉動態時不做
@@ -183,17 +193,16 @@
     function select(i,animate=false,gliding=false){
       index=Math.max(start,Math.min(last(),i));if(!gliding)pos=index;const day=line.days[index],compare=compareText(line.days[pin??start],day),event=events.find(item=>ms(item?.date)===day.time&&/^https:\/\//.test(String(item.url||'')));
       $('when').textContent=`${dayText(day.time)}${index===last()?'（最新）':''}`;setNumber(day.twd,animate);
-      $('say').className=`ptl-say ${compare.tone}`;$('say').textContent=line.days.length>1?compare.text:'';const updated=sourceTime(day.observedAt);$('held').textContent=[day.fresh?(updated?`來源更新 ${updated}（台北時間）`:''):`這天沒有新紀錄，沿用 ${md(day.from)} 的價格`,!day.fresh&&updated?`來源更新 ${updated}（台北時間）`:'',original(day.amount,line.currency),event?`當天：${event.title}`:''].filter(Boolean).join(' · ');const before=index>0?line.days[index-1]:null;$('prev').textContent=before?(day.twd===before.twd?'和前一天一樣':`比前一天 ${signed(day.twd-before.twd,before.twd)}`):'';$('pin').textContent=pin==null?'從這天開始比較':`取消比較（從 ${md(line.days[pin].time)}）`;$('pin').setAttribute('aria-pressed',String(pin!=null));for(const item of $('events').querySelectorAll('[data-i]'))item.classList.toggle('on',Number(item.dataset.i)===index);$('range').value=index;
-      // 動的時候卡片跟著轉一點點，停下就回正，卡面才清楚
-      if(!off&&line.days.length>1){const turn=((index-start)/Math.max(last()-start,1)-.5)*8;for(const card of cards)card.style.transform=`perspective(900px) rotateY(${turn}deg)`;root.clearTimeout(rest);rest=root.setTimeout(()=>{for(const card of cards)card.style.transform=''},500)}
+      $('say').className=`ptl-say ${compare.tone}`;$('say').textContent=line.days.length>1?compare.text:'';cells(original(day.amount,line.currency),sourceTime(day.observedAt),day.fresh?'當日新紀錄':`沿用 ${md(day.from)}`,event?.title);
+      const before=index>0?line.days[index-1]:null;$('prev').textContent=before?(day.twd===before.twd?'和前一天一樣':`比前一天 ${signed(day.twd-before.twd,before.twd)}`):'';$('pin').textContent=pin==null?'從這天開始比較':`取消比較（從 ${md(line.days[pin].time)}）`;$('pin').setAttribute('aria-pressed',String(pin!=null));for(const item of $('events').querySelectorAll('[data-i]'))item.classList.toggle('on',Number(item.dataset.i)===index);$('range').value=index;
       drawHead();
     }
     function stop(){root.cancelAnimationFrame(timer);timer=0;$('play').innerHTML=PLAY;$('play').setAttribute('aria-label','播放價格變化')}
-    function play(quick=false){
+    function play(){
       if(timer){stop();drawHead();return}
-      if(quick||index>=last())select(start);
+      if(index>=last())select(start);
       $('play').innerHTML=PAUSE;$('play').setAttribute('aria-label','暫停');
-      const from=index,to=last(),total=sweepMs(to-from,quick),t0=root.performance.now();
+      const from=index,to=last(),total=sweepMs(to-from),t0=root.performance.now();
       // 位置隨時間連續前進，跨過一天才換讀數；關閉動態時一天一格
       const tick=now=>{
         if(!slot.isConnected)return stop();
@@ -204,45 +213,42 @@
       };
       timer=root.requestAnimationFrame(tick);
     }
-    function jumps(){$('jumps').innerHTML=highlights(line.days,start).map(item=>`<button type="button" class="ptl-chip ptl-jump" data-i="${item.index}">${esc(item.text)}</button>`).join('')}
     function listEvents(){const items=eventsIn(events,line.days,start);$('events').innerHTML=items.length?`<h4>同期時事</h4><ul>${items.map(item=>`<li>${item.index>=0?`<button type="button" class="ptl-event-day" data-i="${item.index}">${esc(item.date.slice(5))}</button>`:`<span class="ptl-event-day soon">${esc(item.date.slice(5))} 即將</span>`}<span>${esc(item.title)}</span><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.source)}</a></li>`).join('')}</ul><p>整個遊戲或系列的消息，不是這張卡專屬，也不代表造成圖上的漲跌。</p>`:''}
     // 範圍或版本一換，時間與價格兩個軸一起滑到新位置，看得出是同一條線被放大。
     function moveView(target){root.cancelAnimationFrame(zoom);const [lo,hi]=domain(),fromStart=shownStart,fromLo=shownLo,fromHi=shownHi,t0=root.performance.now();const anim=t=>{if(!slot.isConnected)return;const k=off?1:Math.max(0,Math.min((t-t0)/260,1)),eased=1-(1-k)**3;shownStart=fromStart+(target-fromStart)*eased;shownLo=fromLo+(lo-fromLo)*eased;shownHi=fromHi+(hi-fromHi)*eased;draw();if(k<1)zoom=root.requestAnimationFrame(anim)};zoom=root.requestAnimationFrame(anim)}
-    function setRange(days){stop();start=days?Math.max(0,last()-days):0;if(pin!=null&&pin<start)pin=null;$('range').min=start;$('endA').textContent=md(line.days[start].time);jumps();listEvents();select(index);moveView(start)}
+    function setRange(days){stop();start=days?Math.max(0,last()-days):0;if(pin!=null&&pin<start)pin=null;$('range').min=start;listEvents();select(index);moveView(start)}
     function setLine(next){
       const first=!shownHi;stop();line=next;start=0;shownStart=0;pin=null;period='day';bars=[];if(first)[shownLo,shownHi]=domain();const hasTrend=line.days.length>1;$('trend').hidden=!hasTrend;$('short').hidden=hasTrend;
       const source=SOURCES[line.provider]||{seller:'',plain:line.provider};
       const latest=line.days.at(-1).twd,now=[['最新參考價',latest],['近 7 天平均',line.avg7],['近 30 天平均',line.avg30],[`${source.seller}賣家最低賣`,line.low]].filter(item=>item[1]!=null),versus=versusAverage(latest,line.avg30);
-      $('low').innerHTML=`<div class="ptl-now"><h4>現在行情</h4><dl>${now.map(item=>`<div><dt>${esc(item[0])}</dt><dd>${esc(ntd(item[1]))}</dd></div>`).join('')}</dl>${versus?`<p>${esc(versus)}</p>`:''}${line.avg30?'<small>平均是 Cardmarket 提供的數字，它沒有公開是否只算成交。</small>':''}</div>`+(line.gap?`<div class="ptl-warn">最低賣價和參考價差約 ${line.gap} 倍，這個數字可能不太準，兩個一起看。</div>`:'');
+      $('low').innerHTML=`<dl>${now.map(item=>`<div><dt>${esc(item[0])}</dt><dd>${esc(ntd(item[1]))}</dd></div>`).join('')}</dl>${versus?`<p>${esc(versus)}</p>`:''}${line.avg30?'<small>平均是 Cardmarket 提供的數字，它沒有公開是否只算成交。</small>':''}${line.gap?`<div class="ptl-warn">最低賣價和參考價差約 ${line.gap} 倍，這個數字可能不太準，兩個一起看。</div>`:''}`;
       $('plain').textContent=`這是${source.plain} 的價格換算，未分卡況，不是台灣賣場價，也不是實際成交價。`;
       const jump=biggestJump(line.points);$('jump').innerHTML=jump?`<div class="ptl-warn">${esc(md(jump.time))} 這筆從 ${esc(ntd(jump.from))} ${jump.to>jump.from?'跳到':'掉到'} ${esc(ntd(jump.to))}，可能是成交稀少，不代表買賣得到這個價。</div>`:'';
-      const avgChip=n=>{const missing=n-line.days.length;if(missing>0)avgOn[n]=false;return `<button type="button" class="ptl-chip ptl-avg${n}${avgOn[n]?' on':''}" data-avg="${n}" aria-pressed="${avgOn[n]}"${missing>0?' disabled':''}>近 ${n} 天平均${missing>0?`：還差 ${missing} 天`:''}</button>`};$('avgs').innerHTML=avgChip(5)+avgChip(20);
-      $('records').innerHTML=`<div class="ptl-now"><h4>每筆價格紀錄</h4><small>共 ${line.points.length} 筆，沒列出的日子沒有新紀錄。紀錄日和來源更新可能差一天，時間都是台北時間。</small><div class="ptl-table" role="region" aria-label="每筆價格紀錄，可捲動" tabindex="0"><table><thead><tr><th scope="col">紀錄日</th><th scope="col">新台幣</th><th scope="col">原幣</th><th scope="col">比上一筆</th><th scope="col">來源更新</th></tr></thead><tbody>${recordRows(line.points,line.currency).map(row=>`<tr><td>${esc(row.date)}</td><td><b>${esc(row.twd)}</b></td><td>${esc(row.original||'—')}</td><td>${esc(row.change)}</td><td>${esc(row.observed||'—')}</td></tr>`).join('')}</tbody></table></div></div>`;
-      $('range').min=0;$('range').max=last();$('endA').textContent=md(line.days[0].time);$('endZ').textContent=md(line.days.at(-1).time);
-      const ranges=rangeOptions(line.days.length);$('ranges').innerHTML=ranges.map((item,i)=>`<button type="button" class="ptl-chip${i===ranges.length-1?' on':''}" data-days="${item.days}">${esc(item.label)}</button>`).join('');
-      setPeriod('day');jumps();listEvents();if(first)draw();else moveView(0);
+      const avgChip=n=>{const missing=n-line.days.length;if(missing>0)avgOn[n]=false;return `<button type="button" class="ptl-chip ptl-avg ptl-avg${n}${avgOn[n]?' on':''}" data-avg="${n}" aria-pressed="${avgOn[n]}" aria-label="近 ${n} 天平均線${missing>0?`，還差 ${missing} 天`:''}"${missing>0?' disabled':''}><i aria-hidden="true"></i>近 ${n} 天${missing>0?`：還差 ${missing} 天`:''}</button>`};$('avgs').innerHTML=avgChip(5)+avgChip(20);
+      $('records').innerHTML=`<details class="ptl-rec-details"><summary>每筆價格紀錄（共 ${line.points.length} 筆）</summary><div class="ptl-now"><small>沒列出的日子沒有新紀錄。紀錄日和來源更新可能差一天，時間都是台北時間。</small><div class="ptl-table" role="region" aria-label="每筆價格紀錄，可捲動" tabindex="0"><table><thead><tr><th scope="col">紀錄日</th><th scope="col">新台幣</th><th scope="col">原幣</th><th scope="col">比上一筆</th><th scope="col">來源更新</th></tr></thead><tbody>${recordRows(line.points,line.currency).map(row=>`<tr><td>${esc(row.date)}</td><td><b>${esc(row.twd)}</b></td><td>${esc(row.original||'—')}</td><td>${esc(row.change)}</td><td>${esc(row.observed||'—')}</td></tr>`).join('')}</tbody></table></div></div></details>`;
+      $('range').min=0;$('range').max=last();
+      const ranges=rangeOptions(line.days.length);$('ranges').innerHTML=ranges.map((item,i)=>{const on=i===ranges.length-1;return `<button type="button" class="ptl-seg-btn${on?' on':''}" data-days="${item.days}" aria-pressed="${on}">${esc(item.label)}</button>`}).join('');
+      setPeriod('day');listEvents();if(first)draw();else moveView(0);
     }
-    function fromPointer(event){const rect=$('chart').getBoundingClientRect();if(period!=='day')return selectBar(Math.floor((event.clientX-rect.left-pad.l)/barGeometry().step));const g=geometry();select(Math.round(shownStart+(event.clientX-rect.left-pad.l)/(g.W-pad.l-pad.r)*(last()-shownStart)))}
+    function fromPointer(event){const rect=$('chart').getBoundingClientRect();if(period!=='day')return bars.length&&selectBar(Math.floor((event.clientX-rect.left-pad.l)/barGeometry().step));const g=geometry();select(Math.round(shownStart+(event.clientX-rect.left-pad.l)/(g.W-pad.l-pad.r)*(last()-shownStart)))}
     const chart=$('chart');
-    chart.addEventListener('pointerdown',event=>{stop();dragging=true;chart.setPointerCapture?.(event.pointerId);fromPointer(event)});
+    chart.addEventListener('pointerdown',event=>{stop();dragging=true;chart.setPointerCapture?.(event.pointerId);const hit=event.target.closest?.('[data-i]');if(hit&&period==='day')select(Number(hit.dataset.i),true);else fromPointer(event)});
     chart.addEventListener('pointermove',event=>{if(dragging||(event.pointerType==='mouse'&&!timer))fromPointer(event)});
     for(const type of ['pointerup','pointercancel'])chart.addEventListener(type,()=>{dragging=false});
     $('range').addEventListener('input',event=>{stop();if(period!=='day')selectBar(Number(event.target.value));else select(Number(event.target.value))});
     // 方向鍵在時間軸上是換日期，不能冒泡到詳細頁變成換卡
     $('range').addEventListener('keydown',event=>{if(/^Arrow|^Home$|^End$/.test(event.key))event.stopPropagation()});
     $('play').addEventListener('click',()=>play());
-    $('ranges').addEventListener('click',event=>{const button=event.target.closest('[data-days]');if(!button)return;for(const chip of $('ranges').children)chip.classList.toggle('on',chip===button);setRange(Number(button.dataset.days))});
-    $('jumps').addEventListener('click',event=>{const button=event.target.closest('[data-i]');if(button){stop();select(Number(button.dataset.i),true)}});
+    $('ranges').addEventListener('click',event=>{const button=event.target.closest('[data-days]');if(!button)return;for(const chip of $('ranges').children){chip.classList.toggle('on',chip===button);chip.setAttribute('aria-pressed',String(chip===button))}setRange(Number(button.dataset.days))});
     $('events').addEventListener('click',event=>{const button=event.target.closest('[data-i]');if(button){if(period!=='day')setPeriod('day');stop();select(Number(button.dataset.i),true)}});
     $('period').addEventListener('click',event=>{const button=event.target.closest('[data-period]');if(button)setPeriod(button.dataset.period)});
     $('avgs').addEventListener('click',event=>{const button=event.target.closest('[data-avg]');if(!button)return;const n=button.dataset.avg;avgOn[n]=!avgOn[n];button.classList.toggle('on',avgOn[n]);button.setAttribute('aria-pressed',String(avgOn[n]));drawBase()});
-    $('lines')?.addEventListener('click',event=>{const button=event.target.closest('[data-line]');if(!button)return;for(const chip of $('lines').children){const on=chip===button;chip.classList.toggle('on',on);chip.setAttribute('aria-pressed',String(on))}setLine(lines[Number(button.dataset.line)]);if(!off&&line.days.length>1)play(true)});
+    $('lines')?.addEventListener('click',event=>{const button=event.target.closest('[data-line]');if(!button)return;for(const chip of $('lines').children){const on=chip===button;chip.classList.toggle('on',on);chip.setAttribute('aria-pressed',String(on))}setLine(lines[Number(button.dataset.line)])});
     $('pin').addEventListener('click',()=>{stop();pin=pin==null?index:null;select(index)});
     if(typeof root.ResizeObserver==='function')new root.ResizeObserver(draw).observe(chart);
-    if(options.platforms?.recent.length){const {text,recent,stale}=options.platforms,link=row=>options.searchName?`<br><a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'';$('platforms').innerHTML=`<div class="ptl-now"><h4>各平台比價</h4><p>${esc(text)}</p><div class="ptl-table" role="region" aria-label="各平台比價，可捲動" tabindex="0"><table><thead><tr><th scope="col">平台與版本</th><th scope="col">新台幣</th><th scope="col">原幣</th><th scope="col">紀錄日</th></tr></thead><tbody>${recent.map(row=>`<tr><td><b>${esc(row.market)}</b> ${esc(row.label)}${link(row)}</td><td><b>${esc(row.twd)}</b></td><td>${esc(row.original||'—')}</td><td>${esc(md(row.time))}</td></tr>`).join('')}</tbody></table></div>${stale.length?`<h4>過期的舊紀錄，僅供參考</h4><ul class="ptl-stale">${stale.map(row=>`<li>${esc(row.market)} ${esc(row.label)}：${esc(row.twd)}${row.original?`（${esc(row.original)}）`:''}，${esc(md(row.time))} 的紀錄</li>`).join('')}</ul>${[...new Map(stale.map(row=>[row.provider,row])).values()].map(row=>options.searchName?`<a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'').join(' ')}`:''}${options.searchName?`<a href="${esc(gradedSearchUrl(options.searchName,options.cardNumber))}" target="_blank" rel="noopener noreferrer">到 eBay 看 PSA 10 鑑定卡已售紀錄</a>`:''}<small>沒有成交量，也沒有台灣行情；不是買賣建議。</small></div>`}
+    if(options.platforms?.recent.length){const {text,recent,stale}=options.platforms,link=row=>row.url?`<a href="${esc(row.url)}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 看這張</a>`:options.searchName?`<a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'';$('platforms').innerHTML=`<h5>各平台比價</h5><p>${esc(text)}</p><div class="ptl-table" role="region" aria-label="各平台比價，可捲動" tabindex="0"><table><thead><tr><th scope="col">平台與版本</th><th scope="col">新台幣</th><th scope="col">原幣</th><th scope="col">紀錄日</th></tr></thead><tbody>${recent.map(row=>`<tr><td><b>${esc(row.market)}</b> ${esc(row.label)}${link(row)?`<br>${link(row)}`:''}</td><td><b>${esc(row.twd)}</b></td><td>${esc(row.original||'—')}</td><td>${esc(md(row.time))}</td></tr>`).join('')}</tbody></table></div>${stale.length?`<h5>過期的舊紀錄，僅供參考</h5><ul class="ptl-stale">${stale.map(row=>`<li>${esc(row.market)} ${esc(row.label)}：${esc(row.twd)}${row.original?`（${esc(row.original)}）`:''}，${esc(md(row.time))} 的紀錄</li>`).join('')}</ul>${[...new Map(stale.map(row=>[row.provider,row])).values()].map(link).join(' ')}`:''}${options.searchName?`<a href="${esc(gradedSearchUrl(options.searchName,options.cardNumber))}" target="_blank" rel="noopener noreferrer">到 eBay 看 PSA 10 鑑定卡已售紀錄</a>`:''}<small>沒有成交量，也沒有台灣行情；不是買賣建議。</small>`}
     setLine(line);
-    // 進場很快掃過一次，停在最新；關閉動態時直接停在最新
-    if(!off&&line.days.length>1){select(start);root.setTimeout(()=>{if(slot.isConnected&&!dragging&&!timer&&period==='day'&&index===start)play(true)},300)}
+    // 進場和切換版本都直接停在最新；要看變化過程由使用者按播放
   }
 
   // 瀏覽器端：打開價格分頁時才請求；失敗時下次再點會重試。
@@ -285,5 +291,5 @@
     slot.innerHTML=gradedMarkup(body?.data);
   }
 
-  root.PriceTimeline={gradedQuery,gradedMarkup,loadGraded,versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,gradedSearchUrl,dayText,sourceTime,load};
+  root.PriceTimeline={gradedQuery,gradedMarkup,loadGraded,versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,productUrl,gradedSearchUrl,dayText,sourceTime,load};
 })(typeof window!=='undefined'?window:globalThis);

@@ -120,3 +120,25 @@ test('coverage metadata is honest about source scope and missing denominators',(
   assert.equal(coverage.observationWindow.earliest,'2026-09-01T00:00:00.000Z');
   assert.equal(coverage.observationWindow.latest,'2026-09-02T00:00:00.000Z');
 });
+
+// 價格歷史 API：TCG API 轉來的 TCGplayer 價（variant 'tcgapi-…'）去掉前綴，前端才對得到 market 紀錄；Cardmarket 的 variant 不動。
+process.env.PORT = '0';
+process.env.CATALOG_SYNC_ON_START = 'false';
+process.env.CATALOG_WARM_ON_START = 'false';
+const { buildPriceHistory, server } = await import('../server.mjs?price-history-variant');
+test.after(async () => {
+  if (!server.listening) return;
+  await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
+});
+
+test('tcgapi- prefix is dropped from TCGplayer history variants and groups with the plain name', () => {
+  const row = (provider, variant, currency, snapshot_date, amount) => ({ card_id: 'c1', provider, variant, currency, snapshot_date, amount });
+  const body = buildPriceHistory([
+    row('tcgplayer', 'tcgapi-holofoil', 'USD', '2026-11-01', 5),
+    row('tcgplayer', 'holofoil', 'USD', '2026-10-01', 4),
+    row('tcgplayer', 'tcgapi-normal', 'USD', '2026-11-01', 1),
+    row('cardmarket', 'tcgapi-odd', 'EUR', '2026-11-01', 2)
+  ], { card: { id: 'c1', printings: [] }, requestedId: 'c1', fx: { rates: { USD: 30, EUR: 36 } }, now: Date.parse('2026-11-02T00:00:00Z') });
+  const keys = body.series.map(s => `${s.provider}:${s.variant}:${s.points.length}`).sort();
+  assert.deepEqual(keys, ['cardmarket:tcgapi-odd:1', 'tcgplayer:holofoil:2', 'tcgplayer:normal:1']);
+});

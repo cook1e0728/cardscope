@@ -147,3 +147,53 @@ test('the graded link searches eBay sold listings for the card and number', () =
   assert.equal(T.gradedSearchUrl('Espeon', '48'), 'https://www.ebay.com/sch/i.html?_nkw=Espeon%2048%20PSA%2010&LH_Sold=1&LH_Complete=1');
   assert.match(T.gradedSearchUrl('Espeon', ''), /_nkw=Espeon%20PSA%2010&/);
 });
+
+test('averages convert with the API exchange rate, not the rounded NT$ of a cheap card', () => {
+  const market = { records: [{ priceType: 'market', market: 'Cardmarket', variant: 'normal', cardId: 'c', amount: 0.12, priceTwd: 4, avg7: 0.5, avg30: 0.25, observedAt: '2026-10-22T01:00:00Z' }] };
+  const history = { series: [line()], meta: { exchangeRates: { rates: { EUR: 36 } } } };
+  const [one] = T.model(history, market);
+  assert.equal(one.avg7, 18);
+  assert.equal(one.avg30, 9);
+  const [old] = T.model({ series: [line()] }, market);
+  assert.equal(old.avg7, 17);
+});
+
+test('a live price one Taipei day after the snapshot with the same amount is the same observation: no flat extra point', () => {
+  const last = line().points.at(-1);
+  const live = (amount, observedAt) => ({ records: [{ priceType: 'market', market: 'Cardmarket', variant: 'normal', cardId: 'c', amount, priceTwd: Math.round(amount * 36), observedAt }] });
+  assert.equal(T.model({ series: [line()] }, live(last.amount, '2026-10-20T20:00:00Z'))[0].days.at(-1).time, Date.UTC(2026, 9, 20));
+  assert.equal(T.model({ series: [line()] }, live(last.amount + 1, '2026-10-20T20:00:00Z'))[0].days.at(-1).time, Date.UTC(2026, 9, 21));
+  assert.equal(T.model({ series: [line()] }, live(last.amount, '2026-10-24T01:00:00Z'))[0].days.at(-1).time, Date.UTC(2026, 9, 24));
+});
+
+test('ranges: 7, 30, 90 days and all, each only when the history is long enough', () => {
+  assert.deepEqual(plain(T.rangeOptions(31).map(r => r.days)), [7, 0]);
+  assert.deepEqual(plain(T.rangeOptions(60).map(r => r.days)), [7, 30, 0]);
+  assert.deepEqual(plain(T.rangeOptions(120).map(r => r.days)), [7, 30, 90, 0]);
+});
+
+test('tcgapi-prefixed TCGplayer history matches the market record and its variant name once the server drops the prefix', () => {
+  const market = { records: [{ priceType: 'market', market: 'TCGplayer', variant: 'holofoil', cardId: 'c', amount: 50, priceTwd: 1600, observedAt: '2026-10-22T01:00:00Z' }] };
+  const [one] = T.model({ series: [line({ provider: 'tcgplayer', currency: 'USD', variant: 'holofoil' })] }, market, { variantLabel: v => ({ holofoil: '閃卡' })[v] || v });
+  assert.equal(one.label, '閃卡');
+  assert.equal(one.days.at(-1).twd, 1600);
+});
+
+test('platform links go to the exact product page when the record has one, otherwise to search', () => {
+  const rec = (market, extra) => ({ priceType: 'market', market, variant: 'normal', cardId: 'c', amount: 3, priceTwd: 90, observedAt: '2026-10-20T00:00:00Z', ...extra });
+  const rows = market => plain(T.platformSummary({ series: [line(), line({ provider: 'tcgplayer', currency: 'USD' })] }, { market: { records: market } })).recent;
+  assert.deepEqual(rows([rec('TCGplayer', { idProduct: 123 }), rec('Cardmarket', { sourceUrl: 'https://www.cardmarket.com/en/Pokemon/Products/Singles/X/Y' })]).map(r => r.url), ['https://www.cardmarket.com/en/Pokemon/Products/Singles/X/Y', 'https://www.tcgplayer.com/product/123']);
+  // a TCGdex page is not a Cardmarket page; non-https is never linked
+  assert.deepEqual(rows([rec('TCGplayer', {}), rec('Cardmarket', { sourceUrl: 'https://tcgdex.dev/x' })]).map(r => r.url), [null, null]);
+  assert.equal(T.productUrl('cardmarket', { sourceUrl: 'http://www.cardmarket.com/x' }), null);
+  assert.equal(T.productUrl('tcgplayer', { idProduct: '' }), null);
+});
+
+test('the mounted markup keeps its accessibility hooks and no longer sweeps or tilts the card by itself', async () => {
+  assert.match(source, /aria-label="時間範圍"/);
+  assert.match(source, /aria-pressed="\$\{on\}"/);
+  assert.match(source, /event\.stopPropagation\(\)/);
+  assert.doesNotMatch(source, /rotateY/);
+  assert.doesNotMatch(source, /play\(true\)/);
+  assert.doesNotMatch(source, /data-r="jumps"/);
+});
