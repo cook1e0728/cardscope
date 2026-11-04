@@ -145,7 +145,7 @@ function cardGameId(card){return typeof card?.game==='object'?card.game.id:card?
 function cardHasEmbeddedSample(card,src){
   const gameId=cardGameId(card),values=[src,card?.imageUrl,card?.imageSource,...(card?.images||[]).flatMap(item=>[item.imageUrl,item.sourceUrl,item.source]),...(card?.printings||[]).flatMap(item=>[item.imageUrl,item.sourceUrl,item.source])].filter(Boolean);
   const joined=values.map(value=>{try{return decodeURIComponent(String(value))}catch{return String(value)}}).join(' ').toLowerCase();
-  return gameId==='onepiece'&&(/(?:asia-tc|asia-en)\.onepiece-cardgame\.com/.test(joined)||joined.includes('/api/images/onepiece?'))||gameId==='weiss-schwarz'&&joined.includes('ws-tcg.com');
+  return gameId==='onepiece'&&(/(?:asia-tc|asia-en|en)\.onepiece-cardgame\.com/.test(joined)||joined.includes('/api/images/onepiece?'))||gameId==='weiss-schwarz'&&joined.includes('ws-tcg.com');
 }
 function cardIsSigned(card){
   const values=[card?.rarity,...(card?.printings||[]).flatMap(item=>[item.rarity,item.rarityCode,item.rarityLabel,item.metadata?.variantKey,item.metadata?.variantName])].filter(Boolean).join(' ').toUpperCase();

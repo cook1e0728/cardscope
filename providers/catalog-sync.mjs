@@ -345,6 +345,29 @@ async function fetchOnePieceProducts(base){
 // The promo numbers (P-001, ...) belong to no set code; the uncoded list holding the most of them names their series.
 export function pickOnePiecePromoOption(options,pageCards){let best=null,bestCount=0;for(const [index,option] of options.entries()){if(option.code)continue;const count=(pageCards[index]||[]).filter(c=>/^P-/i.test(c.number)).length;if(count>bestCount){best=option;bestCount=count}}return best}
 const coversByCode=covers=>{const map=new Map();for(const cover of covers){const key=onePieceSetKey(cover.official_code);if(key&&!map.has(key))map.set(key,cover)}return map};
+// 美版（en.onepiece-cardgame.com；ADR 0027 範圍經使用者 2026-11-05 同意擴大）：卡號與圖檔名跟亞洲英文版相同，所以同一張卡再掛一筆 region US 的版本，
+// provider_id 加 `us:` 前綴避開既有 (source, provider_id)；美版獨有的卡（如美國推廣卡）另建卡。單一連線，每個請求間隔 ≥ 1.1 秒。
+export const ONEPIECE_US_BASE='https://en.onepiece-cardgame.com/cardlist/';
+const ONEPIECE_US_DELAY_MS=1100;
+export async function collectOnePieceUsCards({fetchText=providerText,delay=ONEPIECE_US_DELAY_MS}={}){
+  const pause=()=>new Promise(resolve=>setTimeout(resolve,delay));
+  await pause();const options=parseOnePieceSeries(await fetchText(`${ONEPIECE_US_BASE}?search=true`));if(!options.length)throw new Error('ONEPIECE_US_SERIES_MISSING');
+  const lists=[];for(const option of options){await pause();const cards=parseOnePieceCards(await fetchText(`${ONEPIECE_US_BASE}?search=true&series=${option.providerId}`),ONEPIECE_US_BASE);if(!cards.length)throw new Error(`ONEPIECE_US_SERIES_EMPTY:${option.providerId}`);lists.push({option,cards})}
+  return lists;
+}
+// knownCards：id → 既有卡列（亞洲英文／繁中同步組出的）；seriesIdFor：卡號 → 系列 id。回傳美版版本列與美版獨有的新卡列。
+export function onePieceUsRows(lists,knownCards,seriesIdFor=()=>null,now=new Date().toISOString()){
+  const printings=[],newCards=[],seen=new Set();
+  for(const {option,cards} of lists)for(const c of cards){
+    if(seen.has(c.providerId))continue;seen.add(c.providerId);
+    const id=`onepiece-official-${slug(c.providerId)}`,seriesId=seriesIdFor(c.number);
+    if(!knownCards.has(id))newCards.push({id,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:seriesId,official_card_number:c.number,...cardRarityFields('onepiece',c.rarity),name_zh:null,name_ja:null,name_en:c.name,name_ko:null,aliases:[],source:'onepiece-official',provider_id:`us:${c.providerId}`,search_text:searchText(c.name,c.number,c.rarity,c.cardType),metadata:rarityMetadata('onepiece',c.rarity,{cardType:c.cardType,englishOnly:true,displayNameLanguage:'en'}),updated_at:now});
+    printings.push({card_id:id,series_id:seriesId,region:'US',language:'en-US',local_set_code:c.number.split('-')[0]||'unknown',local_card_number:c.number,...rarityFields('onepiece',c.rarity),image_url:c.imageUrl,source_url:`${ONEPIECE_US_BASE}?search=true&series=${option.providerId}`,release_date:null,source:'onepiece-official',provider_id:`us:${c.providerId}`,image_rehost_required:false,metadata:rarityMetadata('onepiece',c.rarity,{cardType:c.cardType,imageLanguage:'en'}),updated_at:now});
+  }
+  return {printings,newCards};
+}
+// 新卡先寫，版本的 card_id 才對得上。
+async function writeOnePieceUs(db,{newCards,printings}){return await upsert(db,'/tcg_cards',newCards)+await upsert(db,'/tcg_printings',printings,'source,provider_id')}
 async function syncOnePiece(db){
   const provider='onepiece-official',runId=await startRun(db,'onepiece-official-tw','catalog'),stats={seen:0,written:0,cursor:null,metadata:{}};
   try{
@@ -363,9 +386,10 @@ async function syncOnePiece(db){
     stats.written+=await upsert(db,'/tcg_products',twProducts);
     const twPages=[];for(const [index,s] of twAllOptions.entries()){if(index)await politePause();twPages.push(await providerText(`${twCardBase}?search=true&series=${s.providerId}`))}
     const twPageCards=twPages.map(html=>parseOnePieceCards(html,twCardBase)),twPromoOption=pickOnePiecePromoOption(twAllOptions,twPageCards);if(twPromoOption)twSeries.push({id:'onepiece-official-tw-p',game_id:'onepiece',official_code:'P',name_zh:twPromoOption.name,name_ja:null,name_en:null,name_ko:null,region:'TW',language:'zh-Hant-TW',release_date:null,aliases:['P'],source_url:`${twCardBase}?search=true&series=${twPromoOption.providerId}`,image_url:null,image_kind:'series-logo',source:'onepiece-official-tw',provider_id:twPromoOption.providerId,metadata:{productType:twPromoOption.name},updated_at:new Date().toISOString()});
+    const usLists=await collectOnePieceUsCards(),usByProviderId=new Map(usLists.flatMap(list=>list.cards).map(c=>[c.providerId,c]));
     const twCards=[],seenTw=new Set();for(const pageList of twPageCards)for(const card of pageList){if(seenTw.has(card.providerId))continue;seenTw.add(card.providerId);twCards.push(card)}
     const englishByProviderId=new Map(cards.map(c=>[c.providerId,c])),twSeriesByCode=new Map(twSeries.map(s=>[s.official_code.replace('-',''),s.id]));
-    const twCardRows=twCards.map(c=>{const en=englishByProviderId.get(c.providerId),rawRarity=c.rarity||en?.rarity||null;return {id:`onepiece-official-${slug(c.providerId)}`,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:seriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,official_card_number:c.number,...cardRarityFields('onepiece',rawRarity),name_zh:c.name,name_ja:null,name_en:en?.name||null,name_ko:null,aliases:[c.name,en?.name].filter(Boolean),source:provider,provider_id:c.providerId,search_text:searchText(c.name,en?.name,c.number,c.rarity,c.cardType),metadata:rarityMetadata('onepiece',rawRarity,{cardType:c.cardType}),updated_at:new Date().toISOString()}});
+    const twCardRows=twCards.map(c=>{const en=englishByProviderId.get(c.providerId)||usByProviderId.get(c.providerId),rawRarity=c.rarity||en?.rarity||null;return {id:`onepiece-official-${slug(c.providerId)}`,canonical_id:`onepiece-${slug(c.number)}`,game_id:'onepiece',series_id:seriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,official_card_number:c.number,...cardRarityFields('onepiece',rawRarity),name_zh:c.name,name_ja:null,name_en:en?.name||null,name_ko:null,aliases:[c.name,en?.name].filter(Boolean),source:provider,provider_id:c.providerId,search_text:searchText(c.name,en?.name,c.number,c.rarity,c.cardType),metadata:rarityMetadata('onepiece',rawRarity,{cardType:c.cardType}),updated_at:new Date().toISOString()}});
     const twPrintingRows=twCards.map(c=>({card_id:`onepiece-official-${slug(c.providerId)}`,series_id:twSeriesByCode.get((c.number.split('-')[0]||'').replace('-',''))||null,region:'TW',language:'zh-Hant-TW',local_set_code:c.number.split('-')[0]||'unknown',local_card_number:c.number,...rarityFields('onepiece',c.rarity),image_url:c.imageUrl,source_url:c.sourceUrl,release_date:null,source:'onepiece-official-tw',provider_id:c.providerId,image_rehost_required:false,metadata:rarityMetadata('onepiece',c.rarity,{cardType:c.cardType}),updated_at:new Date().toISOString()}));
     const twCounts=new Map();for(const printing of twPrintingRows)if(printing.series_id)twCounts.set(printing.series_id,(twCounts.get(printing.series_id)||0)+1);stats.written+=await upsert(db,'/tcg_series',twSeries.map(s=>({...s,metadata:{...s.metadata,cardsCount:twCounts.get(s.id)||0}})));
     stats.written+=await upsert(db,'/tcg_cards',twCardRows);
@@ -376,8 +400,11 @@ async function syncOnePiece(db){
     stats.written+=await upsert(db,'/tcg_cards',cardRows.filter(card=>!twCardIds.has(card.id)));
     stats.written+=await upsert(db,'/tcg_printings',printingRows,'source,provider_id');
     stats.written+=await upsert(db,'/tcg_printings',twPrintingRows,'source,provider_id');
-    const nameRows=[...cardRows.flatMap(card=>cardNameRows(card,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider]})),...twCardRows.flatMap(card=>cardNameRows(card,{source:'onepiece-official-tw',sourceUrl:CARD_NAME_SOURCE_URLS['onepiece-official-tw']}))],rarityRows=[...cardRows.map(card=>rarityRow('onepiece',card.rarity,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider]})),...twCardRows.map(card=>rarityRow('onepiece',card.rarity,{source:'onepiece-official-tw',sourceUrl:CARD_NAME_SOURCE_URLS['onepiece-official-tw']}))];
-    stats.written+=await upsertCardEnrichment(db,{names:nameRows,rarities:rarityRows});stats.seen+=twCovers.length+twAllOptions.length+twCards.length;stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length,twProducts:twProducts.length,twSets:twSeries.length,twCards:twCards.length,enrichment:{names:nameRows.length,rarities:rarityRows.filter(Boolean).length}};await finishRun(db,runId,'completed',stats);return stats;
+    // 美版：只新增美版版本與美版獨有的卡；既有卡列不動（英文名只在亞洲英文版沒有時，由上面的 twCardRows 以美版名補空白）。
+    const usRows=onePieceUsRows(usLists,new Map([...cardRows,...twCardRows].map(card=>[card.id,card])),number=>seriesByCode.get((number.split('-')[0]||'').replace('-',''))||null);
+    stats.written+=await writeOnePieceUs(db,usRows);stats.seen+=usRows.printings.length;
+    const nameRows=[...cardRows.flatMap(card=>cardNameRows(card,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider]})),...twCardRows.flatMap(card=>cardNameRows(card,{source:'onepiece-official-tw',sourceUrl:CARD_NAME_SOURCE_URLS['onepiece-official-tw']})),...usRows.newCards.flatMap(card=>cardNameRows(card,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider]}))],rarityRows=[...cardRows.map(card=>rarityRow('onepiece',card.rarity,{source:provider,sourceUrl:CARD_NAME_SOURCE_URLS[provider]})),...twCardRows.map(card=>rarityRow('onepiece',card.rarity,{source:'onepiece-official-tw',sourceUrl:CARD_NAME_SOURCE_URLS['onepiece-official-tw']}))];
+    stats.written+=await upsertCardEnrichment(db,{names:nameRows,rarities:rarityRows});stats.seen+=twCovers.length+twAllOptions.length+twCards.length;stats.metadata={products:optionProducts.length,productCovers:productCovers.length,sets:series.length,cards:cards.length,twProducts:twProducts.length,twSets:twSeries.length,twCards:twCards.length,usSets:usLists.length,usPrintings:usRows.printings.length,usOnlyCards:usRows.newCards.length,enrichment:{names:nameRows.length,rarities:rarityRows.filter(Boolean).length}};await finishRun(db,runId,'completed',stats);return stats;
   }catch(error){await finishRun(db,runId,'failed',stats,error);throw error}
 }
 
