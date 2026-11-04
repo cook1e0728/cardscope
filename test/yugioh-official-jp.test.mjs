@@ -170,3 +170,15 @@ test('乾跑用的 only 只處理指定的 cid，不寫資料庫', async () => {
   assert.equal(seen.length, 1);
   assert.deepEqual(rows.printings.map(p => p.provider_id), ['jp:7276:1']);
 });
+
+test('官方沒有的 cid（衍生物、只有英文版）標題是「カード詳細」：不當卡名、連續出現不算被擋；YGOPRODeck 的衍生物不收', async () => {
+  const missingPage = '<html><head><title>カード詳細 | 遊戯王ニューロン(オフィシャルカードゲーム カードデータベース)</title></head><body></body></html>';
+  assert.deepEqual([parseYgoJpDetail(missingPage).name, parseYgoJpDetail(missingPage).missing], [null, true]);
+  assert.equal(konamiIdMap([{ id: 11050416, frameType: 'token', misc_info: [{ konami_id: 3987, formats: ['OCG'] }] }]).size, 0);
+  const many = Array.from({ length: 12 }, (_, i) => ({ id: 1000 + i, name: `c${i}`, misc_info: [{ konami_id: 2000 + i, formats: ['OCG'] }] }));
+  const { db, posts, patches } = mockDb({ '/tcg_cards': many.map(card => ({ id: `yugioh-ygoprodeck-${card.id}`, series_id: null, name_ja: null })), '/tcg_printings': [] });
+  const stats = await syncYugiohJp(db, { fetchText: async () => missingPage, fetchJson: async () => ({ data: many }), delay: 0 });
+  assert.equal(posts.length, 0);
+  assert.equal(patches.length, 0);
+  assert.equal(stats.metadata.noJpRowsCount, 12);
+});

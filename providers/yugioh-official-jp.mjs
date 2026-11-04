@@ -47,7 +47,8 @@ const ygoprodeckJson = url => officialGet(url, 'application/json', response => r
 export function parseYgoJpDetail(html) {
   const images = new Map();
   for (const [, ciid, enc] of String(html).matchAll(/get_image\.action\?type=2&cid=\d+&ciid=(\d+)&enc=([\w-]+)/g)) images.set(ciid, enc);
-  const name = decodeEntities(String(html).match(/<title>\s*([^<|]*?)\s*\|/)?.[1] || '') || null;
+  // 官方沒有這張卡時（衍生物、只有英文版的 cid）仍回 200，標題是頁面名「カード詳細」，不是卡名
+  const title = decodeEntities(String(html).match(/<title>\s*([^<|]*?)\s*\|/)?.[1] || '') || null, missing = title === 'カード詳細', name = missing ? null : title;
   const parts = String(html).split(/<div class="t_row\s+pack_iid_(\d+)">/), printings = [];
   let skippedNoNumber = 0;
   for (let index = 1; index < parts.length; index += 2) {
@@ -58,7 +59,7 @@ export function parseYgoJpDetail(html) {
     if (!number) { skippedNoNumber++; continue; }
     for (const rarity of rarities.length ? rarities : [{ code: null, label: null }]) printings.push({ pid, date, number, rarity: rarity.code, rarityLabel: rarity.label, ciid, packName });
   }
-  return { name, images, printings, skippedNoNumber };
+  return { name, missing, images, printings, skippedNoNumber };
 }
 
 /** 官方圖片網址（外連）；enc 取自詳細頁，沒帶 enc 官方會回另一張替代圖，所以沒有 enc 就不給網址。 */
@@ -70,7 +71,7 @@ export function konamiIdMap(cards) {
   const map = new Map();
   for (const card of cards || []) {
     const info = card?.misc_info?.[0], cid = Number(info?.konami_id);
-    if (cid > 0 && card.id != null && (!Array.isArray(info.formats) || info.formats.includes('OCG'))) map.set(String(cid), { cardId: `yugioh-ygoprodeck-${card.id}`, name: card.name || null });
+    if (cid > 0 && card.id != null && card.frameType !== 'token' && (!Array.isArray(info.formats) || info.formats.includes('OCG'))) map.set(String(cid), { cardId: `yugioh-ygoprodeck-${card.id}`, name: card.name || null });
   }
   return map;
 }
@@ -176,7 +177,7 @@ export async function collectYugiohJp({ fetchText = officialText, fetchJson = yg
     if (requests++) await pause(delay);
     const { cardId } = cidToCard.get(cid), detail = parseYgoJpDetail(await fetchText(ygoJpDetailUrl(cid)));
     // 連續讀到沒有任何收錄列的頁面，多半是官方改版或被擋，整輪失敗不寫入
-    consecutiveEmpty = detail.printings.length || detail.skippedNoNumber ? 0 : consecutiveEmpty + 1;
+    consecutiveEmpty = detail.printings.length || detail.skippedNoNumber || detail.missing ? 0 : consecutiveEmpty + 1;
     if (consecutiveEmpty >= CONSECUTIVE_EMPTY_LIMIT) throw new Error(`YGO_JP_DETAIL_EMPTY:${cid}`);
     processed.push(cid);
     skippedNoNumber += detail.skippedNoNumber;
