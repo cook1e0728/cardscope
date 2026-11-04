@@ -29,13 +29,14 @@ async function cacheOne(db,card){
   const objectPath=`yugioh/${providerId}.jpg`;
   await storageRequest(`/object/${BUCKET}/${objectPath}`,{method:'POST',headers:{'Content-Type':contentType,'Cache-Control':'31536000','x-upsert':'true'},body:bytes});
   const imageUrl=`${process.env.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${objectPath}`;
-  await db(`/tcg_printings?card_id=eq.${encodeURIComponent(card.id)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({image_url:imageUrl,image_rehost_required:false,updated_at:new Date().toISOString()})});
+  // 只動 YGOPRODeck 的美版版本：日版版本（yugioh-neuron）有自己的官方圖，不能被美版快取圖蓋掉
+  await db(`/tcg_printings?card_id=eq.${encodeURIComponent(card.id)}&source=eq.ygoprodeck`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({image_url:imageUrl,image_rehost_required:false,updated_at:new Date().toISOString()})});
   await db('/card_images?on_conflict=card_id,source,image_url',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify([{card_id:card.id,language:'en-US',source:SOURCE,image_url:imageUrl,source_url:sourceUrl,is_primary:true,fetched_at:new Date().toISOString()}])});
   return bytes.length;
 }
 
 async function restoreCachedPrinting(db,cardId,imageUrl){
-  await db(`/tcg_printings?card_id=eq.${encodeURIComponent(cardId)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({image_url:imageUrl,image_rehost_required:false,updated_at:new Date().toISOString()})});
+  await db(`/tcg_printings?card_id=eq.${encodeURIComponent(cardId)}&source=eq.ygoprodeck`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({image_url:imageUrl,image_rehost_required:false,updated_at:new Date().toISOString()})});
 }
 async function cacheWithRetry(db,card){let lastError;for(let attempt=1;attempt<=3;attempt++){try{return await cacheOne(db,card)}catch(error){lastError=error;if(attempt<3)await new Promise(resolve=>setTimeout(resolve,attempt*500))}}throw lastError}
 
