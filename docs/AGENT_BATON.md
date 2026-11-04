@@ -1,14 +1,17 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-03（台灣）｜更新者：Claude Code（桌電）
+> 上次更新：2026-11-05（台灣）｜更新者：Claude Code（桌電）
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-04：使用者要求「全部卡圖先補齊（台／美／日三版），不需再詢問」。盤點（以 tcg_printings 的 region 計）：寶可夢三版齊（日版缺 223 由 TCG API 補、台版 SV-P no0–no3 版本不明待補）；航海王台版 5,026 張即日文卡面（亞洲版就是日文卡），日本官網系列代號與台版完全相同，所以不另收日版；七龍珠 FW 台版圖即日文卡面，349d3d5 加美版：讀 fw/en/cardlist（31 個收錄彈頁＋7 個稀有度頁），既有 3,149 張掛英文版本（region US、`provider_id` 以 `en:` 開頭）並補 name_en，英文獨有約 1,200 個活動包平行版／英文推廣卡另建卡（metadata.englishOnly）。乾跑對官網驗證過；第一次正式寫入要等下次七龍珠同步（約 11-04 UTC 20:17）。遊戲王缺圖 26 張是新卡（含 1014020xx 暫時 ID 與正式 ID 重複各一），等下次 YGO 同步與快取。**還沒做**：航海王美版（en.onepiece-cardgame.com，與亞洲英文版圖幾乎相同，優先度低）、Weiss 全作品日版與英文版、遊戲王日版（官方 DB 目前只放連結）與繁中版（是否有正式發行未查）。
+- 2026-11-05：芙莉蓮加美版（b3d88d2、6858ef0）。英文官方站 en.ws-tcg.com（作品編號 183）只有 S108 補充包（expansion 240）與試玩牌組（239），沒有新裝版／Vol.2；沒有 JSON API，讀 HTML（`/cardlist/` 取擴充包選項、`searchresults` 第一頁帶 max_page、之後 `cardsearch_ex`，約 20 個請求）。卡號 E001↔001、TE01↔T01 一對一，264 張全部對到日版卡，掛 region US 版本（`provider_id` `en:` 開頭）並補 name_en；英文獨有 5 張 PE 推廣卡另建卡（id `weiss-en-…`、metadata.englishOnly）。已用 Supabase MCP 直接寫入正式庫（269 個版本、5 張新卡），正式站搜尋「Frieren Dozing Off」英文卡圖正常顯示；之後每 72 小時的 Weiss 同步會自動跳過已有的列（下次約 11-07 UTC 10:20）。CSP img-src 加 `https://en.ws-tcg.com`；官方卡表名稱解碼改成支援所有數字實體（`&#039;`）。本機 Node 連不到 ws-tcg.com（連到 10.21.3.1），乾跑時日文 API 改用 curl，正式站不受影響。
+- 2026-11-05：TCG API 補圖已寫入 175 張 `card_images`（source tcgplayer），寶可夢日版沒有圖的剩 48 張。首頁漲跌榜有 2 張英文版寶可夢卡圖載入失敗顯示待補（未查）。
+- 本機分支 `harden/ratelimit-socket-fallback` 有未推送的改動（限流沒有 cf-connecting-ip 時改用 socket IP、README 文案、.gitignore 加 claude-red），不是這次的工作，沒動。
+- 2026-11-04：使用者要求「全部卡圖先補齊（台／美／日三版），不需再詢問」。盤點（以 tcg_printings 的 region 計）：寶可夢三版齊（日版缺 223 由 TCG API 補、台版 SV-P no0–no3 版本不明待補）；航海王台版 5,026 張即日文卡面（亞洲版就是日文卡），日本官網系列代號與台版完全相同，所以不另收日版；七龍珠 FW 台版圖即日文卡面，349d3d5 加美版：讀 fw/en/cardlist（31 個收錄彈頁＋7 個稀有度頁），既有 3,149 張掛英文版本（region US、`provider_id` 以 `en:` 開頭）並補 name_en，英文獨有約 1,200 個活動包平行版／英文推廣卡另建卡（metadata.englishOnly）。乾跑對官網驗證過；第一次正式寫入要等下次七龍珠同步（約 11-04 UTC 20:17）。遊戲王缺圖 26 張是新卡（含 1014020xx 暫時 ID 與正式 ID 重複各一），等下次 YGO 同步與快取。**還沒做**：航海王美版（en.onepiece-cardgame.com，與亞洲英文版圖幾乎相同，優先度低）（Weiss 依 PRODUCT_PLAN 只收芙莉蓮，日版與英文版 11-05 都齊了）、遊戲王日版（官方 DB 目前只放連結）與繁中版（是否有正式發行未查）。
 - 2026-11-03：TCG API 補圖上線（`providers/tcgapi-pricing.mjs` 的 `matchSetImages`、RPC `image_tcgapi_targets`、`card_images.source='tcgplayer'`、前端標「TCGplayer 卡圖」）。每天的 TCG API 工作先補圖再抓價，補圖每 7 天一次；額度用完中斷時不記錄，隔天接著補。上線後第一輪（UTC 16:11）因當天額度已被 10:28 抓價與試查用掉，沒寫入任何圖（目標仍 41 系列、194 張）；預計 11-04 UTC 16:11 左右第一次真正補圖。接手方請查 `select count(*) from card_images where source='tcgplayer'`。風險：TCGplayer 商品圖外連條款未確認；TCG API 免費方案限非商業。
 - 2026-11-03：TCG API 卡圖試查（臨時端點已上線再移除，正式站回 404）。卡片資料有 `image_url`，格式固定 `https://product-images.tcgplayer.com/fit-in/400x400/<tcgplayer_id>.jpg`（1000x1000 也可用）。缺圖的 SM／S 金卡與 HR 有收：SM3N 063/051、S8 119/100、S8b 280/184 都查到。若要正式用：照抓價的對應規則（系列名「代號:」唯一、卡號斜線前數字唯一）寫 `card_images`，每個系列約 1–2 次請求、約 45 個系列，要跟抓價共用每天 100 次；圖是 TCGplayer 的商品掃描圖，外連使用的條款未確認。待使用者決定。
 - 2026-11-03：補洞第二輪。基本能量 21 張（M6a 8、MC 8、MF 5）用官方日站補圖：能量沒有卡號，改以「同系列＋同卡名、官方只有一張」對應，rights_note 註明。M6a 的 B／G／R 是字母編號的夢幻卡，不是能量，沒補。查過 Limitless TCG：卡片頁（S6H/84、SM12a/211、M6a/129）回 404、圖檔回 403，它的日版資料只收一般卡，不收 HR／UR／金卡，不能用。剩下 SM／S 時代約 150 張多是金色道具／能量（UR，資料庫標 SR）、HR 訓練家、少數 HR 寶可夢；可試的新來源只剩 TCG API 卡片資料裡可能附的 TCGplayer 商品圖（未驗證，要用 Render 上的金鑰，每天 100 次要跟抓價共用、非商業）。
