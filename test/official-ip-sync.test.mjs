@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { collectDragonballFw, fwCatalogRows, fwEnglishRows, fwFillPatches, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwProducts, parseFwRarities, syncDragonballFw, syncHaikyuu, syncWeissFrieren, weissCardRows, weissSetCode } from '../providers/official-ip-sync.mjs';
+import { collectDragonballFw, fwCatalogRows, fwEnglishRows, fwFillPatches, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwProducts, parseFwRarities, syncDragonballFw, syncHaikyuu, parseWeissEnCards, syncWeissFrieren, weissCardRows, weissEnglishRows, weissEnToJpNumber, weissSetCode } from '../providers/official-ip-sync.mjs';
 
 const haikyuuItem = (ID, card_no, name, extra = {}) => ({ ID: String(ID), card_no, name, name_ruby: 'ひなた しょうよう', product_type: card_no.split('-').slice(0, 2).join('-'), vobarity: 'P', image_end: 'P', category: 'CHARACTER', position: 'MB', affiliation: '烏野·1年', ...extra });
 
@@ -69,11 +69,29 @@ test('芙莉蓮同步只讀作品編號 147 的擴充包，新系列與新卡只
     assert.match(url, /expansion=563/);
     return { items: [{ id: 70000, card_number: 'SFN/S136-001', card_name: 'フリーレン', rare: 'RR', picture: 's/x.png' }], total: 1, page_count: 1 };
   };
-  const { db, posts } = mockDb({ '/tcg_series': [], '/tcg_cards': [], '/tcg_printings': [] });
-  const stats = await syncWeissFrieren(db, { fetchJson, delay: 0 });
+  const fetchText = async url => url.endsWith('/cardlist/') ? '<option class="side-2 category-1 title-183" value="240">Frieren</option><option class="side-1 category-1 title-9" value="7">X</option>'
+    : (assert.match(url, /searchresults\/\?expansion=240$/), `var max_page = 1;${weissEnItem('SFN/S136-E001', 'Frieren', 'RR')}${weissEnItem('SFN/S136-PE01', 'Frieren the Slayer', 'PR')}`);
+  const { db, posts, patches } = mockDb({ '/tcg_series': [], '/tcg_cards': [{ id: 'weiss-70000' }], '/tcg_printings': [] });
+  const stats = await syncWeissFrieren(db, { fetchJson, fetchText, delay: 0 });
   assert.deepEqual(posts.map(p => p.path.split('?')[0]), ['/tcg_series', '/tcg_cards', '/tcg_printings']);
   assert.equal(posts[0].rows[0].id, 'weiss-frieren-s136');
+  assert.deepEqual(posts[1].rows.map(r => r.id), ['weiss-en-sfn/s136-pe01']);
+  assert.deepEqual(posts[2].rows.map(r => [r.card_id, r.region, r.provider_id]), [['weiss-70000', 'JP', '70000'], ['weiss-70000', 'US', 'en:SFN/S136-E001'], ['weiss-en-sfn/s136-pe01', 'US', 'en:SFN/S136-PE01']]);
+  assert.deepEqual(patches.map(p => [p.path, p.body]), [['/tcg_cards?id=eq.weiss-70000&name_en=is.null', { name_en: 'Frieren' }]]);
   assert.deepEqual(stats.metadata.perExpansion, { 563: 1 });
+});
+
+const weissEnItem = (no, name, rarity) => `<li class="ex-item">\n<a href="/cardlist/?cardno=${no}&expansion=240&view=text">\n<div class="image"><img src="/wordpress/wp-content/images/cardimages/${no.replace('-', '_')}.png" alt="${name}" decoding="async"/></div><p class="number">${no}</p><dl><dt>Rarity</dt>\n<dd>${rarity}</dd></dl></li>`;
+
+test('芙莉蓮英文版：卡號對回日文卡號，英文推廣卡另建卡', () => {
+  assert.equal(weissEnToJpNumber('SFN/S108-E001SSP'), 'SFN/S108-001SSP');
+  assert.equal(weissEnToJpNumber('SFN/S108-TE01R'), 'SFN/S108-T01R');
+  assert.equal(weissEnToJpNumber('SFN/S108-PE01'), null);
+  const cards = parseWeissEnCards(weissEnItem('SFN/S108-TE01R', '&quot;Mage&quot; Frieren', 'RRR'));
+  assert.deepEqual(cards, [{ cardNo: 'SFN/S108-TE01R', image: 'https://en.ws-tcg.com/wordpress/wp-content/images/cardimages/SFN/S108_TE01R.png', name: '"Mage" Frieren', rarity: 'RRR' }]);
+  const { printings } = weissEnglishRows([{ expansion: { id: '239' }, cards }], [{ id: 'weiss-9', official_card_number: 'SFN/S108-T01R', series_id: 'weiss-frieren-s108-td' }]);
+  assert.equal(printings[0].local_set_code, 'S108-TD');
+  assert.equal(printings[0].source_url, 'https://en.ws-tcg.com/cardlist/?cardno=SFN%2FS108-TE01R&expansion=239');
 });
 
 // ---- 七龍珠超 Fusion World ----

@@ -86,6 +86,71 @@ export function weissCardRows(item) {
   return { card, printing };
 }
 
+// 英文官方站沒有 JSON API：卡表頁第一頁帶 max_page，之後的頁由 cardsearch_ex 回傳同樣的 <li>。
+export const WEISS_EN = 'https://en.ws-tcg.com';
+export const FRIEREN_TITLE_EN = '183';
+
+/** 卡表搜尋表單的擴充包選項 → [{ id, name }]，只留指定作品（class 帶 title-<作品編號>）。 */
+export function parseWeissEnExpansions(html, title = FRIEREN_TITLE_EN) {
+  const found = new Map();
+  for (const [, id, name] of String(html).matchAll(new RegExp(`<option class="[^"]*\\btitle-${title}"[^>]*value="(\\d+)">([^<]+)<`, 'g'))) found.set(id, { id, name: decodeEntities(name) });
+  return [...found.values()];
+}
+
+export function parseWeissEnCards(html) {
+  return [...String(html).matchAll(/<li[^>]*>\s*<a href="\/cardlist\/\?cardno=([^&"]+)&[^"]*">\s*<div class="image"><img src="([^"]+)" alt="([^"]*)"[\s\S]*?<dt>Rarity<\/dt>\s*<dd>([^<]*)<\/dd>/g)].map(([, cardNo, src, name, rarity]) => ({
+    cardNo, image: new URL(src, WEISS_EN).href, name: decodeEntities(name), rarity: rarity.trim() || null }));
+}
+
+/** 英文卡號對回日文卡號：SFN/S108-E001SSP → SFN/S108-001SSP、SFN/S108-TE01R → SFN/S108-T01R；PE 等英文推廣卡沒有日文版，回 null。 */
+export const weissEnToJpNumber = number => /\/[A-Z0-9]+-T?E\d/.test(number) ? number.replace(/-(T?)E(\d)/, '-$1$2') : null;
+
+/**
+ * 英文卡表（enCards: [{ expansion, cards }]）→ 美版版本列、英文名，以及英文獨有的卡（日文卡號對不到的，如 PE 推廣卡）。
+ * jpCards 是日文卡表組出的卡；卡號一對一掛到同一張卡。英文獨有的卡掛在卡號的系列，provider_id 都加 `en:` 前綴。
+ */
+export function weissEnglishRows(enCards, jpCards) {
+  const byNumber = new Map(jpCards.map(card => [card.official_card_number, card]));
+  const printings = [], enNameById = new Map(), newCards = new Map(), seen = new Set();
+  for (const { expansion, cards } of enCards) for (const item of cards) {
+    const jp = byNumber.get(weissEnToJpNumber(item.cardNo));
+    let card = jp || newCards.get(`weiss-en-${lower(item.cardNo)}`);
+    if (!card) {
+      const code = String(item.cardNo).match(/\/([A-Z0-9]+)-/)?.[1];
+      card = { id: `weiss-en-${lower(item.cardNo)}`, canonical_id: `weiss-${lower(item.cardNo)}`, game_id: 'weiss-schwarz', series_id: `weiss-frieren-${lower(code)}`, official_card_number: item.cardNo,
+        rarity: item.rarity, name_ja: null, name_zh: null, name_en: item.name || null, name_ko: null, aliases: [item.name, '芙莉蓮'].filter(Boolean), source: WEISS_SOURCE, provider_id: `en:${item.cardNo}`,
+        search_text: [item.name, item.cardNo, '芙莉蓮'].filter(Boolean).join(' '), metadata: { ip: 'frieren', displayNameLanguage: 'en', englishOnly: true }, data_status: 'verified' };
+      newCards.set(card.id, card);
+    }
+    if (jp && item.name && !enNameById.has(jp.id)) enNameById.set(jp.id, item.name);
+    if (seen.has(item.cardNo)) continue;
+    seen.add(item.cardNo);
+    printings.push({ card_id: card.id, series_id: card.series_id, region: 'US', language: 'en-US', local_set_code: weissSetCode(card.official_card_number) || card.series_id.replace('weiss-frieren-', '').toUpperCase(), local_card_number: item.cardNo,
+      rarity: item.rarity, image_url: item.image, source_url: `${WEISS_EN}/cardlist/?cardno=${encodeURIComponent(item.cardNo)}&expansion=${expansion.id}`, source: WEISS_SOURCE, provider_id: `en:${item.cardNo}`,
+      image_rehost_required: false, image_rights_status: 'not-provided', metadata: { imageLanguage: 'en' }, data_status: 'incomplete' });
+  }
+  return { printings, enNameById, cards: [...newCards.values()] };
+}
+
+/** 讀英文官方卡表的芙莉蓮擴充包；任何一頁讀不到卡就停，不寫入。 */
+export async function collectWeissFrierenEn({ fetchText = officialText, delay = PAGE_DELAY_MS } = {}) {
+  const get = async url => { await pause(delay); return fetchText(url); };
+  const expansions = parseWeissEnExpansions(await get(`${WEISS_EN}/cardlist/`));
+  if (!expansions.length) throw new Error('FRIEREN_EN_EXPANSIONS_MISSING');
+  const result = [];
+  for (const expansion of expansions) {
+    const first = await get(`${WEISS_EN}/cardlist/searchresults/?expansion=${expansion.id}`), pages = Number(first.match(/max_page = (\d+)/)?.[1] || 1), cards = parseWeissEnCards(first);
+    for (let page = 2; page <= pages; page++) {
+      const found = parseWeissEnCards(await get(`${WEISS_EN}/cardlist/cardsearch_ex?expansion=${expansion.id}&view=text&page=${page}`));
+      if (!found.length) throw new Error(`FRIEREN_EN_PAGE_EMPTY:${expansion.id}:${page}`);
+      cards.push(...found);
+    }
+    if (!cards.length) throw new Error(`FRIEREN_EN_EXPANSION_EMPTY:${expansion.id}`);
+    result.push({ expansion, cards });
+  }
+  return result;
+}
+
 // ---- 七龍珠超 Fusion World（繁中官方卡表，圖片為日版印刷）----
 // 卡表頁把一個收錄彈的全部卡一次列出（分頁只在瀏覽器端），稀有度要用 rarity[] 篩選頁取得（詳細頁要逐張請求），所以整個遊戲約 43 個請求。
 
@@ -314,7 +379,7 @@ export async function syncHaikyuu(db, { fetchJson = officialJson, delay = PAGE_D
   } catch (error) { await finishRun(db, runId, 'failed', stats, error); throw error; }
 }
 
-export async function syncWeissFrieren(db, { fetchJson = officialJson, delay = PAGE_DELAY_MS } = {}) {
+export async function syncWeissFrieren(db, { fetchJson = officialJson, fetchText = officialText, delay = PAGE_DELAY_MS } = {}) {
   const runId = await startRun(db, WEISS_SOURCE), stats = { seen: 0, written: 0, metadata: {} };
   try {
     const options = await fetchJson(`${WEISS_API}/filter-options`);
@@ -340,11 +405,15 @@ export async function syncWeissFrieren(db, { fetchJson = officialJson, delay = P
     }
     const expected = Object.values(perExpansion).reduce((sum, value) => sum + value, 0);
     if (items.length !== expected) throw new Error(`FRIEREN_COUNT_MISMATCH:${items.length}/${expected}`);
-    const rows = items.map(weissCardRows);
-    const result = await writeNew(db, { source: WEISS_SOURCE, series: [...series.values()], cards: rows.map(r => r.card), printings: rows.map(r => r.printing) });
-    stats.seen = items.length;
-    stats.written = result.written;
-    stats.metadata = { officialCount: expected, perExpansion, cards: items.length, newSeries: result.newSeries, newCards: result.newCards, newPrintings: result.newPrintings, differences: result.differences, basis: 'ADR 0034' };
+    const rows = items.map(weissCardRows), jpCards = rows.map(r => r.card);
+    const en = weissEnglishRows(await collectWeissFrierenEn({ fetchText, delay }), jpCards);
+    const result = await writeNew(db, { source: WEISS_SOURCE, series: [...series.values()], cards: [...jpCards, ...en.cards], printings: [...rows.map(r => r.printing), ...en.printings] });
+    // 英文名只補空欄位，不覆蓋
+    const blankEn = await storedRows(db, '/tcg_cards', WEISS_SOURCE, 'id', '&name_en=is.null');
+    const filledNames = await patchRows(db, '/tcg_cards', blankEn.filter(row => en.enNameById.has(row.id)).map(row => ({ id: row.id, guard: 'name_en=is.null', body: { name_en: en.enNameById.get(row.id) } })));
+    stats.seen = items.length + en.printings.length;
+    stats.written = result.written + filledNames;
+    stats.metadata = { officialCount: expected, perExpansion, cards: items.length, enPrintings: en.printings.length, enOnlyCards: en.cards.length, filledNames, newSeries: result.newSeries, newCards: result.newCards, newPrintings: result.newPrintings, differences: result.differences, basis: 'ADR 0034' };
     await finishRun(db, runId, 'completed', stats);
     return stats;
   } catch (error) { await finishRun(db, runId, 'failed', stats, error); throw error; }
