@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { collectDragonballFw, fwCatalogRows, fwFillPatches, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwProducts, parseFwRarities, syncDragonballFw, syncHaikyuu, syncWeissFrieren, weissCardRows, weissSetCode } from '../providers/official-ip-sync.mjs';
+import { collectDragonballFw, fwCatalogRows, fwEnglishRows, fwFillPatches, haikyuuCardRows, parseFwCards, parseFwCategories, parseFwProducts, parseFwRarities, syncDragonballFw, syncHaikyuu, syncWeissFrieren, weissCardRows, weissSetCode } from '../providers/official-ip-sync.mjs';
 
 const haikyuuItem = (ID, card_no, name, extra = {}) => ({ ID: String(ID), card_no, name, name_ruby: 'ひなた しょうよう', product_type: card_no.split('-').slice(0, 2).join('-'), vobarity: 'P', image_end: 'P', category: 'CHARACTER', position: 'MB', affiliation: '烏野·1年', ...extra });
 
@@ -175,8 +175,12 @@ test('七龍珠超同步：只新增資料庫沒有的列，紀錄為 dbs-fw-off
   assert.equal(runs.at(-1).body.status, 'completed');
   assert.equal(stats.metadata.cards, 4);
   assert.equal(stats.metadata.officialCount, 4);
-  assert.ok(seen.every(url => /^https:\/\/www\.dbs-cardgame\.com\/fw\/(asia-tc|jp)\/cardlist\/|^https:\/\/www\.dbs-cardgame\.com\/fw\/asia-tc\/products\//.test(url)));
-  assert.equal(seen.length, 1 + 1 + 4 + 3 * 2 + 4 + 2, '根頁、日文根頁、4 個收錄彈、3 個稀有度各查中日文、4 個日文收錄彈、商品頁 2 頁（第 2 頁沒有新商品就停）');
+  assert.ok(seen.every(url => /^https:\/\/www\.dbs-cardgame\.com\/fw\/(asia-tc|jp|en)\/cardlist\/|^https:\/\/www\.dbs-cardgame\.com\/fw\/asia-tc\/products\//.test(url)));
+  assert.equal(seen.length, 1 + 1 + 4 + 3 * 2 + 4 + 2 + 1 + 4 + 3, '根頁、日文根頁、4 個收錄彈、3 個稀有度各查中日文、4 個日文收錄彈、商品頁 2 頁（第 2 頁沒有新商品就停）、英文根頁、4 個英文收錄彈與 3 個英文稀有度頁');
+  const en = posts[2].rows.filter(p => p.region === 'US');
+  assert.equal(en.length, 4, '英文版本掛在既有的卡上');
+  assert.ok(en.every(p => p.language === 'en-US' && p.provider_id.startsWith('en:') && p.rarity));
+  assert.equal(stats.metadata.enPrintings, 4);
 });
 
 test('七龍珠超同步：某個收錄彈解析不到卡時停止並記為失敗，不寫入', async () => {
@@ -231,11 +235,33 @@ test('七龍珠超同步：補空白以 PATCH 寫入並帶 is.null 條件，數�
   assert.deepEqual(first.patches.map(p => [p.path, p.body]), [
     ['/tcg_series?id=eq.dragonball-fw-fb11&release_date=is.null', { release_date: '2026-09-12' }],
     ['/tcg_series?id=eq.dragonball-fw-fb11&image_url=is.null', { image_url: 'https://www.dbs-cardgame.com/fw/bccard/asia-tc/news/2026/07/13/x/FB11_jp.png', image_kind: 'series-logo' }],
+    ['/tcg_cards?id=eq.dragonball-fw-e-42&name_en=is.null', { name_en: '能量標記' }],
     ['/tcg_cards?id=eq.dragonball-fw-e-42&name_ja=is.null', { name_ja: 'エナジーマーカー', aliases: ['能量標記', 'エナジーマーカー'], search_text: '能量標記 エナジーマーカー E-42' }]
   ]);
-  assert.deepEqual([stats.metadata.filledSeries, stats.metadata.filledJa], [2, 1]);
-  const second = mockDb({ '/tcg_series': [{ id: 'dragonball-fw-fb11', release_date: '2026-01-01', image_url: 'https://manual', image_kind: 'series-logo' }], '/tcg_cards': [{ id: 'dragonball-fw-e-42', name_ja: 'x' }], '/tcg_printings': [] });
+  assert.deepEqual([stats.metadata.filledSeries, stats.metadata.filledNames], [2, 2]);
+  const second = mockDb({ '/tcg_series': [{ id: 'dragonball-fw-fb11', release_date: '2026-01-01', image_url: 'https://manual', image_kind: 'series-logo' }], '/tcg_cards': [{ id: 'dragonball-fw-e-42', name_ja: 'x', name_en: 'y' }], '/tcg_printings': [] });
   const again = await syncDragonballFw(second.db, { fetchText: fwFetch({ energy: true }).fetchText, delay: 0 });
   assert.equal(second.patches.length, 0);
-  assert.deepEqual([again.metadata.filledSeries, again.metadata.filledJa], [0, 0]);
+  assert.deepEqual([again.metadata.filledSeries, again.metadata.filledNames], [0, 0]);
+});
+
+test('七龍珠超英文版：既有的卡沿用繁中稀有度；英文獨有的卡另建，名字沿用基本卡、稀有度取英文稀有度頁；活動包歸推廣卡', () => {
+  const card = (cardNo, variant = '') => ({ cardNo, variant, name: 'Son Goku', image: `https://www.dbs-cardgame.com/fw/images/cards/card/en/${cardNo}_f${variant}.webp` });
+  const tw = new Map([['dragonball-fw-fb11-001', { id: 'dragonball-fw-fb11-001', rarity: 'L', name_zh: '孫悟空', name_ja: '孫悟空' }]]);
+  const { printings, enNameById, cards } = fwEnglishRows([
+    { category: { id: '583011', code: 'FB11' }, cards: [card('FB11-001'), card('FB11-001', '_p1')] },
+    { category: { id: '583904', code: 'PR' }, cards: [card('FB11-001', '_p1'), card('FP-007')] }
+  ], tw, new Set(['FB11', 'PR']), new Map([['FB11-001_p1', 'SCR'], ['FP-007', 'PR']]));
+  assert.deepEqual(printings.map(p => [p.card_id, p.series_id, p.rarity, p.provider_id, p.region]), [
+    ['dragonball-fw-fb11-001', 'dragonball-fw-fb11', 'L', 'en:FB11:FB11-001', 'US'],
+    ['dragonball-fw-fb11-001-p1', 'dragonball-fw-fb11', 'SCR', 'en:FB11:FB11-001_p1', 'US'],
+    ['dragonball-fw-fb11-001-p1', 'dragonball-fw-pr', 'SCR', 'en:PR:FB11-001_p1', 'US'],
+    ['dragonball-fw-fp-007', 'dragonball-fw-pr', 'PR', 'en:PR:FP-007', 'US']
+  ]);
+  assert.deepEqual(cards.map(c => [c.id, c.canonical_id, c.series_id, c.rarity, c.name_zh, c.name_en, c.provider_id]), [
+    ['dragonball-fw-fb11-001-p1', 'dragonball-fw-fb11-001', 'dragonball-fw-fb11', 'SCR', '孫悟空', 'Son Goku', 'en:FB11-001_p1'],
+    ['dragonball-fw-fp-007', 'dragonball-fw-fp-007', 'dragonball-fw-pr', 'PR', null, 'Son Goku', 'en:FP-007']
+  ]);
+  assert.equal(printings[1].source_url, 'https://www.dbs-cardgame.com/fw/en/cardlist/detail.php?card_no=FB11-001&p=_p1');
+  assert.equal(enNameById.get('dragonball-fw-fb11-001'), 'Son Goku');
 });

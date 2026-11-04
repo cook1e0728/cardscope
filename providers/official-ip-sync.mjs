@@ -13,6 +13,7 @@ export const FW_SOURCE = 'dbs-fw-official';
 export const FW_LIST = 'https://www.dbs-cardgame.com/fw/asia-tc/cardlist/';
 export const FW_LIST_JP = 'https://www.dbs-cardgame.com/fw/jp/cardlist/';
 export const FW_PRODUCTS = 'https://www.dbs-cardgame.com/fw/asia-tc/products/';
+export const FW_LIST_EN = 'https://www.dbs-cardgame.com/fw/en/cardlist/';
 // 能量標記（E-、E01- 等開頭）官方沒有稀有度；給一個導覽用的分組，不顯示成「稀有度待補」。
 export const FW_ENERGY_RARITY = '能量標記';
 const PAGE_DELAY_MS = 1100;
@@ -150,6 +151,36 @@ export function fwCatalogRows({ categories, jaCategories = [], categoryCards, ra
   return { series: categories.map(category => fwSeriesRow(category, jaByCode.get(category.code) || null, productByCode.get(category.code) || null)), cards, printings };
 }
 
+/**
+ * 英文官方卡表（enCategoryCards: [{ category, cards }]）→ 英文版本列、英文名，以及英文獨有的卡（活動包平行版、英文推廣卡）。
+ * cardsById 是繁中卡表的卡；既有的卡沿用繁中稀有度，英文獨有的卡用英文稀有度頁（enRarityByKey），卡名沿用同卡號基本卡的中日文名。
+ * 英文版本的 provider_id 加 `en:` 前綴，與繁中版本分開；不是系列代碼的英文收錄彈（活動包）歸推廣卡。
+ */
+export function fwEnglishRows(enCategoryCards, cardsById, codes, enRarityByKey = new Map()) {
+  const printings = [], enNameById = new Map(), newCards = new Map(), seen = new Set();
+  for (const { category, cards } of enCategoryCards) for (const item of cards) {
+    const key = `${item.cardNo}${item.variant}`, cardId = `dragonball-fw-${lower(item.cardNo)}${item.variant ? `-${lower(item.variant.replace(/^_/, ''))}` : ''}`;
+    const code = codes.has(category.code) ? category.code : 'PR', providerId = `en:${code}:${key}`;
+    let card = cardsById.get(cardId) || newCards.get(cardId);
+    if (!card) {
+      const base = cardsById.get(`dragonball-fw-${lower(item.cardNo)}`), prefix = item.cardNo.split('-')[0], seriesCode = codes.has(prefix) ? prefix : prefix === 'FP' && codes.has('PR') ? 'PR' : code;
+      const rarity = enRarityByKey.get(key) || (/^E\d*-/.test(item.cardNo) ? FW_ENERGY_RARITY : null);
+      card = { id: cardId, canonical_id: `dragonball-fw-${lower(item.cardNo)}`, game_id: 'dragonball-fw', series_id: `dragonball-fw-${lower(seriesCode)}`, official_card_number: item.cardNo, rarity,
+        name_ja: base?.name_ja || null, name_zh: base?.name_zh || null, name_en: item.name || null, name_ko: null, aliases: [...new Set([base?.name_zh, base?.name_ja, item.name].filter(Boolean))],
+        source: FW_SOURCE, provider_id: `en:${key}`, search_text: [base?.name_zh, base?.name_ja, item.name, item.cardNo].filter(Boolean).join(' '),
+        metadata: { ip: 'dragonball', displayNameLanguage: base?.name_zh ? 'zh-TW' : 'en', englishOnly: true }, data_status: 'verified' };
+      newCards.set(cardId, card);
+    }
+    if (!enNameById.has(cardId) && item.name) enNameById.set(cardId, item.name);
+    if (seen.has(providerId)) continue;
+    seen.add(providerId);
+    printings.push({ card_id: cardId, series_id: `dragonball-fw-${lower(code)}`, region: 'US', language: 'en-US', local_set_code: category.code, local_card_number: item.cardNo,
+      rarity: card.rarity || null, image_url: item.image, source_url: `${FW_LIST_EN}detail.php?card_no=${item.cardNo}${item.variant ? `&p=${item.variant}` : ''}`, source: FW_SOURCE, provider_id: providerId,
+      image_rehost_required: false, image_rights_status: 'not-provided', metadata: { imageLanguage: 'en', variant: item.variant || null }, data_status: 'incomplete' });
+  }
+  return { printings, enNameById, cards: [...newCards.values()] };
+}
+
 // ---- 共用：只新增 ----
 
 /** 只留下資料庫沒有的列；`existing` 為已存在的鍵集合。 */
@@ -208,7 +239,7 @@ async function writeNew(db, { source, series, cards, printings }) {
  * 七龍珠超「補空白」：只把官方這次讀到的值寫進既有列「目前是 null」的欄位，絕不覆蓋已有的值（含手動整理的）。
  * 系列：release_date、image_url（連同 image_kind）；卡片：name_ja（並補進 aliases、search_text）。每筆 patch 帶 guard，伺服器端再擋一次 null 條件，避免與並行寫入互相覆蓋。
  */
-export function fwFillPatches({ series, cards }, storedSeries, storedCards) {
+export function fwFillPatches({ series, cards, en }, storedSeries, storedCards) {
   const seriesById = new Map(series.map(row => [row.id, row])), cardById = new Map(cards.map(row => [row.id, row]));
   const seriesPatches = [], cardPatches = [];
   for (const stored of storedSeries) {
@@ -218,6 +249,9 @@ export function fwFillPatches({ series, cards }, storedSeries, storedCards) {
     if (stored.image_url == null && row.image_url) seriesPatches.push({ id: stored.id, guard: 'image_url=is.null', body: { image_url: row.image_url, ...(stored.image_kind == null && row.image_kind ? { image_kind: row.image_kind } : {}) } });
   }
   for (const stored of storedCards) {
+    // 英文名只補欄位，不動 aliases／search_text（搜尋會另外讀 name_en）
+    const nameEn = en?.enNameById?.get(stored.id);
+    if (nameEn && stored.name_en == null) cardPatches.push({ id: stored.id, guard: 'name_en=is.null', body: { name_en: nameEn } });
     const row = cardById.get(stored.id);
     if (!row?.name_ja || stored.name_ja != null) continue;
     const plain = [row.name_zh, row.official_card_number].filter(Boolean).join(' ');
@@ -239,10 +273,10 @@ async function patchRows(db, path, patches, concurrency = 6) {
 async function fillFwBlanks(db, rows) {
   const [storedSeries, storedCards] = await Promise.all([
     storedRows(db, '/tcg_series', FW_SOURCE, 'id,release_date,image_url,image_kind', '&or=(release_date.is.null,image_url.is.null)'),
-    storedRows(db, '/tcg_cards', FW_SOURCE, 'id,name_ja,aliases,search_text', '&name_ja=is.null')
+    storedRows(db, '/tcg_cards', FW_SOURCE, 'id,name_ja,name_en,aliases,search_text', '&or=(name_ja.is.null,name_en.is.null)')
   ]);
   const { seriesPatches, cardPatches } = fwFillPatches(rows, storedSeries, storedCards);
-  return { filledSeries: await patchRows(db, '/tcg_series', seriesPatches), filledJa: await patchRows(db, '/tcg_cards', cardPatches) };
+  return { filledSeries: await patchRows(db, '/tcg_series', seriesPatches), filledNames: await patchRows(db, '/tcg_cards', cardPatches) };
 }
 
 async function startRun(db, provider) {
@@ -351,21 +385,29 @@ export async function collectDragonballFw({ fetchText = officialText, delay = PA
     for (const product of found) products.set(product.code, product);
   }
   const rows = fwCatalogRows({ categories, jaCategories, categoryCards, rarityByKey, jaNameByNo, products: [...products.values()] });
+  // 英文卡表（每個收錄彈一頁）：同一張卡的英文版本與英文名；乾跑只看繁中時（only）略過。
+  const enCategoryCards = [], enRarityByKey = new Map();
+  if (only === null) {
+    const enRoot = await get(`${FW_LIST_EN}?search=true`);
+    for (const category of parseFwCategories(enRoot)) enCategoryCards.push({ category, cards: parseFwCards(await get(`${FW_LIST_EN}?search=true&category%5B0%5D=${category.id}`)) });
+    for (const rarity of parseFwRarities(enRoot)) for (const item of parseFwCards(await get(`${FW_LIST_EN}?search=true&rarity%5B0%5D=${encodeURIComponent(rarity)}`))) enRarityByKey.set(`${item.cardNo}${item.variant}`, rarity);
+  }
+  const en = fwEnglishRows(enCategoryCards, new Map(rows.cards.map(card => [card.id, card])), new Set(categories.map(category => category.code)), enRarityByKey);
   const unrated = rows.printings.filter(printing => !printing.rarity).length;
   // 能量標記已給導覽分組；其餘超過兩成沒有稀有度表示篩選頁改版，不寫入。
   if (only === null && unrated > rows.printings.length * 0.2) throw new Error(`FW_RARITY_COVERAGE:${unrated}/${rows.printings.length}`);
-  return { ...rows, unrated, missingJa: rows.cards.filter(card => !card.name_ja).length };
+  return { ...rows, en, unrated, missingJa: rows.cards.filter(card => !card.name_ja).length };
 }
 
 export async function syncDragonballFw(db, { fetchText = officialText, delay = PAGE_DELAY_MS } = {}) {
   const runId = await startRun(db, FW_SOURCE), stats = { seen: 0, written: 0, metadata: {} };
   try {
     const rows = await collectDragonballFw({ fetchText, delay });
-    const result = await writeNew(db, { source: FW_SOURCE, series: rows.series, cards: rows.cards, printings: rows.printings });
+    const result = await writeNew(db, { source: FW_SOURCE, series: rows.series, cards: [...rows.cards, ...rows.en.cards], printings: [...rows.printings, ...rows.en.printings] });
     const filled = await fillFwBlanks(db, rows);
     stats.seen = rows.printings.length;
-    stats.written = result.written + filled.filledSeries + filled.filledJa;
-    stats.metadata = { officialCount: rows.printings.length, cards: rows.cards.length, images: rows.printings.filter(printing => printing.image_url).length, unratedPrintings: rows.unrated, cardsWithoutJa: rows.missingJa, filledSeries: filled.filledSeries, filledJa: filled.filledJa,
+    stats.written = result.written + filled.filledSeries + filled.filledNames;
+    stats.metadata = { officialCount: rows.printings.length, cards: rows.cards.length, images: rows.printings.filter(printing => printing.image_url).length, enPrintings: rows.en.printings.length, enOnlyCards: rows.en.cards.length, unratedPrintings: rows.unrated, cardsWithoutJa: rows.missingJa, filledSeries: filled.filledSeries, filledNames: filled.filledNames,
       newSeries: result.newSeries, newCards: result.newCards, newPrintings: result.newPrintings, differences: result.differences, basis: 'ADR 0052 Q7' };
     await finishRun(db, runId, 'completed', stats);
     return stats;
