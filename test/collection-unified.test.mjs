@@ -167,7 +167,7 @@ test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the 
   click('dec');
   assert.equal(c.run('watchQuantity("k1")'), 0, 'the last − removes after the same confirm as the star');
   assert.match(slot.innerHTML, /☆ 加入收藏/);
-  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2><div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name');
+  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>(?:\$\{detailPriceMarkup\(c\)\})?<div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name (the reference price row may sit between)');
   assert.match(ui, /\.detail-collect button\{min-width:44px;min-height:44px/);
 });
 

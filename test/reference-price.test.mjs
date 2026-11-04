@@ -13,7 +13,7 @@ process.env.PORT = String(freePortProbe.address().port);
 await new Promise(resolve => freePortProbe.close(resolve));
 process.env.CATALOG_WARM_ON_START = 'false';
 process.env.CATALOG_SYNC_ON_START = 'false';
-const { fxJump, buildBrowsePage, buildPrintingIndex, buildVersionPrices, normalizeBrowseSort, referencePriceFromRow, server: importedServer } = await import('../server.mjs');
+const { referenceChange, fxJump, buildBrowsePage, buildPrintingIndex, buildVersionPrices, normalizeBrowseSort, referencePriceFromRow, server: importedServer } = await import('../server.mjs');
 after(() => new Promise(resolve => importedServer.listening ? importedServer.close(resolve) : resolve()));
 
 const [migration, html, ui, server] = await Promise.all(['../supabase/migrations/20261024090000_price_reference_browse.sql', '../index.html', '../ui-enhancements.js', '../server.mjs'].map(path => readFile(new URL(path, import.meta.url), 'utf8')));
@@ -391,4 +391,115 @@ test('card zoom: double tap/click toggles 1x and 2.5x through the shared setZoom
   assert.match(ui, /event\.timeStamp-last\.t<300/);
   assert.match(ui, /setZoom\(state\.scale>1\.01\?'fit':2\.5,event\)/, '走既有 setZoom，回 1x 用 fit');
   assert.match(ui, /addEventListener\('pointerup',event=>\{tapToggle\(event\);endPointer\(event\)\}\)/);
+});
+
+// ---------------------------------------------------------------- 近 7 天漲跌（migration 20261105120000）
+
+test('migration 20261105120000: one new function, latest row at least p_days old, 60 day floor, service role only', async () => {
+  const sql = await readFile(new URL('../supabase/migrations/20261105120000_price_reference_prior.sql', import.meta.url), 'utf8');
+  assert.deepEqual([...sql.matchAll(/create or replace function public\.(\w+)\(([^)]*)\)/g)].map(match => [match[1], match[2]]), [['price_reference_prior', 'p_ids text[], p_days integer default 7']]);
+  assert.doesNotMatch(sql, /create (unique )?index|create table|alter table|drop |insert |update |delete /i);
+  assert.match(sql, /language sql\s+stable\s+set search_path to ''/);
+  assert.match(sql, /distinct on \(s\.card_id, s\.provider, s\.variant\)/);
+  assert.match(sql, /order by s\.card_id, s\.provider, s\.variant, s\.snapshot_date desc/, '每個 variant 取最新一列');
+  assert.match(sql, /s\.snapshot_date <= current_date - least\(greatest\(coalesce\(p_days, 7\), 1\), 30\)/);
+  assert.match(sql, /s\.snapshot_date >= current_date - 60/);
+  assert.match(sql, /s\.provider = 'cardmarket' or \(s\.provider = 'tcgplayer' and s\.variant like 'tcgapi-%'\)/, 'provider 篩選與 price_reference_best 相同');
+  assert.match(sql, /revoke all on function public\.price_reference_prior\(text\[\], integer\) from public, anon, authenticated;\s*grant execute on function public\.price_reference_prior\(text\[\], integer\) to service_role;/);
+});
+
+test('referenceChange: percent rounded to 0.1, under 0.5% is flat, no usable prior means no fields', () => {
+  const price = { amount: 10, currency: 'EUR' }, prior = (amount, extra = {}) => ({ amount, currency: 'EUR', snapshot_date: '2026-10-29', ...extra });
+  assert.deepEqual(referenceChange(price, prior(8)), { changePct: 25, changeFrom: '2026-10-29' });
+  assert.deepEqual(referenceChange(price, prior(10.5)), { changePct: -4.8, changeFrom: '2026-10-29' });
+  assert.deepEqual(referenceChange(price, prior(9.97)), { changePct: 0, changeFrom: '2026-10-29' }, '+0.3% 當持平');
+  assert.deepEqual(referenceChange(price, prior(10.04)), { changePct: 0, changeFrom: '2026-10-29' }, '-0.4% 當持平');
+  assert.equal(referenceChange(price, prior(9.9)).changePct, 1, '+1.01% 不是持平');
+  for (const bad of [undefined, prior(0), prior(null), prior(8, { currency: 'USD' }), prior(8, { snapshot_date: null })]) assert.deepEqual(referenceChange(price, bad), {}, JSON.stringify(bad));
+});
+
+test('browse: prior prices are matched by provider and the original variant, tcgapi- prefix included; no match means no change fields', async () => {
+  const cards = [cardRow('p1', '001'), cardRow('p2', '002'), cardRow('p3', '003'), cardRow('p4', '004'), cardRow('p5', '005')];
+  const best = [priceRow('p1', 10, { variant: 'holo' }), priceRow('p2', 4.5, { variant: 'tcgapi-holofoil', currency: 'USD' }), priceRow('p3', 10, { variant: 'normal' }), priceRow('p4', 10, { variant: 'holo' }), priceRow('p5', 7, { variant: 'normal' })];
+  const prior = (id, provider, variant, amount, extra = {}) => ({ card_id: id, provider, variant, currency: provider === 'tcgplayer' ? 'USD' : 'EUR', amount, snapshot_date: '2026-10-27', ...extra });
+  const rows = [prior('p1', 'cardmarket', 'holo', 8), prior('p2', 'tcgplayer', 'tcgapi-holofoil', 5), prior('p3', 'cardmarket', 'normal', 9.98), prior('p4', 'cardmarket', 'reverse', 1), prior('p5', 'tcgplayer', 'tcgapi-normal', 1)];
+  await withServer({ browse_cards_page: pageRpc(cards), price_reference_best: () => best, price_reference_prior: () => rows }, async ({ get, calls }) => {
+    const { json } = await get('/api/cards?game=pokemon&limit=60'), byId = Object.fromEntries(json.data.map(card => [card.id, card.referencePrice]));
+    assert.deepEqual([byId.p1.changePct, byId.p1.changeFrom], [25, '2026-10-27']);
+    assert.deepEqual([byId.p2.changePct, byId.p2.changeFrom, byId.p2.source, byId.p2.variant], [-10, '2026-10-27', 'tcgplayer', 'holofoil'], 'tcgapi- 前綴只在輸出去掉，配對用原始 variant');
+    assert.equal(byId.p3.changePct, 0, '持平');
+    assert.ok(!('changePct' in byId.p4), 'variant 對不上就不算');
+    assert.ok(!('changePct' in byId.p5), 'provider 對不上就不算');
+    const lookups = calls.filter(call => call.name === 'price_reference_prior');
+    assert.equal(lookups.length, 1);
+    assert.equal(lookups[0].args.p_days, 7);
+    assert.deepEqual(lookups[0].args.p_ids, ['p1', 'p2', 'p3', 'p4', 'p5']);
+  });
+});
+
+test('browse: a failing prior lookup still returns the prices, just without a change', async () => {
+  await withServer({ browse_cards_page: pageRpc([cardRow('p1', '001')]), price_reference_best: () => [priceRow('p1', 12.3, { variant: 'holo' })], price_reference_prior: () => ({ status: 500, body: { message: 'boom' } }) }, async ({ get }) => {
+    const { status, json } = await get('/api/cards?game=pokemon');
+    assert.equal(status, 200);
+    assert.equal(json.data[0].referencePrice.amount, 12.3);
+    assert.ok(!('changePct' in json.data[0].referencePrice));
+  });
+});
+
+test('detail: /api/cards/:id carries the same referencePrice (with change) for a Pokemon card, and survives a failing lookup', async () => {
+  const detail = () => ({ cards: [cardRow('p1', '001')], series: [], games: [{ id: 'pokemon', nameZh: '寶可夢' }] });
+  const handlers = prior => ({ get_card_detail: detail, price_reference_best: () => [priceRow('p1', 10, { variant: 'holo' })], price_reference_prior: prior });
+  await withServer(handlers(() => [{ card_id: 'p1', provider: 'cardmarket', variant: 'holo', currency: 'EUR', amount: 8, snapshot_date: '2026-10-29' }]), async ({ get }) => {
+    const { status, json } = await get('/api/cards/p1');
+    assert.equal(status, 200);
+    assert.equal(json.data.referencePrice.amount, 10);
+    assert.deepEqual([json.data.referencePrice.changePct, json.data.referencePrice.changeFrom], [25, '2026-10-29']);
+  });
+  await withServer({ ...handlers(() => ({ status: 500, body: { message: 'boom' } })), price_reference_best: () => ({ status: 500, body: { message: 'boom' } }) }, async ({ get }) => {
+    const { status, json } = await get('/api/cards/p1');
+    assert.equal(status, 200, '價格查詢失敗不影響詳細頁');
+    assert.ok(!('referencePrice' in json.data));
+  });
+});
+
+test('detail: other games never ask for a reference price', async () => {
+  await withServer({ get_card_detail: () => ({ cards: [cardRow('o1', 'OP01-001', 'onepiece')], series: [], games: [{ id: 'onepiece', nameZh: '航海王' }] }), price_reference_best: () => [priceRow('o1', 5)] }, async ({ get, calls }) => {
+    const { status, json } = await get('/api/cards/o1');
+    assert.equal(status, 200);
+    assert.ok(!('referencePrice' in json.data));
+    assert.equal(calls.filter(call => call.name.startsWith('price_reference')).length, 0);
+  });
+});
+
+test('card wall badge: 7-day change is red up / green down, flat shows nothing but is still announced', () => {
+  const context = harness(), base = { id: 'p1', game: 'pokemon', referencePrice: { amount: 12.3, amountTwd: 452, currency: 'EUR', source: 'cardmarket', variant: 'holo', observedAt: '2026-10-22T22:00:00Z' } };
+  const run = change => vm.runInContext(`cardReferenceMarkup(${JSON.stringify({ ...base, referencePrice: { ...base.referencePrice, ...change } })},'p1')`, context);
+  const up = run({ changePct: 2.5, changeFrom: '2026-10-29' });
+  assert.match(up, /<span class="cr-amount">NT\$452<\/span><small class="cr-chg cr-up" aria-hidden="true">▲2\.5%<\/small><small class="cr-src"/, '漲跌緊接在價格後');
+  assert.match(up, /aria-label="Cardmarket 參考 約 NT\$452（€12\.30），近 7 天上漲 2\.5%（比 10-29），/);
+  const down = run({ changePct: -12, changeFrom: '2026-10-29' });
+  assert.match(down, /class="cr-chg cr-down" aria-hidden="true">▼12%<\/small>/);
+  assert.match(down, /近 7 天下跌 12%（比 10-29）/);
+  const flat = run({ changePct: 0, changeFrom: '2026-10-29' });
+  assert.doesNotMatch(flat, /cr-chg/);
+  assert.match(flat, /近 7 天持平（比 10-29）/);
+  const none = run({});
+  assert.doesNotMatch(none, /cr-chg|近 7 天/, '沒有比較價就維持原樣');
+  assert.match(ui, /\.cr-up\{color:#C4000F\}\.cr-down\{color:#1F6F43\}/, '台灣慣例紅漲綠跌');
+});
+
+test('detail price row: big NT$ amount, change, source and date, disclaimer, opens the price tab; nothing without a usable price', () => {
+  const context = harness(), base = { id: 'p1', game: { id: 'pokemon' }, referencePrice: { amount: 94, amountTwd: 11730, currency: 'EUR', source: 'cardmarket', variant: 'holo', observedAt: '2026-11-05T00:00:00Z', snapshotDate: '2026-11-05', changePct: 3.2, changeFrom: '2026-10-29' } };
+  const run = card => vm.runInContext(`detailPriceMarkup(${JSON.stringify(card)})`, context);
+  const out = run(base);
+  assert.match(out, /^<button type="button" class="detail-price" data-detail-price title="平台參考價，不是成交價或台灣行情；點一下看價格走勢"/);
+  assert.match(out, /<b class="dp-amount">NT\$ 11,730<\/b><span class="dp-chg cr-up">▲3\.2% 近 7 天<\/span><small class="dp-note">Cardmarket 參考 · 11-05 · 非成交價<\/small>/);
+  assert.match(out, /aria-label="NT\$ 11,730，近 7 天上漲 3\.2%（比 10-29），Cardmarket 參考 11-05；平台參考價，不是成交價或台灣行情；開啟價格分頁"/);
+  assert.match(run({ ...base, referencePrice: { ...base.referencePrice, changePct: -1.5 } }), /class="dp-chg cr-down">▼1\.5% 近 7 天/);
+  assert.match(run({ ...base, referencePrice: { ...base.referencePrice, changePct: 0 } }), /class="dp-chg cr-flat">近 7 天持平/);
+  assert.doesNotMatch(run({ ...base, referencePrice: { ...base.referencePrice, changePct: undefined } }), /dp-chg/);
+  assert.match(run({ ...base, referencePrice: { ...base.referencePrice, amountTwd: undefined } }), /<b class="dp-amount">€94\.00<\/b>/, '沒有匯率時顯示原幣');
+  for (const bad of [{ ...base, referencePrice: undefined }, { ...base, game: { id: 'onepiece' } }, { ...base, referencePrice: { ...base.referencePrice, amount: 0 } }]) assert.equal(run(bad), '', JSON.stringify(bad.referencePrice));
+  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>\$\{detailPriceMarkup\(c\)\}<div class="detail-collect"/, '價格列在卡名正下方');
+  assert.match(ui, /querySelector\('\[data-detail-price\]'\)\?\.addEventListener\('click',\(\)=>\{\$\('detail'\)\.querySelector\('\[data-detail-tab="market"\]'\)\?\.click\(\)/, '沿用價格分頁按鈕的點擊，才會觸發 PriceTimeline.load');
 });

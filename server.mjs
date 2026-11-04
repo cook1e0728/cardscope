@@ -290,19 +290,24 @@ async function loadDatabaseImages(cardIds=[]){
 const REFERENCE_PRICE_TTL_MS=10*60*1000,REFERENCE_PRICE_WAIT_MS=1500;
 // Cardmarket 歐元；卡沒有 Cardmarket 價時，price_reference_best 改回 TCG API 轉來的 TCGplayer 美元價（variant 'tcgapi-…'，migration 20261103120000）。
 function referencePriceFromRow(row){const amount=Number(row?.amount),date=String(row?.snapshot_date||'').slice(0,10),usd=row?.currency==='USD'&&String(row?.variant||'').startsWith('tcgapi-');if(!row?.card_id||!Number.isFinite(amount)||amount<=0||!(row.currency==='EUR'||usd)||!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;return {amount,currency:row.currency,source:usd?'tcgplayer':'cardmarket',variant:usd?String(row.variant).slice(7):row.variant||'',observedAt:row.observed_at||`${date}T00:00:00.000Z`,snapshotDate:date}}
-async function loadReferencePrices(ids){
+// 近 7 天漲跌（migration 20261105120000 price_reference_prior）：同 provider＋同原始 variant 的 7 天前（含）最新一筆；變動不到 0.5% 當持平（changePct 0）。沒有比較價就回 {}，卡牆照舊只出價格。
+const REFERENCE_FLAT_PCT=0.5;
+function referenceChange(price,prior){const before=Number(prior?.amount),date=String(prior?.snapshot_date||'').slice(0,10);if(!price||!(before>0)||prior.currency!==price.currency||!/^\d{4}-\d{2}-\d{2}$/.test(date))return {};const pct=(price.amount-before)/before*100;return Number.isFinite(pct)?{changePct:Math.abs(pct)<REFERENCE_FLAT_PCT?0:Math.round(pct*10)/10,changeFrom:date}:{}}
+function referenceRpc(key,name,args){let timer;return Promise.race([cachedBrowseRows(key,()=>supabaseFetch(`/rpc/${name}`,{method:'POST',body:JSON.stringify(args)}),REFERENCE_PRICE_TTL_MS),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('REFERENCE_PRICE_TIMEOUT')),REFERENCE_PRICE_WAIT_MS)})]).finally(()=>clearTimeout(timer))}
+async function loadReferencePrices(ids,{prior=false}={}){
   const unique=[...new Set((ids||[]).filter(id=>typeof id==='string'&&id))].sort(),prices=new Map();
   if(!unique.length||!supabaseConfigured())return prices;
-  const key=`refprice:${createHash('sha1').update(unique.join('|')).digest('hex')}`;let timer;
+  const hash=createHash('sha1').update(unique.join('|')).digest('hex');
   try{
-    const rows=await Promise.race([cachedBrowseRows(key,()=>supabaseFetch('/rpc/price_reference_best',{method:'POST',body:JSON.stringify({p_ids:unique})}),REFERENCE_PRICE_TTL_MS),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('REFERENCE_PRICE_TIMEOUT')),REFERENCE_PRICE_WAIT_MS)})]);
-    for(const row of Array.isArray(rows)?rows:[]){const price=referencePriceFromRow(row);if(price)prices.set(row.card_id,price)}
+    // 比較價失敗只代表沒有漲跌，不能拖垮價格本身。
+    const [rows,priorRows]=await Promise.all([referenceRpc(`refprice:${hash}`,'price_reference_best',{p_ids:unique}),prior?referenceRpc(`refprior:${hash}`,'price_reference_prior',{p_ids:unique,p_days:7}).catch(error=>{console.error('reference prior lookup failed; no change shown',error.message);return []}):[]]);
+    const priorByKey=new Map((Array.isArray(priorRows)?priorRows:[]).map(row=>[`${row.card_id}|${row.provider}|${row.variant||''}`,row]));
+    for(const row of Array.isArray(rows)?rows:[]){const price=referencePriceFromRow(row);if(price)prices.set(row.card_id,{...price,...referenceChange(price,priorByKey.get(`${row.card_id}|${price.source}|${row.variant||''}`))})}
   }catch(error){prices.failed=true;console.error('reference price lookup failed; cards go out without it',error.message)}
-  finally{clearTimeout(timer)}
   return prices;
 }
 async function attachReferencePrices(cards){
-  const prices=await loadReferencePrices((cards||[]).map(card=>card.id));
+  const prices=await loadReferencePrices((cards||[]).map(card=>card.id),{prior:true});
   let rates={};if(prices.size){try{rates=(await getTwdRates()).rates||{}}catch(error){console.error('reference price fx failed',error.message)}}
   for(const card of cards||[]){const price=prices.get(card.id),rate=Number(rates[price?.currency]);if(price)card.referencePrice=rate>0?{...price,amountTwd:Math.round(price.amount*rate)}:price}
   return cards;
@@ -1271,7 +1276,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
       return json(res,200,withPaging({source:catalog.source,architecture:'canonical-card-with-printings',match:exact.length?'exact-name':'substring',databaseSearch:'unavailable',searchScope:'loaded-catalog-only'},page.data,page.total))
     }
   }
-  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11));if(tail.endsWith('/price-history')){const result=await priceHistoryResponse(tail.slice(0,-14));return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7),{card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarketCached(card)})}const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null;return json(res,200,{data:{...card,series,game},meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason?{}:SHORT_CACHE)}
+  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11));if(tail.endsWith('/price-history')){const result=await priceHistoryResponse(tail.slice(0,-14));return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7),{card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarketCached(card)})}const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null,data={...card,series,game};if(card.game==='pokemon')await attachReferencePrices([data]);return json(res,200,{data,meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason?{}:SHORT_CACHE)}
   if(url.pathname==='/api/reports/meta')return json(res,200,{data:{platforms:ALLOWED_PLATFORMS,currencies:ALLOWED_CURRENCIES,maxPrice:MAX_PRICE}});
   // ADR 0045：免登入收藏的參考總值。最多 100 張卡、一次查詢 price_snapshots、不打外部來源。
   if(url.pathname==='/api/prices/reference'&&req.method==='POST'){let body;try{body=await readJsonBody(req,REFERENCE_BODY_MAX_BYTES)}catch(error){return json(res,error.message==='BODY_TOO_LARGE'?413:400,{error:error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤'})}const v=validateReferenceRequest(body);if(v.error)return json(res,400,{error:v.error});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{const [rows,fx]=await Promise.all([supabaseFetch(`/price_snapshots?${new URLSearchParams(referenceQueryParams(v.ids))}`),getTwdRates()]);return json(res,200,{data:buildReferencePrices(rows,v.ids,{fx,amountToTwd})})}catch{return json(res,502,{error:'參考價查詢失敗'})}}
@@ -1331,6 +1336,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { fxJump, buildPriceMovers, buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { referenceChange, fxJump, buildPriceMovers, buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
 
 
