@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
 const source = await readFile(new URL('../price-timeline.js', import.meta.url), 'utf8');
+const cssSource = await readFile(new URL('../catalog-layout.css', import.meta.url), 'utf8');
 const sandbox = { window: {} };
 vm.runInNewContext(source, sandbox);
 const { PriceTimeline: T } = sandbox.window;
@@ -196,4 +197,12 @@ test('the mounted markup keeps its accessibility hooks and no longer sweeps or t
   assert.doesNotMatch(source, /rotateY/);
   assert.doesNotMatch(source, /play\(true\)/);
   assert.doesNotMatch(source, /data-r="jumps"/);
+});
+
+test('the chart marks the latest point and states the range change in red-up / green-down', () => {
+  assert.match(source, /class="ptl-end"/);
+  assert.match(source, /tone=pct<0\.5\?'flat':diff>0\?'up':'down'/);
+  const css = cssSource;
+  assert.match(css, /\.ptl-corner\.up\{fill:#C4000F\}/);
+  assert.match(css, /\.ptl-corner\.down\{fill:#1F6F43\}/);
 });
