@@ -92,16 +92,17 @@ function cardRarityMarkup(card){return rarityMarkup(cardRarityRaw(card),cardGame
 // DP-era Japanese cards print no number (metadata.numberStatus 'not-printed'); only a missing value is '卡號待補'.
 function cardNumberLabel(card){return card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||(card.metadata?.numberStatus==='not-printed'?'未印卡號':'卡號待補')}
 function cardPriceLabel(price){return price&&Number.isFinite(Number(price.price))&&price.currency?`${e(price.currency)} ${Number(price.price).toLocaleString()} 買取`:''}
-// 卡牆參考價（只有寶可夢）：browse 回應的 referencePrice＝該 printing 最新一筆 Cardmarket 每日快照（EUR，7 天內）；有 amountTwd 時新台幣大字、原幣小字。照實標「Cardmarket 參考」，滑過／長按（:active）看觀測日期與價格種類；沒有資料就不顯示，不放 0。
+// 卡牆參考價（只有寶可夢）：browse 回應的 referencePrice＝該 printing 最新一筆 Cardmarket 每日快照（EUR，7 天內）；有 amountTwd 時以新台幣為主。格狀只留一行「NT$ 金額＋來源縮寫（CM／TCG）＋極短版本」，原幣、觀測日、完整來源名放 title／aria-label／滑過或長按（:active）提示，清單模式保留原幣；沒有資料就不顯示，不放 0。
 // Cardmarket 沒有這張卡的價格時，改用 TCG API 轉來的 TCGplayer 美元市價（多為美國市場上的日版卡行情）。
-const REFERENCE_SOURCE_NAMES={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'};
+const REFERENCE_SOURCE_NAMES={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'},REFERENCE_SOURCE_SHORT={cardmarket:'CM',tcgplayer:'TCG'};
 function referenceAmountText(amount,currency){const value=Number(amount);return Number.isFinite(value)?`${currency==='EUR'?'€':currency==='USD'?'US$':currency+' '}${value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`:''}
 function cardReferenceMarkup(card,openId){
   const ref=card?.referencePrice,amount=Number(ref?.amount);
   if(cardGameId(card)!=='pokemon'||!ref||!Number.isFinite(amount)||amount<=0||!(ref.currency==='EUR'||ref.currency==='USD'&&ref.source==='tcgplayer'))return '';
   const source=REFERENCE_SOURCE_NAMES[ref.source]||String(ref.source||'參考來源'),variantKey=String(ref.variant||''),variant=variantKey?(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variantKey])||variantKey:'',seen=typeof marketDate==='function'?marketDate(ref.observedAt):'',
     tip=`${source} 平台參考價${ref.source==='tcgplayer'?'（美國市場，經 TCG API）':''}${variant?`（${variant}）`:''}${seen?`，觀測 ${seen}`:''}；不是成交價或台灣行情`,label=`${source} 參考`,original=referenceAmountText(amount,ref.currency),twd=Number(ref.amountTwd),money=Number.isFinite(twd)&&twd>0?`NT$${twd.toLocaleString('en-US')}`:original,text=`${label} ${money===original?money:`約 ${money}（${original}）`}`;
-  return `<div class="card-price card-reference" data-card-open="${e(openId)}" tabindex="0" role="button" aria-label="${e(text+'，'+tip+'；開啟卡片詳細資料')}"><span class="cr-label">${e(label)}</span> <span class="cr-amount">${e(money)}</span>${money===original?'':`<small class="cr-original">${e(original)}</small>`}<small class="card-reference-tip" aria-hidden="true">${e(tip)}</small></div>`;
+  const short=REFERENCE_SOURCE_SHORT[ref.source]||String(source).slice(0,3).toUpperCase(),shortVariant=variant.split(' ')[0];
+  return `<div class="card-price card-reference" data-card-open="${e(openId)}" tabindex="0" role="button" aria-label="${e(text+'，'+tip+'；開啟卡片詳細資料')}"><span class="cr-amount">${e(money)}</span><small class="cr-src" title="${e(`${source}；${original}${seen?`；觀測 ${seen}`:''}；參考價，不是成交價`)}" aria-hidden="true">${e(short)}</small>${shortVariant?`<small class="cr-var" aria-hidden="true">${e(shortVariant)}</small>`:''}${money===original?'':`<small class="cr-original" aria-hidden="true">${e(original)}</small>`}<small class="card-reference-tip" aria-hidden="true">${e(tip)}</small></div>`;
 }
 function cardGameLabel(card){const catalogName=G(card.game).nameZh;if(catalogName)return catalogName;return (window.CARD_GAMES||[]).find(item=>item.id===card.game)?.name||card.game||'IP 待補'}
 // 數量就是收藏：數量 > 0 即「已收藏」，☆ 只是把數量設成 1（或詢問後移除）的快速鍵。
@@ -432,7 +433,7 @@ function openCardZoom(source,alt,options={}){
   document.body?.classList.add('card-zoom-open');
 
   const viewport=zoom.querySelector('.card-zoom-viewport'),canvas=zoom.querySelector('.card-zoom-canvas'),media=zoom.querySelector('.card-zoom-media'),img=zoom.querySelector('.card-zoom-image'),fallback=zoom.querySelector('.card-zoom-fallback'),sample=zoom.querySelector('.card-sample-watermark'),label=zoom.querySelector('[data-zoom-label]'),quality=zoom.querySelector('[data-image-quality]'),close=zoom.querySelector('.card-zoom-close');
-  const state={scale:1,maxScale:4,mode:'fit',x:0,y:0,pointers:new Map(),gesture:null,sourceIndex:0};
+  const state={scale:1,maxScale:4,mode:'fit',x:0,y:0,pointers:new Map(),gesture:null,sourceIndex:0,downs:new Map(),tap:null,multi:false};
   const clamp=(value,min,max)=>Math.min(max,Math.max(min,value));
   const viewportGeometry=()=>{const rect=viewport?.getBoundingClientRect?.();return{left:rect?.left||0,top:rect?.top||0,width:rect?.width||viewport?.clientWidth||window.innerWidth||900,height:rect?.height||viewport?.clientHeight||window.innerHeight||700}};
   const viewportSize=()=>{const {width,height}=viewportGeometry();return{width,height}};
@@ -465,7 +466,14 @@ function openCardZoom(source,alt,options={}){
       const first=entries[0][1],second=entries[1][1],mid=midpoint(first,second),g=state.gesture,geometry=viewportGeometry(),startPoint={x:g.startMid.x-geometry.left-geometry.width/2,y:g.startMid.y-geometry.top-geometry.height/2},next=clamp(g.startScale*(distance(first,second)/g.startDistance),1,state.maxScale);state.scale=next;state.x=startPoint.x-(startPoint.x-g.startX)*(next/g.startScale)+(mid.x-g.startMid.x);state.y=startPoint.y-(startPoint.y-g.startY)*(next/g.startScale)+(mid.y-g.startMid.y);applyZoom();return}
     if(state.gesture?.type==='pan'&&entries.length===1){const entry=entries[0][1],g=state.gesture;state.x=g.startX+entry.x-g.startPointer.x;state.y=g.startY+entry.y-g.startPointer.y;applyZoom()}
   };
-  const endPointer=event=>{state.pointers.delete(event.pointerId);if(state.pointers.size)beginGesture();else state.gesture=null};
+  const endPointer=event=>{state.pointers.delete(event.pointerId);if(state.pointers.size)beginGesture();else{state.gesture=null;state.multi=false}};
+  // 雙擊／雙觸：兩次 pointerup 間隔 <300ms、各自位移與兩點距離都小才算；在點擊處於 1x 與 2.5x 間切換，走同一個 setZoom（過場本來就沒有動畫，不受 reduced-motion 影響）。滑鼠與觸控共用，不另掛 dblclick 以免重複觸發。
+  const tapToggle=event=>{
+    const down=state.downs.get(event.pointerId);state.downs.delete(event.pointerId);
+    if(!down||state.multi||Math.hypot(event.clientX-down.x,event.clientY-down.y)>10){state.tap=null;return}
+    const last=state.tap;
+    if(last&&event.timeStamp-last.t<300&&Math.hypot(event.clientX-last.x,event.clientY-last.y)<30){state.tap=null;setZoom(state.scale>1.01?'fit':2.5,event)}else state.tap={t:event.timeStamp,x:event.clientX,y:event.clientY};
+  };
 
   const fitMediaToViewport=()=>{if(!media||!img?.naturalWidth||!img?.naturalHeight)return null;const size=viewportSize(),ratio=img.naturalWidth/img.naturalHeight,width=Math.min(size.width,size.height*ratio),height=width/ratio;media.style.width=`${Math.max(1,width).toFixed(2)}px`;media.style.height=`${Math.max(1,height).toFixed(2)}px`;return{width,height}};
   img.onload=()=>{img.hidden=false;if(fallback)fallback.hidden=true;if(sample)sample.hidden=false;const fitted=fitMediaToViewport();state.maxScale=fitted?clamp(Math.min(img.naturalWidth/fitted.width,img.naturalHeight/fitted.height),1,4):1;zoom.querySelectorAll('[data-zoom-preset]').forEach(button=>{const preset=button.dataset.zoomPreset,requested=preset==='fit'?1:Number(preset);button.disabled=requested>state.maxScale+.01;button.title=button.disabled?`來源原始像素最高支援 ${Math.floor(state.maxScale*100)}%`:''});if(quality){const limited=state.maxScale<3.99;quality.textContent=`來源 ${img.naturalWidth}×${img.naturalHeight}${limited?` · 最高無損 ${Math.floor(state.maxScale*100)}%`:''}`;quality.classList.toggle('is-low-resolution',state.maxScale<2)}if(state.scale>state.maxScale)state.scale=state.maxScale;applyZoom()};
@@ -479,9 +487,9 @@ function openCardZoom(source,alt,options={}){
   zoom.querySelector('[data-zoom-action="in"]')?.addEventListener('click',()=>stepZoom(1));
   zoom.querySelector('[data-zoom-action="reset"]')?.addEventListener('click',()=>setZoom('fit'));
   viewport?.addEventListener('wheel',event=>{event.preventDefault();setZoom(clamp(state.scale*(event.deltaY<0?1.25:.8),1,state.maxScale),event)},{passive:false});
-  viewport?.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'&&event.button!==0)return;event.preventDefault();viewport.setPointerCapture?.(event.pointerId);state.pointers.set(event.pointerId,pointerPosition(event));beginGesture()});
+  viewport?.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'&&event.button!==0)return;event.preventDefault();viewport.setPointerCapture?.(event.pointerId);state.pointers.set(event.pointerId,pointerPosition(event));state.downs.set(event.pointerId,pointerPosition(event));if(state.pointers.size>1)state.multi=true;beginGesture()});
   viewport?.addEventListener('pointermove',event=>{if(!state.pointers.has(event.pointerId))return;event.preventDefault();state.pointers.set(event.pointerId,pointerPosition(event));updateGesture()});
-  viewport?.addEventListener('pointerup',endPointer);viewport?.addEventListener('pointercancel',endPointer);viewport?.addEventListener('lostpointercapture',event=>{if(state.pointers.has(event.pointerId))endPointer(event)});
+  viewport?.addEventListener('pointerup',event=>{tapToggle(event);endPointer(event)});viewport?.addEventListener('pointercancel',event=>{state.downs.delete(event.pointerId);state.tap=null;endPointer(event)});viewport?.addEventListener('lostpointercapture',event=>{if(state.pointers.has(event.pointerId))endPointer(event)});
   zoom.onkeydown=event=>{
     if(event.key==='Escape'){event.preventDefault();closeCardZoom();return}
     if(event.key==='+'||event.key==='='){event.preventDefault();stepZoom(1);return}
@@ -897,7 +905,7 @@ document.addEventListener('keydown',event=>{if(event.defaultPrevented)return;if(
 const referencePriceStyle=document.createElement('style');
 referencePriceStyle.textContent=`
   .card-reference{position:relative;z-index:2;cursor:pointer;width:fit-content;max-width:100%}
-  .card-reference .cr-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8em;font-weight:500;opacity:.85}.card-reference .cr-amount{display:block;white-space:nowrap}.card-reference .cr-amount:has(+.cr-original){font-size:1.3em;line-height:1.2}.card-reference .cr-original{display:block;white-space:nowrap;font-size:.8em;font-weight:500;opacity:.75}
+  .card-reference{display:flex;align-items:baseline;gap:4px;white-space:nowrap;font-variant-numeric:tabular-nums}.card-reference .cr-amount{white-space:nowrap}.card-reference .cr-src,.card-reference .cr-var,.card-reference .cr-original{font-size:.7em;font-weight:500;opacity:.75}.card-reference .cr-var{min-width:0;overflow:hidden;text-overflow:ellipsis}.card:not(.card-list) .card-reference .cr-original{display:none}
   .card-reference:focus-visible{outline:3px solid var(--y,#ffe500);outline-offset:2px}
   .card-reference-tip{display:none;position:absolute;left:0;bottom:calc(100% + 4px);width:max-content;max-width:min(240px,80vw);padding:6px 9px;border-radius:8px;background:#171717;color:#fff;font:500 12px/1.4 system-ui,"Noto Sans TC",sans-serif;white-space:normal;box-shadow:0 2px 8px #0006;pointer-events:none}
   .card-reference:hover .card-reference-tip,.card-reference:focus-visible .card-reference-tip,.card-reference:active .card-reference-tip{display:block}
