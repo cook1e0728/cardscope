@@ -153,6 +153,13 @@ test('CSP img-src lets the Fusion World card images (hotlinked from www.dbs-card
   });
 });
 
+test('CSP img-src lets the Japanese Yu-Gi-Oh! card images (hotlinked from www.db.yugioh-card.com) load',async()=>{
+  await withServer('csp-ygo-jp',{},async base=>{
+    const csp=(await fetch(base+'/')).headers.get('content-security-policy');
+    assert.ok(/img-src [^;]*https:\/\/www\.db\.yugioh-card\.com(?:[ ;]|$)/.test(csp), csp);
+  });
+});
+
 test('a query of only symbols finds nothing instead of listing sample cards',async()=>{
   await withServer('symbols',{},async base=>{
     for(const q of ['.','_','%25','..%20_%20','%EF%BC%8E'])assert.equal((await (await fetch(base+'/api/search?q='+q)).json()).data.length,0,q);
