@@ -224,7 +224,6 @@ html.look-clean .cards .card .watchlist-inline{gap:0;border:1px solid var(--lc-h
 html.look-clean .cards .card .watchlist-inline button{width:44px;min-width:44px;height:44px;background:transparent;color:var(--lc-ink);font-size:18px}
 html.look-clean .cards .card .watchlist-inline button:disabled{color:#8A8272}
 html.look-clean .cards .card .watchlist-inline span{min-width:24px;font:500 14px/1 var(--lc-num);color:var(--lc-ink)}
-/* 自己疊的 SAMPLE 浮水印：縮成卡圖右下角的小標，不再蓋住卡面文字（ADR 0044 Q11 預覽）。 */
 
 /* 清單模式：白底細分隔線列，不再是深色框。 */
 html.look-clean .cards.list-view{gap:0}
@@ -375,6 +374,8 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .cards .card:not(.card-list) .card-no{font-size:12px}
   html.look-clean .cards .card:not(.card-list) .card-rarity{padding:0 4px;font-size:12px}
   html.look-clean .cards .card:not(.card-list) .card-price{font-size:12px}
+  html.look-clean .cards .card:not(.card-list) .card-reference{gap:3px}
+  html.look-clean .cards .card:not(.card-list) .card-reference .cr-var{display:none}
   html.look-clean .cards .card:not(.card-list)>.badge:not(.ip-badge){font-size:12px;padding:0 4px}
   html.look-clean .cards .card:not(.card-list) .watchlist-inline{display:none}
   html.look-clean .cards .card:not(.card-list) .card-actions{position:absolute;top:0;right:0;width:auto;margin:0}
@@ -385,7 +386,7 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean #trendsSection .trend-rail{display:flex;overflow-x:auto;gap:10px;padding-top:var(--s2);scroll-snap-type:x proximity}
   html.look-clean #trendsSection .trend-card{flex:0 0 112px;width:112px;padding:6px;scroll-snap-align:start}
   html.look-clean #trendsSection .trend-fall .trend-rise{color:#1F6F43!important;background:#E8F3EC!important}
-  html.look-clean #trendsSection .trend-rise{color:#D7261E;background:#FBEDEB;clip-path:none;border-radius:4px;padding:1px 4px;font-size:11px;font-weight:700}
+  html.look-clean #trendsSection .trend-rise{color:#C4000F;background:#FBEDEB;clip-path:none;border-radius:4px;padding:1px 4px;font-size:11px;font-weight:700}
 
   html.look-clean .card-tools,html.look-clean body[data-view="game"] .card-tools{margin:var(--s3) 0 var(--s4)}
   html.look-clean .view-switch{width:100%}
