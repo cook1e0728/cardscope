@@ -21,7 +21,7 @@
     "pokemon-jp": "external-only",
     "pokemon-tw": "external-only",
     "onepiece-tw": "external-only",
-    "yugioh-neuron": "external-only",
+    "yugioh-neuron": "risk-accepted",
     "yuyutei": "external-only",
     "ebay": "external-only",
     "exchangerate-api": "not-applicable",
@@ -47,6 +47,6 @@
     {"id":"pokemon-jp","kind":"official-link","game":"pokemon","region":"JP","name":"Pokémon Card Search","url":"https://www.pokemon-card.com/card-search/","runtimeProvider":null,"access":"link-only","metadataCollection":"permission-pending","collectionEnabled":false,"imagePolicy":"not-collected","attributionRequired":true,"refreshHours":null,"evidenceUrl":"https://www.pokemon-card.com/","notes":"Official navigation link only."},
     {"id":"pokemon-tw","kind":"official-link","game":"pokemon","region":"TW","name":"Pokémon Card Search Taiwan","url":"https://asia.pokemon-card.com/tw/card-search/","runtimeProvider":null,"access":"link-only","metadataCollection":"permission-pending","collectionEnabled":false,"imagePolicy":"not-collected","attributionRequired":true,"refreshHours":null,"evidenceUrl":"https://asia.pokemon-card.com/tw/","notes":"Official navigation link only."},
     {"id":"onepiece-tw","kind":"official-link","game":"onepiece","region":"TW","name":"ONE PIECE CARD GAME Taiwan Card List","url":"https://asia-tw.onepiece-cardgame.com/cardlist/","runtimeProvider":null,"access":"link-only","metadataCollection":"permission-pending","collectionEnabled":false,"imagePolicy":"not-collected","attributionRequired":true,"refreshHours":null,"evidenceUrl":"https://asia-tw.onepiece-cardgame.com/","notes":"Official navigation link only."},
-    {"id":"yugioh-neuron","kind":"official-link","game":"yugioh","region":"GLOBAL","name":"Yu-Gi-Oh! Neuron Card Database","url":"https://www.db.yugioh-card.com/yugiohdb/card_search","runtimeProvider":null,"access":"link-only","metadataCollection":"permission-pending","collectionEnabled":false,"imagePolicy":"not-collected","attributionRequired":true,"refreshHours":null,"evidenceUrl":"https://www.yugioh-card.com/","notes":"Official navigation link only."}
+    {"id":"yugioh-neuron","kind":"official-page","game":"yugioh","region":"JP","name":"Yu-Gi-Oh! Neuron Card Database (Japanese)","url":"https://www.db.yugioh-card.com/yugiohdb/","runtimeProvider":"yugiohJp","access":"official-page","metadataCollection":"risk-accepted","collectionEnabled":true,"imagePolicy":"not-collected","attributionRequired":true,"refreshHours":72,"evidenceUrl":"https://www.yugioh-card.com/","notes":"The owner accepted the unconfirmed-terms risk on 2026-11-05: Japanese (request_locale=ja) text facts and official image URLs (hotlinked, not rehosted) from the official card database HTML pages: the pack list (card_list.action), each pack page (card_search.action?ope=1, card names and cids) and each card detail page (ope=2, card numbers, rarities, release dates, image tokens). One request at a time at least 1.1 s apart, at most about 1,200 requests per run (the backlog continues on later runs; the cursor is the last pack processed), insert-only, blank name_ja filled. Official cids are matched to existing cards through YGOPRODeck misc_info.konami_id; cids without an existing card are only counted in the run metadata. robots.txt returns 404."}
   ]
 }
