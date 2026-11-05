@@ -332,6 +332,8 @@ html.look-clean .feature-tour>summary,html.look-clean .brand-footer summary{min-
 html.look-clean .feature-tour>summary b{font-weight:700}
 html.look-clean .brand-footer{margin-top:var(--s7);padding:var(--s6) 0 var(--s7);border-top:1px solid var(--lc-hair)}
 html.look-clean .brand-footer p,html.look-clean .brand-footer small{max-width:60ch;font-size:16px;line-height:1.6;color:var(--lc-ink-2)}
+/* 中文只在標點、空白處換行，詞不被切開；過長時才退回任意處 */
+html.look-clean .brand-footer p{word-break:keep-all;overflow-wrap:anywhere;text-wrap:pretty}
 html.look-clean .brand-footer a{display:inline-block;padding:var(--s3) 0;color:var(--lc-ink);text-underline-offset:3px}
 html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
 
