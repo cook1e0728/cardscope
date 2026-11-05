@@ -606,9 +606,9 @@ html.look-clean .top .search button{align-self:stretch;width:56px;min-width:56px
 html.look-clean body[data-view="game"] .hero{padding-top:0}
 html.look-clean body[data-view="game"] .channels{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:var(--s2);padding:var(--s3) 0;overflow:visible}
 html.look-clean body[data-view="game"] .channels:empty{min-height:116px}
-html.look-clean body[data-view="game"] .channel[data-ip],html.look-clean body[data-view="game"] .channel[data-ip]:not(.on){display:grid;justify-items:center;align-content:start;gap:6px;min-width:0;min-height:0;padding:var(--s3) 6px 10px;border:0;border-radius:4px;background:#fff;white-space:normal}
-html.look-clean body[data-view="game"] .channel[data-ip]:not(.on):hover{background:#F3EEE3;transform:none}
-html.look-clean body[data-view="game"] .channel[data-ip].on{min-height:0;border:0;background:#fff;box-shadow:inset 0 -6px 0 var(--ip)}
+html.look-clean body[data-view="game"] .channel[data-ip],html.look-clean body[data-view="game"] .channel[data-ip]:not(.on){display:grid;justify-items:center;align-content:start;gap:6px;min-width:0;min-height:0;padding:var(--s3) 6px 10px;border:1px solid #D8D0C2;border-radius:12px;background:#fff;white-space:normal}
+html.look-clean body[data-view="game"] .channel[data-ip]:not(.on):hover{background:#F3EEE3;border-color:#8F8576;transform:none}
+html.look-clean body[data-view="game"] .channel[data-ip].on{min-height:0;border:1px solid var(--ip);background:#fff;box-shadow:inset 0 0 0 1px var(--ip)}
 html.look-clean body[data-view="game"] .channel[data-ip] .channel-art,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art{display:block;width:100%;height:44px;border-radius:0;background:transparent}
 html.look-clean body[data-view="game"] .channel[data-ip] .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip]:not(.on) .channel-art img,html.look-clean body[data-view="game"] .channel[data-ip="all"] .channel-art img{display:block;box-sizing:border-box;width:100%;height:44px;max-width:none;max-height:none;padding:0;border-radius:0;background:transparent;object-fit:contain}
 html.look-clean body[data-view="game"] .channel[data-ip] .channel-tag{display:none}
