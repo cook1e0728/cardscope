@@ -37,7 +37,8 @@ export function parseSearchQuery(query) {
   const q = String(query ?? '').trim(), plain = { q, name: q, rarities: [], region: null };
   if (!q) return plain;
   const rarities = [];
-  let rest = q.normalize('NFKC');
+  // 「阿爾宙斯UR」「ピカチュウSAR」：中日文卡名後直接黏著稀有度代碼也拆開（EX、GX、VSTAR 等卡名字尾不是代碼，不受影響）
+  let rest = q.normalize('NFKC').replace(/([^\x00-\x7F])([A-Za-z]{2,5})(?=\s|$)/g, (match, before, code) => CODE_WORDS.has(code.toUpperCase()) ? `${before} ${code}` : match);
   for (const [pattern, code] of phraseRules) if (pattern.test(rest)) { rest = rest.replace(pattern, ' '); rarities.push(code) }
   let region = null;
   const kept = [];

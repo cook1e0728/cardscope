@@ -20,7 +20,7 @@ test('parseSearchQuery 拆出稀有度與版本詞，其餘當卡名',()=>{
   assert.deepEqual(parse('ur 日版'),{name:'',rarities:['UR'],region:'JP',rarityOnly:true});
   assert.deepEqual(parse('SEC　SAR'),{name:'',rarities:['SEC','SAR'],region:null,rarityOnly:true});
   // 不解析：只有版本詞、卡號、字母夾在字裡、容易誤判的單字母／常見名字
-  for(const plain of ['日版','SV6a 090','Pikachu','Charizard','Ace Sabo','R 噴火龍','none 皮卡丘','SARX','桃歹郎SAR','','  '])assert.deepEqual(parse(plain),{name:plain.trim(),rarities:[],region:null},`不解析：${plain}`);
+  for(const plain of ['日版','SV6a 090','Pikachu','Charizard','Ace Sabo','R 噴火龍','none 皮卡丘','SARX','桃歹郎SARX','Charizard SARX','','  '])assert.deepEqual(parse(plain),{name:plain.trim(),rarities:[],region:null},`不解析：${plain}`);
 });
 
 test('稀有度拼法展開與 printing 比對',()=>{
@@ -168,4 +168,12 @@ test('卡號後多一個單字母（OP05-001 R）查無時，去掉它有結果�
   await withApp((call,respond)=>respond(answer([],0)),async({search})=>{
     assert.equal((await search({q:'OP05-001 R'})).body.meta.suggestion,null,'去掉後也沒有結果就不建議');
   });
+});
+
+test('a rarity code stuck to a Chinese or Japanese name is split off; name suffixes like ex/VSTAR stay', () => {
+  assert.deepEqual(parseSearchQuery('桃歹郎SAR'), { q: '桃歹郎SAR', name: '桃歹郎', rarities: ['SAR'], region: null });
+  assert.deepEqual(parseSearchQuery('阿爾宙斯UR'), { q: '阿爾宙斯UR', name: '阿爾宙斯', rarities: ['UR'], region: null });
+  assert.deepEqual(parseSearchQuery('ピカチュウSAR 日版'), { q: 'ピカチュウSAR 日版', name: 'ピカチュウ', rarities: ['SAR'], region: 'JP' });
+  assert.equal(parseSearchQuery('噴火龍ex').name, '噴火龍ex');
+  assert.equal(parseSearchQuery('阿爾宙斯VSTAR').name, '阿爾宙斯VSTAR');
 });

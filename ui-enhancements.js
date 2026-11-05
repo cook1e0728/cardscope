@@ -1148,3 +1148,72 @@ function openCollection(){
   if(collectionItems().length)resolveCollection().then(changed=>{if(changed){refreshGrid();rerenderCollection()}return loadCollectionPrices()});
 }
 window.openCollection=openCollection;
+
+// 搜尋框即時建議：輸入停 0.25 秒後查 /api/search（6 筆），在框下列出卡片；↑↓ 選、Enter 開卡、Esc 關。
+// 查詢若帶稀有度（阿爾宙斯UR），第一列說明已拆成「卡名＋稀有度」；Enter 沒選列時照原本的搜尋流程。
+(function installSearchSuggest(){
+  if(typeof document.head?.appendChild!=='function')return; // 測試用的假 DOM 沒有 head，不裝
+  const style=document.createElement('style');style.textContent=`.search-suggest{position:fixed;z-index:1000;max-height:min(70vh,460px);overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid #D8D0C2;border-radius:12px;background:#fff;box-shadow:0 12px 28px rgba(33,28,23,.16);text-align:left}
+.search-suggest[hidden]{display:none}
+.search-suggest li{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 8px;border-radius:8px;cursor:pointer;color:#211C17}
+.search-suggest li[aria-selected=true],.search-suggest li:hover{background:#F3EEE3}
+.search-suggest img,.search-suggest .ss-noimg{flex:none;width:32px;height:44px;border-radius:3px;object-fit:cover;background:#EFE9DB}
+.search-suggest .ss-text{min-width:0;display:grid;gap:1px}
+.search-suggest .ss-name{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.search-suggest .ss-sub{font-size:12px;color:#5A5348;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.search-suggest .ss-action{justify-content:space-between;font-size:14px}
+.search-suggest .ss-action b{font-weight:700}
+.search-suggest .ss-chip{padding:1px 8px;border-radius:999px;background:#211C17;color:#fff;font-size:12px;font-weight:700}
+.search-suggest .ss-state{cursor:default;color:#5A5348;font-size:13px}
+.search-suggest .ss-state:hover{background:none}`;document.head.appendChild(style);
+  const attach=input=>{
+    if(!input||input.dataset.suggest)return;input.dataset.suggest='1';
+    // 搜尋框外層 overflow:hidden（按鈕方角），清單改用 fixed 對齊外層，開啟、捲動、縮放時重算位置
+    const host=input.parentElement;
+    const list=document.createElement('ul'),listId=`${input.id}-suggest`;list.id=listId;list.className='search-suggest';list.setAttribute('role','listbox');list.setAttribute('aria-label','搜尋建議');list.hidden=true;document.body.appendChild(list);
+    const place=()=>{if(list.hidden)return;const box=host.getBoundingClientRect();const width=Math.min(innerWidth-16,Math.max(box.width,340));list.style.width=`${width}px`;list.style.left=`${Math.max(8,Math.min(box.left,innerWidth-8-width))}px`;list.style.top=`${box.bottom+6}px`};
+    addEventListener('resize',place);addEventListener('scroll',place,true);
+    input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls',listId);input.setAttribute('aria-expanded','false');
+    let timer=0,controller=null,items=[],active=-1,lastQ='';
+    const close=()=>{list.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');active=-1};
+    const runSearch=q=>{close();if(typeof window.searchFor==='function')window.searchFor(q)};
+    const choose=index=>{const item=items[index];if(!item)return;close();item.run()};
+    const mark=index=>{active=index;[...list.children].forEach((li,i)=>li.setAttribute('aria-selected',String(i===index)));const li=list.children[index];if(li?.id){input.setAttribute('aria-activedescendant',li.id);li.scrollIntoView({block:'nearest'})}else input.removeAttribute('aria-activedescendant')};
+    const render=(q,body)=>{
+      const cards=Array.isArray(body?.data)?body.data:[],meta=body?.meta||{},parsed=meta.parsed||{},total=Number(meta.total)||cards.length;
+      items=[];const rows=[];
+      const add=(html,run,cls='')=>{const index=items.length;items.push({run});rows.push(`<li role="option" id="${listId}-${index}" class="${cls}" data-index="${index}" aria-selected="false">${html}</li>`)};
+      if(parsed.name&&parsed.rarities?.length)add(`<span>搜尋「<b>${e(parsed.name)}</b>」</span><span>${parsed.rarities.map(code=>`<span class="ss-chip">${e(code)}</span>`).join(' ')}</span>`,()=>runSearch(q),'ss-action');
+      for(const c of cards){const img=image(c),number=c.officialCardNumber||c.printings?.find(p=>p.localCardNumber)?.localCardNumber||'',game=G(c.game)?.nameZh||'',sub=[game,number,c.rarity?rarityText(c.rarity):''].filter(Boolean).join(' · ');
+        add(`${img?`<img src="${e(img)}" alt="" loading="lazy" data-img-error="remove">`:'<span class="ss-noimg" aria-hidden="true"></span>'}<span class="ss-text"><span class="ss-name">${e(name(c))}</span><span class="ss-sub">${e(sub)}</span></span>`,()=>openCard(cardOpenId(c)))}
+      if(!cards.length&&meta.suggestion?.q)add(`<span>試試「<b>${e(meta.suggestion.q)}</b>」</span><span class="ss-sub">${e(meta.suggestion.reason||'')}</span>`,()=>runSearch(meta.suggestion.q),'ss-action');
+      if(cards.length&&total>cards.length)add(`<span>查看全部 <b>${total.toLocaleString('en-US')}</b> 筆結果</span><span aria-hidden="true">›</span>`,()=>runSearch(q),'ss-action');
+      if(!rows.length)rows.push(`<li class="ss-state" role="presentation">${e(meta.hint?.message||`找不到「${q}」，按 Enter 用完整搜尋`)}</li>`);
+      list.innerHTML=rows.join('');list.hidden=false;place();input.setAttribute('aria-expanded','true');active=-1;
+    };
+    const fetchSuggest=async q=>{
+      controller?.abort();controller=new AbortController();
+      try{const response=await fetch(`/api/search?limit=6&q=${encodeURIComponent(q)}`,{signal:controller.signal});if(!response.ok)return close();const body=await response.json();if(q!==input.value.trim()||document.activeElement!==input)return;render(q,body)}catch(error){if(error?.name!=='AbortError')close()}
+    };
+    input.addEventListener('input',()=>{
+      clearTimeout(timer);const q=input.value.trim();
+      // 中日文 1 個字、英數 2 個字以上才查，避免一個字母就灑出整個卡庫
+      if(!q||(!/[^\x00-\x7F]/.test(q)&&q.length<2)){controller?.abort();lastQ='';return close()}
+      if(q===lastQ&&!list.hidden)return;
+      timer=setTimeout(()=>{lastQ=q;if(list.hidden){list.innerHTML='<li class="ss-state" role="presentation">搜尋中…</li>';list.hidden=false;place();input.setAttribute('aria-expanded','true')}fetchSuggest(q)},250);
+    });
+    input.addEventListener('keydown',event=>{
+      if(event.isComposing)return;
+      if(event.key==='Escape'&&!list.hidden){event.preventDefault();event.stopPropagation();close();return}
+      if(list.hidden||!items.length){if(event.key==='Enter'){clearTimeout(timer);controller?.abort();close()}return}
+      if(event.key==='ArrowDown'){event.preventDefault();mark((active+1)%items.length)}
+      else if(event.key==='ArrowUp'){event.preventDefault();mark(active<=0?items.length-1:active-1)}
+      else if(event.key==='Enter'){clearTimeout(timer);controller?.abort();if(active>=0){event.preventDefault();event.stopImmediatePropagation();choose(active)}else close()}
+    },true);
+    list.addEventListener('mousedown',event=>event.preventDefault());
+    list.addEventListener('click',event=>{const li=event.target.closest('li[data-index]');if(li)choose(Number(li.dataset.index))});
+    input.addEventListener('blur',()=>setTimeout(close,120));
+    document.addEventListener('cardscope:search',()=>{clearTimeout(timer);controller?.abort();close()});
+  };
+  attach(document.getElementById('q'));attach(document.getElementById('heroQ'));
+})();
