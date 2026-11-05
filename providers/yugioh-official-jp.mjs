@@ -181,11 +181,12 @@ export async function collectYugiohJp({ fetchText = officialText, fetchJson = yg
     if (consecutiveEmpty >= CONSECUTIVE_EMPTY_LIMIT) throw new Error(`YGO_JP_DETAIL_EMPTY:${cid}`);
     processed.push(cid);
     skippedNoNumber += detail.skippedNoNumber;
-    if (detail.name) nameByCardId.set(cardId, detail.name);
+    // 解析出的字串是整頁 HTML 的切片，留著會連整頁一起留在記憶體（1,200 頁撐爆 256 MB heap，2026-11-05 三次 OOM）；JSON 來回複製成獨立字串
+    if (detail.name) nameByCardId.set(cardId, JSON.parse(JSON.stringify(detail.name)));
     const rows = ygoJpRows({ cardId, seriesId: cardsById.get(cardId).series_id || null, cid, detail });
     skippedKeyConflict += rows.skippedKeyConflict;
     if (!rows.printings.length) noJpRows.push(cid);
-    printings.push(...rows.printings);
+    printings.push(...JSON.parse(JSON.stringify(rows.printings)));
   }
   return { requests, pending: pending.length, processed: processed.length, printings, nameByCardId, missingCard, noJpRows, skippedNoNumber, skippedKeyConflict,
     complete: processed.length === pending.length, cursor: processed.length ? processed.at(-1) : cursor };

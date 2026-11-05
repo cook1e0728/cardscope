@@ -170,3 +170,15 @@ test('Yu-Gi-Oh sync skips cards without TCG sets and only creates series that ca
     globalThis.fetch=originalFetch;
   }
 });
+
+test('closeInterruptedCatalogRuns marks only catalog runs started before boot as failed', async () => {
+  const { closeInterruptedCatalogRuns } = await import('../providers/catalog-sync.mjs');
+  const calls = [];
+  await closeInterruptedCatalogRuns(async (path, init) => { calls.push({ path, init }); return null; }, '2026-11-05T06:53:21.000Z');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].path, '/catalog_sync_runs?scope=eq.catalog&status=eq.running&started_at=lt.2026-11-05T06%3A53%3A21.000Z');
+  assert.equal(calls[0].init.method, 'PATCH');
+  const body = JSON.parse(calls[0].init.body);
+  assert.equal(body.status, 'failed');
+  assert.equal(body.error, 'INTERRUPTED_BY_RESTART');
+});

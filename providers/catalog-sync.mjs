@@ -413,6 +413,10 @@ async function syncOnePiece(db){
 // maintained from the Taiwanese official card search (ADR 0010, 0014, 0015), and a TCGdex resync
 // would overwrite them, so it is left out of scheduled syncs unless explicitly opted in.
 const STALE_RUN_HOURS=6;
+// 單一執行個體：開機前留下的 catalog running 列一定是被重啟（部署或 OOM）打斷的；標成 failed，下一輪就不會被它擋 6 小時。
+export async function closeInterruptedCatalogRuns(db,bootedAt){
+  return db(`/catalog_sync_runs?scope=eq.catalog&status=eq.running&started_at=lt.${encodeURIComponent(bootedAt)}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status:'failed',error:'INTERRUPTED_BY_RESTART',finished_at:new Date().toISOString()})});
+}
 export async function catalogProvidersNeedingSync(db,maxAgeHours=72,{includeTcgdexTw=false}={}){
   const cutoff=new Date(Date.now()-maxAgeHours*3600000).toISOString(),rows=await db(`/catalog_sync_runs?select=provider,status,metadata,started_at&status=in.(completed,running)&started_at=gte.${encodeURIComponent(cutoff)}&limit=100`),
     // A run interrupted by a restart stays 'running' forever; after STALE_RUN_HOURS it no longer counts as covered.

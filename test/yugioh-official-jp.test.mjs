@@ -182,3 +182,10 @@ test('官方沒有的 cid（衍生物、只有英文版）標題是「カード�
   assert.equal(patches.length, 0);
   assert.equal(stats.metadata.noJpRowsCount, 12);
 });
+
+test('collectYugiohJp copies parsed strings so a page of HTML is not kept alive (2026-11-05 OOM)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const source = readFileSync(new URL('../providers/yugioh-official-jp.mjs', import.meta.url), 'utf8');
+  assert.match(source, /nameByCardId\.set\(cardId, JSON\.parse\(JSON\.stringify\(detail\.name\)\)\)/);
+  assert.match(source, /printings\.push\(\.\.\.JSON\.parse\(JSON\.stringify\(rows\.printings\)\)\)/);
+});
