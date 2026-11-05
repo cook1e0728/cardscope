@@ -642,3 +642,23 @@ html.look-clean .top .search button.search-clear:hover,html.look-clean .top .sea
   .rail-wrap .rail-nav:focus-visible{outline:2px solid var(--ip,#C4000F);outline-offset:3px}
   .rail-wrap .rail-nav:disabled{background:#E6DFD2;color:#A69C8C;box-shadow:none;cursor:default;transform:none}
 }
+
+/* 系列區工具：篩選框＋展開全部（series-band.js）；展開或篩選時系列改多排網格 */
+.series-band-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.series-band-tools{display:flex;align-items:center;gap:8px;flex:0 1 440px;margin-left:auto}
+.series-band-filter{flex:1;min-width:0;height:44px;padding:0 16px;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:14px}
+.series-band-filter:focus{outline:none;border-color:#211C17;box-shadow:0 0 0 3px rgba(33,28,23,.08)}
+.series-band-expand{flex:none;min-height:44px;padding:0 18px;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:14px;font-weight:700;cursor:pointer}
+.series-band-expand:hover,.series-band-expand[aria-expanded="true"]{border-color:#211C17}
+html.look-clean .series-band.is-grid .series-band-rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));overflow-x:visible;scroll-snap-type:none}
+html.look-clean .series-band.is-grid .band-tile{width:auto;min-width:0}
+html.look-clean .series-band.is-grid .band-tile-art{width:100%;height:auto;aspect-ratio:1}
+@media (max-width:760px){html.look-clean .series-band.is-grid .series-band-rail{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}}
+.series-band-more{grid-column:1/-1;min-height:44px;border:1px dashed #BDB3A3;border-radius:12px;background:#fff;color:#211C17;font-size:14px;font-weight:700;cursor:pointer}
+.series-band-more:hover{border-style:solid;border-color:#211C17}
+/* 系列標題下的「其他版本」：同代號的系列一鍵切版本 */
+.selected-other-regions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.selected-other-regions .meta{margin:0}
+.selected-other-regions button{min-height:36px;padding:0 14px;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:13px;font-weight:700;cursor:pointer}
+.selected-other-regions button:hover{border-color:#211C17}
+@media (max-width:760px){.series-band-tools{flex:1 1 100%;margin-left:0}}

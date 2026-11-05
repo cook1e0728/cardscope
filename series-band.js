@@ -93,6 +93,26 @@
     wrap.querySelector('.is-prev').disabled=rail.scrollLeft<=4;
     wrap.querySelector('.is-next').disabled=rail.scrollLeft>=max-4;
   }
+  // 同一系列在其他版本的對應列：同遊戲、同代號（不分大小寫）。寶可夢美版的系列切法與日／台版不同，代號相同也不一定是同一彈，所以不和美版互相對應。
+  function sameSeries(item,region){
+    const code=String(item?.officialCode||'').toUpperCase();
+    if(!code||(item.game==='pokemon'&&(item.region==='US'||region==='US')))return null;
+    return (C.series||[]).find(row=>row.game===item.game&&row.region===region&&String(row.officialCode||'').toUpperCase()===code)||null;
+  }
+  // 切換版本時留在同一系列：change 事件在 capture 階段先記下對應系列（此時 browse.seriesId 還是舊的），
+  // 接著 index.html 的 onchange 呼叫 loadGameCards 時，沒有指定入口就改開這個系列。
+  let pendingSame=null;
+  document.addEventListener('change',event=>{
+    if(event.target?.id!=='browseRegion'||game==='all')return;
+    pendingSame=sameSeries((C.series||[]).find(row=>row.id===browse.seriesId),event.target.value)?.id||null;
+    setTimeout(()=>{pendingSame=null},0);
+  },true);
+  if(typeof loadGameCards==='function'){
+    const previousLoad=loadGameCards;
+    loadGameCards=function(id,entry=window.cardscopeEntry,quiet=false){if(!entry&&pendingSame)entry={series:pendingSame};pendingSame=null;return previousLoad(id,entry,quiet)};
+  }
+  // 系列區的篩選字與展開狀態（各遊戲分開記）；展開或篩選時系列改成多排網格，一次先排 SHOW_STEP 個。
+  const bandFilter={},bandExpanded={},bandShown={},SHOW_STEP=120;
   // Released in the last 90 days: shown as a NEW badge on the series' own tile.
   const recentSince=()=>taipeiDate(90);
   // auto: the page opened this series as the game's default view, so it is not remembered as 最近瀏覽 and the page does not scroll.
@@ -100,7 +120,11 @@
     if(!auto)remember(item.id);resetRarityFilter();clearProduct();
     browse.product={...item,seriesId:item.id,versionLabel:regionText(item.region,item.game)};browse.seriesId=item.id;
     const box=document.getElementById('selectedProduct');box.classList.add('open');
-    const art=cover(item);box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="" data-img-error="retry-type">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionText(item.region,item.game)||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}</div>`;
+    const art=cover(item),others=regionsFor(item.game).filter(region=>region!==item.region).map(region=>sameSeries(item,region)).filter(Boolean);
+    const otherLinks=others.length?`<div class="selected-other-regions" role="group" aria-label="同系列其他版本"><span class="meta">其他版本：</span>${others.map(row=>`<button type="button" data-other-region="${esc(row.region)}">${esc(regionText(row.region,row.game)||row.region)} ${esc(row.officialCode||'')}</button>`).join('')}</div>`:'';
+    box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="" data-img-error="retry-type">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionText(item.region,item.game)||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}${otherLinks}</div>`;
+    // 換版本走原本的版本切換（change 事件），由 pendingSame 開同代號的系列
+    box.querySelectorAll('[data-other-region]').forEach(button=>button.onclick=()=>{const select=regionSelect();if(select&&select.value!==button.dataset.otherRegion){select.value=button.dataset.otherRegion;select.dispatchEvent(new Event('change',{bubbles:true}))}});
     if(!auto)scrollBelowHeader(box);
     await loadCardsPage(true);render();if(!auto)window.announceBrowse?.(true);
   }
@@ -227,10 +251,10 @@
     const elsewhere=needles.length?regions.filter(id=>id!==region&&perRegion[id]).map(id=>[id,perRegion[id]]):[];
     searchSummary={here:found.length,others:elsewhere,label:regionText(region)||''};
     // [id, text, hint, count, unit]: the count comes from lists already in memory (no extra request); unit feeds the screen-reader label.
-    const tabs=[...(found.length||elsewhere.length?[['search',`搜尋：${bandSearch.query}`,'',found.length,'項']]:[]),['latest','全部系列','',series.length,'個系列'],...(seen.length?[['recent','最近瀏覽','',seen.length,'個系列']]:[]),...categories.map(item=>[`product:${item.id}`,label(item),item.description,item.rows.length,'項商品']),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label,'',bucket.items.length,'個系列'])];
+    const tabs=[...(found.length||elsewhere.length?[['search',`搜尋：${bandSearch.query}`,'',found.length,'項']]:[]),['latest','全部系列','',series.length,'個系列'],...(seen.length?[['recent','最近瀏覽','',seen.length,'個系列']]:[]),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label,'',bucket.items.length,'個系列']),...categories.map(item=>[`product:${item.id}`,label(item),item.description,item.rows.length,'項商品'])];
     let active=bandTab[game]||'latest';if(!tabs.some(([id])=>id===active))active='latest';bandTab[game]=active;
     // 兔子格開最新已發售系列；dated 的第一筆可能是即將發售
-    const dated=byDate(series),newest=dated.find(item=>!(item.releaseDate&&item.releaseDate>today()))||dated[0],firstEraTab=categories.length?tabs.findIndex(([id])=>id.startsWith('group:')):-1;
+    const dated=byDate(series),newest=dated.find(item=>!(item.releaseDate&&item.releaseDate>today()))||dated[0],firstEraTab=buckets.length?tabs.findIndex(([id])=>id.startsWith('product:')):-1;
     let kind='series',list;
     if(active==='search')list=found;
     else if(active==='latest')list=dated;
@@ -239,17 +263,43 @@
     else list=byDate(buckets.find(bucket=>`group:${bucket.label}`===active)?.items||[]);
     const key=`${game}|${region}|${active}|${list.length}`,keep=band.dataset.key===key?band.querySelector('.series-band-rail')?.scrollLeft||0:0;
     band.dataset.key=key;
-    band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionText(id)||id)}</button>`).join('')}</div></div>`
+    const expanded=Boolean(bandExpanded[game]),tools=series.length>8;
+    // 篩選字不為空時不管目前分頁，在這個版本的全部系列裡找名稱或代號
+    const railMarkup=()=>{
+      const needle=fold(bandFilter[game]||''),grid=Boolean(needle)||Boolean(bandExpanded[game]);
+      const rows=needle?byDate(series.filter(item=>[item.nameZh,item.nameJa,item.nameEn,item.officialCode,...(item.aliases||[])].some(value=>fold(value).includes(needle)))).map(item=>['series',item]):list.map(item=>Array.isArray(item)?item:[kind,item]);
+      const shown=grid?rows.slice(0,bandShown[game]||SHOW_STEP):rows;
+      const more=rows.length>shown.length?`<button type="button" class="series-band-more" data-band-more>顯示更多（還有 ${rows.length-shown.length} 個）</button>`:'';
+      const empty=`<p class="series-band-empty">${needle?`${esc(regionText(region)||'')}沒有名稱或代號含「${esc(bandFilter[game])}」的系列。`:window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionText(region)||'')}沒有符合的系列或商品。`:`${esc(regionText(region)||'')}目前沒有收錄這一類。`}</p>`;
+      return {grid,html:shown.length?(!needle&&newest?mascotNewTile(newest):'')+shown.map(([tileKind,item])=>tile(tileKind,item)).join('')+more:empty};
+    };
+    const paint=()=>{
+      const rail=band.querySelector('.series-band-rail'),{grid,html}=railMarkup();
+      rail.innerHTML=html;band.classList.toggle('is-grid',grid);railNav(rail);
+      const current=browse.product?.id||browse.seriesId;if(current)rail.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
+    };
+    band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionText(id)||id)}</button>`).join('')}</div>`
+      +(tools?`<div class="series-band-tools"><input type="search" class="series-band-filter" placeholder="篩選系列：SV6a、151…" aria-label="篩選系列名稱或代號" enterkeyhint="search" value="${esc(bandFilter[game]||'')}"><button type="button" class="series-band-expand" data-band-expand aria-expanded="${expanded}">${expanded?'收合':'展開全部'}</button></div>`:'')+`</div>`
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
       +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionText(id)||id)} ${count} 項</button>`).join('')}</div>`:'')
-      +`<div class="series-band-rail" role="tabpanel">${(list.length?(newest?mascotNewTile(newest):'')+list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join(''):'')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionText(region)||'')}沒有符合的系列或商品。`:`${esc(regionText(region)||'')}目前沒有收錄這一類。`}</p>`}</div>`;
-    band.querySelector('.series-band-rail').scrollLeft=keep;railNav(band.querySelector('.series-band-rail'));
-    const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
+      +`<div class="series-band-rail" role="tabpanel"></div>`;
+    paint();band.querySelector('.series-band-rail').scrollLeft=keep;railSync(band.querySelector('.series-band-rail'));
+    const filter=band.querySelector('.series-band-filter');
+    if(filter){
+      const apply=()=>{bandFilter[game]=filter.value;bandShown[game]=SHOW_STEP;paint()};
+      filter.oninput=event=>{if(!event.isComposing)apply()};
+      filter.addEventListener('compositionend',apply);
+      filter.onkeydown=event=>{if(event.key==='Escape'&&filter.value){event.preventDefault();filter.value='';apply()}};
+    }
     band.onclick=event=>{
       const regionButton=event.target.closest('[data-region],[data-search-region]'),target=regionButton?.dataset.region||regionButton?.dataset.searchRegion;
       if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
-      const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;render();return}
+      const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;bandFilter[game]='';bandShown[game]=SHOW_STEP;render();return}
+      if(event.target.closest('[data-band-expand]')){bandExpanded[game]=!bandExpanded[game];bandShown[game]=SHOW_STEP;render();band.querySelector('[data-band-expand]')?.focus();return}
+      if(event.target.closest('[data-band-more]')){bandShown[game]=(bandShown[game]||SHOW_STEP)+SHOW_STEP;paint();return}
       const card=event.target.closest('.band-tile');if(!card)return;
+      // 從展開或篩選的網格選了系列：收回單排，讓下方卡表回到眼前
+      if(band.classList.contains('is-grid')){bandExpanded[game]=false;bandFilter[game]=''}
       if(card.dataset.kind==='mascot-new'){bandTab[game]='latest';if(newest)openSeries(newest);else render();return}
       if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);scrollBelowHeader(document.getElementById('selectedProduct'));return}
       const item=series.find(row=>row.id===card.dataset.id);if(item)openSeries(item);
