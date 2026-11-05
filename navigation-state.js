@@ -90,7 +90,7 @@
 
   function installDetailShare(){
     const detail=node('detail');if(!detail||detail.querySelector('[data-share-card]'))return;
-    const button=document.createElement('button');button.type='button';button.className='source-link';button.dataset.shareCard='';button.textContent='分享此卡';button.onclick=()=>copyCurrentUrl(button);detail.querySelector('.card-identity')?.after(button);
+    const button=document.createElement('button');button.type='button';button.className='source-link';button.dataset.shareCard='';button.textContent='分享此卡';button.onclick=()=>copyCurrentUrl(button);const actions=detail.querySelector('.detail-actions');if(actions)actions.append(button);else detail.querySelector('.card-identity')?.after(button);
   }
 
   const originalChoose=window.choose;

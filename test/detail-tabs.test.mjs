@@ -89,7 +89,8 @@ test('資訊分頁：系列名（含版本與代碼）、資料來源名稱、�
     assert.ok(registry.sources.some(source => source.id === id), `${id} 在來源註冊表內`);
     assert.ok(run(`DETAIL_SOURCE_NAMES['${id}']`), `${id} 有中文顯示名稱`);
   }
-  assert.match(ui, /\$\{detailInfoMeta\(c,ps,selectedPrinting\)\}<h3>卡片文字<\/h3>/);
+  assert.match(ui, /\$\{detailInfoMeta\(c,ps,selectedPrinting\)\}\$\{cardTextBlock\(c\)\}/);
+  assert.match(ui, /return `<h3>卡片文字<\/h3><div class="text-switch">/, '有卡面文字才出現「卡片文字」標題');
 });
 
 test('SAMPLE 浮水印只有一套：角落預覽已移除，卡圖自帶 SAMPLE 的照舊不疊', () => {

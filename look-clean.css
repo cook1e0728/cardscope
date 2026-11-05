@@ -271,7 +271,7 @@ html.look-clean .modal{background:rgba(31,27,22,.5)}
 html.look-clean .dialog,html.look-clean body[data-view="game"] .dialog{padding:var(--s6);border:0;border-top:3px solid var(--ip);border-radius:var(--lc-r-md);background:var(--lc-surface);box-shadow:none}
 html.look-clean .close{top:var(--s4);right:var(--s4);width:44px;height:44px;border:1px solid var(--lc-hair);background:#fff;color:var(--lc-ink);font-size:22px}
 html.look-clean .detail{gap:var(--s7)}
-html.look-clean .detail-tabs-layout{grid-template-columns:280px minmax(0,1fr)}
+html.look-clean .detail-tabs-layout{grid-template-columns:300px minmax(0,1fr)}
 html.look-clean .detail-nav{width:44px;height:44px;border:1px solid var(--lc-hair);background:#fff;box-shadow:none}
 html.look-clean .detail-art{border-radius:var(--lc-r-sm);background:var(--lc-sleeve);padding:3px}
 html.look-clean .detail-position{margin:var(--s3) 0 0;font-size:12px;color:var(--lc-ink-2)}
@@ -301,6 +301,17 @@ html.look-clean .detail-visual .detail-position{order:1}
 html.look-clean .detail-visual>p{order:2;margin:var(--s4) 0 0;font-size:12px;font-weight:500;color:var(--lc-ink-2)}
 html.look-clean .detail-visual>h2{order:3;margin:var(--s1) 0 var(--s3)}
 html.look-clean .detail-visual>.card-identity{order:4}
+/* 卡名下：原文名、價格列、收藏＋分享並排，再接卡號／稀有度 */
+html.look-clean .detail-visual>.detail-subname{order:3;margin:calc(-1*var(--s2)) 0 var(--s3);font-size:14px;color:var(--lc-ink-2)}
+html.look-clean .detail-visual>.detail-price{order:3}
+html.look-clean .detail-visual>.detail-actions{order:3;display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);margin:0 0 var(--s4)}
+html.look-clean .detail-actions .detail-collect{margin:0}
+html.look-clean #detail .detail-actions .source-link{align-self:auto;min-height:44px;margin:0;padding:0 14px;border:1px solid var(--lc-hair);border-radius:10px;background:#fff;color:var(--lc-ink);font-weight:700}
+html.look-clean #detail .detail-actions .source-link:hover{border-color:var(--lc-ink)}
+html.look-clean .detail-actions .share-url{flex-basis:100%;margin:0}
+html.look-clean .detail-position span:empty{display:none}
+html.look-clean .card-text-empty{margin:var(--s4) 0 0;font-size:13px}
+html.look-clean .detail-price-retry .dp-retry{font-size:15px}
 html.look-clean .detail-tabs{gap:var(--s1);margin-bottom:var(--s5);border-bottom:1px solid var(--lc-hair);background:transparent}
 html.look-clean .detail-tabs button,html.look-clean .view-switch.detail-tabs button{min-height:44px;padding:0 var(--s4);border:0;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent;color:var(--lc-ink-2);font-size:15px;font-weight:500}
 html.look-clean .detail-tabs button.on,html.look-clean body .detail-tabs button.on{background:transparent!important;color:var(--lc-ink)!important;font-weight:700;border-bottom-color:var(--ip)!important}

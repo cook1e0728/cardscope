@@ -184,5 +184,5 @@ test('opening a card from the list pushes one history entry; next/previous repla
 test('openCard ignores an answer that arrives after a newer card was requested',()=>{
   assert.match(ui,/const version=\+\+detailRequestVersion,stale=\(\)=>version!==detailRequestVersion/);
   const body=ui.match(/openCard=async function[^]*?window\.openCard=openCard/)[0];
-  assert.equal((body.match(/if\(stale\(\)\)return/g)||[]).length,3,'checked after the card answer, after the market/report answers, and in the catch');
+  assert.equal((body.match(/if\(stale\(\)\)return/g)||[]).length,4,'checked after the card answer, after the market/report answers, after a price retry, and in the catch');
 });

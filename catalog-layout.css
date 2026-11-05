@@ -261,7 +261,7 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
 }
 
 /* 價格分頁的互動時間軸（price-timeline.js）：卡片放大、拖動日期時大數字跟著變 */
-@media(min-width:761px){html.look-clean .detail-tabs-layout:has(#detail-panel-market:not([hidden])){grid-template-columns:340px minmax(0,1fr)}}
+/* 左欄寬度兩個分頁一致（look-clean.css 300px），切分頁時卡圖不跳動 */
 .ptl-mini{display:none}
 .ptl-when{font-weight:700;color:#5A5348;font-size:15px;font-variant-numeric:tabular-nums}
 .ptl-big{font-size:48px;font-weight:900;line-height:1.1;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#211C17}

@@ -507,6 +507,7 @@ test('detail price row: big NT$ amount, change, source and date, disclaimer, ope
   assert.match(live([rec({ observedAt: '2026-11-04T00:00:00Z' })]), /NT\$ 11,730/);
   assert.match(live([rec({ variant: 'normal' })]), /NT\$ 11,730/);
   assert.doesNotMatch(live([rec()], { ...base.referencePrice, changeBase: undefined }), /dp-chg/, '沒有比較基準就不顯示漲跌');
-  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>\$\{detailPriceMarkup\(c,m\.records\)\}<div class="detail-collect"/, '價格列在卡名正下方');
-  assert.match(ui, /querySelector\('\[data-detail-price\]'\)\?\.addEventListener\('click',\(\)=>\{\$\('detail'\)\.querySelector\('\[data-detail-tab="market"\]'\)\?\.click\(\)/, '沿用價格分頁按鈕的點擊，才會觸發 PriceTimeline.load');
+  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\}\$\{detailPriceMarkup\(c,m\.records\)\}<div class="detail-actions"><div class="detail-collect"/, '價格列在卡名（與原文名）正下方');
+  assert.match(ui, /if\(!ref\)return card\?\.referencePriceFailed&&cardGameId\(card\)==='pokemon'\?'<button type="button" class="detail-price detail-price-retry" data-detail-price-retry>/, '參考價逾時留重試鈕');
+  assert.match(ui, /querySelector\('\[data-detail-price\]'\)\?\.addEventListener\('click',\(\)=>\{box\.querySelector\('\[data-detail-tab="market"\]'\)\?\.click\(\)/, '沿用價格分頁按鈕的點擊，才會觸發 PriceTimeline.load');
 });
