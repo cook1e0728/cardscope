@@ -74,7 +74,8 @@
       wrap=document.createElement('div');wrap.className='rail-wrap';rail.before(wrap);wrap.append(rail);
       for(const dir of[-1,1]){
         const button=document.createElement('button');button.type='button';button.className=`rail-nav ${dir<0?'is-prev':'is-next'}`;
-        button.setAttribute('aria-label',dir<0?'往左看更多系列':'往右看更多系列');button.textContent=dir<0?'‹':'›';
+        button.setAttribute('aria-label',dir<0?'往左看更多系列':'往右看更多系列');
+        button.innerHTML=`<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="${dir<0?'M15 5l-7 7 7 7':'M9 5l7 7-7 7'}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         button.onclick=event=>{event.stopPropagation();rail.scrollBy({left:dir*Math.max(200,rail.clientWidth*.8),behavior:'smooth'})};
         wrap.append(button);
       }
@@ -86,6 +87,9 @@
   function railSync(rail){
     const wrap=rail.parentElement,max=rail.scrollWidth-rail.clientWidth;
     wrap.classList.toggle('has-overflow',max>4);
+    // 按鈕對齊系列圖的垂直中心（圖的大小隨斷點變）
+    const art=rail.querySelector('.band-tile-art');
+    if(art)wrap.style.setProperty('--rail-mid',`${Math.round(art.getBoundingClientRect().top-rail.getBoundingClientRect().top+art.offsetHeight/2)}px`);
     wrap.querySelector('.is-prev').disabled=rail.scrollLeft<=4;
     wrap.querySelector('.is-next').disabled=rail.scrollLeft>=max-4;
   }

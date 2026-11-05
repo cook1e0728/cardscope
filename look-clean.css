@@ -628,14 +628,17 @@ html.look-clean body[data-view="game"] .channel[data-ip].on b{color:var(--ip-ink
 html.look-clean .top .search button.search-clear{align-self:center;width:32px;min-width:32px;height:32px;min-height:32px;margin-right:4px;border-radius:999px;background:transparent;color:var(--lc-ink);font-size:20px;line-height:1;opacity:.6}
 html.look-clean .top .search button.search-clear:hover,html.look-clean .top .search button.search-clear:focus-visible{opacity:1;background:#0000000f}
 
-/* 系列橫列左右翻頁鈕（series-band.js railNav）：只在滑鼠裝置、有溢出時出現，垂直置中在系列圖上 */
+/* 系列橫列左右翻頁鈕（series-band.js railNav）：只在滑鼠裝置、有溢出時出現；放在橫列兩側的獨立欄，不疊在系列格上，垂直對齊系列圖中心（--rail-mid 由 JS 量） */
 .rail-wrap{position:relative}
 .rail-nav{display:none}
 @media (hover:hover) and (pointer:fine){
-  .rail-wrap.has-overflow .rail-nav{display:grid;place-items:center;position:absolute;top:calc(16px + 66px);z-index:2;width:40px;height:40px;min-height:0;margin-top:-20px;padding:0;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(33,28,23,.16);transition:opacity .15s,border-color .15s}
-  .rail-wrap .rail-nav.is-prev{left:-6px}
-  .rail-wrap .rail-nav.is-next{right:-6px}
-  .rail-wrap .rail-nav:hover{border-color:#211C17}
-  .rail-wrap .rail-nav:focus-visible{outline:2px solid var(--ip,#C4000F);outline-offset:2px}
-  .rail-wrap .rail-nav:disabled{opacity:0;pointer-events:none}
+  .rail-wrap.has-overflow{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;column-gap:12px;align-items:start}
+  .rail-wrap.has-overflow>.series-band-rail{grid-column:2;grid-row:1;margin-inline:0}
+  .rail-wrap.has-overflow .rail-nav{display:grid;place-items:center;grid-row:1;width:40px;height:40px;min-height:0;margin-top:calc(var(--rail-mid,82px) - 20px);padding:0;border:0;border-radius:999px;background:#211C17;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(33,28,23,.18);transition:background-color .15s,transform .15s,opacity .15s}
+  .rail-wrap .rail-nav.is-prev{grid-column:1}
+  .rail-wrap .rail-nav.is-next{grid-column:3}
+  .rail-wrap .rail-nav:hover{background:var(--ip,#C4000F);transform:scale(1.06)}
+  .rail-wrap .rail-nav:active{transform:scale(.96)}
+  .rail-wrap .rail-nav:focus-visible{outline:2px solid var(--ip,#C4000F);outline-offset:3px}
+  .rail-wrap .rail-nav:disabled{background:#E6DFD2;color:#A69C8C;box-shadow:none;cursor:default;transform:none}
 }
