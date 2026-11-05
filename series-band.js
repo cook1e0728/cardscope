@@ -66,6 +66,29 @@
       +`<span class="band-tile-art is-mascot-art"><img src="/assets/brand/web/rabbit-success-160.webp" alt="" loading="lazy"><span class="band-tile-flag is-new">NEW</span></span>`
       +`<b class="band-tile-name">最新系列</b><span class="band-tile-code">NEW</span></button>`;
   }
+  // 橫列左右的翻頁鈕：一次捲約八成寬，捲到頭的那側停用；沒有溢出時兩顆都隱藏（觸控裝置用 CSS 隱藏，照常手滑）。
+  function railNav(rail){
+    if(!rail)return;
+    let wrap=rail.parentElement;
+    if(!wrap.classList.contains('rail-wrap')){
+      wrap=document.createElement('div');wrap.className='rail-wrap';rail.before(wrap);wrap.append(rail);
+      for(const dir of[-1,1]){
+        const button=document.createElement('button');button.type='button';button.className=`rail-nav ${dir<0?'is-prev':'is-next'}`;
+        button.setAttribute('aria-label',dir<0?'往左看更多系列':'往右看更多系列');button.textContent=dir<0?'‹':'›';
+        button.onclick=event=>{event.stopPropagation();rail.scrollBy({left:dir*Math.max(200,rail.clientWidth*.8),behavior:'smooth'})};
+        wrap.append(button);
+      }
+      rail.addEventListener('scroll',()=>railSync(rail),{passive:true});
+      if(typeof ResizeObserver==='function')new ResizeObserver(()=>railSync(rail)).observe(rail);
+    }
+    railSync(rail);
+  }
+  function railSync(rail){
+    const wrap=rail.parentElement,max=rail.scrollWidth-rail.clientWidth;
+    wrap.classList.toggle('has-overflow',max>4);
+    wrap.querySelector('.is-prev').disabled=rail.scrollLeft<=4;
+    wrap.querySelector('.is-next').disabled=rail.scrollLeft>=max-4;
+  }
   // Released in the last 90 days: shown as a NEW badge on the series' own tile.
   const recentSince=()=>taipeiDate(90);
   // auto: the page opened this series as the game's default view, so it is not remembered as 最近瀏覽 and the page does not scroll.
@@ -128,6 +151,7 @@
     tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
     tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(!btn)return;homeTab=btn.dataset.homeTab;renderHome()};
     rail.innerHTML=(list.length?mascotNewTile(list[0]):'')+list.map(item=>tile('series',item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionText(item.region,item.game)||item.region||''].filter(Boolean).join(' '))).join('');
+    railNav(rail);
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
@@ -215,7 +239,7 @@
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
       +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionText(id)||id)} ${count} 項</button>`).join('')}</div>`:'')
       +`<div class="series-band-rail" role="tabpanel">${(list.length?(newest?mascotNewTile(newest):'')+list.map(item=>Array.isArray(item)?tile(item[0],item[1]):tile(kind,item)).join(''):'')||`<p class="series-band-empty">${window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionText(region)||'')}沒有符合的系列或商品。`:`${esc(regionText(region)||'')}目前沒有收錄這一類。`}</p>`}</div>`;
-    band.querySelector('.series-band-rail').scrollLeft=keep;
+    band.querySelector('.series-band-rail').scrollLeft=keep;railNav(band.querySelector('.series-band-rail'));
     const current=browse.product?.id||browse.seriesId;if(current)band.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     band.onclick=event=>{
       const regionButton=event.target.closest('[data-region],[data-search-region]'),target=regionButton?.dataset.region||regionButton?.dataset.searchRegion;
