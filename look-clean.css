@@ -670,3 +670,6 @@ html.look-clean .series-band.is-grid .band-tile-art{width:100%;height:auto;aspec
 /* 篩選中：上方分頁不是這次的篩選範圍，變淡並由說明列講明 */
 .series-band.is-filtering .series-band-tabs{opacity:.45}
 .series-band-scope{margin:8px 0 0;color:#5C5348;font-size:13px}
+
+/* 卡牌時事標題與上方首頁深色區塊拉開 10px */
+#eventsSection>.title{padding-top:10px}
