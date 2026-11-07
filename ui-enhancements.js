@@ -1198,18 +1198,21 @@ window.openCollection=openCollection;
       list.innerHTML=rows.join('');list.classList.remove('ss-stale');list.hidden=false;place();input.setAttribute('aria-expanded','true');input.removeAttribute('aria-activedescendant');active=-1;
       live.textContent=items.length?`${items.length} 筆建議`:'找不到符合的卡';
     };
+    // 伺服器在美國、資料庫在東京，一次查詢約 0.7–1.5 秒；同一個詞（刪字再打回、重新聚焦）直接用記住的結果
+    const memo=new Map(),regionNow=()=>document.getElementById('browseRegion')?.value||'all',memoKey=q=>`${regionNow()}|${q}`;
     const fetchSuggest=async q=>{
-      controller?.abort();controller=new AbortController();
-      try{const response=await fetch(`/api/search?limit=6&fields=suggest&q=${encodeURIComponent(q)}&region=${encodeURIComponent(document.getElementById('browseRegion')?.value||'all')}`,{signal:controller.signal});if(!response.ok)return close();const body=await response.json();if(q!==input.value.trim()||document.activeElement!==input)return;render(q,body)}catch(error){if(error?.name!=='AbortError')close()}
+      controller?.abort();controller=new AbortController();const key=memoKey(q);
+      try{const response=await fetch(`/api/search?limit=6&fields=suggest&q=${encodeURIComponent(q)}&region=${encodeURIComponent(regionNow())}`,{signal:controller.signal});if(!response.ok)return close();const body=await response.json();memo.delete(key);memo.set(key,body);if(memo.size>60)memo.delete(memo.keys().next().value);if(q!==input.value.trim()||document.activeElement!==input)return;render(q,body)}catch(error){if(error?.name!=='AbortError')close()}
     };
     const schedule=()=>{
       clearTimeout(timer);const q=input.value.trim();
       // 中日文 1 個字、英數 2 個字以上才查，避免一個字母就灑出整個卡庫
       if(!q||(!/[^\x00-\x7F]/.test(q)&&q.length<2)){controller?.abort();lastQ='';return close()}
       if(q===lastQ&&!list.hidden)return;
+      const known=memo.get(memoKey(q));if(known){controller?.abort();lastQ=q;render(q,known);return}
       // 查詢變了：舊結果不可再被選（↓ Enter 會開出上一輪的卡），清單若還開著就淡化到新結果回來
       items=[];active=-1;input.removeAttribute('aria-activedescendant');if(!list.hidden)list.classList.add('ss-stale');
-      timer=setTimeout(()=>{lastQ=q;if(list.hidden){list.innerHTML='<li class="ss-state" role="option" aria-disabled="true">搜尋中…</li>';list.hidden=false;place();input.setAttribute('aria-expanded','true');live.textContent='搜尋中'}fetchSuggest(q)},250);
+      timer=setTimeout(()=>{lastQ=q;if(list.hidden){list.innerHTML='<li class="ss-state" role="option" aria-disabled="true">搜尋中…</li>';list.hidden=false;place();input.setAttribute('aria-expanded','true');live.textContent='搜尋中'}fetchSuggest(q)},150);
     };
     // 輸入法組字中不查；組字結束（compositionend）再查一次
     input.addEventListener('input',event=>{if(event.isComposing)clearTimeout(timer);else schedule()});

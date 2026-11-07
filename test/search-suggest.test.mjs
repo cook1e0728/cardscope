@@ -44,3 +44,10 @@ test('選中列有左側 3px 深色條，請求帶 fields=suggest',()=>{
   assert.match(block,/li\[aria-selected=true\]\{box-shadow:inset 3px 0 0 #211C17\}/);
   assert.match(block,/\/api\/search\?limit=6&fields=suggest&q=/);
 });
+
+test('同版本同一個詞記住結果（最多 60 筆），刪字再打回直接顯示不再發請求',()=>{
+  assert.match(block,/memoKey=q=>`\$\{regionNow\(\)\}\|\$\{q\}`/,'鍵含目前版本');
+  assert.match(block,/memo\.set\(key,body\);if\(memo\.size>60\)memo\.delete/);
+  const schedule=block.slice(block.indexOf('const schedule='));
+  assert.ok(schedule.indexOf('memo.get(memoKey(q))')<schedule.indexOf('setTimeout('),'命中時在排程請求之前就顯示');
+});
