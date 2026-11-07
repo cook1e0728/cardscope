@@ -41,7 +41,10 @@
   const eraOrder=['MEGA 系列','朱／紫系列','劍／盾系列','太陽／月亮系列','XY 系列','BW 系列','LEGEND 系列','DP 系列','ADV／PCG 系列','經典系列'];
   const eraRank=item=>{if(item.game!=='pokemon')return 0;const rank=eraOrder.indexOf(pokemonEra(item));return rank<0?eraOrder.length:rank};
   function byDate(list){return [...list].sort((a,b)=>compare(a,b))}
-  const compare=(a,b)=>String(b.releaseDate||'').localeCompare(String(a.releaseDate||''))||eraRank(a)-eraRank(b)||String(b.officialCode||'').localeCompare(String(a.officialCode||''),undefined,{numeric:true});
+  // 只用於排序：台版等沒有發售日的系列借用日版同代號系列的日期，不會沉到列表最後；畫面上仍顯示自己的日期（待補）
+  const sortDates=new WeakMap();
+  const sortDate=item=>{if(item.releaseDate)return item.releaseDate;if(!sortDates.has(item))sortDates.set(item,item.region!=='JP'?sameSeries(item,'JP')?.releaseDate||'':'');return sortDates.get(item)};
+  const compare=(a,b)=>String(sortDate(b)).localeCompare(String(sortDate(a)))||eraRank(a)-eraRank(b)||String(b.officialCode||'').localeCompare(String(a.officialCode||''),undefined,{numeric:true});
   // Pokémon eras already come newest first; other IPs' groups are often undated, so order them by their newest series.
   function orderBuckets(buckets){return game==='pokemon'?buckets:[...buckets].sort((a,b)=>compare(byDate(a.items)[0],byDate(b.items)[0]))}
   // A series has no picture of its own, so it borrows the box art of the sealed product linked to it (same region).
