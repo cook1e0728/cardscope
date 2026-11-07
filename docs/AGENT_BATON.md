@@ -75,6 +75,8 @@
 
 - 2026-11-02：免費速度改善：`getCard` 查不在 250 張內的卡時不再複製整包目錄；價格 API 每張卡快取 5 分鐘（有來源失敗不快取）；覆蓋率每小時才重算；覆蓋率、健康檢查、漲跌榜過期 24 小時內先回舊值、背景更新。UptimeRobot 監測早已存在（每 5 分鐘），GitHub keep-warm 實際約 240 分鐘才跑一次，只算備援。
 
+- 2026-11-07：搜尋建議提速（4844a3c）：前端記住同版本同一個詞的建議結果（最多 60 筆，刪字再打回 22 ms），等待輸入 250→150 ms。量測：`search_cards_ranked` 熱的時候 10–130 ms、新詞第一次 100–500 ms（全是 buffer hit，免費層 CPU 慢）；正式站 rpc 300–800 ms、整個請求 0.7–1.7 s，主要是 Render（Ohio）↔ Supabase（東京 ap-northeast-1）往返與台灣↔Ohio。改寫 in_filter 測過沒有穩定差異，未改資料庫。
+
 ## 下次要確認
 - **資料庫容量**：11-02 `VACUUM FULL browse_card_keys_mat` 後 399 MB（原 436 MB，該表 59→22 MB）。重建排序鍵後該表可能再長回 30～40 MB，碰近 440 MB 煞車線時可再做一次（避開每小時 :25，事後補一般 VACUUM）。舊稽核表不能刪：有防竄改觸發器，`pokemon_jp_series_imported` 也會讀。快照保留不能縮成 14 天：`price_movers` 需要 14 天前的起點。
 - 共用商品：下一輪完整快照（約 10-31 晚間跑完）後查 `select count(*) from price_products_shared(null)`、`price_movers` 執行時間（手動 8 張時約 1.4 秒）。
@@ -87,6 +89,7 @@
 - 首頁 <title>／description 在 `providers/seo.mjs` 的 homeSeo 有一份，改 index.html 文案要同步；Chiron Hei HK 用 text= 子集化，改首頁大標或導覽小卡標題要同步 text=。
 
 ## 卡住的地方／需要規劃方決策
+- 搜尋再快一截要把 Render 服務搬到新加坡（離東京資料庫近）；Render 不能改區域，只能新建服務並換網址／環境變數，需使用者決定。
 - （無）#3 Render 舊金鑰已由使用者於 10-30 刪除。暫停中的新加坡服務 `cardscope-1` 也已刪除，Render 只剩正式服務 `cardscope`（Ohio）。
 
 ## 本機檔案（不在 git，換電腦不會帶過去）
