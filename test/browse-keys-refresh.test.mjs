@@ -57,7 +57,7 @@ test('the end of every catalog sync rebuilds stale keys, and a rebuild failure n
   const quiet = await syncCatalog(rpcDb({ stale: [] }).db, { providers: [] });
   assert.ok(!('browseKeys' in quiet), 'nothing stale, nothing reported');
   const broken = await syncCatalog(async () => { throw new Error('SUPABASE_503'); }, { providers: [] });
-  assert.match(broken.browseKeys.error, /SUPABASE_503/);
+  assert.match(broken.browseKeys.staleCheck.error, /SUPABASE_503/);
 });
 
 test('the scheduled server tick also heals stale keys (manual SQL batches are noticed by the triggers)', () => {
@@ -111,4 +111,10 @@ test('a publish cut by the request limit is left to the database cron job instea
   assert.equal(result.pokemon.publishDeferred, true);
   const cron = await readFile(new URL('../supabase/migrations/20261028120000_browse_keys_publish_cron.sql', import.meta.url), 'utf8');
   assert.match(cron, /cron\.schedule\('browse-keys-publish'/);
+});
+
+test('a timed-out stale check is reported, not thrown, so the scheduled image cache after it still runs', async () => {
+  const db = async path => { if (path.includes('browse_keys_stale')) throw new Error('The operation was aborted due to timeout'); throw new Error('unexpected ' + path); };
+  const result = await refreshBrowseKeys(db);
+  assert.deepEqual(result, { staleCheck: { error: 'The operation was aborted due to timeout' } });
 });

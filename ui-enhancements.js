@@ -1193,7 +1193,7 @@ window.openCollection=openCollection;
     };
     const fetchSuggest=async q=>{
       controller?.abort();controller=new AbortController();
-      try{const response=await fetch(`/api/search?limit=6&q=${encodeURIComponent(q)}`,{signal:controller.signal});if(!response.ok)return close();const body=await response.json();if(q!==input.value.trim()||document.activeElement!==input)return;render(q,body)}catch(error){if(error?.name!=='AbortError')close()}
+      try{const response=await fetch(`/api/search?limit=6&q=${encodeURIComponent(q)}&region=${encodeURIComponent(document.getElementById('browseRegion')?.value||'all')}`,{signal:controller.signal});if(!response.ok)return close();const body=await response.json();if(q!==input.value.trim()||document.activeElement!==input)return;render(q,body)}catch(error){if(error?.name!=='AbortError')close()}
     };
     input.addEventListener('input',()=>{
       clearTimeout(timer);const q=input.value.trim();

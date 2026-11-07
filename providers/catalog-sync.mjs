@@ -430,7 +430,9 @@ export async function shouldSyncCatalog(db,maxAgeHours=72){return (await catalog
 // Writes are noticed by database triggers, so a stale game just falls back to the slow live query until it is rebuilt; this rebuilds the stale ones.
 // build and publish are separate transactions because one PostgREST request is cut at 20 s (a cold build can need more; the pages it read stay cached, so a retry is fast).
 export async function refreshBrowseKeys(db,{games=null,attempts=3}={}){
-  const stale=await db('/rpc/browse_keys_stale',{method:'POST',body:'{}'}),targets=(Array.isArray(stale)?stale:[]).filter(game=>!games||games.includes(game)),results={};
+  // 查哪些遊戲過期這一步逾時（資料庫忙）也只回報、不丟錯：丟出去會讓排程同步跳過後面的遊戲王卡圖快取（11-06 起新卡都沒圖就是這樣）
+  let stale;try{stale=await db('/rpc/browse_keys_stale',{method:'POST',body:'{}'})}catch(error){return{staleCheck:{error:error.message}}}
+  const targets=(Array.isArray(stale)?stale:[]).filter(game=>!games||games.includes(game)),results={};
   const call=(name,game)=>db(`/rpc/${name}`,{method:'POST',body:JSON.stringify({p_game:game})});
   for(const game of targets){
     for(let attempt=1;attempt<=attempts;attempt++){let built;try{built=await call('browse_refresh_keys_build',game)}catch(error){results[game]={error:error.message,attempts:attempt};continue}
