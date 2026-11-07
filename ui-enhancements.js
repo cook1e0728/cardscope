@@ -1157,6 +1157,9 @@ window.openCollection=openCollection;
 .search-suggest[hidden]{display:none}
 .search-suggest li{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 8px;border-radius:8px;cursor:pointer;color:#211C17}
 .search-suggest li[aria-selected=true],.search-suggest li:hover{background:#F3EEE3}
+.search-suggest li[aria-selected=true]{box-shadow:inset 3px 0 0 #211C17}
+.search-suggest.ss-stale{opacity:.55;pointer-events:none}
+.ss-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .search-suggest img,.search-suggest .ss-noimg{flex:none;width:32px;height:44px;border-radius:3px;object-fit:cover;background:#EFE9DB}
 .search-suggest .ss-text{min-width:0;display:grid;gap:1px}
 .search-suggest .ss-name{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1171,13 +1174,16 @@ window.openCollection=openCollection;
     // 搜尋框外層 overflow:hidden（按鈕方角），清單改用 fixed 對齊外層，開啟、捲動、縮放時重算位置
     const host=input.parentElement;
     const list=document.createElement('ul'),listId=`${input.id}-suggest`;list.id=listId;list.className='search-suggest';list.setAttribute('role','listbox');list.setAttribute('aria-label','搜尋建議');list.hidden=true;document.body.appendChild(list);
+    // 即時播報（螢幕閱讀器）：建議筆數、搜尋中、找不到
+    const live=document.createElement('div');live.className='ss-live';live.setAttribute('role','status');live.setAttribute('aria-live','polite');document.body.appendChild(live);
     const place=()=>{if(list.hidden)return;const box=host.getBoundingClientRect();const width=Math.min(innerWidth-16,Math.max(box.width,340));list.style.width=`${width}px`;list.style.left=`${Math.max(8,Math.min(box.left,innerWidth-8-width))}px`;list.style.top=`${box.bottom+6}px`};
     addEventListener('resize',place);addEventListener('scroll',place,true);
     input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls',listId);input.setAttribute('aria-expanded','false');
     let timer=0,controller=null,items=[],active=-1,lastQ='';
-    const close=()=>{list.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');active=-1};
+    const close=()=>{list.hidden=true;list.classList.remove('ss-stale');input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');live.textContent='';items=[];active=-1};
     const runSearch=q=>{close();if(typeof window.searchFor==='function')window.searchFor(q)};
-    const choose=index=>{const item=items[index];if(!item)return;close();item.run()};
+    // 只執行目前清單裡真的存在的可選列；「搜尋中／找不到」列沒有 data-index
+    const choose=index=>{const item=list.querySelector(`li[data-index="${index}"]`)&&items[index];if(!item)return;close();item.run()};
     const mark=index=>{active=index;[...list.children].forEach((li,i)=>li.setAttribute('aria-selected',String(i===index)));const li=list.children[index];if(li?.id){input.setAttribute('aria-activedescendant',li.id);li.scrollIntoView({block:'nearest'})}else input.removeAttribute('aria-activedescendant')};
     const render=(q,body)=>{
       const cards=Array.isArray(body?.data)?body.data:[],meta=body?.meta||{},parsed=meta.parsed||{},total=Number(meta.total)||cards.length;
@@ -1185,23 +1191,29 @@ window.openCollection=openCollection;
       const add=(html,run,cls='')=>{const index=items.length;items.push({run});rows.push(`<li role="option" id="${listId}-${index}" class="${cls}" data-index="${index}" aria-selected="false">${html}</li>`)};
       if(parsed.name&&parsed.rarities?.length)add(`<span>搜尋「<b>${e(parsed.name)}</b>」</span><span>${parsed.rarities.map(code=>`<span class="ss-chip">${e(code)}</span>`).join(' ')}</span>`,()=>runSearch(q),'ss-action');
       for(const c of cards){const img=image(c),number=c.officialCardNumber||c.printings?.find(p=>p.localCardNumber)?.localCardNumber||'',game=G(c.game)?.nameZh||'',sub=[game,number,c.rarity?rarityText(c.rarity):''].filter(Boolean).join(' · ');
-        add(`${img?`<img src="${e(img)}" alt="" loading="lazy" data-img-error="remove">`:'<span class="ss-noimg" aria-hidden="true"></span>'}<span class="ss-text"><span class="ss-name">${e(name(c))}</span><span class="ss-sub">${e(sub)}</span></span>`,()=>openCard(cardOpenId(c)))}
+        add(`${img?`<img src="${e(img)}" alt="" loading="lazy" data-img-error="remove">`:'<span class="ss-noimg" aria-hidden="true"></span>'}<span class="ss-text"><span class="ss-name">${e(name(c))}</span><span class="ss-sub">${e(sub)}</span></span>`,()=>{input.value='';openCard(cardOpenId(c))})}
       if(!cards.length&&meta.suggestion?.q)add(`<span>試試「<b>${e(meta.suggestion.q)}</b>」</span><span class="ss-sub">${e(meta.suggestion.reason||'')}</span>`,()=>runSearch(meta.suggestion.q),'ss-action');
       if(cards.length&&total>cards.length)add(`<span>查看全部 <b>${total.toLocaleString('en-US')}</b> 筆結果</span><span aria-hidden="true">›</span>`,()=>runSearch(q),'ss-action');
-      if(!rows.length)rows.push(`<li class="ss-state" role="presentation">${e(meta.hint?.message||`找不到「${q}」，按 Enter 用完整搜尋`)}</li>`);
-      list.innerHTML=rows.join('');list.hidden=false;place();input.setAttribute('aria-expanded','true');active=-1;
+      if(!rows.length)rows.push(`<li class="ss-state" role="option" aria-disabled="true">${e(meta.hint?.message||`找不到「${q}」，按 Enter 用完整搜尋`)}</li>`);
+      list.innerHTML=rows.join('');list.classList.remove('ss-stale');list.hidden=false;place();input.setAttribute('aria-expanded','true');input.removeAttribute('aria-activedescendant');active=-1;
+      live.textContent=items.length?`${items.length} 筆建議`:'找不到符合的卡';
     };
     const fetchSuggest=async q=>{
       controller?.abort();controller=new AbortController();
-      try{const response=await fetch(`/api/search?limit=6&q=${encodeURIComponent(q)}&region=${encodeURIComponent(document.getElementById('browseRegion')?.value||'all')}`,{signal:controller.signal});if(!response.ok)return close();const body=await response.json();if(q!==input.value.trim()||document.activeElement!==input)return;render(q,body)}catch(error){if(error?.name!=='AbortError')close()}
+      try{const response=await fetch(`/api/search?limit=6&fields=suggest&q=${encodeURIComponent(q)}&region=${encodeURIComponent(document.getElementById('browseRegion')?.value||'all')}`,{signal:controller.signal});if(!response.ok)return close();const body=await response.json();if(q!==input.value.trim()||document.activeElement!==input)return;render(q,body)}catch(error){if(error?.name!=='AbortError')close()}
     };
-    input.addEventListener('input',()=>{
+    const schedule=()=>{
       clearTimeout(timer);const q=input.value.trim();
       // 中日文 1 個字、英數 2 個字以上才查，避免一個字母就灑出整個卡庫
       if(!q||(!/[^\x00-\x7F]/.test(q)&&q.length<2)){controller?.abort();lastQ='';return close()}
       if(q===lastQ&&!list.hidden)return;
-      timer=setTimeout(()=>{lastQ=q;if(list.hidden){list.innerHTML='<li class="ss-state" role="presentation">搜尋中…</li>';list.hidden=false;place();input.setAttribute('aria-expanded','true')}fetchSuggest(q)},250);
-    });
+      // 查詢變了：舊結果不可再被選（↓ Enter 會開出上一輪的卡），清單若還開著就淡化到新結果回來
+      items=[];active=-1;input.removeAttribute('aria-activedescendant');if(!list.hidden)list.classList.add('ss-stale');
+      timer=setTimeout(()=>{lastQ=q;if(list.hidden){list.innerHTML='<li class="ss-state" role="option" aria-disabled="true">搜尋中…</li>';list.hidden=false;place();input.setAttribute('aria-expanded','true');live.textContent='搜尋中'}fetchSuggest(q)},250);
+    };
+    // 輸入法組字中不查；組字結束（compositionend）再查一次
+    input.addEventListener('input',event=>{if(event.isComposing)clearTimeout(timer);else schedule()});
+    input.addEventListener('compositionend',schedule);
     input.addEventListener('keydown',event=>{
       if(event.isComposing)return;
       if(event.key==='Escape'&&!list.hidden){event.preventDefault();event.stopPropagation();close();return}

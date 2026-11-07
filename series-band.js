@@ -43,7 +43,8 @@
   function byDate(list){return [...list].sort((a,b)=>compare(a,b))}
   // 只用於排序：台版等沒有發售日的系列借用日版同代號系列的日期，不會沉到列表最後；畫面上仍顯示自己的日期（待補）
   const sortDates=new WeakMap();
-  const sortDate=item=>{if(item.releaseDate)return item.releaseDate;if(!sortDates.has(item))sortDates.set(item,item.region!=='JP'?sameSeries(item,'JP')?.releaseDate||'':'');return sortDates.get(item)};
+  // 日版日期晚於今天（未上市）就不借用，免得即將發售的系列排到最前；只在第一次算時比對，排序時不重算 Intl
+  const sortDate=item=>{if(item.releaseDate)return item.releaseDate;if(!sortDates.has(item)){const borrowed=item.region!=='JP'?sameSeries(item,'JP')?.releaseDate||'':'';sortDates.set(item,borrowed>today()?'':borrowed)}return sortDates.get(item)};
   const compare=(a,b)=>String(sortDate(b)).localeCompare(String(sortDate(a)))||eraRank(a)-eraRank(b)||String(b.officialCode||'').localeCompare(String(a.officialCode||''),undefined,{numeric:true});
   // Pokémon eras already come newest first; other IPs' groups are often undated, so order them by their newest series.
   function orderBuckets(buckets){return game==='pokemon'?buckets:[...buckets].sort((a,b)=>compare(byDate(a.items)[0],byDate(b.items)[0]))}
@@ -78,8 +79,9 @@
       for(const dir of[-1,1]){
         const button=document.createElement('button');button.type='button';button.className=`rail-nav ${dir<0?'is-prev':'is-next'}`;
         button.setAttribute('aria-label',dir<0?'往左看更多系列':'往右看更多系列');
+        button.tabIndex=-1;// 鍵盤使用者直接在磚之間 Tab，磚會自動捲入視野
         button.innerHTML=`<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="${dir<0?'M15 5l-7 7 7 7':'M9 5l7 7-7 7'}" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        button.onclick=event=>{event.stopPropagation();rail.scrollBy({left:dir*Math.max(200,rail.clientWidth*.8),behavior:'smooth'})};
+        button.onclick=event=>{event.stopPropagation();rail.scrollBy({left:dir*Math.max(200,rail.clientWidth*.8),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};
         wrap.append(button);
       }
       rail.addEventListener('scroll',()=>railSync(rail),{passive:true});
@@ -104,7 +106,7 @@
   }
   // 切換版本時留在同一系列：change 事件在 capture 階段先記下對應系列（此時 browse.seriesId 還是舊的），
   // 接著 index.html 的 onchange 呼叫 loadGameCards 時，沒有指定入口就改開這個系列。
-  let pendingSame=null;
+  let pendingSame=null,focusTitleUntil=0;
   document.addEventListener('change',event=>{
     if(event.target?.id!=='browseRegion'||game==='all')return;
     pendingSame=sameSeries((C.series||[]).find(row=>row.id===browse.seriesId),event.target.value)?.id||null;
@@ -125,11 +127,13 @@
     const box=document.getElementById('selectedProduct');box.classList.add('open');
     const art=cover(item),others=regionsFor(item.game).filter(region=>region!==item.region).map(region=>sameSeries(item,region)).filter(Boolean);
     const otherLinks=others.length?`<div class="selected-other-regions" role="group" aria-label="同系列其他版本"><span class="meta">其他版本：</span>${others.map(row=>`<button type="button" data-other-region="${esc(row.region)}">${esc(regionText(row.region,row.game)||row.region)} ${esc(row.officialCode||'')}</button>`).join('')}</div>`:'';
-    box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="" data-img-error="retry-type">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionText(item.region,item.game)||item.region||'版本待補')}</span><h2>${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}${otherLinks}</div>`;
+    box.innerHTML=`<div class="selected-product-art"><span class="band-tile-art${art?'':' is-type'}" data-code="${esc(item.officialCode||'')}">${art?`<img src="${esc(art)}" alt="" data-img-error="retry-type">`:''}</span></div><div><span class="badge">系列卡表</span><span class="badge">${esc(regionText(item.region,item.game)||item.region||'版本待補')}</span><h2 tabindex="-1">${esc(seriesName(item))}</h2><div class="meta">${esc(item.officialCode||'系列代碼待補')} · ${esc(item.releaseDate||'發售日待補')}</div>${item.nameJa&&item.nameZh?`<p class="meta">${esc(item.nameJa)}</p>`:''}${otherLinks}</div>`;
     // 換版本走原本的版本切換（change 事件），由 pendingSame 開同代號的系列
-    box.querySelectorAll('[data-other-region]').forEach(button=>button.onclick=()=>{const select=regionSelect();if(select&&select.value!==button.dataset.otherRegion){select.value=button.dataset.otherRegion;select.dispatchEvent(new Event('change',{bubbles:true}))}});
+    box.querySelectorAll('[data-other-region]').forEach(button=>button.onclick=()=>{const select=regionSelect();if(select&&select.value!==button.dataset.otherRegion){focusTitleUntil=Date.now()+10000;select.value=button.dataset.otherRegion;select.dispatchEvent(new Event('change',{bubbles:true}))}});
     if(!auto)scrollBelowHeader(box);
     await loadCardsPage(true);render();if(!auto)window.announceBrowse?.(true);
+    // 從「其他版本」鈕切過來：舊的鈕已被換掉，焦點放到新系列標題，不要掉回 body
+    if(Date.now()<focusTitleUntil){focusTitleUntil=0;document.querySelector('#selectedProduct h2')?.focus({preventScroll:true})}
   }
   // Default view of a game page: the newest released series of the browsing region; one with no cards yet falls through to the next (three at most).
   async function openLatestSeries(){
@@ -266,7 +270,7 @@
     else list=byDate(buckets.find(bucket=>`group:${bucket.label}`===active)?.items||[]);
     const key=`${game}|${region}|${active}|${list.length}`,keep=band.dataset.key===key?band.querySelector('.series-band-rail')?.scrollLeft||0:0;
     band.dataset.key=key;
-    const expanded=Boolean(bandExpanded[game]),tools=series.length>8;
+    const tools=series.length>8;
     // 篩選字不為空時不管目前分頁，在這個版本的全部系列裡找名稱或代號
     const railMarkup=()=>{
       const needle=fold(bandFilter[game]||''),grid=Boolean(needle)||Boolean(bandExpanded[game]);
@@ -274,23 +278,28 @@
       const shown=grid?rows.slice(0,bandShown[game]||SHOW_STEP):rows;
       const more=rows.length>shown.length?`<button type="button" class="series-band-more" data-band-more>顯示更多（還有 ${rows.length-shown.length} 個）</button>`:'';
       const empty=`<p class="series-band-empty">${needle?`${esc(regionText(region)||'')}沒有名稱或代號含「${esc(bandFilter[game])}」的系列。`:window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionText(region)||'')}沒有符合的系列或商品。`:`${esc(regionText(region)||'')}目前沒有收錄這一類。`}</p>`;
-      return {grid,html:shown.length?(!needle&&newest?mascotNewTile(newest):'')+shown.map(([tileKind,item])=>tile(tileKind,item)).join('')+more:empty};
+      return {grid,filtering:Boolean(needle),html:shown.length?(!needle&&newest?mascotNewTile(newest):'')+shown.map(([tileKind,item])=>tile(tileKind,item)).join('')+more:empty};
     };
     const paint=()=>{
-      const rail=band.querySelector('.series-band-rail'),{grid,html}=railMarkup();
-      rail.innerHTML=html;band.classList.toggle('is-grid',grid);railNav(rail);
+      const rail=band.querySelector('.series-band-rail'),{grid,filtering,html}=railMarkup();
+      rail.innerHTML=html;band.classList.toggle('is-grid',grid);band.classList.toggle('is-filtering',filtering);railNav(rail);
+      // 按鈕看「網格是否顯示」（展開或篩選中），paint 不重建按鈕所以在這裡同步
+      const toggle=band.querySelector('[data-band-expand]');if(toggle){toggle.textContent=grid?'收合':'展開全部';toggle.setAttribute('aria-expanded',grid)}
+      const scope=band.querySelector('.series-band-scope');if(scope)scope.hidden=!filtering;
       const current=browse.product?.id||browse.seriesId;if(current)rail.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     };
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionText(id)||id)}</button>`).join('')}</div>`
-      +(tools?`<div class="series-band-tools"><input type="search" class="series-band-filter" placeholder="篩選系列：SV6a、151…" aria-label="篩選系列名稱或代號" enterkeyhint="search" value="${esc(bandFilter[game]||'')}"><button type="button" class="series-band-expand" data-band-expand aria-expanded="${expanded}">${expanded?'收合':'展開全部'}</button></div>`:'')+`</div>`
+      +(tools?`<div class="series-band-tools"><input type="search" class="series-band-filter" placeholder="篩選系列：SV6a、151…" aria-label="篩選系列名稱或代號" enterkeyhint="search" value="${esc(bandFilter[game]||'')}"><button type="button" class="series-band-expand" data-band-expand aria-expanded="false">展開全部</button></div>`:'')+`</div>`
       +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
       +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionText(id)||id)} ${count} 項</button>`).join('')}</div>`:'')
+      +(tools?'<p class="series-band-scope" role="status" hidden>篩選中：在這個版本的全部系列裡找，不分上方分頁。</p>':'')
       +`<div class="series-band-rail" role="tabpanel"></div>`;
     paint();band.querySelector('.series-band-rail').scrollLeft=keep;railSync(band.querySelector('.series-band-rail'));
     const filter=band.querySelector('.series-band-filter');
     if(filter){
-      const apply=()=>{bandFilter[game]=filter.value;bandShown[game]=SHOW_STEP;paint()};
-      filter.oninput=event=>{if(!event.isComposing)apply()};
+      let timer=0;
+      const apply=()=>{clearTimeout(timer);if(!filter.isConnected)return;bandFilter[game]=filter.value;bandShown[game]=SHOW_STEP;paint()};
+      filter.oninput=event=>{if(event.isComposing)return;clearTimeout(timer);timer=setTimeout(apply,120)};
       filter.addEventListener('compositionend',apply);
       filter.onkeydown=event=>{if(event.key==='Escape'&&filter.value){event.preventDefault();filter.value='';apply()}};
     }
@@ -298,11 +307,12 @@
       const regionButton=event.target.closest('[data-region],[data-search-region]'),target=regionButton?.dataset.region||regionButton?.dataset.searchRegion;
       if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
       const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;bandFilter[game]='';bandShown[game]=SHOW_STEP;render();return}
-      if(event.target.closest('[data-band-expand]')){bandExpanded[game]=!bandExpanded[game];bandShown[game]=SHOW_STEP;render();band.querySelector('[data-band-expand]')?.focus();return}
-      if(event.target.closest('[data-band-more]')){bandShown[game]=(bandShown[game]||SHOW_STEP)+SHOW_STEP;paint();return}
+      if(event.target.closest('[data-band-expand]')){const open=band.classList.contains('is-grid');bandExpanded[game]=!open;if(open)bandFilter[game]='';bandShown[game]=SHOW_STEP;render();band.querySelector('[data-band-expand]')?.focus();return}
+      if(event.target.closest('[data-band-more]')){const before=band.querySelectorAll('.band-tile').length;bandShown[game]=(bandShown[game]||SHOW_STEP)+SHOW_STEP;paint();band.querySelectorAll('.band-tile')[before]?.focus();return}
       const card=event.target.closest('.band-tile');if(!card)return;
       // 從展開或篩選的網格選了系列：收回單排，讓下方卡表回到眼前
-      if(band.classList.contains('is-grid')){bandExpanded[game]=false;bandFilter[game]=''}
+      // 要先收合重繪再開系列／商品，捲動位置才是收合後的版面（否則停在頁尾）
+      if(band.classList.contains('is-grid')){bandExpanded[game]=false;bandFilter[game]='';bandShown[game]=SHOW_STEP;render()}
       if(card.dataset.kind==='mascot-new'){bandTab[game]='latest';if(newest)openSeries(newest);else render();return}
       if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);scrollBelowHeader(document.getElementById('selectedProduct'));return}
       const item=series.find(row=>row.id===card.dataset.id);if(item)openSeries(item);

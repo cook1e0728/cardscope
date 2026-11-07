@@ -520,6 +520,11 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .home-latest .band-tile.is-mascot-new .band-tile-name{color:#F6F1E6}
   html.look-clean .home-latest .band-tile-code,html.look-clean .home-latest .home-cards-head,html.look-clean .home-latest .home-cards-head h3{color:#C9C1DA}
   html.look-clean .home-latest .home-cards-more{color:#E7BA4C}
+  /* 深紫底上的翻頁鈕：白底深色箭頭加淺邊；停用時整顆變淡，不用亮米色（會比可按的還亮） */
+  html.look-clean .home-latest .rail-wrap .rail-nav{background:#fff;color:#1B1733;border:1px solid #D8D0C2}
+  html.look-clean .home-latest .rail-wrap .rail-nav:hover{background:#F6F1E6}
+  html.look-clean .home-latest .rail-wrap .rail-nav:focus-visible{outline-color:#F6F1E6}
+  html.look-clean .home-latest .rail-wrap .rail-nav:disabled{background:#fff;color:#1B1733;box-shadow:none;opacity:.35}
 }
 
 /* 詳細頁關閉鈕：手機緊湊版的卡圖區塊會疊在它上面，點不到（2026-10-22 冒煙測試發現）。 */
@@ -632,9 +637,9 @@ html.look-clean .top .search button.search-clear:hover,html.look-clean .top .sea
 .rail-wrap{position:relative}
 .rail-nav{display:none}
 @media (hover:hover) and (pointer:fine){
-  .rail-wrap.has-overflow{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;column-gap:12px;align-items:start}
+  .rail-wrap.has-overflow{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;column-gap:12px;align-items:start}
   .rail-wrap.has-overflow>.series-band-rail{grid-column:2;grid-row:1;margin-inline:0}
-  .rail-wrap.has-overflow .rail-nav{display:grid;place-items:center;grid-row:1;width:40px;height:40px;min-height:0;margin-top:calc(var(--rail-mid,82px) - 20px);padding:0;border:0;border-radius:999px;background:#211C17;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(33,28,23,.18);transition:background-color .15s,transform .15s,opacity .15s}
+  .rail-wrap.has-overflow .rail-nav{display:grid;place-items:center;grid-row:1;width:44px;height:44px;min-height:0;margin-top:calc(var(--rail-mid,82px) - 22px);padding:0;border:0;border-radius:999px;background:#211C17;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(33,28,23,.18);transition:background-color .15s,transform .15s,opacity .15s}
   .rail-wrap .rail-nav.is-prev{grid-column:1}
   .rail-wrap .rail-nav.is-next{grid-column:3}
   .rail-wrap .rail-nav:hover{background:var(--ip,#C4000F);transform:scale(1.06)}
@@ -659,6 +664,9 @@ html.look-clean .series-band.is-grid .band-tile-art{width:100%;height:auto;aspec
 /* 系列標題下的「其他版本」：同代號的系列一鍵切版本 */
 .selected-other-regions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
 .selected-other-regions .meta{margin:0}
-.selected-other-regions button{min-height:36px;padding:0 14px;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:13px;font-weight:700;cursor:pointer}
+.selected-other-regions button{min-height:44px;padding:0 14px;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:13px;font-weight:700;cursor:pointer}
 .selected-other-regions button:hover{border-color:#211C17}
 @media (max-width:760px){.series-band-tools{flex:1 1 100%;margin-left:0}}
+/* 篩選中：上方分頁不是這次的篩選範圍，變淡並由說明列講明 */
+.series-band.is-filtering .series-band-tabs{opacity:.45}
+.series-band-scope{margin:8px 0 0;color:#5C5348;font-size:13px}

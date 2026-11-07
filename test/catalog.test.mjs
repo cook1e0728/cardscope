@@ -7,12 +7,13 @@ import { catalogProvidersNeedingSync, syncCatalog, localizePokemonName, localize
 import { classifyProduct, normalizeProduct, PRODUCT_CATEGORIES } from '../providers/products.mjs';
 import { catalogCollectionAllowed, imageCollectionAllowed, imageRightsAllowDisplay, sourceDisplayDenied, sourcePolicySummary } from '../providers/source-policy.mjs';
 
-const port=4197;
-let server;
+let port,server;
 
 test.before(async()=>{
+  port=await freePort();
   server=spawn(process.execPath,['server.mjs'],{cwd:new URL('..',import.meta.url),env:{...process.env,PORT:String(port),SUPABASE_URL:'',SUPABASE_SERVICE_KEY:''},stdio:['ignore','pipe','pipe']});
-  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('server start timeout')),5000);server.once('error',reject);server.stdout.on('data',chunk=>{if(String(chunk).includes('CardScope is running')){clearTimeout(timer);resolve()}})});
+  let stderr='';server.stderr.on('data',chunk=>{stderr+=String(chunk)});
+  await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error(`server start timeout: ${stderr}`)),5000);server.once('error',reject);server.stdout.on('data',chunk=>{if(String(chunk).includes('CardScope is running')){clearTimeout(timer);resolve()}})});
 });
 
 test.after(()=>server?.kill());
