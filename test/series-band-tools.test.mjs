@@ -44,9 +44,9 @@ test('touch targets are 44px and the rail arrows respect reduced motion and the 
   assert.match(band,/button\.setAttribute\('aria-label',dir<0\?'往左看更多系列':'往右看更多系列'\)/,'the arrows keep their labels');
 });
 
-test('home latest arrows are light on the dark landing, and dim when disabled',()=>{
-  assert.match(css,/\.home-latest \.rail-wrap \.rail-nav\{background:#fff;color:#1B1733;border:1px solid #D8D0C2\}/);
-  assert.match(css,/\.home-latest \.rail-wrap \.rail-nav:disabled\{[^}]*opacity:\.35\}/);
+test('home latest sits on the cream background (方案一), so its arrows use the shared light style',()=>{
+  assert.doesNotMatch(css,/\.home-latest \.rail-wrap \.rail-nav\{/);
+  assert.match(css,/\.rail-wrap \.rail-nav:disabled\{background:#E6DFD2/);
 });
 
 test('a borrowed Japanese release date that is still in the future is not used for sorting',()=>{

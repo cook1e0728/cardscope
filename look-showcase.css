@@ -63,7 +63,8 @@ html.look-clean .hero-intro::after{background-image:
 html.look-clean .cs1-fan,html.look-clean .cs1-strip,html.look-clean .cs1-replay.cs1-replay-m{display:none}
 @media (min-width:761px){
   html.look-clean body[data-view="landing"] .hero{position:relative;isolation:isolate}
-  html.look-clean body[data-view="landing"] .hero::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background-image:var(--cs1-stars)}
+  /* 深色星空底只畫在前三列（標題、搜尋、範例＋兔子），往外補回 .hero 的內距；下面的入口與最新系列在米白底 */
+  html.look-clean body[data-view="landing"] .hero::before{content:"";position:absolute;grid-column:1/-1;grid-row:1/4;inset:calc(-1*var(--s8)) calc(-1*var(--s7)) calc(-1*var(--s6));z-index:-1;border-radius:24px;pointer-events:none;background-color:#1B1733;background-image:var(--cs1-stars)}
   html.look-clean body[data-view="landing"] .browse-regions{align-items:center}
   html.look-clean .cs1-replay{margin-left:auto}
 }
