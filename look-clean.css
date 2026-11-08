@@ -647,3 +647,17 @@ html.look-clean .series-band.is-grid .band-tile-art{width:100%;height:auto;aspec
 
 /* 2026-11-08：首頁單卡預覽只做展示，收藏星號與張數加減只留在卡表／詳細頁 */
 #homeCardsPreview .card-actions{display:none}
+
+/* ===== 手機原生感（mobile-native skill，2026-11-09）===== */
+/* 拿掉點擊時的灰藍色閃框、橫向時字級不自動放大；點按不等雙擊判定；長按按鈕不選字 */
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,[role="button"],summary,label,select{touch-action:manipulation}
+button,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* iOS 對 16px 以下的輸入框會放大整頁且不縮回；觸控裝置一律 16px（各處選擇器權重不一，用 !important 收斂） */
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}}
+/* 觸控沒有 hover：點過的卡片、入口不能一直浮起；改給按下當下的回饋 */
+@media (hover:none){
+  html.look-clean .card:hover,html.look-clean .channel:hover,html.look-clean .game-entry:hover,html.look-clean .series-card-rail .series-card:hover,html.look-clean #trendsSection .trend-card:hover{transform:none;box-shadow:none}
+  html.look-clean .band-tile:hover .band-tile-art img{transform:none}
+  html.look-clean button:not(:disabled):active,html.look-clean .card:active{filter:brightness(.94)}
+}

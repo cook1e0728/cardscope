@@ -244,7 +244,7 @@
     sync();mq.addEventListener('change',sync);
   }
   function shortPlaceholder(){
-    const q=$('#q');if(!q)return;const full=q.placeholder,mq=matchMedia('(max-width:760px)'),sync=()=>{q.placeholder=mq.matches?'搜尋卡名或卡號':full};
+    const q=$('#q');if(!q)return;const full=q.placeholder,mq=matchMedia('(max-width:760px)'),sync=()=>{q.placeholder=mq.matches?'卡名或卡號':full};
     sync();mq.addEventListener('change',sync);
   }
 

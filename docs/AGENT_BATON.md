@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-09：手機原生感一輪（mobile-native skill，只在內建瀏覽器 375×812 模擬驗證，未上實機）。look-clean.css 末段：拿掉點擊灰藍閃框、text-size-adjust、按鈕 touch-action:manipulation 與長按不選字；觸控裝置（pointer:coarse）輸入框一律 16px（原本 #q 14px、手機遊戲／版本選單 13px，iOS 點下去會放大整頁）；hover:none 時卡片／入口不再停在浮起狀態，改給按下回饋。theme-color 改成手機頂欄米白 #F8F5EE。手機搜尋框 placeholder 縮成「卡名或卡號」（16px 才放得下）。未做：viewport-fit=cover（env(safe-area) 目前都是 0，但不開也不會被瀏海遮；開了要補左右安全區，需實機驗證）、manifest theme_color 仍是深色 #16132A、其餘約 70 條未分流的 :hover（多為顏色變化，影響小）。
 - 2026-11-09：設計審查 (b)(c)(d) 上線，(e) 使用者決定不做（自加 SAMPLE 浮水印保留）。(b) 首頁單卡預覽隱藏 .card-actions（☆、−0＋），點卡照常開詳細頁；(c) ≥761px 隱藏 nav.bottom、body 底部留白歸零（頂欄已有同樣三鈕），手機保留；(d) 首頁「最新系列」拿掉兔子黑磚（series-band.js 188 行）；11-09 依使用者要求遊戲頁系列列的兔子磚也拿掉，mascotNewTile 與相關 CSS 一併刪除。
 - 2026-11-08：設計審查 (a) 低風險項目上線。(1) 漲跌榜美版卡名：migration 20261108090000 `price_movers` 多回傳 name_en（drop 後重建，已套用到 Supabase），server 名稱後備加 row.name_en，前 20 名不再顯示卡號。(2) price-movers.js：警語只在榜單上方寫一次、日期改 MM/DD、副標與 meta.note 白話化。(3) 時事來源：providers/market-events.mjs `SOURCE_NAMES` 網域→網站名稱（沒對到照舊顯示網域）。(4) 白話文案：搜尋跨 IP→一次搜全部遊戲、可靠價格→參考價、買取價→店家收購價、拿掉「比對基準」標籤、同名推導→參考同名譯名、觀測→更新、資料庫目前觀測→目前已收錄（持續補齊中）、單卡推送→本彈高稀有度卡預覽、歐洲賣家最低賣→歐洲最低掛牌價。未改：收錄狀態面板（#coverageStatus）裡的「完整分母未核定」等字樣、已停用的遊々亭區塊。
 - 2026-11-08：首頁桌面配色「方案一」（使用者從 agy 設計審查選定，部分推翻 ADR 0050 的整片深色）：深色只留在搜尋區，由 look-showcase.css `.hero::before` 以 grid-row:1/4 畫在標題／搜尋／範例＋兔子後方，往外補回 .hero 內距；遊戲入口、版本、最新系列、單卡預覽改回米白底（look-clean.css 刪掉深色覆寫，左右以負 margin 對齊下方區塊）。順帶修好預覽卡價格／系列字在深底看不見。手機不變。未做（等使用者選）：漲跌榜美版卡名顯示數字（price_movers 沒選 name_en）、漲跌警語每張重複、時事來源顯示網址、白話文案、預覽卡 ☆／−0＋、桌機底部導覽列、兔子黑磚、自加 SAMPLE 浮水印。
