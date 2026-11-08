@@ -648,3 +648,6 @@ html.look-clean .series-band.is-grid .band-tile-art{width:100%;height:auto;aspec
 
 /* 卡牌時事標題與上方首頁深色區塊拉開 10px */
 #eventsSection>.title{padding-top:10px}
+
+/* 2026-11-08：首頁單卡預覽只做展示，收藏星號與張數加減只留在卡表／詳細頁 */
+#homeCardsPreview .card-actions{display:none}

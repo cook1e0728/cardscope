@@ -185,7 +185,7 @@
     if(!tabBar){tabBar=document.createElement('div');tabBar.className='series-band-tabs home-latest-tabs';tabBar.setAttribute('role','tablist');tabBar.setAttribute('aria-label','最新系列快速分類');rail.before(tabBar)}
     tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
     tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(!btn)return;homeTab=btn.dataset.homeTab;renderHome()};
-    rail.innerHTML=(list.length?mascotNewTile(list[0]):'')+list.map(item=>tile('series',item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionText(item.region,item.game)||item.region||''].filter(Boolean).join(' '))).join('');
+    rail.innerHTML=list.map(item=>tile('series',item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionText(item.region,item.game)||item.region||''].filter(Boolean).join(' '))).join('');
     railNav(rail);
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;

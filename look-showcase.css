@@ -137,7 +137,8 @@ html.look-clean nav.bottom button[aria-current="page"],html.look-clean nav.botto
 html.look-clean nav.bottom button[aria-current="page"]{font-weight:700}
 html.look-clean nav.bottom button[aria-current="page"]::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--cs1-gold)}
 /* 暫停動態開關在中等寬度會和 dock 重疊 → 往上抬 */
-@media (min-width:761px) and (max-width:1000px){html.look-clean .cs-motion-toggle{bottom:92px}}
+/* 2026-11-08：桌機頂欄已有同樣三個導覽鈕，底部 dock 只留手機（≤760px） */
+@media (min-width:761px){html.look-clean nav.bottom{display:none}html.look-clean body{padding-bottom:0}}
 
 /* ===== 手機（≤760px）：標題區改成深色星空小卡，含 3 張迷你卡帶；dock 滿寬貼底 ===== */
 @media (max-width:760px){
