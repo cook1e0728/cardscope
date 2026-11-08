@@ -64,12 +64,6 @@
       +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>`
       +`<b class="band-tile-name">${esc(name)}</b><span class="band-tile-code">${esc(sub)}</span></button>`;
   }
-  function mascotNewTile(target){
-    const hint=target?`${seriesName(target)}・${target.officialCode||''}`:'最新收錄系列';
-    return`<button type="button" class="band-tile is-mascot-new" data-kind="mascot-new"${target?` data-id="${esc(target.id)}" data-game="${esc(target.game)}"`:''} title="${esc(`最新系列 NEW｜${hint}`)}">`
-      +`<span class="band-tile-art is-mascot-art"><img src="/assets/brand/web/rabbit-success-160.webp" alt="" loading="lazy"><span class="band-tile-flag is-new">NEW</span></span>`
-      +`<b class="band-tile-name">最新系列</b><span class="band-tile-code">NEW</span></button>`;
-  }
   // 橫列左右的翻頁鈕：一次捲約八成寬，捲到頭的那側停用；沒有溢出時兩顆都隱藏（觸控裝置用 CSS 隱藏，照常手滑）。
   function railNav(rail){
     if(!rail)return;
@@ -260,8 +254,7 @@
     // [id, text, hint, count, unit]: the count comes from lists already in memory (no extra request); unit feeds the screen-reader label.
     const tabs=[...(found.length||elsewhere.length?[['search',`搜尋：${bandSearch.query}`,'',found.length,'項']]:[]),['latest','全部系列','',series.length,'個系列'],...(seen.length?[['recent','最近瀏覽','',seen.length,'個系列']]:[]),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label,'',bucket.items.length,'個系列']),...categories.map(item=>[`product:${item.id}`,label(item),item.description,item.rows.length,'項商品'])];
     let active=bandTab[game]||'latest';if(!tabs.some(([id])=>id===active))active='latest';bandTab[game]=active;
-    // 兔子格開最新已發售系列；dated 的第一筆可能是即將發售
-    const dated=byDate(series),newest=dated.find(item=>!(item.releaseDate&&item.releaseDate>today()))||dated[0],firstEraTab=buckets.length?tabs.findIndex(([id])=>id.startsWith('product:')):-1;
+    const dated=byDate(series),firstEraTab=buckets.length?tabs.findIndex(([id])=>id.startsWith('product:')):-1;
     let kind='series',list;
     if(active==='search')list=found;
     else if(active==='latest')list=dated;
@@ -278,7 +271,7 @@
       const shown=grid?rows.slice(0,bandShown[game]||SHOW_STEP):rows;
       const more=rows.length>shown.length?`<button type="button" class="series-band-more" data-band-more>顯示更多（還有 ${rows.length-shown.length} 個）</button>`:'';
       const empty=`<p class="series-band-empty">${needle?`${esc(regionText(region)||'')}沒有名稱或代號含「${esc(bandFilter[game])}」的系列。`:window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionText(region)||'')}沒有符合的系列或商品。`:`${esc(regionText(region)||'')}目前沒有收錄這一類。`}</p>`;
-      return {grid,filtering:Boolean(needle),html:shown.length?(!needle&&newest?mascotNewTile(newest):'')+shown.map(([tileKind,item])=>tile(tileKind,item)).join('')+more:empty};
+      return {grid,filtering:Boolean(needle),html:shown.length?shown.map(([tileKind,item])=>tile(tileKind,item)).join('')+more:empty};
     };
     const paint=()=>{
       const rail=band.querySelector('.series-band-rail'),{grid,filtering,html}=railMarkup();
@@ -286,7 +279,7 @@
       // 按鈕看「網格是否顯示」（展開或篩選中），paint 不重建按鈕所以在這裡同步
       const toggle=band.querySelector('[data-band-expand]');if(toggle){toggle.textContent=grid?'收合':'展開全部';toggle.setAttribute('aria-expanded',grid)}
       const scope=band.querySelector('.series-band-scope');if(scope)scope.hidden=!filtering;
-      const current=browse.product?.id||browse.seriesId;if(current)rail.querySelector(`.band-tile:not(.is-mascot-new)[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
+      const current=browse.product?.id||browse.seriesId;if(current)rail.querySelector(`.band-tile[data-id="${CSS.escape(String(current))}"]`)?.setAttribute('aria-current','true');
     };
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionText(id)||id)}</button>`).join('')}</div>`
       +(tools?`<div class="series-band-tools"><input type="search" class="series-band-filter" placeholder="篩選系列：SV6a、151…" aria-label="篩選系列名稱或代號" enterkeyhint="search" value="${esc(bandFilter[game]||'')}"><button type="button" class="series-band-expand" data-band-expand aria-expanded="false">展開全部</button></div>`:'')+`</div>`
@@ -313,7 +306,7 @@
       // 從展開或篩選的網格選了系列：收回單排，讓下方卡表回到眼前
       // 要先收合重繪再開系列／商品，捲動位置才是收合後的版面（否則停在頁尾）
       if(band.classList.contains('is-grid')){bandExpanded[game]=false;bandFilter[game]='';bandShown[game]=SHOW_STEP;render()}
-      if(card.dataset.kind==='mascot-new'){bandTab[game]='latest';if(newest)openSeries(newest);else render();return}
+      
       if(card.dataset.kind==='product'){openProduct(card.dataset.id).then(render);scrollBelowHeader(document.getElementById('selectedProduct'));return}
       const item=series.find(row=>row.id===card.dataset.id);if(item)openSeries(item);
     };

@@ -58,4 +58,5 @@ test('home preview is display-only, the desktop dock is gone, and home latest ha
   const showcase=await readFile(new URL('../look-showcase.css',import.meta.url),'utf8');
   assert.match(showcase,/@media \(min-width:761px\)\{html\.look-clean nav\.bottom\{display:none\}/);
   assert.match(band,/rail\.innerHTML=list\.map\(item=>tile\('series'/,'home latest starts with the first series');
+  assert.doesNotMatch(band,/mascot/,'no rabbit tile on the game page either');
 });

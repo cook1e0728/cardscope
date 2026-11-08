@@ -144,10 +144,6 @@ html.look-clean .series-band-tabs .count{margin-left:2px;color:var(--lc-ink-2);f
 html.look-clean .series-band-rail{gap:var(--s4);margin-inline:calc(var(--s2) * -1);padding:var(--s4) var(--s2) var(--s1);scroll-padding-inline:var(--s2)}
 html.look-clean .band-tile{align-items:flex-start;gap:0;text-align:left}
 html.look-clean .band-tile-art{border-radius:var(--lc-r-md);box-shadow:none;border:1px solid var(--lc-hair);background:#fff}
-html.look-clean .band-tile-art.is-mascot-art{border:2px solid var(--lc-ink);background:var(--lc-ink);box-shadow:inset 0 0 0 2px #D49B1B}
-html.look-clean .band-tile-art.is-mascot-art img{padding:4px;object-fit:cover;border-radius:10px}
-html.look-clean .band-tile.is-mascot-new .band-tile-name{font-weight:700;color:var(--lc-ink)}
-html.look-clean .band-tile.is-mascot-new .band-tile-code{font-weight:700;color:#B8820E}
 html.look-clean .band-tile-art.is-type{border:0;background:var(--lc-sleeve)}
 html.look-clean .band-tile-art.is-type:before{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
 html.look-clean .band-tile-flag{left:var(--s2);top:var(--s2);padding:2px var(--s2);border-radius:999px;background:var(--ip);color:var(--ip-on);font-size:12px;font-weight:700;letter-spacing:.04em}
