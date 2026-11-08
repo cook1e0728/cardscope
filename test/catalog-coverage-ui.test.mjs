@@ -76,9 +76,9 @@ test('catalog status labels bootstrap rows as a sample until a complete database
   assert.match(sample.betaStatus,/目前載入樣本 · 156 張收錄/);
 
   const verified=summarize({catalog:{cards:Array.from({length:156},()=>({}))},catalogState:'ready',coverage:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'complete'}},coverageState:'ready',productsState:'ready',productsCount:12});
-  assert.match(verified.status,/資料庫目前觀測 48,244 張卡片/);
+  assert.match(verified.status,/目前已收錄 48,244 張卡片/);
   assert.doesNotMatch(verified.status,/156 張卡片/);
-  assert.match(verified.betaStatus,/48,244 張收錄/);
+  assert.match(verified.betaStatus,/已收錄 48,244 張/);
 
   const partial=summarize({catalog:{cards:Array.from({length:156},()=>({}))},catalogState:'ready',coverage:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'partial'}},coverageState:'ready',productsState:'loading'});
   assert.match(partial.status,/目前載入樣本：156 張卡片/);
@@ -107,7 +107,7 @@ test('catalog health labels only verified totals as database counts',async()=>{
   vm.runInContext(healthNumber,context);
   vm.runInContext(enhancements.slice(helperStart,helperEnd),context);
   const label=input=>{context.input=input;return vm.runInContext('enhancementCoverageLabel(input.data,input.loadedCount)',context)};
-  assert.equal(label({data:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'complete'}},loadedCount:156}),'資料庫目前觀測 48,244 張');
+  assert.equal(label({data:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'complete'}},loadedCount:156}),'目前已收錄 48,244 張卡片（持續補齊中）');
   assert.equal(label({data:{source:'supabase-current-rows',sample:false,totalCards:48244,metricStatus:{cards:'partial'}},loadedCount:156}),'目前載入樣本 156 張；資料庫總數待核');
   assert.equal(label({data:{source:'catalog.json',sample:true,totalCards:156,metricStatus:{cards:'catalog-file'}},loadedCount:156}),'本機備援樣本 156 張；資料庫總數未核定');
   assert.equal(label({data:null,loadedCount:null}),'資料庫總數查核中；尚無載入樣本');

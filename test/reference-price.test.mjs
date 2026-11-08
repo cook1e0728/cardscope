@@ -268,10 +268,10 @@ test('card wall badge: source and price kind are spelled out, the observation da
   const context = harness();
   const card = { id: 'p1', game: 'pokemon', referencePrice: { amount: 12.3, currency: 'EUR', source: 'cardmarket', variant: 'holo', observedAt: '2026-10-22T22:00:00Z' } };
   const out = vm.runInContext(`cardReferenceMarkup(${JSON.stringify(card)},'p1')`, context);
-  assert.match(out, /<span class="cr-amount">€12\.30<\/span><small class="cr-src" title="Cardmarket；€12\.30；觀測 2026\/10\/22；參考價，不是成交價" aria-hidden="true">CM<\/small><small class="cr-var" aria-hidden="true">閃卡<\/small>/, '卡牆一行：金額＋來源縮寫＋極短版本，完整來源與觀測日在 title');
+  assert.match(out, /<span class="cr-amount">€12\.30<\/span><small class="cr-src" title="Cardmarket；€12\.30；更新於 2026\/10\/22；參考價，不是成交價" aria-hidden="true">CM<\/small><small class="cr-var" aria-hidden="true">閃卡<\/small>/, '卡牆一行：金額＋來源縮寫＋極短版本，完整來源與觀測日在 title');
   assert.doesNotMatch(out, /cr-label/, '不再有獨立的來源文字行');
   assert.match(out, /aria-label="Cardmarket 參考 €12\.30，/);
-  assert.match(out, /class="card-reference-tip" aria-hidden="true">Cardmarket 平台參考價（閃卡 Holo），觀測 2026\/10\/22；不是成交價或台灣行情<\/small>/, '滑過、聚焦或按住時顯示的提示');
+  assert.match(out, /class="card-reference-tip" aria-hidden="true">Cardmarket 平台參考價（閃卡 Holo），更新於 2026\/10\/22；不是成交價或台灣行情<\/small>/, '滑過、聚焦或按住時顯示的提示');
   assert.match(out, /data-card-open="p1"/, '點價格也開啟詳細頁');
   const twd = vm.runInContext(`cardReferenceMarkup(${JSON.stringify({ ...card, referencePrice: { ...card.referencePrice, amountTwd: 452 } })},'p1')`, context);
   assert.match(twd, /<span class="cr-amount">NT\$452<\/span><small class="cr-src"[^>]*>CM<\/small><small class="cr-var"[^>]*>閃卡<\/small><small class="cr-original" aria-hidden="true">€12\.30<\/small>/, '新台幣為主，原幣小字保留給清單模式（格狀用 CSS 隱藏）');
@@ -304,7 +304,7 @@ test('sort menu: Pokemon gets a reference-price sort, other games keep the buyba
   assert.equal(onepiece.cardFilters.sort, 'number-asc');
   const yugioh = run('yugioh', true);
   assert.equal(yugioh.options[1].disabled, false);
-  assert.match(yugioh.options[1].textContent, /^買取價從低到高$/);
+  assert.match(yugioh.options[1].textContent, /^店家收購價從低到高$/);
 });
 
 test('client sort: Pokemon cards sort by the server reference price, unpriced last, other games by the buyback list', () => {
@@ -326,14 +326,14 @@ test('version table markup: columns, a plain "no reliable price" row, scrolls in
   ] };
   context.market = market;
   const out = vm.runInContext(`versionPriceTable(market,'pokemon','k-jp')`, context);
-  for (const heading of ['版本', '來源', '價格種類', '原幣', '新台幣', '觀測日期']) assert.match(out, new RegExp(`<th scope="col">${heading}</th>`));
+  for (const heading of ['版本', '來源', '價格種類', '原幣', '新台幣', '更新日期']) assert.match(out, new RegExp(`<th scope="col">${heading}</th>`));
   assert.match(out, /EUR 10\.00/);
   assert.match(out, /NT\$ 360/);
   assert.match(out, /JPY 800<\/td><td>—<\/td>/, '沒有台幣換算就寫破折號，不補數字');
   assert.match(out, /<small>閃卡 Holo<\/small>/);
   assert.match(out, /每日快照/);
   assert.match(out, /目前顯示/);
-  assert.match(out, /<td colspan="5" class="vp-none">目前沒有可靠價格<\/td>/);
+  assert.match(out, /<td colspan="5" class="vp-none">目前沒有參考價<\/td>/);
   assert.match(out, /class="version-prices" role="region"[^>]*tabindex="0"/);
   assert.doesNotMatch(out, /最便宜|最低|合計|總計/, '只並列，不比較也不加總');
   assert.equal(vm.runInContext(`versionPriceTable({versions:[${JSON.stringify(market.versions[0])}]},'pokemon','k-jp')`, context), '', '只有一個版本不畫表');

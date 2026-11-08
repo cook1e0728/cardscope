@@ -23,6 +23,14 @@ test('price movers split by direction, convert to TWD and skip broken rows', () 
   assert.match(body.meta.note, /不是成交價/);
 });
 
+test('a card with only an English name shows that name, not its number', async () => {
+  const row = { direction: 'up', card_id: 'pokemon-x', currency: 'EUR', from_date: '2026-10-16', from_amount: '10', to_date: '2026-10-29', to_amount: '30', change_percent: '200', name_zh: null, name_ja: null, name_en: 'Dark Exeggutor', card_number: '33' };
+  assert.equal(buildPriceMovers([row], { rates: { EUR: 35 } }).data.up[0].name, 'Dark Exeggutor');
+  const sql = await readFile(new URL('../supabase/migrations/20261108090000_price_movers_name_en.sql', import.meta.url), 'utf8');
+  assert.match(sql, /image_url text, name_en text\)/);
+  assert.match(sql, /grant execute on function public\.price_movers\(integer, numeric, integer\) to service_role/);
+});
+
 test('movers markup uses delegated actions and the migration stays service-role only', async () => {
   const js = await readFile(new URL('../price-movers.js', import.meta.url), 'utf8');
   assert.doesNotMatch(js, /\son[a-z]+=/);

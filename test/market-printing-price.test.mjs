@@ -57,7 +57,7 @@ test('market rows name the printing they belong to, and an empty list says there
   assert.match(out, /對應版本：未標示/, 'neither: said so, not guessed');
   assert.match(out, /YGOPRODeck 參考價為美元計價、來源平台未標示，不是成交價/);
   assert.doesNotMatch(out, /TCGplayer/, 'only the sources present are named');
-  assert.match(context.marketBlock({ meta, records: [] }), /目前沒有這個版本的可靠價格/);
+  assert.match(context.marketBlock({ meta, records: [] }), /目前沒有這個版本的參考價/);
 });
 
 test('collection rows: a price older than 7 days is shown as 已過期 and left out of the total', () => {

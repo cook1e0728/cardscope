@@ -9,7 +9,9 @@ const plain = value => JSON.parse(JSON.stringify(value));
 const row = over => ({ game_id: 'yugioh', region: 'US', release_date: '2026-11-12', name_en: '遊戲王系列｜Magnificent Maestros', source_url: 'https://ygoprodeck.com/api-guide/', ...over });
 
 test('catalog rows become events with their source; rows without a date, name or https source drop out', () => {
-  assert.deepEqual(catalogEventsFrom([row()]), [{ date: '2026-11-12', game: 'yugioh', title: '美版 新系列發售：Magnificent Maestros', source: 'ygoprodeck.com', url: 'https://ygoprodeck.com/api-guide/' }]);
+  assert.deepEqual(catalogEventsFrom([row()]), [{ date: '2026-11-12', game: 'yugioh', title: '美版 新系列發售：Magnificent Maestros', source: 'YGOPRODeck 資料庫', url: 'https://ygoprodeck.com/api-guide/' }]);
+  assert.equal(catalogEventsFrom([row({ source_url: 'https://asia-tc.onepiece-cardgame.com/products/' })])[0].source, '航海王卡牌繁中官網');
+  assert.equal(catalogEventsFrom([row({ source_url: 'https://www.unknown.test/a' })])[0].source, 'unknown.test', 'unmapped hosts still show the domain');
   for (const bad of [{ release_date: null }, { name_en: '' }, { source_url: 'http://x.test/' }, { source_url: 'javascript:alert(1)' }, { source_url: null }]) assert.equal(catalogEventsFrom([row(bad)]).length, 0);
 });
 

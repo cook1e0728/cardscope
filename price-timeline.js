@@ -222,7 +222,7 @@
     function setLine(next){
       const first=!shownHi;stop();line=next;start=0;shownStart=0;pin=null;period='day';bars=[];if(first)[shownLo,shownHi]=domain();const hasTrend=line.days.length>1;$('trend').hidden=!hasTrend;$('short').hidden=hasTrend;
       const source=SOURCES[line.provider]||{seller:'',plain:line.provider};
-      const latest=line.days.at(-1).twd,now=[['最新參考價',latest],['近 7 天平均',line.avg7],['近 30 天平均',line.avg30],[`${source.seller}賣家最低賣`,line.low]].filter(item=>item[1]!=null),versus=versusAverage(latest,line.avg30);
+      const latest=line.days.at(-1).twd,now=[['最新參考價',latest],['近 7 天平均',line.avg7],['近 30 天平均',line.avg30],[`${source.seller}最低掛牌價`,line.low]].filter(item=>item[1]!=null),versus=versusAverage(latest,line.avg30);
       $('low').innerHTML=`<dl>${now.map(item=>`<div><dt>${esc(item[0])}</dt><dd>${esc(ntd(item[1]))}</dd></div>`).join('')}</dl>${versus?`<p>${esc(versus)}</p>`:''}${line.avg30?'<small>平均是 Cardmarket 提供的數字，它沒有公開是否只算成交。</small>':''}${line.gap?`<div class="ptl-warn">最低賣價和參考價差約 ${line.gap} 倍，這個數字可能不太準，兩個一起看。</div>`:''}`;
       $('plain').textContent=`這是${source.plain} 的價格換算，未分卡況，不是台灣賣場價，也不是實際成交價。`;
       const jump=biggestJump(line.points);$('jump').innerHTML=jump?`<div class="ptl-warn">${esc(md(jump.time))} 這筆從 ${esc(ntd(jump.from))} ${jump.to>jump.from?'跳到':'掉到'} ${esc(ntd(jump.to))}，可能是成交稀少，不代表買賣得到這個價。</div>`:'';

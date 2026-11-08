@@ -1103,9 +1103,9 @@ const PRICE_MOVERS_TTL_MS=3600000,PRICE_MOVERS_DAYS=14,PRICE_MOVERS_MIN_EUR=5,pr
 function buildPriceMovers(rows,fx,now=Date.now()){
   const up=[],down=[];
   for(const row of rows||[]){const from=Number(row.from_amount),to=Number(row.to_amount),change=Number(row.change_percent);if(!row?.card_id||!Number.isFinite(from)||!Number.isFinite(to)||!Number.isFinite(change))continue;
-    (row.direction==='up'?up:down).push({cardId:row.card_id,name:row.name_zh||row.name_ja||row.card_number||row.card_id,nameJa:row.name_ja||null,cardNumber:row.card_number||null,seriesCode:row.series_code||null,seriesName:row.series_name||null,imageUrl:row.image_url||null,variant:row.variant||'',currency:row.currency,changePercent:change,
+    (row.direction==='up'?up:down).push({cardId:row.card_id,name:row.name_zh||row.name_ja||row.name_en||row.card_number||row.card_id,nameJa:row.name_ja||null,cardNumber:row.card_number||null,seriesCode:row.series_code||null,seriesName:row.series_name||null,imageUrl:row.image_url||null,variant:row.variant||'',currency:row.currency,changePercent:change,
       from:{date:String(row.from_date).slice(0,10),amount:from,amountTwd:amountToTwd(from,row.currency,fx)},to:{date:String(row.to_date).slice(0,10),amount:to,amountTwd:amountToTwd(to,row.currency,fx)}})}
-  return {data:{up,down},meta:{provider:'cardmarket',windowDays:PRICE_MOVERS_DAYS,minAmount:PRICE_MOVERS_MIN_EUR,currency:'EUR',note:'Cardmarket 平台參考價（經 TCGdex 轉供）的變動，不是成交價、買取價或台灣行情，也不代表能賺到的價差；新台幣以今日匯率換算。',generatedAt:new Date(now).toISOString()}};
+  return {data:{up,down},meta:{provider:'cardmarket',windowDays:PRICE_MOVERS_DAYS,minAmount:PRICE_MOVERS_MIN_EUR,currency:'EUR',note:'這是歐洲平台的參考價，不是成交價或台灣行情；新台幣以今日匯率換算，未含運費與關稅，也不是買賣建議。',generatedAt:new Date(now).toISOString()}};
 }
 async function loadPriceMovers(){
   const snapshot=await priceMoversCache.get(async()=>{const [rows,fx]=await Promise.all([supabaseFetch('/rpc/price_movers',{method:'POST',body:JSON.stringify({p_days:PRICE_MOVERS_DAYS,p_min:PRICE_MOVERS_MIN_EUR,p_limit:20})}),getTwdRates()]);return buildPriceMovers(rows,fx)});

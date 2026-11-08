@@ -4,6 +4,7 @@
   const BIG=200,esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const twd=value=>value==null?'':`NT$ ${Math.round(Number(value)).toLocaleString('en-US')}`;
   const eur=value=>`€${Number(value).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  const md=date=>String(date||'').slice(5).replace('-','/');
   const fallback='<span class="image-fallback unified-image-fallback"%H><b>圖片待補</b><small>圖片來源尚未收錄</small></span>';
   function card(row,up){
     const pct=Number(row.changePercent),label=`${up?'↑ +':'↓ '}${pct.toLocaleString('en-US',{maximumFractionDigits:1})}%`;
@@ -13,8 +14,7 @@
     return `<button type="button" class="trend-card${up?'':' trend-fall'}" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${image}</div>`+
       `<div class="trend-card-head"><b>${esc(row.name)}</b><span class="trend-rise">${esc(label)}</span></div>`+
       `<span class="trend-card-number">${esc([row.seriesCode,row.cardNumber].filter(Boolean).join(' · '))}</span><strong>${esc(price)}</strong>`+
-      `<small>${esc(eur(row.from.amount))} → ${esc(eur(row.to.amount))}<br>${esc(row.from.date)} → ${esc(row.to.date)}</small>`+
-      (Math.abs(pct)>=BIG?'<small class="trend-warn">變動很大：多半是成交稀少、少數高價刊登拉動，先看詳細頁走勢</small>':'')+'</button>';
+      `<small>${esc(eur(row.from.amount))} → ${esc(eur(row.to.amount))}<br>${esc(md(row.from.date))} → ${esc(md(row.to.date))}</small></button>`;
   }
   const rail=(rows,up,title)=>`<h3 class="movers-head">${title}</h3><div class="trend-rail">${rows.length?rows.map(row=>card(row,up)).join(''):'<div class="trend-empty"><b>目前沒有符合條件的卡</b></div>'}</div>`;
   let pending=null;
@@ -24,8 +24,10 @@
       const up=body?.data?.up||[],down=body?.data?.down||[],meta=body?.meta||{};
       if(!up.length&&!down.length){section.hidden=true;section.innerHTML='';pending=null;return}
       section.hidden=false;section.classList.add('price-movers');
-      section.innerHTML=`<div class="title"><div><h2>近 ${esc(meta.windowDays||14)} 天參考價漲跌（寶可夢）</h2><span class="meta">Cardmarket 平台參考價，兩端都在 €${esc(meta.minAmount||5)} 以上、連續兩筆紀錄同方向才列入</span></div></div>`+
-        `<p class="trend-scope-note">${esc(meta.note||'')}沒有計入運費、手續費與關稅，不是買賣建議。</p>`+
+      section.innerHTML=`<div class="title"><div><h2>近 ${esc(meta.windowDays||14)} 天參考價漲跌（寶可夢）</h2><span class="meta">依歐洲 Cardmarket 平台參考價整理（已排除 €${esc(meta.minAmount||5)} 以下的低價卡與單日異常跳動）</span></div></div>`+
+        `<p class="trend-scope-note">${esc(meta.note||'')}</p>`+
+        // 漲跌很大的卡只在榜單上方說明一次，不在每張卡重複
+        ([...up,...down].some(row=>Math.abs(Number(row.changePercent))>=BIG)?'<p class="trend-scope-note trend-warn">漲跌超過 200% 的卡，多半是成交稀少、少數高價刊登拉動，請先點進去看走勢。</p>':'')+
         rail(up,true,'漲幅')+rail(down,false,'跌幅');
     });
   };

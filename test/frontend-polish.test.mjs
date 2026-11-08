@@ -35,12 +35,12 @@ test('price copy: games without a price source say so; Pokemon summary says Card
   vm.runInContext(slice(html, 'function priceScopeNote', 'window.priceScopeNote'), context);
   vm.runInContext(slice(html, 'function noPriceSource', 'function marketBlock'), context);
   vm.runInContext(slice(html, 'function marketBlock', 'async function openCard').replace(/^[^]*?(?=function marketBlock)/, ''), context);
-  assert.match(vm.runInContext('priceScopeNote()', context), /Cardmarket 歐元參考價（沒有歐洲行情的日版系列改用 TCGplayer 美元市價），不是台灣買取價/);
+  assert.match(vm.runInContext('priceScopeNote()', context), /Cardmarket 歐元參考價（沒有歐洲行情的日版系列改用 TCGplayer 美元市價），不是台灣店家收購價/);
   context.game = 'onepiece';
-  assert.match(vm.runInContext('priceScopeNote()', context), /價格僅採可驗證買取資料/);
+  assert.match(vm.runInContext('priceScopeNote()', context), /價格只採可查證的店家收購價/);
   assert.equal(vm.runInContext("noPriceSource('onepiece')&&noPriceSource({id:'haikyuu'})&&noPriceSource('dragonball-fw')&&!noPriceSource('pokemon')&&!noPriceSource('yugioh')&&!noPriceSource(undefined)", context), true);
   assert.match(vm.runInContext("marketBlock({records:[],meta:{}},'onepiece')", context), /尚未接入價格來源/);
-  assert.match(vm.runInContext("marketBlock({records:[],meta:{}},'pokemon')", context), /目前沒有這個版本的可靠價格/);
+  assert.match(vm.runInContext("marketBlock({records:[],meta:{}},'pokemon')", context), /目前沒有這個版本的參考價/);
 });
 
 test('resolveCollection fills the whole collection in batches of 200 and does not loop on temporary failures', async () => {
