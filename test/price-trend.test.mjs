@@ -152,7 +152,7 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
 
 test('detail page wiring: the price panel holds the slot that loads only when the 價格 tab is opened', async () => {
   const [ui, html] = await Promise.all(['../ui-enhancements.js', '../index.html'].map(path => readFile(new URL(path, import.meta.url), 'utf8')));
-  assert.match(ui, /detailPanel\('market',true,`<div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div>/);
+  assert.match(ui, /detailPanel\('market',true,`<section class="dpanel dpanel-trend"><h3 class="dpanel-title">價格走勢<\/h3><div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div>/);
   assert.match(ui, /\[data-detail-tab="market"\]/);
   assert.match(ui, /tab\.addEventListener\('click',\(\)=>\{[^]*?window\.PriceTimeline\.load\(slot/);
   assert.ok(html.indexOf('/price-timeline.js') > 0 && html.indexOf('/price-timeline.js') < html.indexOf('/ui-enhancements.js'));

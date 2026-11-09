@@ -306,18 +306,47 @@ html.look-clean #detail .detail-actions .source-link{align-self:auto;min-height:
 html.look-clean #detail .detail-actions .source-link:hover{border-color:var(--lc-ink)}
 html.look-clean .detail-actions .share-url{flex-basis:100%;margin:0}
 html.look-clean .detail-position span:empty{display:none}
-html.look-clean .card-text-empty{margin:var(--s4) 0 0;font-size:13px}
+html.look-clean .card-text-empty{margin:0 0 var(--s4);font-size:13px}
 html.look-clean .detail-price-retry .dp-retry{font-size:15px}
-html.look-clean .detail-tabs{gap:var(--s1);margin-bottom:var(--s5);border-bottom:1px solid var(--lc-hair);background:transparent}
-html.look-clean .detail-tabs button,html.look-clean .view-switch.detail-tabs button{min-height:44px;padding:0 var(--s4);border:0;border-bottom:2px solid transparent!important;border-radius:0!important;background:transparent;color:var(--lc-ink-2);font-size:15px;font-weight:500}
-html.look-clean .detail-tabs button.on,html.look-clean body .detail-tabs button.on{background:transparent!important;color:var(--lc-ink)!important;font-weight:700;border-bottom-color:var(--ip)!important}
+html.look-clean .detail{--dframe:#D5CCBB;--dpanel:#FBF9F4}
+/* 分頁：分段式按鈕列（外框＋選中者填色加粗），仍是 role=tablist／tab */
+html.look-clean .detail-tabs{display:flex;width:fit-content;max-width:100%;gap:var(--s1);margin-bottom:var(--s5);padding:var(--s1);overflow:visible;border:1px solid var(--dframe);border-radius:var(--lc-r-md);background:#F1ECE1}
+html.look-clean .detail-tabs button,html.look-clean .view-switch.detail-tabs button{min-width:112px;min-height:44px;padding:0 var(--s5);border:1px solid transparent!important;border-radius:var(--lc-r-sm)!important;background:transparent;color:var(--lc-ink-2);font-size:15px;font-weight:500}
+html.look-clean .detail-tabs button:hover{background:#fff;color:var(--lc-ink)}
+html.look-clean .detail-tabs button.on,html.look-clean body .detail-tabs button.on{background:var(--ip)!important;color:var(--ip-on)!important;font-weight:700}
 html.look-clean .detail-tabs button.on:before{content:none}
 html.look-clean .detail h3{margin:var(--s6) 0 var(--s2);font-size:17px;font-weight:700}
 html.look-clean .detail .state,html.look-clean .detail .market{margin:0;padding:var(--s3) 0;border:0;border-top:1px solid var(--lc-hair);border-radius:0;background:transparent;font-size:15px}
 html.look-clean .detail .state:last-of-type{border-bottom:1px solid var(--lc-hair)}
-html.look-clean .detail .version-switch:hover{background:var(--lc-bg);border-color:transparent;border-top-color:var(--lc-hair)}
 html.look-clean .detail .badge{padding:2px var(--s2);border-radius:999px;background:#ECE6D8;color:#4A443A;font-size:12px;font-weight:500}
 html.look-clean .detail .rarity-code{font-family:var(--lc-num);font-weight:700}
+/* ===== 詳細頁面板：卡片資料／系列與來源／收錄版本／價格走勢／各版本價格，每組一個框、一行小標 ===== */
+html.look-clean .dpanel{min-width:0;margin:0 0 var(--s4);padding:var(--s4);border:1px solid var(--dframe);border-radius:var(--lc-r-md);background:var(--dpanel)}
+html.look-clean .dpanel:last-child{margin-bottom:0}
+html.look-clean .detail .dpanel-title{display:flex;align-items:center;gap:var(--s2);margin:0 0 var(--s3);font-size:14px;font-weight:700;line-height:1.3;color:var(--lc-ink)}
+html.look-clean .detail .dpanel-title:before{content:"";flex:none;width:4px;height:14px;border-radius:2px;background:var(--ip)}
+html.look-clean .dpanel>.meta{margin:0 0 var(--s3);font-size:13px}
+html.look-clean .dpanel .card-identity{margin:0}
+html.look-clean .dpanel .card-identity>div{grid-template-columns:72px minmax(0,1fr);gap:var(--s3)}
+html.look-clean .dpanel .card-identity>div:first-child{border-top:0;padding-top:0}
+html.look-clean .dpanel .card-identity>div:last-child{border-bottom:0;padding-bottom:0}
+html.look-clean .detail-visual>.dpanel-facts{order:4;margin:var(--s1) 0 0}
+/* 作品（IP）標籤：小膠囊，用該卡遊戲的主色（.detail 上的 data-ip 帶入 --ip），白字對 6 種主色皆 ≥4.5:1 */
+html.look-clean .detail-visual>p.detail-ip{align-self:flex-start;margin:var(--s4) 0 var(--s2);padding:2px var(--s3);border-radius:999px;background:var(--ip);color:var(--ip-on);font-size:12px;font-weight:700;line-height:20px;letter-spacing:.04em}
+/* 收錄版本：每個版本一張框住的列；目前顯示者加色邊＋左側色條；可點的列有箭頭、hover、focus */
+html.look-clean .version-list{display:grid;gap:var(--s2)}
+html.look-clean .detail .dpanel-versions .state{padding:var(--s3) var(--s4);border:1px solid var(--lc-hair);border-radius:var(--lc-r-sm);background:#fff;line-height:1.5}
+html.look-clean .detail .dpanel-versions .state.is-current{border-color:var(--ip);box-shadow:inset 4px 0 0 var(--ip)}
+html.look-clean .detail .dpanel-versions .version-switch{position:relative;min-height:44px;padding-right:var(--s7);border-color:var(--dframe)}
+html.look-clean .detail .dpanel-versions .version-switch:after{content:"›";position:absolute;top:50%;right:var(--s4);transform:translateY(-50%);font-size:24px;line-height:1;color:var(--ip-ink)}
+html.look-clean .detail .dpanel-versions .version-switch:hover{border-color:var(--ip);box-shadow:0 0 0 1px var(--ip)}
+html.look-clean .detail .dpanel-versions .version-switch:focus-visible{outline:3px solid var(--ip-ink);outline-offset:2px}
+/* 價格分頁：走勢一個框；「這個價格怎麼來的」整塊一個框，裡面的各版本價格對照再一個框 */
+html.look-clean .dpanel-trend .price-trend{margin:0}
+html.look-clean .detail .ptl-details{margin:0 0 var(--s4);padding:0 var(--s4);border:1px solid var(--dframe);border-radius:var(--lc-r-md);background:var(--dpanel)}
+html.look-clean .detail .ptl-details[open]{padding-bottom:var(--s4)}
+html.look-clean .ptl-details .dpanel{background:#fff}
+html.look-clean .dpanel-prices .version-prices{margin-bottom:0}
 html.look-clean .source-link,html.look-clean body[data-view="game"] .source-link{align-self:flex-start;min-height:44px;
 display:inline-flex;align-items:center;margin-top:var(--s4);padding:0 var(--s5);border-radius:999px;background:var(--lc-ink);color:#fff;font-weight:700}
 html.look-clean .market-price b{font:700 22px/1.2 var(--lc-num);font-variant-numeric:tabular-nums}
@@ -423,6 +452,16 @@ html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
   html.look-clean .detail-tabs{margin-bottom:var(--s3)}
   html.look-clean .detail h3{margin:var(--s5) 0 var(--s2)}
   html.look-clean .detail .share-url{font-size:16px}
+  /* 詳細頁面板：手機整列滿版，分頁鈕均分，內距縮小 */
+  html.look-clean .detail-tabs{width:100%}
+  html.look-clean .detail-tabs button,html.look-clean .view-switch.detail-tabs button{flex:1 1 0;min-width:0;padding:0 var(--s3)}
+  html.look-clean .dpanel{margin-bottom:var(--s3);padding:var(--s3)}
+  html.look-clean .dpanel .card-identity>div{grid-template-columns:64px minmax(0,1fr)}
+  html.look-clean .detail .dpanel-versions .state{padding:var(--s3)}
+  html.look-clean .detail .dpanel-versions .version-switch{padding-right:var(--s6)}
+  html.look-clean .detail .dpanel-versions .version-switch:after{right:var(--s3)}
+  html.look-clean .detail .ptl-details{padding:0 var(--s3)}
+  html.look-clean .detail .ptl-details[open]{padding-bottom:var(--s3)}
   /* 稀有度分類（V1 雙行 Bento 3 欄直選格 ＋ V5 底部拇指懸浮快選盤） */
   html.look-clean .rarity-bento-box{display:block;flex:0 0 100%;width:100%;padding:10px 10px 10px 12px;border:1.5px solid #D8D0C2;border-left:7px solid var(--ip,#C83E2B);border-radius:14px;background:#FBF9F4;box-sizing:border-box}
   html.look-clean .rarity-bento-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}

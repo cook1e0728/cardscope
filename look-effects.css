@@ -1,0 +1,71 @@
+/* 互動動效（look-effects.js 的樣式）：全息閃光、收藏迸發、捲動進場、開卡轉場、手機傾斜鈕。
+   只動 transform／opacity／translate（與 SVG 的 stroke-dashoffset，後者由 JS 的 Web Animations 處理）。
+   三道閘門與全站一致：prefers-reduced-motion、(hover:hover) and (pointer:fine)（桌面懸停）、html[data-cs-paused]（使用者的暫停開關）。
+   裝飾層一律 aria-hidden＋pointer-events:none；卡圖只被疊一層光，不被改動。 */
+
+:root{--fx-ease:cubic-bezier(.23,1,.32,1)}
+
+/* ---- 1. 高稀有度卡的全息閃光（.fx-holo 由 JS 加在 data-tier="top" 的卡上） ---- */
+.fx-holo-layer{position:absolute;inset:0;z-index:2;border-radius:inherit;overflow:hidden;pointer-events:none}
+.fx-holo-layer::before{
+  content:"";position:absolute;inset:0;opacity:0;transition:opacity .2s ease;
+  background:
+    radial-gradient(circle at var(--fx-x,50%) var(--fx-y,50%),rgba(255,255,255,.5),rgba(255,255,255,0) 42%),
+    linear-gradient(115deg,rgba(255,64,129,0) 0%,rgba(255,64,129,.28) 18%,rgba(255,200,0,.28) 34%,rgba(80,230,140,.28) 50%,rgba(60,170,255,.28) 66%,rgba(170,90,255,.28) 82%,rgba(170,90,255,0) 100%);
+  background-size:100% 100%,260% 260%;background-position:0 0,var(--fx-x,50%) var(--fx-y,50%);
+}
+.fx-holo-layer::after{
+  content:"";position:absolute;top:-10%;bottom:-10%;left:0;width:55%;opacity:0;
+  background:linear-gradient(105deg,rgba(255,255,255,0),rgba(255,255,255,.6) 50%,rgba(255,255,255,0));
+  transform:translateX(-130%) skewX(-12deg);
+}
+/* 桌面：游標移上去才亮，位置跟著游標（變數由 JS 以 rAF 節流寫入） */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  html:not([data-cs-paused]) .fx-holo:hover .fx-holo-layer::before{opacity:1}
+}
+/* 觸控：卡第一次捲進視窗時斜掃一次（JS 加 .fx-sweep） */
+@media (hover:none) and (prefers-reduced-motion:no-preference){
+  html:not([data-cs-paused]) .fx-holo.fx-sweep .fx-holo-layer::after{animation:fx-sweep .9s ease-out both}
+}
+@keyframes fx-sweep{
+  from{transform:translateX(-130%) skewX(-12deg);opacity:1}
+  to{transform:translateX(260%) skewX(-12deg);opacity:1}
+}
+
+/* ---- 2. 收藏迸發：固定在畫面上的小層（按鈕被重繪也不受影響），動畫由 JS 的 Web Animations 驅動 ---- */
+.fx-burst{position:fixed;z-index:2147483000;width:0;height:0;pointer-events:none}
+.fx-burst-star{position:absolute;left:-14px;top:-14px;width:28px;height:28px;display:grid;place-items:center;font-size:26px;line-height:1;color:#E8B400}
+.fx-burst-dot{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:#E8B400}
+.fx-burst-dot:nth-child(3n){background:#F26B5B}
+.fx-burst-dot:nth-child(3n+1){background:#4DA6E8}
+
+/* ---- 4. 捲動進場：隱藏狀態只在 JS 加上 .fx-pre 時才存在（JS 壞了或沒有 IntersectionObserver 都不會藏內容） ---- */
+@media (prefers-reduced-motion:no-preference){
+  html:not([data-cs-paused]) .fx-pre{opacity:0;translate:0 12px}
+  html:not([data-cs-paused]) .fx-in{
+    opacity:1;translate:0 0;
+    transition:opacity .36s var(--fx-ease) var(--fx-d,0ms),translate .36s var(--fx-ease) var(--fx-d,0ms),transform .2s var(--fx-ease);
+  }
+}
+
+/* ---- 5. 開卡轉場（View Transitions）：被點的卡圖飛進彈窗主圖；其餘畫面只做短淡入淡出 ---- */
+@media (prefers-reduced-motion:no-preference){
+  ::view-transition-group(fx-card){animation-duration:.42s;animation-timing-function:var(--fx-ease)}
+  ::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}
+}
+
+/* ---- 6. 手機「傾斜卡片」鈕：只在粗指標（觸控）顯示；動態關閉時隱藏 ---- */
+.fx-tilt-btn{display:none}
+@media (pointer:coarse){
+  .fx-tilt-btn{
+    order:1;display:flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;margin:10px auto 0;padding:0 18px;
+    border:1px solid #D9D1C0;border-radius:999px;background:#fff;color:#1F1B16;font:700 14px/1 'Noto Sans TC',system-ui,sans-serif;cursor:pointer;
+  }
+  .fx-tilt-btn[aria-pressed="true"]{background:#1F1B16;color:#fff;border-color:#1F1B16}
+  .fx-tilt-btn:focus-visible{outline:3px solid #1F1B16;outline-offset:2px}
+}
+@media (prefers-reduced-motion:reduce){.fx-tilt-btn{display:none}}
+html[data-cs-paused] .fx-tilt-btn{display:none}
+
+/* 列印與強制色彩：不留任何動效殘影 */
+@media print{.fx-holo-layer,.fx-burst{display:none}.fx-pre{opacity:1;translate:none}}
