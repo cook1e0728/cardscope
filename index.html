@@ -67,7 +67,9 @@ function setCardDisplayState(kind,message){
 function scrollBelowHeader(target,gap=12){
   if(!target||typeof target.getBoundingClientRect!=='function')return;
   const header=document.querySelector?.('.top'),pinned=header&&getComputedStyle(header).position==='sticky'?header.getBoundingClientRect().height:0,reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  scrollTo({top:Math.max(0,target.getBoundingClientRect().top+scrollY-pinned-gap),behavior:reduce?'auto':'smooth'});
+  const top=Math.max(0,target.getBoundingClientRect().top+scrollY-pinned-gap);
+  // 超過一個畫面高就直接跳：從首頁搜尋時，平滑捲動會一路掃過最新系列與時事區
+  scrollTo({top,behavior:reduce||Math.abs(top-scrollY)>innerHeight?'auto':'smooth'});
 }
 window.scrollBelowHeader=scrollBelowHeader;
 // URL-state hook for navigation-state.js: push=true for a user's choice (new history entry), false when the page picked its default.

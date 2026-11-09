@@ -700,3 +700,6 @@ button,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-touch-c
   html.look-clean .band-tile:hover .band-tile-art img{transform:none}
   html.look-clean button:not(:disabled):active,html.look-clean .card:active{filter:brightness(.94)}
 }
+
+/* 換版本載入中：保留目前內容、稍微變淡並擋點擊，不閃回骨架 */
+html.look-clean #detail[aria-busy="true"]{opacity:.55;pointer-events:none;transition:opacity .15s}
