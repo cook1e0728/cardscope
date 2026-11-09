@@ -145,7 +145,8 @@ for(let i=0;i<caps.length;i++){const c=caps[i];if(!c.zh)continue;const until=(ca
   .c{position:fixed;left:50%;${c.top?'top:9%':'bottom:3.5%'};transform:translateX(-50%);max-width:68%;box-sizing:border-box;padding:10px 26px 12px;border-radius:16px;background:rgba(27,23,51,.9);border:1px solid #4A4470;text-align:center;font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif}
   .zh{font-size:22px;font-weight:500;line-height:1.45;color:#F6F1E6}.en{font-size:15px;line-height:1.45;color:#C9C1DA}</style><div class="c"><div class="zh">${esc(c.zh)}</div><div class="en">${esc(c.en||'')}</div></div>`;
   await send('Page.navigate',{url:'about:blank'});await send('Page.setDocumentContent',{frameId:(await send('Page.getFrameTree')).frameTree.frame.id,html});
-  await evaluate('document.fonts.ready.then(()=>new Promise(r=>setTimeout(r,300)))');
+  // 第一句字幕時樣式表常還沒載完，fonts.ready 會立刻成立而截到空白框：先等 link 載入、再指定載入這句要用的字
+  await evaluate(`new Promise(r=>{const l=document.querySelector('link');l.sheet?r():(l.onload=l.onerror=r)}).then(()=>document.fonts.load("500 22px 'Noto Sans TC'",${JSON.stringify(c.zh+(c.en||''))})).then(()=>document.fonts.ready).then(()=>new Promise(r=>setTimeout(r,300)))`);
   const file=path.join(work,`cap${i}.png`);fs.writeFileSync(file,Buffer.from((await send('Page.captureScreenshot',{format:'png'})).data,'base64'));capFiles.push({file,t:c.t,dur:until});}
 await shutdown();
 
