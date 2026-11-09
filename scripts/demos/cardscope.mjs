@@ -10,7 +10,7 @@ export default {
 
   ending:{image:SITE+'/assets/brand/web/rabbit-explore.webp',imgWidth:260,title:'CardScope',subtitle:'跨版本卡牌圖鑑 · Cross-edition TCG catalog'},
   async prime(d){ // 錄影前把要用到的卡、兩個版本、價格分頁都先開過，正式錄影就不會出現骨架畫面
-    await d.goto(SITE+'/');await d.type('#heroQ','噴火龍SAR',{delay:0});await d.key('Enter');await d.waitFor('#cards .card',{timeout:30000});
+    await d.goto(SITE+'/');await d.wait(2000);await d.type('#heroQ','噴火龍SAR',{delay:0}); // 太早打字會被首頁初始化清掉await d.key('Enter');await d.waitFor('#cards .card',{timeout:30000});
     await d.click(CARD);await d.waitFor(OTHER,{timeout:45000});
     await d.click(OTHER);await d.wait(800);await d.waitFor(TAB,{timeout:45000});
     await d.click(TAB);await d.waitFor('#detail .ptl-chart',{timeout:30000});
