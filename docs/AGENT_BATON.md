@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-11：詳細視窗配色第二輪（look-clean.css 檔尾區塊）：框線 #D5CCBB→#E7E1D4、分隔線更淡；遊戲色不再整塊塗（分頁選中改白底浮起＋遊戲色字、遊戲標籤與目前版本列改淡底）；面板標題退成 12px 灰褐小標；標籤字 13px 灰褐。分工改為 Fable 5.2 主導設計／美編／架構，Opus、Sonnet 當代理。
 - 2026-11-10：示範影片 v3 重錄完成（33.7 秒）。先前「預熱時按 Enter 沒送出」查明不是網站錯誤（本機預覽真人打字後立刻 Enter 可正常搜尋），改成預熱直接開搜尋網址並預查搜尋建議（fields=suggest）；換版本後改等  才點價格分頁。
 - 2026-11-10：示範影片看出的兩處網站閃動已修。(1) `scrollBelowHeader` 距離超過一個畫面高時直接跳（首頁搜尋原本平滑捲過最新系列與時事區）；導覽「圖鑑」、選系列的長距離捲動也一併變成直接跳。(2) 詳細視窗切換版本（keepPosition）不再清成「正在載入…」（index.html 的 MutationObserver 會換成骨架），改在 `#detail` 加 `aria-busy` 讓舊內容變淡、擋點擊；新內容寫入、失敗或改走一般開卡時移除。未處理（agy 審查提到、屬既有行為）：切換後鍵盤焦點掉回 body、載入中仍可用鍵盤觸發舊內容的按鈕。首頁載入時標題淡入是既有進場動畫，未改。
 - 2026-11-10：詳細視窗分區（ui-enhancements.js 包 `.dpanel` 面板：卡片資料／系列與來源／收錄版本／價格走勢／各版本價格對照；遊戲色小膠囊 `.detail-ip`；`.detail` 帶 `data-ip` 跟該卡遊戲色；資訊／價格改分段按鈕框；目前版本 `is-current`）。未框：有技能文字時的「卡片文字」區塊（測試 regex 綁定）；價格面板內 `.ptl-*` 自帶框，會框中有框。互動特效 `look-effects.css/.js`（新檔，index.html 載入）：頂級稀有度全息光、加入收藏迸發、價格圖畫入＋數字跳動、系列／漲跌榜／時事進場、開卡 View Transition、手機「傾斜卡片」（陀螺儀，iOS 授權只在按鈕 click）。三道閘門：reduced-motion、data-cs-paused、hover 裝置。未驗：真機陀螺儀與 iOS 授權、reduced-motion 實測、轉場飛行畫面。卡牌開包特效延後。示範影片錄影工具 `scripts/record-demo.mjs`＋`scripts/demos/cardscope.mjs`（`node scripts/record-demo.mjs cardscope`，要 ffmpeg，用 DEMO_FFMPEG 指定；輸出 .demo-out/，已 gitignore）。

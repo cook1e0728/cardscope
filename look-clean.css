@@ -703,3 +703,25 @@ button,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-touch-c
 
 /* 換版本載入中：保留目前內容、稍微變淡並擋點擊，不閃回骨架 */
 html.look-clean #detail[aria-busy="true"]{opacity:.55;pointer-events:none;transition:opacity .15s}
+
+/* 詳細視窗配色第二輪（2026-11-11）：框線變淡、遊戲色只留在小處。
+   原本分頁、標題色條、目前版本邊框、標籤同時用實心遊戲色，寶可夢紅一次出現四處，太搶。 */
+html.look-clean .detail{--dframe:#E7E1D4;--dpanel:#FCFBF8;--dlabel:#7A7266;--dline:#EFEAE0}
+/* 分頁：選中的是白色浮起的那顆、字用遊戲色，不再整塊塗滿 */
+html.look-clean .detail-tabs{background:#F2EEE6;border-color:var(--dframe)}
+html.look-clean .detail-tabs button.on,html.look-clean body .detail-tabs button.on{background:#fff!important;color:var(--ip-ink)!important;box-shadow:0 1px 2px rgba(60,45,20,.14),0 0 0 1px rgba(60,45,20,.06)}
+html.look-clean .detail-tabs button:hover{background:rgba(255,255,255,.6)}
+/* 面板標題退成小標：小字、加字距、灰褐色，色條變細 */
+html.look-clean .detail .dpanel-title{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--dlabel)}
+html.look-clean .detail .dpanel-title:before{width:3px;height:12px}
+/* 資料列：標籤灰褐、內容深色，分隔線比外框更淡 */
+html.look-clean .detail .card-identity>div{border-color:var(--dline)}
+html.look-clean .detail .card-identity dt{font-size:13px;font-weight:400;color:var(--dlabel)}
+html.look-clean .detail .card-identity dd{color:var(--lc-ink)}
+html.look-clean .detail .dpanel>.meta{color:var(--dlabel);line-height:1.6}
+/* 遊戲標籤：淡底＋遊戲色字 */
+html.look-clean .detail-visual>p.detail-ip{background:#F4F1EA;background:color-mix(in srgb,var(--ip) 9%,#fff);color:var(--ip-ink);box-shadow:inset 0 0 0 1px rgba(60,45,20,.1);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ip) 28%,transparent)}
+/* 版本列：目前顯示的用淡底＋細色條，不用整圈實色框 */
+html.look-clean .detail .dpanel-versions .state{border-color:var(--dframe)}
+html.look-clean .detail .dpanel-versions .state.is-current{border-color:#D9D1C0;border-color:color-mix(in srgb,var(--ip) 32%,#fff);background:#FAF8F3;background:color-mix(in srgb,var(--ip) 4%,#fff);box-shadow:inset 3px 0 0 var(--ip)}
+html.look-clean .detail .dpanel-versions .version-switch:hover{border-color:var(--ip-ink);box-shadow:none;background:#FDFCFA}
