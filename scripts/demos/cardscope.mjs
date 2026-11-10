@@ -1,7 +1,7 @@
 // CardScope 首頁 → 搜尋建議 → 卡片詳細頁（版本、參考價走勢）→ 遊戲頁系列。正式站、只搜尋不送出任何表單，沒有登入與個資。
 // 節奏：每個畫面停 1～1.6 秒就換下一個動作；放大不到 1.2 倍的鏡頭不放（看不出來，只像畫面晃）。
 const SITE='https://cardscope.onrender.com';
-const CARD='#cards .card:nth-child(3) .card-open-hit',OTHER='text:點擊查看此版本的卡圖',TAB='#detail [role=tab]:nth-child(2)';
+const CARD='#cards .card:nth-child(3) .card-open-hit',OTHER='text:點擊查看此版本的卡圖',TAB='#detail [role=tab]:nth-child(2)',READY='#detail:not([aria-busy]) [role=tab]:nth-child(2)'; // 換版本時舊內容會留著變淡，要等忙碌標記拿掉才算載好
 export default {
   start:SITE+'/',
   warm:SITE+'/api/search?limit=1&q=pikachu', // Render 免費方案會休眠，先叫醒
@@ -10,9 +10,12 @@ export default {
 
   ending:{image:SITE+'/assets/brand/web/rabbit-explore.webp',imgWidth:260,title:'CardScope',subtitle:'跨版本卡牌圖鑑 · Cross-edition TCG catalog'},
   async prime(d){ // 錄影前把要用到的卡、兩個版本、價格分頁都先開過，正式錄影就不會出現骨架畫面
-    await d.goto(SITE+'/');await d.wait(2000);await d.type('#heroQ','噴火龍SAR',{delay:0}); // 太早打字會被首頁初始化清掉await d.key('Enter');await d.waitFor('#cards .card',{timeout:30000});
+    await d.goto(SITE+'/?q='+encodeURIComponent('噴火龍SAR')); // 預熱不用拍，直接開搜尋網址（極快打字後按 Enter 有時沒送出）
+    await d.waitFor('#cards .card',{timeout:30000});
+    // 搜尋建議走另一個查詢（fields=suggest），沒熱過會在影片裡卡在「搜尋中…」好幾秒；每個打字中途的字都先查一次
+    await d.eval("Promise.all(['噴','噴火','噴火龍','噴火龍S','噴火龍SA','噴火龍SAR'].map(q=>fetch('/api/search?limit=6&fields=suggest&region=all&q='+encodeURIComponent(q)))).then(()=>1)");
     await d.click(CARD);await d.waitFor(OTHER,{timeout:45000});
-    await d.click(OTHER);await d.wait(800);await d.waitFor(TAB,{timeout:45000});
+    await d.click(OTHER);await d.wait(800);await d.waitFor(READY,{timeout:45000});
     await d.click(TAB);await d.waitFor('#detail .ptl-chart',{timeout:30000});
     await d.goto(SITE+'/?game=pokemon');await d.waitFor('#seriesBand',{timeout:30000});
   },
@@ -35,7 +38,7 @@ export default {
     await d.wait(900);
     await d.click(OTHER);
     await d.wait(500);
-    await d.waitFor(TAB,{timeout:30000}); // 換版本時詳細頁會先出骨架
+    await d.waitFor(READY,{timeout:30000}); // 換版本時詳細頁會先出骨架
     await d.wait(1100);
     d.caption('價格分頁：歐洲平台參考價的走勢，換算成新台幣','Price tab: European reference prices over time, in NT$');
     await d.click(TAB);

@@ -8,7 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-10（未完）：f88327a 部署後重錄示範影片失敗兩次：錄前預熱 prime 以 delay:0 打字後立刻 Enter，正式站停在建議「搜尋中…」沒進結果頁（已加 2 秒等待仍失敗）。待查：是錄影腳本按太快，還是建議載入中按 Enter 真的不會搜尋（ui-enhancements.js 約 1225 行）。目前 .demo-out/cardscope.mp4 仍是修網站前的 34 秒版。
+- 2026-11-10：示範影片 v3 重錄完成（33.7 秒）。先前「預熱時按 Enter 沒送出」查明不是網站錯誤（本機預覽真人打字後立刻 Enter 可正常搜尋），改成預熱直接開搜尋網址並預查搜尋建議（fields=suggest）；換版本後改等  才點價格分頁。
 - 2026-11-10：示範影片看出的兩處網站閃動已修。(1) `scrollBelowHeader` 距離超過一個畫面高時直接跳（首頁搜尋原本平滑捲過最新系列與時事區）；導覽「圖鑑」、選系列的長距離捲動也一併變成直接跳。(2) 詳細視窗切換版本（keepPosition）不再清成「正在載入…」（index.html 的 MutationObserver 會換成骨架），改在 `#detail` 加 `aria-busy` 讓舊內容變淡、擋點擊；新內容寫入、失敗或改走一般開卡時移除。未處理（agy 審查提到、屬既有行為）：切換後鍵盤焦點掉回 body、載入中仍可用鍵盤觸發舊內容的按鈕。首頁載入時標題淡入是既有進場動畫，未改。
 - 2026-11-10：詳細視窗分區（ui-enhancements.js 包 `.dpanel` 面板：卡片資料／系列與來源／收錄版本／價格走勢／各版本價格對照；遊戲色小膠囊 `.detail-ip`；`.detail` 帶 `data-ip` 跟該卡遊戲色；資訊／價格改分段按鈕框；目前版本 `is-current`）。未框：有技能文字時的「卡片文字」區塊（測試 regex 綁定）；價格面板內 `.ptl-*` 自帶框，會框中有框。互動特效 `look-effects.css/.js`（新檔，index.html 載入）：頂級稀有度全息光、加入收藏迸發、價格圖畫入＋數字跳動、系列／漲跌榜／時事進場、開卡 View Transition、手機「傾斜卡片」（陀螺儀，iOS 授權只在按鈕 click）。三道閘門：reduced-motion、data-cs-paused、hover 裝置。未驗：真機陀螺儀與 iOS 授權、reduced-motion 實測、轉場飛行畫面。卡牌開包特效延後。示範影片錄影工具 `scripts/record-demo.mjs`＋`scripts/demos/cardscope.mjs`（`node scripts/record-demo.mjs cardscope`，要 ffmpeg，用 DEMO_FFMPEG 指定；輸出 .demo-out/，已 gitignore）。
 - 2026-11-09：手機原生感一輪（mobile-native skill，只在內建瀏覽器 375×812 模擬驗證，未上實機）。look-clean.css 末段：拿掉點擊灰藍閃框、text-size-adjust、按鈕 touch-action:manipulation 與長按不選字；觸控裝置（pointer:coarse）輸入框一律 16px（原本 #q 14px、手機遊戲／版本選單 13px，iOS 點下去會放大整頁）；hover:none 時卡片／入口不再停在浮起狀態，改給按下回饋。theme-color 改成手機頂欄米白 #F8F5EE。手機搜尋框 placeholder 縮成「卡名或卡號」（16px 才放得下）。未做：viewport-fit=cover（env(safe-area) 目前都是 0，但不開也不會被瀏海遮；開了要補左右安全區，需實機驗證）、manifest theme_color 仍是深色 #16132A、其餘約 70 條未分流的 :hover（多為顏色變化，影響小）。
