@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-12 晚：全站改善計畫書 `docs/SITE_IMPROVEMENT_PLAN.md`（Fable 起草，草案）：安全、功能、效能、導覽、版面、SEO／行銷、信任七個工作流，版面部分沿用 REDESIGN_PLAN。第 3 節八個決定等使用者拍板；第 5 節「第 1 波」不用等決定，可由 Opus 帶 sonnet-worker 直接開工（四個 worker 的檔案分配已排好）。這次只寫文件，沒有改程式。
 - 2026-11-12 晚：使用者決定**示範影片先不用聲音**。`cardscope.mjs` 拿掉 `voice`（註解留恢復寫法），錄影程式沒旁白時字幕至少停 max(2.2 秒, 每字 0.2 秒)；影片 45.3 秒、無音軌。試過但都沒被選：剪映 9 個 VIP 童聲（.demo-out/voice/vip）、使用者自己錄 8 句（voice-lab/rec）經 Seed-VC 轉童聲再調圓潤（.demo-out/voice/me，使用者評「太尖、不夠圓潤」）。之後要重啟配音，先請使用者給一個「就是這種」的參考聲音，別再盲調參數。
 - 2026-11-12：本機語音工具裝在專案外 `C:\Users\99wye\voice-lab\`（Qwen3-TTS、BreezyVoice、Seed-VC，各自 uv 環境，README 有指令）。已產生三種試聽：Qwen 童聲、BreezyVoice 台灣腔底聲、BreezyVoice→Seed-VC 台灣腔童聲（.demo-out/voice/1-3*.mp3），等使用者選；影片仍是剪映萌娃版。
 - 2026-11-11 晚：煤炭旁白改用剪映「萌娃」（免費音色，像 AI 小貓影片的奶音），8 句存 `assets/brand/voice/mengwa/n.wav`，腳本 `voice:{dir,tempo:1.15}`；錄影程式支援 `voice.dir` 現成音檔與 `d.hush()`（等旁白講完再換頁）。影片 54.4 秒。口音仍待使用者審核。作法見 BRAND_RABBIT.md（一次只唸一句，8 句一起會卡住）。jianying-mcp 的 export_draft 在 cp950 主控台會因中文訊息失敗，沒用它。
