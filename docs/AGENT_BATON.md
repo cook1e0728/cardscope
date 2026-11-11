@@ -8,7 +8,8 @@
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-11：示範影片加兔子嚮導：姿勢圖 `scripts/demos/guide/*.png`（agy 的 image-generator 生成綠幕圖，Claude 去背、共用裁切框對齊；idle 用 talk-a 的複本，因原 idle 劍咬在嘴裡會跳位置）。腳本設 `guide:{dir}` 才疊，時間軸在 `scripts/guide-track.mjs`（有測試），字幕可帶 `{pose:'point'|'cheer'}`。已知小缺點：兔子蓋住網站左下角「暫停動畫」鈕。
+- 2026-11-11：兔子素材統一：規格 `docs/BRAND_RABBIT.md`（唯一來源，AGENTS.md 已指向）、對照表 `assets/brand/rabbit-model-sheet.jpg`、去背腳本 `scripts/rabbit-key.py`；嚮導姿勢圖搬到 `assets/brand/guide/`。示範影片加旁白（edge-tts，`pip install edge-tts`；腳本 `voice`＋每句 `say`，快取在 .demo-out/voice-cache）與兔子滑入／跳躍／晃動；影片變 51.7 秒。聲音還在讓使用者選（.demo-out/voice/ 樣本 A–I），選定後改 `scripts/demos/cardscope.mjs` 的 voice 一行重錄。zh-TW-YunJheNeural 不接受 pitch/rate 參數、句子常不回聲音，別用。
+- 2026-11-11：示範影片加兔子嚮導：姿勢圖（現在在 `assets/brand/guide/`，原本放 `scripts/demos/guide/*.png`）（agy 的 image-generator 生成綠幕圖，Claude 去背、共用裁切框對齊；idle 用 talk-a 的複本，因原 idle 劍咬在嘴裡會跳位置）。腳本設 `guide:{dir}` 才疊，時間軸在 `scripts/guide-track.mjs`（有測試），字幕可帶 `{pose:'point'|'cheer'}`。已知小缺點：兔子蓋住網站左下角「暫停動畫」鈕。
 - 2026-11-11：整體重新設計計畫書 docs/REDESIGN_PLAN.md：**方向已定 B′**（展示首頁＋卡冊內頁），第 5 節其餘細項仍待決定，使用者說拍板前不得動工。拍板後 Opus 主導、Sonnet 實作，在分支 redesign-v2 做、不進 main。本機有未提交的預覽稿 look-next.css 與 index.html 載入它的那一行，不要提交上線。
 - 2026-11-11：詳細視窗配色第二輪（look-clean.css 檔尾區塊）：框線 #D5CCBB→#E7E1D4、分隔線更淡；遊戲色不再整塊塗（分頁選中改白底浮起＋遊戲色字、遊戲標籤與目前版本列改淡底）；面板標題退成 12px 灰褐小標；標籤字 13px 灰褐。分工改為 Fable 5.2 主導設計／美編／架構，Opus、Sonnet 當代理。
 - 2026-11-10：示範影片 v3 重錄完成（33.7 秒）。先前「預熱時按 Enter 沒送出」查明不是網站錯誤（本機預覽真人打字後立刻 Enter 可正常搜尋），改成預熱直接開搜尋網址並預查搜尋建議（fields=suggest）；換版本後改等  才點價格分頁。

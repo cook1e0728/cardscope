@@ -8,6 +8,11 @@ phase order, source policy, data priority, UX rules, and release gates. Use
 silently replace those decisions with data copied from a marketplace, social
 site, or image search result.
 
+Brand rabbit: anything that shows the CardScope rabbit (site, demo video,
+social images) uses only the files listed in `docs/BRAND_RABBIT.md`. New poses
+are generated from those references and checked against
+`assets/brand/rabbit-model-sheet.jpg`; never invent a different-looking rabbit.
+
 Use GPT-6 Luna Max as the primary model for normal coding, analysis, testing, review, and task orchestration. GPT-6 Sol is an on-demand advisor, not the default supervisor.
 
 ## Automatic routing

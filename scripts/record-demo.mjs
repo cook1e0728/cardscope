@@ -10,11 +10,26 @@ import {setTimeout as sleep} from 'node:timers/promises';
 
 const ROOT=path.resolve(import.meta.dirname,'..'),OUT=path.join(ROOT,'.demo-out');
 const name=process.argv[2];if(!name){console.error('用法：node scripts/record-demo.mjs <腳本名稱>');process.exit(1)}
-import {guideFrames} from './guide-track.mjs';
+import {guideFrames,hopRanges} from './guide-track.mjs';
 const script=(await import(new URL(`./demos/${name}.mjs`,import.meta.url))).default;
 const W=1440,H=900,DSF=2,OUT_W=1920,OUT_H=1200,FPS=30,BAND=.15,EASE_S=.7,PAD=32,MAX_Z=1.6;
 const CHROME=process.env.CHROME||['C:/Program Files/Google/Chrome/Application/chrome.exe','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/usr/bin/google-chrome'].find(p=>fs.existsSync(p));
 const FFMPEG=process.env.DEMO_FFMPEG||'ffmpeg',FFPROBE=process.env.DEMO_FFPROBE||'ffprobe'; // 不用 FFMPEG：有些電腦把它設成資料夾
+
+// ---------- 旁白（腳本有 voice 與 lines[].say 才做）：錄影前先用 edge-tts 生好每句，快取在 .demo-out/voice-cache ----------
+// 需要 `pip install edge-tts`；語音服務偶爾不回聲音，重試 3 次。DEMO_VOICE 可臨時換聲音（例如 zh-TW-HsiaoYuNeural）
+const voices=new Map();let sayUntil=0;
+if(script.voice&&script.lines){
+  const v={...script.voice,...(process.env.DEMO_VOICE?{name:process.env.DEMO_VOICE}:{})},cache=path.join(ROOT,'.demo-out','voice-cache');fs.mkdirSync(cache,{recursive:true});
+  for(const l of script.lines.filter(l=>l.say)){
+    const file=path.join(cache,(await import('node:crypto')).createHash('sha1').update(JSON.stringify([v,l.say])).digest('hex').slice(0,16)+'.mp3');
+    for(let i=0;i<3&&!(fs.existsSync(file)&&fs.statSync(file).size>0);i++)
+      try{execFileSync('python',['-m','edge_tts','--voice',v.name,...(v.pitch?[`--pitch=${v.pitch}`]:[]),...(v.rate?[`--rate=${v.rate}`]:[]),'--text',l.say,'--write-media',file],{stdio:'ignore'})}catch{}
+    if(!(fs.existsSync(file)&&fs.statSync(file).size>0))throw new Error('旁白生成失敗：'+l.say);
+    voices.set(l.say,{file,dur:Number(execFileSync(FFPROBE,['-v','error','-show_entries','format=duration','-of','csv=p=0',file]).toString())});
+  }
+  console.log(`旁白 ${voices.size} 句，共 ${[...voices.values()].reduce((s,x)=>s+x.dur,0).toFixed(1)} 秒（${v.name}）`);
+}
 
 // ---------- Chrome 與 CDP ----------
 const work=fs.mkdtempSync(path.join(os.tmpdir(),'demo-')),frameDir=path.join(work,'frames');fs.mkdirSync(frameDir);fs.mkdirSync(OUT,{recursive:true});
@@ -73,7 +88,11 @@ const d={
   async waitFor(q,{timeout=15000}={}){const end=Date.now()+timeout;while(Date.now()<end){if(await evaluate(`(()=>{try{(${FIND})(${JSON.stringify(q)});return true}catch{return false}})()`))return;await sleep(200)}throw new Error('等不到元素：'+q)},
   goto,
   eval:js=>evaluate(js),
-  caption(zh,en,{top=false,pose}={}){events.push({t:now(),type:'caption',zh,en,top,pose})},
+  // 字幕可傳 (zh,en,{top,pose,say}) 或單一物件；有旁白時先等上一句講完（所以腳本要 await），講多久兔子就說多久
+  async caption(zh,en,o={}){if(zh&&typeof zh==='object'){o=zh;({zh,en}=zh)}
+    const left=sayUntil-now();if(left>0)await sleep(left*1000);
+    const v=o.say&&voices.get(o.say);if(v)sayUntil=now()+v.dur+.3;
+    events.push({t:now(),type:'caption',zh,en,top:!!o.top,pose:o.pose,audio:v?.file,talk:v?.dur})},
   async focus(q,{pad=PAD,closest}={}){const r=await rectOf(q,{closest});events.push({t:now(),type:'focus',z:zoomFor(r,pad)});await sleep(EASE_S*1000+100)},
   async unfocus(){events.push({t:now(),type:'focus',z:{z:1,x:0,y:0}});await sleep(EASE_S*1000+100)},
   async hover(q,opt){const p=center(await rectOf(q,opt));await moveTo(p.x,p.y)},
@@ -100,6 +119,7 @@ try{
   await send('Page.startScreencast',{format:'jpeg',quality:88,maxWidth:W*DSF,maxHeight:H*DSF,everyNthFrame:1});
   recording=true;await evaluate('__demo.nudge()');await sleep(400);events.push({t:now(),type:'start'});
   await script.run(d);
+  if(sayUntil>now())await sleep((sayUntil-now())*1000); // 最後一句講完才進片尾
   await ending();
 }catch(e){failed=e;fs.writeFileSync(path.join(OUT,`${name}-error.png`),Buffer.from((await send('Page.captureScreenshot',{format:'png'})).data,'base64'));}
 recording=false;await send('Page.stopScreencast').catch(()=>{});
@@ -163,12 +183,20 @@ let last=capFiles.length;
 // 兔子嚮導（腳本設 guide:{dir} 才有）：每格硬連結一張姿勢圖成序列，疊在左下角、字幕左邊；片尾畫面出現時淡出
 if(script.guide){
   const g=script.guide,gDir=path.join(work,'guide'),size=g.size||260;fs.mkdirSync(gDir);
-  guideFrames(caps,end,FPS).forEach((p,k)=>fs.linkSync(path.join(ROOT,g.dir,p+'.png'),path.join(gDir,String(k).padStart(6,'0')+'.png')));
+  const poses=guideFrames(caps,end,FPS);poses.forEach((p,k)=>fs.linkSync(path.join(ROOT,g.dir,p+'.png'),path.join(gDir,String(k).padStart(6,'0')+'.png')));
   const outT=(caps.find(c=>!c.zh)?.t??end).toFixed(3);
+  // 動作：開場 0.6 秒從下方滑上來；平常上下輕晃（1.8 秒一次、5px）並左右擺 ±2.5°；揮手與歡呼時一跳一跳（0.5 秒一下、16px）
+  const hops=hopRanges(poses,FPS).map(([a,b])=>`between(t,${a.toFixed(2)},${b.toFixed(2)})*abs(sin(PI*(t-${a.toFixed(2)})/0.5))*16`).join('+')||'0';
+  const y=`H-${size}-${g.bottom??18}+if(lt(t,0.6),pow(1-t/0.6,2)*${size},0)+5*sin(2*PI*t/1.8)-(${hops})`;
   args.push('-framerate',String(FPS),'-i',path.join(gDir,'%06d.png'));
-  graph+=`;[${last+1}:v]format=rgba,scale=${size}:${size}:flags=area,fade=in:st=0.15:d=0.3:alpha=1,fade=out:st=${outT}:d=0.3:alpha=1[g];[v${last}][g]overlay=${g.x??36}:H-${size}-${g.bottom??18}:shortest=1[v${last+1}]`;last++;
+  graph+=`;[${last+1}:v]format=rgba,scale=${size}:${size}:flags=area,rotate=a='0.044*sin(2*PI*t/2.4)':c=none,fade=in:st=0.15:d=0.3:alpha=1,fade=out:st=${outT}:d=0.3:alpha=1[g];[v${last}][g]overlay=x=${g.x??36}:y='${y}':eval=frame:shortest=1[v${last+1}]`;last++;
 }
-args.push('-filter_complex',graph,'-map',`[v${last}]`,'-t',dur,'-an','-c:v','libx264','-preset','slow','-crf','23','-pix_fmt','yuv420p','-r',String(FPS),'-movflags','+faststart',mp4);
+// 旁白：每句從字幕出現的時間點開始播，混成一軌
+const said=caps.filter(c=>c.audio),nIn=1+capFiles.length+(script.guide?1:0);
+said.forEach(c=>args.push('-i',c.audio));
+said.forEach((c,i)=>{const ms=Math.round(c.t*1000);graph+=`;[${nIn+i}:a]adelay=${ms}|${ms}[a${i}]`});
+if(said.length)graph+=`;${said.map((_,i)=>`[a${i}]`).join('')}amix=inputs=${said.length}:normalize=0,apad[aout]`;
+args.push('-filter_complex',graph,'-map',`[v${last}]`,...(said.length?['-map','[aout]','-c:a','aac','-b:a','128k']:['-an']),'-t',dur,'-c:v','libx264','-preset','slow','-crf','23','-pix_fmt','yuv420p','-r',String(FPS),'-movflags','+faststart',mp4);
 execFileSync(FFMPEG,args,{stdio:'inherit'});
 // 總覽圖：每 3 秒一格，上傳前逐格看敏感資訊
 const secs=Number(execFileSync(FFPROBE,['-v','error','-show_entries','format=duration','-of','csv=p=0',mp4]).toString());
