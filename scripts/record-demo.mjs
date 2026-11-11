@@ -21,8 +21,11 @@ const FFMPEG=process.env.DEMO_FFMPEG||'ffmpeg',FFPROBE=process.env.DEMO_FFPROBE|
 const voices=new Map();let sayUntil=0,curZ={z:1,x:0,y:0};
 if(script.voice&&script.lines){
   const v={...script.voice,...(process.env.DEMO_VOICE?{name:process.env.DEMO_VOICE}:{})},cache=path.join(ROOT,'.demo-out','voice-cache');fs.mkdirSync(cache,{recursive:true});
-  for(const l of script.lines.filter(l=>l.say)){
-    const file=path.join(cache,(await import('node:crypto')).createHash('sha1').update(JSON.stringify([v,l.say])).digest('hex').slice(0,16)+'.mp3');
+  for(const [n,l] of script.lines.filter(l=>l.say).entries()){
+    // dir：用現成錄好的音檔（第 n 句旁白＝dir/n.wav，例如剪映文本朗讀匯出的童聲），只套 tempo／af，不呼叫 edge-tts
+    const src=v.dir&&path.join(ROOT,v.dir,n+'.wav');if(src&&!fs.existsSync(src))throw new Error('缺旁白音檔：'+src);
+    const file=path.join(cache,(await import('node:crypto')).createHash('sha1').update(JSON.stringify([v,l.say,src&&fs.statSync(src).mtimeMs])).digest('hex').slice(0,16)+'.mp3');
+    if(src&&!fs.existsSync(file))execFileSync(FFMPEG,['-y','-loglevel','error','-i',src,'-af',v.af||(v.tempo?`atempo=${v.tempo}`:'anull'),'-b:a','96k',file]);
     // af：自訂 ffmpeg 音訊濾鏡（奶音：asetrate 拉音色＋rubberband 只拉音高）；shift：整體升調倍率（音色變小、像小動物）；tempo：用 ffmpeg 加速（給不接受 --rate、--pitch 的聲音，例如雲哲）
     for(let i=0;i<8&&!(fs.existsSync(file)&&fs.statSync(file).size>0);i++)
       try{const raw=file+'.raw.mp3';execFileSync('python',['-m','edge_tts','--voice',v.name,...(v.pitch?[`--pitch=${v.pitch}`]:[]),...(v.rate?[`--rate=${v.rate}`]:[]),'--text',l.say,'--write-media',raw],{stdio:'ignore'});
@@ -30,7 +33,7 @@ if(script.voice&&script.lines){
     if(!(fs.existsSync(file)&&fs.statSync(file).size>0))throw new Error('旁白生成失敗：'+l.say);
     voices.set(l.say,{file,dur:Number(execFileSync(FFPROBE,['-v','error','-show_entries','format=duration','-of','csv=p=0',file]).toString())});
   }
-  console.log(`旁白 ${voices.size} 句，共 ${[...voices.values()].reduce((s,x)=>s+x.dur,0).toFixed(1)} 秒（${v.name}）`);
+  console.log(`旁白 ${voices.size} 句，共 ${[...voices.values()].reduce((s,x)=>s+x.dur,0).toFixed(1)} 秒（${v.dir||v.name}）`);
 }
 
 // ---------- Chrome 與 CDP ----------
@@ -95,6 +98,7 @@ const d={
     const left=sayUntil-now();if(left>0)await sleep(left*1000);
     const v=o.say&&voices.get(o.say);if(v)sayUntil=now()+v.dur+.3;
     events.push({t:now(),type:'caption',zh,en,top:!!o.top,pose:o.pose,talkAs:o.talkAs,audio:v?.file,talk:v?.dur})},
+  async hush(){const left=sayUntil-now();if(left>0)await sleep(left*1000)}, // 等這句旁白講完再換畫面（字幕才不會留到下一頁）
   async focus(q,{pad=PAD,closest}={}){const r=await rectOf(q,{closest});curZ=zoomFor(r,pad);events.push({t:now(),type:'focus',z:curZ});await sleep(EASE_S*1000+100)},
   async unfocus(){curZ={z:1,x:0,y:0};events.push({t:now(),type:'focus',z:curZ});await sleep(EASE_S*1000+100)},
   // 兔子嚮導跳到元素旁邊（side:'left' 站在左邊面向右、'right' 站在右邊面向左）；'home' 回左下角。不等跳完，畫面照常進行

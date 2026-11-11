@@ -19,7 +19,7 @@ export default {
   settle:2500,
   init:"try{localStorage.setItem('cs-tour-done','1')}catch{}", // 跳過首次造訪的三步導覽
 
-  lines:L,voice:{name:'zh-TW-YunJheNeural',shift:1.25,tempo:1.12}, // 煤炭是小男生：台灣男聲雲哲升調成男孩聲並加快（樣本 J，口音待使用者審核）
+  lines:L,voice:{dir:'assets/brand/voice/mengwa',tempo:1.15}, // 煤炭的奶音：剪映文本朗讀「萌娃」（免費音色）逐句匯出，第 n 句＝n.wav；改台詞要重錄對應音檔。口音待使用者審核
   guide:{dir:'assets/brand/guide'}, // 兔子嚮導姿勢圖（512×512 透明 PNG）：idle、talk-a/b、wave-a/b、point、cheer
   ending:{image:SITE+'/assets/brand/web/rabbit-explore.webp',imgWidth:260,title:'CardScope',subtitle:'跨版本卡牌圖鑑 · Cross-edition TCG catalog'},
   async prime(d){ // 錄影前把要用到的卡、兩個版本、價格分頁都先開過，正式錄影就不會出現骨架畫面
@@ -64,7 +64,7 @@ export default {
     await d.guide('#detail .ptl-chart',{side:'left',pose:'point'});
     await d.caption(L[5]);
     await d.hover('#detail .ptl-chart');
-    await d.wait(1200);
+    await d.hush(); // 這句講完才關詳細頁，字幕不會掛到首頁
     await d.unfocus();
     await d.click('#close');
     await d.goto(SITE+'/'); // 回首頁再點遊戲入口；在搜尋結果頁直接捲回去會先閃過時事區
