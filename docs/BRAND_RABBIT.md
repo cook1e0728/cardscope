@@ -5,7 +5,7 @@
 
 ## 角色設定
 - 名字：**煤炭**（英文 Coal），**男生**。自稱「我是煤炭」，口吻是活潑的小男孩嚮導。
-- 聲音：**台灣口音**男孩聲（不要大陸口音），像爆紅的 AI 小貓影片那種奶音。目前用剪映專業版「文本朗讀」的「萌娃」音色（免費、不用 VIP）逐句產生，存在 `assets/brand/voice/mengwa/`（第 n 句＝`n.wav`），錄影時加速 1.15 倍；口音待使用者審核。備案：edge-tts `zh-TW-YunJheNeural` 升調 1.25 倍、加速 1.12 倍（樣本 J）。
+- 聲音：**台灣口音**男孩聲（不要大陸口音），像爆紅的 AI 小貓影片那種奶音。目前用剪映專業版「文本朗讀」的「萌娃」音色（免費、不用 VIP）逐句產生，存在 `assets/brand/voice/mengwa/`（第 n 句＝`n.wav`），錄影時加速 1.15 倍；口音待使用者審核。本機開源方案（2026-11-12 試聽中）：BreezyVoice 唸台灣腔 → Seed-VC 換成 Qwen3-TTS 設計的童聲，工具與作法在專案外的 `C:\Users\99wye\voice-lab\README.md`；選定後把 8 句放進 `assets/brand/voice/<名稱>/n.wav`、腳本 `voice.dir` 指過去即可。備案：edge-tts `zh-TW-YunJheNeural` 升調 1.25 倍、加速 1.12 倍（樣本 J）。
 - 重做剪映旁白：新草稿加一段文字 → 貼一句台詞 → 「朗讀」分頁搜「萌娃」選取 → 開始朗讀，音檔會出現在 `%LOCALAPPDATA%\JianyingPro\User Data\Cache\ttsTemp\`（最新的那個）；一次只放一句，整段 8 句一起唸會卡住不回。
 
 ## 角色外觀（每張都要符合）
