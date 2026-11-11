@@ -10,6 +10,7 @@ import {setTimeout as sleep} from 'node:timers/promises';
 
 const ROOT=path.resolve(import.meta.dirname,'..'),OUT=path.join(ROOT,'.demo-out');
 const name=process.argv[2];if(!name){console.error('用法：node scripts/record-demo.mjs <腳本名稱>');process.exit(1)}
+import {guideFrames} from './guide-track.mjs';
 const script=(await import(new URL(`./demos/${name}.mjs`,import.meta.url))).default;
 const W=1440,H=900,DSF=2,OUT_W=1920,OUT_H=1200,FPS=30,BAND=.15,EASE_S=.7,PAD=32,MAX_Z=1.6;
 const CHROME=process.env.CHROME||['C:/Program Files/Google/Chrome/Application/chrome.exe','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/usr/bin/google-chrome'].find(p=>fs.existsSync(p));
@@ -72,7 +73,7 @@ const d={
   async waitFor(q,{timeout=15000}={}){const end=Date.now()+timeout;while(Date.now()<end){if(await evaluate(`(()=>{try{(${FIND})(${JSON.stringify(q)});return true}catch{return false}})()`))return;await sleep(200)}throw new Error('等不到元素：'+q)},
   goto,
   eval:js=>evaluate(js),
-  caption(zh,en,{top=false}={}){events.push({t:now(),type:'caption',zh,en,top})},
+  caption(zh,en,{top=false,pose}={}){events.push({t:now(),type:'caption',zh,en,top,pose})},
   async focus(q,{pad=PAD,closest}={}){const r=await rectOf(q,{closest});events.push({t:now(),type:'focus',z:zoomFor(r,pad)});await sleep(EASE_S*1000+100)},
   async unfocus(){events.push({t:now(),type:'focus',z:{z:1,x:0,y:0}});await sleep(EASE_S*1000+100)},
   async hover(q,opt){const p=center(await rectOf(q,opt));await moveTo(p.x,p.y)},
@@ -158,7 +159,16 @@ const args=['-y','-loglevel','error','-i',base];
 capFiles.forEach(c=>args.push('-framerate',String(FPS),'-loop','1','-t',dur,'-i',c.file));
 let graph=`[0:v]setpts=N/${FPS}/TB[v0]`; // 第一段的時間戳仍不規則（格數對、時長短約 4 秒），解碼後按格號重排
 capFiles.forEach((c,i)=>{graph+=`;[${i+1}:v]format=rgba,fade=in:st=${c.t.toFixed(3)}:d=0.25:alpha=1,fade=out:st=${Math.max(c.t,c.t+c.dur-.25).toFixed(3)}:d=0.25:alpha=1[c${i}];[v${i}][c${i}]overlay=shortest=1[v${i+1}]`});
-args.push('-filter_complex',graph,'-map',`[v${capFiles.length}]`,'-t',dur,'-an','-c:v','libx264','-preset','slow','-crf','23','-pix_fmt','yuv420p','-r',String(FPS),'-movflags','+faststart',mp4);
+let last=capFiles.length;
+// 兔子嚮導（腳本設 guide:{dir} 才有）：每格硬連結一張姿勢圖成序列，疊在左下角、字幕左邊；片尾畫面出現時淡出
+if(script.guide){
+  const g=script.guide,gDir=path.join(work,'guide'),size=g.size||260;fs.mkdirSync(gDir);
+  guideFrames(caps,end,FPS).forEach((p,k)=>fs.linkSync(path.join(ROOT,g.dir,p+'.png'),path.join(gDir,String(k).padStart(6,'0')+'.png')));
+  const outT=(caps.find(c=>!c.zh)?.t??end).toFixed(3);
+  args.push('-framerate',String(FPS),'-i',path.join(gDir,'%06d.png'));
+  graph+=`;[${last+1}:v]format=rgba,scale=${size}:${size}:flags=area,fade=in:st=0.15:d=0.3:alpha=1,fade=out:st=${outT}:d=0.3:alpha=1[g];[v${last}][g]overlay=${g.x??36}:H-${size}-${g.bottom??18}:shortest=1[v${last+1}]`;last++;
+}
+args.push('-filter_complex',graph,'-map',`[v${last}]`,'-t',dur,'-an','-c:v','libx264','-preset','slow','-crf','23','-pix_fmt','yuv420p','-r',String(FPS),'-movflags','+faststart',mp4);
 execFileSync(FFMPEG,args,{stdio:'inherit'});
 // 總覽圖：每 3 秒一格，上傳前逐格看敏感資訊
 const secs=Number(execFileSync(FFPROBE,['-v','error','-show_entries','format=duration','-of','csv=p=0',mp4]).toString());

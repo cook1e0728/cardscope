@@ -8,6 +8,7 @@ export default {
   settle:2500,
   init:"try{localStorage.setItem('cs-tour-done','1')}catch{}", // 跳過首次造訪的三步導覽
 
+  guide:{dir:'scripts/demos/guide'}, // 兔子嚮導姿勢圖（512×512 透明 PNG）：idle、talk-a/b、wave-a/b、point、cheer
   ending:{image:SITE+'/assets/brand/web/rabbit-explore.webp',imgWidth:260,title:'CardScope',subtitle:'跨版本卡牌圖鑑 · Cross-edition TCG catalog'},
   async prime(d){ // 錄影前把要用到的卡、兩個版本、價格分頁都先開過，正式錄影就不會出現骨架畫面
     await d.goto(SITE+'/?q='+encodeURIComponent('噴火龍SAR')); // 預熱不用拍，直接開搜尋網址（極快打字後按 Enter 有時沒送出）
@@ -40,7 +41,7 @@ export default {
     await d.wait(500);
     await d.waitFor(READY,{timeout:30000}); // 換版本時詳細頁會先出骨架
     await d.wait(1100);
-    d.caption('價格分頁：歐洲平台參考價的走勢，換算成新台幣','Price tab: European reference prices over time, in NT$');
+    d.caption('價格分頁：歐洲平台參考價的走勢，換算成新台幣','Price tab: European reference prices over time, in NT$',{pose:'point'});
     await d.click(TAB);
     await d.waitFor('#detail .ptl-chart',{timeout:30000});
     await d.wait(1200); // 打開分頁會自動播一次走勢，播完再放大
@@ -56,7 +57,7 @@ export default {
     await d.waitFor('#seriesBand');
     await d.wait(1500);
     await d.scroll(520);
-    d.caption('點任何一張卡，就能看完整資料與價格','Tap any card for its full details and prices');
+    d.caption('點任何一張卡，就能看完整資料與價格','Tap any card for its full details and prices',{pose:'cheer'});
     await d.hover('#cards .card');
     await d.wait(1600);
   },
