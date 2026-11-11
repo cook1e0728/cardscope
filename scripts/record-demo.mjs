@@ -97,6 +97,7 @@ const d={
   async caption(zh,en,o={}){if(zh&&typeof zh==='object'){o=zh;({zh,en}=zh)}
     const left=sayUntil-now();if(left>0)await sleep(left*1000);
     const v=o.say&&voices.get(o.say);if(v)sayUntil=now()+v.dur+.3;
+    else if(!script.voice&&zh)sayUntil=now()+Math.max(2.2,zh.length*.2); // 沒旁白：字幕至少留到看得完（約每字 0.2 秒）
     events.push({t:now(),type:'caption',zh,en,top:!!o.top,pose:o.pose,talkAs:o.talkAs,audio:v?.file,talk:v?.dur})},
   async hush(){const left=sayUntil-now();if(left>0)await sleep(left*1000)}, // 等這句旁白講完再換畫面（字幕才不會留到下一頁）
   async focus(q,{pad=PAD,closest}={}){const r=await rectOf(q,{closest});curZ=zoomFor(r,pad);events.push({t:now(),type:'focus',z:curZ});await sleep(EASE_S*1000+100)},

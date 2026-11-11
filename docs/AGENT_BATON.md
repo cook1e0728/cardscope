@@ -1,13 +1,14 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-05（台灣）｜更新者：Claude Code（桌電）
+> 上次更新：2026-11-12（台灣）｜更新者：Claude Code（桌電）
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-12 晚：使用者決定**示範影片先不用聲音**。`cardscope.mjs` 拿掉 `voice`（註解留恢復寫法），錄影程式沒旁白時字幕至少停 max(2.2 秒, 每字 0.2 秒)；影片 45.3 秒、無音軌。試過但都沒被選：剪映 9 個 VIP 童聲（.demo-out/voice/vip）、使用者自己錄 8 句（voice-lab/rec）經 Seed-VC 轉童聲再調圓潤（.demo-out/voice/me，使用者評「太尖、不夠圓潤」）。之後要重啟配音，先請使用者給一個「就是這種」的參考聲音，別再盲調參數。
 - 2026-11-12：本機語音工具裝在專案外 `C:\Users\99wye\voice-lab\`（Qwen3-TTS、BreezyVoice、Seed-VC，各自 uv 環境，README 有指令）。已產生三種試聽：Qwen 童聲、BreezyVoice 台灣腔底聲、BreezyVoice→Seed-VC 台灣腔童聲（.demo-out/voice/1-3*.mp3），等使用者選；影片仍是剪映萌娃版。
 - 2026-11-11 晚：煤炭旁白改用剪映「萌娃」（免費音色，像 AI 小貓影片的奶音），8 句存 `assets/brand/voice/mengwa/n.wav`，腳本 `voice:{dir,tempo:1.15}`；錄影程式支援 `voice.dir` 現成音檔與 `d.hush()`（等旁白講完再換頁）。影片 54.4 秒。口音仍待使用者審核。作法見 BRAND_RABBIT.md（一次只唸一句，8 句一起會卡住）。jianying-mcp 的 export_draft 在 cp950 主控台會因中文訊息失敗，沒用它。
 - 2026-11-11：兔子素材統一：規格 `docs/BRAND_RABBIT.md`（唯一來源，AGENTS.md 已指向）、對照表 `assets/brand/rabbit-model-sheet.jpg`、去背腳本 `scripts/rabbit-key.py`；嚮導姿勢圖搬到 `assets/brand/guide/`。示範影片加旁白（edge-tts，`pip install edge-tts`；腳本 `voice`＋每句 `say`，快取在 .demo-out/voice-cache）與兔子滑入／跳躍／晃動；影片變 51.7 秒。兔子叫**煤炭、男生**；使用者不要大陸口音，聲音暫用台灣雲哲升調（樣本 J–L 待審）；煤炭改成四腳跳（hop-1～4，agy 生圖額度用完所以落地格用蹲姿代替）、落點避開目標與字幕、放大到 320；煤炭會用 `d.guide()` 跳到操作旁邊；影片 43 秒。錄影的嚮導序列先把姿勢圖複製進工作資料夾再硬連結（NTFS 單檔 1023 連結上限）。zh-TW-YunJheNeural 不接受 pitch/rate 參數、句子常不回聲音，別用。
