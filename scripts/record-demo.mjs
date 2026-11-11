@@ -23,10 +23,10 @@ if(script.voice&&script.lines){
   const v={...script.voice,...(process.env.DEMO_VOICE?{name:process.env.DEMO_VOICE}:{})},cache=path.join(ROOT,'.demo-out','voice-cache');fs.mkdirSync(cache,{recursive:true});
   for(const l of script.lines.filter(l=>l.say)){
     const file=path.join(cache,(await import('node:crypto')).createHash('sha1').update(JSON.stringify([v,l.say])).digest('hex').slice(0,16)+'.mp3');
-    // shift：整體升調倍率（音色變小、像小動物）；tempo：用 ffmpeg 加速（給不接受 --rate、--pitch 的聲音，例如雲哲）
+    // af：自訂 ffmpeg 音訊濾鏡（奶音：asetrate 拉音色＋rubberband 只拉音高）；shift：整體升調倍率（音色變小、像小動物）；tempo：用 ffmpeg 加速（給不接受 --rate、--pitch 的聲音，例如雲哲）
     for(let i=0;i<8&&!(fs.existsSync(file)&&fs.statSync(file).size>0);i++)
       try{const raw=file+'.raw.mp3';execFileSync('python',['-m','edge_tts','--voice',v.name,...(v.pitch?[`--pitch=${v.pitch}`]:[]),...(v.rate?[`--rate=${v.rate}`]:[]),'--text',l.say,'--write-media',raw],{stdio:'ignore'});
-        execFileSync(FFMPEG,['-y','-loglevel','error','-i',raw,'-af',v.shift?`asetrate=24000*${v.shift},aresample=24000,atempo=${v.tempo||1}/${v.shift}`:v.tempo?`atempo=${v.tempo}`:'anull','-b:a','96k',file]);fs.rmSync(raw,{force:true})}catch{}
+        execFileSync(FFMPEG,['-y','-loglevel','error','-i',raw,'-af',v.af?v.af:v.shift?`asetrate=24000*${v.shift},aresample=24000,atempo=${v.tempo||1}/${v.shift}`:v.tempo?`atempo=${v.tempo}`:'anull','-b:a','96k',file]);fs.rmSync(raw,{force:true})}catch{}
     if(!(fs.existsSync(file)&&fs.statSync(file).size>0))throw new Error('旁白生成失敗：'+l.say);
     voices.set(l.say,{file,dur:Number(execFileSync(FFPROBE,['-v','error','-show_entries','format=duration','-of','csv=p=0',file]).toString())});
   }
