@@ -5,7 +5,7 @@
 
 ## 角色設定
 - 名字：**煤炭**（英文 Coal），**男生**。自稱「我是煤炭」，口吻是活潑的小男孩嚮導。
-- 聲音：卡通小男孩聲（edge-tts `zh-CN-YunxiaNeural`，音高 +10Hz、語速 +15%，再整體升調 1.2 倍）。
+- 聲音：**台灣口音**男孩聲（不要大陸口音）。目前暫用 edge-tts `zh-TW-YunJheNeural` 整體升調 1.25 倍、加速 1.12 倍（樣本 J），口音待使用者審核。
 
 ## 角色外觀（每張都要符合）
 - 黑色兔子，毛色帶深灰層次；耳朵直立、內耳粉紅；粉紅小鼻子；大而亮的深色眼睛，有白色反光點。
@@ -25,7 +25,7 @@
 | `assets/brand/rabbit-profile.jpg` | 頭像、底部導覽「我的」 |
 | `assets/brand/rabbit-offline.png` | 離線頁（`sw.js`） |
 | `assets/brand/rabbit-silhouette.jpg`、`cardscope-rabbit-mark.png` | 剪影標誌、「全部遊戲」圖示、PWA 圖示來源 |
-| `assets/brand/guide/*.png` | 嚮導姿勢（512×512 透明 PNG，同一裁切框，換姿勢不會跳）：`wave-a/b` 揮手兩格、`talk-a/b` 說話閉口／開口、`idle`（＝talk-a 複本）、`point` 指向右邊、`cheer` 雙手歡呼 |
+| `assets/brand/guide/*.png` | 嚮導姿勢（512×512 透明 PNG，同一裁切框，換姿勢不會跳）：`wave-a/b` 揮手兩格、`talk-a/b` 說話閉口／開口、`idle`（＝talk-a 複本）、`point` 指向右邊、`cheer` 雙手歡呼；`hop-1`～`hop-4` 側面四腳跳躍（蹲、蹬、騰空、落地＝蹲的複本），已縮到 80% 和坐姿同大小，缺淺灰外框 |
 
 網頁實際載入的是 `assets/brand/web/` 的縮圖與 webp；原圖改了要重新輸出那裡的檔案。
 
@@ -38,5 +38,5 @@
 ## 示範影片的嚮導
 - 開關與位置：腳本的 `guide:{dir:'assets/brand/guide',size,x,bottom}`；時間軸在 `scripts/guide-track.mjs`。
 - 動作：開場從下方滑入、揮手時一跳一跳；平常上下輕晃、左右擺 ±2.5°；每句字幕開頭說話，講到旁白結束；`pose:'point'|'cheer'` 指定講完的姿勢。
-- 跟著操作跳：`d.guide(選擇器,{side:'left'|'right',pose,closest})` 跳到元素旁（拋物線 0.55 秒、騰空用 cheer、站右邊時左右翻轉面向元素），`d.guide('home')` 回左下角。
+- 跟著操作跳：`d.guide(選擇器,{side:'left'|'right',pose,closest})` 跳到元素旁，`d.guide('home')` 回左下角。像真兔子沿地面一蹬一蹬（每跳約 220px、0.28 秒，四格步態），途中面向前進方向、落地後面向元素。落點由 `placeGuide` 挑：避開目標元素、底部字幕、游標，擋到就換另一側或上下。大小預設 320px（輸出 1920 寬）。換頁或捲動後原落點會變成別的內容，要先 `d.guide('home')`。
 - 聲音：腳本的 `voice`（見「角色設定」，`shift` 是升調倍率）；`DEMO_VOICE=...` 可臨時換。台詞寫在每句的 `say`，和字幕幾乎同一句（看字聽聲才對得上），開場先打招呼。

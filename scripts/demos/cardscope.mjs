@@ -19,7 +19,7 @@ export default {
   settle:2500,
   init:"try{localStorage.setItem('cs-tour-done','1')}catch{}", // 跳過首次造訪的三步導覽
 
-  lines:L,voice:{name:'zh-CN-YunxiaNeural',pitch:'+10Hz',rate:'+15%',shift:1.2}, // 煤炭是小男生：卡通男孩聲整體升調（樣本 G），語速加快
+  lines:L,voice:{name:'zh-TW-YunJheNeural',shift:1.25,tempo:1.12}, // 煤炭是小男生：台灣男聲雲哲升調成男孩聲並加快（樣本 J，口音待使用者審核）
   guide:{dir:'assets/brand/guide'}, // 兔子嚮導姿勢圖（512×512 透明 PNG）：idle、talk-a/b、wave-a/b、point、cheer
   ending:{image:SITE+'/assets/brand/web/rabbit-explore.webp',imgWidth:260,title:'CardScope',subtitle:'跨版本卡牌圖鑑 · Cross-edition TCG catalog'},
   async prime(d){ // 錄影前把要用到的卡、兩個版本、價格分頁都先開過，正式錄影就不會出現骨架畫面
@@ -45,12 +45,12 @@ export default {
     await d.key('Enter');
     await d.waitFor('#cards .card');
     await d.wait(1000); // 按 Enter 後網站會平滑捲到結果區，捲完才量位置、點卡
-    await d.guide('#appliedFilters .applied-chip',{side:'right',pose:'point'});
+    await d.guide('home'); // SAR 標籤會在點卡前被網站捲到標題列下面，站過去會懸在卡片上；這句回左下角
     await d.caption(L[3]);
     await d.wait(1200);
     await d.click(CARD);
     await d.waitFor(OTHER,{timeout:30000});
-    await d.guide('#detail',{side:'left',pose:'point'});
+    await d.guide('#detail',{side:'left',pose:'point',closest:'.dialog'});
     await d.caption(L[4]);
     await d.wait(600);
     await d.click(OTHER);
@@ -73,9 +73,9 @@ export default {
     await d.wait(500);
     await d.click('#channels .channel[data-ip="pokemon"]');
     await d.waitFor('#seriesBand');
+    await d.guide('home'); // 換頁後原位置變成別的內容，先回左下角
     await d.wait(900);
     await d.scroll(520);
-    await d.guide('home');
     await d.caption(L[7]);
     await d.hover('#cards .card');
     await d.wait(1000);
