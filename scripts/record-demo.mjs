@@ -10,7 +10,7 @@ import {setTimeout as sleep} from 'node:timers/promises';
 
 const ROOT=path.resolve(import.meta.dirname,'..'),OUT=path.join(ROOT,'.demo-out');
 const name=process.argv[2];if(!name){console.error('用法：node scripts/record-demo.mjs <腳本名稱>');process.exit(1)}
-import {guideFrames,hopRanges} from './guide-track.mjs';
+import {guideFrames,hopRanges,pathExpr} from './guide-track.mjs';
 const script=(await import(new URL(`./demos/${name}.mjs`,import.meta.url))).default;
 const W=1440,H=900,DSF=2,OUT_W=1920,OUT_H=1200,FPS=30,BAND=.15,EASE_S=.7,PAD=32,MAX_Z=1.6;
 const CHROME=process.env.CHROME||['C:/Program Files/Google/Chrome/Application/chrome.exe','/Applications/Google Chrome.app/Contents/MacOS/Google Chrome','/usr/bin/google-chrome'].find(p=>fs.existsSync(p));
@@ -18,13 +18,15 @@ const FFMPEG=process.env.DEMO_FFMPEG||'ffmpeg',FFPROBE=process.env.DEMO_FFPROBE|
 
 // ---------- 旁白（腳本有 voice 與 lines[].say 才做）：錄影前先用 edge-tts 生好每句，快取在 .demo-out/voice-cache ----------
 // 需要 `pip install edge-tts`；語音服務偶爾不回聲音，重試 3 次。DEMO_VOICE 可臨時換聲音（例如 zh-TW-HsiaoYuNeural）
-const voices=new Map();let sayUntil=0;
+const voices=new Map();let sayUntil=0,curZ={z:1,x:0,y:0};
 if(script.voice&&script.lines){
   const v={...script.voice,...(process.env.DEMO_VOICE?{name:process.env.DEMO_VOICE}:{})},cache=path.join(ROOT,'.demo-out','voice-cache');fs.mkdirSync(cache,{recursive:true});
   for(const l of script.lines.filter(l=>l.say)){
     const file=path.join(cache,(await import('node:crypto')).createHash('sha1').update(JSON.stringify([v,l.say])).digest('hex').slice(0,16)+'.mp3');
+    // shift：整體升調倍率（音色變小、像小動物），語速不變
     for(let i=0;i<3&&!(fs.existsSync(file)&&fs.statSync(file).size>0);i++)
-      try{execFileSync('python',['-m','edge_tts','--voice',v.name,...(v.pitch?[`--pitch=${v.pitch}`]:[]),...(v.rate?[`--rate=${v.rate}`]:[]),'--text',l.say,'--write-media',file],{stdio:'ignore'})}catch{}
+      try{const raw=file+'.raw.mp3';execFileSync('python',['-m','edge_tts','--voice',v.name,...(v.pitch?[`--pitch=${v.pitch}`]:[]),...(v.rate?[`--rate=${v.rate}`]:[]),'--text',l.say,'--write-media',raw],{stdio:'ignore'});
+        execFileSync(FFMPEG,['-y','-loglevel','error','-i',raw,'-af',v.shift?`asetrate=24000*${v.shift},aresample=24000,atempo=1/${v.shift}`:'anull','-b:a','96k',file]);fs.rmSync(raw,{force:true})}catch{}
     if(!(fs.existsSync(file)&&fs.statSync(file).size>0))throw new Error('旁白生成失敗：'+l.say);
     voices.set(l.say,{file,dur:Number(execFileSync(FFPROBE,['-v','error','-show_entries','format=duration','-of','csv=p=0',file]).toString())});
   }
@@ -92,9 +94,11 @@ const d={
   async caption(zh,en,o={}){if(zh&&typeof zh==='object'){o=zh;({zh,en}=zh)}
     const left=sayUntil-now();if(left>0)await sleep(left*1000);
     const v=o.say&&voices.get(o.say);if(v)sayUntil=now()+v.dur+.3;
-    events.push({t:now(),type:'caption',zh,en,top:!!o.top,pose:o.pose,audio:v?.file,talk:v?.dur})},
-  async focus(q,{pad=PAD,closest}={}){const r=await rectOf(q,{closest});events.push({t:now(),type:'focus',z:zoomFor(r,pad)});await sleep(EASE_S*1000+100)},
-  async unfocus(){events.push({t:now(),type:'focus',z:{z:1,x:0,y:0}});await sleep(EASE_S*1000+100)},
+    events.push({t:now(),type:'caption',zh,en,top:!!o.top,pose:o.pose,talkAs:o.talkAs,audio:v?.file,talk:v?.dur})},
+  async focus(q,{pad=PAD,closest}={}){const r=await rectOf(q,{closest});curZ=zoomFor(r,pad);events.push({t:now(),type:'focus',z:curZ});await sleep(EASE_S*1000+100)},
+  async unfocus(){curZ={z:1,x:0,y:0};events.push({t:now(),type:'focus',z:curZ});await sleep(EASE_S*1000+100)},
+  // 兔子嚮導跳到元素旁邊（side:'left' 站在左邊面向右、'right' 站在右邊面向左）；'home' 回左下角。不等跳完，畫面照常進行
+  async guide(q,{side='left',pose,closest}={}){events.push(q==='home'?{t:now(),type:'guide',home:true,pose}:{t:now(),type:'guide',rect:await rectOf(q,{closest,reveal:false}),side,pose,z:curZ})},
   async hover(q,opt){const p=center(await rectOf(q,opt));await moveTo(p.x,p.y)},
   async click(q,opt){const p=center(await rectOf(q,opt));await moveTo(p.x,p.y);await sleep(120);
     await evaluate('__demo.press()');await send('Input.dispatchMouseEvent',{type:'mousePressed',x:p.x,y:p.y,button:'left',clickCount:1});await sleep(70);
@@ -183,13 +187,22 @@ let last=capFiles.length;
 // 兔子嚮導（腳本設 guide:{dir} 才有）：每格硬連結一張姿勢圖成序列，疊在左下角、字幕左邊；片尾畫面出現時淡出
 if(script.guide){
   const g=script.guide,gDir=path.join(work,'guide'),size=g.size||260;fs.mkdirSync(gDir);
-  const poses=guideFrames(caps,end,FPS);poses.forEach((p,k)=>fs.linkSync(path.join(ROOT,g.dir,p+'.png'),path.join(gDir,String(k).padStart(6,'0')+'.png')));
+  // 跳到元素旁邊：用當下鏡頭（放大倍率與位置）把網頁座標換成輸出畫面座標，腳底對齊元素底邊，夾在畫面內、字幕帶上方
+  const sc=OUT_W/W,home={x:g.x??36,y:OUT_H-size-(g.bottom??18),face:1};
+  const moves=events.filter(e=>e.type==='guide'&&e.t>=t0).map(e=>{if(e.home)return {...home,t:e.t-t0,pose:e.pose};
+    const {rect:r,z}=e,ox=(r.x-z.x/DSF)*z.z*sc,oy=(r.y-z.y/DSF)*z.z*sc,ow=r.w*z.z*sc,oh=r.h*z.z*sc,right=e.side==='right';
+    return {t:e.t-t0,pose:e.pose,face:right?-1:1,x:Math.round(Math.max(0,Math.min(OUT_W-size,right?ox+ow-size*.2:ox-size*.8))),y:Math.round(Math.max(30,Math.min(home.y,oy+oh-size*.97)))}}); // 上緣留 30px：晃動與跳躍時頭不會出畫面
+  // 每格挑姿勢圖（硬連結成序列）；面向左時用左右翻轉的版本
+  // 先複製到工作資料夾再連結：NTFS 一個檔最多 1023 個硬連結，直接連原圖會被留下的除錯中間檔累積用完
+  const poses=guideFrames(caps,end,FPS,moves),srcDir=path.join(work,'guide-src'),flipDir=path.join(work,'guide-flip');fs.mkdirSync(srcDir);fs.mkdirSync(flipDir);
+  for(const p of new Set(poses)){fs.copyFileSync(path.join(ROOT,g.dir,p+'.png'),path.join(srcDir,p+'.png'));execFileSync(FFMPEG,['-y','-loglevel','error','-i',path.join(srcDir,p+'.png'),'-vf','hflip',path.join(flipDir,p+'.png')])}
+  poses.forEach((p,k)=>{let face=1;for(const m of moves)if(m.t<=k/FPS)face=m.face;fs.linkSync(path.join(face<0?flipDir:srcDir,p+'.png'),path.join(gDir,String(k).padStart(6,'0')+'.png'))});
   const outT=(caps.find(c=>!c.zh)?.t??end).toFixed(3);
-  // 動作：開場 0.6 秒從下方滑上來；平常上下輕晃（1.8 秒一次、5px）並左右擺 ±2.5°；揮手與歡呼時一跳一跳（0.5 秒一下、16px）
-  const hops=hopRanges(poses,FPS).map(([a,b])=>`between(t,${a.toFixed(2)},${b.toFixed(2)})*abs(sin(PI*(t-${a.toFixed(2)})/0.5))*16`).join('+')||'0';
-  const y=`H-${size}-${g.bottom??18}+if(lt(t,0.6),pow(1-t/0.6,2)*${size},0)+5*sin(2*PI*t/1.8)-(${hops})`;
+  // 動作：開場 0.6 秒從下方滑上來；跳到新位置走拋物線（高 140px）；平常上下輕晃（1.8 秒一次、5px）並左右擺 ±2.5°；揮手與歡呼時小跳（0.5 秒一下、10px）
+  const hops=hopRanges(poses,FPS).map(([a,b])=>`between(t,${a.toFixed(2)},${b.toFixed(2)})*abs(sin(PI*(t-${a.toFixed(2)})/0.5))*10`).join('+')||'0';
+  const x=pathExpr(home,moves,'x'),y=`${pathExpr(home,moves,'y',140)}+if(lt(t,0.6),pow(1-t/0.6,2)*${size},0)+5*sin(2*PI*t/1.8)-(${hops})`;
   args.push('-framerate',String(FPS),'-i',path.join(gDir,'%06d.png'));
-  graph+=`;[${last+1}:v]format=rgba,scale=${size}:${size}:flags=area,rotate=a='0.044*sin(2*PI*t/2.4)':c=none,fade=in:st=0.15:d=0.3:alpha=1,fade=out:st=${outT}:d=0.3:alpha=1[g];[v${last}][g]overlay=x=${g.x??36}:y='${y}':eval=frame:shortest=1[v${last+1}]`;last++;
+  graph+=`;[${last+1}:v]format=rgba,scale=${size}:${size}:flags=area,rotate=a='0.044*sin(2*PI*t/2.4)':c=none,fade=in:st=0.15:d=0.3:alpha=1,fade=out:st=${outT}:d=0.3:alpha=1[g];[v${last}][g]overlay=x='${x}':y='${y}':eval=frame:shortest=1[v${last+1}]`;last++;
 }
 // 旁白：每句從字幕出現的時間點開始播，混成一軌
 const said=caps.filter(c=>c.audio),nIn=1+capFiles.length+(script.guide?1:0);
