@@ -127,7 +127,7 @@ const detail = vm.createContext({
   cardGameId: card => typeof card?.game === 'object' ? card.game.id : card?.game,
   DETAIL_SOURCE_NAMES: {}
 });
-vm.runInContext(`${lnSource};\n${between('function cardNumberLabel', 'function cardPriceLabel')}\n${between('// 系列名要跟隨', '// 分頁')}\n${between('// 收錄版本列', '// 詳細頁的收藏按鈕')}`, detail);
+vm.runInContext(`${lnSource};\n${between('function cardNumberLabel', 'function cardPriceLabel')}\n${between('// 系列名要跟隨', '// ADR 0042')}\n${between('// 收錄版本列', '// 詳細頁的收藏按鈕')}`, detail);
 const run = code => vm.runInContext(code, detail);
 
 test('收錄版本: One Piece Taiwan printings read 日文, not 繁體中文; other games keep the stored language', () => {
@@ -177,7 +177,7 @@ test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the 
   const c = collection({ watchlist: {} });
   const slot = { dataset: { detailCollect: 'k1' }, innerHTML: '', contains: () => false, querySelector: () => null };
   Object.assign(c.sandbox, { document: { querySelector: () => slot, activeElement: null } });
-  vm.runInContext(between('function renderDetailCollect', 'openCard=async function'), c.sandbox);
+  vm.runInContext(between('function renderDetailCollect', '// ── 詳細資料（REDESIGN_PLAN'), c.sandbox);
   c.run('renderDetailCollect()');
   assert.match(slot.innerHTML, /data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</);
   assert.doesNotMatch(slot.innerHTML, /data-collect-act="inc"/);
@@ -191,7 +191,7 @@ test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the 
   click('dec');
   assert.equal(c.run('watchQuantity("k1")'), 0, 'the last − removes after the same confirm as the star');
   assert.match(slot.innerHTML, /☆ 加入收藏/);
-  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>(?:\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\})(?:\$\{detailPriceMarkup\(c,m\.records\)\})?<div class="detail-actions"><div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name (the reference price row may sit between)');
+  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>(?:\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\})(?:\$\{priceSlot\})?<div class="detail-actions"><div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name (the reference price row may sit between)');
   assert.match(ui, /\.detail-collect button\{min-width:44px;min-height:44px/);
 });
 

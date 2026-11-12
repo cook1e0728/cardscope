@@ -24,9 +24,9 @@ test('Esc closes an open ⓘ first (capture phase, stops the event so a dialog b
   assert.ok(listeners.filter(l=>l.type==='keydown').every(l=>l.capture),'must run before the dialog handlers');
   let stopped=0;
   fire('keydown',{key:'Enter',stopPropagation:()=>stopped++});assert.equal(tip.open,true);assert.equal(stopped,0);
-  fire('keydown',{key:'Escape',stopPropagation:()=>stopped++});
+  fire('keydown',{key:'Escape',stopPropagation:()=>stopped++,preventDefault(){}});
   assert.deepEqual([tip.open,summary.focused,stopped],[false,true,1]);
-  fire('keydown',{key:'Escape',stopPropagation:()=>stopped++});assert.equal(stopped,1,'with nothing open, Esc passes through');
+  fire('keydown',{key:'Escape',stopPropagation:()=>stopped++,preventDefault(){}});assert.equal(stopped,1,'with nothing open, Esc passes through');
 });
 
 test('a click outside closes an open ⓘ; a click inside does not',()=>{

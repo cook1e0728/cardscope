@@ -335,26 +335,33 @@ async function runViewport(browser,viewport){
     const detailText=await page.locator('#modal.open').innerText();
     assert.match(detailText,/故障圖測試卡/);
     assert.match(detailText,/圖片待補|圖片來源待補|尚未收錄可公開顯示的圖片/);
-    const marketTab=page.locator('#modal.open [data-detail-tab="market"]');
-    if(await marketTab.count()){
-      await marketTab.click();
-      await waitForVisible(page.locator('#modal.open [data-detail-panel="market"]'),'optional market panel did not open');
-      // 價格走勢是打開分頁後才請求，要等讀取結束再看內容。
-      await page.waitForFunction(()=>!document.querySelector('#modal.open [data-price-trend]')?.textContent.includes('正在讀取價格紀錄'));
-      assert.match(await page.locator('#modal.open [data-detail-panel="market"]').innerText(),/沒有可靠|市場|不可用|待補|暫時無法讀取/);
-    }
+    // 階段 4：沒有分頁。價格區塊一直在資訊下面；行情服務失敗只讓價格區塊說明讀不到（整頁仍可用），按頂端的「價格」跳到那裡。
+    await page.waitForFunction(()=>{const body=document.querySelector('#modal.open [data-price-body]');return body&&body.getAttribute('aria-busy')!=='true'},undefined,{timeout:8000});
+    assert.equal(await page.locator('#modal.open [data-detail-tab], #modal.open [role="tablist"]').count(),0,`${viewport.name} the detail has no tabs any more`);
+    await page.locator('#modal.open [data-detail-jump]').click();
+    await page.waitForFunction(()=>document.activeElement?.id==='detailPriceTitle',undefined,{timeout:5000});
+    // 平滑捲動要幾百毫秒；捲完後標題在頂端列（sticky）下面、視窗內，沒有被蓋住
+    await page.waitForFunction(()=>{const box=document.getElementById('detailPriceTitle').getBoundingClientRect(),bar=document.querySelector('#modal .detail-bar').getBoundingClientRect();return box.top>=bar.bottom-1&&box.top<innerHeight},undefined,{timeout:5000}).catch(()=>{throw new Error(`${viewport.name} the price title is not on screen (below the sticky bar) after the jump`)});
+    // 走勢區塊捲進視窗才請求（IntersectionObserver）；請求失敗時價格區塊說明讀不到，不影響其餘內容。
+    await page.waitForFunction(()=>{const slot=document.querySelector('#modal.open [data-price-trend]');return slot?.dataset.loaded==='1'&&slot.textContent.trim()&&!slot.textContent.includes('正在讀取價格紀錄')},undefined,{timeout:8000});
+    assert.match(await page.locator('#modal.open [data-price-body]').innerText(),/行情服務暫時無法回應|沒有可靠|市場|不可用|待補|暫時無法讀取/);
     await page.locator('#close').click();
     await page.waitForFunction(()=>!new URL(location.href).searchParams.has('card'));
 
-    // Keyboard: the detail dialog takes focus, keeps Tab inside, and Escape hands focus back to the card.
+    // Keyboard: the detail takes focus when it opens; the full-screen page (under 1000px) keeps Tab inside, the desktop side panel lets Tab go on to the wall; Escape hands focus back to the card.
     const opener=page.locator('#cards .card-open-hit[data-card-open]').first();
     const openerId=await opener.getAttribute('data-card-open');
     await opener.focus();
     await page.keyboard.press('Enter');
     await waitForVisible(page.locator('#modal.open .detail'),`${viewport.name} keyboard Enter did not open the detail`);
     await page.waitForFunction(()=>document.activeElement?.id==='close',undefined,{timeout:5000});
-    await page.keyboard.press('Shift+Tab');
-    assert.ok(await page.evaluate(()=>document.getElementById('modal').contains(document.activeElement)),`${viewport.name} Shift+Tab left the detail dialog`);
+    const panelMode=viewport.width>=1000;
+    for(let press=0;press<14;press+=1)await page.keyboard.press('Shift+Tab');
+    const stillInside=await page.evaluate(()=>document.getElementById('modal').contains(document.activeElement));
+    if(panelMode)assert.equal(stillInside,false,`${viewport.name} the side panel traps Tab: Shift+Tab never reached the wall`);
+    else assert.ok(stillInside,`${viewport.name} Shift+Tab left the full-screen detail`);
+    // 回到卡牆之後 Escape 仍然只關側板（焦點不在輸入元件），焦點回到打開它的那張卡
+    if(panelMode)await opener.focus();
     await page.keyboard.press('Escape');
     await page.waitForFunction(id=>!document.getElementById('modal').classList.contains('open')&&document.activeElement?.dataset?.cardOpen===id,openerId,{timeout:5000});
 

@@ -27,7 +27,7 @@ test('series-navigator renderTrends: cardUrl 只接受 https://，其餘改成 #
 
 test('B4: 換版本後焦點留在版本列，載入中舊內容的鍵盤操作被擋掉', () => {
   assert.match(ui, /refocus=Boolean\(options\.keepPosition&&document\.activeElement\?\.closest\?\.\('#detail \[data-version-card\]'\)\)/, '只有從版本按鈕換版本才要還焦點');
-  assert.match(ui, /if\(refocus\)\{const current=\$\('detail'\)\.querySelector\('\.version-list \[aria-current="true"\]'\);if\(current\)\{current\.tabIndex=-1;current\.focus\(\)\}\}/, '重畫後焦點移到新版本的「目前顯示」列');
+  assert.match(ui, /if\(refocus\)\{const current=box\.querySelector\('\.version-list \[aria-current="true"\]'\);if\(current\)\{current\.tabIndex=-1;current\.focus\(\)\}\}/, '重畫後焦點移到新版本的「目前顯示」列');
   assert.match(ui, /if\(refocus\)retry\.focus\(\)/, '失敗時焦點移到重試鈕');
   // 守門：#detail[aria-busy=true] 時，捕獲階段擋 click／Enter／Space／方向鍵
   const start = ui.indexOf("(()=>{const busy=event=>$('detail')"), end = ui.indexOf('\n', start);
@@ -49,7 +49,7 @@ test('B5a: 開卡不再請求 /api/reports，回報分頁程式移除', () => {
   assert.doesNotMatch(ui, /api\/reports/);
   assert.doesNotMatch(ui, /reportList|reportResult|reportResponse/);
   assert.doesNotMatch(ui, /data-detail-panel="reports"|detail-tab-reports/);
-  assert.match(ui, /const DETAIL_TABS=\[\['info','資訊'\],\['market','價格'\]\];/);
+  assert.doesNotMatch(ui, /DETAIL_TABS|data-detail-tab/, '階段 4 起沒有分頁');
 });
 
 test('B5a: coverage 只在關於頁載入（首頁與遊戲頁不請求）', () => {

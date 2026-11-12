@@ -267,7 +267,7 @@ html.look-clean .modal{background:rgba(31,27,22,.5)}
 html.look-clean .dialog,html.look-clean body[data-view="game"] .dialog{padding:var(--s6);border:0;border-top:3px solid var(--ip);border-radius:var(--lc-r-md);background:var(--lc-surface);box-shadow:none}
 html.look-clean .close{top:var(--s4);right:var(--s4);width:44px;height:44px;border:1px solid var(--lc-hair);background:#fff;color:var(--lc-ink);font-size:22px}
 html.look-clean .detail{gap:var(--s7)}
-html.look-clean .detail-tabs-layout{grid-template-columns:300px minmax(0,1fr)}
+html.look-clean .detail-flow{grid-template-columns:300px minmax(0,1fr)}
 html.look-clean .detail-nav{width:44px;height:44px;border:1px solid var(--lc-hair);background:#fff;box-shadow:none}
 html.look-clean .detail-art{border-radius:var(--lc-r-sm);background:var(--lc-sleeve);padding:3px}
 html.look-clean .detail-position{margin:var(--s3) 0 0;font-size:12px;color:var(--lc-ink-2)}
@@ -309,12 +309,6 @@ html.look-clean .detail-position span:empty{display:none}
 html.look-clean .card-text-empty{margin:0 0 var(--s4);font-size:13px}
 html.look-clean .detail-price-retry .dp-retry{font-size:15px}
 html.look-clean .detail{--dframe:#D5CCBB;--dpanel:#FBF9F4}
-/* 分頁：分段式按鈕列（外框＋選中者填色加粗），仍是 role=tablist／tab */
-html.look-clean .detail-tabs{display:flex;width:fit-content;max-width:100%;gap:var(--s1);margin-bottom:var(--s5);padding:var(--s1);overflow:visible;border:1px solid var(--dframe);border-radius:var(--lc-r-md);background:#F1ECE1}
-html.look-clean .detail-tabs button,html.look-clean .view-switch.detail-tabs button{min-width:112px;min-height:44px;padding:0 var(--s5);border:1px solid transparent!important;border-radius:var(--lc-r-sm)!important;background:transparent;color:var(--lc-ink-2);font-size:15px;font-weight:500}
-html.look-clean .detail-tabs button:hover{background:#fff;color:var(--lc-ink)}
-html.look-clean .detail-tabs button.on,html.look-clean body .detail-tabs button.on{background:var(--ip)!important;color:var(--ip-on)!important;font-weight:700}
-html.look-clean .detail-tabs button.on:before{content:none}
 html.look-clean .detail h3{margin:var(--s6) 0 var(--s2);font-size:17px;font-weight:700}
 html.look-clean .detail .state,html.look-clean .detail .market{margin:0;padding:var(--s3) 0;border:0;border-top:1px solid var(--lc-hair);border-radius:0;background:transparent;font-size:15px}
 html.look-clean .detail .state:last-of-type{border-bottom:1px solid var(--lc-hair)}
@@ -444,15 +438,13 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean .card-tools,html.look-clean body[data-view="game"] .card-tools{margin:var(--s3) 0 var(--s4)}
   html.look-clean .view-switch{width:100%}
   html.look-clean .dialog,html.look-clean body[data-view="game"] .dialog{padding:var(--s5) var(--s4)}
-  html.look-clean .detail,html.look-clean .detail-tabs-layout{gap:var(--s5);grid-template-columns:minmax(0,1fr)}
+  html.look-clean .detail,html.look-clean .detail-flow{gap:var(--s5);grid-template-columns:minmax(0,1fr)}
   html.look-clean .detail h2{font-size:24px}
   html.look-clean .card-identity>div{grid-template-columns:80px minmax(0,1fr)}
   /* 詳細頁：卡圖縮小、資訊改緊湊 key-value，分頁列與收錄版本更早出現；箭頭鈕收進 320px 寬內 */
   html.look-clean .detail-visual{max-width:100%}
   html.look-clean .detail-visual-stage{padding:0}
   html.look-clean .detail-visual .detail-art{max-width:200px}
-  html.look-clean .detail-prev{left:calc(50% - 144px)}
-  html.look-clean .detail-next{right:calc(50% - 144px)}
   html.look-clean .detail-position small{display:none}
   html.look-clean .detail-visual>p{margin-top:var(--s3)}
   html.look-clean .detail h2{margin:var(--s1) 0 var(--s2)}
@@ -463,12 +455,9 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean .card-identity dd small{font-size:12px}
   html.look-clean .detail-meta dd{font-size:14px}
   html.look-clean .detail-meta{margin-bottom:var(--s2)}
-  html.look-clean .detail-tabs{margin-bottom:var(--s3)}
   html.look-clean .detail h3{margin:var(--s5) 0 var(--s2)}
   html.look-clean .detail .share-url{font-size:16px}
   /* 詳細頁面板：手機整列滿版，分頁鈕均分，內距縮小 */
-  html.look-clean .detail-tabs{width:100%}
-  html.look-clean .detail-tabs button,html.look-clean .view-switch.detail-tabs button{flex:1 1 0;min-width:0;padding:0 var(--s3)}
   html.look-clean .dpanel{margin-bottom:var(--s3);padding:var(--s3)}
   html.look-clean .dpanel .card-identity>div{grid-template-columns:64px minmax(0,1fr)}
   html.look-clean .detail .dpanel-versions .state{padding:var(--s3)}
@@ -722,9 +711,6 @@ html.look-clean #detail[aria-busy="true"]{opacity:.55;pointer-events:none;transi
    原本分頁、標題色條、目前版本邊框、標籤同時用實心遊戲色，寶可夢紅一次出現四處，太搶。 */
 html.look-clean .detail{--dframe:#E7E1D4;--dpanel:#FCFBF8;--dlabel:#7A7266;--dline:#EFEAE0}
 /* 分頁：選中的是白色浮起的那顆、字用遊戲色，不再整塊塗滿 */
-html.look-clean .detail-tabs{background:#F2EEE6;border-color:var(--dframe)}
-html.look-clean .detail-tabs button.on,html.look-clean body .detail-tabs button.on{background:#fff!important;color:var(--ip-ink)!important;box-shadow:0 1px 2px rgba(60,45,20,.14),0 0 0 1px rgba(60,45,20,.06)}
-html.look-clean .detail-tabs button:hover{background:rgba(255,255,255,.6)}
 /* 面板標題退成小標：小字、加字距、灰褐色，色條變細 */
 html.look-clean .detail .dpanel-title{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--dlabel)}
 html.look-clean .detail .dpanel-title:before{width:3px;height:12px}

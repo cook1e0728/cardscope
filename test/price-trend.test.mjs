@@ -150,11 +150,16 @@ test('price-history endpoint: groups per card, source and variant, keeps 180 day
   }
 });
 
-test('detail page wiring: the price panel holds the slot that loads only when the 價格 tab is opened', async () => {
+test('detail page wiring: no tabs; the trend slot sits in the price block and loads only when it scrolls into view', async () => {
   const [ui, html] = await Promise.all(['../ui-enhancements.js', '../index.html'].map(path => readFile(new URL(path, import.meta.url), 'utf8')));
-  assert.match(ui, /detailPanel\('market',true,`<section class="dpanel dpanel-trend"><h3 class="dpanel-title">價格走勢<\/h3><div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div>/);
-  assert.match(ui, /\[data-detail-tab="market"\]/);
-  assert.match(ui, /tab\.addEventListener\('click',\(\)=>\{[^]*?window\.PriceTimeline\.load\(slot/);
+  assert.match(ui, /<section class="dpanel dpanel-trend"><h4 class="dpanel-title">價格走勢<\/h4><div class="price-trend" data-price-trend="\$\{e\(id\)\}"><\/div><\/section>/);
+  assert.doesNotMatch(ui, /data-detail-tab|DETAIL_TABS|detailPanel\(/, '階段 4 起沒有分頁');
+  const bind = ui.match(/function bindPriceTrend[^]*?\n\}/)[0];
+  assert.match(bind, /new IntersectionObserver\(entries=>\{if\(entries\.some\(entry=>entry\.isIntersecting\)\)\{watch\.disconnect\(\);load\(\)\}\}/, '走勢區塊進入視窗才請求');
+  assert.match(bind, /if\(slot\.dataset\.loaded\)return;slot\.dataset\.loaded='1'[^]*?window\.PriceTimeline\.load\(slot/, '每個區塊只請求一次');
+  assert.match(bind, /typeof IntersectionObserver!=='function'\)return load\(\)/, '沒有 IntersectionObserver 的瀏覽器直接載入');
+  assert.match(bind, /watch\.observe\(slot\.closest\('\.dpanel-trend'\)\|\|slot\)/, '觀察有標題的外層區塊：空的 .price-trend 是 display:none（.price-trend:empty），沒有盒子就不會觸發');
+  assert.match(html, /\.price-trend:empty\{display:none\}/, '這條規則存在，所以不能直接觀察空的 slot');
   assert.ok(html.indexOf('/price-timeline.js') > 0 && html.indexOf('/price-timeline.js') < html.indexOf('/ui-enhancements.js'));
   assert.doesNotMatch(ui.match(/openCard=async function[^]*?window\.openCard=openCard/)[0], /price-history'/, 'the detail request itself never asks for the trend');
 });

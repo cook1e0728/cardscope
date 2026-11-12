@@ -86,16 +86,17 @@ test('card tile (grid, list and rarity-group views) escapes every external strin
 test('card detail view escapes names, numbers, sources, links, prices and reports', async () => {
   const card = hostileCard(), market = { records: [{ provider: HOSTILE, priceType: HOSTILE, currency: HOSTILE, amount: 5, priceTwd: 100, market: HOSTILE, observedAt: HOSTILE, variant: HOSTILE, region: HOSTILE, setCode: HOSTILE, rarity: HOSTILE, sourceUrl: HOSTILE_URL }], meta: { warning: HOSTILE, priceTypes: { [HOSTILE]: HOSTILE }, exchangeRates: { source: HOSTILE, updatedAt: HOSTILE } } };
   const fetch = async url => ({ ok: true, json: async () => /\/market$/.test(url) ? { data: market } : /reports/.test(url) ? { data: { reports: [{ platform: HOSTILE, currency: HOSTILE, price: 1 }] } } : { data: card } });
-  const h = harness({ fetch });
+  // deep：價格區塊（[data-price-body]）是階段 4 起市場資料回來後才填的子節點，假 DOM 把它當同一個子節點，一併檢查
+  const h = harness({ fetch, deep: true });
   h.run(`C={games:[{id:'pokemon',nameZh:${JSON.stringify(HOSTILE)}}],series:[{id:'hostile-series',nameZh:${JSON.stringify(HOSTILE)},officialCode:${JSON.stringify(HOSTILE)},region:'JP'}],cards:[]};game='pokemon'`);
   await h.run('openCard("x")');
-  const detail = h.byId.get('detail').innerHTML;
+  const detail = h.byId.get('detail').innerHTML + h.byId.get('detail').querySelector('[data-price-body]').innerHTML;
   assertSafe(detail, 'detail');
   assert.ok(detail.includes(ESCAPED));
   assert.ok(!detail.includes(`href="${HOSTILE_URL}`) && !detail.includes('href="https://example.test/"'), 'the source link cannot break out of href');
   // 沒有 https 的來源網址不會變成連結
   const plain = hostileCard({ printings: [{ ...card.printings[0], sourceUrl: 'javascript:alert(1)' }] });
-  const h2 = harness({ fetch: async url => ({ ok: true, json: async () => /\/market$/.test(url) ? { data: { records: [], meta: {} } } : /reports/.test(url) ? { data: { reports: [] } } : { data: plain } }) });
+  const h2 = harness({ deep: true, fetch: async url => ({ ok: true, json: async () => /\/market$/.test(url) ? { data: { records: [], meta: {} } } : /reports/.test(url) ? { data: { reports: [] } } : { data: plain } }) });
   await h2.run('openCard("x")');
   assert.ok(!/href="javascript:/i.test(h2.byId.get('detail').innerHTML));
 });

@@ -73,21 +73,21 @@ html.look-clean body[data-view] :is(.rarity-hud-close,.filter-sheet-close,.card-
   transition:transform .14s var(--ease),background-color .14s var(--ease);
 }
 /* 分段按鈕：外層凹陷底，被選中的那顆是白色紙片（內外圓角同心） */
-html.look-clean body[data-view] :is(.view-switch,.detail-tabs){padding:3px;border:1px solid transparent;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:visible}
-html.look-clean body[data-view] :is(.view-switch button,.detail-tabs button){border:0!important;border-radius:var(--btn-r)!important;background:transparent;color:var(--v2-ink-2);box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
-html.look-clean body[data-view] :is(.view-switch button.on,.detail-tabs button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)!important}
+html.look-clean body[data-view] :is(.view-switch){padding:3px;border:1px solid transparent;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:visible}
+html.look-clean body[data-view] :is(.view-switch button){border:0!important;border-radius:var(--btn-r)!important;background:transparent;color:var(--v2-ink-2);box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
+html.look-clean body[data-view] :is(.view-switch button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)!important}
 /* 按下縮到 97%；滑過只給滑鼠 */
-html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close],.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm],.view-switch button,.detail-tabs button,.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):active,
+html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close],.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm],.view-switch button,.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):active,
 html.look-clean body[data-view] header.top :is(.nav button,#go):active{transform:scale(.97)}
 @media (hover:hover) and (pointer:fine){
   html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close]):hover,
   html.look-clean body[data-view] header.top :is(.nav button,#go):hover{background:var(--v2-surface);box-shadow:var(--v2-shadow-up)}
   html.look-clean body[data-view] :is(.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm]):hover{box-shadow:0 3px 8px rgba(60,45,20,.28)}
   html.look-clean body[data-view] :is(.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):hover{background:rgba(60,45,20,.08)}
-  html.look-clean body[data-view] :is(.view-switch button,.detail-tabs button):not(.on):hover{background:rgba(255,255,255,.6);color:var(--v2-ink)}
+  html.look-clean body[data-view] :is(.view-switch button):not(.on):hover{background:rgba(255,255,255,.6);color:var(--v2-ink)}
 }
 /* 焦點框：看得見（WCAG 2.4.7）。用鍵盤觸發的動作不加動畫 */
-html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,.product-category,.series-group,.load-more,.notice-retry,.view-switch button,.detail-tabs button,.detail-collect-state,.source-link,.detail-price,.version-switch,.suggest-chip,.applied-chip):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,.product-category,.series-group,.load-more,.notice-retry,.view-switch button,.detail-collect-state,.source-link,.detail-price,.version-switch,.suggest-chip,.applied-chip):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 
 /* ===== 5. ⓘ 說明：解釋規則的句子收在這裡，點開才看（markup 由 ui-actions.js 的 infoTip 產生） ===== */
 .info-tip{position:relative;display:inline-block;vertical-align:middle}
@@ -422,4 +422,54 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
   html.look-clean body[data-view] .cards .card.card-list .card-list-facts b{white-space:nowrap}
   html.look-clean body[data-view] .cards .card.card-list .card-actions{grid-column:3;grid-row:1/3;justify-self:end}
   html.look-clean body[data-view] .cards .card.card-list .watchlist-inline{width:116px}
+}
+/* ===== 11. 詳細資料（階段 4，ui-enhancements.js openCard／navigation-state.js；docs/REDESIGN_PLAN.md 第 6 節「側板要解的五件事」） =====
+   桌機 ≥1000px：#modal 是釘在頂欄下方右側的側板（不遮卡牆、不鎖 Tab），遊戲頁與搜尋結果的卡牆（#main）讓出同樣的寬度，欄數自動變少（6→4）。
+   <1000px：全螢幕一頁（沿用 #modal 當容器，.dialog 自己捲動，頂端列 .detail-bar sticky）。兩種都沒有分頁：卡圖與版本在上，資訊與價格連續往下排。 */
+:root{--panel-w:clamp(360px,34vw,440px)}
+/* 頂端列：上一張／位置／下一張｜跳到價格｜關閉。釘在 .dialog 的捲動區頂端，手機全螢幕也一樣（取代原本沒生效的分頁列 sticky） */
+html.look-clean #modal .dialog{padding:0}
+html.look-clean #modal #detail{padding:var(--s4) var(--s5) var(--s7)}
+.detail-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:4px;padding:6px 8px;background:var(--v2-surface);box-shadow:0 1px 0 var(--v2-line)}
+html.look-clean .detail-bar .detail-nav{position:static;flex:none;width:var(--btn-h);height:var(--btn-h);padding:0;border:0;border-radius:var(--btn-r);background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+.detail-bar .detail-nav:disabled,.detail-bar .detail-jump:disabled{opacity:.4;box-shadow:none;cursor:default}
+.detail-pos{min-width:4.5em;text-align:center;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
+html.look-clean .detail-bar .detail-jump{flex:none;margin-left:auto;min-height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font-size:14px;font-weight:700;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+html.look-clean .detail-bar .close{position:static;flex:none;width:var(--btn-h);height:var(--btn-h);border:0;border-radius:var(--btn-r);background:transparent;box-shadow:none;color:var(--v2-ink);font-size:26px;line-height:1}
+.detail-bar :is(.detail-nav,.detail-jump,.close):not(:disabled):active{transform:scale(.97)}
+.detail-bar :is(.detail-nav,.detail-jump,.close):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){
+  .detail-bar :is(.detail-nav,.detail-jump):not(:disabled):hover{box-shadow:var(--v2-shadow-up)}
+  .detail-bar .close:hover{background:rgba(60,45,20,.08)}
+}
+/* 卡圖、卡名、價格、收藏、卡片資料、收錄版本（版本切換在這一欄）；右欄是系列與來源、卡面文字、價格 */
+html.look-clean .detail-visual>.detail-price-slot{order:3;margin:0 0 var(--s3)}
+html.look-clean .detail-visual>.dpanel-versions{order:5;margin-top:var(--s4)}
+html.look-clean .detail .detail-section-title{scroll-margin-top:calc(var(--btn-h) + 20px);margin:var(--s6) 0 var(--s3);font-size:20px;line-height:1.3}
+.detail-section-title:focus-visible{outline:2px solid var(--v2-ink);outline-offset:4px}
+.detail-price-section [data-price-body]>.state{margin:0}
+/* 先畫的卡牆資料還在等 API：下面一欄的灰色骨架 */
+html.look-clean .dsk.dsk-flow{grid-template-columns:minmax(0,1fr)}
+/* 卡牆上現在開著的那張：粗外框（不只靠顏色）；用方向鍵換卡時 scrollIntoView 不被頂欄蓋住 */
+html.look-clean body[data-view] #cards .card:has(.card-open-hit[aria-current="true"]){outline:2px solid var(--v2-ink);outline-offset:3px}
+#cards .card{scroll-margin-block:calc(var(--side-top,66px) + 12px) 16px}
+
+/* ---- <1000px：全螢幕一頁 ---- */
+@media (max-width:999px){
+  html.look-clean #modal.open{padding:0;place-items:stretch;overflow:hidden;background:var(--v2-surface)}
+  html.look-clean #modal .dialog{width:100%;max-width:none;height:100dvh;max-height:none;overflow:auto;overscroll-behavior:contain;border-radius:0}
+}
+@media (max-width:760px){html.look-clean #modal #detail{padding:var(--s3) var(--s4) var(--s7)}}
+
+/* ---- ≥1000px：右側側板 ---- */
+@media (min-width:1000px){
+  html.look-clean #modal.open{display:block;position:fixed;inset:var(--side-top,66px) var(--side-edge,0px) 0 auto;z-index:6;width:var(--panel-w);padding:0;overflow:visible;background:transparent;pointer-events:none}
+  html.look-clean #modal.open .dialog{pointer-events:auto;width:100%;max-width:none;height:100%;max-height:none;overflow:auto;overscroll-behavior:contain;border-radius:0;box-shadow:-1px 0 0 var(--v2-line),-10px 0 28px rgba(60,45,20,.10)}
+  html.look-clean #modal .detail{grid-template-columns:minmax(0,1fr);gap:var(--s5)}
+  html.look-clean #modal .detail-visual .detail-art{max-width:260px;margin-inline:auto}
+}
+/* 遊戲頁、搜尋結果：卡牆讓出側板的寬度（側欄 inline 的條件：寬 ≥1000 且高 ≥501），卡自動重排 */
+@media (min-width:1000px) and (min-height:501px){
+  html.look-clean body[data-side]:has(#modal.open) #main{max-width:calc(var(--shell-max) - var(--side-w) - var(--panel-w));margin-right:var(--panel-w)}
+  html.look-clean body[data-side]:has(#modal.open) .cards:not(.list-view){grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }

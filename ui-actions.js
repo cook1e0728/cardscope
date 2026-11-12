@@ -20,7 +20,7 @@
   // 捕獲階段先處理：開著說明時第一次 Esc 只關說明（不連帶關掉後面的詳細視窗），焦點回到 ⓘ。
   document.addEventListener('keydown',event=>{
     const tip=event.key==='Escape'&&document.querySelector('details.info-tip[open]');if(!tip)return;
-    tip.open=false;tip.querySelector('summary').focus();event.stopPropagation();
+    tip.open=false;tip.querySelector('summary').focus();event.stopPropagation();event.preventDefault();
   },true);
   const FAILED={
     remove:img=>img.remove(),

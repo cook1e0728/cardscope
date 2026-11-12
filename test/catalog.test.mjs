@@ -269,8 +269,9 @@ test('all product feeds receive a Chinese display name',()=>{
 });
 
 test('round three browsing controls and honest fallbacks stay wired',async()=>{
-  const [ui,navigator,mappings]=await Promise.all([
+  const [ui,html,navigator,mappings]=await Promise.all([
     readFile(new URL('../ui-enhancements.js',import.meta.url),'utf8'),
+    readFile(new URL('../index.html',import.meta.url),'utf8'),
     readFile(new URL('../series-navigator.js',import.meta.url),'utf8'),
     readFile(new URL('../data/series-zh.json',import.meta.url),'utf8').then(JSON.parse)
   ]);
@@ -279,7 +280,9 @@ test('round three browsing controls and honest fallbacks stay wired',async()=>{
   assert.match(ui,/清單模式/);
   assert.match(ui,/圖片待補/);
   for(const tab of ['資訊','價格','走勢'])assert.match(ui,new RegExp(tab));
-  for(const interaction of ['tilt-card','perspective:1000px','上一張卡','下一張卡','ArrowLeft','ArrowRight','card-zoom','點擊卡圖可放大'])assert.match(ui,new RegExp(interaction));
+  for(const interaction of ['tilt-card','perspective:1000px','ArrowLeft','ArrowRight','card-zoom','點擊卡圖可放大'])assert.match(ui,new RegExp(interaction));
+  // 階段 4：上一張／下一張在 index.html 的 .detail-bar（#modal 裡），不再是卡圖兩側
+  for(const control of ['上一張卡','下一張卡','data-card-step','data-detail-jump'])assert.match(html,new RegExp(control));
   for(const marker of ['cardscopeFeatureTour','feature-tour','快速使用說明','help-grid'])assert.match(ui,new RegExp(marker));
   assert.doesNotMatch(ui,/暫停輪播|setInterval/);
   assert.match(navigator,/series-block/);

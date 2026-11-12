@@ -52,8 +52,8 @@ function navigationHarness(initialSearch='?game=pokemon&region=JP&rarity=SR&pric
   context.dispatchEvent=event=>dispatchWindow(event.type,event);
   const setSearch=search=>{location.search=search};
   const dispatchPopstate=async()=>{await dispatchWindow('popstate',{type:'popstate'})};
-  const dispatchEscape=()=>{const event={type:'keydown',key:'Escape',defaultPrevented:false,preventDefault(){this.defaultPrevented=true}};dispatchDocument('keydown',event);return event};
-  return {context,nodes,historyCalls,flush,setSearch,dispatchPopstate,dispatchEscape,run:code=>vm.runInContext(code,context)};
+  const dispatchEscape=(target,prevented=false)=>{const event={type:'keydown',key:'Escape',target,defaultPrevented:prevented,preventDefault(){this.defaultPrevented=true}};dispatchDocument('keydown',event);return event};
+  return {context,nodes,historyCalls,flush,setSearch,dispatchPopstate,dispatchEscape,dispatchDocument,run:code=>vm.runInContext(code,context)};
 }
 
 test('shareable browsing URLs preserve every public catalog dimension',()=>{
@@ -185,4 +185,100 @@ test('openCard ignores an answer that arrives after a newer card was requested',
   assert.match(ui,/const version=\+\+detailRequestVersion,stale=\(\)=>version!==detailRequestVersion/);
   const body=ui.match(/openCard=async function[^]*?window\.openCard=openCard/)[0];
   assert.equal((body.match(/if\(stale\(\)\)return/g)||[]).length,4,'checked after the card answer, after the market/report answers, after a price retry, and in the catch');
+});
+
+// ---- 階段 4：側板與歷史（五件事之二）----
+const urlOf = h => new URL(h.context.location.href), backs = h => h.historyCalls.filter(call => call.method === 'back').length, pushes = h => h.historyCalls.filter(call => call.method === 'push').length;
+
+test('側板開著時在側欄換系列：網址帶新系列與 card，重新整理會直接開這張；Esc 只關側板，不退回上一個系列', async () => {
+  const h = navigationHarness('?game=pokemon&region=JP&series=s1');
+  await h.flush();
+  h.context.detailMode = () => 'panel';
+  await h.run("openCard('a')");
+  assert.equal(pushes(h), 1);
+  assert.equal(h.context.history.state.cardEntry, true, '從列表打開的那一筆歷史帶 cardEntry');
+  // 側板開著，使用者在側欄選了別的系列（index.html 宣告 cardscope:browse，push）
+  h.run("browse.seriesId='s2'");
+  h.dispatchDocument('cardscope:browse', { type: 'cardscope:browse', detail: { push: true } });
+  assert.equal(pushes(h), 2);
+  assert.equal(urlOf(h).searchParams.get('series'), 's2');
+  assert.equal(urlOf(h).searchParams.get('card'), 'a', '側板還開著，網址仍帶 card');
+  assert.equal(h.context.history.state.cardEntry, false, '這一筆已經不是「從列表打開」的那一筆');
+  const event = h.dispatchEscape();
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(backs(h), 0, 'Esc 不用 history.back（否則會退回舊系列）');
+  assert.equal(h.nodes.get('modal').classList.contains('open'), false);
+  assert.equal(urlOf(h).searchParams.get('series'), 's2', '留在新系列');
+  assert.equal(urlOf(h).searchParams.has('card'), false, '只拿掉 card');
+  assert.equal(pushes(h), 2, '關閉沒有新增歷史');
+});
+
+test('從列表打開側板後 Esc：退回打開前的那一筆歷史（一步），Back 之後的 popstate 不會重複還原', async () => {
+  const h = navigationHarness('?game=pokemon&region=JP&series=s1');
+  await h.flush();
+  h.context.detailMode = () => 'panel';
+  await h.run("openCard('a')");
+  await h.run("openCard('b')");
+  assert.equal(pushes(h), 1, '上一張／下一張只改網址，不加歷史');
+  h.dispatchEscape();
+  assert.equal(backs(h), 1);
+  assert.equal(h.nodes.get('modal').classList.contains('open'), false, '先關側板再退，畫面不等網址');
+  const calls = h.historyCalls.length;
+  h.setSearch('?game=pokemon&region=JP&series=s1');
+  await h.dispatchPopstate();
+  assert.equal(h.historyCalls.length, calls, '自己發起的返回不再還原一次（會重畫卡牆、捲動跳掉）');
+});
+
+test('Back 關閉側板：回到沒有 card 的網址就關，沒有 card 的 Forward 再回來會重開', async () => {
+  const h = navigationHarness('?game=pokemon&region=JP&series=s1');
+  await h.flush();
+  h.context.detailMode = () => 'panel';
+  await h.run("openCard('a')");
+  h.setSearch('?game=pokemon&region=JP&series=s1');
+  await h.dispatchPopstate();
+  assert.equal(h.nodes.get('modal').classList.contains('open'), false);
+  assert.equal(h.run('activeDetailCardId'), null);
+  h.setSearch('?game=pokemon&region=JP&series=s1&card=a');
+  await h.dispatchPopstate();
+  assert.equal(h.nodes.get('modal').classList.contains('open'), true);
+  assert.equal(h.run('activeDetailCardId'), 'a');
+});
+
+test('網址直開（重新整理）：card 在網址上就直接開側板；這種情況 Esc 只拿掉 card，不離開頁面', async () => {
+  const h = navigationHarness('?game=pokemon&region=JP&series=s1&card=pk-9');
+  await h.flush();
+  h.context.detailMode = () => 'panel';
+  assert.equal(h.nodes.get('modal').classList.contains('open'), true);
+  assert.equal(h.run('activeDetailCardId'), 'pk-9');
+  h.dispatchEscape();
+  assert.equal(backs(h), 0, '這筆歷史不是 openCard 推出來的，退回去會離開網站');
+  assert.equal(urlOf(h).searchParams.has('card'), false);
+  assert.equal(urlOf(h).searchParams.get('region'), 'JP', '其餘網址狀態不動');
+});
+
+test('側板常駐時，搜尋框、選單裡的 Esc 留給它們自己；全螢幕詳細頁與其他地方的 Esc 照樣關閉', async () => {
+  const input = { closest: selector => (/input/.test(selector) ? {} : null) }, plain = { closest: () => null };
+  const panel = navigationHarness('?game=pokemon&region=JP&series=s1');
+  await panel.flush();
+  panel.context.detailMode = () => 'panel';
+  await panel.run("openCard('a')");
+  const typed = panel.dispatchEscape(input);
+  assert.equal(typed.defaultPrevented, false);
+  assert.equal(panel.nodes.get('modal').classList.contains('open'), true, '搜尋框裡的 Esc 不關側板');
+  panel.dispatchEscape(plain);
+  assert.equal(panel.nodes.get('modal').classList.contains('open'), false, '側欄、卡牆、側板內的 Esc 關側板');
+  const page = navigationHarness('?game=pokemon&region=JP&series=s1');
+  await page.flush();
+  page.context.detailMode = () => 'page';
+  await page.run("openCard('a')");
+  page.dispatchEscape(input);
+  assert.equal(page.nodes.get('modal').classList.contains('open'), false, '全螢幕詳細頁蓋住整頁，Esc 一律關閉');
+});
+
+test('ⓘ 說明先處理 Esc（已 preventDefault）：這時詳細頁不關', async () => {
+  const h = navigationHarness('?game=pokemon&region=JP&series=s1');
+  await h.flush();
+  await h.run("openCard('a')");
+  h.dispatchEscape({ closest: () => null }, true);
+  assert.equal(h.nodes.get('modal').classList.contains('open'), true);
 });

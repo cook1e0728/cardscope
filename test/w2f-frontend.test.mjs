@@ -135,7 +135,7 @@ test('D3: 系列頁卡牆上方才有麵包屑；首頁、搜尋、全部卡片�
   }
   // 詳細頁：卡名在最後，前面都是連結；crumbs 接在 #detail 內容最前面（與 .detail 同層）
   assert.match(ui, /detailCrumbs=crumbsMarkup\(\[\.\.\.crumbTrail\(gid,crumbSeries\?\.region\|\|selectedPrinting\?\.region,crumbSeries\),\{label:name\(c\)\}\]\);/);
-  assert.match(ui, /\$\('detail'\)\.innerHTML=`\$\{detailCrumbs\}<div class="detail detail-tabs-layout"/);
+  assert.match(ui, /box\.innerHTML=`\$\{detailCrumbs\}<div class="detail detail-flow"/);
   assert.match(ui, /syncSeriesCrumbs\(\)\}catch/, '跟分頁標題同時機更新');
   // 樣式：觸控 44px、滑鼠 24px 以上，焦點框有實線
   assert.match(clean, /\.crumbs a\{display:inline-flex;align-items:center;min-height:24px;/);
