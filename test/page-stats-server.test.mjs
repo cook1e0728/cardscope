@@ -47,6 +47,10 @@ function mockDatabase(state={}){
       state.requests.push({method:req.method,path:url.pathname,search:url.search,body});
       const reply=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(typeof value==='string'?value:JSON.stringify(value))};
       if(url.pathname==='/rest/v1/rpc/page_stats_add'){if(state.rpcMissing)return reply(404,'{"message":"function not found"}');res.writeHead(204);return res.end()}
+      if(url.pathname==='/rest/v1/rpc/get_card_detail')return reply(200,JSON.parse(body||'{}').p_id===HOT_CARD.id?{cards:[HOT_CARD],series:[],games:[{id:'pokemon',nameZh:'寶可夢'}]}:{cards:[],series:[],games:[]});
+      if(url.pathname==='/rest/v1/rpc/card_hot_add'){if(state.hotMissing)return reply(404,'{"message":"function not found"}');res.writeHead(204);return res.end()}
+      if(url.pathname==='/rest/v1/rpc/card_hot_top'){state.hotTopCalls=(state.hotTopCalls||0)+1;if(state.hotTopFails)return reply(500,'{"message":"secret db detail"}');return reply(200,state.hotRows||[])}
+      if(url.pathname==='/rest/v1/card_hot_daily')return reply(200,state.hotDays||[]);
       if(url.pathname==='/rest/v1/rpc/db_size_report'){state.sizeCalls=(state.sizeCalls||0)+1;if(state.sizeFails)return reply(500,'{"message":"boom"}');return reply(200,{databaseBytes:state.databaseBytes,tables:state.tables||[]})}
       if(url.pathname==='/rest/v1/rpc/catalog_health_snapshot_v2')return reply(200,{totals:{cards:1}});
       if(url.pathname==='/rest/v1/page_stats_daily')return reply(200,state.rows||[]);
@@ -55,6 +59,7 @@ function mockDatabase(state={}){
   };
 }
 const MB=1024*1024;
+const HOT_CARD={id:'pokemon-hot-001',canonicalId:'pokemon-hot-001',game:'pokemon',seriesId:'pokemon-s1',officialCardNumber:'001',rarity:'C',nameZh:'熱門卡',nameJa:null,nameEn:'Hot card',nameKo:null,aliases:[],metadata:{},printings:[{id:'p-hot-001',cardId:'pokemon-hot-001',seriesId:'pokemon-s1',region:'JP',language:'ja-JP',localSetCode:'S1',localCardNumber:'001',rarity:'C',imageUrl:null,imageRehostRequired:false}],images:[]};
 
 test('GET / is counted by kind; bots, HEAD and non-document fetches are handled as specified; 304 counts',async()=>{
   const state={};
@@ -177,5 +182,101 @@ test('/api/admin/catalog/health carries the size report, or storage.error withou
     const { data }=await response.json();
     assert.deepEqual(data.storage,{error:'unavailable'});
     assert.ok(data.summary&&data.sources&&data.missing&&data.rightsReview);
+  });
+});
+
+// Per-card opens: the front end asks for /api/cards/:id?open=1 when a card detail is opened; only that counts.
+const adminHeaders={authorization:'Bearer admin-secret'};
+const hotPending=async base=>(await (await fetch(base+'/api/admin/page-stats',{headers:adminHeaders})).json()).data.cardHot.pending;
+const firstCardId=async()=>HOT_CARD.id;
+
+test('/api/cards/:id counts a card open only with open=1, only for 200s and not for bots',async()=>{
+  const state={};
+  await withServer('hot-open',{database:mockDatabase(state),env:{SCRAPE_SECRET:'admin-secret'}},async base=>{
+    const id=await firstCardId(base),path='/api/cards/'+encodeURIComponent(id);
+    assert.equal((await fetch(base+path)).status,200);
+    assert.equal((await fetch(base+path+'?open=0')).status,200);
+    await (await fetch(base+path+'/price-history?open=1')).arrayBuffer();
+    assert.deepEqual(await hotPending(base),{},'no open=1 on a card detail, nothing counted');
+    assert.equal((await fetch(base+path+'?open=1',{headers:{'user-agent':BROWSER}})).status,200);
+    assert.equal((await fetch(base+path+'?open=1',{headers:{'user-agent':BROWSER}})).status,200);
+    assert.equal((await fetch(base+path+'?open=1',{headers:{'user-agent':'Googlebot/2.1'}})).status,200);
+    assert.equal((await fetch(base+path+'?open=1',{headers:{'user-agent':'curl/8.4'}})).status,200);
+    assert.equal((await fetch(base+'/api/cards/no-such-card?open=1',{headers:{'user-agent':BROWSER}})).status,404);
+    const pending=await hotPending(base),days=Object.values(pending);
+    assert.equal(days.length,1);
+    assert.deepEqual(days[0],{[id]:2});
+    assert.equal(JSON.stringify(pending).includes('no-such-card'),false);
+  });
+});
+
+test('card opens are flushed through card_hot_add with ids and counts only, a missing function keeps them for the next flush',async()=>{
+  const state={hotMissing:true};
+  await withServer('hot-flush',{database:mockDatabase(state),env:{PAGE_STATS_FLUSH_MS:'60',SCRAPE_SECRET:'admin-secret'}},async base=>{
+    const id=await firstCardId(base);
+    await fetch(base+'/api/cards/'+encodeURIComponent(id)+'?open=1',{headers:{'user-agent':BROWSER}});
+    await sleep(250);
+    assert.ok(state.requests.filter(r=>r.path==='/rest/v1/rpc/card_hot_add').length>=2,'retried while the migration is missing');
+    assert.deepEqual(Object.values(await hotPending(base))[0],{[id]:1},'nothing dropped');
+    state.hotMissing=false;
+    await sleep(250);
+    assert.deepEqual(await hotPending(base),{});
+    const calls=state.requests.filter(r=>r.path==='/rest/v1/rpc/card_hot_add'),last=calls.at(-1),body=JSON.parse(last.body);
+    assert.deepEqual(Object.keys(body).sort(),['p_counts','p_day']);
+    assert.deepEqual(body.p_counts,{[id]:1});
+    assert.equal(/Mozilla|127\.0\.0\.1/.test(last.body),false);
+    await sleep(200);
+    assert.equal(state.requests.filter(r=>r.path==='/rest/v1/rpc/card_hot_add').length,calls.length,'sent once, not again');
+  });
+});
+
+test('/api/admin/page-stats carries cardHot rows and pending next to the page counts',async()=>{
+  const state={hotDays:[{day:'2026-11-12',counts:{'pokemon-x':4},updatedAt:'2026-11-12T10:00:00Z'}]};
+  await withServer('hot-admin',{database:mockDatabase(state),env:{SCRAPE_SECRET:'admin-secret'}},async base=>{
+    assert.equal((await fetch(base+'/api/admin/page-stats')).status,401);
+    const { data }=await (await fetch(base+'/api/admin/page-stats?days=5',{headers:adminHeaders})).json();
+    assert.deepEqual(data.cardHot.days,state.hotDays);
+    assert.deepEqual(data.cardHot.pending,{});
+    assert.ok(data.days&&data.pending);
+    const query=new URLSearchParams(state.requests.filter(r=>r.path==='/rest/v1/card_hot_daily').at(-1).search);
+    assert.equal(query.get('order'),'day.desc');
+    assert.equal(query.get('limit'),'5');
+  });
+});
+
+test('/api/hot-cards: not-configured answer, row shape without open counts, one-hour cache, 502 without details',async()=>{
+  await withServer('hot-nodb',{},async base=>{
+    const response=await fetch(base+'/api/hot-cards');
+    assert.equal(response.status,200);
+    assert.deepEqual(await response.json(),{data:[],meta:{unavailable:'not-configured'}});
+  });
+  const state={hotRows:[
+    {card_id:'pokemon-a',name_zh:'皮卡丘',name_ja:'ピカチュウ',name_en:'Pikachu',card_number:'025/165',series_code:'sv2a',series_name:'151',game:'pokemon',image_url:'https://img.example/a.png',opens:99},
+    {card_id:'pokemon-b',name_zh:null,name_ja:null,name_en:'Eevee',card_number:null,series_code:null,series_name:null,game:'pokemon',image_url:null}
+  ]};
+  await withServer('hot-api',{database:mockDatabase(state)},async base=>{
+    const response=await fetch(base+'/api/hot-cards');
+    assert.equal(response.status,200);
+    assert.match(response.headers.get('cache-control'),/max-age=60/);
+    const body=await response.json();
+    assert.deepEqual(body.data,[
+      {cardId:'pokemon-a',name:'皮卡丘',nameJa:'ピカチュウ',cardNumber:'025/165',seriesCode:'sv2a',seriesName:'151',game:'pokemon',imageUrl:'https://img.example/a.png'},
+      {cardId:'pokemon-b',name:'Eevee',nameJa:null,cardNumber:null,seriesCode:null,seriesName:null,game:'pokemon',imageUrl:null}
+    ]);
+    assert.deepEqual(Object.keys(body.meta).sort(),['generatedAt','minOpens','windowDays']);
+    assert.equal(body.meta.windowDays,7);
+    assert.equal(body.meta.minOpens,3);
+    assert.ok(!Number.isNaN(Date.parse(body.meta.generatedAt)));
+    assert.equal(JSON.stringify(body).includes('99'),false,'no open counts');
+    assert.deepEqual(JSON.parse(state.requests.find(r=>r.path==='/rest/v1/rpc/card_hot_top').body),{p_days:7,p_limit:12,p_min:3});
+    for(let i=0;i<3;i++)await fetch(base+'/api/hot-cards');
+    assert.equal(state.hotTopCalls,1,'cached for an hour');
+  });
+  await withServer('hot-fail',{database:mockDatabase({hotTopFails:true})},async base=>{
+    const response=await fetch(base+'/api/hot-cards');
+    assert.equal(response.status,502);
+    const text=await response.text();
+    assert.equal(text.includes('secret db detail'),false);
+    assert.equal(text.includes('SUPABASE'),false);
   });
 });

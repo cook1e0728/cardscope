@@ -59,3 +59,49 @@ export function createPageStats({ db, enabled = () => true, now = Date.now, inte
     pending: () => Object.fromEntries([...days].sort(([a], [b]) => (a < b ? 1 : -1)).map(([day, row]) => [day, { ...row }]))
   };
 }
+
+// How many times each card was opened per day, so the site can list the most opened ones (user approved 2026-11-12).
+// Only a card id and a count: record() takes no IP, user agent or session. The database keeps the top 50 cards per day (card_hot_add).
+export const CARD_ID_PATTERN = /^[\w:.\-]{1,120}$/;
+
+export function createCardHotStats({ db, enabled = () => true, now = Date.now, intervalMs = 10 * 60 * 1000, maxDays = 3, maxIdsPerDay = 5000, sendLimit = 200, logger = console } = {}) {
+  const days = new Map(); // day -> Map(cardId -> opens) not yet written to the database
+  let warned = false, timer = null, chain = Promise.resolve();
+  const top = (row, limit) => [...row].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, limit);
+
+  function record(cardId) {
+    if (!enabled() || typeof cardId !== 'string' || !CARD_ID_PATTERN.test(cardId)) return;
+    const day = taipeiDay(now());
+    let row = days.get(day);
+    if (!row) { row = new Map(); days.set(day, row); while (days.size > maxDays) days.delete([...days.keys()].sort()[0]); } // a long outage cannot grow memory
+    if (row.has(cardId)) row.set(cardId, row.get(cardId) + 1);
+    else if (row.size < maxIdsPerDay) row.set(cardId, 1); // shortcut: ids past the cap are not counted that day, they only appear again once a flush frees room
+  }
+
+  async function flushOnce() {
+    if (!enabled()) return;
+    for (const day of [...days.keys()].sort()) {
+      const sent = top(days.get(day), sendLimit);
+      if (!sent.length) { days.delete(day); continue; }
+      try { await db('/rpc/card_hot_add', { method: 'POST', body: JSON.stringify({ p_day: day, p_counts: Object.fromEntries(sent) }), signal: AbortSignal.timeout(10000) }); }
+      catch (error) {
+        if (!warned) { warned = true; logger.warn('card hot flush failed; keeping counts in memory and retrying:', error?.message); }
+        return; // keep every delta; the next flush retries
+      }
+      warned = false;
+      const current = days.get(day); // opens that arrived while the request was in flight stay
+      if (!current) continue;
+      for (const [id, count] of sent) { const left = current.get(id) - count; if (left > 0) current.set(id, left); else current.delete(id); }
+      if (!current.size) days.delete(day);
+    }
+  }
+
+  // Serialized so a SIGTERM flush never overlaps the interval flush and double-sends; flushOnce never throws.
+  const flush = () => (chain = chain.then(flushOnce));
+  return {
+    record, flush,
+    start() { if (!timer) { timer = setInterval(flush, intervalMs); timer.unref(); } },
+    stop() { clearInterval(timer); timer = null; },
+    pending: () => Object.fromEntries([...days].sort(([a], [b]) => (a < b ? 1 : -1)).map(([day, row]) => [day, Object.fromEntries(top(row, 50))]))
+  };
+}

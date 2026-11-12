@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPageStats, isBot, pageKind, taipeiDay, PAGE_KINDS } from '../providers/page-stats.mjs';
+import { createPageStats, createCardHotStats, CARD_ID_PATTERN, isBot, pageKind, taipeiDay, PAGE_KINDS } from '../providers/page-stats.mjs';
 
 // F4: daily page-open counts. Pure logic with an injected clock and database; the HTTP side is in page-stats-server.test.mjs.
 const params = query => new URLSearchParams(query);
@@ -130,4 +130,99 @@ test('disabled (no database configured) is a no-op', async () => {
   await stats.flush();
   assert.deepEqual(stats.pending(), {});
   assert.equal(calls, 0);
+});
+
+// Per-card opens (card_hot_daily): same shape as the page counters, plus a per-day id cap and a top-200 send limit.
+test('card ids: only safe characters up to 120 long are counted', () => {
+  for (const id of ['pokemon-tcgdex-ja-sv6a-039', 'ygo:LOCH-JP001', 'op01.001_a', 'a'.repeat(120)]) assert.equal(CARD_ID_PATTERN.test(id), true, id);
+  for (const id of ['', 'a'.repeat(121), 'x y', 'a/b', '<script>', 'a?open=1', '卡', 'a\nb']) assert.equal(CARD_ID_PATTERN.test(id), false, JSON.stringify(id));
+  const stats = createCardHotStats({ db: async () => {}, now: () => Date.parse('2026-11-12T02:00:00Z') });
+  for (const id of ['bad id', '<x>', '', null, undefined, 5, 'a'.repeat(121)]) stats.record(id);
+  assert.deepEqual(stats.pending(), {});
+});
+
+test('card opens are counted per Taipei day by card id and nothing else', () => {
+  let clock = Date.parse('2026-11-12T15:59:00Z');
+  const stats = createCardHotStats({ db: async () => {}, now: () => clock });
+  for (const id of ['a', 'b', 'a', 'a']) stats.record(id);
+  clock = Date.parse('2026-11-12T16:01:00Z');
+  stats.record('a');
+  assert.deepEqual(stats.pending(), { '2026-11-13': { a: 1 }, '2026-11-12': { a: 3, b: 1 } });
+});
+
+test('card opens are not counted when the database is not configured', () => {
+  const stats = createCardHotStats({ db: async () => {}, enabled: () => false });
+  stats.record('a');
+  assert.deepEqual(stats.pending(), {});
+});
+
+test('a day holds at most maxIdsPerDay different cards; known cards keep counting', () => {
+  const stats = createCardHotStats({ db: async () => {}, now: () => Date.parse('2026-11-12T02:00:00Z'), maxIdsPerDay: 3 });
+  for (const id of ['a', 'b', 'c', 'd', 'e', 'a', 'd']) stats.record(id);
+  assert.deepEqual(stats.pending(), { '2026-11-12': { a: 2, b: 1, c: 1 } });
+});
+
+test('only the newest maxDays days stay in memory', () => {
+  let clock = Date.parse('2026-11-01T02:00:00Z');
+  const stats = createCardHotStats({ db: async () => {}, now: () => clock, maxDays: 3 });
+  for (let i = 0; i < 5; i++) { stats.record('a'); clock += 24 * 3600 * 1000; }
+  assert.deepEqual(Object.keys(stats.pending()), ['2026-11-05', '2026-11-04', '2026-11-03']);
+});
+
+test('card flush sends the top 200 of a day through card_hot_add and keeps the rest', async () => {
+  const calls = [];
+  const stats = createCardHotStats({ db: async (path, options) => { calls.push({ path, options, body: JSON.parse(options.body) }); }, now: () => Date.parse('2026-11-12T02:00:00Z') });
+  for (let i = 0; i < 250; i++) for (let n = 0; n <= i; n++) stats.record('card-' + i); // card-249 opened 250 times ... card-0 once
+  await stats.flush();
+  assert.equal(calls.length, 1);
+  assert.deepEqual([calls[0].path, calls[0].options.method], ['/rpc/card_hot_add', 'POST']);
+  assert.deepEqual(Object.keys(calls[0].body).sort(), ['p_counts', 'p_day']);
+  assert.equal(calls[0].body.p_day, '2026-11-12');
+  const sent = Object.keys(calls[0].body.p_counts);
+  assert.equal(sent.length, 200);
+  assert.equal(calls[0].body.p_counts['card-249'], 250);
+  assert.equal(sent.includes('card-49'), false, 'the 50 least opened cards wait for the next flush');
+  assert.equal(Object.keys(stats.pending()['2026-11-12']).length, 50, 'pending shows at most 50 per day');
+  await stats.flush();
+  assert.equal(calls.length, 2, 'the remainder goes out next time');
+  assert.equal(Object.keys(calls[1].body.p_counts).length, 50);
+  await stats.flush();
+  assert.equal(calls.length, 2, 'nothing left to send');
+  assert.deepEqual(stats.pending(), {});
+});
+
+test('card flush: a failing database keeps every delta, warns once, and a recovered flush sends each open exactly once', async () => {
+  const warnings = [];
+  let fail = true;
+  const sent = [];
+  const stats = createCardHotStats({ db: async (path, options) => { if (fail) throw new Error('SUPABASE_404:function not found'); sent.push(JSON.parse(options.body).p_counts); }, now: () => Date.parse('2026-11-12T02:00:00Z'), logger: { warn: (...args) => warnings.push(args.join(' ')) } });
+  stats.record('a');
+  await stats.flush();
+  stats.record('a');
+  stats.record('b');
+  await stats.flush();
+  await stats.flush();
+  assert.equal(warnings.length, 1);
+  assert.deepEqual(stats.pending(), { '2026-11-12': { a: 2, b: 1 } });
+  fail = false;
+  await stats.flush();
+  await stats.flush();
+  assert.deepEqual(sent, [{ a: 2, b: 1 }], 'sent once, not twice');
+  assert.deepEqual(stats.pending(), {});
+});
+
+test('card flush: opens that arrive while the request is in flight are kept, and concurrent flushes never resend', async () => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const sent = [];
+  const stats = createCardHotStats({ db: async (path, options) => { sent.push(JSON.parse(options.body).p_counts); await gate; }, now: () => Date.parse('2026-11-12T02:00:00Z') });
+  stats.record('a');
+  stats.record('a');
+  const first = stats.flush(), second = stats.flush(); // e.g. the interval flush and the SIGTERM flush
+  await new Promise(resolve => setImmediate(resolve));
+  stats.record('a');
+  release();
+  await Promise.all([first, second]);
+  assert.deepEqual(sent, [{ a: 2 }, { a: 1 }], 'the second flush waited for the first and sent only what was new');
+  assert.deepEqual(stats.pending(), {});
 });
