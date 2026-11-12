@@ -16,14 +16,17 @@ const label = (game, value) => ({ SAR: 'SAR', UR: '終極稀有' })[value] || va
 const seo = (c = card(), over = {}) => cardSeo({ card: c, series, game: { id: 'pokemon', nameZh: '寶可夢' }, baseUrl: BASE, rarityLabel: label, ...over });
 const chars = value => Array.from(value).length;
 
-test('card title puts the Chinese name and rarity first, then region, set and number', () => {
-  assert.equal(seo().title, '桃歹郎ex SAR｜日版 SV6a 090｜CardScope');
-  assert.equal(seo(card({ nameZh: null })).title, 'モモワロウex SAR｜日版 SV6a 090｜CardScope', 'no Chinese name: the original name');
+test('card title is name（original name） number rarity｜series｜CardScope, leaving out whatever is missing', () => {
+  assert.equal(seo().title, '桃歹郎ex（モモワロウex） 090 SAR｜黑夜漫遊者｜CardScope');
+  assert.equal(seo(card({ nameZh: null })).title, 'モモワロウex 090 SAR｜黑夜漫遊者｜CardScope', 'no Chinese name: the original name alone, no empty parentheses');
   const us = card({ nameZh: null, nameJa: null, nameEn: 'Charizard ex', rarity: 'UR', printings: [printing({ region: 'US', language: 'en-US', localSetCode: 'sv3pt5', localCardNumber: '6', rarity: 'UR' })] });
-  assert.equal(seo(us).title, 'Charizard ex 終極稀有｜美版 sv3pt5 6｜CardScope', 'the rarity uses its display label');
-  assert.equal(seo(card({ rarity: 'NONE', printings: [printing({ rarity: 'NONE' })] })).title, '桃歹郎ex｜日版 SV6a 090｜CardScope', 'NONE is not a rarity to show');
-  assert.equal(seo(card({ printings: [] })).title, '桃歹郎ex SAR｜SV6a 090｜CardScope', 'no printing: the series code and the card number');
-  assert.equal(seo(card({ printings: [] }), { series: null }).title, '桃歹郎ex SAR｜090｜CardScope', 'no printing and no series: the card number only');
+  assert.equal(seo(us).title, 'Charizard ex 6 終極稀有｜黑夜漫遊者｜CardScope', 'the rarity uses its display label');
+  assert.equal(seo(card({ rarity: 'NONE', printings: [printing({ rarity: 'NONE' })] })).title, '桃歹郎ex（モモワロウex） 090｜黑夜漫遊者｜CardScope', 'NONE is not a rarity to show');
+  assert.equal(seo(card({ printings: [] })).title, '桃歹郎ex（モモワロウex） 090 SAR｜黑夜漫遊者｜CardScope', 'no printing: the card number and rarity still come from the card');
+  assert.equal(seo(card(), { series: null }).title, '桃歹郎ex（モモワロウex） 090 SAR｜CardScope', 'no series: that segment is dropped');
+  const bare = seo(card({ officialCardNumber: null, rarity: null, nameJa: null, printings: [] }), { series: null }).title;
+  assert.equal(bare, '桃歹郎ex｜CardScope', 'only a name: no empty parentheses, no stray spaces or separators');
+  for (const title of [seo().title, bare, seo(card(), { series: null }).title]) assert.doesNotMatch(title, /（）|\s\s|^｜|｜｜|\s｜|｜\s/, title);
   assert.equal(seo(card({ nameZh: null, nameJa: null }), {}), null, 'a card without any name has no page');
 });
 
@@ -49,13 +52,13 @@ test('canonical keeps only game and card, whatever else the request carried', ()
 });
 
 test('og:image is the card art when displayable, the One Piece proxy for official art, and the site logo otherwise', () => {
-  assert.equal(seo().image, `${BASE}/assets/brand/web/rabbit-hero.webp`);
+  assert.equal(seo().image, `${BASE}/assets/brand/web/og-default-1200x630.png`);
   assert.equal(seo().imageIsCardArt, false);
   assert.equal(seo(card({ imageUrl: 'https://img.example.test/sv6a-090.jpg' })).image, 'https://img.example.test/sv6a-090.jpg');
   assert.equal(seo(card({ imageUrl: '/assets/cards/a.webp' })).image, `${BASE}/assets/cards/a.webp`);
   const op = 'https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP01-001.png';
   assert.equal(seo(card({ imageUrl: op })).image, `${BASE}/api/images/onepiece?url=${encodeURIComponent(op)}`);
-  assert.equal(seo(card({ imageUrl: 'javascript:alert(1)' })).image, `${BASE}/assets/brand/web/rabbit-hero.webp`);
+  assert.equal(seo(card({ imageUrl: 'javascript:alert(1)' })).image, `${BASE}/assets/brand/web/og-default-1200x630.png`);
 });
 
 test('JSON-LD is a BreadcrumbList home > game > series > card, with no Product or Offer', () => {
@@ -74,7 +77,8 @@ test('JSON-LD is a BreadcrumbList home > game > series > card, with no Product o
 
 test('series pages get a title, description, canonical and breadcrumb of their own', () => {
   const result = seriesSeo({ series, baseUrl: BASE, printingCount: 106 });
-  assert.equal(result.title, '黑夜漫遊者 SV6a｜寶可夢日版系列卡表｜CardScope');
+  assert.equal(result.title, '黑夜漫遊者 卡表｜日版寶可夢・共 106 張｜CardScope');
+  assert.equal(seriesSeo({ series, baseUrl: BASE }).title, '黑夜漫遊者 卡表｜日版寶可夢｜CardScope', 'no count: the count is left out');
   assert.equal(result.canonical, `${BASE}/?game=pokemon&series=pokemon-tcgdex-ja-sv6a&region=JP`);
   assert.match(result.description, /黑夜漫遊者（SV6a）是寶可夢日版的卡牌系列，發售日 2024-06-07，共收錄 106 個卡片版本/);
   assert.ok(chars(result.description) >= 80 && chars(result.description) <= 150);
@@ -89,7 +93,7 @@ test('every string is HTML-escaped in the head and the noscript summary, and "$&
   const out = applySeoToHtml(html, seo(hostile));
   assert.equal(out.includes('<img src=x'), false, 'no raw tag from the name');
   assert.equal(out.includes('onerror=alert(1)>'), false);
-  assert.match(out, /<title>&lt;img src=x onerror=alert\(1\)&gt; &quot;q&quot; &#39;s&#39; &amp; \$&amp; \$1 /);
+  assert.match(out, /<title>&lt;img src=x onerror=alert\(1\)&gt; &quot;q&quot; &#39;s&#39; &amp; \$&amp; \$1（/);
   assert.ok(out.includes('<meta property="og:image" content="https://img.example.test/a.jpg?x=1&amp;y=%222%22">'));
   assert.match(out, /<noscript><section aria-label="卡片摘要"><h2>&lt;img/);
   assert.equal((out.match(/<title>/g) || []).length, 1);
@@ -129,7 +133,7 @@ test('sitemap helpers: index and url set format, escaped URLs, 40,000-URL files,
   assert.deepEqual(chunkEntries(many).map(part => part.length), [SITEMAP_MAX_URLS, SITEMAP_MAX_URLS, 1]);
   assert.equal(chunkEntries(many.slice(0, 5), 10 ** 9).length, 1, 'a size above 40,000 is capped');
   assert.deepEqual(chunkEntries([]), []);
-  assert.deepEqual(pageSitemapEntries(BASE, ['pokemon', 'yugioh']).map(entry => entry.loc), [`${BASE}/`, `${BASE}/?game=pokemon`, `${BASE}/?game=yugioh`]);
+  assert.deepEqual(pageSitemapEntries(BASE, ['pokemon', 'yugioh']).map(entry => entry.loc), [`${BASE}/`, `${BASE}/?game=pokemon`, `${BASE}/?game=yugioh`, `${BASE}/?view=about`, `${BASE}/?view=privacy`]);
   assert.equal(dateOnly('2026-10-14 08:19:19.5761+00'), '2026-10-14');
   assert.equal(dateOnly('nonsense'), '');
 
@@ -224,10 +228,12 @@ test('HTTP: a card URL gets its own title, description, canonical, Open Graph, J
   const page = await get('/?game=pokemon&card=pokemon-tcgdex-ja-sv6a-090&region=JP&sort=rarity-desc&q=%E6%A1%83');
   assert.equal(page.status, 200);
   assert.match(page.type, /^text\/html/);
-  assert.match(head(page.body), /<title>桃歹郎ex SAR｜日版 SV6a 090｜CardScope<\/title>/);
+  assert.match(head(page.body), /<title>桃歹郎ex（モモワロウex） 090 SAR｜黑夜漫遊者｜CardScope<\/title>/);
   assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=pokemon&amp;card=pokemon-tcgdex-ja-sv6a-090">/);
   assert.match(head(page.body), /<meta property="og:image" content="https:\/\/img\.example\.test\/sv6a-090\.jpg">/);
-  assert.match(head(page.body), /<meta property="og:title" content="桃歹郎ex SAR｜日版 SV6a 090｜CardScope">/);
+  assert.match(head(page.body), /<meta property="og:title" content="桃歹郎ex（モモワロウex） 090 SAR｜黑夜漫遊者｜CardScope">/);
+  assert.match(page.body, /<div class="hero-intro"><h1>桃歹郎ex<\/h1>/, 'the hero h1 carries the card name');
+  assert.equal(page.body.includes('<h1>跨版本卡牌圖鑑</h1>'), false);
   assert.match(head(page.body), /<meta name="description" content="桃歹郎ex（モモワロウex）是寶可夢卡牌，收錄於日版「黑夜漫遊者」SV6a 系列/);
   assert.match(head(page.body), /<script type="application\/ld\+json">\{"@context":"https:\/\/schema\.org","@type":"BreadcrumbList"/);
   assert.equal((page.body.match(/<title>/g) || []).length, 1);
@@ -240,8 +246,8 @@ test('HTTP: a card URL gets its own title, description, canonical, Open Graph, J
 test('HTTP: a card without a displayable image uses the site logo and its original name', async () => {
   const page = await get('/?game=pokemon&card=pokemon-noimage');
   assert.equal(page.status, 200);
-  assert.match(head(page.body), /<title>Charizard ex RR｜美版 sv3pt5 6｜CardScope<\/title>/);
-  assert.match(head(page.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/rabbit-hero\.webp">/);
+  assert.match(head(page.body), /<title>Charizard ex 6 RR｜黑夜漫遊者｜CardScope<\/title>/);
+  assert.match(head(page.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/og-default-1200x630\.png">/);
   assert.equal(head(page.body).includes('hidden.jpg'), false, 'an image the policy does not allow is never advertised');
 });
 
@@ -249,14 +255,16 @@ test('HTTP: card names cannot break out of the head', async () => {
   const page = await get('/?game=pokemon&card=pokemon-hostile');
   assert.equal(page.status, 200);
   assert.equal(head(page.body).includes('<script>alert(1)</script>'), false);
-  assert.match(head(page.body), /<title>&lt;\/title&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt; SAR｜/);
+  assert.match(head(page.body), /<title>&lt;\/title&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt; 090 SAR｜/);
+  assert.match(page.body, /<div class="hero-intro"><h1>&lt;\/title&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h1>/, 'the hero h1 is escaped too');
   assert.equal(page.body.includes('<noscript><section aria-label="卡片摘要"><h2></title>'), false);
 });
 
 test('HTTP: a series URL gets a series title and canonical', async () => {
   const page = await get('/?game=pokemon&series=pokemon-tcgdex-ja-sv6a&region=JP');
   assert.equal(page.status, 200);
-  assert.match(head(page.body), /<title>黑夜漫遊者 SV6a｜寶可夢日版系列卡表｜CardScope<\/title>/);
+  assert.match(head(page.body), /<title>黑夜漫遊者 卡表｜日版寶可夢・共 106 張｜CardScope<\/title>/);
+  assert.match(page.body, /<div class="hero-intro"><h1>黑夜漫遊者<\/h1>/, 'the hero h1 carries the series name');
   assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=pokemon&amp;series=pokemon-tcgdex-ja-sv6a&amp;region=JP">/);
   assert.match(head(page.body), /共收錄 106 個卡片版本/);
   assert.match(page.body, /<noscript><section aria-label="系列摘要">/);
@@ -280,7 +288,10 @@ test('HTTP: every kind of response carries the security headers; pages also carr
     assert.equal(headers.get('x-frame-options'), 'SAMEORIGIN', path);
     assert.equal(headers.get('referrer-policy'), 'strict-origin-when-cross-origin', path);
     assert.ok(headers.get('strict-transport-security'), path);
-    assert.equal(headers.has('content-security-policy'), !path.startsWith('/api/'), path);
+    assert.ok(headers.get('permissions-policy').includes('camera=()') && headers.get('permissions-policy').includes('gyroscope=(self)') && headers.get('permissions-policy').includes('accelerometer=(self)'), path);
+    assert.equal(headers.get('cross-origin-opener-policy'), 'same-origin', path);
+    assert.equal(headers.has('content-security-policy'), true, path);
+    assert.equal(headers.get('content-security-policy') === "default-src 'none'", path.startsWith('/api/'), path);
   }
   const csp = (await get('/')).headers.get('content-security-policy');
   assert.ok(csp.includes('https://images.pokemontcg.io'));
@@ -301,7 +312,10 @@ test('HTTP: the home page and game pages get a canonical, og:image and (games) t
   const home = await get('/');
   assert.equal(home.status, 200);
   assert.match(head(home.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/">/);
-  assert.match(head(home.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/rabbit-hero\.webp">/);
+  assert.match(head(home.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/og-default-1200x630\.png">/);
+  assert.match(head(home.body), /<meta property="og:image:width" content="1200">/);
+  assert.match(head(home.body), /<meta property="og:image:height" content="630">/);
+  assert.match(head(home.body), /<meta name="twitter:card" content="summary_large_image">/);
   assert.match(head(home.body), /<title>CardScope｜TCG 卡牌圖鑑<\/title>/);
   assert.equal(home.body.includes('<noscript>'), indexHtml.includes('<noscript>'), 'no card summary is added to the home page');
   assert.equal((home.body.match(/rel="canonical"/g) || []).length, 1);
@@ -310,10 +324,43 @@ test('HTTP: the home page and game pages get a canonical, og:image and (games) t
     assert.equal(page.status, 200, path);
     assert.match(head(page.body), /<title>遊戲王卡牌圖鑑｜CardScope<\/title>/, path);
     assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=yugioh">/, path);
-    assert.match(head(page.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/rabbit-hero\.webp">/, path);
+    assert.match(head(page.body), /<meta property="og:image" content="https:\/\/seo\.example\.test\/assets\/brand\/web\/og-default-1200x630\.png">/, path);
   }
   assert.match(head((await get('/?game=bogus')).body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/">/, 'an unknown game is the home page');
-  for (const path of ['/?view=about', '/?game=pokemon&view=about', '/index.html']) assert.equal((await get(path)).body, indexHtml, path);
+  for (const path of ['/?view=other', '/?game=pokemon&view=other', '/index.html']) assert.equal((await get(path)).body, indexHtml, path);
+});
+
+test('HTTP: ?view=about and ?view=privacy have their own title, canonical and description', async () => {
+  for (const [view, title] of [['about', '資料收錄狀態｜CardScope'], ['privacy', '隱私說明｜CardScope']]) {
+    const page = await get(`/?view=${view}`);
+    assert.equal(page.status, 200, view);
+    assert.match(head(page.body), new RegExp(`<title>${title}</title>`), view);
+    assert.match(head(page.body), new RegExp(`<link rel="canonical" href="https://seo\\.example\\.test/\\?view=${view}">`), view);
+    assert.equal((page.body.match(/rel="canonical"/g) || []).length, 1, view);
+    assert.equal((page.body.match(/name="description"/g) || []).length, 1, view);
+    assert.equal(page.body.includes('<noscript><section'), false, 'no card summary on a view page');
+    assert.match(head(page.body), /<meta name="twitter:card" content="summary_large_image">/, view);
+  }
+});
+
+test('HTTP: a card page with art uses the small twitter card; the default image gets 1200x630 and the large one', async () => {
+  const art = head((await get('/?game=pokemon&card=pokemon-tcgdex-ja-sv6a-090')).body);
+  assert.match(art, /<meta name="twitter:card" content="summary">/);
+  assert.equal(art.includes('og:image:width'), false, 'no fixed size for card art');
+  const plain = head((await get('/?game=pokemon&card=pokemon-noimage')).body);
+  assert.match(plain, /<meta name="twitter:card" content="summary_large_image">/);
+  assert.match(plain, /<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">/);
+});
+
+test('HTTP: /.well-known/security.txt is served as plain text with a placeholder contact and a future expiry', async () => {
+  const page = await get('/.well-known/security.txt');
+  assert.equal(page.status, 200);
+  assert.match(page.type, /^text\/plain/);
+  assert.match(page.body, /^Contact: https:\/\/seo\.example\.test\/\?view=about$/m);
+  assert.match(page.body, /^Preferred-Languages: zh-TW, en$/m);
+  assert.match(page.body, /placeholder/i);
+  const expires = Date.parse(page.body.match(/^Expires: (.+)$/m)[1]);
+  assert.ok(expires > Date.now() + 360 * 86400000 && expires < Date.now() + 370 * 86400000, 'about a year out');
 });
 
 test('HTTP: an unknown path is a Chinese 404 page with a link home; /api/ stays JSON', async () => {
@@ -343,7 +390,7 @@ test('HTTP: pages.xml needs no database', async () => {
   const pages = await get('/sitemaps/pages.xml');
   assert.equal(pages.status, 200);
   assert.match(pages.type, /^application\/xml/);
-  assert.deepEqual([...pages.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/', ...['pokemon', 'onepiece', 'yugioh', 'haikyuu', 'weiss-schwarz', 'dragonball-fw'].map(game => `https://seo.example.test/?game=${game}`)]);
+  assert.deepEqual([...pages.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/', ...['pokemon', 'onepiece', 'yugioh', 'haikyuu', 'weiss-schwarz', 'dragonball-fw'].map(game => `https://seo.example.test/?game=${game}`), 'https://seo.example.test/?view=about', 'https://seo.example.test/?view=privacy']);
 });
 
 test('HTTP: a failed sitemap build is a 503 and is not cached; concurrent requests share one build; keyset paging covers every card once', async () => {
