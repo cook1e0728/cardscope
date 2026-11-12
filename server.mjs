@@ -1306,7 +1306,7 @@ const server=createServer((req,res)=>{
   res.setHeader('Content-Security-Policy',String(req.url).startsWith('/api/')?API_CSP:CSP);
   handleRequest(req,res).catch(error=>{
   const badInput=error instanceof URIError||error?.code==='ERR_INVALID_URL';
-  if(!badInput)console.error('request failed',req.method,String(req.url).slice(0,200),error?.stack||error);
+  if(!badInput)console.error('request failed',req.method,String(req.url).split('?')[0].slice(0,200),error?.stack||error);
   if(!res.headersSent)json(res,badInput?400:500,{error:badInput?'網址格式錯誤':'伺服器暫時發生錯誤'});else res.end();
 })});
 // 只限制接收請求的時間（擋慢速連線），不影響回應要跑多久。

@@ -31,7 +31,7 @@ test('exact title copy matches the server (providers/seo.mjs)', () => {
   assert.equal(title({ kind: 'search', query: '皮卡丘' }), '「皮卡丘」搜尋結果｜CardScope');
   assert.equal(title({ kind: 'series', name: '151', region: '日版', game: '寶可夢', count: 207 }), '151 卡表｜日版寶可夢・共 207 張｜CardScope');
   assert.equal(title({ kind: 'series', name: '151', region: '日版', game: '寶可夢', count: null }), '151 卡表｜日版寶可夢｜CardScope', 'the count is dropped when unknown');
-  assert.equal(title({ kind: 'card', name: '皮卡丘', original: 'ピカチュウ', number: '025/165', rarity: 'RR', series: '151' }), '皮卡丘（ピカチュウ）025/165 RR｜151｜CardScope');
+  assert.equal(title({ kind: 'card', name: '皮卡丘', original: 'ピカチュウ', number: '025/165', rarity: 'RR', series: '151' }), '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
   assert.equal(title({ kind: 'collection' }), '我的收藏｜CardScope');
   assert.equal(title({ kind: 'about' }), '資料收錄狀態｜CardScope');
 });
@@ -75,7 +75,7 @@ test('the page kinds produce distinct titles from real page state', () => {
   h.run("document.body.dataset.view='';game='pokemon'");
   h.modal.open = true;
   h.run("detailTitleInfo={name:'皮卡丘',original:'ピカチュウ',number:'025/165',rarity:'RR',series:'151'}");
-  record('card detail', '皮卡丘（ピカチュウ）025/165 RR｜151｜CardScope');
+  record('card detail', '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
   assert.equal(seen.size, 7);
 });
 

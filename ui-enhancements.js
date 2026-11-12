@@ -278,7 +278,7 @@ function pageTitleFor(view){
   if(v.kind==='collection')return `我的收藏｜${TITLE_SITE}`;
   if(v.kind==='about')return `資料收錄狀態｜${TITLE_SITE}`;
   if(v.kind==='search'&&text(v.query))return `「${text(v.query)}」搜尋結果｜${TITLE_SITE}`;
-  if(v.kind==='card'&&text(v.name)){const head=text(v.name)+(text(v.original)?`（${text(v.original)}）`:''),tail=[text(v.number),text(v.rarity)].filter(Boolean).join(' '),first=tail?`${head}${text(v.original)?'':' '}${tail}`:head;/* 「）」後面直接接卡號，與文案 {name}（{original}）{number} {rarity} 一致 */return [first,text(v.series),TITLE_SITE].filter(Boolean).join('｜')}
+  if(v.kind==='card'&&text(v.name)){const head=text(v.name)+(text(v.original)?`（${text(v.original)}）`:''),tail=[text(v.number),text(v.rarity)].filter(Boolean).join(' '),first=[head,tail].filter(Boolean).join(' ');/* 與 providers/seo.mjs 的 cardSeo 相同：名稱段與卡號稀有度之間一個空格 */return [first,text(v.series),TITLE_SITE].filter(Boolean).join('｜')}
   if(v.kind==='series'&&text(v.name)){const count=Number(v.count),place=`${text(v.region)}${text(v.game)}${Number.isFinite(count)&&count>0?`・共 ${count} 張`:''}`;return `${text(v.name)} 卡表｜${place}｜${TITLE_SITE}`}
   if((v.kind==='game'||v.kind==='series')&&text(v.game))return gameTitle;
   return `${TITLE_SITE}｜TCG 卡牌圖鑑`;
