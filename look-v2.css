@@ -141,3 +141,48 @@ html.look-clean body[data-view] .card-reference{min-height:var(--btn-h);align-it
 }
 html[data-cs-paused] body[data-view] *{transition-duration:.01ms!important}
 html[data-cs-paused] body[data-view] :is(button,summary,#go):active{transform:none!important}
+
+/* ===== 8. 首頁「最新｜最夯｜最熱」（home-rails.js；分段按鈕沿用第 4 節的 .view-switch）與手機頂欄比例 ===== */
+body:not([data-view="landing"]) #homeRails{display:none}
+.home-rails{margin:var(--s6,32px) 0 0}
+/* 先保留面板高度，資料到了再填，下面的內容不會被推動；等「最熱」回來才決定預設分頁的那一瞬間先藏起來，免得先亮最新再跳 */
+.home-rails .rails-panels{min-height:380px;margin-top:var(--s4,16px)}
+.home-rails[data-pending] .rails-panels{visibility:hidden}
+html.look-clean body[data-view] #homeRails .rails-switch{display:inline-flex;width:auto}
+html.look-clean body[data-view] #homeRails .rails-switch button{min-width:96px;font-size:var(--fs-body)}
+/* 最新面板：原本的 #homeLatest 整塊搬進來，拿掉它自己的卡片底與標題（分頁已經叫「最新」，標題只留給報讀軟體） */
+html.look-clean body[data-view] #homeRails .home-latest{margin:0;padding:0;border:0;border-radius:0;background:none}
+html.look-clean body[data-view] #homeRails #homeLatestTitle{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.rails-head{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--s3,12px)}
+.rails-head h3{margin:0;font-size:20px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
+.rails-head .meta{font-size:var(--fs-sub);color:var(--v2-ink-2)}
+.rails-rail{display:flex;gap:12px;overflow-x:auto;padding:8px 4px 14px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.rails-note{margin:0;padding:24px 0;color:var(--v2-ink-2);font-size:15px}
+/* 卡片：沿用漲跌榜的 trend-card 結構，外觀換成紙片（白底＋暖色淡陰影，不描框） */
+html.look-clean body[data-view] #homeRails .trend-card{display:block;flex:0 0 190px;width:190px;min-width:0;padding:10px;border:0;border-radius:15px;background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font:inherit;text-align:left;cursor:pointer;scroll-snap-align:start;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+html.look-clean body[data-view] #homeRails .trend-card:active{transform:scale(.97)}
+html.look-clean body[data-view] #homeRails .trend-card:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+html.look-clean body[data-view] #homeRails .trend-image{height:170px;border:0;border-radius:10px;background:var(--v2-page)}
+html.look-clean body[data-view] #homeRails .trend-card-head{align-items:flex-start;gap:6px;margin-top:8px}
+html.look-clean body[data-view] #homeRails .trend-card-head>b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:15px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
+/* 漲幅標籤：文字有 ↑ 與正號，不只靠顏色；台灣慣例紅漲 */
+html.look-clean body[data-view] #homeRails .trend-rise{flex:none;padding:2px 6px;border-radius:6px;background:#FBEDEB;color:#C4000F;clip-path:none;font-family:inherit;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+html.look-clean body[data-view] #homeRails .trend-card-number{color:var(--v2-ink-2);font-variant-numeric:tabular-nums}
+html.look-clean body[data-view] #homeRails .trend-card>strong{display:block;margin-top:6px;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink)}
+html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margin-top:2px;font-size:var(--fs-note);line-height:1.5;color:var(--v2-ink-2);overflow-wrap:anywhere}
+@media (hover:hover) and (pointer:fine){html.look-clean body[data-view] #homeRails .trend-card:hover{box-shadow:var(--v2-shadow-up)}}
+/* 最熱還沒有資料：兔子＋一句話，安靜不搶眼 */
+.rails-empty{display:grid;justify-items:center;gap:8px;padding:28px 0 20px;text-align:center}
+.rails-empty img{display:block;width:128px;height:auto}
+.rails-empty p{margin:0;color:var(--v2-ink-2);font-size:15px}
+@media (max-width:760px){
+  html.look-clean body[data-view] #homeRails .rails-switch{display:flex;width:100%}
+  html.look-clean body[data-view] #homeRails .rails-switch button{flex:1 1 0;min-width:0}
+  .home-rails .rails-panels{min-height:340px}
+  html.look-clean body[data-view] #homeRails .trend-card{flex-basis:150px;width:150px}
+  html.look-clean body[data-view] #homeRails .trend-image{height:140px}
+  /* 手機頂欄：遊戲／版本兩個選單收到版本 2 個字、遊戲 3 個字（觸控裝置的選單字必須 16px，防 iOS 放大頁面）（點開的清單仍是全名），把寬度還給搜尋框（375px 下輸入框從約 2 個字增到 6 個字以上） */
+  html.look-clean body[data-view] #mobileHeaderScope select{width:2.5em;text-overflow:ellipsis}
+  html.look-clean body[data-view] #mobileHeaderScope #mobileGameSelect{width:3em}
+  html.look-clean body[data-view] header.top .search input{padding:0 12px}
+}
