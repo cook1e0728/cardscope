@@ -209,7 +209,7 @@ async function retryBrowse(page){
 }
 
 // Tab through the page: every stop is visible and a solid focus outline reaches 3:1 against what is behind it (WCAG 2.4.7, 1.4.11).
-// shortcut: compares against the nearest opaque ancestor background, so rings drawn over images or gradients are not measured.
+// shortcut: compares against the nearest opaque ancestor background (its ::before first, e.g. the dark .hero::before panel), so rings drawn over images or gradients are not measured.
 async function assertFocusRings(page,label,stops=45){
   const failures=[];
   for(let index=0;index<stops;index+=1){
@@ -224,7 +224,7 @@ async function assertFocusRings(page,label,stops=45){
       const rgb=value=>(String(value).match(/[\d.]+/g)||[]).map(Number);
       const luminance=([r,g,b])=>[r,g,b].map(channel=>{channel/=255;return channel<=0.03928?channel/12.92:((channel+0.055)/1.055)**2.4}).reduce((sum,channel,i)=>sum+channel*[0.2126,0.7152,0.0722][i],0);
       let node=parseFloat(style.outlineOffset)<0?element:element.parentElement,background=[255,255,255];
-      for(;node;node=node.parentElement){const color=rgb(getComputedStyle(node).backgroundColor);if(color.length&&(color[3]===undefined||color[3]>0.5)){background=color;break}}
+      for(;node;node=node.parentElement){const before=getComputedStyle(node,'::before'),layers=[before.content!=='none'?before.backgroundColor:'',getComputedStyle(node).backgroundColor],color=layers.map(rgb).find(value=>value.length&&(value[3]===undefined||value[3]>0.5));if(color){background=color;break}}
       const [high,low]=[luminance(rgb(style.outlineColor)),luminance(background)].sort((a,b)=>b-a);
       const ratio=(high+0.05)/(low+0.05);
       return ratio<3?`${name} focus ring ${ratio.toFixed(2)}:1`:null;
