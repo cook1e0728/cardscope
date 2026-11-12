@@ -1,6 +1,6 @@
 // PWA shell cache. Network-first so a deploy is never hidden behind an old copy; the cache is only the offline fallback.
 // Only same-origin GET of the static shell is stored: never /api/*, never third-party card images.
-const VERSION = 'cardscope-shell-v1';
+const VERSION = 'cardscope-shell-v2';
 const SHELL_URLS = ['/', '/assets/brand/web/rabbit-offline.webp', '/assets/brand/web/pwa-icon-192.png'];
 const SHELL_PATH = /^\/(?:[a-z0-9-]+\.(?:js|css)|assets\/brand\/web\/[\w.-]+\.(?:png|webp)|assets\/[\w./-]*\.(?:png|webp|svg|woff2?))$/;
 const OFFLINE_HTML = '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CardScope 離線</title><body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#EDE8DE;color:#16132A;font:16px/1.6 system-ui,\'Noto Sans TC\',sans-serif;text-align:center"><main style="padding:24px"><img src="/assets/brand/web/rabbit-offline.webp" alt="" width="160" style="max-width:50vw;height:auto"><h1 style="font-size:20px;margin:12px 0 6px">目前離線</h1><p style="margin:0">已收藏的卡仍保存在這台裝置。連上網路後再重新整理即可。</p></main>';
@@ -22,9 +22,10 @@ self.addEventListener('fetch', event => {
   const isPage = request.mode === 'navigate';
   if (!isPage && !SHELL_PATH.test(url.pathname)) return;
   // All navigations share the '/' entry: the app is a single-page shell and deep links are resolved client-side.
+  // Only query-less URLs may be stored there: ?game=/?card= pages would otherwise replace the offline home shell.
   const key = isPage ? '/' : request;
   event.respondWith(fetch(request).then(response => {
-    if (response.ok && (!isPage || response.headers.get('content-type')?.includes('text/html'))) { const copy = response.clone(); caches.open(VERSION).then(cache => cache.put(key, copy)); }
+    if (response.ok && (!isPage || (!url.search && response.headers.get('content-type')?.includes('text/html')))) { const copy = response.clone(); caches.open(VERSION).then(cache => cache.put(key, copy)); }
     return response;
   }).catch(async () => (await caches.match(key)) || (isPage ? new Response(OFFLINE_HTML, { headers: { 'Content-Type': 'text/html; charset=utf-8' } }) : Response.error())));
 });
