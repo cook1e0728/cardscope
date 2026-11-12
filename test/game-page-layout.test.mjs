@@ -56,7 +56,7 @@ test('the landing is search first; statistics, health and the purple CTA live on
   assert.match(theme,/body:not\(\[data-view="about"\]\) #coverageStatus/);
   assert.match(theme,/body:not\(\[data-view="about"\]\) \.brand-showcase/);
   assert.match(theme,/body\[data-view="landing"\] section\.section:has\(> #series\)/,'the empty 商品圖鑑 frame is gone from the landing');
-  assert.match(theme,/body\[data-view="landing"\]:not\(:has\(#cardsSection\.has-results\)\) \.top \.search\{display:none\}/,'one visible search box at a time; search results (has-results) get the top-bar box back');
+  assert.match(theme,/body\[data-view="landing"\]:where\(:not\(:has\(#cardsSection\.has-results\)\)\) \.top \.search\{display:none\}/,'one visible search box at a time; search results (has-results) get the top-bar box back');
 });
 test('loading shows grey card-shaped skeletons and results scroll below the sticky header',()=>{
   assert.match(html,/class="sk-card"/);

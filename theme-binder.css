@@ -221,7 +221,7 @@ body[data-view="game"] section.section:has(> #series),body[data-view="game"] .br
 /* Views: landing = search first; game = band + cards; about = data status (coverage, health, guidance moved out of the landing). */
 .about-intro,.cards-mode[hidden]{display:none}
 /* 首頁主視覺有大搜尋框所以頂欄的收起來；但搜尋結果（#cardsSection.has-results）仍是 data-view=landing，頂欄要有搜尋框才能改搜 */
-body[data-view="landing"]:not(:has(#cardsSection.has-results)) .top .search{display:none}
+body[data-view="landing"]:where(:not(:has(#cardsSection.has-results))) .top .search{display:none}
 body[data-view="landing"] #cardsSection:not(.has-results),body[data-view="landing"] section.section:has(> #series),body[data-view="about"] section.section:has(> #series),body[data-view="privacy"] section.section:has(> #series){display:none}
 body:not([data-view="about"]) .beta-guidance,body:not([data-view="about"]) #coverageStatus,body:not([data-view="about"]) #catalogHealth,body:not([data-view="about"]) .brand-showcase,body:not([data-view="about"]) #status{display:none}
 body[data-view="about"] .hero,body[data-view="about"] #cardsSection,body[data-view="about"] #trendsSection,body[data-view="about"] #selectedProduct,body[data-view="privacy"] .hero,body[data-view="privacy"] #cardsSection,body[data-view="privacy"] #trendsSection,body[data-view="privacy"] #selectedProduct{display:none}

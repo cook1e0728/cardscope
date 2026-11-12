@@ -98,7 +98,7 @@ test('F1: 整頁只有一個 h1（.hero-intro），其餘兩個改成 h2 且樣�
 });
 
 test('D1: 搜尋結果（#cardsSection.has-results）不套用首頁版面的「隱藏頂欄搜尋框」', () => {
-  assert.match(theme, /body\[data-view="landing"\]:not\(:has\(#cardsSection\.has-results\)\) \.top \.search\{display:none\}/);
+  assert.match(theme, /body\[data-view="landing"\]:where\(:not\(:has\(#cardsSection\.has-results\)\)\) \.top \.search\{display:none\}/);
   assert.doesNotMatch(theme, /\r?\nbody\[data-view="landing"\] \.top \.search\{display:none\}/, '舊的無條件規則已移除');
   assert.match(html, /\$\('cardsSection'\)\?\.classList\.add\('has-results'\)/, '搜尋時加上 has-results');
   assert.match(html, /\$\('cardsSection'\)\?\.classList\.remove\('has-results'\)/, '回到首頁時移除');
