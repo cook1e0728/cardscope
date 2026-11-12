@@ -3,8 +3,8 @@
 
 export const SITE_NAME = 'CardScope';
 export const DEFAULT_BASE_URL = 'https://cardscope.onrender.com';
-export const DEFAULT_IMAGE_PATH = '/assets/brand/web/rabbit-hero.webp';
-export const DEFAULT_IMAGE_SIZE = { width: 860, height: 860 };
+export const DEFAULT_IMAGE_PATH = '/assets/brand/web/og-default-1200x630.png';
+export const DEFAULT_IMAGE_SIZE = { width: 1200, height: 630 };
 export const SITEMAP_MAX_URLS = 40000;
 
 const GAME_NAMES = { pokemon: '寶可夢', onepiece: '航海王', yugioh: '遊戲王', haikyuu: '排球少年', 'weiss-schwarz': 'Weiß Schwarz', 'dragonball-fw': '七龍珠超 Fusion World' };
@@ -35,9 +35,10 @@ export function normalizeBaseUrl(value) {
 }
 
 // Canonical URLs keep only the identity parameters: the same card or series is one page however it was reached.
-export function canonicalUrl(baseUrl, { game, card, series, region } = {}) {
+export function canonicalUrl(baseUrl, { game, card, series, region, view } = {}) {
   const base = normalizeBaseUrl(baseUrl), params = new URLSearchParams();
-  if (game) params.set('game', game);
+  if (view) params.set('view', view);
+  else if (game) params.set('game', game);
   if (card) params.set('card', card);
   else if (series) { params.set('series', series); if (region) params.set('region', region); }
   const query = params.toString();
@@ -92,7 +93,8 @@ export function cardSeo({ card, series = null, game = null, baseUrl = DEFAULT_BA
   let rarity = rawRarity && rawRarity.toUpperCase() !== 'NONE' ? pickFirst(rarityLabel(gameId, rawRarity), printing?.rarityLabel, rawRarity) : '';
   if (rarity.toUpperCase() === 'NONE') rarity = '';
   const seriesLabel = seriesName(series), edition = [region, setCode, number].filter(Boolean).join(' ');
-  const title = `${[names.primary, rarity].filter(Boolean).join(' ')}｜${edition ? `${edition}｜` : ''}${SITE_NAME}`;
+  // 照人實際會搜的詞：{名稱}（{原文名}）{卡號} {稀有度}｜{系列}｜CardScope，缺的部分整段略過。
+  const title = [[`${names.primary}${names.alternate ? `（${names.alternate}）` : ''}`, number, rarity].filter(Boolean).join(' '), seriesLabel, SITE_NAME].filter(Boolean).join('｜');
   const intro = `${names.primary}${names.alternate ? `（${names.alternate}）` : ''}是${gameLabel}卡牌`;
   const where = seriesLabel ? `，收錄於${region}「${seriesLabel}」${setCode ? `${setCode} ` : ''}系列` : edition ? `，${edition}` : '';
   const details = [number ? `卡號 ${number}` : '', rarity ? `稀有度 ${rarity}` : '', printings.length ? `共整理 ${printings.length} 個版本` : ''].filter(Boolean).join('，');
@@ -121,13 +123,25 @@ export function homeSeo({ gameId = '', baseUrl = DEFAULT_BASE_URL } = {}) {
   };
 }
 
+// ?view=about／?view=privacy：站內說明頁各有自己的標題與 canonical（privacy 頁面本身由別的工作包加入）。
+export const VIEW_PAGES = {
+  about: { title: `資料收錄狀態｜${SITE_NAME}`, description: 'CardScope 各遊戲的收錄張數、欄位完整度與資料更新時間，公開說明卡牌資料的來源與缺口。' },
+  privacy: { title: `隱私說明｜${SITE_NAME}`, description: 'CardScope 不需登入、不放追蹤碼；收藏只存在你的瀏覽器，這裡說明站上蒐集與不蒐集哪些資料。' }
+};
+export function viewSeo({ view = '', baseUrl = DEFAULT_BASE_URL } = {}) {
+  const page = Object.hasOwn(VIEW_PAGES, view) ? VIEW_PAGES[view] : null;
+  if (!page) return null;
+  const base = normalizeBaseUrl(baseUrl);
+  return { kind: 'home', ...page, canonical: canonicalUrl(base, { view }), image: defaultImage(base), imageAlt: `${SITE_NAME} 標誌`, imageIsCardArt: false, jsonLd: [], summary: null };
+}
+
 export function seriesSeo({ series, game = null, baseUrl = DEFAULT_BASE_URL, printingCount = null } = {}) {
   if (!series?.id) return null;
   const base = normalizeBaseUrl(baseUrl), label = seriesName(series);
   if (!label) return null;
   const gameId = series.game || game?.id || '', gameLabel = gameName(gameId, game), region = regionLabel(series.region), code = text(series.officialCode);
-  const title = `${label}${code && code !== label ? ` ${code}` : ''}｜${gameLabel}${region}系列卡表｜${SITE_NAME}`;
   const release = text(series.releaseDate).slice(0, 10), count = Number(printingCount);
+  const title = [`${label} 卡表`, `${region}${gameLabel}${Number.isFinite(count) && count > 0 ? `・共 ${count} 張` : ''}`, SITE_NAME].filter(Boolean).join('｜');
   const facts = [release ? `發售日 ${release}` : '', Number.isFinite(count) && count > 0 ? `共收錄 ${count} 個卡片版本` : ''].filter(Boolean).join('，');
   const description = describe(`${label}${code && code !== label ? `（${code}）` : ''}是${gameLabel}${region}的卡牌系列${facts ? `，${facts}` : ''}。`);
   const canonical = canonicalUrl(base, { game: gameId || undefined, series: series.id, region: text(series.region) || undefined });
@@ -151,8 +165,8 @@ export function seoHeadTags(seo) {
     metaTag('property', 'og:image', seo.image), metaTag('property', 'og:image:alt', seo.imageAlt)
   ];
   if (!seo.imageIsCardArt) tags.push(metaTag('property', 'og:image:width', DEFAULT_IMAGE_SIZE.width), metaTag('property', 'og:image:height', DEFAULT_IMAGE_SIZE.height));
-  // Card art is portrait, so the small "summary" card avoids a bad crop; the square logo fits it too.
-  tags.push(metaTag('name', 'twitter:card', 'summary'), metaTag('name', 'twitter:title', seo.title), metaTag('name', 'twitter:description', seo.description), metaTag('name', 'twitter:image', seo.image), metaTag('name', 'twitter:image:alt', seo.imageAlt));
+  // Card art is portrait, so the small "summary" card avoids a bad crop; the default image is landscape 1200x630 and fits the large card.
+  tags.push(metaTag('name', 'twitter:card', seo.imageIsCardArt ? 'summary' : 'summary_large_image'), metaTag('name', 'twitter:title', seo.title), metaTag('name', 'twitter:description', seo.description), metaTag('name', 'twitter:image', seo.image), metaTag('name', 'twitter:image:alt', seo.imageAlt));
   for (const data of seo.jsonLd || []) tags.push(jsonLdScript(data));
   return tags.join('');
 }
@@ -164,7 +178,9 @@ export function seoNoscript(seo) {
   return `<noscript><section aria-label="${escapeHtml(seo.kind === 'card' ? '卡片摘要' : '系列摘要')}"><h2>${escapeHtml(seo.summary.heading)}</h2><ul>${items}</ul></section></noscript>`;
 }
 
-const SEO_HEAD_META = /<meta\b[^>]*\b(?:name|property)\s*=\s*["'](?:description|og:title|og:description|og:url|og:image[^"']*|twitter:[^"']*)["'][^>]*>/gi;
+// The page's single hero <h1> (inside .hero-intro) carries the card or series name; the other headings are not touched.
+const HERO_H1 = /(<div\b[^>]*\bclass\s*=\s*["'][^"']*\bhero-intro\b[^"']*["'][^>]*>\s*<h1\b[^>]*>)[\s\S]*?(<\/h1>)/i;
+const SEO_HEAD_META =/<meta\b[^>]*\b(?:name|property)\s*=\s*["'](?:description|og:title|og:description|og:url|og:image[^"']*|twitter:[^"']*)["'][^>]*>/gi;
 const CANONICAL_LINK = /<link\b[^>]*\brel\s*=\s*["']canonical["'][^>]*>/gi;
 
 // Function replacers throughout: card names may contain "$&" and the like, which a string replacement would interpret.
@@ -175,6 +191,7 @@ export function applySeoToHtml(html, seo) {
   out = /<title\b[^>]*>[\s\S]*?<\/title>/i.test(out) ? out.replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, () => title) : out.replace(/<\/head>/i, () => `${title}</head>`);
   out = out.replace(/<\/head>/i, () => `${seoHeadTags(seo)}</head>`);
   out = out.replace(/<body\b[^>]*>/i, match => `${match}${seoNoscript(seo)}`);
+  if (seo.summary?.heading) out = out.replace(HERO_H1, (_, open, close) => `${open}${escapeHtml(seo.summary.heading)}${close}`);
   return out;
 }
 
@@ -207,7 +224,7 @@ export function chunkEntries(entries, size = SITEMAP_MAX_URLS) {
 
 export function pageSitemapEntries(baseUrl, gameIds) {
   const base = normalizeBaseUrl(baseUrl);
-  return [{ loc: `${base}/` }, ...gameIds.map(game => ({ loc: canonicalUrl(base, { game }) }))];
+  return [{ loc: `${base}/` }, ...gameIds.map(game => ({ loc: canonicalUrl(base, { game }) })), ...Object.keys(VIEW_PAGES).map(view => ({ loc: canonicalUrl(base, { view }) }))];
 }
 
 // Rows are physical cards (id, canonical_id, game_id, updated_at, names). Linked cards share one canonical page, so one URL per

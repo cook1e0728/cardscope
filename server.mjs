@@ -20,7 +20,7 @@ import { normalizeProduct } from './providers/products.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
-import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries } from './providers/seo.mjs';
+import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo } from './providers/seo.mjs';
 
 const nativeFetch = globalThis.fetch;
 const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
@@ -64,11 +64,13 @@ const trendCache = {data:null,expiresAt:0,promise:null};
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.webmanifest':'application/manifest+json'};
 // 只公開前端需要的檔案：根目錄的 .js／.css／index.html、assets/、前端讀的兩個 data 檔；server.mjs、providers、docs 等一律 404。
 const PUBLIC_STATIC=/^\/(?:[a-z0-9-]+\.(?:js|css)|manifest\.webmanifest|index\.html|googlefb9a9f93e94c056f\.html|assets\/(?:[\w.-]+\/)*[\w.-]+\.(?:png|jpe?g|webp|svg|ico|woff2?)|data\/(?:rarity-rankings|game-taxonomy)\.json)$/;
-const SECURITY_HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'SAMEORIGIN','Strict-Transport-Security':'max-age=15552000'};
+const SECURITY_HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'SAMEORIGIN','Strict-Transport-Security':'max-age=15552000','Permissions-Policy':'camera=(), microphone=(), geolocation=(), gyroscope=(self), accelerometer=(self)','Cross-Origin-Opener-Policy':'same-origin'};
+// 感測器留給自己：look-effects.js 的手機傾斜卡片要讀 device orientation／motion。
 // 強制：script-src 只允許同源 .js 與 index.html 內 inline <script> 的 SHA-256（啟動時由檔案算出，不用 nonce：nonce 會與 ETag 304、service worker 快取的舊頁對不上）；沒有 unsafe-inline、也沒有 inline 事件屬性（script-src-attr 'none'，改用 ui-actions.js 的事件委派）。擋的是外部腳本、未列出的圖片主機、被嵌入框架。新增卡圖來源時要把主機加進 img-src，否則圖片會被擋；改 index.html 的 inline script 不必動這裡，重啟即重算。
 const inlineScripts=html=>[...html.matchAll(/<script(?![^>]*\s(?:src|type)=)[^>]*>([\s\S]*?)<\/script>/g)].map(match=>match[1]);
 const INLINE_SCRIPT_SOURCES=(()=>{try{return inlineScripts(readFileSync(join(root,'index.html'),'utf8')).map(code=>`'sha256-${createHash('sha256').update(code).digest('base64')}'`)}catch{return[]}})();
 const CSP=`default-src 'self'; script-src 'self' ${INLINE_SCRIPT_SOURCES.join(' ')}; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://www.pokemon-card.com https://asia.pokemon-card.com https://images.pokemontcg.io https://*.supabase.co https://*.onepiece-cardgame.com https://assets.tcgdex.net https://images.ygoprodeck.com https://images.scrydex.com https://ws-tcg.com https://en.ws-tcg.com https://www.takaratomy.co.jp https://www.dbs-cardgame.com https://www.db.yugioh-card.com https://product-images.tcgplayer.com; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'`;
+const API_CSP="default-src 'none'";
 // 目錄類回應每份 1–3 MB：讓瀏覽器 1 分鐘內重用、5 分鐘內先用舊的再背景更新，免得每次換頁重抓。
 const SHORT_CACHE={'Cache-Control':'public, max-age=60, stale-while-revalidate=300'};
 const json = (res,status,body,headers={})=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});res.end(JSON.stringify(body));};
@@ -736,10 +738,10 @@ function adminAuthorized(req){
 }
 // 公開 API 每個 IP 每分鐘的上限；卡圖一頁就有幾十張，另算一個寬鬆的額度。
 const apiLimiter=createRateLimiter({limit:Number(process.env.API_RATE_LIMIT_PER_MINUTE||240)}),imageLimiter=createRateLimiter({limit:Number(process.env.IMAGE_RATE_LIMIT_PER_MINUTE||1200)});
-// 正式站在 Cloudflare 後面，只有這個標頭無法由訪客偽造（X-Forwarded-For 的第一段可以）。沒有這個標頭時不限流，避免所有人共用同一個額度。
+// 正式站在 Cloudflare 後面，只有這個標頭無法由訪客偽造（X-Forwarded-For 的第一段可以）。沒有這個標頭時（有人繞過 Cloudflare 直連源站）退回用 TCP 連線對端 IP（socket.remoteAddress，同樣無法偽造，每個直連 client 各自計一組額度）；絕不信 X-Forwarded-For。
 function rateLimited(req,pathname){
-  const ip=req.headers['cf-connecting-ip'];
-  if(!ip||!pathname.startsWith('/api/')||pathname==='/api/catalog/health'||adminAuthorized(req))return false;
+  const ip=req.headers['cf-connecting-ip']||req.socket?.remoteAddress;
+  if(!ip||!pathname.startsWith('/api/')||adminAuthorized(req))return false;
   return !(pathname.startsWith('/api/images/')?imageLimiter:apiLimiter)(ip);
 }
 async function loadAdminCatalogHealth(){
@@ -1283,12 +1285,15 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(url.pathname==='/api/admin/price-archive/run'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const result=await priceArchive.runNow();return json(res,result.started?202:409,{data:result})}
   if(url.pathname==='/api/admin/price-snapshot/stop'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});return json(res,200,{data:priceSnapshot.stop()})}
   if(url.pathname==='/api/admin/catalog/sync'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const requested=(url.searchParams.get('provider')||'all').toLowerCase(),aliases={pokemontw:'pokemonZhTw',pokemonzh:'pokemonZhTw',weissfrieren:'weissFrieren',frieren:'weissFrieren',dragonball:'dragonballFw',dbs:'dragonballFw',yugiohjp:'yugiohJp',neuron:'yugiohJp'},selected=aliases[requested]||requested,tcgdexTw=process.env.TCGDEX_TW_SYNC==='true',candidates=requested==='all'?['pokemon',...(tcgdexTw?['pokemonZhTw']:[]),'onepiece','yugioh','haikyuu','weissFrieren','dragonballFw','yugiohJp']:[selected];if(candidates.some(p=>!['pokemon','pokemonZhTw','onepiece','yugioh','haikyuu','weissFrieren','dragonballFw','yugiohJp'].includes(p)))return json(res,400,{error:'不支援的 provider'});if(candidates.includes('pokemonZhTw')&&!tcgdexTw)return json(res,409,{error:'TCGdex 台版同步會覆寫台灣官方補正的資料，需設定 TCGDEX_TW_SYNC=true 才能執行'});const providers=filterAllowedCatalogProviders(candidates),blocked=candidates.filter(provider=>!providers.includes(provider));if(!providers.length)return json(res,409,{error:'所選來源尚未通過來源政策',blocked});syncCatalog(supabaseFetch,{providers}).then(result=>console.log('catalog sync complete',JSON.stringify(result))).catch(error=>console.error('catalog sync failed',error));return json(res,202,{data:{message:'Catalog 同步已在背景開始',providers,blocked}})}
+  // 聯絡方式是佔位（SITE_IMPROVEMENT_PLAN 決定 5 拍板後換成真正的信箱）。
+  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/.well-known/security.txt'){res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});return res.end(`# Contact is a placeholder pending decision 5 (a real address will replace it).\nContact: ${PUBLIC_BASE_URL}/?view=about\nExpires: ${new Date(Date.now()+365*86400000).toISOString()}\nPreferred-Languages: zh-TW, en\nCanonical: ${PUBLIC_BASE_URL}/.well-known/security.txt\n`)}
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/robots.txt'){res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});return res.end(renderRobotsTxt(PUBLIC_BASE_URL))}
   if((req.method==='GET'||req.method==='HEAD')&&(url.pathname==='/sitemap.xml'||/^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname)))return serveSitemap(res,url.pathname);
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/'){const seoTarget=seoRequestTarget(url);if(seoTarget)return serveSeoIndex(res,seoTarget)}
   let pathname=url.pathname==='/'?'/index.html':url.pathname;if(!PUBLIC_STATIC.test(pathname))return notFound(res,url.pathname);const file=normalize(join(root,pathname));if(!file.startsWith(root))return json(res,403,{error:'Forbidden'});try{const raw=await readFile(file),ext=extname(file),game=url.searchParams.get('game'),
     // 首頁與遊戲頁補 canonical／og:image／遊戲專屬標題（index.html 是靜態檔）；帶 view 的子頁維持原樣。
-    content=url.pathname==='/'&&!url.searchParams.has('view')?applySeoToHtml(raw.toString('utf8'),homeSeo({gameId:CATALOG_GAME_IDS.has(game)?game:'',baseUrl:PUBLIC_BASE_URL})):raw,headers={'Content-Type':types[ext]||'application/octet-stream'};
+    // ?view=about／privacy 有自己的標題與 canonical；其他 view 值維持原樣。
+    seo=url.pathname!=='/'?null:url.searchParams.has('view')?viewSeo({view:url.searchParams.get('view'),baseUrl:PUBLIC_BASE_URL}):homeSeo({gameId:CATALOG_GAME_IDS.has(game)?game:'',baseUrl:PUBLIC_BASE_URL}),content=seo?applySeoToHtml(raw.toString('utf8'),seo):raw,headers={'Content-Type':types[ext]||'application/octet-stream'};
     // html/js/css: always revalidate (no-cache) with a content ETag, so a deploy reaches browsers at once and an unchanged file is a 304. Images keep their existing handling.
     if(['.html','.js','.css','.webmanifest'].includes(ext)){const etag=`"${createHash('sha1').update(content).digest('hex')}"`;headers['Cache-Control']='no-cache';headers.ETag=etag;if(String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}
     res.writeHead(200,headers);res.end(content)}catch{notFound(res,url.pathname)}
@@ -1297,7 +1302,8 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
 const server=createServer((req,res)=>{
   // 先設在 res 上，每一種回應（SEO 頁、sitemap、robots、圖片代理、404、錯誤）寫標頭時都會帶上，不必各處手寫。
   for(const [name,value] of Object.entries(SECURITY_HEADERS))res.setHeader(name,value);
-  if(!String(req.url).startsWith('/api/'))res.setHeader('Content-Security-Policy',CSP);
+  // API 與圖片代理的回應不會被當頁面執行：default-src 'none'（圖片本身不受影響，頁面 <img> 看的是頁面自己的 CSP）。
+  res.setHeader('Content-Security-Policy',String(req.url).startsWith('/api/')?API_CSP:CSP);
   handleRequest(req,res).catch(error=>{
   const badInput=error instanceof URIError||error?.code==='ERR_INVALID_URL';
   if(!badInput)console.error('request failed',req.method,String(req.url).slice(0,200),error?.stack||error);

@@ -183,15 +183,52 @@ test('card list, search and detail answers can be cached for a minute; errors an
   });
 });
 
-test('public API is limited per Cloudflare client IP; health, admin and direct requests are not',async()=>{
+test('public API is limited per Cloudflare client IP, falls back to the socket address without the header, and exempts only admin requests',async()=>{
   await withServer('limit',{env:{API_RATE_LIMIT_PER_MINUTE:'2',SCRAPE_SECRET:'admin-secret'}},async base=>{
-    const hit=(path,headers={})=>fetch(base+path,{headers:{'cf-connecting-ip':'198.51.100.1',...headers}}).then(res=>res.status);
-    assert.deepEqual([await hit('/api/catalog/sources'),await hit('/api/catalog/sources')],[200,200]);
-    assert.equal(await hit('/api/catalog/sources'),429);
-    assert.equal(await hit('/api/catalog/sources',{'cf-connecting-ip':'198.51.100.2'}),200);
-    assert.equal(await hit('/api/catalog/health'),200);
+    const hit=(path,headers={})=>fetch(base+path,{headers}).then(res=>res.status),cf=(ip,extra={})=>({'cf-connecting-ip':ip,...extra});
+    // header present: one counter per client IP
+    assert.deepEqual([await hit('/api/catalog/sources',cf('198.51.100.1')),await hit('/api/catalog/sources',cf('198.51.100.1'))],[200,200]);
+    assert.equal(await hit('/api/catalog/sources',cf('198.51.100.1')),429);
+    assert.equal(await hit('/api/catalog/sources',cf('198.51.100.2')),200);
+    // health is limited like every other API route (it used to be exempt)
+    assert.equal(await hit('/api/catalog/health',cf('198.51.100.1')),429);
+    // admin key: never limited
+    for(let i=0;i<4;i++)assert.equal(await hit('/api/catalog/sources',cf('198.51.100.1',{'x-scrape-token':'admin-secret'})),200);
+    assert.equal(await hit('/api/catalog/sources',cf('198.51.100.1',{'x-scrape-token':'wrong'})),429,'a wrong key is not admin');
+    // header absent: counted by the TCP peer address, and a spoofed X-Forwarded-For does not help
+    assert.deepEqual([await hit('/api/catalog/sources'),await hit('/api/catalog/sources',{'x-forwarded-for':'203.0.113.9'})],[200,200]);
+    assert.equal(await hit('/api/catalog/sources',{'x-forwarded-for':'203.0.113.10'}),429);
+    assert.equal(await hit('/api/catalog/health'),429);
     assert.equal(await hit('/api/catalog/sources',{'x-scrape-token':'admin-secret'}),200);
-    assert.equal((await fetch(base+'/api/catalog/sources')).status,200);
+    // non-API pages are never limited
+    assert.equal(await hit('/'),200);
+  });
+});
+
+test('every response carries Permissions-Policy (sensors left to the site) and COOP; API answers carry CSP default-src none',async()=>{
+  await withServer('headers',{},async base=>{
+    for(const path of ['/','/robots.txt','/.well-known/security.txt','/no-such-file','/api/providers','/api/images/onepiece','/api/no-such-route']){
+      const res=await fetch(base+path),policy=res.headers.get('permissions-policy');
+      assert.equal(policy,'camera=(), microphone=(), geolocation=(), gyroscope=(self), accelerometer=(self)',path);
+      assert.equal(res.headers.get('cross-origin-opener-policy'),'same-origin',path);
+      const csp=res.headers.get('content-security-policy');
+      assert.equal(path.startsWith('/api/')?csp==="default-src 'none'":csp.includes("script-src 'self'"),true,path+' '+csp);
+    }
+  });
+});
+
+test('/.well-known/security.txt is plain text with a placeholder contact, a year-out expiry and the languages',async()=>{
+  await withServer('security-txt',{env:{PUBLIC_BASE_URL:'https://example.test'}},async base=>{
+    const res=await fetch(base+'/.well-known/security.txt'),body=await res.text();
+    assert.equal(res.status,200);
+    assert.match(res.headers.get('content-type'),/^text\/plain/);
+    assert.match(body,/^Contact: https:\/\/example\.test\/\?view=about$/m);
+    assert.match(body,/^Preferred-Languages: zh-TW, en$/m);
+    assert.match(body,/^# .*placeholder.*decision 5/m);
+    const expires=Date.parse(body.match(/^Expires: (.+)$/m)[1]);
+    assert.ok(expires>Date.now()+360*86400000&&expires<Date.now()+370*86400000);
+    assert.equal((await fetch(base+'/.well-known/security.txt',{method:'HEAD'})).status,200);
+    assert.equal((await fetch(base+'/.well-known/other')).status,404);
   });
 });
 
