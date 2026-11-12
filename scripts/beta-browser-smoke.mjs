@@ -477,7 +477,8 @@ try{
     assert.ok(await zoomed.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'200% zoom: game page overflows sideways');
     await zoomed.locator('#cards .card-open-hit[data-card-open]').first().click();
     await waitForVisible(zoomed.locator('#modal.open .detail'),'200% zoom: card detail did not open');
-    const closeHit=await zoomed.evaluate(()=>{const box=document.getElementById('close').getBoundingClientRect();return box.top>=0&&box.bottom<=innerHeight&&document.elementFromPoint(box.left+box.width/2,box.top+box.height/2)?.closest('#close')!==null});
+    // 開卡有 View Transition（look-effects.js）：轉場期間 elementFromPoint 只拿到 <html>，所以等最多 3 秒讓它結束再量。
+    const closeHit=await zoomed.waitForFunction(()=>{const box=document.getElementById('close').getBoundingClientRect();return box.top>=0&&box.bottom<=innerHeight&&document.elementFromPoint(box.left+box.width/2,box.top+box.height/2)?.closest('#close')!==null},null,{timeout:3000}).then(()=>true,()=>false);
     assert.ok(closeHit,'200% zoom: the detail close button is off screen or covered');
     results.push({viewport:'zoom-200',header:layout.header});
   }finally{await zoomed.close()}
