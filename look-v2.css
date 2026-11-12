@@ -1,0 +1,143 @@
+/* 重新設計 v2 階段 1：設計變數、三種按鈕、ⓘ 說明、字級與點擊區下限（ADR 0056、docs/REDESIGN_PLAN.md 第 3 節）。
+   最後載入、只覆蓋，不改其他檔。首頁夜空展示區（body[data-view="landing"] 的 hero、cs1-*）外觀不動。
+   選擇器一律用 html.look-clean body[data-view] 開頭（--v2 前綴 V2），特異性比 look-clean／look-showcase 高一級，不靠加 !important。 */
+
+/* ===== 1. 設計變數 ===== */
+:root{
+  --v2-page:#F8F5EE;          /* 頁面 */
+  --v2-surface:#FFFFFF;       /* 內容面（卡片、按鈕、輸入內層） */
+  --v2-well:#EFEAE0;          /* 凹陷區（搜尋框外層、分段按鈕的底） */
+  --v2-line:#E7E1D4;          /* 框線：只給可點、可輸入的東西 */
+  --v2-ink:#1F1B16;--v2-ink-2:#5A5348;
+  --v2-shadow:0 1px 2px rgba(60,45,20,.12),0 0 0 1px rgba(60,45,20,.06);                 /* 紙片 */
+  --v2-shadow-up:0 3px 8px rgba(60,45,20,.18),0 0 0 1px rgba(60,45,20,.08);               /* 滑過 */
+  --v2-shadow-in:inset 0 1px 2px rgba(60,45,20,.10);                                      /* 凹槽 */
+  --v2-shadow-pop:0 8px 24px rgba(60,45,20,.18),0 0 0 1px rgba(60,45,20,.06);             /* 浮起的說明面板 */
+  --ease:cubic-bezier(.23,1,.32,1);
+  /* 字四級 */
+  --fs-title:clamp(20px,1.2vw + 14px,28px);--fs-body:16px;--fs-sub:13px;--fs-note:12px;
+  --btn-h:44px;--btn-r:999px;
+}
+
+/* ===== 2. 底色三層：內頁（遊戲、搜尋結果、關於、隱私）用頁面底；首頁展示區不動 ===== */
+html.look-clean body[data-view="game"],html.look-clean body[data-view="about"],html.look-clean body[data-view="privacy"],
+html.look-clean body[data-view="landing"]:has(#cardsSection.has-results){background:var(--v2-page)}
+
+/* ===== 3. 頂欄 ===== */
+/* 底下的紅線／遊戲色線改成淡色細線 */
+html.look-clean body[data-view] header.top{border-bottom:1px solid var(--v2-line)}
+/* 搜尋：凹槽裡放一張白紙（雙層邊，內外圓角同心） */
+html.look-clean body[data-view] header.top .search{height:auto;min-height:48px;padding:2px;overflow:visible;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in)}
+html.look-clean body[data-view] header.top .search:focus-within{box-shadow:var(--v2-shadow-in),0 0 0 2px var(--v2-page),0 0 0 4px var(--v2-ink)}
+html.look-clean body[data-view] header.top .search input{height:44px;padding:0 16px;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:var(--fs-body);box-shadow:0 1px 1px rgba(60,45,20,.08)}
+/* 搜尋鈕：白底紙片，放大鏡用遊戲色（landing 沒有遊戲色時用墨色） */
+html.look-clean body[data-view] header.top #go{flex:none;align-self:center;width:var(--btn-h);min-width:var(--btn-h);height:var(--btn-h);min-height:var(--btn-h);margin:0 0 0 4px;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--ip-ink,var(--v2-ink));box-shadow:var(--v2-shadow)}
+html.look-clean body[data-view] header.top #go svg{width:20px;height:20px}
+html.look-clean body[data-view] header.top .search button.search-clear{width:var(--btn-h);min-width:var(--btn-h);height:var(--btn-h);min-height:var(--btn-h);margin:0 2px 0 0;opacity:.7}
+/* 三顆導覽鈕：白色紙片＋很淡的暖色陰影，不加實線框；目前頁＝粗體＋1.5px 墨色細框（不只靠顏色） */
+html.look-clean body[data-view] header.top .nav button{min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink-2);box-shadow:var(--v2-shadow)}
+html.look-clean body[data-view] header.top .nav button[aria-current="page"]{color:var(--v2-ink);font-weight:700;box-shadow:0 2px 6px rgba(60,45,20,.16),inset 0 0 0 1.5px var(--v2-ink)}
+html.look-clean body[data-view] header.top .nav button:hover{background:var(--v2-surface);border:0}
+html.look-clean body[data-view] header.top .nav button:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;box-shadow:var(--v2-shadow),0 0 0 5px var(--v2-surface)}
+
+/* ===== 4. 按鈕三種 =====
+   主要：一頁最多一顆，實心。次要：白底紙片＋淡暖陰影，不加實線框。文字鈕：沒有底。
+   共同：高 44px、同一個圓角、按下縮到 97%、只轉場要變的屬性、滑過效果只給滑鼠。
+   選中狀態＝粗體＋1.5px 墨色細框（與頂欄目前頁同一套語言），遊戲色只留在字與細線上。 */
+/* 4a 次要 */
+html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.home-preview-ip,.detail-collect button,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close]),
+html.look-clean body[data-view] header.top .nav button{
+  min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow);
+  transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease);
+}
+html.look-clean body[data-view] header.top .nav button{color:var(--v2-ink-2)}
+html.look-clean body[data-view] header.top .nav button[aria-current="page"]{color:var(--v2-ink)}
+/* 選中：粗體＋細墨框（✓ 沿用既有的 :before） */
+html.look-clean body[data-view] :is(.favorites-filter.on,.product-category.on,.series-group.on,.series-sort button.on,.series-band-regions button.on,.home-preview-ip.on,.cards-mode[aria-pressed="true"],.ptl-chip.on,.ptl-chip[aria-pressed="true"]){
+  background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:0 2px 6px rgba(60,45,20,.16),inset 0 0 0 1.5px var(--v2-ink)!important;
+}
+html.look-clean body[data-view] #detail .detail-actions :is(.source-link,.detail-collect-state){padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);box-shadow:var(--v2-shadow)}
+/* 選單是輸入：凹陷底、不描邊 */
+html.look-clean body[data-view] main select{border-color:transparent;background-color:var(--v2-well)}
+/* 停用的次要按鈕：淡掉、不浮起 */
+html.look-clean body[data-view] :is(.coll-tools button,#downloadWatchlist,#collectionCsv):disabled{opacity:.5;box-shadow:none;cursor:default}
+/* 4b 主要：實心，一頁最多一顆（載入更多、重試、篩選面板的套用） */
+html.look-clean body[data-view] :is(.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm]){
+  min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--ip-ink,var(--v2-ink));color:var(--ip-on,#fff);font-weight:700;box-shadow:0 1px 2px rgba(60,45,20,.24);
+  transition:transform .14s var(--ease),box-shadow .14s var(--ease),background-color .14s var(--ease);
+}
+html.look-clean body[data-view] .load-more{padding:0 var(--s6,32px)}
+/* 4c 文字鈕：沒有底與框，只有字 */
+html.look-clean body[data-view] :is(.rarity-hud-close,.filter-sheet-close,.card-zoom-close,.mobile-scope-pill select,.mobile-region-pill select,.search-clear){
+  background:transparent;border:0;box-shadow:none;color:var(--v2-ink);
+  transition:transform .14s var(--ease),background-color .14s var(--ease);
+}
+/* 分段按鈕：外層凹陷底，被選中的那顆是白色紙片（內外圓角同心） */
+html.look-clean body[data-view] :is(.view-switch,.detail-tabs){padding:3px;border:1px solid transparent;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:visible}
+html.look-clean body[data-view] :is(.view-switch button,.detail-tabs button){border:0!important;border-radius:var(--btn-r)!important;background:transparent;color:var(--v2-ink-2);box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
+html.look-clean body[data-view] :is(.view-switch button.on,.detail-tabs button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)!important}
+/* 按下縮到 97%；滑過只給滑鼠 */
+html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close],.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm],.view-switch button,.detail-tabs button,.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):active,
+html.look-clean body[data-view] header.top :is(.nav button,#go):active{transform:scale(.97)}
+@media (hover:hover) and (pointer:fine){
+  html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close]):hover,
+  html.look-clean body[data-view] header.top :is(.nav button,#go):hover{background:var(--v2-surface);box-shadow:var(--v2-shadow-up)}
+  html.look-clean body[data-view] :is(.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm]):hover{box-shadow:0 3px 8px rgba(60,45,20,.28)}
+  html.look-clean body[data-view] :is(.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):hover{background:rgba(60,45,20,.08)}
+  html.look-clean body[data-view] :is(.view-switch button,.detail-tabs button):not(.on):hover{background:rgba(255,255,255,.6);color:var(--v2-ink)}
+}
+/* 焦點框：看得見（WCAG 2.4.7）。用鍵盤觸發的動作不加動畫 */
+html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,.product-category,.series-group,.load-more,.notice-retry,.view-switch button,.detail-tabs button,.detail-collect-state,.source-link,.detail-price,.version-switch,.suggest-chip,.applied-chip):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+
+/* ===== 5. ⓘ 說明：解釋規則的句子收在這裡，點開才看（markup 由 ui-actions.js 的 infoTip 產生） ===== */
+.info-tip{position:relative;display:inline-block;vertical-align:middle}
+.info-tip>summary{display:inline-grid;place-items:center;width:var(--btn-h);min-width:var(--btn-h);height:var(--btn-h);padding:0;border-radius:var(--btn-r);list-style:none;cursor:pointer;color:var(--v2-ink-2);font-size:20px;line-height:1;-webkit-tap-highlight-color:transparent;transition:transform .14s var(--ease),background-color .14s var(--ease)}
+.info-tip>summary::-webkit-details-marker{display:none}
+.info-tip>summary:active{transform:scale(.97)}
+.info-tip[open]>summary{background:var(--v2-well);color:var(--v2-ink)}
+.info-tip>summary:focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
+.info-body{position:absolute;z-index:40;top:calc(100% + 2px);left:0;width:min(360px,calc(100vw - 32px));padding:12px 14px;border-radius:12px;background:var(--v2-surface);color:var(--v2-ink);font-size:var(--fs-sub);font-weight:400;line-height:1.55;text-align:left;box-shadow:var(--v2-shadow-pop)}
+.info-body p{margin:0 0 6px;color:inherit;font-size:inherit}
+.info-body p:last-child{margin-bottom:0}
+.info-body b{display:block;font-size:var(--fs-note);font-weight:700;color:var(--v2-ink-2)}
+.info-body a{color:var(--v2-ink);text-decoration:underline;text-underline-offset:3px}
+@media (hover:hover) and (pointer:fine){.info-tip>summary:hover{background:var(--v2-well)}}
+/* 各處的位置 */
+.title-note{display:flex;flex-wrap:wrap;align-items:center;gap:0 2px}
+#trendsSection .title-note .meta{font-size:var(--fs-sub)}
+.card-tools .price-info{align-self:end}
+.browse-regions .info-tip{flex:none}
+.dpanel-versions{position:relative}
+.dpanel-versions>.info-tip{position:absolute;top:2px;right:2px}
+.detail-position{display:flex;align-items:center;justify-content:space-between}
+.watchlist-summary .info-tip{vertical-align:baseline;margin-left:2px}
+@media (max-width:760px){.card-tools .price-info{display:none}}   /* 手機本來就不顯示篩選摘要，說明也不單獨留一顆 */
+@media (hover:none){.detail-position .info-tip{display:none}}   /* 「移動游標可傾斜」是滑鼠才有的提示 */
+
+/* ===== 6. 字級下限 12px、點擊區下限 44px（375px 手機也一樣；行內文字連結除外，WCAG 2.5.8 例外） ===== */
+html.look-clean body[data-view] :is(
+  .badge,.channel-tag,.browse-regions span,.brand-showcase-copy>span,.mascot-gallery figcaption,.hero-eyebrow,.section-kicker,.health-status,
+  .trend-scope-item b,.trend-scope-item span,.trend-scope-note,.trend-warn,.hero-trust>span,.coverage-status-source,.coverage-status-card header span,
+  .coverage-baseline-status,.coverage-baseline,.coverage-status-metrics span,.coverage-status-metrics small,.coverage-status-note,.health-scope,
+  .health-metric>div:first-child span,.health-metric>small,.trend-card-number,.trend-card-facts span,.game-context-kicker,.game-context small,
+  .ptl-cells dt,.ptl-ext-text,.card-lang-note,.mqg-badge,.mqg-label,.band-tile-code,.band-tile-flag,.card-rarity,.cr-chg,.trend-rise,.rarity-bento-title span,
+  .rarity-bento-reset,.rarity-hud-Jump,.rp-meta,.rarity-hud-pill small,.rarity-hud-close,.rarity-hud-grid button small,.region-chip,
+  .feature-eyebrow,.feature-kicker,.card-identity dt,.card-zoom-quality,.version-price-table small,.coll-stat span,.coll-binder-copy small,.coll-art .image-fallback,
+  .series-index-badge,.series-facts span,.series-facts b,.series-source,.series-overlay,.card-reference .cr-src,.card-reference .cr-var,.card-reference .cr-original,.rarity-pills button[aria-pressed="true"]::before,.coll-art .card-sample-watermark
+){font-size:var(--fs-note)!important}
+/* 字放大到 12px 後手機快速入口的標籤放不下一行：改成最多兩行，不再用省略號吃掉字 */
+html.look-clean body[data-view] .mqg-label{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.3}
+html.look-clean body[data-view] .mobile-scope-pill:after,html.look-clean body[data-view] .mobile-region-pill:after{font-size:var(--fs-note)}
+/* 麵包屑、單獨成行的連結：高 44px，窄的也撐到 44px 寬 */
+html.look-clean body[data-view] :is(.crumbs a,.about-intro p>a:only-child){display:inline-flex;align-items:center;justify-content:center;min-width:var(--btn-h);min-height:var(--btn-h)}
+html.look-clean body[data-view] .home-examples button{min-height:var(--btn-h)}
+/* 卡牆上的價格是 role=button（開詳細資料）：點擊區 44px 高 */
+html.look-clean body[data-view] .card-reference{min-height:var(--btn-h);align-items:center}
+
+/* ===== 7. 暫停動態、減少動態：沒有新動畫，按下不縮放 ===== */
+@media (prefers-reduced-motion:reduce){
+  html.look-clean body[data-view] *{transition-duration:.01ms!important}
+  html.look-clean body[data-view] :is(button,summary,#go):active{transform:none!important}
+}
+html[data-cs-paused] body[data-view] *{transition-duration:.01ms!important}
+html[data-cs-paused] body[data-view] :is(button,summary,#go):active{transform:none!important}

@@ -24,10 +24,14 @@
       const up=body?.data?.up||[],down=body?.data?.down||[],meta=body?.meta||{};
       if(!up.length&&!down.length){section.hidden=true;section.innerHTML='';pending=null;return}
       section.hidden=false;section.classList.add('price-movers');
-      section.innerHTML=`<div class="title"><div><h2>近 ${esc(meta.windowDays||14)} 天參考價漲跌（寶可夢）</h2><span class="meta">依歐洲 Cardmarket 平台參考價整理（已排除 €${esc(meta.minAmount||5)} 以下的低價卡與單日異常跳動）</span></div></div>`+
-        `<p class="trend-scope-note">${esc(meta.note||'')}</p>`+
-        // 漲跌很大的卡只在榜單上方說明一次，不在每張卡重複
-        ([...up,...down].some(row=>Math.abs(Number(row.changePercent))>=BIG)?'<p class="trend-scope-note trend-warn">漲跌超過 200% 的卡，多半是成交稀少、少數高價刊登拉動，請先點進去看走勢。</p>':'')+
+      // 標題下只留一句「不是成交價」；來源與連結、前後觀測時間、適用範圍（PRODUCT_PLAN 第 6 節）都收進 ⓘ。
+      const rows=[...up,...down],from=rows.map(row=>row.from?.date).filter(Boolean).sort()[0],to=rows.map(row=>row.to?.date).filter(Boolean).sort().at(-1);
+      const info=root.infoTip('參考價漲跌榜的來源與範圍',
+        `<p><b>來源</b>歐洲 Cardmarket 平台參考價（歐元，<a href="https://www.cardmarket.com/" target="_blank" rel="noopener">cardmarket.com</a>）。其他來源見<a href="/?view=privacy#sources" data-spa>資料來源</a>。</p>`+
+        `<p><b>觀測時間</b>${from&&to?`本榜涵蓋 ${esc(md(from))} → ${esc(md(to))}（近 ${esc(meta.windowDays||14)} 天）；`:''}每張卡下方標出它自己前後兩次的觀測日。</p>`+
+        `<p><b>適用範圍</b>只含寶可夢；共 ${rows.length} 張上榜（漲 ${up.length}、跌 ${down.length}）；已排除 €${esc(meta.minAmount||5)} 以下的低價卡與單日異常跳動。${rows.some(row=>Math.abs(Number(row.changePercent))>=BIG)?'漲跌超過 200% 的卡，多半是成交稀少、少數高價刊登拉動，請先點進去看走勢。':''}</p>`+
+        `<p>${esc(meta.note||'')}</p>`);
+      section.innerHTML=`<div class="title"><div><h2>近 ${esc(meta.windowDays||14)} 天參考價漲跌（寶可夢）</h2><div class="title-note"><span class="meta">歐洲平台參考價，不是成交價</span>${info}</div></div></div>`+
         rail(up,true,'漲幅')+rail(down,false,'跌幅');
     });
   };

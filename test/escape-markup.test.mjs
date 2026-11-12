@@ -171,6 +171,8 @@ test('series band (tabs, tiles, selected-series box, home preview) escapes serie
 test('price movers escape names, series codes and image urls', async () => {
   const row = (over = {}) => ({ cardId: HOSTILE, name: HOSTILE, nameJa: HOSTILE, cardNumber: HOSTILE, seriesCode: HOSTILE, seriesName: HOSTILE, imageUrl: HOSTILE_URL, currency: HOSTILE, changePercent: 250, from: { date: HOSTILE, amount: 5, amountTwd: 100 }, to: { date: HOSTILE, amount: 20, amountTwd: 400 }, ...over });
   const root = { fetch: async () => ({ ok: true, json: async () => ({ data: { up: [row()], down: [row({ changePercent: -50 })] }, meta: { windowDays: HOSTILE, minAmount: HOSTILE, note: HOSTILE } }) }) };
+  // 來源、觀測時間、範圍都收在 ⓘ 裡；ⓘ 的標記由 ui-actions.js 產生，所以用真的那一份
+  vm.runInNewContext(await read('ui-actions.js'), { window: root, document: { addEventListener() {} }, Object });
   vm.runInNewContext(movers, { window: root, ...root });
   const section = { hidden: true, innerHTML: '', classList: { add() {} } };
   await root.renderPriceMovers(section);
