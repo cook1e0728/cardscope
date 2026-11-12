@@ -100,10 +100,11 @@ html.look-clean .cs1-card:is(:hover,:focus-visible) .cs1-cap{opacity:1}
 html.look-clean .cs1-fan:has(.cs1-card:is(:hover,:focus-visible)) .cs1-card:not(:hover):not(:focus-visible){opacity:.6}
 
 /* 重看導覽 */
-html.look-clean .cs1-replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 16px;border:1px solid rgba(246,241,230,.38);border-radius:999px;background:transparent;color:#F6F1E6;font:500 14px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background .18s ease-out,transform .12s}
+html.look-clean .cs1-replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;padding:0 16px;border:1px solid rgba(246,241,230,.38);border-radius:999px;background:rgba(27,23,51,.6);color:#F6F1E6;font:500 14px/1 'Noto Sans TC',sans-serif;cursor:pointer;transition:background .18s ease-out,transform .12s}
 html.look-clean .cs1-replay:hover{background:rgba(246,241,230,.12)}
 html.look-clean .cs1-replay:active{transform:scale(.97)}
-html.look-clean .cs1-replay:focus-visible{outline:2px solid #F6F1E6;outline-offset:2px}
+/* 底色與 .hero::before 同色（半透明）：焦點框畫在按鈕內側，對比有實際底色可量（冒煙測試 assertFocusRings） */
+html.look-clean .cs1-replay:focus-visible{outline:2px solid #F6F1E6;outline-offset:-4px}
 
 /* ===== 3. 頂欄：帶圖示的半透明描邊膠囊（桌面；手機頂欄沒有 nav，改用 dock） ===== */
 html.look-clean body .top .nav{gap:10px}
