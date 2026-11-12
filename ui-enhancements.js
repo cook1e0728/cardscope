@@ -660,7 +660,7 @@ openCard=async function(id,options={}){
   // 換版本時保留目前內容、只標記忙碌（變淡），不閃回骨架；新內容換上或失敗時拿掉
   if(options.keepPosition&&$('detail').querySelector('.detail'))$('detail').setAttribute('aria-busy','true');else{$('detail').removeAttribute('aria-busy');$('detail').textContent='正在載入…'}
   try{
-    const cr=await fetch('/api/cards/'+encodeURIComponent(id)),cb=await cr.json();
+    const cr=await fetch('/api/cards/'+encodeURIComponent(id)+'?open=1'),cb=await cr.json();
     if(stale())return;
     if(!cr.ok)throw Error(cb.error);
     const [marketResult]=await Promise.allSettled([fetch('/api/cards/'+encodeURIComponent(id)+'/market')]),marketResponse=marketResult.status==='fulfilled'?marketResult.value:null,mb=marketResponse?.ok?await marketResponse.json().catch(()=>({data:{records:[],meta:{}}})):{data:{records:[],meta:{warning:'行情服務暫時無法回應；卡片資料仍可正常查看。'}}},c=cb.data,m=mb.data||{records:[],meta:{}};

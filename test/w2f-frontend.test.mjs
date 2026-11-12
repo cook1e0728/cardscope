@@ -145,7 +145,7 @@ test('D3: 系列頁卡牆上方才有麵包屑；首頁、搜尋、全部卡片�
 
 test('F4: 隱私頁寫明每天只統計各類頁面開啟總次數，且前面的句子不再說「完全沒有分析」', () => {
   const privacy = html.match(/<section class="info-page" id="privacy"[\s\S]*?<\/section>/)[0];
-  assert.ok(privacy.includes('<li>伺服器每天統計各類頁面（首頁、遊戲、系列、卡片、搜尋）被開啟的總次數，只留下每天的總數；不記 IP、不記搜尋字詞、不放 cookie，也無法分辨是誰開的。</li>'));
+  assert.ok(privacy.includes('<li>伺服器每天統計各類頁面（首頁、遊戲、系列、卡片、搜尋）被開啟的總次數，只留下每天的總數；不記 IP、不記搜尋字詞、不放 cookie，也無法分辨是誰開的。另外每天記錄被開啟最多次的前 50 張卡各被開了幾次，用來排「最熱」，同樣不記錄是誰開的。</li>'));
   assert.ok(privacy.includes('<li>不使用第三方的分析或廣告工具（沒有 Google Analytics、沒有像素、沒有指紋辨識）。</li>'));
   assert.doesNotMatch(privacy, /不使用任何分析/);
   assert.match(privacy, /最後更新：2026-11-12/);

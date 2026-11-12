@@ -9,7 +9,7 @@ import { crossVersionLowestPrices, matchYgoprodeckSet, searchYgoProDeck } from '
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createGradedPrices } from './providers/graded-prices.mjs';
 import { createPriceSnapshotController } from './providers/price-snapshot.mjs';
-import { createPageStats } from './providers/page-stats.mjs';
+import { createPageStats, createCardHotStats, isBot } from './providers/page-stats.mjs';
 import { createTcgapiPricing } from './providers/tcgapi-pricing.mjs';
 import { createArchiveReader, createArchiveStorage, createPriceArchiveController, mergeSnapshotRows } from './providers/price-archive.mjs';
 import { REFERENCE_BODY_MAX_BYTES, buildReferencePrices, referenceQueryParams, validateReferenceRequest } from './providers/collection-valuation.mjs';
@@ -179,6 +179,8 @@ const decodeHtml=s=>String(s||'').replace(/&#(\d+);/g,(_,value)=>String.fromCode
 async function supabaseFetchAll(pathAndQuery,pageSize=1000){const rows=[];for(let offset=0;;offset+=pageSize){const separator=pathAndQuery.includes('?')?'&':'?',batch=await supabaseFetch(`${pathAndQuery}${separator}limit=${pageSize}&offset=${offset}`);rows.push(...(batch||[]));if(!batch||batch.length<pageSize)return rows}}
 // F4：每天各類頁面被開幾次，只存總數（不記 IP、UA、網址參數、來源頁）；記憶體累計，每 10 分鐘與收到 SIGTERM 時寫進 page_stats_daily。
 const pageStats=createPageStats({db:supabaseFetch,enabled:supabaseConfigured,intervalMs:Number(process.env.PAGE_STATS_FLUSH_MS)||10*60*1000});
+// 每天被開最多次的卡（使用者 2026-11-12 同意）：只記卡片 ID 與次數、不記是誰開的；前端開卡片時帶 ?open=1，非機器人才算；資料庫每天只留前 50 名（card_hot_add）。
+const cardHot=createCardHotStats({db:supabaseFetch,enabled:supabaseConfigured,intervalMs:Number(process.env.PAGE_STATS_FLUSH_MS)||10*60*1000});
 // C3：資料庫大小。免費方案上限 500 MB，價格快照自動煞車在 440 MB（SNAPSHOT_DB_BRAKE_BYTES），所以 430 MB 就先讓外部監測亮燈。公開端點只給 ok／near-limit／unknown，不給位元組數。
 const DB_NEAR_LIMIT_BYTES=430*1024*1024,STORAGE_CACHE_MS=60*60*1000,STORAGE_RETRY_MS=60*1000,storageCache={data:null,expiresAt:0,promise:null,retryAt:0};
 function loadStorageReport(){
@@ -1127,6 +1129,13 @@ async function loadPriceMovers(){
   const snapshot=await priceMoversCache.get(async()=>{const [rows,fx]=await Promise.all([supabaseFetch('/rpc/price_movers',{method:'POST',body:JSON.stringify({p_days:PRICE_MOVERS_DAYS,p_min:PRICE_MOVERS_MIN_EUR,p_limit:20})}),getTwdRates()]);return buildPriceMovers(rows,fx)});
   return snapshot.data;
 }
+// 最熱的卡（/api/hot-cards）：資料庫函式 card_hot_top 排名；近 7 天至少被開 3 次才上榜（避免從排名反推個人行為），不回傳次數；一小時快取，失敗不快取。
+const HOT_CARDS_DAYS=7,HOT_CARDS_LIMIT=12,HOT_CARDS_MIN_OPENS=3,hotCardsCache=createBoundedSnapshotCache({ttlMs:3600000,maxStaleMs:24*60*60*1000,serveStaleWhileRevalidate:true});
+async function loadHotCards(){
+  const snapshot=await hotCardsCache.get(async()=>{const rows=await supabaseFetch('/rpc/card_hot_top',{method:'POST',body:JSON.stringify({p_days:HOT_CARDS_DAYS,p_limit:HOT_CARDS_LIMIT,p_min:HOT_CARDS_MIN_OPENS})});
+    return {data:(rows||[]).filter(row=>row?.card_id).map(row=>({cardId:row.card_id,name:row.name_zh||row.name_ja||row.name_en||row.card_number||row.card_id,nameJa:row.name_ja||null,cardNumber:row.card_number||null,seriesCode:row.series_code||null,seriesName:row.series_name||null,game:row.game||null,imageUrl:row.image_url||null})),meta:{windowDays:HOT_CARDS_DAYS,minOpens:HOT_CARDS_MIN_OPENS,generatedAt:new Date().toISOString()}}});
+  return snapshot.data;
+}
 async function priceHistoryResponse(requestedId){
   let loaded=null;try{loaded=await getCard(requestedId)}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:priceHistoryNote([]),generatedAt:new Date().toISOString()}}}}
   if(!loaded?.card)return {status:404,body:{error:'找不到這張卡'}};
@@ -1216,7 +1225,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(url.pathname==='/api/catalog/health'&&req.method==='GET'){const [health,storage]=await Promise.all([loadCatalogHealth(),loadStorageReport()]);return json(res,200,{data:{...health,storage:{status:storageStatus(storage)}}})}
   if(url.pathname==='/api/catalog/sources'&&req.method==='GET'){return json(res,200,{data:publicSourcePolicies(),meta:sourcePolicySummary()})}
   if(url.pathname==='/api/admin/catalog/health'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；請使用 Authorization Bearer 或 x-scrape-token 標頭'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{return json(res,200,{data:await loadAdminCatalogHealth()})}catch(e){return json(res,502,{error:e.message})}}
-  if(url.pathname==='/api/admin/page-stats'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；請使用 Authorization Bearer 或 x-scrape-token 標頭'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const days=Math.min(366,Math.max(1,Math.floor(Number(url.searchParams.get('days')))||30));try{return json(res,200,{data:{days:await supabaseFetch(`/page_stats_daily?select=day,counts,updatedAt:updated_at&order=day.desc&limit=${days}`),pending:pageStats.pending()}})}catch(e){return json(res,502,{error:e.message,pending:pageStats.pending()})}}
+  if(url.pathname==='/api/admin/page-stats'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；請使用 Authorization Bearer 或 x-scrape-token 標頭'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const days=Math.min(366,Math.max(1,Math.floor(Number(url.searchParams.get('days')))||30));try{const [rows,hotRows]=await Promise.all([supabaseFetch(`/page_stats_daily?select=day,counts,updatedAt:updated_at&order=day.desc&limit=${days}`),supabaseFetch(`/card_hot_daily?select=day,counts,updatedAt:updated_at&order=day.desc&limit=${days}`).catch(()=>null)]);return json(res,200,{data:{days:rows,pending:pageStats.pending(),cardHot:{days:hotRows,pending:cardHot.pending()}}})}catch(e){return json(res,502,{error:e.message,pending:pageStats.pending()})}}
   if(url.pathname==='/api/trends'&&req.method==='GET'){
     const requestedLimit=Number(url.searchParams.get('limit')),limit=Math.min(Math.max(Number.isFinite(requestedLimit)&&requestedLimit>0?requestedLimit:12,1),50);
     // Trends come only from Yuyu-tei buyback history; Yuyu-tei declined reuse (2026-10-12), so the section is switched off rather than shown empty forever.
@@ -1236,6 +1245,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   }
   if(url.pathname==='/api/products'&&req.method==='GET'){try{const catalog=await loadProductSets();return json(res,200,{data:catalog.products,series:catalog.series,meta:productFeedMeta(catalog)},SHORT_CACHE)}catch(e){return failJson(res,502,'products failed',e)}}
   if(url.pathname==='/api/market-events'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});return json(res,200,await marketEventsResponse(url.searchParams.get('game')||null),SHORT_CACHE)}
+  if(url.pathname==='/api/hot-cards'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});try{return json(res,200,await loadHotCards(),SHORT_CACHE)}catch(e){console.error('hot cards failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/price-movers'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:{up:[],down:[]},meta:{unavailable:'not-configured'}});try{return json(res,200,await loadPriceMovers(),SHORT_CACHE)}catch(e){console.error('price movers failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
   if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort'),requestedGame),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(rarity&&!BROWSE_RARITY_FORMAT.test(rarity))return json(res,400,{error:'稀有度格式不正確'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});if(requestedGame==='pokemon')await attachReferencePrices(page.data);return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors,referencePriced:page.referencePriced??null}},{...SHORT_CACHE,'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){if(e.code==='BROWSE_BUSY')return json(res,503,{error:e.message},{'Retry-After':'5'});if(e.code==='BROWSE_REFUSED')return json(res,502,{error:e.message});return failJson(res,502,'browse failed',e)}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}},catalog.fallbackReason?{}:SHORT_CACHE)}
@@ -1286,7 +1296,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
       return json(res,200,slimBody(withPaging({source:catalog.source,architecture:'canonical-card-with-printings',match:exact.length?'exact-name':'substring',databaseSearch:'unavailable',searchScope:'loaded-catalog-only'},page.data,page.total)))
     }
   }
-  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11));if(tail.endsWith('/price-history')){const result=await priceHistoryResponse(tail.slice(0,-14));return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7),{card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarketCached(card)})}const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null,data={...card,series,game};const priced=card.game==='pokemon'?await attachReferencePrices([data]):null;if(priced?.referenceFailed)data.referencePriceFailed=true;return json(res,200,{data,meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason||priced?.referenceFailed?{}:SHORT_CACHE)}
+  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11));if(tail.endsWith('/price-history')){const result=await priceHistoryResponse(tail.slice(0,-14));return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7),{card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarketCached(card)})}const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});if(url.searchParams.get('open')==='1'&&!isBot(req.headers['user-agent']))cardHot.record(card.id);const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null,data={...card,series,game};const priced=card.game==='pokemon'?await attachReferencePrices([data]):null;if(priced?.referenceFailed)data.referencePriceFailed=true;return json(res,200,{data,meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason||priced?.referenceFailed?{}:SHORT_CACHE)}
   if(url.pathname==='/api/reports/meta')return json(res,200,{data:{platforms:ALLOWED_PLATFORMS,currencies:ALLOWED_CURRENCIES,maxPrice:MAX_PRICE}});
   // ADR 0045：免登入收藏的參考總值。最多 100 張卡、一次查詢 price_snapshots、不打外部來源。
   if(url.pathname==='/api/prices/reference'&&req.method==='POST'){let body;try{body=await readJsonBody(req,REFERENCE_BODY_MAX_BYTES)}catch(error){return json(res,error.message==='BODY_TOO_LARGE'?413:400,{error:error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤'})}const v=validateReferenceRequest(body);if(v.error)return json(res,400,{error:v.error});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{const [rows,fx]=await Promise.all([supabaseFetch(`/price_snapshots?${new URLSearchParams(referenceQueryParams(v.ids))}`),getTwdRates()]);return json(res,200,{data:buildReferencePrices(rows,v.ids,{fx,amountToTwd})})}catch{return json(res,502,{error:'參考價查詢失敗'})}}
@@ -1329,8 +1339,8 @@ const server=createServer((req,res)=>{
 server.headersTimeout=20000;server.requestTimeout=30000;
 process.on('unhandledRejection',error=>console.error('unhandled rejection',error?.stack||error));
 // Render 部署時送 SIGTERM：先把還沒寫進資料庫的頁面計數送出再結束（最多等 8 秒，資料庫慢也不拖住部署）。伺服器關閉時（測試）把監聽器與計時器拆掉。
-const flushPageStatsAndExit=()=>{pageStats.stop();Promise.race([pageStats.flush(),new Promise(resolve=>setTimeout(resolve,8000))]).finally(()=>process.exit(0))};
-process.once('SIGTERM',flushPageStatsAndExit);server.once('close',()=>{process.off('SIGTERM',flushPageStatsAndExit);pageStats.stop()});
+const flushPageStatsAndExit=()=>{pageStats.stop();cardHot.stop();Promise.race([Promise.all([pageStats.flush(),cardHot.flush()]),new Promise(resolve=>setTimeout(resolve,8000))]).finally(()=>process.exit(0))};
+process.once('SIGTERM',flushPageStatsAndExit);server.once('close',()=>{process.off('SIGTERM',flushPageStatsAndExit);pageStats.stop();cardHot.stop()});
 
 const priceSnapshot=createPriceSnapshotController({db:supabaseFetch,isBlocked:()=>priceArchive.status().running});
 const tcgapiPricing=createTcgapiPricing({apiKey:process.env.TCGAPI_KEY,db:supabaseFetch});
@@ -1338,7 +1348,7 @@ const tcgapiPricing=createTcgapiPricing({apiKey:process.env.TCGAPI_KEY,db:supaba
 const priceArchive=createPriceArchiveController({db:supabaseFetch,storage:archiveStorage,reader:archiveReader,isBusy:()=>priceSnapshot.status().running,enabled:()=>process.env.PRICE_ARCHIVE_ENABLED!=='false'});
 let sitemapWarm=null,coverageWarm=null;
 server.listen(port,()=>{
-  if(supabaseConfigured())pageStats.start();
+  if(supabaseConfigured()){pageStats.start();cardHot.start()}
   if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false'){priceSnapshot.start();priceArchive.start();tcgapiPricing.start()}
   console.log(`CardScope is running at http://localhost:${port}`);
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
