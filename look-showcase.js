@@ -155,6 +155,9 @@
   /* ---------- 4. 聚光燈導覽 ---------- */
   let tour=null;
   const mobile=()=>matchMedia('(max-width:760px)').matches;
+  const tourDone=()=>{try{return!!localStorage.getItem(DONE)}catch{return false}};
+  // 手機按鈕：沒看過導覽時叫「看導覽」（手機第一次進站不自動跳出，改由這顆按鈕開始），看過才叫「重看導覽」
+  const syncReplayLabel=()=>{const b=$('.cs1-replay-m');if(!b)return;const done=tourDone();b.textContent=done?'✦ 重看導覽':'✦ 看導覽';b.classList.toggle('cs1-replay-new',!done)};
   const firstVis=sel=>[...doc.querySelectorAll(sel)].find(vis);
   const union=sels=>{
     let r=null;
@@ -173,7 +176,7 @@
     if(!tour)return;
     const t=tour;tour=null;
     doc.removeEventListener('keydown',t.key,true);removeEventListener('resize',t.place);removeEventListener('scroll',t.place,true);t.mo.disconnect();t.ov.remove();
-    if(mark){try{localStorage.setItem(DONE,'1')}catch{}}
+    if(mark){try{localStorage.setItem(DONE,'1')}catch{}syncReplayLabel()}
     (t.back&&t.back.isConnected&&t.back!==doc.body?t.back:$('#main'))?.focus({preventScroll:true});
   }
   function startTour(){
@@ -220,8 +223,8 @@
   }
 
   function maybeAutoStart(){
-    let done=false;try{done=!!localStorage.getItem(DONE)}catch{}
-    if(done||!landing())return;
+    // 手機第一次進站不自動跳出導覽（會蓋住主視覺）；改由標題小卡內的「看導覽」鈕開始
+    if(tourDone()||!landing()||mobile())return;
     // 等四個導覽目標都出現（最多 3 秒）再開始，總步數一開始就定下來，不會從「1／3」跳成「1／4」
     const t0=Date.now();
     setTimeout(()=>{
@@ -253,7 +256,7 @@
     // 重看導覽：桌面在「版本」那一列，手機在標題小卡內
     const mk=(cls)=>{const b=el('button',cls,'✦ 重看導覽');b.type='button';b.classList.add('cs1-replay');b.onclick=()=>startTour();return b};
     $('.browse-regions')?.append(mk(''));
-    $('.hero-intro')?.append(mk('cs1-replay-m'));
+    $('.hero-intro')?.append(mk('cs1-replay-m'));syncReplayLabel();
     new MutationObserver(()=>{picked=null;syncNav();loadFan()}).observe(doc.body,{attributes:true,attributeFilter:['data-view']});
     new MutationObserver(syncNav).observe(doc.body,{subtree:true,attributes:true,attributeFilter:['open']});doc.addEventListener('close',syncNav,true);
     doc.querySelectorAll('[data-nav="search"],[data-nav="browse"]').forEach(b=>b.addEventListener('click',()=>{picked=b.dataset.nav;syncNav()}));matchMedia('(min-width:1200px)').addEventListener('change',loadFan);
