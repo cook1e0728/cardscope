@@ -176,7 +176,7 @@
     saveScroll();if(node('modal')?.classList.contains('open')){openedFromList=false;closeDetail()}
     history.pushState({},'',url.pathname+url.search+url.hash);
     // restore() 結束前排了一個 rAF 把捲動拉回 scrollY；錨點的捲動排在它後面
-    restore(readLocation()).then(()=>requestAnimationFrame(()=>{const target=url.hash&&document.getElementById(decodeURIComponent(url.hash.slice(1)));if(target)window.scrollBelowHeader?window.scrollBelowHeader(target):target.scrollIntoView()}));
+    restore(readLocation()).then(()=>requestAnimationFrame(()=>{const target=url.hash&&document.getElementById(decodeURIComponent(url.hash.slice(1)));if(target)window.scrollBelowHeader?window.scrollBelowHeader(target):target.scrollIntoView();/* 焦點跟著移到新內容（錨點目標或主內容），不留在已關掉的詳細頁或被重畫掉的節點上 */const focusTo=target||node('main');if(focusTo?.focus){if(focusTo.getAttribute?.('tabindex')==null)focusTo.tabIndex=-1;focusTo.focus({preventScroll:true})}}));
   });
   window.addEventListener('beforeunload',saveScroll);
   window.addEventListener('popstate',()=>{if(skipRestore){skipRestore=false;return}return restore(readLocation())});

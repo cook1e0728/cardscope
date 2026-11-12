@@ -1329,7 +1329,7 @@ const server=createServer((req,res)=>{
 server.headersTimeout=20000;server.requestTimeout=30000;
 process.on('unhandledRejection',error=>console.error('unhandled rejection',error?.stack||error));
 // Render 部署時送 SIGTERM：先把還沒寫進資料庫的頁面計數送出再結束（最多等 8 秒，資料庫慢也不拖住部署）。伺服器關閉時（測試）把監聽器與計時器拆掉。
-const flushPageStatsAndExit=()=>{Promise.race([pageStats.flush(),new Promise(resolve=>setTimeout(resolve,8000))]).finally(()=>process.exit(0))};
+const flushPageStatsAndExit=()=>{pageStats.stop();Promise.race([pageStats.flush(),new Promise(resolve=>setTimeout(resolve,8000))]).finally(()=>process.exit(0))};
 process.once('SIGTERM',flushPageStatsAndExit);server.once('close',()=>{process.off('SIGTERM',flushPageStatsAndExit);pageStats.stop()});
 
 const priceSnapshot=createPriceSnapshotController({db:supabaseFetch,isBlocked:()=>priceArchive.status().running});

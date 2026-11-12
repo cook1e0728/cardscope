@@ -228,7 +228,7 @@
     // 等四個導覽目標都出現（最多 3 秒）再開始，總步數一開始就定下來，不會從「1／3」跳成「1／4」
     const t0=Date.now();
     setTimeout(()=>{
-      const tick=()=>{
+      const tick=()=>{if(mobile())return;/* 等待期間視窗縮成手機寬度：照手機規則不自動開 */
         if(tour||!landing()||$('#modal.open'))return;
         if((!firstVis('#channels .channel,#mobileQuickGrid .mqg-tile')||stepDefs().length<4)&&Date.now()-t0<3000)return setTimeout(tick,150);
         startTour();
