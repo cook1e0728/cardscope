@@ -922,48 +922,6 @@ function installMobileCompactHeader(){
   window.syncMobileHeaderScope=sync;
 }
 
-// ADR 0049：手機版探索首頁 2×5 圓角方格入口（10 格：各 IP × 主要版本，附紅底「新發售（30 天內）／即將發售／收錄中」小標，一鍵直達該遊戲與版本）。桌面版隱藏。
-function installMobileQuickGrid(){
-  const channelsEl=$('channels'),regionSelect=$('browseRegion');
-  if(!channelsEl||$('mobileQuickGrid'))return;
-  const grid=document.createElement('div');grid.id='mobileQuickGrid';grid.className='mobile-quick-grid';grid.setAttribute('role','group');grid.setAttribute('aria-label','手機快速探索入口');
-  // 10 格＝手機 5 欄剛好兩排；導覽改由標題小卡的「重看導覽」進入（加入七龍珠超後拿掉原本補空位的新手導覽格）。
-  const items=[
-    {game:'pokemon',region:'JP',label:'寶可夢日文',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
-    {game:'pokemon',region:'TW',label:'寶可夢繁中',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
-    {game:'pokemon',region:'US',label:'寶可夢美版',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
-    {game:'onepiece',region:'ASIA',label:'航海王英文',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
-    {game:'onepiece',region:'TW',label:'航海王日文',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
-    {game:'yugioh',region:'US',label:'遊戲王美版',logo:'/assets/ip-logos/yugioh.png',tag:'收錄中',hot:false},
-    {game:'weiss-schwarz',region:'JP',label:'芙莉蓮日文',logo:'/assets/ip-logos/weiss-schwarz.png',tag:'熱門收錄',hot:false},
-    {game:'haikyuu',region:'JP',label:'排球少年日文',logo:'/assets/ip-logos/haikyuu.svg',tag:'收錄中',hot:false},
-    {game:'dragonball-fw',region:'TW',label:'七龍珠超',logo:'/assets/ip-logos/dragonball-fw.png',tag:'收錄中',hot:false},
-    {game:'all',region:'all',label:'我的收藏冊',logo:'/assets/brand/web/rabbit-success-160.webp',tag:'收藏冊',hot:false,action:'collection'}
-  ];
-  grid.innerHTML=items.map(item=>`<button type="button" class="mqg-tile" data-mqg-game="${e(item.game)}" data-mqg-region="${e(item.region)}"${item.action?` data-mqg-action="${e(item.action)}"`:''} data-ip="${e(item.game)}"><span class="mqg-art"><img src="${e(item.logo)}" alt="" loading="lazy"><span class="mqg-badge${item.hot?' is-hot':''}">${e(item.tag)}</span></span><b class="mqg-label">${e(item.label)}</b></button>`).join('');
-  // 角標依目錄的發售日計算（tag 只是目錄載入前的預設）；首頁每次重繪時由 index.html 呼叫
-  window.syncMobileQuickGrid=()=>{
-    const rows=Array.isArray(C?.series)?C.series:[];if(!rows.length)return;
-    // 台灣日期；「新發售」只給 30 天內，90 天會讓 10 格中 7 格都是紅標而失去意義。
-    const today=window.taipeiDate(),since=window.taipeiDate(30);
-    grid.querySelectorAll('.mqg-tile:not([data-mqg-action])').forEach(btn=>{
-      const own=rows.filter(row=>row.game===btn.dataset.mqgGame&&row.region===btn.dataset.mqgRegion),badge=btn.querySelector('.mqg-badge');if(!badge)return;
-      const tag=own.some(row=>row.releaseDate>today)?'即將發售':own.some(row=>row.releaseDate&&row.releaseDate<=today&&row.releaseDate>=since)?'新發售':'收錄中';
-      badge.textContent=tag;badge.classList.toggle('is-hot',tag!=='收錄中');
-    });
-  };
-  window.syncMobileQuickGrid();
-  grid.onclick=event=>{
-    const btn=event.target.closest('.mqg-tile');if(!btn)return;
-    if(btn.dataset.mqgAction==='collection'&&typeof window.openCollection==='function')return window.openCollection();
-    const g=btn.dataset.mqgGame,r=btn.dataset.mqgRegion;
-    if(regionSelect&&r)regionSelect.value=r;
-    if(typeof window.choose==='function')window.choose(g);
-    window.syncMobileHeaderScope?.();
-  };
-  channelsEl.before(grid);
-}
-
 installTrendTransparency();
 installReportTemplate();
 installFeatureTour();
@@ -975,7 +933,6 @@ installCardUtilities();
 installFilterSheet();
 installRarityPills();
 installMobileCompactHeader();
-installMobileQuickGrid();
 // 分頁標題跟著內容走：換頁面種類（body data-*）、開關詳細頁（#modal class）、瀏覽／搜尋事件時重算。
 if(typeof MutationObserver!=='undefined'&&document.body){const watch=(node,filter)=>node&&new MutationObserver(syncPageTitle).observe(node,{attributes:true,attributeFilter:filter});watch($('modal'),['class']);watch(document.body,['data-view','data-game'])}
 document.addEventListener('cardscope:browse',syncPageTitle);document.addEventListener('cardscope:search',syncPageTitle);

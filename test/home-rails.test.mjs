@@ -175,5 +175,5 @@ test('樣式：面板先保留高度、分段按鈕沿用 .view-switch、手機�
   assert.match(css,/#mobileHeaderScope select\{width:2\.5em/);
   assert.match(html,/class="view-switch rails-switch" role="tablist"/);
   assert.match(css,/#homeRails \.trend-card:active\{transform:scale\(\.97\)\}/);
-  assert.doesNotMatch(css.slice(css.indexOf('/* ===== 8.')),/transition:all|font-size:\s*(?:[0-9]|1[01])(?:\.\d+)?px|@keyframes|animation:/);
+  assert.doesNotMatch(css.slice(css.indexOf('/* ===== 8.'),css.indexOf('/* ===== 9.')),/transition:all|font-size:\s*(?:[0-9]|1[01])(?:\.\d+)?px|@keyframes|animation:/);
 });

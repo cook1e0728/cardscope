@@ -172,12 +172,27 @@ async function waitForVisible(locator,message){
   });
 }
 
-// Phones (≤760px) show the 2×5 quick grid instead of #channels on the landing page (look-clean.css).
-const IP_ENTRY='#channels .channel:visible, .mobile-quick-grid .mqg-tile:visible';
+// Phones (≤760px) keep the game list in the sidebar's bottom sheet (side-nav.js), opened from the bottom nav 圖鑑; wider screens show #channels on the landing page and the docked sidebar on game pages.
+const IP_ENTRY='#channels .channel';
+const isPhone=page=>page.viewportSize().width<=760;
+async function waitForIpEntry(page,message){
+  if(isPhone(page))await page.locator(IP_ENTRY).first().waitFor({state:'attached',timeout:8000}).catch(error=>{throw new Error(`${message}: ${error.message}`)});
+  else await waitForVisible(page.locator(`${IP_ENTRY}:visible`).first(),message);
+}
+async function openSheet(page){
+  if(await page.locator('#sideNav.open').count())return;
+  await page.locator('nav.bottom [data-nav="browse"]').click();
+  await waitForVisible(page.locator('#sideNav.open .channel').first(),'the phone sheet did not open');
+}
+async function closeSheet(page){
+  if(!await page.locator('#sideNav.open').count())return;
+  await page.locator('#sideClose').click();
+  await page.locator('#sideNav.open').waitFor({state:'detached',timeout:5000});
+}
 async function clickIp(page,id){
-  const tile=page.locator(`.mobile-quick-grid .mqg-tile[data-ip="${id}"]:not([data-mqg-action]):visible`).first();
-  if(await tile.count()){await tile.click();return;}
-  const channel=page.locator(`#channels .channel[data-ip="${id}"]:visible`).first();
+  // Phones: the sheet is the only game list. It stays visible for a moment while closing, so never pick #channels there.
+  if(isPhone(page)){await openSheet(page);await page.locator(`#sideNav .channel[data-ip="${id}"]`).click();await closeSheet(page);return;}
+  const channel=page.locator(`${IP_ENTRY}[data-ip="${id}"]:visible`).first();
   if(await channel.count()){await channel.click();return;}
   const mobileSelect=page.locator('#mobileGameSelect:visible');
   if(await mobileSelect.count()){await mobileSelect.selectOption(id);return;}
@@ -241,11 +256,13 @@ async function runViewport(browser,viewport){
   await installFixtures(page,state);
   try{
     await page.goto(baseUrl,{waitUntil:'domcontentloaded'});
-    await waitForVisible(page.locator(IP_ENTRY).first(),'IP navigation did not render');
+    await waitForIpEntry(page,'IP navigation did not render');
     // Phones search from the header capsule (#q); the large landing form is desktop-only.
     try{await waitForVisible(page.locator('#homeSearch:visible, #q:visible').first(),'the landing search box did not render')}
     catch(error){throw new Error(`${error.message}; pageErrors=${pageErrors.join(' | ')}; cards=${await page.locator('#cards').innerText().catch(()=>'<unavailable>')}`,{cause:error})}
     assert.equal(new Set(await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(id=>id&&id!=='all'))).size,6,`${viewport.name} should show six IP entry tiles`);
+    assert.equal(await page.locator('.mobile-quick-grid').count(),0,`${viewport.name} the 2x5 quick grid is gone (the sidebar owns game navigation)`);
+    assert.equal(await page.locator('#sideNav:visible').count(),0,`${viewport.name} the landing has no sidebar`);
     assert.equal(await page.locator('#cards .game-entry').count(),0,`${viewport.name} the landing keeps only one game chooser`);
     assert.equal(await page.locator('.home-examples [data-example]').count()>=3,true,`${viewport.name} should show search examples`);
     const channelIds=[];
@@ -375,6 +392,110 @@ async function runViewport(browser,viewport){
   }
 }
 
+// Left sidebar (side-nav.js): docked on desktop, drawer at tablet width, bottom sheet on phones. Pokemon is avoided on purpose: its first browse request is a fixture failure.
+async function runSidebarChecks(browser){
+  const open=async(width,height,{init,url='/?game=onepiece'}={})=>{
+    const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));page.errors=errors;
+    if(init)await page.addInitScript(init);
+    await installFixtures(page,makeFixtureState(fixtureCatalog()));
+    await page.goto(baseUrl+url,{waitUntil:'domcontentloaded'});
+    await waitForGame(page,new URL(baseUrl+url).searchParams.get('game'));
+    return page;
+  };
+  const current=page=>page.evaluate(()=>[...document.querySelectorAll('#sideNav .channel[aria-current="true"]')].map(item=>item.dataset.ip));
+  const inside=page=>page.evaluate(()=>document.getElementById('sideNav').contains(document.activeElement));
+  // Desktop: docked, selected state, real clicks keep the URL and Back working, collapse survives a reload, keyboard reaches and activates items.
+  let page=await open(1440,900);
+  try{
+    await waitForVisible(page.locator('#sideNav'),'desktop: the sidebar is not visible on a game page');
+    assert.deepEqual(await current(page),['onepiece'],'desktop: the open game carries aria-current in the sidebar');
+    const box=await page.locator('#sideNav').boundingBox();
+    assert.ok(box.x===0&&box.width>=240&&box.width<=264,`desktop: sidebar width ${box.width}`);
+    const toggle=page.locator('#sideToggle');
+    assert.equal(await toggle.getAttribute('aria-expanded'),'true');
+    assert.equal(await toggle.getAttribute('aria-controls'),'sideBody');
+    assert.equal(await page.locator('#sideBody').count(),1,'desktop: aria-controls points at a real element');
+    assert.equal(await page.locator('#sideNav [data-region], #sideNav .band-tile').count()>0,true,'desktop: the version and series controls live in the sidebar');
+    assert.equal(await page.locator('#channels').count(),1,'desktop: one copy of the game list');
+    assert.equal(await page.locator('a.skip-link[href="#main"]').count(),1,'desktop: the skip link still targets the main region');
+    await page.locator('#sideNav .channel[data-ip="yugioh"]').click();
+    await waitForGame(page,'yugioh');
+    assert.equal(new URL(page.url()).searchParams.get('game'),'yugioh','desktop: a sidebar click updates the URL');
+    assert.deepEqual(await current(page),['yugioh']);
+    await page.goBack({waitUntil:'domcontentloaded'});
+    await waitForGame(page,'onepiece');
+    assert.equal(new URL(page.url()).searchParams.get('game'),'onepiece','desktop: Back restores the previous game');
+    assert.deepEqual(await current(page),['onepiece']);
+    await page.locator('#sideNav .channel[data-ip="haikyuu"]').focus();
+    await page.keyboard.press('Enter');
+    await waitForGame(page,'haikyuu');
+    const toggleNow=page.locator('#sideToggle');
+    await toggleNow.click();
+    assert.equal(await toggleNow.getAttribute('aria-expanded'),'false');
+    assert.equal((await page.locator('#sideNav').boundingBox()).width<=64,true,'desktop: collapsed to a rail');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('cardscope-side-collapsed')),'1','desktop: the collapsed flag is stored');
+    await page.reload({waitUntil:'domcontentloaded'});
+    await waitForGame(page,'haikyuu');
+    assert.equal(await page.locator('#sideToggle').getAttribute('aria-expanded'),'false','desktop: collapsed state survives a reload');
+    await page.locator('#sideToggle').click();
+    assert.equal(await page.locator('#sideToggle').getAttribute('aria-expanded'),'true');
+    assert.deepEqual(page.errors,[],`desktop page errors: ${page.errors.join('; ')}`);
+  }finally{await page.close()}
+  // Blocked storage must not break the sidebar.
+  page=await open(1440,900,{init:()=>{Object.defineProperty(window,'localStorage',{get(){throw new Error('storage blocked')}})}});
+  try{
+    await waitForVisible(page.locator('#sideNav'),'blocked storage: the sidebar did not render');
+    await page.locator('#sideToggle').click();
+    assert.equal(await page.locator('#sideToggle').getAttribute('aria-expanded'),'false','blocked storage: the toggle still works');
+    assert.deepEqual(page.errors,[],`blocked storage page errors: ${page.errors.join('; ')}`);
+  }finally{await page.close()}
+  // Tablet: hidden until 目錄 is pressed; Escape closes it and focus returns to the button.
+  page=await open(900,900);
+  try{
+    assert.equal(await page.locator('#sideNav:visible').count(),0,'tablet: the sidebar starts hidden');
+    const menu=page.locator('#sideMenuBtn');
+    await menu.click();
+    await waitForVisible(page.locator('#sideNav.open'),'tablet: the drawer did not open');
+    assert.equal(await menu.getAttribute('aria-expanded'),'true');
+    assert.ok(await inside(page),'tablet: focus moves into the drawer');
+    await page.keyboard.press('Escape');
+    await page.locator('#sideNav.open').waitFor({state:'detached',timeout:5000});
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),'sideMenuBtn','tablet: focus returns to the opener');
+    assert.deepEqual(page.errors,[],`tablet page errors: ${page.errors.join('; ')}`);
+  }finally{await page.close()}
+  // Phone: bottom sheet from the bottom nav and from 選系列; focus is trapped, Escape and the scrim close it, focus returns.
+  page=await open(390,844);
+  try{
+    const sheetButton=page.locator('#sideSheetBtn');
+    await waitForVisible(sheetButton,'phone: the 選系列 button is missing on a game page');
+    await sheetButton.click();
+    await waitForVisible(page.locator('#sideNav.open'),'phone: the sheet did not open');
+    assert.ok(await inside(page),'phone: focus moves into the sheet');
+    for(let index=0;index<40;index+=1){await page.keyboard.press('Tab');if(!await inside(page))assert.fail('phone: Tab left the sheet')}
+    await page.keyboard.press('Escape');
+    await page.locator('#sideNav.open').waitFor({state:'detached',timeout:5000});
+    assert.equal(await page.evaluate(()=>document.activeElement?.id),'sideSheetBtn','phone: focus returns to 選系列');
+    await page.locator('nav.bottom [data-nav="browse"]').click();
+    await waitForVisible(page.locator('#sideNav.open'),'phone: the bottom nav 圖鑑 did not open the sheet');
+    await page.mouse.click(195,60);
+    await page.locator('#sideNav.open').waitFor({state:'detached',timeout:5000});
+    assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.nav),'browse','phone: focus returns to the bottom nav button');
+    await clickIp(page,'yugioh');
+    await waitForGame(page,'yugioh');
+    await page.goBack({waitUntil:'domcontentloaded'});
+    await waitForGame(page,'onepiece');
+    assert.equal(new URL(page.url()).searchParams.get('game'),'onepiece','phone: Back after a sheet selection restores the previous game');
+    assert.equal(await page.locator('#sideNav.open').count(),0,'phone: Back leaves the sheet closed');
+    await page.reload({waitUntil:'domcontentloaded'});
+    await waitForGame(page,'onepiece');
+    assert.equal(await page.locator('#sideNav.open').count(),0,'phone: a reload does not reopen the sheet');
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'phone: no sideways scroll');
+    assert.deepEqual(page.errors,[],`phone page errors: ${page.errors.join('; ')}`);
+  }finally{await page.close()}
+  return {viewport:'sidebar',checks:['selected','url','back','collapse','blocked-storage','drawer','sheet-focus']};
+}
+
 // Release-gate items the viewport pass does not reach: share, recently viewed series, a slow network and reduced motion.
 async function runPhaseTwoChecks(browser){
   const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
@@ -461,12 +582,13 @@ try{
   const results=[];
   for(const viewport of viewports)results.push(await runViewport(browser,viewport));
   results.push(await runPhaseTwoChecks(browser));
+  results.push(await runSidebarChecks(browser));
   // 200% zoom on a 1280x800 screen: the header scrolls away and nothing overflows sideways.
   const zoomed=await browser.newPage({viewport:{width:640,height:400},deviceScaleFactor:1});
   try{
     await installFixtures(zoomed,makeFixtureState(fixtureCatalog()));
     await zoomed.goto(baseUrl,{waitUntil:'domcontentloaded'});
-    await waitForVisible(zoomed.locator(IP_ENTRY).first(),'200% zoom: IP navigation did not render');
+    await waitForIpEntry(zoomed,'200% zoom: IP navigation did not render');
     const layout=await zoomed.evaluate(()=>({header:getComputedStyle(document.querySelector('.top')).position,overflow:document.documentElement.scrollWidth-innerWidth}));
     assert.equal(layout.header,'static','200% zoom: the header should not stay pinned');
     assert.ok(layout.overflow<=0,`200% zoom: page overflows sideways by ${layout.overflow}px`);

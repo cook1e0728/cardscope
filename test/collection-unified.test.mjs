@@ -172,11 +172,8 @@ test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the 
 });
 
 // --- phone quick grid
-test('手機快速入口: 10 tiles fill two rows of five; the tour is reached from 重看導覽, not a filler tile', () => {
-  assert.doesNotMatch(ui, /label:'遊戲王日文'/);
-  assert.doesNotMatch(ui, /label:'新手導覽'/);
-  const items = ui.slice(ui.indexOf('const items=['), ui.indexOf('];', ui.indexOf('const items=[')));
-  assert.equal((items.match(/\{game:'/g) || []).length, 10);
+test('手機快速入口: the 2x5 grid is gone (the sidebar sheet owns game navigation); the tour is still reached from 重看導覽', () => {
+  assert.doesNotMatch(ui, /installMobileQuickGrid|mobile-quick-grid|mqg-tile/);
+  assert.doesNotMatch(ui, /label:'遊戲王日文'|label:'新手導覽'/);
   assert.match(readFileSync(new URL('../look-showcase.js', import.meta.url), 'utf8'), /重看導覽/);
-  assert.match(ui, /label:'遊戲王美版'/, 'the US tile stays');
 });

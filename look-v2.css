@@ -186,3 +186,142 @@ html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margi
   html.look-clean body[data-view] #mobileHeaderScope #mobileGameSelect{width:3em}
   html.look-clean body[data-view] header.top .search input{padding:0 12px}
 }
+
+/* ===== 9. 外框骨架：左側欄（階段 2，side-nav.js）=====
+   遊戲頁與全部遊戲的搜尋結果出現（body[data-side]）；首頁、關於、隱私維持滿版。三種模式，界線與 side-nav.js 的 sideMode 同一組：
+   inline ≥1000px 且高 ≥501px：固定在左、可收合成 56px 窄條；drawer 761–999px（或矮視窗）：從左滑出、有遮罩；sheet ≤760px：從底部拉起。
+   側欄不描框：白底對頁面底就是分隔；選中＝粗體＋左側 3px 墨色線（不只靠顏色）。 */
+:root{--side-w:264px;--side-rail:56px;--shell-max:1440px;--side-top:66px}
+/* 預設：側欄、目錄鈕、選系列鈕都不存在（手機的選單在任何頁都能開，下面 sheet 另外開放） */
+#sideNav,.side-menu-btn,.side-sheet-btn{display:none}
+body[data-side] #sideNav{display:flex}
+/* 還沒搬進側欄之前（腳本還沒跑）先藏起來，搬進去時主內容才不會往上跳（CLS）；搬進側欄後就不再命中 */
+body[data-side] :is(#channels,#gameContext):not(#sideNav *){display:none}
+#sideNav{position:fixed;z-index:30;left:0;top:0;bottom:0;width:min(320px,88vw);flex-direction:column;background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow-pop);transform:translateX(-100%);visibility:hidden;overscroll-behavior:contain;transition:transform .26s var(--ease),visibility 0s linear .26s}
+#sideNav.open{transform:none;visibility:visible;transition:transform .26s var(--ease),visibility 0s}
+#sideScrim{position:fixed;z-index:29;inset:0;background:rgba(31,27,22,.45);opacity:0;visibility:hidden;touch-action:none;transition:opacity .26s var(--ease),visibility 0s linear .26s}
+#sideNav.open+#sideScrim{opacity:1;visibility:visible;transition:opacity .26s var(--ease),visibility 0s}
+html.side-open{overflow:hidden}
+/* 頂部：收合鈕（inline）／關閉鈕（drawer、sheet） */
+#sideNav .side-head{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:8px 12px 0}
+#sideNav :is(.side-toggle,.side-close){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);padding:0 14px 0 10px;border:0;border-radius:var(--btn-r);background:transparent;color:var(--v2-ink-2);font-size:var(--fs-sub);font-weight:500;transition:transform .14s var(--ease),background-color .14s var(--ease)}
+#sideNav :is(.side-toggle,.side-close):active{transform:scale(.97)}
+#sideNav .side-toggle{display:none}
+#sideNav :is(.side-toggle,.side-close,.channel,.band-tile,.series-band-regions button,.series-band-tabs button,.series-band-more,.series-band-filter,.browse-regions select):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
+#sideNav .side-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 12px 80px}
+#sideNav .side-sec{margin:0}
+#sideNav .side-h{margin:16px 8px 6px;font-size:var(--fs-note);font-weight:700;letter-spacing:.08em;color:var(--v2-ink-2)}
+#sideNav .side-sec:first-child .side-h{margin-top:4px}
+#sideNav .side-h-sub{margin-top:18px}
+/* 版本選單只在「全部遊戲」的搜尋結果出現（遊戲頁用系列橫幅裡的版本按鈕）；沒有的時候整段不顯示 */
+#sideNav .side-sec-region{display:none}
+body[data-side="results"] #sideNav .side-sec-region{display:block}
+/* 遊戲：一列一個，Logo 在左；手機選單改兩欄 */
+#sideNav #channels{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;overflow:visible;min-height:0}
+#sideNav .channel[data-ip]{position:relative;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;width:100%;min-width:0;min-height:var(--btn-h);margin:0;padding:4px 10px;border:0;border-radius:10px;background:transparent;box-shadow:none;color:var(--v2-ink);text-align:left;animation:none;transform:none;transition:transform .14s var(--ease),background-color .14s var(--ease)}
+#sideNav .channel[data-ip]:active{transform:scale(.97)}
+#sideNav .channel[data-ip]:before,#sideNav .channel[data-ip]:after{content:none}
+#sideNav .channel-art{flex:none;display:grid;place-items:center;width:56px;height:32px;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+#sideNav .channel-art img,#sideNav .channel[data-ip]:not(.on) .channel-art img{display:block;width:auto;height:auto;max-width:56px;max-height:32px;padding:0;border-radius:0;background:none;box-sizing:border-box;object-fit:contain}
+#sideNav .channel[data-ip="all"] .channel-art img{max-height:24px;filter:brightness(0)}
+#sideNav .channel-tag{display:none}
+#sideNav .channel[data-ip] b{margin:0;font-size:15px;font-weight:500;line-height:1.3;color:inherit}
+#sideNav :is(.channel[data-ip].on,.channel[data-ip][aria-current="true"],.band-tile[aria-current]){background:var(--v2-well);box-shadow:inset 3px 0 0 var(--v2-ink)}
+#sideNav :is(.channel[data-ip].on,.channel[data-ip][aria-current="true"]) b{font-weight:700;color:var(--v2-ink)}
+/* 版本（全部遊戲搜尋結果用的選單）：只留選單，標題由「版本」小標負責 */
+#sideNav .browse-regions{display:block;margin:0;padding:0 8px;border:0}
+#sideNav .browse-regions>label,#sideNav .browse-regions>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#sideNav .browse-regions .cs1-replay{display:none}
+#sideNav .browse-regions select{width:calc(100% - 44px);min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background-color:var(--v2-well);color:var(--v2-ink)}
+#sideNav .browse-regions .info-tip{vertical-align:middle}
+/* 系列橫幅（series-band.js）：同一份資料與事件，改成直排 */
+#sideNav #seriesBand{display:block;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+#sideNav .series-band-head{display:block;padding:0}
+#sideNav .series-band-regions{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0 8px;overflow:visible}
+#sideNav .series-band-regions .series-band-note{flex-basis:100%}
+#sideNav :is(.series-band-regions button,.series-band-tabs button){flex:none;min-height:var(--btn-h);padding:0 14px;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:none;color:var(--v2-ink);font-size:14px;font-weight:500;white-space:nowrap;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease)}
+#sideNav :is(.series-band-regions button,.series-band-tabs button,.band-tile,.series-band-more):active{transform:scale(.97)}
+#sideNav .series-band-tools{display:block;flex:none;margin:0;padding:0 8px}
+#sideNav .series-band-expand{display:none}
+#sideNav .series-band-filter{width:100%;height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-well);color:var(--v2-ink);font-size:14px;box-shadow:var(--v2-shadow-in)}
+#sideNav .series-band-filter:focus{box-shadow:var(--v2-shadow-in)}
+#sideNav .series-band-scope{margin:6px 8px 0;font-size:var(--fs-note)}
+#sideNav .series-band-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;padding:0 8px;border:0;overflow:visible}
+#sideNav .series-band-tabs .count{margin-left:4px;color:var(--v2-ink-2);font-size:var(--fs-note)}
+#sideNav .series-band-tabs button.starts-eras{margin:0}
+#sideNav .series-band-tabs button.starts-eras:before{content:none}
+#sideNav .series-band-tabs button.on{background:var(--v2-surface);color:var(--v2-ink);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--v2-ink)}
+#sideNav .side-tab-label{flex-basis:100%;margin:10px 0 0 2px;font-size:var(--fs-note);font-weight:700;letter-spacing:.08em;color:var(--v2-ink-2)}
+#sideNav .series-band.is-filtering .series-band-tabs{opacity:.45}
+/* 系列清單：名稱＋代號一列，NEW／即將發售標在右邊；圖片收起來（右側標題區會有大圖） */
+#sideNav .rail-wrap,#sideNav .rail-wrap.has-overflow{display:block;margin:0}
+#sideNav .rail-nav{display:none}
+#sideNav .series-band-rail,#sideNav .series-band.is-grid .series-band-rail{display:flex;flex-direction:column;gap:2px;margin:6px 0 0;padding:0;overflow:visible;scroll-snap-type:none}
+#sideNav .band-tile,#sideNav .series-band.is-grid .band-tile{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center;flex:none;width:100%;min-width:0;min-height:var(--btn-h);padding:6px 10px;border:0;border-radius:10px;background:transparent;box-shadow:none;color:var(--v2-ink);text-align:left;scroll-snap-align:none;transition:transform .14s var(--ease),background-color .14s var(--ease)}
+#sideNav .band-tile-art{display:contents}
+#sideNav .band-tile-art:before{content:none}
+#sideNav .band-tile-art img{display:none}
+#sideNav .band-tile-flag{position:static;grid-column:2;grid-row:1;padding:2px 8px;border-radius:var(--btn-r);font-size:var(--fs-note);font-weight:700}
+#sideNav .band-tile-name{grid-column:1;grid-row:1;display:block;width:auto;min-height:0;margin:0;overflow:visible;font-size:14px;font-weight:500;line-height:1.35;white-space:normal;text-overflow:clip;color:var(--v2-ink)}
+#sideNav .band-tile-code{grid-column:1/-1;grid-row:2;width:auto;margin:0;overflow:hidden;font-size:var(--fs-note);font-weight:400;line-height:1.4;color:var(--v2-ink-2);text-overflow:ellipsis;white-space:nowrap}
+#sideNav .band-tile[aria-current] .band-tile-name{font-weight:700;color:var(--v2-ink)}
+#sideNav .series-band-more{width:100%;margin-top:4px;border:1px dashed var(--v2-line);border-radius:10px;background:transparent;color:var(--v2-ink)}
+#sideNav .series-band-empty{margin:8px;color:var(--v2-ink-2);font-size:var(--fs-sub)}
+@media (hover:hover) and (pointer:fine){
+  #sideNav :is(.side-toggle,.side-close):hover{background:var(--v2-well);color:var(--v2-ink)}
+  #sideNav :is(.channel[data-ip],.band-tile):not(.on):not([aria-current]):hover{background:var(--v2-page)}
+  #sideNav :is(.series-band-regions button,.series-band-tabs button):not(.on):hover{background:var(--v2-line)}
+}
+/* 取代的舊東西：遊戲頁不再放 #hero（遊戲列、版本、系列橫幅都搬進側欄了）；全部遊戲的搜尋結果也不留首頁區塊 */
+html.look-clean :is(body[data-view="game"],body[data-side="results"]) :is(#hero,#homeRails,#trendsSection,#eventsSection){display:none}
+
+/* ---- sheet：≤760px，從底部拉起 ---- */
+@media (max-width:760px){
+  #sideNav{display:flex;left:0;right:0;top:auto;bottom:0;width:auto;max-height:min(86dvh,680px);border-radius:18px 18px 0 0;transform:translateY(100%);padding-bottom:env(safe-area-inset-bottom)}
+  #sideNav.open{transform:none}
+  #sideNav .side-head{position:relative;padding-top:12px}
+  #sideNav .side-head:before{content:"";position:absolute;top:8px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--v2-line)}
+  #sideNav #channels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+  body[data-view="game"] .side-sheet-btn{display:flex}
+  body:not([data-side]) #channels{display:none}
+  /* 階段 1 把頂欄兩個選單縮到 2.5em／3em，窄於 44px 的觸控目標：補上最小寬度 */
+  html.look-clean body[data-view] #mobileHeaderScope select{min-width:44px}
+}
+.side-sheet-btn{align-items:center;gap:8px;width:100%;min-height:var(--btn-h);margin:8px 0 4px;padding:0 14px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:15px;text-align:left;box-shadow:var(--v2-shadow);transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+.side-sheet-btn:active{transform:scale(.97)}
+.side-sheet-btn:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+.side-sheet-label{flex:none;font-weight:700}
+.side-sheet-ctx{flex:1 1 auto;min-width:0;overflow:hidden;color:var(--v2-ink-2);font-size:var(--fs-sub);text-overflow:ellipsis;white-space:nowrap}
+.side-sheet-btn svg{flex:none;margin-left:auto;color:var(--v2-ink-2)}
+
+/* ---- drawer：761–999px（或矮視窗）。頂欄左側多一顆「目錄」，Logo 只留兔子騰出寬度 ---- */
+@media (min-width:761px) and (max-width:999px),(min-width:1000px) and (max-height:500px){
+  body[data-side] .side-menu-btn{display:inline-flex}
+}
+@media (min-width:761px) and (max-width:999px){body[data-side] header.top .brand span{display:none}}
+header.top .side-menu-btn{flex:none;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);padding:0 14px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:var(--fs-sub);font-weight:500;box-shadow:var(--v2-shadow);transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+header.top .side-menu-btn:active{transform:scale(.97)}
+header.top .side-menu-btn:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){header.top .side-menu-btn:hover{box-shadow:var(--v2-shadow-up)}}
+
+/* ---- inline：≥1000px 且高 ≥501px。固定在頂欄下方，側欄＋卡牆合計最寬 1440px 置中 ---- */
+@media (min-width:1000px) and (min-height:501px){
+  html{--side-edge:max(0px,calc((100% - var(--shell-max)) / 2))}
+  html[data-side-collapsed]{--side-w:var(--side-rail)}
+  body[data-side] #sideNav{z-index:4;left:var(--side-edge);top:var(--side-top);right:auto;bottom:0;width:var(--side-w);max-height:none;border-radius:0;box-shadow:none;transform:none;visibility:visible;transition:none}
+  #sideScrim,#sideNav .side-close{display:none}
+  body[data-side] #sideNav .side-toggle{display:inline-flex}
+  body[data-side] #sideNav .side-head{justify-content:flex-start;padding-left:8px}
+  html[data-side-collapsed] #sideNav .side-body,html[data-side-collapsed] #sideNav .side-toggle-text{display:none}
+  html[data-side-collapsed] #sideNav .side-head{justify-content:center;padding:8px 0 0}
+  html[data-side-collapsed] #sideNav .side-toggle{padding:0}
+  html[data-side-collapsed] #sideNav .side-toggle svg{transform:rotate(180deg)}
+  html.look-clean body[data-side] #main{display:flow-root;max-width:calc(var(--shell-max) - var(--side-w));margin:0 0 0 calc(var(--side-edge) + var(--side-w))}
+}
+
+/* 暫停動態、減少動態：側欄開合不動畫（inline 的收合本來就是瞬間；只轉場 transform 與 opacity） */
+@media (prefers-reduced-motion:reduce){#sideNav,#sideScrim{transition:none!important}}
+html[data-cs-paused] #sideNav,html[data-cs-paused] #sideScrim{transition:none!important}
+
+/* 首頁頂欄是深色底（look-clean.css），階段 1 的深色焦點框在上面只有約 1.06:1：改成淺色（smoke 的焦點框對比檢查） */
+html.look-clean body[data-view="landing"] header.top .nav button:focus-visible{outline-color:#F6F1E6}
