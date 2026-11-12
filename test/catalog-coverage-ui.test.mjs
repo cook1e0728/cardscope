@@ -49,7 +49,7 @@ test('coverage status keeps unknown denominators honest and supports future base
 });
 
 test('coverage status layout is responsive and keeps card content shrinkable',()=>{
-  assert.match(css,/\.coverage-status-grid\{display:grid;grid-template-columns:repeat\(5,minmax\(0,1fr\)/);
+  assert.match(css,/\.coverage-status-grid\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(\d+px,1fr\)\)/,'欄數自動配合遊戲數量，不鎖死 5 欄');
   assert.match(css,/\.coverage-status-card\{[^}]*min-width:0/);
   assert.match(css,/\.coverage-status-metrics\{[^}]*min-width:0|\.coverage-status-metrics>div\{[^}]*min-width:0/);
   assert.match(css,/@media\(max-width:760px\)[\s\S]*\.coverage-status-grid\{grid-template-columns:repeat\(2,minmax\(0,1fr\)/);

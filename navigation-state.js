@@ -40,8 +40,8 @@
       game:allowedGames.has(requestedGame)?requestedGame:'all',
       region:allowedRegions.has(requestedRegion)?requestedRegion:'all',
       series:clean(params.get('series')),
-      // view=all: a game's full card list; view=about: the data-status page.
-      view:['all','about'].includes(clean(params.get('view')))?clean(params.get('view')):'',
+      // view=all: a game's full card list; view=about: the data-status page; view=privacy: privacy and data sources.
+      view:['all','about','privacy'].includes(clean(params.get('view')))?clean(params.get('view')):'',
       rarity:clean(params.get('rarity'))||'all',
       price:allowedPrices.has(clean(params.get('price')))?clean(params.get('price')):'all',
       sort:allowedSorts.has(clean(params.get('sort')))?clean(params.get('sort')):'number-asc',
@@ -53,7 +53,7 @@
   }
 
   function urlFor(overrides={}){
-    const params=new URLSearchParams(),selectedGame=overrides.game??game,region=overrides.region??node('browseRegion')?.value??'all',series=overrides.series??browse?.seriesId??'',rarity=overrides.rarity??cardFilters?.rarity??'all',price=overrides.price??cardFilters?.price??'all',sort=overrides.sort??cardFilters?.sort??'number-asc',query=overrides.query??node('q')?.value?.trim()??'',card=overrides.card??currentCardId(),view=overrides.view??(selectedGame==='all'?(document.body?.dataset?.view==='about'?'about':''):!series&&browse?.all?'all':''),pages=overrides.pages??Math.max(1,Math.ceil(number(browse?.offset,0)/PAGE_SIZE));
+    const params=new URLSearchParams(),selectedGame=overrides.game??game,region=overrides.region??node('browseRegion')?.value??'all',series=overrides.series??browse?.seriesId??'',rarity=overrides.rarity??cardFilters?.rarity??'all',price=overrides.price??cardFilters?.price??'all',sort=overrides.sort??cardFilters?.sort??'number-asc',query=overrides.query??node('q')?.value?.trim()??'',card=overrides.card??currentCardId(),view=overrides.view??(selectedGame==='all'?(['about','privacy'].includes(document.body?.dataset?.view)?document.body.dataset.view:''):!series&&browse?.all?'all':''),pages=overrides.pages??Math.max(1,Math.ceil(number(browse?.offset,0)/PAGE_SIZE));
     if(selectedGame&&selectedGame!=='all')params.set('game',selectedGame);
     if(region&&region!=='all')params.set('region',region);
     if(series)params.set('series',series);
@@ -135,7 +135,7 @@
       if(node('cardSort'))node('cardSort').value=state.sort;
       if(node('q'))node('q').value=state.query;
       if(node('heroQ'))node('heroQ').value=state.query;
-      if(typeof siteView!=='undefined')siteView=state.view==='about'?'about':'';
+      if(typeof siteView!=='undefined')siteView=['about','privacy'].includes(state.view)?state.view:'';
       // The game page opens on the series (or full list) named in the URL, without first loading the default newest series.
       window.cardscopeEntry=state.game!=='all'&&(state.series||state.view==='all')?{series:state.series,all:!state.series&&state.view==='all'}:null;
       await originalChoose?.(state.game);

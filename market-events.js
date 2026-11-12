@@ -9,7 +9,7 @@
   function render(){
     const section=root.document?.getElementById('eventsSection');if(!section)return;
     const view=root.document.body?.dataset||{},game=view.game&&view.game!=='all'?view.game:null;
-    if(view.view==='about'){section.hidden=true;return}
+    if(view.view==='about'||view.view==='privacy'){section.hidden=true;return}
     pending=pending||root.fetch('/api/market-events').then(r=>r.ok?r.json():null).catch(()=>null);
     pending.then(body=>{
       if(!body)pending=null;

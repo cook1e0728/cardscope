@@ -34,6 +34,7 @@ test('exact title copy matches the server (providers/seo.mjs)', () => {
   assert.equal(title({ kind: 'card', name: '皮卡丘', original: 'ピカチュウ', number: '025/165', rarity: 'RR', series: '151' }), '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
   assert.equal(title({ kind: 'collection' }), '我的收藏｜CardScope');
   assert.equal(title({ kind: 'about' }), '資料收錄狀態｜CardScope');
+  assert.equal(title({ kind: 'privacy' }), '隱私說明｜CardScope');
 });
 
 test('missing card parts are omitted cleanly, with no stray separators', () => {
@@ -69,6 +70,8 @@ test('the page kinds produce distinct titles from real page state', () => {
   record('search', '「皮卡丘」搜尋結果｜CardScope');
   h.run("activeSearch=null;document.body.dataset.view='about'");
   record('about', '資料收錄狀態｜CardScope');
+  h.run("document.body.dataset.view='privacy'");
+  record('privacy', '隱私說明｜CardScope');
   h.document.getElementById = id => id === 'collectionDialog' ? { open: true } : null;
   record('collection', '我的收藏｜CardScope');
   h.document.getElementById = () => null;
@@ -76,7 +79,7 @@ test('the page kinds produce distinct titles from real page state', () => {
   h.modal.open = true;
   h.run("detailTitleInfo={name:'皮卡丘',original:'ピカチュウ',number:'025/165',rarity:'RR',series:'151'}");
   record('card detail', '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
-  assert.equal(seen.size, 7);
+  assert.equal(seen.size, 8);
 });
 
 test('closing the card detail or the collection restores the title of the page underneath', () => {

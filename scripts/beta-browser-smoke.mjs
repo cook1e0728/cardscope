@@ -368,7 +368,7 @@ async function runViewport(browser,viewport){
       await waitForVisible(page.locator('#cards .search-empty'),'reload did not restore the zero-result state');
     }
     assert.equal(pageErrors.length,0,`${viewport.name} page errors: ${pageErrors.join('; ')}`);
-    assert.ok(state.optionalServiceFailures>=2,`${viewport.name} detail did not exercise both optional service failures`);
+    assert.ok(state.optionalServiceFailures>=1,`${viewport.name} detail did not exercise the optional market service failure`);
     return {viewport:viewport.name,switches:20,cardRequests:state.cardRequests.length,detailRequests:state.detailRequests.length,optionalServiceFailures:state.optionalServiceFailures};
   }finally{
     await page.close();

@@ -220,16 +220,31 @@ body[data-view="game"] section.section:has(> #series),body[data-view="game"] .br
 
 /* Views: landing = search first; game = band + cards; about = data status (coverage, health, guidance moved out of the landing). */
 .about-intro,.cards-mode[hidden]{display:none}
-body[data-view="landing"] .top .search{display:none}
-body[data-view="landing"] #cardsSection:not(.has-results),body[data-view="landing"] section.section:has(> #series),body[data-view="about"] section.section:has(> #series){display:none}
+/* 首頁主視覺有大搜尋框所以頂欄的收起來；但搜尋結果（#cardsSection.has-results）仍是 data-view=landing，頂欄要有搜尋框才能改搜 */
+body[data-view="landing"]:not(:has(#cardsSection.has-results)) .top .search{display:none}
+body[data-view="landing"] #cardsSection:not(.has-results),body[data-view="landing"] section.section:has(> #series),body[data-view="about"] section.section:has(> #series),body[data-view="privacy"] section.section:has(> #series){display:none}
 body:not([data-view="about"]) .beta-guidance,body:not([data-view="about"]) #coverageStatus,body:not([data-view="about"]) #catalogHealth,body:not([data-view="about"]) .brand-showcase,body:not([data-view="about"]) #status{display:none}
-body[data-view="about"] .hero,body[data-view="about"] #cardsSection,body[data-view="about"] #trendsSection,body[data-view="about"] #selectedProduct{display:none}
+body[data-view="about"] .hero,body[data-view="about"] #cardsSection,body[data-view="about"] #trendsSection,body[data-view="about"] #selectedProduct,body[data-view="privacy"] .hero,body[data-view="privacy"] #cardsSection,body[data-view="privacy"] #trendsSection,body[data-view="privacy"] #selectedProduct{display:none}
 body[data-view="about"] .about-intro{display:grid;gap:6px;max-width:760px;padding:22px 0 4px}
-body[data-view="about"] .about-intro h1{margin:0;font-size:clamp(26px,3vw,38px);line-height:1.1}
+body[data-view="about"] .about-intro h2{margin:0;font-size:clamp(26px,3vw,38px);line-height:1.1}
 body[data-view="about"] .about-intro p{margin:0;color:var(--ink-2)}
 body:not([data-view="landing"]) .home-search,body:not([data-view="landing"]) .home-examples,body:not([data-view="landing"]) #homeLatest{display:none}
 .game-context:empty{display:none}
 body[data-view="about"] .hero-eyebrow{color:var(--ink-2)}
+/* privacy view (?view=privacy): privacy text + data-sources table; hidden in every other view */
+body:not([data-view="privacy"]) .info-page{display:none}
+.info-page{max-width:960px;padding:22px 0 8px}
+.info-page h2{margin:0;font-size:clamp(24px,3vw,34px);line-height:1.15}
+.info-page h3{margin:24px 0 8px;font-size:18px}
+.info-page p,.info-page li{color:var(--ink-2);line-height:1.7}
+.info-page ul,.info-page ol{margin:6px 0;padding-left:1.4em}
+.info-page a{color:var(--ip-ink,var(--ink))}
+.source-table-wrap{max-width:100%;margin:14px 0;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+.source-table{width:100%;min-width:760px;border-collapse:collapse;font-size:14px;line-height:1.6}
+.source-table caption{padding:10px 12px;text-align:left}
+.source-table th,.source-table td{padding:10px 12px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+.source-table thead th{border-top:0;color:var(--ink-2);white-space:nowrap}
+.source-table tbody th{width:9em;white-space:normal}
 
 /* Landing first screen: one big search box, tappable examples, the game tiles, then the newest series. */
 .home-search{display:flex;max-width:780px;margin:14px 0 8px;border:2px solid var(--ink);border-radius:8px;background:#fff;overflow:hidden}
