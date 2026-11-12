@@ -12,7 +12,8 @@ const [html,css,ui,switcher]=await Promise.all([
 
 test('catalog defaults to the visual grid and exposes an explicit IP landing scope',()=>{
   assert.match(ui,/let cardViewMode='grid'/);
-  assert.match(ui,/data-view="grid">圖鑑模式/);
+  assert.match(ui,/cardGroupMode='none'/,'grouping is its own switch, not a third display mode');
+  assert.match(ui,/segment\('cardViewSwitch','顯示方式','view',\[\['grid','圖鑑'\],\['list','清單'\]\]\)/);
   assert.match(html,/game==='all'/);
   assert.doesNotMatch(html,/classList\.add\('game-entry-grid'\)/,'the landing no longer draws a second game chooser');
   assert.match(html,/不同 IP 不會合併|每個 IP 獨立呈現/);

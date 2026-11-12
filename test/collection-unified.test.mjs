@@ -16,7 +16,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp
 function collection({ stored = {}, legacy = [], watchlist = {}, confirmAnswer = true, failWrites = false } = {}) {
   const storage = new Map(Object.entries(stored)), asked = [];
   const sandbox = vm.createContext({
-    CS, watchlist, watchlistMeta: {}, legacyFavoriteIds: legacy, renderedCards: new Map(), currentCardRows: [], asked,
+    CS, watchlist, watchlistMeta: {}, legacyFavoriteIds: legacy, renderedCards: new Map(), currentCardRows: [], asked, repaints: [], repaintCollected: (...args) => { sandbox.repaints.push(args); sandbox.renderDetailCollect(); },
     uiLocal: { get: (key, fallback) => storage.get(key) || fallback, set: (key, value) => { if (failWrites) return false; storage.set(key, value); return true; } },
     name: card => card.nameZh, cards() {}, renderDetailCollect() {}, showCollectionToast() {}, allKnownCards: () => [], cardSnapshot: (card, key) => ({ id: key, nameZh: card.nameZh }),
     confirm: message => { asked.push(message); return confirmAnswer; }
@@ -43,7 +43,7 @@ test('migration: old stars become quantity 1 once, counts stay, the old keys are
   assert.equal(failing.storage.has('cardscope-collection-unified'), false, 'not marked done, so the next load tries again');
 });
 
-test('star and ± share one number: add -> 1, remove asks first, ± never goes below the confirm', () => {
+test('star and ± share one number: add -> 1, removing a bare card is one press, notes or several copies ask first, ± never goes below the confirm', () => {
   const c = collection({ legacy: [], watchlist: {} });
   c.sandbox.renderedCards.set('a', { nameZh: '皮卡丘' });
   assert.equal(c.run('isFavorite("a")'), false);
@@ -55,6 +55,14 @@ test('star and ± share one number: add -> 1, remove asks first, ± never goes b
   c.run('stepWatchQuantity("a",-1)');
   assert.equal(c.run('watchQuantity("a")'), 1);
   assert.equal(c.sandbox.asked.length, 0, 'no question while the card stays in the collection');
+  // decision 10: one copy and nothing filled in (no condition, version or note) cancels at once, without a question
+  c.run('stepWatchQuantity("a",-1)');
+  assert.equal(c.run('watchQuantity("a")'), 0);
+  assert.equal(c.sandbox.asked.length, 0, 'a bare single copy is cancelled without asking');
+  assert.deepEqual(c.sandbox.repaints.at(-1), ['a', 1, 0], 'one single-card repaint per change');
+  // a saved condition, version or note is lost on cancel, so that asks
+  c.run('toggleFavorite("a")');
+  c.run('watchlistMeta.a={...watchlistMeta.a,condition:"NM"}');
   c.sandbox.confirm = () => { c.sandbox.asked.push('declined'); return false; };
   c.run('toggleFavorite("a")');
   c.run('stepWatchQuantity("a",-1)');
@@ -67,6 +75,20 @@ test('star and ± share one number: add -> 1, remove asks first, ± never goes b
   assert.equal(c.run('"a" in watchlistMeta'), false, 'removing also drops the saved condition and note');
   assert.equal(c.run('stepWatchQuantity("never",-1)'), undefined, 'a card that is not collected stays that way');
   assert.equal(c.run('watchQuantity("never")'), 0);
+  // several copies are also a loss worth one question, even with nothing filled in
+  c.run('setWatchQuantity("multi",3)');
+  c.sandbox.asked.length = 0;
+  c.sandbox.confirm = () => { c.sandbox.asked.push('multi'); return false; };
+  c.run('toggleFavorite("multi")');
+  assert.equal(c.sandbox.asked.length, 1);
+  assert.equal(c.run('watchQuantity("multi")'), 3);
+  for (const field of ['finish', 'note']) {
+    c.run('setWatchQuantity("n-' + field + '",1)');
+    c.run('watchlistMeta["n-' + field + '"]={...watchlistMeta["n-' + field + '"],' + field + ':"x"}');
+    c.run('toggleFavorite("n-' + field + '")');
+    assert.equal(c.sandbox.asked.length, 2 + (field === 'note' ? 1 : 0), field + ' also asks');
+    assert.equal(c.run('watchQuantity("n-' + field + '")'), 1);
+  }
 });
 
 test('one count everywhere: 款數 and 張數 come from quantity only, so the filter button and the collection window agree', () => {
@@ -74,7 +96,9 @@ test('one count everywhere: 款數 and 張數 come from quantity only, so the fi
   assert.deepEqual(JSON.parse(c.run('JSON.stringify(collectionIds())')), ['a', 'b']);
   assert.equal(c.run('collectionTotal()'), 3);
   assert.doesNotMatch(ui, /favoriteIds/, 'no second star list is kept');
-  assert.match(ui, /control\.textContent=`只看我的收藏（\$\{collectionIds\(\)\.length\}）`/);
+  // the 全部／已收藏／還缺 group reuses the stored cardscope-favorites-only switch; the count lives in the summary line, not on the button
+  assert.match(ui, /const current=missingOnlyActive\(\)\?'missing':favoritesOnly\?'owned':'all'/);
+  assert.match(ui, /uiLocal\.set\('cardscope-favorites-only',favoritesOnly\?'1':'0'\)/);
   assert.match(ui, /filteredCards=function\(rows\)\{const result=cardscopeBaseFilteredCards\(rows\);const owned=favoritesOnly\?result\.filter\(card=>isFavorite\(entryKey\(card\)\)\)/);
   assert.match(ui, /function collectionItems\(\)\{return CS\.itemsFromLegacy\(\[\],watchlist,watchlistMeta\)\.filter\(item=>item\.quantity>0\)\}/);
   assert.match(ui, /const quantity=CS\.collectedQuantity\(item\);if\(quantity>0\)watchlist\[item\.id\]=quantity/, 'importing an old star-only backup gives quantity 1');

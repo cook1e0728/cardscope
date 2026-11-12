@@ -325,3 +325,101 @@ html[data-cs-paused] #sideNav,html[data-cs-paused] #sideScrim{transition:none!im
 
 /* 首頁頂欄是深色底（look-clean.css），階段 1 的深色焦點框在上面只有約 1.06:1：改成淺色（smoke 的焦點框對比檢查） */
 html.look-clean body[data-view="landing"] header.top .nav button:focus-visible{outline-color:#F6F1E6}
+
+/* ===== 10. 卡牆與工具列（階段 3，ui-enhancements.js；docs/REDESIGN_PLAN.md 第 4 節、決定 3c／6／10／11） =====
+   工具列一排：顯示方式｜分組｜稀有度｜排序｜收藏狀態（#cardControls）；下面一行是集卡進度、篩選結果數、ⓘ、收藏摘要。
+   卡片三行：卡名（旁邊是收藏）、卡號＋稀有度、價格；白色內容面、不加框、暖色淡陰影。 */
+html.look-clean body[data-view] #cardTools{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:16px 0;padding:0!important;border:0;border-radius:0;background:transparent;box-shadow:none;min-height:0!important}
+html.look-clean body[data-view] #cardTools[hidden],html.look-clean body[data-view] #cardTools [hidden]{display:none!important}
+html.look-clean body[data-view] #cardControls{order:1;flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-width:0}
+html.look-clean body[data-view] #cardControls>.view-switch{flex:none;display:inline-flex;width:auto;flex-wrap:nowrap;margin:0}
+html.look-clean body[data-view] #cardControls .view-switch button{flex:none;min-width:44px;padding:0 14px;white-space:nowrap}
+html.look-clean body[data-view] #cardControls .filter-field{position:relative;flex:none;min-width:0;margin:0;display:block}
+html.look-clean body[data-view] #cardControls .filter-field select{width:auto;min-width:132px;max-width:220px;border-color:transparent;background-color:var(--v2-well)}
+/* 欄位名稱留給報讀軟體（選單的第一個選項已寫明是什麼）；「此遊戲沒有價格排序」的說明已在 ⓘ */
+html.look-clean body[data-view] #cardControls .filter-field>label,html.look-clean body[data-view] #cardControls .price-note{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* 資訊列 */
+html.look-clean body[data-view] #seriesProgress{order:2;flex:1 1 240px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;min-height:var(--btn-h);margin:0;padding:0;border:0;border-radius:0;background:none;color:var(--v2-ink)}
+html.look-clean body[data-view] .series-progress-text{flex:none;font-size:var(--fs-sub);font-weight:600;font-variant-numeric:tabular-nums}
+html.look-clean body[data-view] #seriesProgress .series-progress-bar{flex:1 1 96px;height:4px;border-radius:2px;background:var(--v2-line)}
+html.look-clean body[data-view] #seriesProgress .series-progress-bar i{border-radius:2px;background:var(--v2-ink)}
+html.look-clean body[data-view] #seriesProgress small{flex:1 1 100%;font-size:var(--fs-note);color:var(--v2-ink-2)}
+html.look-clean body[data-view] #cardTools #filterSummary{order:3;flex:0 1 auto;margin:0;font-size:var(--fs-sub);color:var(--v2-ink-2)}
+html.look-clean body[data-view] #cardTools .price-info{order:4;flex:none}
+html.look-clean body[data-view] #watchlistSummary{order:5;flex:0 1 auto;min-width:0;margin:0 0 0 auto;padding:0;border:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:0 4px;font-size:var(--fs-sub);color:var(--v2-ink-2)}
+html.look-clean body[data-view] #watchlistSummary .wl-count{font-size:var(--fs-sub);color:var(--v2-ink-2)}
+html.look-clean body[data-view] #watchlistSummary .wl-count b{font-size:var(--fs-sub);color:var(--v2-ink)}
+html.look-clean body[data-view] #watchlistSummary .info-tip{vertical-align:middle}
+html.look-clean body[data-view] #watchlistSummary .info-body{left:auto;right:0}
+html.look-clean body[data-view] #watchlistSummary button{margin-left:4px;padding:0 16px}
+
+/* 卡片：三行 */
+html.look-clean body[data-view] .cards:not(.list-view){gap:16px 14px}
+html.look-clean body[data-view] .cards .card:not(.card-list){
+  display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"art art" "ctx ctx" "name act" "meta meta" "price price" "flags flags";
+  align-content:start;align-items:center;gap:0 4px;padding:8px 8px 10px;border:0;border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);
+  transition:box-shadow .14s var(--ease);
+}
+html.look-clean body[data-view] .cards .card:not(.card-list) .art{grid-area:art;margin:0 0 8px;padding:0;border-radius:8px;background:var(--v2-page)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .art img{border-radius:6px}
+html.look-clean body[data-view] .cards .card:not(.card-list) h3{grid-area:name;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;min-width:0;margin:0;overflow:hidden;overflow-wrap:anywhere;white-space:normal;font-size:14px;font-weight:600;line-height:1.35;letter-spacing:0;color:var(--v2-ink)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .meta{grid-area:meta;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:2px 6px;min-width:0;margin:0;color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-no{flex:none;font-size:var(--fs-sub);font-weight:500;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-rarity{margin-left:0}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-pricing{grid-area:price;min-width:0;margin-top:2px}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-price{margin:0;font-size:var(--fs-body);font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-flags{grid-area:flags;display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+/* 混合牆才有的一行：遊戲、系列、版本 */
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-ctx{grid-area:ctx;display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;min-width:0;margin:0 0 4px;font-size:var(--fs-note);color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card .card-ctx .badge{margin:0;padding:0;border:0;border-radius:0;background:none;font-size:var(--fs-note);font-weight:600;color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card .card-ctx .card-series{flex:0 1 auto;order:0;margin:0;min-width:0;max-width:100%;overflow:hidden;font-size:var(--fs-note);text-overflow:ellipsis;white-space:nowrap}
+html.look-clean body[data-view] .cards .card .card-ctx .card-versions{order:0}
+html.look-clean body[data-view] .cards .card .card-ctx .region-chip{padding:0 6px;border-radius:6px;background:var(--v2-well);font-weight:500}
+/* 收藏：一個動作。沒收藏＝一顆 ☆（卡名右邊；手機在卡號右邊）；收藏了＝「− 數量 ＋」整列放在卡片底部 */
+html.look-clean body[data-view] .cards .card .card-actions{position:relative;top:auto;right:auto;z-index:2;grid-area:act;justify-self:end;align-self:center;display:flex;width:auto;margin:0}
+html.look-clean body[data-view] .cards .card .favorite-toggle{width:44px;height:44px;min-width:44px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;color:var(--v2-ink-2);font-size:22px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
+html.look-clean body[data-view] .cards .card .favorite-toggle:active{transform:scale(.97)}
+html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act"}
+html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{justify-self:stretch;margin-top:6px}
+html.look-clean body[data-view] .cards .card .watchlist-inline{display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:hidden}
+html.look-clean body[data-view] .cards .card .watchlist-inline button{flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
+html.look-clean body[data-view] .cards .card .watchlist-inline button:active{transform:scale(.97)}
+html.look-clean body[data-view] .cards .card .watchlist-inline .watch-quantity{flex:1 1 auto;text-align:center;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
+html.look-clean body[data-view] .cards .card :is(.favorite-toggle,.watchlist-inline button):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
+/* 清單模式：收藏鈕在最右邊 */
+html.look-clean body[data-view] .cards .card.card-list{padding:8px 14px 8px 10px;border:0;border-radius:14px;background:#fff;box-shadow:var(--v2-shadow)}
+html.look-clean body[data-view] .cards .card.card-list .card-actions{grid-area:auto;grid-column:-2/-1;display:flex;justify-self:end;align-self:center;margin:0}
+html.look-clean body[data-view] .cards .card.card-list .watchlist-inline{width:128px}
+html.look-clean body[data-view] .cards .card.card-list .favorite-toggle{margin:0}
+html.look-clean body[data-view] .cards .card.card-list .card-list-main,html.look-clean body[data-view] .cards .card.card-list .card-list-facts{min-width:0}
+html.look-clean body[data-view] .cards .card.card-list .card-list-facts :is(.card-reference,.card-reference *,.meta,strong){color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{color:var(--v2-ink)}
+@media (hover:hover) and (pointer:fine){
+  html.look-clean body[data-view] .cards .card:not(.card-list):hover{box-shadow:var(--v2-shadow-up)}
+  html.look-clean body[data-view] .cards .card .favorite-toggle:hover{background:var(--v2-well);color:var(--v2-ink)}
+  html.look-clean body[data-view] .cards .card .watchlist-inline button:hover{background:rgba(60,45,20,.08)}
+}
+
+/* 手機：一排 3 張（決定 6）；工具列單排橫向捲動（決定 11）；收藏在卡號那一行右邊 */
+@media (max-width:760px){
+  html.look-clean body[data-view] .cards:not(.list-view){grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}
+  html.look-clean body[data-view] .cards .card:not(.card-list){padding:6px 6px 8px;border-radius:12px;grid-template-areas:"art art" "ctx ctx" "name name" "meta act" "price price" "flags flags"}
+  html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act"}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .art{margin-bottom:6px}
+  html.look-clean body[data-view] .cards .card:not(.card-list) h3{font-size:13px;line-height:1.3}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .meta{flex-direction:column;align-items:flex-start;gap:2px}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .card-sep{display:none}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .card-price{font-size:var(--fs-sub)}
+  html.look-clean body[data-view] .cards .card .favorite-toggle{margin:0 -4px 0 0}
+  html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{margin:4px -6px -2px}
+  html.look-clean body[data-view] #cardControls{flex-wrap:nowrap;overflow-x:auto;padding:2px 32px 2px 0;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
+  html.look-clean body[data-view] #cardControls::-webkit-scrollbar{display:none}
+  html.look-clean body[data-view] #cardControls>*{scroll-snap-align:start}
+  html.look-clean body[data-view] #watchlistSummary{margin-left:0;justify-content:flex-start}
+  html.look-clean body[data-view] .cards .card.card-list{grid-template-columns:58px minmax(0,1fr) auto;column-gap:10px}
+  html.look-clean body[data-view] .cards .card.card-list .card-list-main{grid-column:2;grid-row:1}
+  html.look-clean body[data-view] .cards .card.card-list .card-list-facts{grid-column:2;grid-row:2;display:flex;flex-wrap:wrap;gap:2px 10px}
+  html.look-clean body[data-view] .cards .card.card-list .card-list-facts b{white-space:nowrap}
+  html.look-clean body[data-view] .cards .card.card-list .card-actions{grid-column:3;grid-row:1/3;justify-self:end}
+  html.look-clean body[data-view] .cards .card.card-list .watchlist-inline{width:116px}
+}

@@ -99,10 +99,10 @@ test('SAMPLE 浮水印只有一套：角落預覽已移除，卡圖自帶 SAMPLE
 
 test('我的收藏：用語統一為「我的收藏」與「張」，並提供 window.openCollection', () => {
   assert.doesNotMatch(ui, /追蹤清單|\$\{totalQuantity\} 件| 件<|件數/);
-  assert.match(ui, /<b>我的收藏<\/b><span> 共 \$\{collectionTotal\(\)\} 張<\/span>/);
+  assert.match(ui, /<span class="wl-count"><b>我的收藏<\/b> 共 \$\{collectionTotal\(\)\} 張<\/span>/);
   assert.match(ui, /function collectionTotal\(\)\{return collectionIds\(\)\.reduce\(\(sum,id\)=>sum\+watchQuantity\(id\),0\)\}/, '頂部摘要與清單視窗用同一個張數（數量就是收藏）');
   assert.match(ui, /<b>已加入我的收藏<\/b>/);
-  assert.match(ui, /aria-label="我的收藏張數"/);
+  assert.match(ui, /class="watchlist-inline" data-action="watchlist" role="group" aria-label="\$\{title\}，已收藏 \$\{quantity\} 張"/, '卡片上的「− 數量 ＋」是一組，朗讀出卡名與目前張數');
   assert.match(ui, /window\.openCollection=openCollection;/);
   assert.match(ui, /dialog\.showModal\(\)/, '用原生 dialog，焦點鎖定、Escape 與焦點返回由瀏覽器處理');
   assert.match(ui, /<h2 id="collectionTitle"[^>]*>我的收藏<\/h2>/);

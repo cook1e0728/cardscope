@@ -236,23 +236,14 @@
     },1400);
   }
 
-  /* ---------- 5. 手機：我的收藏列與「下載清單 CSV」收進「更多工具」，卡牆往上提；頂欄 placeholder 縮短 ---------- */
-  function foldTools(){
-    const s=$('#watchlistSummary');if(!s)return;
-    const mq=matchMedia('(max-width:760px)'),sync=()=>{
-      const d=s.closest('.cs-more');
-      if(mq.matches&&!d){const n=el('details','cs-more'),cards=$('#cards');(cards||s).after(n);n.append(el('summary','','更多工具：我的收藏、下載清單'),s)} // 手機放在卡牆下方
-      else if(!mq.matches&&d){$('#cardTools')?.append(s);d.remove()} // 桌面不包，版面維持原樣
-    };
-    sync();mq.addEventListener('change',sync);
-  }
+  /* ---------- 5. 頂欄 placeholder 縮短（我的收藏摘要已在階段 3 併進卡牆工具列，不再於手機折進「更多工具」） ---------- */
   function shortPlaceholder(){
     const q=$('#q');if(!q)return;const full=q.placeholder,mq=matchMedia('(max-width:760px)'),sync=()=>{q.placeholder=mq.matches?'卡名或卡號':full};
     sync();mq.addEventListener('change',sync);
   }
 
   function init(){
-    splitTitle();syncNav();foldTools();shortPlaceholder();
+    splitTitle();syncNav();shortPlaceholder();
     // 重看導覽：桌面在「版本」那一列，手機在標題小卡內
     const mk=(cls)=>{const b=el('button',cls,'✦ 重看導覽');b.type='button';b.classList.add('cs1-replay');b.onclick=()=>startTour();return b};
     $('.browse-regions')?.append(mk(''));

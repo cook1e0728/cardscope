@@ -283,15 +283,12 @@ async function runViewport(browser,viewport){
     await waitForGame(page,'pokemon');
 
     const rarityFilter=page.locator('#rarityFilter');
-    // Phones keep the selects in a bottom sheet: open it, choose, then 套用.
-    const phone=viewport.width<=760;
-    const chooseRarity=async value=>{
-      if(phone){await page.locator('.filter-sheet-toggle').click();await waitForVisible(page.locator('#filterSheet.open'),`${viewport.name} filter sheet did not open`)}
-      await rarityFilter.selectOption(String(value));
-      if(phone)await page.locator('#filterSheet .filter-sheet-apply').click();
-    };
-    if(phone){await page.locator('.filter-sheet-toggle').click();await waitForVisible(rarityFilter,`${viewport.name} rarity filter missing`);await page.locator('#filterSheet .filter-sheet-close').click()}
-    else await waitForVisible(rarityFilter,`${viewport.name} rarity filter missing`);
+    // 階段 3：工具列只有一套（顯示｜分組｜稀有度｜排序｜收藏狀態），手機也一樣，不再有底部篩選面板；選稀有度就直接選，改完立刻生效。
+    const chooseRarity=async value=>{await rarityFilter.selectOption(String(value))};
+    assert.equal(await page.locator('.filter-sheet-toggle, #filterSheet, .rarity-pills, .rarity-hud').count(),0,`${viewport.name} the old phone filter sheet and rarity quick-pick are gone`);
+    await waitForVisible(rarityFilter,`${viewport.name} rarity filter missing`);
+    assert.deepEqual(await page.locator('#cardControls').evaluate(row=>[...row.children].filter(item=>!item.hidden).map(item=>item.id||item.className.split(' ')[0])),['cardViewSwitch','cardGroupSwitch','filter-field','filter-field','collectionState'],`${viewport.name} toolbar order: display | grouping | rarity | sort | collection state`);
+    assert.equal(await page.locator('#cardTools .filter-field:not([hidden])').count(),2,`${viewport.name} one rarity select and one sort select (the price filter only shows when verified prices exist), no second set`);
     const srValue=await rarityFilter.locator('option').evaluateAll(options=>options.find(option=>option.value==='SR'||/^SR(?:\b|（)/.test(option.textContent||''))?.value);
     assert.ok(srValue,`${viewport.name} fixture should expose an SR rarity option`);
     await chooseRarity(srValue);
@@ -306,6 +303,25 @@ async function runViewport(browser,viewport){
     assert.equal(new URL(page.url()).searchParams.get('game'),'pokemon');
     await chooseRarity('all');
     await waitForGame(page,'pokemon');
+
+    // 收藏是一個動作：☆ 加 1 張、「− 數量 ＋」調整、減到 0 取消；只重畫那一張卡，其他卡的節點留著（B7）。
+    const wallCards=page.locator('#cards .card');
+    assert.ok(await wallCards.count()>=2,`${viewport.name} need two cards to check single-card repaint`);
+    await page.evaluate(()=>{document.querySelectorAll('#cards .card').forEach((card,index)=>{card.dataset.smokeNode=String(index)})});
+    const first=wallCards.nth(0),firstStar=first.locator('.favorite-toggle');
+    assert.equal(await first.locator('.card-ctx').count(),0,`${viewport.name} a single series page keeps game, series and version labels off the cards`);
+    const starBox=await firstStar.boundingBox();assert.ok(starBox.width>=44&&starBox.height>=44,`${viewport.name} the collect star is a 44px target`);
+    await firstStar.click();
+    await waitForVisible(first.locator('.watchlist-inline'),`${viewport.name} one press on ☆ should add the card`);
+    assert.equal(await first.locator('.watch-quantity').innerText(),'1');
+    assert.match(await first.locator('.watchlist-inline').getAttribute('aria-label'),/已收藏 1 張/);
+    await first.locator('[data-watch-increment]').click();
+    assert.equal(await first.locator('.watch-quantity').innerText(),'2');
+    assert.equal(await page.evaluate(()=>[...document.querySelectorAll('#cards .card')].map(card=>card.dataset.smokeNode).join()),await wallCards.evaluateAll(cards=>cards.map((_,index)=>String(index)).join()),`${viewport.name} collecting must not rebuild the wall`);
+    await first.locator('[data-watch-decrement]').click();
+    await first.locator('[data-watch-decrement]').click();
+    await waitForVisible(first.locator('.favorite-toggle'),`${viewport.name} going to 0 should cancel the collection`);
+    assert.equal(await first.locator('.watchlist-inline').count(),0);
 
     // Open the deliberately broken-image card. Market and reports are both
     // unavailable, but the detail surface must remain usable and disclose the
