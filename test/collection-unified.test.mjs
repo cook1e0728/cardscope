@@ -104,16 +104,29 @@ test('one count everywhere: 款數 and 張數 come from quantity only, so the fi
   assert.match(ui, /const quantity=CS\.collectedQuantity\(item\);if\(quantity>0\)watchlist\[item\.id\]=quantity/, 'importing an old star-only backup gives quantity 1');
 });
 
-test('collection window: region names follow the game, and the meaningless 最近瀏覽系列 stat is replaced by 涵蓋遊戲', () => {
-  assert.match(ui, /rn\(meta\.region,meta\.game\)/);
+test('collection page: wall rows keep the saved snapshot, the side list counts only games that are known, and version labels follow the game', () => {
   assert.match(ui, /choiceLabels\(meta\.choices\|\|\[\],meta\.game\)/);
   assert.match(ui, /bindPriceTrend\(c\.game,m,c\)/);
-  assert.doesNotMatch(ui, /最近瀏覽系列|collStatRecent|recentSeriesCount/);
-  const c = collection({ watchlist: { a: 1, b: 2, c: 1 } });
-  c.sandbox.watchlistMeta = { a: { game: 'pokemon' }, b: { game: 'onepiece' }, c: {} };
-  vm.runInContext(between('function collectionGameCount', 'function refreshCollectionValue'), c.sandbox);
-  assert.equal(c.run('collectionGameCount()'), 2, 'cards without a known game are not counted');
-  assert.match(ui, /function shownFinish\(item\)\{return item\.finish\|\|CS\.soleFinish\(/, 'a card with one price version shows it as the default 版本 (display only)');
+  assert.doesNotMatch(ui, /最近瀏覽系列|collStatRecent|recentSeriesCount|collectionGameCount/);
+  const meta = { a: { v: 1, game: 'pokemon', region: 'JP', seriesId: 's1', nameZh: '皮卡丘', officialCardNumber: '025', rarity: 'RR', image: 'https://x.test/a.png', version: '版本 2' }, b: { v: 1, game: 'onepiece' }, c: {} };
+  const sandbox = vm.createContext({ collectionUi: { filter: { game: '', series: '' }, failed: new Set() }, watchlistMeta: meta, G: () => ({}), window: { CARD_GAMES: [{ id: 'pokemon', name: '寶可夢' }, { id: 'onepiece', name: '航海王' }] }, e: esc, seriesLabel: id => id });
+  vm.runInContext(between('const collectionGameName', 'window.collectionFilterLabel'), sandbox);
+  const run = code => vm.runInContext(code, sandbox);
+  const rows = ['a', 'b', 'c'].map(id => run(`collectionWallRow({id:'${id}'})`));
+  assert.deepEqual([rows[0].region, rows[0].seriesId, rows[0].printings[0].cardId, rows[0].printings[0].imageUrl, rows[0].printings[0].metadata.variantName, rows[0].__collection], ['JP', 's1', 'a', 'https://x.test/a.png', '版本 2', true]);
+  assert.match(rows[2].nameZh, /卡片資料載入中（c）/, 'an entry without a snapshot says so');
+  sandbox.collectionUi.failed.add('c');
+  assert.match(run("collectionWallRow({id:'c'})").nameZh, /查無這張卡的資料（c）/);
+  sandbox.rows = rows;
+  const side = run('collectionSideHtml(rows)');
+  assert.match(side, /全部收藏<\/span><span class="coll-side-count">3</);
+  assert.equal(side.match(/data-coll-game=/g).length, 2, 'cards without a known game get no game button');
+  assert.doesNotMatch(side, /data-coll-series=/, 'series only open under the chosen game');
+  run("collectionUi.filter.game='pokemon'");
+  assert.match(run('collectionSideHtml(rows)'), /data-coll-game="pokemon" data-coll-series="s1"/);
+  assert.equal(run("collectionRowMatches({game:'pokemon',seriesId:'s1'})"), true);
+  assert.equal(run("collectionRowMatches({game:'onepiece',seriesId:''})"), false);
+  assert.match(ui, /function shownFinish\(item\)\{return item\.finish\|\|CS\.soleFinish\(/, 'a card with one price version shows it as the default 閃卡版本 (display only)');
 });
 
 // --- detail page: 收錄版本
@@ -176,7 +189,7 @@ test('收錄版本: Yu-Gi-Oh! shows the printed number first with the passcode a
 test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the grid quantity, 44px targets', () => {
   const c = collection({ watchlist: {} });
   const slot = { dataset: { detailCollect: 'k1' }, innerHTML: '', contains: () => false, querySelector: () => null };
-  Object.assign(c.sandbox, { document: { querySelector: () => slot, activeElement: null } });
+  Object.assign(c.sandbox, { document: { querySelector: () => slot, activeElement: null }, collectionEditorHtml: () => '', onCollectionField() {}, chooseCollectionVersion() {} });
   vm.runInContext(between('function renderDetailCollect', '// ── 詳細資料（REDESIGN_PLAN'), c.sandbox);
   c.run('renderDetailCollect()');
   assert.match(slot.innerHTML, /data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</);

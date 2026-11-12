@@ -7,8 +7,8 @@
   'use strict';
   const COLLAPSE_KEY='cardscope-side-collapsed';
   const sideMode=(width,height)=>width<=760?'sheet':width>=1000&&height>=501?'inline':'drawer';
-  // 側欄只在遊戲頁與全部遊戲的搜尋結果出現；首頁 landing 與 about／privacy 維持滿版
-  const sideState=(view,hasResults)=>view==='game'?'game':view==='landing'&&hasResults?'results':'';
+  // 側欄在遊戲頁、全部遊戲的搜尋結果、我的收藏（收藏篩選）出現；首頁 landing、行情與 about／privacy 維持滿版
+  const sideState=(view,hasResults)=>view==='game'?'game':view==='collection'?'collection':view==='landing'&&hasResults?'results':'';
   // localStorage 在無痕、封鎖網站資料時會丟例外：讀不到就當展開、寫不進去就只在這個分頁記
   const collapsedStore=storage=>({
     read(){try{return storage.getItem(COLLAPSE_KEY)==='1'}catch{return false}},
@@ -66,7 +66,7 @@
     }else if(homes.has(el)&&el.parentNode===slot){homes.get(el).before(el)}
   }
   function dock(){
-    place($('channels'),slots.games,usable());
+    place($('channels'),slots.games,usable()&&body.dataset.side!=='collection');
     place(doc.querySelector('.browse-regions'),slots.region,body.dataset.side==='results');
     // #gameContext 是 series-band.js 放系列橫幅的錨點（anchor.after(band)）：搬一次，橫幅之後重建也都落在側欄裡
     const anchor=$('gameContext');if(anchor&&anchor.parentNode!==slots.series)slots.series.prepend(anchor);
@@ -115,6 +115,8 @@
   // 手機上「選系列」鈕顯示現在的位置，不用打開選單就知道在哪
   function refreshContext(){
     const label=$('sideSheetCtx');if(!label)return;
+    if(body.dataset.view==='collection'){label.textContent=scope.collectionFilterLabel?.()||'全部收藏';const head=doc.querySelector('.side-sheet-label');if(head)head.textContent='篩選收藏';return}
+    const head=doc.querySelector('.side-sheet-label');if(head)head.textContent='選系列';
     const game=(scope.CARD_GAMES||[]).find(item=>item.id===body.dataset.game),select=$('browseRegion'),region=select&&select.value!=='all'?select.selectedOptions?.[0]?.textContent:'',title=$('selectedProduct')?.querySelector('h2')?.textContent;
     label.textContent=[game?.name,region,title].filter(Boolean).join('・');
   }
@@ -161,7 +163,7 @@
   // overlay 模式選了系列／商品、或回到「全部遊戲」就收起來（選遊戲、版本、分類時留著，讓人接著挑系列）
   side.addEventListener('click',event=>{
     if(mode()==='inline')return;
-    if(event.target.closest?.('.band-tile,.channel[data-ip="all"]'))close();
+    if(event.target.closest?.('.band-tile,.channel[data-ip="all"],.coll-side-btn'))close();
   });
   doc.addEventListener('keydown',event=>{
     // 篩選欄的 Esc 先清掉字（它自己 preventDefault），ⓘ 說明的 Esc 由 ui-actions.js 先處理
@@ -171,6 +173,7 @@
   // 「圖鑑」：手機開選單；桌機在遊戲頁跳到側欄（收合著就先展開）；首頁沒有側欄，交回 game-switcher.js 原本的捲動
   doc.addEventListener('click',event=>{
     const button=event.target.closest?.('[data-nav="browse"]');if(!button)return;
+    if(['collection','market'].includes(body.dataset.view))return;// 這兩頁的「圖鑑」回首頁（game-switcher.js）
     const m=mode();
     if(m==='sheet'||(m==='drawer'&&sideOn())){event.stopImmediatePropagation();if(isOpen())close();else open(button);return}
     if(m==='inline'&&sideOn()){
@@ -199,5 +202,5 @@
   scope.installDialogFocus?.(side,{doc,initialFocus:()=>side.querySelector('.channel.on')||closeBtn,returnTarget:()=>opener});
 
   reflectCollapse();syncSide();setTop();decorate();
-  scope.cardscopeSideNav={open,close,isOpen,mode};
+  scope.cardscopeSideNav={open,close,isOpen,mode,refresh:refreshContext};
 })(window);

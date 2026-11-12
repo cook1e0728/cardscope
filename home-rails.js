@@ -1,6 +1,6 @@
 // 首頁「最新｜最夯｜最熱」（重新設計 v2，REDESIGN_PLAN 第 3 節）：夜空展示區下方的一組分段按鈕＋三個面板。
 // 最新＝原本的 #homeLatest（series-band.js 照舊畫，標記直接放在 index.html 的面板裡）。
-// 最夯＝/api/price-movers 的 data.up 前 6 張，與下方完整漲跌榜共用同一個請求（price-movers.js 的 priceMoversShared）。
+// 最夯＝/api/price-movers 的 data.up 前 6 張，加一個連到行情頁（?view=market）的連結；行情頁的完整漲跌榜與這裡共用同一個請求（price-movers.js 的 priceMoversShared）。
 // 最熱＝/api/hot-cards 近 7 天被開最多次的卡前 12 張；沒有這支 API（404）或還沒有資料時顯示安靜的空白狀態。
 (root=>{
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -32,7 +32,7 @@
     const meta=mov?.meta||{},days=Number(meta.windowDays)||14;
     const info=mov?shared().info(mov.up,mov.down,meta):'';
     const body=!mov?quiet('讀取中…'):mov.up.length?`<div class="rails-rail">${mov.up.slice(0,TREND_LIMIT).map(row=>shared().card(row,true)).join('')}</div>`:quiet('目前沒有符合條件的卡');
-    return head(`近 ${days} 天參考價漲幅最大（寶可夢）`,'歐洲平台參考價，不是成交價',info)+body;
+    return head(`近 ${days} 天參考價漲幅最大（寶可夢）`,'歐洲平台參考價，不是成交價',info)+body+'<p class="rails-more"><a href="/?view=market" data-spa>看完整行情</a></p>';
   }
   // 左右鍵在三個分頁間循環，Home／End 到頭尾；其他鍵回 -1。
   const nextTab=(key,index,count)=>key==='ArrowRight'?(index+1)%count:key==='ArrowLeft'?(index+count-1)%count:key==='Home'?0:key==='End'?count-1:-1;

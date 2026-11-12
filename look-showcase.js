@@ -20,10 +20,10 @@
   }
 
   /* ---------- 2. 目前頁標記（頂欄與 dock）：landing＝搜尋、game＝圖鑑 ---------- */
-  // 首頁的「搜尋」「圖鑑」是同一頁內的捲動：被點的那個兩處（頂欄與 dock）一起亮；開著我的收藏對話框時亮「我的收藏」。
+  // 首頁的「搜尋」「圖鑑」是同一頁內的捲動：被點的那個兩處（頂欄與 dock）一起亮；在我的收藏頁時亮「我的收藏」。
   let picked=null;
   function syncNav(){
-    const view=doc.body.dataset.view,cur=doc.querySelector('dialog.collection-dialog[open]')?'collection':view==='game'?'browse':view==='landing'?picked||'search':undefined;
+    const view=doc.body.dataset.view,cur=view==='collection'?'collection':view==='game'?'browse':view==='landing'?picked||'search':undefined;
     doc.querySelectorAll('[data-nav]').forEach(b=>b.dataset.nav===cur?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   }
 

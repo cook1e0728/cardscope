@@ -5,6 +5,7 @@
   const allowedRegions=new Set(['all','JP','TW','US','CN','KR','ASIA']);
   const allowedSorts=new Set(['number-asc','number-desc','rarity-desc','rarity-asc','price-asc','price-desc','release-desc']);
   const allowedPrices=new Set(['all','priced','unpriced']);
+  const SITE_VIEWS=['about','privacy','collection','market'];
   let restoring=false;
 
   const node=id=>document.getElementById(id);
@@ -41,12 +42,14 @@
 
   function readLocation(){
     const params=new URLSearchParams(location.search),requestedGame=clean(params.get('game'))||'all',requestedRegion=clean(params.get('region'))||'all';
+    const view=['all',...SITE_VIEWS].includes(clean(params.get('view')))?clean(params.get('view')):'';
     return {
-      game:allowedGames.has(requestedGame)?requestedGame:'all',
+      // 我的收藏、行情是獨立頁，不屬於哪個遊戲：帶了 game 也當全部遊戲
+      game:allowedGames.has(requestedGame)&&!['collection','market'].includes(view)?requestedGame:'all',
       region:allowedRegions.has(requestedRegion)?requestedRegion:'all',
       series:clean(params.get('series')),
-      // view=all: a game's full card list; view=about: the data-status page; view=privacy: privacy and data sources.
-      view:['all','about','privacy'].includes(clean(params.get('view')))?clean(params.get('view')):'',
+      // view=all: a game's full card list; view=about: the data-status page; view=privacy: privacy and data sources; view=collection: 我的收藏 (this device only); view=market: 行情 (price movers and events).
+      view,
       rarity:clean(params.get('rarity'))||'all',
       price:allowedPrices.has(clean(params.get('price')))?clean(params.get('price')):'all',
       sort:allowedSorts.has(clean(params.get('sort')))?clean(params.get('sort')):'number-asc',
@@ -58,7 +61,7 @@
   }
 
   function urlFor(overrides={}){
-    const params=new URLSearchParams(),selectedGame=overrides.game??game,region=overrides.region??node('browseRegion')?.value??'all',series=overrides.series??browse?.seriesId??'',rarity=overrides.rarity??cardFilters?.rarity??'all',price=overrides.price??cardFilters?.price??'all',sort=overrides.sort??cardFilters?.sort??'number-asc',query=overrides.query??node('q')?.value?.trim()??'',card=overrides.card??currentCardId(),view=overrides.view??(selectedGame==='all'?(['about','privacy'].includes(document.body?.dataset?.view)?document.body.dataset.view:''):!series&&browse?.all?'all':''),pages=overrides.pages??Math.max(1,Math.ceil(number(browse?.offset,0)/PAGE_SIZE));
+    const params=new URLSearchParams(),selectedGame=overrides.game??game,region=overrides.region??node('browseRegion')?.value??'all',series=overrides.series??browse?.seriesId??'',rarity=overrides.rarity??cardFilters?.rarity??'all',price=overrides.price??cardFilters?.price??'all',sort=overrides.sort??cardFilters?.sort??'number-asc',query=overrides.query??node('q')?.value?.trim()??'',card=overrides.card??currentCardId(),view=overrides.view??(selectedGame==='all'?(SITE_VIEWS.includes(document.body?.dataset?.view)?document.body.dataset.view:''):!series&&browse?.all?'all':''),pages=overrides.pages??Math.max(1,Math.ceil(number(browse?.offset,0)/PAGE_SIZE));
     if(selectedGame&&selectedGame!=='all')params.set('game',selectedGame);
     if(region&&region!=='all')params.set('region',region);
     if(series)params.set('series',series);
@@ -146,7 +149,7 @@
       if(node('cardSort'))node('cardSort').value=state.sort;
       if(node('q'))node('q').value=state.query;
       if(node('heroQ'))node('heroQ').value=state.query;
-      if(typeof siteView!=='undefined')siteView=['about','privacy'].includes(state.view)?state.view:'';
+      if(typeof siteView!=='undefined')siteView=SITE_VIEWS.includes(state.view)?state.view:'';
       // The game page opens on the series (or full list) named in the URL, without first loading the default newest series.
       window.cardscopeEntry=state.game!=='all'&&(state.series||state.view==='all')?{series:state.series,all:!state.series&&state.view==='all'}:null;
       await originalChoose?.(state.game);
@@ -191,6 +194,14 @@
     // restore() 結束前排了一個 rAF 把捲動拉回 scrollY；錨點的捲動排在它後面
     restore(readLocation()).then(()=>requestAnimationFrame(()=>{const target=url.hash&&document.getElementById(decodeURIComponent(url.hash.slice(1)));if(target)window.scrollBelowHeader?window.scrollBelowHeader(target):target.scrollIntoView();/* 焦點跟著移到新內容（錨點目標或主內容），不留在已關掉的詳細頁或被重畫掉的節點上 */const focusTo=target||node('main');if(focusTo?.focus){if(focusTo.getAttribute?.('tabindex')==null)focusTo.tabIndex=-1;focusTo.focus({preventScroll:true})}}));
   });
+  // 頂欄、底部導覽的「我的收藏」：不整頁重載，pushState 後依新網址還原（上一頁回到原本那頁）。已經在該頁就只回到頁首。
+  window.openView=view=>{
+    if(restoring)return;
+    if(view&&document.body?.dataset?.view===view){window.scrollTo({top:0,behavior:'auto'});node(view==='market'?'marketTitle':'cardsTitle')?.focus?.({preventScroll:true});return}
+    saveScroll();if(node('modal')?.classList.contains('open'))closeDetail();
+    history.pushState({},'',view?`${location.pathname}?view=${view}`:location.pathname);
+    return restore(readLocation()).then(()=>{window.scrollTo({top:0,behavior:'auto'});node(view==='market'?'marketTitle':view==='collection'?'cardsTitle':'main')?.focus?.({preventScroll:true})});
+  };
   window.addEventListener('beforeunload',saveScroll);
   window.addEventListener('popstate',()=>{if(skipRestore){skipRestore=false;return}return restore(readLocation())});
   if('scrollRestoration'in history)history.scrollRestoration='manual';

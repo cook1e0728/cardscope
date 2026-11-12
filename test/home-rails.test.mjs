@@ -158,7 +158,9 @@ test('index.html：tablist／tab／tabpanel 的 ARIA 互相對得上，只有選
   assert.match(section,/id="railsPanel-trending"[^>]*hidden/);assert.match(section,/id="railsPanel-hot"[^>]*hidden/);
   assert.doesNotMatch(html.slice(html.indexOf('<section class="hero"'),html.indexOf('<section class="home-rails"')),/id="homeLatest"/,'#homeLatest 只剩一份，搬出了夜空展示區');
   assert.ok(html.indexOf('<section class="home-rails"')>html.indexOf('id="hero"'),'夜空展示區之後');
-  assert.match(html,/const anchor=\$\('homeRails'\)\|\|hero;if\(anchor\.nextElementSibling!==trends\)anchor\.after\(trends\)/,'完整漲跌榜仍在首頁，排在三分頁之後');
+  assert.match(html,/const anchor=\$\('marketIntro'\)\|\|\$\('homeRails'\)\|\|hero;if\(anchor\.nextElementSibling!==trends\)anchor\.after\(trends\)/,'完整漲跌榜搬到行情頁，排在行情標題之後');
+  assert.match(html,/<section class="market-intro" id="marketIntro"[^>]*><h2 id="marketTitle" tabindex="-1">行情<\/h2>/,'行情頁的標題');
+  assert.ok(html.indexOf('id="marketIntro"')<html.indexOf('id="homeRails"'));
 });
 
 test('載入順序與 CSP：home-rails.js 在 ui-actions（infoTip）與 price-movers（共用請求）之後，沒有行內事件',()=>{

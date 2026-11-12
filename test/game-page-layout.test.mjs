@@ -6,7 +6,7 @@ const [html,css,ui]=await Promise.all(['../index.html','../catalog-layout.css','
 
 test('game pages are marked before first paint and kept in sync by render',()=>{
   assert.ok(html.indexOf("document.body.dataset.view=")<html.indexOf('class="skip-link"'),'the view is set before any content paints');
-  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)\{document\.body\.dataset\.view=gameView\?'game':siteView==='about'\|\|siteView==='privacy'\?siteView:'landing';document\.body\.dataset\.game=game\}placeTrends\(gameView\);/);
+  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)\{document\.body\.dataset\.view=gameView\?'game':\['about','privacy','collection','market'\]\.includes\(siteView\)\?siteView:'landing';document\.body\.dataset\.game=game\}placeTrends\(gameView\);/);
 });
 
 test('game pages open on series and cards; the landing keeps its introduction',()=>{
@@ -54,7 +54,7 @@ test('the landing is search first; statistics, health and the purple CTA live on
   assert.match(html,/data-example="桃歹郎"/);
   assert.doesNotMatch(html,/class="tabs"|最新收錄/,'the dead 最新收錄 tab row is gone');
   assert.match(html,/href="\/\?view=about"/,'the footer links to the data status');
-  assert.match(html,/\['about','privacy'\]\.includes\(p\.get\('view'\)\)\?p\.get\('view'\):'landing'/,'the view is set before first paint');
+  assert.match(html,/\['about','privacy','collection','market'\]\.includes\(p\.get\('view'\)\)\?p\.get\('view'\):'landing'/,'the view is set before first paint');
   assert.match(theme,/body:not\(\[data-view="about"\]\) #coverageStatus/);
   assert.match(theme,/body:not\(\[data-view="about"\]\) \.brand-showcase/);
   assert.match(theme,/body\[data-view="landing"\] section\.section:has\(> #series\)/,'the empty 商品圖鑑 frame is gone from the landing');

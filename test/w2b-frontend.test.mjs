@@ -128,12 +128,13 @@ test('G1/G3: ?view=privacy 有隱私說明與資料來源表，不含待辦字�
 });
 
 test('G1/G3: body[data-view] 與網址狀態把 privacy 當成站內頁', () => {
-  assert.match(html, /document\.body\.dataset\.view=g==='all'\?\(\['about','privacy'\]\.includes\(p\.get\('view'\)\)\?p\.get\('view'\):'landing'\):'game'/, '提早執行的內嵌腳本');
-  assert.match(html, /siteView==='about'\|\|siteView==='privacy'\?siteView:'landing'/, 'render()');
-  assert.match(nav, /\['all','about','privacy'\]\.includes\(clean\(params\.get\('view'\)\)\)/);
-  assert.match(nav, /siteView=\['about','privacy'\]\.includes\(state\.view\)\?state\.view:''/);
-  assert.match(nav, /\(\['about','privacy'\]\.includes\(document\.body\?\.dataset\?\.view\)\?document\.body\.dataset\.view:''\)/, 'urlFor 保留 view=privacy');
-  assert.match(events, /view\.view==='about'\|\|view\.view==='privacy'/, '隱私頁不載入卡牌時事');
+  assert.match(html, /document\.body\.dataset\.view=g==='all'\?\(\['about','privacy','collection','market'\]\.includes\(p\.get\('view'\)\)\?p\.get\('view'\):'landing'\):'game'/, '提早執行的內嵌腳本');
+  assert.match(html, /\['about','privacy','collection','market'\]\.includes\(siteView\)\?siteView:'landing'/, 'render()');
+  assert.match(nav, /const SITE_VIEWS=\['about','privacy','collection','market'\]/);
+  assert.match(nav, /\['all',\.\.\.SITE_VIEWS\]\.includes\(clean\(params\.get\('view'\)\)\)/);
+  assert.match(nav, /siteView=SITE_VIEWS\.includes\(state\.view\)\?state\.view:''/);
+  assert.match(nav, /\(SITE_VIEWS\.includes\(document\.body\?\.dataset\?\.view\)\?document\.body\.dataset\.view:''\)/, 'urlFor 保留 view=privacy、collection、market');
+  assert.match(events, /if\(view\.view!=='market'\)\{section\.hidden=true;return\}/, '卡牌時事只在行情頁載入，其他頁（含隱私頁）不請求');
   // 內嵌腳本不得出現 on*= 屬性（CSP script-src-attr 'none'）
   assert.doesNotMatch(html, /<[a-z][^>]*\son(?:click|error|load|submit|change|input|keydown)=/i);
 });

@@ -221,12 +221,12 @@ test('import dialog wiring: preview before writing, replace needs the checkbox a
   assert.match(ui, /data-coll-replace/);
   assert.match(ui, /if\(pending\.replace&&!confirm\(`這會刪除目前的/);
   assert.match(ui, /if\(file\.size>CS\.LIMITS\.fileMaxChars\)\{collectionStatus\('沒有匯入：檔案過大（上限 2 MB）/);
-  assert.match(ui, /const parsed=CS\.parseImport\(text\);\s*if\(parsed\.error\)\{collectionUi\.pending=null;renderCollection\(\);collectionStatus/);
+  assert.match(ui, /const parsed=CS\.parseImport\(text\);\s*if\(parsed\.error\)\{collectionUi\.pending=null;renderCollectionExtras\(\);collectionStatus/);
   const importFlow = between('async function importCollectionFile', 'function onCollectionField');
   assert.doesNotMatch(importFlow.slice(0, importFlow.indexOf('async function confirmCollectionImport')), /applyItems|commitItems|persistCollection/, 'choosing a file only previews');
   assert.match(importFlow, /if\(!commitItems\(plan\.items\)\)return collectionStatus\('無法寫入瀏覽器儲存空間/);
   assert.match(ui, /系列 ID','遊戲','地區'/, 'CSV keeps its columns and adds the series ones at the end');
-  assert.match(ui, /<h3>各系列進度/);
+  assert.match(ui, /各系列進度/);
   assert.match(ui, /CS\.seriesBreakdown\(collectionItems\(\),10\)/);
 });
 

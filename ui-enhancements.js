@@ -154,7 +154,7 @@ migrateLegacyFavorites();
 function touchMeta(key){
   if(!watchQuantity(key)){delete watchlistMeta[key];return}
   const card=renderedCards.get(key)||allKnownCards().find(item=>String(item.id)===key);
-  if(card)watchlistMeta[key]={...watchlistMeta[key],...cardSnapshot(card,key),v:1};
+  if(card&&!card.__collection)watchlistMeta[key]={...watchlistMeta[key],...cardSnapshot(card,key),v:1};
 }
 
 const cardscopeBaseFilteredCards=typeof filteredCards==='function'?filteredCards:null;
@@ -222,7 +222,7 @@ function drawViewButtons(){
 // 混合牆（決定：卡片三行）：搜尋結果，或載入的卡跨了不同遊戲、系列、版本（日／台…）。同名同號的卡要靠遊戲、系列、版本標籤分辨；單一系列頁已經是同一批，不重複顯示。
 function wallIsMixed(rows){
   if(typeof activeSearch!=='undefined'&&activeSearch)return true;
-  if(typeof browse!=='undefined'&&browse?.seriesId)return false;
+  if(typeof browse!=='undefined'&&browse?.seriesId&&!inCollectionView())return false;
   const games=new Set(),series=new Set(),regions=new Set();
   for(const card of rows||[]){games.add(cardGameId(card));series.add(card.seriesId||card.printings?.find(p=>p.seriesId)?.seriesId||'');regions.add(card.region||card.printings?.[0]?.region||'')}
   return games.size>1||series.size>1||regions.size>1;
@@ -256,7 +256,7 @@ let seriesIndex=null,seriesIndexSource=null;
 const CARD_REGION_ORDER=['JP','TW','US','KR','CN','ASIA'];
 function cardSeriesLabel(card){
   if(seriesIndexSource!==C.series){seriesIndexSource=C.series;seriesIndex=new Map((C.series||[]).map(row=>[row.id,row]))}
-  if(browse?.seriesId&&!activeSearch)return '';
+  if(browse?.seriesId&&!activeSearch&&!inCollectionView())return '';
   const id=card.seriesId||card.printings?.find(p=>p.seriesId)?.seriesId,row=seriesIndex.get(id),label=String(row?.nameZh||row?.nameJa||row?.nameEn||row?.officialCode||setCodeText(card.printings?.[0]?.localSetCode)||'').replace(/^.*?系列｜/,'');
   return label?`<div class="card-series" title="${e([row?.officialCode,label].filter(Boolean).join('・'))}">${e(label)}</div>`:'';
 }
@@ -268,7 +268,7 @@ function cardVersionBadges(card){
 }
 function cardMarkup(card){
   const source=image(card),price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),rarityHtml=cardRarityMarkup(card),mixed=wallMixed,versionMarkup=mixed?cardVersionBadges(card):'',seriesMarkup=mixed?cardSeriesLabel(card):'',gameLabel=cardGameLabel(card),picture=resilientImage(source,name(card),'這張卡尚未收錄可公開顯示的圖片',{...cardWatermarkOptions(card,source),fallbacks:[...cardImageSourceCandidates(card),...(card.fallbackImageUrls||[])]}),id=e(cardOpenId(card)),priceMarkup=cardPriceLabel(price),referenceMarkup=cardReferenceMarkup(card,cardOpenId(card));
-  const variant=card.metadata?.variantName||card.printings?.find(p=>p.metadata?.variantName)?.metadata?.variantName,flags=`${variant?`<span class="badge variant-badge">${e(variant)}</span>`:''}${listingBadge(card)}`,owned=watchQuantity(entryKey(card))>0?' is-owned':'';
+  const variant=card.metadata?.variantName||card.printings?.find(p=>p.metadata?.variantName)?.metadata?.variantName,flags=`${variant?`<span class="badge variant-badge">${e(variant)}</span>`:''}${card.__ambiguous?'<span class="badge">版本待確認</span>':''}${listingBadge(card)}`,owned=watchQuantity(entryKey(card))>0?' is-owned':'';
   const openLabel=`開啟${name(card)}的卡片詳細資料`;
   const openControl=`<button type="button" class="card-open-hit" data-card-open="${id}" aria-label="${e(openLabel)}"></button>`;
   if(cardViewMode==='list')return `<article class="card card-list${owned}">${openControl}<div class="art">${picture}</div><div class="card-list-main">${mixed?`<span class="badge ip-badge">${e(gameLabel)}</span>`:''}<h3>${e(name(card))}</h3>${seriesMarkup}<div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${rarityHtml}</span>${versionMarkup}${flags}${priceMarkup?`<strong>${priceMarkup}</strong>`:''}${referenceMarkup||(priceMarkup?'':'<span class="meta">參考價待補</span>')}</div>${cardActionsMarkup(card)}</article>`;
@@ -301,6 +301,7 @@ let detailTitleInfo=null;
 function pageTitleFor(view){
   const v=view||{},text=value=>String(value??'').trim(),gameTitle=`${text(v.game)}卡牌圖鑑｜${TITLE_SITE}`;
   if(v.kind==='collection')return `我的收藏｜${TITLE_SITE}`;
+  if(v.kind==='market')return `卡牌參考價漲跌與時事｜${TITLE_SITE}`;
   if(v.kind==='about')return `資料收錄狀態｜${TITLE_SITE}`;
   if(v.kind==='privacy')return `隱私說明｜${TITLE_SITE}`;
   if(v.kind==='search'&&text(v.query))return `「${text(v.query)}」搜尋結果｜${TITLE_SITE}`;
@@ -315,8 +316,9 @@ function cardTitleParts(c,selected){
 }
 function currentTitleView(){
   const label=id=>G(id).nameZh||(window.CARD_GAMES||[]).find(item=>item.id===id)?.name||id;
-  if(document.getElementById('collectionDialog')?.open)return{kind:'collection'};
   if(detailTitleInfo&&$('modal')?.classList.contains('open'))return{kind:'card',...detailTitleInfo};
+  if(inCollectionView())return{kind:'collection'};
+  if(document.body?.dataset?.view==='market')return{kind:'market'};
   if(typeof activeSearch!=='undefined'&&activeSearch?.q)return{kind:'search',query:activeSearch.q};
   if(document.body?.dataset?.view==='about')return{kind:'about'};
   if(document.body?.dataset?.view==='privacy')return{kind:'privacy'};
@@ -413,6 +415,11 @@ function watchlistTotals(){
 // 收藏數量變動後只重畫動到的那張卡的收藏區（B7：整片重繪會讓圖片閃一下、鍵盤焦點掉光）。
 // 只有開著「已收藏／還缺」篩選、而且這張卡進出了牆面時，才整片重繪。
 function repaintCollected(key,previous,next){
+  // 收藏頁：卡進出牆（0 ↔ 1）要重畫整面牆與側欄；其餘只重畫那一張，再更新摘要。
+  if(inCollectionView()){
+    if(previous===0||next===0){renderCollectionPage();renderDetailCollect();return}
+    refreshCardCollect(key,next);refreshCollectionValue();renderDetailCollect();return;
+  }
   if((favoritesOnly||missingOnlyActive())&&(previous===0||next===0)){cards(currentCardRows,true);renderDetailCollect();return}
   refreshCardCollect(key,next);renderFavoritesControl();renderWatchlistSummary();renderSeriesProgress();renderDetailCollect();
 }
@@ -716,6 +723,9 @@ function renderDetailCollect(){
   const slot=document.querySelector('#detail [data-detail-collect]');if(!slot)return;
   const key=slot.dataset.detailCollect,quantity=watchQuantity(key),focused=slot.contains(document.activeElement)?document.activeElement.dataset.collectAct:'';
   slot.innerHTML=quantity?`<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="true" title="已收藏，按一下移除">★ 已收藏 ×${quantity}</button><span class="detail-collect-step" role="group" aria-label="收藏張數"><button type="button" data-collect-act="dec" aria-label="減少數量">−</button><button type="button" data-collect-act="inc" aria-label="增加數量">＋</button></span>`:'<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</button>';
+  if(quantity)slot.innerHTML+=collectionEditorHtml(key);
+  slot.oninput=event=>{if(event.target.dataset?.collField)onCollectionField(event.target,key)};
+  slot.onchange=event=>{const pick=event.target.dataset?.collPick;if(pick&&event.target.value)chooseCollectionVersion(pick,event.target.value)};
   slot.onclick=event=>{const act=event.target.closest('[data-collect-act]')?.dataset.collectAct;if(act==='toggle')toggleFavorite(key);else if(act==='dec')stepWatchQuantity(key,-1);else if(act==='inc')stepWatchQuantity(key,1)};
   if(focused)(slot.querySelector(`[data-collect-act="${focused}"]`)||slot.querySelector('[data-collect-act="toggle"]'))?.focus();
 }
@@ -1005,20 +1015,20 @@ referencePriceStyle.textContent=`
 `;
 document.head.append(referencePriceStyle);
 const detailTabsStyle=document.createElement('style');
-detailTabsStyle.textContent=`.rarity-code{text-decoration:none;cursor:help}.rarity-full{font-size:12px}.detail-meta{margin:0 0 14px}
-.collection-dialog{width:min(760px,calc(100vw - 16px));max-height:calc(100dvh - 16px);padding:0;border:1px solid var(--rule,#d9d1c0);border-radius:14px;background:#fff;color:inherit}.collection-dialog::backdrop{background:#0008}.coll{display:grid;gap:12px;padding:16px}.coll header{display:flex;align-items:center;justify-content:space-between;gap:12px}.coll h2{margin:0;font-size:20px}.coll header button{min-width:44px}.coll h3{margin:0 0 6px;font-size:16px}.coll-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px 8px;border:1px solid var(--rule,#d9d1c0);border-radius:10px;background:#FBF9F4;text-align:center}.coll-stat{display:grid;gap:2px;min-width:0}.coll-stat b{font-size:18px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}.coll-stat span{font-size:11px;color:var(--ink-2,#5a5348);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.coll-binder-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;padding:10px 14px;border:1.5px solid #D49B1B;border-radius:12px;background:linear-gradient(135deg,#1F1B16 0%,#2B2A26 100%);color:#FFF8E7;text-align:left;cursor:pointer;box-sizing:border-box}.coll-binder-left{display:flex;align-items:center;gap:10px;min-width:0}.coll-binder-left img{width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid #D49B1B;flex:none}.coll-binder-copy{display:grid;gap:2px;min-width:0}.coll-binder-copy b{font-size:15px;color:#FFF8E7}.coll-binder-copy small{font-size:11px;color:#E7BA4C}.coll-binder-right{font-size:13px;font-weight:700;color:#E7BA4C;white-space:nowrap;font-variant-numeric:tabular-nums}.coll-local{margin:0;padding:10px 12px;border-radius:8px;background:var(--paper-2,#f8f5ee);border:1px solid var(--rule,#d9d1c0);font-size:14px}.coll-value{padding:10px 12px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-value p{margin:6px 0 0}.coll-sums{display:grid;gap:6px;margin:0;padding:0;list-style:none}.coll-sums li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.coll-sums b{font-size:18px}.coll-sums small{color:var(--ink-2,#5a5348)}.coll-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.coll-item{content-visibility:auto;contain-intrinsic-size:auto 220px;display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 12px;padding:10px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-art{position:relative;width:64px;aspect-ratio:5/7;overflow:hidden;border-radius:6px;background:var(--paper-2,#f8f5ee)}.coll-art .card-sample-watermark{font-size:9px;letter-spacing:.04em}.coll-art img{width:100%;height:100%;object-fit:contain}.coll-art .image-fallback{font-size:11px}.coll-main{min-width:0;overflow-wrap:anywhere}.coll-name{display:block}.coll-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.coll-price{display:grid;gap:2px;margin-top:6px;font-size:13px}.coll-skip{color:var(--ink-2,#5a5348)}.coll-fields,.coll-pick,.coll-actions{grid-column:1/-1}.coll-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.coll-fields label,.coll-pick{display:grid;gap:2px;font-size:13px;font-weight:700}.coll-fields input,.coll-fields select,.coll-pick select{width:100%;font:inherit;font-weight:400}.coll-note-field{grid-column:1/-1}.coll-actions,.coll-tools{display:flex;flex-wrap:wrap;gap:8px}.coll-actions{justify-content:flex-end}@media(min-width:720px){.coll-fields{grid-template-columns:90px repeat(2,minmax(0,1fr))}}@media(max-width:520px){.coll{padding:12px}.coll-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.coll-tools button{width:100%;min-height:44px}}`;
+detailTabsStyle.textContent=`.rarity-code{text-decoration:none;cursor:help}.rarity-full{font-size:12px}.detail-meta{margin:0 0 14px}`;
 document.head.append(detailTabsStyle);
 const seriesProgressStyle=document.createElement('style');
 seriesProgressStyle.textContent=`.series-progress{display:grid;gap:8px;flex:1 1 100%;width:100%;margin-top:8px;padding:10px 12px;border:1px solid #D9D1C0;border-radius:10px;background:#FBF9F4;color:#1F1B16;box-sizing:border-box}.series-progress[hidden]{display:none}.series-progress-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}.series-progress-row span{font-variant-numeric:tabular-nums}.series-progress #missingOnly{min-height:44px;margin-left:auto}.series-progress-bar{height:10px;border-radius:999px;background:#E6DFCE;overflow:hidden}.series-progress-bar i{display:block;height:100%;border-radius:999px;background:#1F1B16}.coll-series-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.coll-series-list li{display:grid;gap:4px}.coll-series-name{font-weight:700;overflow-wrap:anywhere}.coll-series-count{font-size:13px;color:#5A5348;font-variant-numeric:tabular-nums}.coll-import{display:grid;gap:8px;padding:12px;border:2px solid #D49B1B;border-radius:10px;background:#FFF8E7;color:#1F1B16}.coll-import h3,.coll-import p{margin:0}.coll-import ul{margin:6px 0 0;padding-left:20px}.coll-import summary{min-height:44px;display:flex;align-items:center;cursor:pointer}.coll-replace{display:flex;align-items:center;gap:8px;min-height:44px}.coll-replace input{width:20px;height:20px;flex:none}.coll-import-actions{display:flex;flex-wrap:wrap;gap:8px}.coll-import-actions button{min-height:44px}`;
 document.head.append(seriesProgressStyle);
 
-// 頂欄／底部導覽的「我的收藏」呼叫 window.openCollection()（ADR 0045，v0 免登入）：清單可編輯張數／品況／版本／備註、看參考總值、匯出入 JSON 備份、下載 CSV。資料只在這台裝置。
-const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:'',pending:null};
+// 「我的收藏」是獨立一頁（?view=collection；window.openCollection 走 navigation-state.js 的 window.openView，網址與上一頁由它管）。免登入（ADR 0045），資料只在這台裝置。
+// 左側欄只列有收藏的遊戲／系列；中間是卡牆（階段 3 的卡片與工具列，資料來自本機快照）；點卡開右側側板，品況・閃卡版本・備註在側板（renderDetailCollect）；匯出入、CSV、各系列進度收在工具列右邊的「管理」選單。
+const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:'',pending:null,filter:{game:'',series:''},showSeries:false,active:false};
 const COLLECTION_REASONS={slab:'鑑定卡不計入',none:'尚無參考價快照',choose:'請選擇版本',['no-match']:'所選版本沒有對應的參考價'};
 function collectionItems(){return CS.itemsFromLegacy([],watchlist,watchlistMeta).filter(item=>item.quantity>0)}
-const collectionDialog=()=>$('collectionDialog'),collectionRowEl=id=>[...document.querySelectorAll('#collectionDialog [data-coll-id]')].find(item=>item.dataset.collId===id);
-const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collStatus');if(node)node.textContent=collectionUi.progress};
-const typingInCollection=()=>/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'')&&collectionDialog()?.contains(document.activeElement);
+const inCollectionView=()=>document.body?.dataset?.view==='collection';
+// 收藏頁的狀態列是 #collStatus；其他頁（在側板改品況）沒有這個節點，改用螢幕閱讀器的播報區。
+const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collStatus');if(node)node.textContent=collectionUi.progress;else if(text)announceCollect(text)};
 function finishLabel(key){return key===''?'未指定':(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[key])||key}
 // 這張卡只有一種價格版本時，版本欄預設選它（只是顯示，不寫入；估值本來就會用唯一的版本）。
 function shownFinish(item){return item.finish||CS.soleFinish((collectionUi.prices[item.id]||[]).filter(price=>!price.stale))}
@@ -1044,32 +1054,56 @@ function valueHtml(valuation){
   const fx=collectionUi.priceMeta?.exchangeRates,sums=Object.entries(CS.PROVIDER_LABELS).filter(([key])=>valuation.byProvider[key]).map(([key,label])=>{const row=valuation.byProvider[key];return `<li><span>${e(label)} 參考價小計</span><b>約 NT$ ${Math.round(row.twd).toLocaleString()}</b><small>${row.entries} 款${row.missingFx?`；${row.missingFx} 款缺匯率未換算`:''}</small></li>`}).join('');
   return `<h3>參考總值</h3>${sums?`<ul class="coll-sums">${sums}</ul>`:'<p>目前沒有可計入的參考價。</p>'}<p class="meta">${valuation.counted}／${valuation.total} 款有參考價${valuation.uncounted.length?`；其餘 ${valuation.uncounted.length} 款未計入（原因標在各卡）`:''}。${valuation.dateFrom?`快照日期 ${e(valuation.dateFrom)}${valuation.dateTo!==valuation.dateFrom?` 至 ${e(valuation.dateTo)}`:''}。`:''}不同來源不相加；品況不調整價格。${fx?.source==='fallback'?'匯率為備用值，僅供概略。':fx?.updatedAt?`匯率日期 ${e(fx.updatedAt)}。`:''}</p><p class="meta">${e(collectionUi.priceMeta?.note||'參考價不是成交價或台灣行情。')}</p>`;
 }
-// 「涵蓋遊戲」：收藏裡不同遊戲的數量（卡片資料還沒補齊的不算）。
-function collectionGameCount(){return new Set(collectionIds().map(id=>watchlistMeta[id]?.game).filter(Boolean)).size}
+// 收藏頁摘要裡的一行參考總值（詳細的小計、來源、日期、匯率收在旁邊的 ⓘ，內容是上面的 valueHtml）。
+function collectionValueLine(valuation){
+  const state=collectionUi.pricesState;
+  if(state==='loading'||state==='idle')return '參考總值查詢中…';
+  if(state==='error')return '參考價暫時無法取得';
+  const sums=Object.entries(CS.PROVIDER_LABELS).filter(([key])=>valuation.byProvider[key]).map(([key,label])=>`${label} 參考價約 NT$ ${Math.round(valuation.byProvider[key].twd).toLocaleString()}`);
+  return sums.length?`參考總值：${sums.join('；')}`:'目前沒有可計入的參考價';
+}
+// 側板裡這張卡的參考價列（只有收藏頁查過價格才有）。
+function panelPriceHtml(key){const item=collectionItems().find(row=>row.id===key);return item&&collectionUi.pricesState==='ready'&&collectionUi.prices[key]?rowPriceHtml(item,collectionValuation()):''}
 function refreshCollectionValue(){
-  const valuation=collectionValuation(),host=$('collValue');if(host)host.innerHTML=valueHtml(valuation);
-  collectionItems().forEach(item=>{const cell=collectionRowEl(item.id)?.querySelector('.coll-price');if(cell)cell.innerHTML=rowPriceHtml(item,valuation)});
-  const idsCount=collectionIds().length,cardsCount=collectionTotal();
-  const total=$('collTotal');if(total)total.textContent=`共 ${idsCount} 款、${cardsCount} 張`;
-  const statIds=$('collStatIds');if(statIds)statIds.textContent=String(idsCount);
-  const statCards=$('collStatCards');if(statCards)statCards.textContent=String(cardsCount);
-  const statGames=$('collStatGames');if(statGames)statGames.textContent=String(collectionGameCount());
-  const statPriced=$('collStatPriced');if(statPriced)statPriced.textContent=String(valuation.counted||0);
-  const binderTotal=$('collBinderTotal');if(binderTotal)binderTotal.textContent=`已擁有 ${cardsCount} 張卡 ›`;
+  const valuation=collectionValuation(),count=$('collSumCount');
+  if(count)count.textContent=`共 ${collectionIds().length} 款、${collectionTotal()} 張`;
+  const line=$('collValue');if(line)line.textContent=collectionValueLine(valuation);
+  const detail=$('collValueDetail');if(detail)detail.innerHTML=valueHtml(valuation);
+  const price=document.querySelector('#detail [data-detail-collect] .coll-price');if(price)price.innerHTML=panelPriceHtml(price.closest('[data-detail-collect]').dataset.detailCollect);
 }
 // Alt-art versions can share region, set and number; add the id only when the label alone would not tell them apart.
 function choiceLabels(choices,gameId){const labels=choices.map(choice=>[choice.cardId,[rn(choice.region,gameId),choice.set,choice.number,choice.rarity,choice.variant].filter(Boolean).join(' · ')]);return labels.map(([cardId,label])=>[cardId,labels.filter(row=>row[1]===label).length>1?`${label} · ${cardId}`:label])}
-function collectionRowHtml(item,valuation){
-  const meta=watchlistMeta[item.id]||{},known=!!meta.v,title=known?name(meta):collectionUi.failed.has(item.id)?`查無這張卡的資料（${item.id}）`:`卡片資料載入中（${item.id}）`,qty=item.quantity||1,id=e(item.id);
-  const facts=known?[e(meta.officialCardNumber||'卡號待補'),meta.rarity?rarityMarkup(meta.rarity,meta.game):'稀有度待補'].join(' · '):'',badges=known?`${meta.region?`<span class="badge">${e(rn(meta.region,meta.game))}</span>`:''}${meta.version?`<span class="badge variant-badge">${e(meta.version)}</span>`:''}${meta.ambiguous?'<span class="badge">版本待確認</span>':''}`:'';
-  const pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[],meta.game).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
-  return `<li class="coll-item" data-coll-id="${id}"><div class="coll-art">${known&&meta.image?resilientImage(meta.image,title,'圖片來源尚未收錄'):missingImageMarkup('')}</div><div class="coll-main"><b class="coll-name">${e(title)}</b><div class="meta">${facts}</div><div class="coll-badges">${badges}</div><div class="coll-price">${rowPriceHtml(item,valuation)}</div></div>${pick}<div class="coll-actions"><label class="coll-qty">張數<input type="number" inputmode="numeric" min="1" max="999" step="1" value="${qty}" data-coll-field="quantity"></label><button type="button" data-collection-open="${id}">查看</button><button type="button" data-coll-remove="${id}" aria-label="從我的收藏移除${e(title)}">移除</button></div><details class="coll-edit"${collectionUi.editOpen?.has(item.id)?' open':''}><summary>編輯品況・版本・備註</summary><div class="coll-fields"><label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([key,label])=>`<option value="${e(key)}"${key===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>版本<select data-coll-field="finish">${finishChoices(item).map(key=>`<option value="${e(key)}"${CS.finishKey(key)===CS.finishKey(shownFinish(item))?' selected':''}>${e(finishLabel(key))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label></div></details></li>`;
+// 卡牆的列：把本機快照整理成與 /api/cards 相同形狀，卡片、工具列、側板都沿用圖鑑那一套。還沒補到快照的卡先顯示「資料載入中」，由 resolveCollection 補齊。
+const collectionGameName=id=>G(id).nameZh||(window.CARD_GAMES||[]).find(item=>item.id===id)?.name||id;
+function collectionWallRow(item){
+  const meta=watchlistMeta[item.id]||{},known=Boolean(meta.v),region=meta.region||item.region||'',seriesId=meta.seriesId||item.seriesId||'',variant={variantName:meta.version||''},
+    pendingName=collectionUi.failed.has(item.id)?`查無這張卡的資料（${item.id}）`:`卡片資料載入中（${item.id}）`;
+  return{id:item.id,game:meta.game||item.game||'',region,seriesId,nameZh:known?meta.nameZh||'':pendingName,nameEn:known?meta.nameEn||'':'',nameJa:known?meta.nameJa||'':'',nameKo:known?meta.nameKo||'':'',officialCardNumber:meta.officialCardNumber||'',rarity:meta.rarity||'',imageUrl:meta.image||'',physicalCardIds:[item.id],metadata:variant,
+    printings:[{cardId:item.id,region,seriesId,rarity:meta.rarity||'',localCardNumber:meta.officialCardNumber||'',imageUrl:meta.image||'',metadata:variant}],__collection:true,__ambiguous:Boolean(meta.ambiguous)};
+}
+const collectionRowMatches=row=>{const filter=collectionUi.filter;return(!filter.game||row.game===filter.game)&&(!filter.series||row.seriesId===filter.series)};
+// 側欄：有收藏的遊戲（後面是款數），選了某個遊戲才展開它底下有收藏的系列。選中＝粗體＋左側線（aria-pressed），不只靠顏色。
+function collectionSideHtml(rows){
+  if(!rows.length)return '<p class="meta coll-side-empty">還沒有收藏</p>';
+  const filter=collectionUi.filter,games=new Map(),series=new Map(),order=new Map((window.CARD_GAMES||[]).map((item,index)=>[item.id,index]));
+  rows.forEach(row=>{if(!row.game)return;games.set(row.game,(games.get(row.game)||0)+1);if(row.seriesId&&row.game===filter.game)series.set(row.seriesId,(series.get(row.seriesId)||0)+1)});
+  const button=(attrs,label,count,on)=>`<button type="button" class="coll-side-btn${on?' on':''}" ${attrs} aria-pressed="${on}"><span class="coll-side-name">${e(label)}</span><span class="coll-side-count">${count}</span></button>`;
+  const sub=[...series].map(([id,count])=>[id,count,seriesLabel(id)]).sort((a,b)=>a[2].localeCompare(b[2],'zh-Hant')).map(([id,count,label])=>`<li>${button(`data-coll-game="${e(filter.game)}" data-coll-series="${e(id)}"`,label,count,filter.series===id)}</li>`).join('');
+  const list=[...games].sort((a,b)=>(order.get(a[0])??999)-(order.get(b[0])??999)).map(([id,count])=>`<li>${button(`data-coll-game="${e(id)}"`,collectionGameName(id),count,filter.game===id&&!filter.series)}${filter.game===id&&sub?`<ul class="coll-side-sub">${sub}</ul>`:''}</li>`).join('');
+  return `<ul class="coll-side-list"><li>${button('data-coll-all','全部收藏',rows.length,!filter.game&&!filter.series)}</li>${list}</ul>`;
+}
+window.collectionFilterLabel=()=>{const filter=collectionUi.filter;return filter.series?seriesLabel(filter.series):filter.game?collectionGameName(filter.game):'全部收藏'};
+// 側板的收藏資料（品況・閃卡版本・備註）：只在已收藏時出現；每次輸入就存（沿用原本的做法）。
+function collectionEditorHtml(key){
+  const item=collectionItems().find(row=>row.id===key);if(!item)return '';
+  const meta=watchlistMeta[key]||{},id=e(key),pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[],meta.game).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
+  return `<div class="coll-edit" role="group" aria-label="這張卡的收藏資料">${pick}<label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([k,label])=>`<option value="${e(k)}"${k===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>閃卡版本<select data-coll-field="finish">${finishChoices(item).map(k=>`<option value="${e(k)}"${CS.finishKey(k)===CS.finishKey(shownFinish(item))?' selected':''}>${e(finishLabel(k))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label><div class="coll-price">${panelPriceHtml(key)}</div></div>`;
 }
 function seriesLabel(seriesId){const row=(typeof C!=='undefined'&&C.series||[]).find(item=>item.id===seriesId);return row?`${titleName(row)||seriesId}${row.region?`（${rn(row.region,row.game)}）`:''}`:seriesId}
 function collectionSeriesHtml(){
   const {rows,seriesCount,unknown}=CS.seriesBreakdown(collectionItems(),10),note=unknown?`<p class="meta">另有 ${unknown} 款還沒有系列資料；打開該系列的卡牆（圖鑑 → 系列）就會自動補上。</p>`:'';
   if(!rows.length)return note;
-  return `<h3>各系列進度${seriesCount>rows.length?`（前 ${rows.length} 名，共 ${seriesCount} 個系列）`:''}</h3><ul class="coll-series-list">${rows.map(row=>{const total=seriesTotals.get(row.seriesId),p=total&&CS.seriesProgress(row.owned,total),label=seriesLabel(row.seriesId);return `<li><span class="coll-series-name">${e(label)}</span><span class="coll-series-count">${p?`已收藏 ${p.owned} / 共 ${p.total} 張（${p.percent}%）`:`已收藏 ${row.owned} 張（${seriesTotalFailed.has(row.seriesId)?'總數暫時查不到':'總數查詢中…'}）`}</span>${p?progressBar(p,`${label} 集卡進度`):''}</li>`}).join('')}</ul>${note}`;
+  return `<h3 id="collSeriesTitle" tabindex="-1">各系列進度${seriesCount>rows.length?`（前 ${rows.length} 名，共 ${seriesCount} 個系列）`:''}</h3><ul class="coll-series-list">${rows.map(row=>{const total=seriesTotals.get(row.seriesId),p=total&&CS.seriesProgress(row.owned,total),label=seriesLabel(row.seriesId);return `<li><span class="coll-series-name">${e(label)}</span><span class="coll-series-count">${p?`已收藏 ${p.owned} / 共 ${p.total} 張（${p.percent}%）`:`已收藏 ${row.owned} 張（${seriesTotalFailed.has(row.seriesId)?'總數暫時查不到':'總數查詢中…'}）`}</span>${p?progressBar(p,`${label} 集卡進度`):''}</li>`}).join('')}</ul>${note}`;
 }
 // 前 10 名系列的卡數各查一次（limit=1 只取 meta.total）；查不到的不擋畫面。
 async function loadSeriesTotals(){
@@ -1080,23 +1114,15 @@ async function loadSeriesTotals(){
       if(!response.ok||!(total>0))throw Error('no total');seriesTotals.set(row.seriesId,total);
     }catch{seriesTotalFailed.add(row.seriesId)}
   }));
-  const host=$('collSeries');if(host)host.innerHTML=collectionSeriesHtml();
+  renderCollectionSeries();
 }
 // 匯入預覽：確認前不動既有收藏。
 function importPreviewHtml(){
   const pending=collectionUi.pending;if(!pending)return '';
   const {parsed,replace}=pending,plan=CS.planImport(collectionItems(),parsed.items,replace),bad=parsed.problems,empty=!parsed.items.length,nothing=!plan.added&&!plan.updated&&!plan.removed;
-  return `<section class="coll-import" id="collImport" aria-label="匯入預覽"><h3>匯入預覽</h3><p class="meta">${e(pending.fileName)}（${parsed.format==='csv'?'CSV':'JSON 備份'}，共 ${parsed.rows} 筆資料）。按下確認前不會改動你的收藏；同一張卡取較大的數量，不會相加，重複匯入不會翻倍。</p><p class="coll-import-counts" role="status"><b>將新增 ${plan.added} 筆、更新 ${plan.updated} 筆、略過 ${bad.length} 筆格式錯誤</b>${replace?`；移除目前有、檔案裡沒有的 ${plan.removed} 筆`:''}${plan.unchanged?`（另有 ${plan.unchanged} 筆內容相同，不變）`:''}</p>${bad.length?`<details><summary>看略過的原因（${bad.length>20?'前 20 筆':`${bad.length} 筆`}）</summary><ul>${bad.slice(0,20).map(({index,reason})=>`<li>第 ${index} 筆：${e(reason)}</li>`).join('')}</ul></details>`:''}${empty?'<p class="coll-skip">檔案裡沒有可匯入的資料。</p>':''}<label class="coll-replace"><input type="checkbox" data-coll-replace${replace?' checked':''}${empty?' disabled':''}> 以匯入檔取代全部（目前的收藏會被刪除，會再問一次）</label><div class="coll-import-actions"><button type="button" data-coll-import-confirm${empty||nothing?' disabled':''}>${replace?'取代全部收藏':'確認匯入'}</button><button type="button" data-coll-import-cancel>取消</button></div></section>`;
+  return `<section class="coll-import" id="collImport" aria-label="匯入預覽"><h3 id="collImportTitle" tabindex="-1">匯入預覽</h3><p class="meta">${e(pending.fileName)}（${parsed.format==='csv'?'CSV':'JSON 備份'}，共 ${parsed.rows} 筆資料）。按下確認前不會改動你的收藏；同一張卡取較大的數量，不會相加，重複匯入不會翻倍。</p><p class="coll-import-counts" role="status"><b>將新增 ${plan.added} 筆、更新 ${plan.updated} 筆、略過 ${bad.length} 筆格式錯誤</b>${replace?`；移除目前有、檔案裡沒有的 ${plan.removed} 筆`:''}${plan.unchanged?`（另有 ${plan.unchanged} 筆內容相同，不變）`:''}</p>${bad.length?`<details><summary>看略過的原因（${bad.length>20?'前 20 筆':`${bad.length} 筆`}）</summary><ul>${bad.slice(0,20).map(({index,reason})=>`<li>第 ${index} 筆：${e(reason)}</li>`).join('')}</ul></details>`:''}${empty?'<p class="coll-skip">檔案裡沒有可匯入的資料。</p>':''}<label class="coll-replace"><input type="checkbox" data-coll-replace${replace?' checked':''}${empty?' disabled':''}> 以匯入檔取代全部（目前的收藏會被刪除，會再問一次）</label><div class="coll-import-actions"><button type="button" data-coll-import-confirm${empty||nothing?' disabled':''}>${replace?'取代全部收藏':'確認匯入'}</button><button type="button" data-coll-import-cancel>取消</button></div></section>`;
 }
-function renderCollection(){
-  const dialog=collectionDialog();if(!dialog)return;
-  collectionUi.editOpen=new Set([...dialog.querySelectorAll('.coll-edit[open]')].map(box=>box.closest('[data-coll-id]')?.dataset.collId).filter(Boolean));const items=collectionItems(),valuation=collectionValuation(),idsCount=collectionIds().length,cardsCount=collectionTotal(),gameCount=collectionGameCount();
-  const overviewHtml=`<div class="coll-stats-grid" aria-label="收藏統計摘要"><div class="coll-stat"><b id="collStatIds">${idsCount}</b><span>收藏款數</span></div><div class="coll-stat"><b id="collStatCards">${cardsCount}</b><span>收藏總張數</span></div><div class="coll-stat"><b id="collStatGames">${gameCount}</b><span>涵蓋遊戲</span></div><div class="coll-stat"><b id="collStatPriced">${valuation.counted||0}</b><span>已估值款數</span></div></div><button type="button" class="coll-binder-banner" data-coll-binder><span class="coll-binder-left"><img src="/assets/brand/web/rabbit-success-160.webp" alt=""><span class="coll-binder-copy"><b>TCG 收藏冊</b><small>本機免登入 · 即時估值與清單管理</small></span></span><span class="coll-binder-right" id="collBinderTotal">已擁有 ${cardsCount} 張卡 ›</span></button>`;
-  dialog.innerHTML=`<div class="coll"><header><h2 id="collectionTitle" tabindex="-1">我的收藏</h2><button type="button" data-collection-close aria-label="關閉我的收藏">×</button></header><div class="coll-top"><div class="coll-tools"><button type="button" data-coll-export${items.length?'':' disabled'} title="把收藏存成 JSON 備份檔">匯出備份</button><button type="button" data-coll-import title="匯入 JSON 備份或 CSV 清單">匯入</button><input type="file" id="collFile" accept="application/json,.json,text/csv,.csv" hidden><button type="button" id="collectionCsv"${items.length?'':' disabled'} title="下載清單 CSV">下載 CSV</button><button type="button" data-coll-explore>探索加卡</button></div><p class="coll-status" id="collStatus" role="status" aria-live="polite">${e(collectionUi.progress)}</p></div>${overviewHtml}<p class="coll-local" role="note"><b>只存在這台裝置</b>：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期「匯出備份」。</p>${importPreviewHtml()}${items.length?`<section class="coll-series" id="collSeries" aria-label="各系列集卡進度">${collectionSeriesHtml()}</section><p class="meta" id="collTotal">共 ${idsCount} 款、${cardsCount} 張</p><section class="coll-value" id="collValue" aria-label="參考總值">${valueHtml(valuation)}</section><ul class="coll-list" id="collList">${items.map(item=>collectionRowHtml(item,valuation)).join('')}</ul>`:'<div class="state">還沒有收藏。在卡片上按星號或「＋」就會出現在這裡；也可以匯入之前的備份。</div>'}</div>`;
-  const csv=$('collectionCsv');if(csv)csv.onclick=()=>{downloadWatchlistCsv();collectionStatus(`已下載清單 CSV（${items.length} 款）。`)};
-}
-const rerenderCollection=()=>{if(collectionDialog()?.open&&!typingInCollection())renderCollection()};
-function refreshGrid(){renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true);renderDetailCollect()}
+function refreshGrid(){if(inCollectionView()){renderCollectionPage();renderDetailCollect();return}renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true);renderDetailCollect()}
 
 // 把 items 寫回三個既有 localStorage 鍵；畫面快照（名稱、圖、地區）依 id 沿用。
 function applyItems(items){
@@ -1139,7 +1165,7 @@ async function loadCollectionPrices(){
   if(!ids.length){collectionUi.pricesState='ready';refreshCollectionValue();return}
   collectionUi.pricesState='loading';
   try{for(let index=0;index<ids.length;index+=100){const response=await fetch('/api/prices/reference',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardIds:ids.slice(index,index+100)})});if(!response.ok)throw Error(`HTTP ${response.status}`);const body=(await response.json()).data;body.cards.forEach(row=>{collectionUi.prices[row.cardId]=row.prices});collectionUi.priceMeta=body.meta}collectionUi.pricesState='ready'}catch{collectionUi.pricesState='error'}
-  rerenderCollection();if(typingInCollection())refreshCollectionValue();
+  refreshCollectionValue();
 }
 
 function downloadFile(filename,type,text){const url=URL.createObjectURL(new Blob([text],{type})),link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),0)}
@@ -1148,8 +1174,8 @@ async function importCollectionFile(file){
   if(file.size>CS.LIMITS.fileMaxChars){collectionStatus('沒有匯入：檔案過大（上限 2 MB）。既有收藏沒有變動。');return}
   let text='';try{text=await file.text()}catch{collectionStatus('讀不到這個檔案。既有收藏沒有變動。');return}
   const parsed=CS.parseImport(text);
-  if(parsed.error){collectionUi.pending=null;renderCollection();collectionStatus(`沒有匯入：${parsed.error}。既有收藏沒有變動。`);return}
-  collectionUi.pending={parsed,fileName:file.name,replace:false};collectionStatus('');renderCollection();$('collImport')?.scrollIntoView({block:'nearest'});
+  if(parsed.error){collectionUi.pending=null;renderCollectionExtras();collectionStatus(`沒有匯入：${parsed.error}。既有收藏沒有變動。`);return}
+  collectionUi.pending={parsed,fileName:file.name,replace:false};collectionStatus('');renderCollectionExtras();$('collImportTitle')?.focus();$('collImport')?.scrollIntoView({block:'nearest'});
 }
 async function confirmCollectionImport(){
   const pending=collectionUi.pending;if(!pending)return;
@@ -1158,53 +1184,152 @@ async function confirmCollectionImport(){
   if(plan.items.length>CS.LIMITS.itemsMax)return collectionStatus(`匯入後會超過 ${CS.LIMITS.itemsMax.toLocaleString('en-US')} 款上限，沒有匯入。`);
   if(pending.replace&&!confirm(`這會刪除目前的 ${existing.length} 款收藏，只留下匯入檔的 ${plan.items.length} 款，無法復原。真的要取代全部嗎？`))return;
   if(!commitItems(plan.items))return collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），匯入已取消，既有收藏沒有變動。');
-  collectionUi.pending=null;refreshGrid();renderCollection();
+  collectionUi.pending=null;refreshGrid();renderCollectionExtras();
   collectionStatus(`已匯入：新增 ${plan.added} 筆、更新 ${plan.updated} 筆${plan.removed?`、移除 ${plan.removed} 筆`:''}${skipped?`、略過 ${skipped} 筆格式錯誤`:''}。`);
-  collectionUi.pricesState='idle';await resolveCollection();await loadCollectionPrices();rerenderCollection();loadSeriesTotals();
+  collectionUi.pricesState='idle';await resolveCollection();rerenderCollection();await loadCollectionPrices();if(collectionUi.showSeries)loadSeriesTotals();
 }
-function onCollectionField(input){
-  const row=input.closest('[data-coll-id]'),id=row?.dataset.collId,field=input.dataset.collField;if(!id||!field)return;
-  if(field==='quantity'){const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>CS.LIMITS.quantityMax)return;watchlist[id]=value}
-  else watchlistMeta[id]={...watchlistMeta[id],id,[field]:field==='note'?input.value.slice(0,CS.LIMITS.noteMax):input.value};
+// 側板的欄位（品況／閃卡版本／備註）：每次輸入就存。數量用卡牆與側板上的 − ＋，不在這裡改。
+function onCollectionField(input,id){
+  const field=input.dataset.collField;if(!id||!field)return;
+  watchlistMeta[id]={...watchlistMeta[id],id,[field]:field==='note'?input.value.slice(0,CS.LIMITS.noteMax):input.value};
   if(!persistCollection())collectionStatus('無法寫入瀏覽器儲存空間，這次的變更關掉頁面後會消失；請先匯出備份。');
-  refreshCollectionValue();if(field==='quantity')refreshGrid();
+  refreshCollectionValue();
 }
-function removeCollectionItem(id){
-  const meta=watchlistMeta[id],title=meta?.v?name(meta):id;
-  if(!confirm(`從「我的收藏」移除 ${title}？品況、版本與備註也會一併刪除。`))return;
-  delete watchlist[id];delete watchlistMeta[id];persistCollection();refreshGrid();renderCollection();$('collectionTitle')?.focus();collectionStatus(`已移除 ${title}。`);
+// 舊資料的作品層 ID 對到多張實體卡時，在側板選你持有的那個版本：換成實體卡 ID，再補快照與參考價。
+function chooseCollectionVersion(from,to){
+  const items=collectionItems(),item=items.find(row=>row.id===from);if(!item||!to)return;
+  applyItems(CS.mergeItems(items.filter(row=>row.id!==from),[{...item,id:to}]).items);refreshGrid();
+  if($('modal')?.classList.contains('open'))openCard(to,{keepPosition:true});
+  resolveCollection().then(()=>loadCollectionPrices()).then(rerenderCollection);
 }
-function installCollectionDialog(){
-  let dialog=collectionDialog();if(dialog)return dialog;
-  dialog=document.createElement('dialog');dialog.id='collectionDialog';dialog.className='collection-dialog';dialog.setAttribute('aria-labelledby','collectionTitle');document.body.append(dialog);
-  dialog.addEventListener('close',syncPageTitle);
-  dialog.addEventListener('click',event=>{
-    const target=event.target;if(target===dialog||target.closest('[data-collection-close]'))return dialog.close();
-    const open=target.closest('[data-collection-open]');if(open){dialog.close();return openCard(open.dataset.collectionOpen)}
-    const remove=target.closest('[data-coll-remove]');if(remove)return removeCollectionItem(remove.dataset.collRemove);
-    if(target.closest('[data-coll-binder]')){const list=$('collList')||$('collValue');if(list)return list.scrollIntoView({behavior:'smooth',block:'start'});dialog.close();return typeof browse==='function'&&browse()}
-    if(target.closest('[data-coll-explore]')){dialog.close();return typeof browse==='function'&&browse()}
-    if(target.closest('[data-coll-export]')){const items=collectionItems(),filename=`cardscope-collection-${window.taipeiDate()}.json`;downloadFile(filename,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(items)));return collectionStatus(`已匯出 ${items.length} 款、${collectionTotal()} 張，備份檔 ${filename}（在瀏覽器的下載資料夾）。`)}
-    if(target.closest('[data-coll-import]'))return $('collFile')?.click();
-    if(target.closest('[data-coll-import-confirm]'))return confirmCollectionImport();
-    if(target.closest('[data-coll-import-cancel]')){collectionUi.pending=null;renderCollection();return collectionStatus('已取消匯入，收藏沒有變動。')}
-  });
-  dialog.addEventListener('input',event=>{if(event.target.dataset?.collField)onCollectionField(event.target)});
-  dialog.addEventListener('change',event=>{
-    const target=event.target;
-    if(target.dataset?.collReplace!==undefined&&collectionUi.pending){collectionUi.pending.replace=target.checked;renderCollection();$('collImport')?.querySelector('[data-coll-replace]')?.focus();return}
-    if(target.id==='collFile'){const file=target.files?.[0];target.value='';importCollectionFile(file);return}
-    if(target.dataset?.collField==='quantity')target.value=String(watchQuantity(target.closest('[data-coll-id]')?.dataset.collId)||1);
-    if(target.dataset?.collPick&&target.value){const from=target.dataset.collPick,items=collectionItems(),item=items.find(row=>row.id===from);if(!item)return;applyItems(CS.mergeItems(items.filter(row=>row.id!==from),[{...item,id:target.value}]).items);refreshGrid();renderCollection();resolveCollection().then(()=>loadCollectionPrices()).then(rerenderCollection)}
-  });
-  return dialog;
-}
-function openCollection(){
-  const dialog=installCollectionDialog();collectionUi.prices={};collectionUi.pricesState='idle';collectionUi.progress='';collectionUi.pending=null;
-  renderCollection();if(!dialog.open)dialog.showModal();syncPageTitle();loadSeriesTotals();
-  if(collectionItems().length)resolveCollection().then(changed=>{if(changed){refreshGrid();rerenderCollection()}return loadCollectionPrices()});
-}
+function openCollection(){return window.openView?.('collection')}
 window.openCollection=openCollection;
+
+// 工具列右邊的「管理」按鈕與卡牆上方的狀態／摘要／匯入預覽／系列進度，第一次進收藏頁才建立。
+function ensureCollectionHosts(){
+  if(!$('collExtras')){
+    const extras=document.createElement('div');extras.id='collExtras';extras.className='coll-extras';
+    extras.innerHTML='<p class="coll-status" id="collStatus" role="status" aria-live="polite"></p><div class="coll-summary" id="collSummary" hidden></div><div id="collImportHost"></div><section class="coll-series" id="collSeries" aria-label="各系列集卡進度" hidden></section>';
+    $('cards').before(extras);
+  }
+  if(!$('collManage')){
+    const box=document.createElement('div');box.id='collManage';box.className='coll-manage';
+    box.innerHTML='<button type="button" id="collManageBtn" class="coll-manage-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="collMenu">管理 <span aria-hidden="true">▾</span></button><div class="coll-menu" id="collMenu" role="menu" aria-label="管理我的收藏" hidden><button type="button" role="menuitem" data-coll-export title="把收藏存成 JSON 備份檔">匯出備份</button><button type="button" role="menuitem" data-coll-import title="匯入 JSON 備份或 CSV 清單">匯入備份</button><button type="button" role="menuitem" id="collectionCsv" title="下載清單 CSV">下載 CSV</button><button type="button" role="menuitemcheckbox" aria-checked="false" data-coll-series-toggle>各系列進度</button></div><input type="file" id="collFile" accept="application/json,.json,text/csv,.csv" hidden>';
+    $('cardTools').append(box);
+  }
+}
+const collectionSummaryHtml=()=>`<b id="collSumCount"></b><span class="coll-sum-value" id="collValue"></span>${tipMarkup('參考總值與儲存方式','<div id="collValueDetail"></div><p>收藏只存在這台裝置：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期用「管理 → 匯出備份」存檔。</p>')}<a class="coll-market-link" href="/?view=market" data-spa>看卡牌行情</a>`;
+const collectionEmptyHtml=()=>'<div class="coll-empty"><img src="/assets/brand/web/rabbit-profile.webp" alt="" width="120" height="120" loading="lazy"><p>還沒有收藏。在卡片上按 ☆ 就會收在這裡。</p><button type="button" class="coll-empty-cta" data-coll-explore>去圖鑑找卡</button></div>';
+function renderCollectionSeries(){
+  const host=$('collSeries');if(!host)return;
+  host.hidden=!collectionUi.showSeries||!collectionItems().length;if(!host.hidden)host.innerHTML=collectionSeriesHtml();
+}
+function renderCollectionExtras(){
+  ensureCollectionHosts();
+  const empty=!collectionItems().length,summary=$('collSummary'),importHost=$('collImportHost'),html=importPreviewHtml(),status=$('collStatus');
+  document.querySelectorAll('#collMenu [data-coll-export],#collectionCsv').forEach(button=>{button.disabled=empty});
+  if(status&&status.textContent!==collectionUi.progress)status.textContent=collectionUi.progress;
+  summary.hidden=empty;if(!empty&&!summary.firstChild)summary.innerHTML=collectionSummaryHtml();
+  if(importHost.__html!==html){importHost.innerHTML=html;importHost.__html=html}
+  document.querySelector('#collMenu [data-coll-series-toggle]')?.setAttribute('aria-checked',String(collectionUi.showSeries));
+  renderCollectionSeries();refreshCollectionValue();
+}
+function renderCollectionPage(){
+  if(!inCollectionView()||!$('cards'))return;
+  ensureCollectionHosts();
+  const host=$('cards'),active=document.activeElement,wasInWall=Boolean(active?.closest?.('#cards')),focusKey=active?.closest?.('#cards .card')?.querySelector('[data-card-open]')?.dataset.cardOpen;
+  const all=collectionItems().map(collectionWallRow),filter=collectionUi.filter;
+  if(filter.game&&!all.some(row=>row.game===filter.game)){filter.game='';filter.series=''}
+  if(filter.series&&!all.some(row=>row.game===filter.game&&row.seriesId===filter.series))filter.series='';
+  const rows=all.filter(collectionRowMatches),filtered=Boolean(filter.game||filter.series);
+  cardDisplayState='ready';host.classList.remove('game-entry-grid');$('loadMore').style.display='none';
+  if(typeof showApplied==='function')showApplied(null);
+  if(typeof syncCardsMode==='function')syncCardsMode();
+  $('cardsTitle').textContent='我的收藏';$('cardsMeta').textContent=filtered?`${window.collectionFilterLabel()}：${rows.length} 款`:'';
+  $('cardsSection').classList.toggle('coll-is-empty',!all.length);$('cardTools').hidden=false;
+  if(all.length)cards(rows);
+  else{currentCardRows=[];refreshRarityOptions([]);$('filterSummary').textContent='';host.classList.remove('list-view','rarity-view');host.innerHTML=collectionEmptyHtml()}
+  $('sideColl').innerHTML=collectionSideHtml(all);
+  renderCollectionExtras();window.cardscopeSideNav?.refresh?.();syncPageTitle();
+  if(wasInWall){const hit=focusKey&&[...host.querySelectorAll('[data-card-open]')].find(button=>button.dataset.cardOpen===focusKey);(hit||$('cardsTitle'))?.focus?.({preventScroll:true})}
+}
+const rerenderCollection=()=>{if(inCollectionView())renderCollectionPage()};
+// 進入收藏頁（不是每次重畫）：價格與篩選從頭來，補齊快照後再查參考價。
+function enterCollectionPage(){
+  Object.assign(collectionUi,{active:true,prices:{},priceMeta:null,pricesState:'idle',progress:'',pending:null,showSeries:false,filter:{game:'',series:''}});
+  if(collectionItems().length)resolveCollection().then(changed=>{if(changed)rerenderCollection();return loadCollectionPrices()});
+}
+
+// ── 管理選單：按鈕開關；↑↓／Home／End 移動、Esc 關掉並把焦點還給按鈕、Tab 離開就關。 ──
+const manageItems=()=>[...document.querySelectorAll('#collMenu [role^="menuitem"]:not(:disabled)')];
+function setManageMenu(open,focusFirst){
+  const menu=$('collMenu'),button=$('collManageBtn');if(!menu||!button)return;
+  menu.hidden=!open;button.setAttribute('aria-expanded',String(open));
+  if(open&&focusFirst)manageItems()[0]?.focus();
+}
+function exportCollection(){
+  const items=collectionItems(),filename=`cardscope-collection-${window.taipeiDate()}.json`;downloadFile(filename,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(items)));
+  collectionStatus(`已匯出 ${items.length} 款、${collectionTotal()} 張，備份檔 ${filename}（在瀏覽器的下載資料夾）。`);
+}
+function onManageItem(item){
+  setManageMenu(false);
+  const back=()=>$('collManageBtn')?.focus();
+  if('collExport' in item.dataset){exportCollection();back()}
+  else if('collImport' in item.dataset)$('collFile')?.click();
+  else if(item.id==='collectionCsv'){downloadWatchlistCsv();collectionStatus(`已下載清單 CSV（${collectionItems().length} 款）。`);back()}
+  else if('collSeriesToggle' in item.dataset){collectionUi.showSeries=!collectionUi.showSeries;renderCollectionExtras();if(collectionUi.showSeries){loadSeriesTotals();$('collSeriesTitle')?.focus()}else back()}
+}
+function onCollectionClick(event){
+  const target=event.target;if(!target?.closest)return;
+  const menu=$('collMenu'),toggle=target.closest('#collManageBtn'),item=target.closest('#collMenu [role^="menuitem"]');
+  if(toggle&&menu){const open=menu.hidden;setManageMenu(open,open&&event.detail===0);return}
+  if(item&&!item.disabled)return onManageItem(item);
+  if(menu&&!menu.hidden&&!target.closest('#collManage'))setManageMenu(false);
+  const side=target.closest('#sideColl .coll-side-btn');
+  if(side){
+    const filter=collectionUi.filter,data=side.dataset,inSide=Boolean($('sideNav')?.contains(document.activeElement));
+    if(data.collSeries){filter.game=data.collGame;filter.series=data.collSeries}else{filter.game=data.collGame||'';filter.series=''}
+    renderCollectionPage();
+    if(inSide)[...document.querySelectorAll('#sideColl .coll-side-btn')].find(button=>button.dataset.collGame===data.collGame&&button.dataset.collSeries===data.collSeries)?.focus();
+    return;
+  }
+  if(target.closest('[data-coll-explore]'))return Promise.resolve(window.openView?.('')).then(()=>{const tabs=$('channels');if(!tabs)return;window.scrollBelowHeader?.(tabs,8);(tabs.querySelector('.channel.on')||tabs.querySelector('.channel'))?.focus({preventScroll:true})});
+  if(target.closest('[data-coll-import-confirm]'))return confirmCollectionImport();
+  if(target.closest('[data-coll-import-cancel]')){collectionUi.pending=null;renderCollectionExtras();collectionStatus('已取消匯入，收藏沒有變動。');$('collManageBtn')?.focus()}
+}
+function onCollectionKey(event){
+  const button=$('collManageBtn'),menu=$('collMenu');if(!button||!menu)return;
+  const onButton=event.target===button,inMenu=Boolean(event.target.closest?.('#collMenu'));if(!onButton&&!inMenu)return;
+  const open=!menu.hidden,key=event.key;
+  if(key==='Escape'&&open){event.preventDefault();setManageMenu(false);button.focus();return}
+  if(key==='Tab'&&open){setManageMenu(false);return}
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(key))return;
+  event.preventDefault();if(!open)setManageMenu(true);
+  const list=manageItems();if(!list.length)return;
+  const at=list.indexOf(document.activeElement),last=list.length-1;
+  list[key==='Home'?0:key==='End'?last:key==='ArrowDown'?(at+1)%list.length:at<=0?last:at-1].focus();
+}
+function onCollectionChange(event){
+  const target=event.target;
+  if(target.dataset?.collReplace!==undefined&&collectionUi.pending){collectionUi.pending.replace=target.checked;renderCollectionExtras();document.querySelector('#collImport [data-coll-replace]')?.focus();return}
+  if(target.id==='collFile'){const file=target.files?.[0];target.value='';importCollectionFile(file)}
+}
+document.addEventListener('click',onCollectionClick);
+document.addEventListener('keydown',onCollectionKey);
+document.addEventListener('change',onCollectionChange);
+// 收藏頁沒有遊戲的 renderGameLanding：render() 走到「全部遊戲」時改畫收藏牆；離開收藏頁就把 active 清掉，下次進來再重新補快照與查價。
+if(typeof renderGameLanding==='function'){
+  const baseLanding=renderGameLanding;
+  renderGameLanding=function(){
+    if(!inCollectionView())return baseLanding.apply(this,arguments);
+    if(!collectionUi.active)enterCollectionPage();
+    renderCollectionPage();
+  };
+}
+if(typeof render==='function'){
+  const baseRender=render;
+  render=function(){const result=baseRender.apply(this,arguments);if(!inCollectionView())collectionUi.active=false;return result};
+}
 
 // 搜尋框即時建議：輸入停 0.25 秒後查 /api/search（6 筆），在框下列出卡片；↑↓ 選、Enter 開卡、Esc 關。
 // 查詢若帶稀有度（阿爾宙斯UR），第一列說明已拆成「卡名＋稀有度」；Enter 沒選列時照原本的搜尋流程。

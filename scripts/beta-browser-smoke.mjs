@@ -590,6 +590,147 @@ async function runPhaseTwoChecks(browser){
   return {viewport:'phase-two',checks:['share','recent','slow-network','reduced-motion','first-visit-tour']};
 }
 
+// 階段 5：收藏頁（?view=collection）與行情頁（?view=market）。收藏只存在這台裝置；壞檔匯入不動既有收藏；上一頁回到原本那頁。
+// 舊的「我的收藏」對話框已拿掉：這裡取代它，用同一個入口（頂欄／底部導覽的「我的收藏」）走到頁面。
+async function runCollectionChecks(browser,viewport){
+  const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},acceptDownloads:true});
+  const page=await context.newPage();
+  const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
+  const label=`${viewport.name} collection page`;
+  try{
+    await installFixtures(page,makeFixtureState(fixtureCatalog()));
+    const mover=(id,name,percent,from,to)=>({cardId:id,name,seriesCode:'SV',cardNumber:'001',imageUrl:null,changePercent:percent,from:{amountTwd:from*35,amount:from,date:'2026-10-30'},to:{amountTwd:to*35,amount:to,date:'2026-11-12'}});
+    await page.route('**/api/price-movers',route=>responseBody(route,{data:{up:[mover('u1','皮卡丘 ex',42.5,20,28.5)],down:[mover('d1','水箭龜 ex',-22,30,23.4)]},meta:{windowDays:14,minAmount:5,note:''}}));
+    await page.route('**/api/market-events',route=>responseBody(route,{data:[{date:'2026-11-20',game:'pokemon',title:'新彈發售',url:null,source:'官方'}],meta:{note:'發售日與官方消息'}}));
+    const view=()=>page.evaluate(()=>document.body.dataset.view);
+    const overflow=()=>page.evaluate(()=>document.documentElement.scrollWidth-innerWidth);
+    const entry=()=>page.locator('[data-nav="collection"]:visible').first();
+    const goHome=async()=>{await page.goto(baseUrl,{waitUntil:'domcontentloaded'});await waitForVisible(page.locator('[data-nav="collection"]:visible').first(),`${label}: the 我的收藏 entry did not render`)};
+    const openCollection=async()=>{await entry().click();await page.waitForFunction(()=>document.body.dataset.view==='collection',undefined,{timeout:8000})};
+    const addCards=async(game,count)=>{
+      await page.goto(`${baseUrl}/?game=${game}`,{waitUntil:'domcontentloaded'});
+      const retry=page.locator('button.notice-retry, #notice button, .cards-state button').filter({hasText:/重試|再試/}).first();
+      await Promise.race([page.locator('#cards .card').first().waitFor({timeout:8000}),retry.waitFor({timeout:8000})]).catch(()=>{});
+      if(await retry.count()&&await retry.isVisible())await retry.click();
+      await waitForVisible(page.locator('#cards .card').first(),`${label}: ${game} wall did not load`);
+      for(let index=0;index<count;index+=1){const card=page.locator('#cards .card').nth(index);await card.locator('.favorite-toggle').click();await waitForVisible(card.locator('.watchlist-inline'),`${label}: ☆ should collect ${game} card ${index}`)}
+    };
+    const stored=()=>page.evaluate(()=>localStorage.getItem('cardscope-watchlist')+'|'+localStorage.getItem('cardscope-watchlist-meta'));
+
+    // 空的收藏：兔子、一句話、一顆主要按鈕；上一頁回到原本那頁（首頁）。
+    await goHome();
+    await openCollection();
+    assert.equal(new URL(page.url()).searchParams.get('view'),'collection',`${label}: the entry should push ?view=collection`);
+    assert.equal(await page.title(),'我的收藏｜CardScope');
+    assert.equal(await page.locator('[data-coll-explore]').count(),1,`${label}: the empty state has one button to the catalog`);
+    assert.match(await page.locator('#cards').innerText(),/還沒有收藏/);
+    assert.ok(await overflow()<=0,`${label}: empty collection overflows sideways`);
+    await page.goBack();
+    await page.waitForFunction(()=>document.body.dataset.view!=='collection',undefined,{timeout:5000});
+    assert.equal(new URL(page.url()).search,'',`${label}: back returns to the page before`);
+
+    // 收藏三張，回首頁再進收藏頁：卡牆混排帶遊戲／系列／版本，側欄（桌機）只列有收藏的遊戲。
+    await addCards('pokemon',2);
+    await addCards('onepiece',1);
+    await goHome();
+    await openCollection();
+    await waitForVisible(page.locator('#cards .card').first(),`${label}: the wall did not render`);
+    assert.equal(await page.locator('#cards .card').count(),3);
+    assert.ok(await page.locator('#cards .card-ctx').count()>=3,`${label}: a mixed wall labels each card with game, series and version`);
+    assert.ok(await overflow()<=0,`${label}: collection page overflows sideways`);
+    if(viewport.width>760){
+      assert.equal(await page.locator('#sideColl [data-coll-game]').count(),2,`${label}: the side list holds only games with collected cards`);
+      await page.locator('#sideColl [data-coll-game="onepiece"]').click();
+      await page.waitForFunction(()=>document.querySelectorAll('#cards .card').length===1,undefined,{timeout:5000});
+      await page.locator('#sideColl .coll-side-btn').first().click();
+      await page.waitForFunction(()=>document.querySelectorAll('#cards .card').length===3,undefined,{timeout:5000});
+    }
+
+    // 管理選單：四個動作、44px、Esc 只關選單。
+    await page.locator('#collManageBtn').click();
+    await waitForVisible(page.locator('#collMenu'),`${label}: the 管理 menu did not open`);
+    assert.equal(await page.locator('#collManageBtn').getAttribute('aria-expanded'),'true');
+    assert.deepEqual((await page.locator('#collMenu [role^="menuitem"]').allInnerTexts()).map(text=>text.trim()),['匯出備份','匯入備份','下載 CSV','各系列進度']);
+    assert.deepEqual(await page.locator('#collMenu [role^="menuitem"]').evaluateAll(items=>items.filter(item=>item.getBoundingClientRect().height<44).map(item=>item.textContent)),[],`${label}: menu items are 44px targets`);
+    await page.keyboard.press('Escape');
+    await page.locator('#collMenu').waitFor({state:'hidden',timeout:3000});
+    assert.equal(await view(),'collection',`${label}: Escape closes the menu, not the page`);
+
+    // 側板的收藏欄位：改品況與備註，重新整理後還在。
+    await page.locator('#cards .card-open-hit[data-card-open]').first().click();
+    await waitForVisible(page.locator('#modal.open .coll-edit'),`${label}: the side panel has no collection editor`);
+    assert.match(await page.evaluate(()=>location.search),/view=collection&card=/,`${label}: the card opens on top of the collection page`);
+    await page.locator('#modal.open [data-coll-field="condition"]').selectOption('LP');
+    await page.locator('#modal.open [data-coll-field="note"]').fill('冒煙測試備註');
+    await page.waitForTimeout(300);
+    await page.reload({waitUntil:'domcontentloaded'});
+    await waitForVisible(page.locator('#modal.open .coll-edit'),`${label}: the card did not reopen after reload`);
+    assert.equal(await page.locator('#modal.open [data-coll-field="condition"]').inputValue(),'LP');
+    assert.equal(await page.locator('#modal.open [data-coll-field="note"]').inputValue(),'冒煙測試備註');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(()=>!document.querySelector('#modal.open')&&new URL(location.href).searchParams.get('view')==='collection'&&!new URL(location.href).searchParams.get('card'),undefined,{timeout:5000});
+
+    // 匯出、CSV。
+    await page.locator('#collManageBtn').click();
+    const [backup]=await Promise.all([page.waitForEvent('download'),page.locator('#collMenu [data-coll-export]').click()]);
+    assert.match(backup.suggestedFilename(),/^cardscope-collection-\d{4}-\d{2}-\d{2}\.json$/);
+    const {readFile}=await import('node:fs/promises');
+    const backupText=await readFile(await backup.path(),'utf8');
+    assert.equal(JSON.parse(backupText).items.length,3);
+    assert.match(await page.locator('#collStatus').innerText(),/已匯出 3 款、3 張/);
+    await page.locator('#collManageBtn').click();
+    const [csv]=await Promise.all([page.waitForEvent('download'),page.locator('#collectionCsv').click()]);
+    assert.equal(csv.suggestedFilename(),'cardscope-watchlist.csv');
+    assert.match(await readFile(await csv.path(),'utf8'),/輕微使用痕跡 LP.*冒煙測試備註/);
+
+    // 壞檔匯入：說明原因、既有收藏一個字都沒動。
+    const before=await stored();
+    await page.setInputFiles('#collFile',{name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{"nope":')});
+    await page.waitForFunction(()=>/沒有匯入/.test(document.getElementById('collStatus')?.textContent||''),undefined,{timeout:5000});
+    assert.match(await page.locator('#collStatus').innerText(),/既有收藏沒有變動/);
+    assert.equal(await stored(),before,`${label}: a refused file must not touch the collection`);
+
+    // 清空後匯入備份：先預覽，按「確認匯入」才寫入，品況與備註跟著回來。
+    await page.evaluate(()=>{for(const key of Object.keys(localStorage))if(/watchlist|collection/i.test(key))localStorage.removeItem(key)});
+    await page.reload({waitUntil:'domcontentloaded'});
+    await waitForVisible(page.locator('[data-coll-explore]'),`${label}: an emptied collection shows the empty state`);
+    await page.setInputFiles('#collFile',{name:'backup.json',mimeType:'application/json',buffer:Buffer.from(backupText)});
+    await waitForVisible(page.locator('#collImport'),`${label}: the import preview did not appear`);
+    assert.equal(await page.locator('#cards .card').count(),0,`${label}: nothing is written before 確認匯入`);
+    await page.locator('[data-coll-import-confirm]').click();
+    await page.waitForFunction(()=>document.querySelectorAll('#cards .card').length===3,undefined,{timeout:8000});
+    assert.match(await page.locator('#collStatus').innerText(),/已匯入：新增 3 筆/);
+    assert.ok((await stored()).includes('LP')&&(await stored()).includes('冒煙測試備註'),`${label}: condition and note came back with the import`);
+
+    // 上一頁：從首頁進收藏頁再按上一頁，回到首頁。
+    await goHome();
+    await openCollection();
+    await page.goBack();
+    await page.waitForFunction(()=>document.body.dataset.view!=='collection',undefined,{timeout:5000});
+    assert.equal(await view(),'landing',`${label}: back returns to the home page`);
+
+    // 行情頁：首頁最夯 → 看完整行情 → 上一頁。
+    await page.locator('[data-rails-tab="trending"]').click();
+    const more=page.locator('.rails-more a[data-spa]').first();
+    await waitForVisible(more,`${label}: home 最夯 has no 看完整行情 link`);
+    await more.click();
+    await page.waitForFunction(()=>document.body.dataset.view==='market',undefined,{timeout:8000});
+    assert.equal(new URL(page.url()).searchParams.get('view'),'market');
+    assert.equal(await page.title(),'卡牌參考價漲跌與時事｜CardScope');
+    assert.equal((await page.locator('#marketTitle').innerText()).trim(),'行情');
+    await waitForVisible(page.locator('#trendsSection .trend-card').first(),`${label}: the market page lacks the price movers`);
+    assert.match(await page.locator('#trendsSection').innerText(),/歐洲平台參考價，不是成交價/);
+    await waitForVisible(page.locator('#eventsSection li').first(),`${label}: the market page lacks the card events`);
+    assert.equal(await page.locator('#hero:visible, #homeRails:visible').count(),0,`${label}: the home hero and rails stay off the market page`);
+    assert.equal(await page.locator('[data-nav]:visible').count(),3,`${label}: the top bar keeps three buttons`);
+    assert.ok(await overflow()<=0,`${label}: market page overflows sideways`);
+    await page.goBack();
+    await page.waitForFunction(()=>document.body.dataset.view==='landing',undefined,{timeout:5000});
+    assert.deepEqual(pageErrors,[],`${label}: page errors`);
+  }finally{await context.close()}
+  return {viewport:viewport.name,checks:['collection-page','manage-menu','panel-edit','export-import','market-page']};
+}
+
 const launchOptions={headless:true};
 if(requestedChannel)launchOptions.channel=requestedChannel;
 let browser;
@@ -606,6 +747,7 @@ try{
   for(const viewport of viewports)results.push(await runViewport(browser,viewport));
   results.push(await runPhaseTwoChecks(browser));
   results.push(await runSidebarChecks(browser));
+  for(const viewport of [viewports[0],viewports[2]])results.push(await runCollectionChecks(browser,viewport));
   // 200% zoom on a 1280x800 screen: the header scrolls away and nothing overflows sideways.
   const zoomed=await browser.newPage({viewport:{width:640,height:400},deviceScaleFactor:1});
   try{

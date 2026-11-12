@@ -135,7 +135,7 @@ test('a quantity change repaints only that card\'s collect area; the whole wall 
   assert.equal(h.run('wallCalls'), 1, 'but a quantity change inside the wall is still local');
   h.run("confirm=()=>true;setWatchQuantity('c2',0)");
   assert.equal(h.run('wallCalls'), 2, 'leaving the filtered wall re-renders');
-  assert.match(ui, /function repaintCollected\(key,previous,next\)\{\s*if\(\(favoritesOnly\|\|missingOnlyActive\(\)\)&&\(previous===0\|\|next===0\)\)\{cards\(currentCardRows,true\)/);
+  assert.match(ui, /function repaintCollected\(key,previous,next\)\{[\s\S]*?\n  if\(\(favoritesOnly\|\|missingOnlyActive\(\)\)&&\(previous===0\|\|next===0\)\)\{cards\(currentCardRows,true\)/);
 });
 
 test('the collect area is replaced in place and focus returns to the same kind of button; the change is announced', () => {

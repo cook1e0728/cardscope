@@ -45,7 +45,7 @@ html.look-clean body[data-view] header.top .nav button:focus-visible{outline:2px
    共同：高 44px、同一個圓角、按下縮到 97%、只轉場要變的屬性、滑過效果只給滑鼠。
    選中狀態＝粗體＋1.5px 墨色細框（與頂欄目前頁同一套語言），遊戲色只留在字與細線上。 */
 /* 4a 次要 */
-html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.home-preview-ip,.detail-collect button,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close]),
+html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.home-preview-ip,.detail-collect button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]),
 html.look-clean body[data-view] header.top .nav button{
   min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow);
   transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease);
@@ -60,7 +60,7 @@ html.look-clean body[data-view] #detail .detail-actions :is(.source-link,.detail
 /* 選單是輸入：凹陷底、不描邊 */
 html.look-clean body[data-view] main select{border-color:transparent;background-color:var(--v2-well)}
 /* 停用的次要按鈕：淡掉、不浮起 */
-html.look-clean body[data-view] :is(.coll-tools button,#downloadWatchlist,#collectionCsv):disabled{opacity:.5;box-shadow:none;cursor:default}
+html.look-clean body[data-view] :is(#downloadWatchlist):disabled{opacity:.5;box-shadow:none;cursor:default}
 /* 4b 主要：實心，一頁最多一顆（載入更多、重試、篩選面板的套用） */
 html.look-clean body[data-view] :is(.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm]){
   min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--ip-ink,var(--v2-ink));color:var(--ip-on,#fff);font-weight:700;box-shadow:0 1px 2px rgba(60,45,20,.24);
@@ -77,10 +77,10 @@ html.look-clean body[data-view] :is(.view-switch){padding:3px;border:1px solid t
 html.look-clean body[data-view] :is(.view-switch button){border:0!important;border-radius:var(--btn-r)!important;background:transparent;color:var(--v2-ink-2);box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
 html.look-clean body[data-view] :is(.view-switch button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)!important}
 /* 按下縮到 97%；滑過只給滑鼠 */
-html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close],.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm],.view-switch button,.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):active,
+html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel],.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm],.view-switch button,.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):active,
 html.look-clean body[data-view] header.top :is(.nav button,#go):active{transform:scale(.97)}
 @media (hover:hover) and (pointer:fine){
-  html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#collectionCsv,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,.coll-actions button,.coll-tools button,[data-coll-import-cancel],[data-collection-close]):hover,
+  html.look-clean body[data-view] :is(.cards-mode,.favorites-filter,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.rarity-bento-reset,.rarity-hud-Jump,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]):hover,
   html.look-clean body[data-view] header.top :is(.nav button,#go):hover{background:var(--v2-surface);box-shadow:var(--v2-shadow-up)}
   html.look-clean body[data-view] :is(.load-more,.notice-retry,.filter-sheet-apply,[data-coll-import-confirm]):hover{box-shadow:0 3px 8px rgba(60,45,20,.28)}
   html.look-clean body[data-view] :is(.search-clear,.rarity-hud-close,.filter-sheet-close,.card-zoom-close):hover{background:rgba(60,45,20,.08)}
@@ -122,8 +122,8 @@ html.look-clean body[data-view] :is(
   .health-metric>div:first-child span,.health-metric>small,.trend-card-number,.trend-card-facts span,.game-context-kicker,.game-context small,
   .ptl-cells dt,.ptl-ext-text,.card-lang-note,.mqg-badge,.mqg-label,.band-tile-code,.band-tile-flag,.card-rarity,.cr-chg,.trend-rise,.rarity-bento-title span,
   .rarity-bento-reset,.rarity-hud-Jump,.rp-meta,.rarity-hud-pill small,.rarity-hud-close,.rarity-hud-grid button small,.region-chip,
-  .feature-eyebrow,.feature-kicker,.card-identity dt,.card-zoom-quality,.version-price-table small,.coll-stat span,.coll-binder-copy small,.coll-art .image-fallback,
-  .series-index-badge,.series-facts span,.series-facts b,.series-source,.series-overlay,.card-reference .cr-src,.card-reference .cr-var,.card-reference .cr-original,.rarity-pills button[aria-pressed="true"]::before,.coll-art .card-sample-watermark
+  .feature-eyebrow,.feature-kicker,.card-identity dt,.card-zoom-quality,.version-price-table small,
+  .series-index-badge,.series-facts span,.series-facts b,.series-source,.series-overlay,.card-reference .cr-src,.card-reference .cr-var,.card-reference .cr-original,.rarity-pills button[aria-pressed="true"]::before
 ){font-size:var(--fs-note)!important}
 /* 字放大到 12px 後手機快速入口的標籤放不下一行：改成最多兩行，不再用省略號吃掉字 */
 html.look-clean body[data-view] .mqg-label{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.3}
@@ -473,3 +473,80 @@ html.look-clean body[data-view] #cards .card:has(.card-open-hit[aria-current="tr
   html.look-clean body[data-side]:has(#modal.open) #main{max-width:calc(var(--shell-max) - var(--side-w) - var(--panel-w));margin-right:var(--panel-w)}
   html.look-clean body[data-side]:has(#modal.open) .cards:not(.list-view){grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
+
+/* ===== 11. 階段 5：我的收藏頁（?view=collection）與行情頁（?view=market）=====
+   收藏頁＝遊戲頁的骨架（左側欄＋卡牆＋右側側板），側欄改列「有收藏的遊戲／系列」，收藏的匯出入收進工具列右邊的「管理」選單；
+   行情頁＝單欄：標題＋參考價漲跌榜＋卡牌時事。首頁只留最夯，不再放完整榜單與時事。 */
+html.look-clean body[data-view="collection"],html.look-clean body[data-view="market"]{background:var(--v2-page)}
+/* 這兩頁沒有首頁主視覺、搜尋範例、商品圖鑑條與首頁最夯；完整漲跌榜與時事只在行情頁 */
+body:is([data-view="collection"],[data-view="market"]) :is(#hero,#homeRails,#selectedProduct),
+body:is([data-view="collection"],[data-view="market"]) section.section:has(> #series),
+body[data-view="market"] #cardsSection,
+body:not([data-view="market"]) :is(#trendsSection,#eventsSection,#marketIntro){display:none!important}
+body[data-view="market"] #marketIntro{display:block;padding:22px 0 0}
+.market-intro h2{margin:0;font-size:var(--fs-title);line-height:1.15}
+.market-intro h2:focus-visible{outline:2px solid var(--v2-ink);outline-offset:4px}
+/* 「看完整行情」「看卡牌行情」：文字連結，高 44px */
+.rails-more{margin:8px 0 0}
+:is(.rails-more a,.coll-market-link){display:inline-flex;align-items:center;min-height:44px;padding:0 4px;color:var(--v2-ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+:is(.rails-more a,.coll-market-link):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:4px}
+
+/* ---- 收藏頁：側欄（有收藏的遊戲／系列）---- */
+#sideNav .side-sec-coll{display:none}
+body[data-side="collection"] #sideNav .side-sec-coll{display:block}
+body[data-side="collection"] #sideNav :is(.side-sec-games,.side-sec-region,.side-sec-series){display:none}
+@media (max-width:760px){body[data-view="collection"] .side-sheet-btn{display:flex}}
+.coll-side-list,.coll-side-sub{margin:0;padding:0;list-style:none}
+.coll-side-sub{margin:2px 0 6px 14px;padding-left:8px;border-left:1px solid var(--v2-line)}
+.coll-side-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:var(--btn-h);padding:4px 10px;border:0;border-radius:10px;background:transparent;color:var(--v2-ink);font:inherit;font-size:15px;line-height:1.3;text-align:left;cursor:pointer}
+.coll-side-name{min-width:0;overflow-wrap:anywhere}
+.coll-side-count{flex:none;color:var(--v2-ink-2);font-size:var(--fs-sub);font-variant-numeric:tabular-nums}
+.coll-side-btn.on{background:var(--v2-well);box-shadow:inset 3px 0 0 var(--v2-ink);font-weight:700}
+.coll-side-btn:focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
+.coll-side-empty{margin:8px 10px}
+@media (hover:hover) and (pointer:fine){.coll-side-btn:not(.on):hover{background:var(--v2-page)}}
+
+/* ---- 收藏頁：卡牆工具列右邊的「管理」---- */
+.coll-manage,.coll-extras{display:none}
+body[data-view="collection"] .coll-manage{display:block;position:relative;order:2;flex:none}
+html.look-clean body[data-view="collection"] #cardControls{flex:1 1 0}
+body[data-view="collection"] :is(#collectionState,#watchlistSummary,#seriesProgress){display:none!important}
+body[data-view="collection"] .coll-is-empty :is(#cardControls,#filterSummary,.price-info){display:none}
+body[data-view="collection"] .coll-is-empty #cardTools{justify-content:flex-end}
+.coll-manage-btn{min-height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-weight:600;box-shadow:var(--v2-shadow);cursor:pointer;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+.coll-manage-btn:active{transform:scale(.97)}
+.coll-manage-btn[aria-expanded="true"]{box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)}
+.coll-menu{position:absolute;z-index:8;right:0;top:calc(100% + 6px);display:grid;min-width:200px;padding:6px;border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow-pop)}
+.coll-menu[hidden]{display:none}
+.coll-menu button{min-height:var(--btn-h);padding:0 14px;border:0;border-radius:10px;background:transparent;color:var(--v2-ink);font:inherit;text-align:left;white-space:nowrap;cursor:pointer}
+.coll-menu button:disabled{opacity:.5;cursor:default}
+.coll-menu button[aria-checked="true"]{font-weight:700;box-shadow:inset 3px 0 0 var(--v2-ink)}
+:is(.coll-manage-btn,.coll-menu button,.coll-empty-cta):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
+@media (hover:hover) and (pointer:fine){.coll-menu button:not(:disabled):hover{background:var(--v2-page)}}
+
+/* ---- 收藏頁：卡牆上方的狀態、摘要、匯入預覽、各系列進度 ---- */
+body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
+.coll-status{margin:0;font-size:var(--fs-sub);color:var(--v2-ink-2)}
+.coll-status:empty{display:none}
+.coll-summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;font-size:var(--fs-sub);color:var(--v2-ink-2)}
+.coll-summary[hidden]{display:none}
+.coll-summary b{color:var(--v2-ink);font-size:15px}
+.coll-sum-value{overflow-wrap:anywhere}
+.coll-series{padding:12px 14px;border-radius:12px;background:var(--v2-surface);box-shadow:var(--v2-shadow)}
+.coll-series[hidden]{display:none}
+.coll-series h3,.coll-import h3{margin:0 0 6px;font-size:16px}
+.coll-sums{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.coll-sums b{font-size:16px}
+.coll-skip{color:var(--v2-ink-2)}
+.coll-empty{grid-column:1/-1;display:grid;justify-items:center;gap:12px;max-width:420px;margin:32px auto;padding:0 16px;text-align:center}
+.coll-empty img{width:120px;height:120px;object-fit:contain}
+.coll-empty p{margin:0;font-size:var(--fs-body)}
+.coll-empty-cta{white-space:nowrap;min-height:var(--btn-h);padding:0 24px;border:0;border-radius:var(--btn-r);background:var(--v2-ink);color:#fff;font:inherit;font-weight:700;box-shadow:0 1px 2px rgba(60,45,20,.24);cursor:pointer}
+
+/* ---- 側板裡的收藏資料：品況、閃卡版本、備註 ---- */
+.coll-edit{flex:1 1 100%;display:grid;gap:10px;margin-top:6px;padding:12px;border-radius:12px;background:var(--v2-page)}
+.coll-edit label{display:grid;gap:4px;font-size:var(--fs-sub);font-weight:700}
+.coll-edit :is(select,input){width:100%;min-height:var(--btn-h);padding:0 10px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-weight:400}
+.coll-edit :is(select,input):focus-visible{outline:2px solid var(--v2-ink);outline-offset:1px}
+.coll-price{display:grid;gap:2px;font-size:var(--fs-sub);font-weight:400}
+.coll-price:empty{display:none}
