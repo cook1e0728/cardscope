@@ -434,7 +434,9 @@ async function runPhaseTwoChecks(browser){
   // First visit: the guided tour opens on its own, Escape closes it and it stays closed.
   const visitor=await browser.newPage({viewport:{width:1440,height:1000}});
   try{
-    await installFixtures(visitor,makeFixtureState(fixtureCatalog()),{returning:false});
+    // 首頁「最新系列」只列有發售日的系列；桌機沒有它時導覽只剩兩個目標（底部導覽列只在手機），不會自動開啟。只在這一頁給日期：其他頁的「首次瀏覽失敗」計數不能被最新系列的請求先用掉。
+    const visitorCatalog=fixtureCatalog();visitorCatalog.series.forEach(row=>{row.releaseDate='2026-09-01'});
+    await installFixtures(visitor,makeFixtureState(visitorCatalog),{returning:false});
     await visitor.goto(baseUrl,{waitUntil:'domcontentloaded'});
     await waitForVisible(visitor.locator('.cs1-tour'),'first visit: the guided tour did not open');
     await visitor.keyboard.press('Escape');
