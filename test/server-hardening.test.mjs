@@ -217,14 +217,14 @@ test('every response carries Permissions-Policy (sensors left to the site) and C
   });
 });
 
-test('/.well-known/security.txt is plain text with a placeholder contact, a year-out expiry and the languages',async()=>{
+test('/.well-known/security.txt is plain text with the contact mailbox, a year-out expiry and the languages',async()=>{
   await withServer('security-txt',{env:{PUBLIC_BASE_URL:'https://example.test'}},async base=>{
     const res=await fetch(base+'/.well-known/security.txt'),body=await res.text();
     assert.equal(res.status,200);
     assert.match(res.headers.get('content-type'),/^text\/plain/);
-    assert.match(body,/^Contact: https:\/\/example\.test\/\?view=about$/m);
+    assert.match(body,/^Contact: mailto:cardscopetw@gmail\.com$/m);
     assert.match(body,/^Preferred-Languages: zh-TW, en$/m);
-    assert.match(body,/^# .*placeholder.*decision 5/m);
+    assert.doesNotMatch(body,/placeholder/i);
     const expires=Date.parse(body.match(/^Expires: (.+)$/m)[1]);
     assert.ok(expires>Date.now()+360*86400000&&expires<Date.now()+370*86400000);
     assert.equal((await fetch(base+'/.well-known/security.txt',{method:'HEAD'})).status,200);

@@ -34,12 +34,13 @@ test('B6: 手機（≤760px）第一次進站不自動開導覽；看導覽鈕�
   assert.match(showcaseCss, /\.cs1-replay\{display:inline-flex;[^}]*min-height:44px/, '觸控目標 44px');
 });
 
-test('D2: 頁尾連結列只有真的連結，勘誤／聯絡留 HTML 註解等決定 5', () => {
+test('D2: 頁尾連結列：站內三個連結＋勘誤表單＋聯絡信箱', () => {
   const footer = html.match(/<footer class="brand-footer">[\s\S]*?<\/footer>/)[0];
   const links = footer.match(/<nav class="footer-links" aria-label="站內資訊">[\s\S]*?<\/nav>/)[0];
   assert.deepEqual([...links.matchAll(/<a href="([^"]+)" data-spa>([^<]+)<\/a>/g)].map(m => [m[1], m[2]]), [['/?view=about', '資料收錄狀態'], ['/?view=privacy', '隱私說明'], ['/?view=privacy#sources', '資料來源']]);
-  assert.equal((links.match(/<a /g) || []).length, 3, '沒有多出來的（死）連結');
-  assert.ok(links.includes('<!-- 勘誤／聯絡：等決定 5 的信箱與表單 -->'));
+  assert.equal((links.match(/<a /g) || []).length, 5, '沒有多出來的（死）連結');
+  assert.match(links, /<a href="https:\/\/docs\.google\.com\/forms\/d\/e\/[\w-]+\/viewform" target="_blank" rel="noopener">勘誤回報<\/a>/);
+  assert.match(links, /<a href="mailto:cardscopetw@gmail\.com">聯絡我們<\/a>/);
   assert.doesNotMatch(links, /href="(#|mailto:|)"/);
   assert.match(footer, /權利人要求時將立即移除/, '版權與免責文字保留');
   assert.match(footer, /class="mascot-gallery"/, '吉祥物圖庫保留');

@@ -352,13 +352,13 @@ test('HTTP: a card page with art uses the small twitter card; the default image 
   assert.match(plain, /<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">/);
 });
 
-test('HTTP: /.well-known/security.txt is served as plain text with a placeholder contact and a future expiry', async () => {
+test('HTTP: /.well-known/security.txt is served as plain text with the contact mailbox and a future expiry', async () => {
   const page = await get('/.well-known/security.txt');
   assert.equal(page.status, 200);
   assert.match(page.type, /^text\/plain/);
-  assert.match(page.body, /^Contact: https:\/\/seo\.example\.test\/\?view=about$/m);
+  assert.match(page.body, /^Contact: mailto:cardscopetw@gmail\.com$/m);
   assert.match(page.body, /^Preferred-Languages: zh-TW, en$/m);
-  assert.match(page.body, /placeholder/i);
+  assert.doesNotMatch(page.body, /placeholder/i);
   const expires = Date.parse(page.body.match(/^Expires: (.+)$/m)[1]);
   assert.ok(expires > Date.now() + 360 * 86400000 && expires < Date.now() + 370 * 86400000, 'about a year out');
 });

@@ -110,7 +110,8 @@ test('G1/G3: ?view=privacy 有隱私說明與資料來源表，不含待辦字�
   assert.match(html, /<h2 id="privacyTitle">隱私說明<\/h2>/);
   assert.match(html, /<h2 id="sourcesTitle">資料來源<\/h2>/);
   assert.doesNotMatch(html, /TODO|example\.invalid|〈/, '聯絡信箱未定，不上線待辦字樣');
-  assert.match(html, /<!-- 聯絡方式：等決定 5 -->/);
+  assert.match(html, /<h3>聯絡<\/h3><p>[^<]*<a href="mailto:cardscopetw@gmail\.com">/, '隱私頁有聯絡信箱');
+  assert.doesNotMatch(html, /等決定 5/, '佔位註解已換掉');
   const table = html.match(/<table class="source-table">[\s\S]*?<\/table>/)[0];
   for (const game of ['寶可夢', '航海王', '遊戲王', '葬送的芙莉蓮', '排球少年', '七龍珠超 Fusion World']) assert.match(table, new RegExp(`<th scope="row">${game}`));
   assert.equal([...table.matchAll(/<tbody>[\s\S]*<\/tbody>/g)].length, 1);
