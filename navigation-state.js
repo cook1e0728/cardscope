@@ -167,6 +167,17 @@
   // index.html announces a browse view the page picked (newest series) or the user chose (series tile, 全部卡片), and searches it started itself (example chips, cancelled conditions).
   document.addEventListener('cardscope:browse',event=>{if(!restoring)writeUrl(event.detail?.push?'push':'replace',{pages:1,card:'',query:''})});
   document.addEventListener('cardscope:search',event=>{if(!restoring)writeUrl('push',{query:event.detail?.q||'',card:'',pages:1})});
+  // 站內連結（頁尾、麵包屑；標記 data-spa）：不整頁重載，存下捲動位置後 pushState 再依新網址還原。詳細頁開著時先關掉（不用 history.back，新網址是新的一步）。帶修飾鍵、非左鍵、別的網域照瀏覽器預設。
+  document.addEventListener('click',event=>{
+    const link=event.target.closest?.('a[data-spa]');
+    if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+    const url=new URL(link.getAttribute('href'),location.href);if(url.origin!==location.origin)return;
+    event.preventDefault();if(restoring)return;
+    saveScroll();if(node('modal')?.classList.contains('open')){openedFromList=false;closeDetail()}
+    history.pushState({},'',url.pathname+url.search+url.hash);
+    // restore() 結束前排了一個 rAF 把捲動拉回 scrollY；錨點的捲動排在它後面
+    restore(readLocation()).then(()=>requestAnimationFrame(()=>{const target=url.hash&&document.getElementById(decodeURIComponent(url.hash.slice(1)));if(target)window.scrollBelowHeader?window.scrollBelowHeader(target):target.scrollIntoView()}));
+  });
   window.addEventListener('beforeunload',saveScroll);
   window.addEventListener('popstate',()=>{if(skipRestore){skipRestore=false;return}return restore(readLocation())});
   if('scrollRestoration'in history)history.scrollRestoration='manual';

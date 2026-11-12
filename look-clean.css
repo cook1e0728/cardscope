@@ -101,7 +101,7 @@ html.look-clean .browse-regions{padding:var(--s4) 0 0;border-top:0;gap:var(--s3)
 html.look-clean .browse-regions label{font-weight:500;color:var(--lc-ink-2)}
 html.look-clean .browse-regions select{min-height:44px;border:1px solid var(--lc-line);border-radius:999px;padding:0 var(--s6) 0 var(--s4);background:#fff;font-size:14px}
 html.look-clean .browse-regions span{font-size:14px;color:var(--lc-ink-2)}
-html.look-clean .mascot-gallery figcaption{font-size:12px}
+html.look-clean .mascot-gallery figcaption{font-size:13px}
 
 
 html.look-clean .home-latest{margin:var(--s6) 0 0;padding:var(--s5) var(--s5) var(--s4) var(--s6);background:#FBF9F4;border:1px solid #D8D0C2;border-left:12px solid #D49B1B;border-radius:16px}
@@ -361,6 +361,20 @@ html.look-clean .brand-footer p,html.look-clean .brand-footer small{max-width:60
 html.look-clean .brand-footer p{word-break:keep-all;overflow-wrap:anywhere;text-wrap:pretty}
 html.look-clean .brand-footer a{display:inline-block;padding:var(--s3) 0;color:var(--lc-ink);text-underline-offset:3px}
 html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
+/* 頁尾所有文字 13px 以上（catalog-layout.css 底層是 12px，摘要列與「CardScope」標題會繼承到）；連結列：每個連結 44px 高（字級 16px），連結之間 24px */
+html.look-clean .brand-footer{font-size:16px}
+html.look-clean .brand-footer .footer-links ul{display:flex;flex-wrap:wrap;gap:0 var(--s5);margin:var(--s2) 0 0;padding:0;list-style:none}
+html.look-clean .brand-footer .footer-links a{display:inline-flex;align-items:center;min-height:44px;padding:0;font-size:16px}
+html.look-clean .brand-footer .footer-links a:focus-visible{outline:2px solid var(--lc-ink);outline-offset:3px;border-radius:2px}
+/* 麵包屑（系列頁卡牆上方 #seriesCrumbs、詳細頁頂端）：14px；觸控裝置的連結 44px 高，滑鼠 24px 以上 */
+html.look-clean .crumbs ol{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--s2);margin:0 0 var(--s3);padding:0;list-style:none;font-size:14px;line-height:1.4;color:var(--lc-ink-2)}
+html.look-clean .crumbs li{display:inline-flex;align-items:center;min-width:0}
+html.look-clean .crumbs li:not(:last-child)::after{content:"›";content:"›"/"";margin-left:var(--s2)}
+html.look-clean .crumbs a{display:inline-flex;align-items:center;min-height:24px;padding:2px 0;color:var(--lc-ink);text-underline-offset:3px}
+html.look-clean .crumbs a:focus-visible{outline:2px solid var(--lc-ink);outline-offset:2px;border-radius:2px}
+html.look-clean .crumbs [aria-current="page"]{font-weight:500;overflow-wrap:anywhere}
+html.look-clean #detail>.crumbs{padding-right:56px}
+@media (pointer:coarse){html.look-clean .crumbs a{min-height:44px}}
 
 /* ===== 手機（390 優先） ===== */
 

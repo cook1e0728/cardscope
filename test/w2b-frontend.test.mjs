@@ -118,8 +118,9 @@ test('G1/G3: ?view=privacy 有隱私說明與資料來源表，不含待辦字�
   const privacy = html.match(/<section class="info-page" id="privacy"[\s\S]*?<\/section>/)[0] + html.match(/<section class="info-page" id="sources"[\s\S]*?<\/section>/)[0];
   assert.doesNotMatch(privacy, /\son\w+=|javascript:|<script/i);
   assert.match(privacy, /<a href="https:\/\/www\.exchangerate-api\.com" rel="noopener">/);
-  assert.match(html, /<a href="\/\?view=privacy">隱私說明與資料來源<\/a>/, '頁尾連結');
-  assert.match(html, /<a href="\/\?view=about">資料收錄狀態與勘誤方式<\/a>/);
+  assert.match(html, /<a href="\/\?view=privacy" data-spa>隱私說明<\/a>/, '頁尾連結（W2f 起拆成隱私說明、資料來源兩個）');
+  assert.match(html, /<a href="\/\?view=privacy#sources" data-spa>資料來源<\/a>/);
+  assert.match(html, /<a href="\/\?view=about" data-spa>資料收錄狀態<\/a>/);
   // 其他頁面一律不顯示；privacy 視同 about 的版面（隱藏首頁與卡牆）
   assert.match(theme, /body:not\(\[data-view="privacy"\]\) \.info-page\{display:none\}/);
   assert.match(theme, /body\[data-view="privacy"\] \.hero,body\[data-view="privacy"\] #cardsSection/);

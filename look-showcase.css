@@ -105,6 +105,10 @@ html.look-clean .cs1-replay:hover{background:rgba(246,241,230,.12)}
 html.look-clean .cs1-replay:active{transform:scale(.97)}
 /* 底色與 .hero::before 同色（半透明）：焦點框畫在按鈕內側，對比有實際底色可量（冒煙測試 assertFocusRings） */
 html.look-clean .cs1-replay:focus-visible{outline:2px solid #F6F1E6;outline-offset:-4px}
+/* 手機第一次進站：導覽不自動跳出，所以這顆鈕要明顯——米白實心底、深色字，焦點框用深色（對米白底約 14:1） */
+html.look-clean .cs1-replay.cs1-replay-new{border-color:#F6F1E6;background:#F6F1E6;color:#1B1733;font-weight:700}
+html.look-clean .cs1-replay.cs1-replay-new:hover{background:#fff}
+html.look-clean .cs1-replay.cs1-replay-new:focus-visible{outline-color:#1B1733}
 
 /* ===== 3. 頂欄：帶圖示的半透明描邊膠囊（桌面；手機頂欄沒有 nav，改用 dock） ===== */
 html.look-clean body .top .nav{gap:10px}
