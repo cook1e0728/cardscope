@@ -51,7 +51,7 @@
     const rect = button.getBoundingClientRect(), wrap = make('div', 'fx-burst'), star = make('span', 'fx-burst-star');
     wrap.style.left = rect.left + rect.width / 2 + 'px'; wrap.style.top = rect.top + rect.height / 2 + 'px';
     star.textContent = '★'; wrap.append(star);
-    star.animate([{ transform: 'scale(.6)', opacity: .9 }, { transform: 'scale(1.9)', opacity: 0 }], { duration: 480, easing: EASE });
+    star.animate([{ transform: 'scale(.6)', opacity: .9 }, { transform: 'scale(1.9)', opacity: 0 }], { duration: 480, easing: EASE, fill: 'forwards' }); // forwards: 不然 480ms 播完到 650ms 移除前，星星會彈回不透明閃一下
     for (let i = 0; i < 8; i++) {
       const dot = make('span', 'fx-burst-dot'), angle = (i / 8) * Math.PI * 2 + Math.random() * .4, dist = 22 + Math.random() * 14;
       wrap.append(dot);

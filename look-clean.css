@@ -45,7 +45,6 @@ html.look-clean .search button{width:44px;min-width:44px;height:44px;min-height:
 html.look-clean body[data-view="game"] .search button{background:var(--ip);color:var(--ip-on)}
 html.look-clean .search:focus-within{box-shadow:0 0 0 2px var(--lc-bg),0 0 0 4px var(--lc-ink)}
 html.look-clean .mobile-header-scope{display:none}
-html.look-clean .mobile-quick-grid{display:none}
 
 /* ===== 首頁第一屏：標題、搜尋、範例、遊戲入口 ===== */
 html.look-clean .hero{padding-top:var(--s7)}
@@ -179,11 +178,6 @@ html.look-clean body .view-switch button.on{background:var(--lc-ink)!important;b
 html.look-clean body .view-switch button.on:before{content:"✓";margin-right:6px}
 html.look-clean .filter-field label{margin-bottom:var(--s1);font-size:12px;font-weight:500;color:var(--lc-ink-2)}
 html.look-clean .filter-field select,html.look-clean .card-tools .filter-field select{height:44px!important;padding:0 var(--s6) 0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background-color:#fff;box-shadow:none;font-size:14px}
-html.look-clean .favorites-filter,html.look-clean .card-tools .favorites-filter{min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background:#fff;font-size:14px;font-weight:500}
-html.look-clean .favorites-filter.on{background:var(--lc-ink);border-color:var(--lc-ink);color:#fff;font-weight:700}
-html.look-clean .favorites-filter.on:before{content:"✓ "}
-html.look-clean .filter-sheet-toggle{border:1px solid var(--lc-line);border-radius:var(--lc-r-md);background:#fff}
-html.look-clean .filter-sheet-toggle b{font-weight:700}
 html.look-clean .filter-summary{font-size:13px;color:var(--lc-ink-2)}
 html.look-clean .applied-chip,html.look-clean button.applied-chip{min-height:44px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;font-size:14px;font-weight:700}
 html.look-clean .watchlist-summary{align-items:center;padding-top:var(--s4);border-top:1px solid var(--lc-hair);color:var(--lc-ink-2)}
@@ -286,10 +280,6 @@ html.look-clean .detail a{color:var(--ip-ink);text-underline-offset:3px}
 html.look-clean .detail-meta a{display:inline-flex;align-items:center;min-height:44px;margin:-12px 0;padding:0 var(--s2)}
 /* 分享鈕失敗時的唯讀網址欄（ui-enhancements.js） */
 html.look-clean .detail .share-url{display:block;width:100%;min-height:44px;margin:0 0 var(--s4);padding:0 var(--s3);border:1px solid var(--lc-line);border-radius:var(--lc-r-sm);background:#fff;color:var(--lc-ink);font:500 14px/1.4 var(--lc-num)}
-/* 手機稀有度 V1 直選格＋V5 底部拇指懸浮盤（ui-enhancements.js installRarityPills）；桌面不顯示 */
-html.look-clean .rarity-bento-box,html.look-clean .rarity-thumb-hud{display:none}
-html.look-clean .rarity-pills{display:none}
-html.look-clean .rarity-bento-box[hidden],html.look-clean .rarity-thumb-hud[hidden],html.look-clean .rarity-pills[hidden]{display:none!important}
 html.look-clean .detail-visual{display:flex;flex-direction:column}
 html.look-clean .detail-visual>*{order:5}
 html.look-clean .detail-visual .detail-visual-stage{order:0}
@@ -394,14 +384,6 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean body[data-view="landing"] .hero{margin-top:var(--s2);padding:0;border:0;background:transparent;background-image:none}
   html.look-clean body[data-view="landing"] .hero-intro,html.look-clean body[data-view="landing"] .home-search,html.look-clean body[data-view="landing"] .home-examples,html.look-clean body[data-view="landing"] .hero-art{display:none}
   html.look-clean body[data-view="landing"] #channels{display:none}
-  html.look-clean body[data-view="landing"] .mobile-quick-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 6px;padding:var(--s3) var(--s2) var(--s3) 14px;background:#FBF9F4;border:1px solid #D8D0C2;border-left:8px solid #D49B1B;border-radius:14px}
-  html.look-clean .mqg-tile{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:var(--lc-ink);cursor:pointer;text-align:center}
-  html.look-clean .mqg-art{position:relative;display:grid;place-items:center;width:54px;height:54px;padding:5px;border-radius:14px;background:#fff;border:1px solid var(--lc-hair);box-sizing:border-box}
-  html.look-clean .mqg-tile[data-mqg-action="collection"] .mqg-art{background:var(--lc-ink);border-color:#D49B1B}
-  html.look-clean .mqg-art img{width:100%;height:100%;object-fit:contain;border-radius:8px}
-  html.look-clean .mqg-badge{position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:999px;background:var(--lc-ink);color:#fff;font-size:10px;font-weight:700;line-height:1.25;white-space:nowrap}
-  html.look-clean .mqg-badge.is-hot{background:#D7261E;color:#fff}
-  html.look-clean .mqg-label{width:100%;margin-top:2px;font-size:11px;font-weight:500;line-height:1.25;color:var(--lc-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   html.look-clean .home-latest{margin-top:var(--s4);padding:var(--s4) var(--s3) var(--s3) 18px;border-left-width:8px}
   html.look-clean .home-latest h2,html.look-clean .section h2{font-size:20px}
   html.look-clean body[data-view="game"] .section h2,html.look-clean #cardsSection .title h2{font-size:22px}
@@ -433,7 +415,7 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean #trendsSection .trend-rail{display:flex;overflow-x:auto;gap:10px;padding-top:var(--s2);scroll-snap-type:x proximity}
   html.look-clean #trendsSection .trend-card{flex:0 0 112px;width:112px;padding:6px;scroll-snap-align:start}
   html.look-clean #trendsSection .trend-fall .trend-rise{color:#1F6F43!important;background:#E8F3EC!important}
-  html.look-clean #trendsSection .trend-rise{color:#C4000F;background:#FBEDEB;clip-path:none;border-radius:4px;padding:1px 4px;font-size:11px;font-weight:700}
+  html.look-clean #trendsSection .trend-rise{color:#C4000F;background:#FBEDEB!important;clip-path:none;border-radius:4px;padding:1px 4px;font-size:11px;font-weight:700}
 
   html.look-clean .card-tools,html.look-clean body[data-view="game"] .card-tools{margin:var(--s3) 0 var(--s4)}
   html.look-clean .view-switch{width:100%}
@@ -465,45 +447,6 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean .detail .dpanel-versions .version-switch:after{right:var(--s3)}
   html.look-clean .detail .ptl-details{padding:0 var(--s3)}
   html.look-clean .detail .ptl-details[open]{padding-bottom:var(--s3)}
-  /* 稀有度分類（V1 雙行 Bento 3 欄直選格 ＋ V5 底部拇指懸浮快選盤） */
-  html.look-clean .rarity-bento-box{display:block;flex:0 0 100%;width:100%;padding:10px 10px 10px 12px;border:1.5px solid #D8D0C2;border-left:7px solid var(--ip,#C83E2B);border-radius:14px;background:#FBF9F4;box-sizing:border-box}
-  html.look-clean .rarity-bento-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
-  html.look-clean .rarity-bento-title{display:flex;align-items:baseline;gap:6px;min-width:0}
-  html.look-clean .rarity-bento-title b{font-size:13px;font-weight:900;color:var(--lc-ink)}
-  html.look-clean .rarity-bento-title span{font-size:11px;color:var(--lc-ink-2);white-space:nowrap}
-  html.look-clean .rarity-bento-actions{display:flex;align-items:center;gap:5px;flex:none}
-  html.look-clean .rarity-bento-reset,html.look-clean .rarity-hud-Jump{min-height:44px;padding:3px 9px;border:0;border-radius:999px;background:#ECE6D8;color:#4A443A;font-size:11px;font-weight:700;cursor:pointer}
-  html.look-clean .rarity-hud-Jump{background:#1F1B16;color:#E7BA4C;border:1px solid #D49B1B}
-  html.look-clean .rarity-pills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%;min-width:0;margin:0;padding:0;overflow:visible}
-  html.look-clean .rarity-pills button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:46px;padding:5px 8px;border:1px solid #D8D0C2;border-radius:10px;background:#fff;color:var(--lc-ink);text-align:left;line-height:1.2;white-space:normal;font-variant-numeric:tabular-nums;cursor:pointer;position:relative}
-  html.look-clean .rarity-pills button .rp-top{display:flex;align-items:center;justify-content:space-between;width:100%;gap:3px}
-  html.look-clean .rarity-pills button .rp-code{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  html.look-clean .rarity-pills button .rp-dot{width:7px;height:7px;border-radius:50%;flex:none}
-  html.look-clean .rarity-pills button .rp-dot.is-top{background:#D49B1B;box-shadow:0 0 0 2px #FFF3C4}
-  html.look-clean .rarity-pills button .rp-dot.is-high{background:#8C96A6}
-  html.look-clean .rarity-pills button .rp-dot.is-base{background:#C8BFA8}
-  html.look-clean .rarity-pills button .rp-meta{margin-top:2px;font-size:10px;font-weight:500;color:#6E6558;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  html.look-clean .rarity-pills button[aria-pressed="true"]{border-color:var(--lc-ink);background:var(--lc-ink);color:#FFF8E7;font-weight:700;box-shadow:0 0 0 2px #FBF9F4,0 0 0 3.5px var(--ip,#C83E2B)}
-  html.look-clean .rarity-pills button[aria-pressed="true"] .rp-meta{color:#E7BA4C;font-weight:700}
-  html.look-clean .rarity-pills button[aria-pressed="true"]:before{content:"✓ "}
-  html.look-clean .rarity-pills button[aria-pressed="true"]::before{position:absolute;top:5px;right:6px;font-size:10px;color:#E7BA4C}
-  html.look-clean .rarity-pills button[aria-pressed="true"] .rp-dot{display:none}
-  html.look-clean body[data-view="game"] .rarity-thumb-hud{display:block;position:fixed;left:10px;right:10px;bottom:68px;z-index:25;padding:10px;border:1.5px solid #D49B1B;border-radius:16px;background:rgba(31,27,22,.96);color:#FFF8E7;box-shadow:0 12px 28px rgba(0,0,0,.35);backdrop-filter:blur(8px)}
-  /* 深色快選盤上，遊戲頁預設的 IP 深色焦點框對比不足（約 2.4:1）→ 改米白（WCAG 1.4.11）。 */
-  html.look-clean body[data-view="game"] .rarity-thumb-hud :focus-visible{outline:2px solid #FFF8E7;outline-offset:-4px}
-  html.look-clean body[data-view="game"] .rarity-thumb-hud.is-collapsed{left:auto;right:12px;padding:0;border-radius:999px}
-  html.look-clean .rarity-hud-pill{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:#FFF8E7;font-size:12px;font-weight:700;cursor:pointer}
-  html.look-clean .rarity-hud-pill b{color:#E7BA4C}
-  html.look-clean .rarity-hud-pill small{color:#C8BFA8;font-size:11px}
-  html.look-clean .rarity-hud-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;padding:0 2px}
-  html.look-clean .rarity-hud-title{font-size:12px;font-weight:800;color:#E7BA4C}
-  html.look-clean .rarity-hud-close{min-height:28px;padding:3px 10px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#FFF8E7;font-size:11px;font-weight:700;cursor:pointer}
-  html.look-clean .rarity-hud-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:156px;overflow-y:auto}
-  html.look-clean .rarity-hud-grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px;padding:5px 6px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:rgba(255,255,255,.07);color:#FFF8E7;text-align:center;cursor:pointer}
-  html.look-clean .rarity-hud-grid button b{font-size:12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  html.look-clean .rarity-hud-grid button small{font-size:10px;color:#C8BFA8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-  html.look-clean .rarity-hud-grid button[aria-pressed="true"]{background:#D49B1B;border-color:#FFF8E7;color:#1F1B16;font-weight:900}
-  html.look-clean .rarity-hud-grid button[aria-pressed="true"] small{color:#1F1B16;font-weight:800}
 }
 
 /* ===== 首頁桌面第一屏「夜間展示櫃」（ADR 0050，2026-10-22 使用者從 5 版預覽選定）=====
@@ -553,23 +496,14 @@ html.look-clean .top>.search-hint:not(:empty){padding:var(--s1) var(--s3);margin
 html.look-clean .price-note:not([hidden]){display:block;margin-top:var(--s1);overflow:hidden;font-size:12px;line-height:1.4;color:var(--lc-ink-2);text-overflow:ellipsis;white-space:nowrap}
 html.look-clean #cardsSection:has(#cards .search-empty) #cardTools{display:none!important}
 @media(max-width:760px){
-  html.look-clean .cs-more{flex:0 0 100%;width:100%;border-top:1px solid var(--lc-hair)}
-  html.look-clean .cs-more>summary{display:flex;align-items:center;min-height:44px;font-size:14px;font-weight:500;color:var(--lc-ink-2);cursor:pointer}
-  html.look-clean .cs-more .watchlist-summary{padding-top:0;border-top:0}
   /* 頂欄：遊戲／版本選擇器收窄（不用原生箭頭、不放 Logo），搜尋框在 390 寬至少約 150px */
   html.look-clean .mobile-scope-pill img{display:none}
   html.look-clean .mobile-scope-pill select,html.look-clean .mobile-region-pill select{appearance:none;-webkit-appearance:none;padding:0;font-size:13px}
   html.look-clean .mobile-scope-pill:after,html.look-clean .mobile-region-pill:after{content:"▾";margin:0 2px;font-size:10px;color:var(--lc-ink-2);pointer-events:none}
   html.look-clean .top .search{padding-left:var(--s2)}
   html.look-clean .top .search input{padding:0 var(--s1)}
-  /* 第一張卡盡量在第一屏：稀有度直選改成一排橫向捲動、篩選鈕單行、商品橫幅縮小 */
+  /* 第一張卡盡量在第一屏：商品橫幅縮小 */
   html.look-clean .card-tools,html.look-clean body[data-view="game"] .card-tools{row-gap:var(--s2)}
-  html.look-clean .rarity-bento-box{padding:8px 8px 8px 12px}
-  html.look-clean .rarity-bento-head{margin-bottom:6px}
-  html.look-clean .rarity-bento-title span,html.look-clean .rarity-hud-Jump{display:none}
-  html.look-clean .rarity-pills{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(104px,max-content);padding-bottom:2px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
-  html.look-clean .filter-sheet-toggle{flex-direction:row;align-items:center;gap:var(--s2);min-height:44px;padding:0 var(--s3)}
-  html.look-clean .filter-sheet-toggle span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   html.look-clean .selected-product,html.look-clean .selected-product.open{gap:var(--s3);margin-top:var(--s3);padding-top:var(--s3)}
   html.look-clean .selected-product-art,html.look-clean .selected-product-art .band-tile-art{width:64px;height:64px}
   html.look-clean .selected-product h2{margin-top:0;font-size:20px}
@@ -676,7 +610,7 @@ button,[role="button"]{-webkit-user-select:none;user-select:none;-webkit-touch-c
 @media (pointer:coarse){input,select,textarea{font-size:16px!important}}
 /* 觸控沒有 hover：點過的卡片、入口不能一直浮起；改給按下當下的回饋 */
 @media (hover:none){
-  html.look-clean .card:hover,html.look-clean .channel:hover,html.look-clean .game-entry:hover,html.look-clean .series-card-rail .series-card:hover,html.look-clean #trendsSection .trend-card:hover{transform:none;box-shadow:none}
+  html.look-clean .card:hover,html.look-clean .channel:hover,html.look-clean .series-card-rail .series-card:hover,html.look-clean #trendsSection .trend-card:hover{transform:none;box-shadow:none}
   html.look-clean .band-tile:hover .band-tile-art img{transform:none}
   html.look-clean button:not(:disabled):active,html.look-clean .card:active{filter:brightness(.94)}
 }

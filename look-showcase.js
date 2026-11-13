@@ -167,9 +167,9 @@
   };
   const stepDefs=()=>[
     {t:['#homeSearch','.top .search'],h:'先從這裡找卡',p:'輸入卡名、卡號或系列；也可以點旁邊的範例直接試試。'},
-    {t:[mobile()?'#mobileQuickGrid':'#channels'],h:'挑一個遊戲開始翻閱',p:'選一個作品，直接進入它的圖鑑。'},
-    {t:['#homeLatest h2','#homeLatest .home-latest-tabs','#homeLatest .series-band-rail'],h:'最新系列放在這裡',p:'可依遊戲切換分頁，點系列磚就能看完整卡表。'},
-    {t:['nav.bottom [data-nav="collection"]'],h:'我的收藏',p:'卡片上的收藏鈕加入的卡，都會集中在這裡；這條列也能快速切換搜尋與圖鑑。'}
+    mobile()?{t:['nav.bottom [data-nav="browse"]'],h:'點「圖鑑」挑一個遊戲',p:'從底部的「圖鑑」選一個作品，直接進入它的圖鑑。'}:{t:['#channels'],h:'挑一個遊戲開始翻閱',p:'選一個作品，直接進入它的圖鑑。'},
+    {t:['#homeRails .rails-switch'],h:'最新、最夯、最熱',p:'切換分頁看最新系列、參考價漲幅最大的卡，和本站最多人開的卡。'},
+    {t:['nav.bottom [data-nav="collection"]','header.top .nav [data-nav="collection"]'],h:'我的收藏',p:'卡片上加入收藏的卡，都會集中在這裡。'}
   ].filter(s=>union(s.t));
 
   function closeTour(mark){
@@ -230,7 +230,7 @@
     setTimeout(()=>{
       const tick=()=>{if(mobile())return;/* 等待期間視窗縮成手機寬度：照手機規則不自動開 */
         if(tour||!landing()||$('#modal.open'))return;
-        if((!firstVis('#channels .channel,#mobileQuickGrid .mqg-tile')||stepDefs().length<4)&&Date.now()-t0<3000)return setTimeout(tick,150);
+        if((!firstVis('#channels .channel')||stepDefs().length<4)&&Date.now()-t0<3000)return setTimeout(tick,150);
         startTour();
       };tick();
     },1400);
