@@ -236,7 +236,7 @@
       if (!inDetail && record.target.closest?.('#detail')) inDetail = true;
       for (const node of record.addedNodes) {
         if (node.nodeType !== 1) continue;
-        find(node, '.card').forEach(card => { if (card.closest('#cards,#homeCardsPreview')) holo(card); });
+        find(node, '.card').forEach(card => { if (card.closest('#cards')) holo(card); });
         if (revealIO && motionOK()) find(node, REVEAL).forEach(reveal);
         if (chartIO) find(node, '.ptl-chart').forEach(chart => { if (!charts.has(chart)) { charts.add(chart); chartIO.observe(chart); } });
       }
@@ -245,6 +245,6 @@
   }).observe(doc.body, { childList: true, subtree: true });
 
   // 頁面載入時已經在的節點
-  doc.querySelectorAll('#cards .card,#homeCardsPreview .card').forEach(holo);
+  doc.querySelectorAll('#cards .card').forEach(holo);
   if (revealIO && motionOK()) doc.querySelectorAll(REVEAL).forEach(reveal);
 })();

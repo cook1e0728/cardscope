@@ -53,8 +53,7 @@ test('a borrowed Japanese release date that is still in the future is not used f
   assert.match(band,/sortDates\.set\(item,borrowed>today\(\)\?'':borrowed\)/);
 });
 
-test('home preview is display-only, the desktop dock is gone, and home latest has no rabbit tile',async()=>{
-  assert.match(css,/#homeCardsPreview \.card-actions\{display:none\}/);
+test('the desktop dock is gone, and home latest has no rabbit tile',async()=>{
   const showcase=await readFile(new URL('../look-showcase.css',import.meta.url),'utf8');
   assert.match(showcase,/@media \(min-width:761px\)\{html\.look-clean nav\.bottom\{display:none\}/);
   assert.match(band,/rail\.innerHTML=list\.map\(item=>tile\('series'/,'home latest starts with the first series');

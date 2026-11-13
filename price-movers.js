@@ -8,7 +8,9 @@
   const fallback='<span class="image-fallback unified-image-fallback"%H><b>圖片待補</b><small>圖片來源尚未收錄</small></span>';
   // 卡圖標記（含載入失敗時的退回）；首頁的最夯／最熱（home-rails.js）共用。
   function image(url,alt){
-    const src=url&&(typeof root.displayImageUrl==='function'?root.displayImageUrl(url):url);
+    // displayImageUrl 是 index.html 頂層的 const（不在 window 上），要直接用名字取；航海王卡圖靠它改走 /api/images/onepiece。
+    const show=typeof root.displayImageUrl==='function'?root.displayImageUrl:typeof displayImageUrl==='function'?displayImageUrl:null;
+    const src=url&&(show?show(url):url);
     return src?`<img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" data-img-error="swap-hidden">${fallback.replace('%H',' hidden')}`:fallback.replace('%H','');
   }
   function card(row,up){

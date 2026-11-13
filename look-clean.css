@@ -108,14 +108,6 @@ html.look-clean .home-latest h2,html.look-clean .section h2{font-family:var(--lc
 html.look-clean .home-latest .home-latest-tabs{margin-top:var(--s3)}
 html.look-clean .home-latest .home-latest-tabs button.on{border-bottom-color:#D49B1B}
 html.look-clean .home-latest .series-band-rail{padding-top:var(--s4)}
-html.look-clean .home-cards-preview{margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--lc-hair)}
-html.look-clean .home-cards-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);margin-bottom:var(--s3)}
-html.look-clean .home-cards-head h3{margin:0;font-family:var(--lc-display);font-size:18px;font-weight:700;color:var(--lc-ink)}
-html.look-clean .home-cards-more{flex:none;white-space:nowrap;min-height:44px;padding:0 var(--s3);border:0;border-radius:999px;background:transparent;color:#8A6100;font-size:13px;font-weight:700;cursor:pointer}
-html.look-clean .home-cards-more:hover{background:#F3EEE3}
-html.look-clean .home-preview-ips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-html.look-clean .home-preview-ip{min-height:32px;padding:0 10px;border:1px solid var(--lc-line);border-radius:999px;background:#fff;color:var(--lc-ink-2);font-size:12px;font-weight:700;cursor:pointer}
-html.look-clean .home-preview-ip.on{border-color:var(--lc-ink);background:var(--lc-ink);color:#fff}
 
 /* ===== 遊戲頁：遊戲切換（膠囊）與系列橫幅 ===== */
 html.look-clean body[data-view="game"] .channels{gap:var(--s2);padding:var(--s4) 0 var(--s3)}
@@ -601,7 +593,6 @@ html.look-clean .series-band.is-grid .band-tile-art{width:100%;height:auto;aspec
 #eventsSection>.title{padding-top:10px}
 
 /* 2026-11-08：首頁單卡預覽只做展示，收藏星號與張數加減只留在卡表／詳細頁 */
-#homeCardsPreview .card-actions{display:none}
 
 /* ===== 手機原生感（mobile-native skill，2026-11-09）===== */
 /* 拿掉點擊時的灰藍色閃框、橫向時字級不自動放大；點按不等雙擊判定；長按按鈕不選字 */

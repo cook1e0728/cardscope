@@ -1,6 +1,6 @@
-const PROMO_RE=/特典|贈品卡|宣傳卡|促銷卡|配布|\b(?:promo(?:tional)?|campaign|bonus|giveaway|prize card)\b|プロモ|キャンペーン|配布|特典|프로모|프로모션|특전/i;
-const ACCESSORY_RE=/周邊|周辺|周邊道具|配件|\b(?:accessor(?:y|ies)?|supplies|play ?mats?|sleeves?|storage|binders?|portfolio|deck cases?|deck boxes?|card cases?|dice|coins?|markers?)\b|遊戲墊|游戏垫|卡套|牌套|收納盒|收纳盒|卡冊|卡册|卡盒|牌盒|骰子|硬幣|プレイマット|スリーブ|デッキケース|カードケース|バインダー|サプライ|플레이매트|슬리브|덱 케이스|카드 케이스|바인더/i;
-const DECK_RE=/牌組|牌组|構築|构筑|起始(?:牌組|牌组|組合)|預組|预组|試玩|试用|\b(?:starter|structure|constructed|preconstructed|trial|theme|battle|intro|beginner)\s*deck\b|\bdecks?\b|スタートデッキ|スターターデッキ|構築デッキ|トライアルデッキ|デッキ|스타터\s*덱|구축\s*덱/i;
+export const PROMO_RE=/特典|贈品卡|宣傳卡|促銷卡|配布|\b(?:promo(?:tional)?|campaign|bonus|giveaway|prize card)\b|プロモ|キャンペーン|配布|特典|프로모|프로모션|특전/i;
+export const ACCESSORY_RE=/周邊|周辺|周邊道具|配件|\b(?:accessor(?:y|ies)?|supplies|play ?mats?|sleeves?|storage|binders?|portfolio|deck cases?|deck boxes?|card cases?|dice|coins?|markers?)\b|遊戲墊|游戏垫|卡套|牌套|收納盒|收纳盒|卡冊|卡册|卡盒|牌盒|骰子|硬幣|プレイマット|スリーブ|デッキケース|カードケース|バインダー|サプライ|플레이매트|슬리브|덱 케이스|카드 케이스|바인더/i;
+export const DECK_RE=/牌組|牌组|構築|构筑|起始(?:牌組|牌组|組合)|預組|预组|試玩|试用|\b(?:starter|structure|constructed|preconstructed|trial|theme|battle|intro|beginner)\s*deck\b|\bdecks?\b|スタートデッキ|スターターデッキ|構築デッキ|トライアルデッキ|デッキ|스타터\s*덱|구축\s*덱/i;
 const EVENT_STORE_RE=/賽事|賽事限定|商店限定|店鋪限定|店家限定|參加獎|参加賞|優勝|冠軍(?:獎|奖|卡|賽|赛|活動|活动)|獎品|奖品|大賽|大赛|\b(?:tournament|championship|champion(?:ship)?\s+(?:prize|reward|card)|winner|participation|event|store[- ]exclusive|shop[- ]limited|prize)\b|大会|店舗|ショップ|トーナメント|チャンピオン(?:シップ|大会|賞|カード)|優勝|参加賞|대회|우승|참가상/i;
 const SEALED_RE=/密封|原盒|禮盒|礼盒|組合包|组合包|盒裝|盒装|鐵盒|铁盒|卡包|補充包|补充包|擴充包|扩充包|強化補充包|强化补充包|高級補充包|高级补充包|額外補充包|额外补充包|\b(?:booster|expansion|premium|extra)\s*(?:pack|box)?\b|\b(?:booster|display|box|bundle|collection|tin|blister|pack|set)s?\b|ブースターパック|拡張パック|プレミアムパック|ボックス|セット|缶/i;
 const KNOWN_SEALED_NAME_RE=/\bgreat encounters\b/i;

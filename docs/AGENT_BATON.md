@@ -1,14 +1,14 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-12（台灣）｜更新者：Claude Code（桌電，Opus 帶 sonnet-worker）
+> 上次更新：2026-11-13（台灣）｜更新者：Claude Code（桌電）
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-13：**下一步提案（待使用者拍板）：首頁「最夯」改成「本彈大獎」**。自動規則＋手動清單：寶可夢、航海王、黑白雙翼各取近 90 天最新主流彈（排除預組／禮盒／周邊／特典，沿用 providers/products.mjs 的 DECK_RE／ACCESSORY_RE／PROMO_RE；航海王只看 OP／EB／PRB），取最高稀有度（寶可夢 MUR／SAR／UR；航海王異圖 SEC／SP／TR；WS SSP／SP），寶可夢以稀有度為主、參考價為輔排序（新彈首週常無價），其他遊戲只顯示稀有度不放價格；新增手動置頂清單檔（例如 30 週年）。航海王異圖：catalog-sync.mjs parseOnePieceCards 以檔名 providerId（如 OP05-119_p1）建卡、稀有度不變 → 帶 _p\d 標「異圖」排在原版前（漫畫背景與一般異圖能否分辨待查資料）。分工：最新改成只放新系列導覽（不放單卡，避免重複），最夯＝本彈大獎牆，最熱維持；漲跌榜只留行情頁。UA 尚未收錄，另案。agy（預設模型）第二意見大致相同，已查證 _p1 與 DECK_RE 兩點。
+- 2026-11-13：**首頁「最夯」改成「本彈大獎」已做**（分支 `claude/pack-prizes`，從 origin/main 開；**未合併、未上線**，等使用者看過）。`providers/pack-prizes.mjs`（純規則，有測試）＋ `GET /api/pack-prizes`（一小時快取、開機預熱）：寶可夢、航海王、黑白雙翼各取近 90 天最新主流彈（同一彈任一版本名稱符合 DECK／ACCESSORY／PROMO_RE 就整彈排除，因台版 MF「太陽伊布・月亮伊布」名稱沒寫牌組；航海王只看 OP／EB／PRB；版本優先 台灣→日本→亞洲，美版不收），一彈不到 3 張大獎時先退回同彈日版／亞洲版、再往前找（最多 3 彈）；彈的排序看最早發售日；名稱檢查看同代號所有版本（不限地區與日期）；loadCatalog 退回內建舊目錄時丟錯不快取；稀有度與卡號以這一彈的 printing 為準。稀有度用 data/rarity-rankings.json 排名：寶可夢 SAR 以上（含 MUR／FUR／UR／HR）、航海王 SEC 以上、WS SP 以上；異圖（providerId 帶 _p\d）同稀有度排原版前並標「異圖」；寶可夢同稀有度參考價高的先、卡片上顯示「參考價約 NT$」，其他遊戲不放價格；每遊戲最多 10 張。手動置頂 `data/pack-prizes.json` 的 pinned（卡片 id，排「精選」一排）。正式資料實測：30th CELEBRATION 台版 9 張（FUR 2＋SAR 7；台版 SAR 比日版少 3 張是資料缺）、EB-05 台版 5 張、芙莉蓮 Vol.2 10 張。「最新」拿掉「本彈高稀有度卡預覽」單卡區與其樣式；首頁不再打 /api/price-movers，最夯底下留「看參考價漲跌」連到行情頁。順手修：price-movers.js 共用的 image() 找 window.displayImageUrl，但那是 index.html 頂層 const 不在 window 上，航海王卡圖沒走 /api/images/onepiece 而顯示「圖片待補」（最熱榜原本也受影響），改成直接用名字取；首頁分頁在最熱回來前被點，面板原本要等 1.2 秒才顯示，改成點了就顯示。agy（gemini-4-argon-medium）唯讀審查 9 點，採納 7 點（上述），不採：價格前 100 張截斷（門檻以上的卡實際不到 20 張）；置頂卡的異圖標記（getCard 沒有 providerId，已在程式留 shortcut 註解）。912 測試、check 全過；瀏覽器用暫時代理（正式 API＋本機挑選邏輯）看過桌機與手機 375px。未做：beta-browser-smoke 沒在本機跑；UA 尚未收錄；漫畫背景異圖與一般異圖目前沒分。
 - 2026-11-13：**朋友回饋第二輪**（fdd7707）：Weiß Schwarz 導覽名稱改「黑白雙翼」（taxonomy displayNameZh，game-switcher 優先用它；各處寫死的芙莉蓮標籤、SEO 名稱「黑白雙翼 Weiß Schwarz」、隱私頁資料來源表一併改；內容仍只收芙莉蓮系列）；側欄系列清單附商品縮圖（官方圖放大 80px 裁外圈 16px，顯示 48px）。正式站 402px 已確認。**朋友另提、尚未做**：最夯應改成「主流新彈的話題卡」（例：OP 新彈大隱藏、寶可夢 MUR／SAR、30 週年），以新卡為主；先以寶可夢、航海王、WS、UA 為主（UA 尚未收錄）；航海王稀有度要把異圖卡分出來。
 - 2026-11-13：**朋友 iPhone 回饋**（79d9400、2aa16f1）：首頁「本彈高稀有度卡預覽」的「查看完整卡表（遊戲）」在手機擠成三行，改成「完整卡表 ›」不換行（全名在 aria-label）；手機卡牆原本把價格來源藏起來，改成在漲跌下一行顯示，來源文字由 CM／TCG 改成「Cardmarket 參考價／TCGplayer 市價」。正式站 402px 已確認。朋友問「是買取還是 eBay 成交價」：目前兩者都沒有，非寶可夢的卡沒有價格。
 - 2026-11-13：**行情榜部署後空白已修**：c132ca6 前端讀取失敗 3 秒後重試一次、仍失敗清掉 pending；902edbe 根本原因是 price_movers 冷的要掃約 50 萬資料頁（熱 1 秒、冷超過 12 秒，超過 supabaseFetch 預設 12 秒上限），改開機預熱並用 BROWSE_HEAVY_TIMEOUT_MS（25 秒）。部署切換期間 /api/price-movers 全程 200，行情頁 40 張卡正常。898 測試全過。若之後仍慢，可考慮為 price_movers 加物化快照。

@@ -18,6 +18,7 @@ import { auditCatalogLinks, catalogProvidersNeedingSync, closeInterruptedCatalog
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
 import { foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './providers/search-query.mjs';
 import { normalizeProduct } from './providers/products.mjs';
+import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, prizeCards, prizeRow, prizeSeriesCandidates } from './providers/pack-prizes.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
@@ -1136,6 +1137,38 @@ async function loadHotCards(){
     return {data:(rows||[]).filter(row=>row?.card_id).map(row=>({cardId:row.card_id,name:row.name_zh||row.name_ja||row.name_en||row.card_number||row.card_id,nameJa:row.name_ja||null,cardNumber:row.card_number||null,seriesCode:row.series_code||null,seriesName:row.series_name||null,game:row.game||null,imageUrl:row.image_url||null})),meta:{windowDays:HOT_CARDS_DAYS,minOpens:HOT_CARDS_MIN_OPENS,generatedAt:new Date().toISOString()}}});
   return snapshot.data;
 }
+// 本彈大獎（/api/pack-prizes，首頁「最夯」）：寶可夢、航海王、黑白雙翼各取近 90 天最新主流彈的最高稀有度卡（規則在 providers/pack-prizes.mjs），
+// 加上 data/pack-prizes.json 的手動置頂。一彈不到 3 張大獎（例如資料還沒補齊）就往前找下一彈，每個遊戲最多看 3 彈。一小時快取，失敗不快取。
+const PACK_PRIZE_PINNED=JSON.parse(readFileSync(new URL('./data/pack-prizes.json',import.meta.url),'utf8')).pinned||[],packPrizesCache=createBoundedSnapshotCache({ttlMs:3600000,maxStaleMs:24*60*60*1000,serveStaleWhileRevalidate:true});
+async function prizeBrowse(game,options){
+  if(supabaseConfigured())return (await browseDatabaseCards(game,options)).data;
+  const catalog=await loadCatalog(),cards=catalog.cards.filter(card=>card.game===game);
+  return buildBrowsePage(cards,{...options,printingByCard:buildPrintingIndex(cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id}))))}).data;
+}
+async function loadPackPrizes(){
+  const snapshot=await packPrizesCache.get(async()=>{
+    const catalog=await loadCatalog(),today=new Date().toISOString().slice(0,10),seriesById=new Map((catalog.series||[]).map(s=>[s.id,s]));
+    // 資料庫讀不到時 loadCatalog 會退回內建的舊目錄（沒有近期系列）：丟錯讓快取不收這份空結果。
+    if(catalog.fallbackReason)throw new Error(`catalog fallback: ${catalog.fallbackReason}`);
+    const games=[];
+    for(const rule of PACK_PRIZE_GAMES){
+      search:for(const release of prizeSeriesCandidates(catalog.series,rule,today).slice(0,3))for(const series of release){
+        const cards=await prizeBrowse(rule.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:BROWSE_PAGE_MAX,offset:0});
+        if(rule.game==='pokemon')await attachReferencePrices(cards);
+        const picked=prizeCards(rule.game,rule.top,cards,{seriesId:series.id});
+        if(picked.length<3)continue;
+        games.push({game:rule.game,seriesId:series.id,region:series.region,seriesName:series.nameZh||series.nameJa||series.nameEn||series.officialCode,releaseDate:series.releaseDate,data:picked.map(card=>prizeRow(card,series))});break search;
+      }
+    }
+    // shortcut: 置頂卡經 getCard 讀，那裡沒有 providerId，所以不會標「異圖」；真的要置頂異圖時再補。
+    const pinnedCards=[];
+    for(const id of PACK_PRIZE_PINNED){const card=(await getCard(id).catch(()=>null))?.card;if(card)pinnedCards.push(card)}
+    const pokemonPinned=pinnedCards.filter(card=>card.game==='pokemon');if(pokemonPinned.length)await attachReferencePrices(pokemonPinned);
+    const pinned=pinnedCards.map(card=>{const seriesId=card.seriesId||card.printings?.[0]?.seriesId;return prizeRow(card,seriesById.get(seriesId))});
+    return {pinned,games,meta:{windowDays:PACK_PRIZE_WINDOW_DAYS,limit:PACK_PRIZE_LIMIT,generatedAt:new Date().toISOString()}};
+  });
+  return snapshot.data;
+}
 async function priceHistoryResponse(requestedId){
   let loaded=null;try{loaded=await getCard(requestedId)}catch{return {status:200,body:{series:[],meta:{unavailable:'price-history-unavailable',note:priceHistoryNote([]),generatedAt:new Date().toISOString()}}}}
   if(!loaded?.card)return {status:404,body:{error:'找不到這張卡'}};
@@ -1245,6 +1278,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   }
   if(url.pathname==='/api/products'&&req.method==='GET'){try{const catalog=await loadProductSets();return json(res,200,{data:catalog.products,series:catalog.series,meta:productFeedMeta(catalog)},SHORT_CACHE)}catch(e){return failJson(res,502,'products failed',e)}}
   if(url.pathname==='/api/market-events'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});return json(res,200,await marketEventsResponse(url.searchParams.get('game')||null),SHORT_CACHE)}
+  if(url.pathname==='/api/pack-prizes'&&req.method==='GET'){try{return json(res,200,await loadPackPrizes(),SHORT_CACHE)}catch(e){console.error('pack prizes failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/hot-cards'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});try{return json(res,200,await loadHotCards(),SHORT_CACHE)}catch(e){console.error('hot cards failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/price-movers'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:{up:[],down:[]},meta:{unavailable:'not-configured'}});try{return json(res,200,await loadPriceMovers(),SHORT_CACHE)}catch(e){console.error('price movers failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
@@ -1352,7 +1386,7 @@ server.listen(port,()=>{
   if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false'){priceSnapshot.start();priceArchive.start();tcgapiPricing.start()}
   console.log(`CardScope is running at http://localhost:${port}`);
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
-  if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));loadPriceMovers().catch(error=>console.error('price movers warm-up failed',error.message));
+  if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));loadPriceMovers().catch(error=>console.error('price movers warm-up failed',error.message));loadPackPrizes().catch(error=>console.error('pack prizes warm-up failed',error.message));
     // Coverage pages through every card and printing (about a minute cold); start it after the lighter warm-ups so the first visitor after a restart does not wait for it.
     setTimeout(()=>{coverageWarm=loadCatalogCoverage().catch(error=>console.error('coverage warm-up failed',error.message))},30000).unref();
     // The sitemap scans every card (about a minute cold, 24-hour cache): build it after the other warm-ups so a crawler's first request is not the one that waits.

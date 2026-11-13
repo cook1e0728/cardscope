@@ -185,57 +185,6 @@
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
     };
-    renderHomeCardsPreview(host,list.length?list:allDated);
-  }
-  const homeCardsCache=new Map();
-  let homePreviewGame='';
-  async function renderHomeCardsPreview(host,candidates){
-    const rawList=Array.isArray(candidates)?candidates.filter(Boolean):[candidates].filter(Boolean);
-    if(!host||!rawList.length||typeof fetch!=='function')return;
-    let wrap=document.getElementById('homeCardsPreview');
-    if(!wrap){
-      wrap=document.createElement('div');wrap.id='homeCardsPreview';wrap.className='home-cards-preview';
-      host.append(wrap);
-    }
-    const availableGames=[...new Set(rawList.map(s=>s.game))];
-    const activePreviewGame=homePreviewGame&&availableGames.includes(homePreviewGame)?homePreviewGame:homeTab!=='latest'&&availableGames.includes(homeTab)?homeTab:'';
-    const ordered=activePreviewGame?[...rawList.filter(s=>s.game===activePreviewGame),...rawList.filter(s=>s.game!==activePreviewGame)]:rawList;
-    const sig=ordered.map(s=>`${s.game}|${s.id}`).join(',')+'|'+activePreviewGame;
-    wrap.dataset.key=sig;
-    const draw=(targetSeries,rows)=>{
-      if(wrap.dataset.key!==sig||game!=='all')return;
-      if(!rows.length||!targetSeries){wrap.hidden=true;return}
-      wrap.hidden=false;
-      const gameName=(window.CARD_GAMES||[]).find(c=>c.id===targetSeries.game)?.name||targetSeries.game;
-      const switcher=availableGames.length>1?`<div class="home-preview-ips" role="group" aria-label="熱門與最新 IP 預覽切換">${availableGames.map(gid=>{const gLabel=(window.CARD_GAMES||[]).find(c=>c.id===gid)?.name||gid;const isOn=gid===targetSeries.game;return`<button type="button" class="home-preview-ip${isOn?' on':''}" data-preview-game="${esc(gid)}" aria-pressed="${isOn}">${esc(gLabel)}</button>`}).join('')}</div>`:'';
-      wrap.innerHTML=`<div class="home-cards-head"><div><h3>本彈高稀有度卡預覽 · ${esc(seriesName(targetSeries))}</h3>${switcher}</div><button type="button" class="home-cards-more" data-open-series="${esc(targetSeries.id)}" data-open-game="${esc(targetSeries.game)}" data-open-region="${esc(targetSeries.region||'')}" aria-label="查看完整卡表（${esc(gameName)}）">完整卡表 ›</button></div><div class="cards home-cards-grid">${rows.slice(0,8).map(c=>typeof cardMarkup==='function'?cardMarkup(c):'').join('')}</div>`;
-      if(typeof activateCardActions==='function')activateCardActions(wrap.querySelector('.home-cards-grid'));
-      wrap.querySelectorAll('[data-preview-game]').forEach(btn=>{btn.onclick=()=>{homePreviewGame=btn.dataset.previewGame;renderHomeCardsPreview(host,rawList)}});
-      const moreBtn=wrap.querySelector('[data-open-series]');
-      if(moreBtn)moreBtn.onclick=()=>{const select=regionSelect();if(select&&moreBtn.dataset.openRegion)select.value=moreBtn.dataset.openRegion;window.cardscopeEntry={series:moreBtn.dataset.openSeries};window.choose(moreBtn.dataset.openGame)};
-    };
-    const hasImg=card=>{const u=String((typeof image==='function'?image(card):card?.imageUrl)||card?.printings?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||'');return Boolean(u)&&!u.includes('www.pokemon-card.com')};
-    let fallbackSeries=null,fallbackRows=[];
-    for(const targetSeries of ordered.slice(0,8)){
-      const key=`${targetSeries.game}|${targetSeries.id}`;
-      let rows=homeCardsCache.get(key);
-      if(!rows){
-        try{
-          const params=new URLSearchParams({game:targetSeries.game,series:targetSeries.id,region:targetSeries.region||'JP',limit:'12',offset:'0',sort:'rarity-desc'});
-          const res=await fetch('/api/cards?'+params);
-          if(res.ok){
-            const body=await res.json();
-            rows=Array.isArray(body.data)?body.data:[];
-            if(rows.length)homeCardsCache.set(key,rows);
-          }else rows=[];
-        }catch{rows=[]}
-      }
-      if(!rows.length)continue;
-      if(!fallbackSeries){fallbackSeries=targetSeries;fallbackRows=rows}
-      const withImg=rows.filter(hasImg);
-      if(withImg.length>=4)return draw(targetSeries,[...withImg,...rows.filter(c=>!hasImg(c))].slice(0,8));
-    }
-    if(fallbackSeries)draw(fallbackSeries,fallbackRows);
   }
   function render(){
     const anchor=document.getElementById('gameContext');let band=document.getElementById('seriesBand');

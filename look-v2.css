@@ -45,7 +45,7 @@ html.look-clean body[data-view] header.top .nav button:focus-visible{outline:2px
    共同：高 44px、同一個圓角、按下縮到 97%、只轉場要變的屬性、滑過效果只給滑鼠。
    選中狀態＝粗體＋1.5px 墨色細框（與頂欄目前頁同一套語言），遊戲色只留在字與細線上。 */
 /* 4a 次要 */
-html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.home-preview-ip,.detail-collect button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]),
+html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.detail-collect button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]),
 html.look-clean body[data-view] header.top .nav button{
   min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow);
   transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease);
@@ -53,7 +53,7 @@ html.look-clean body[data-view] header.top .nav button{
 html.look-clean body[data-view] header.top .nav button{color:var(--v2-ink-2)}
 html.look-clean body[data-view] header.top .nav button[aria-current="page"]{color:var(--v2-ink)}
 /* 選中：粗體＋細墨框（✓ 沿用既有的 :before） */
-html.look-clean body[data-view] :is(.product-category.on,.series-group.on,.series-sort button.on,.series-band-regions button.on,.home-preview-ip.on,.cards-mode[aria-pressed="true"],.ptl-chip.on,.ptl-chip[aria-pressed="true"]){
+html.look-clean body[data-view] :is(.product-category.on,.series-group.on,.series-sort button.on,.series-band-regions button.on,.cards-mode[aria-pressed="true"],.ptl-chip.on,.ptl-chip[aria-pressed="true"]){
   background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:0 2px 6px rgba(60,45,20,.16),inset 0 0 0 1.5px var(--v2-ink)!important;
 }
 html.look-clean body[data-view] #detail .detail-actions :is(.source-link,.detail-collect-state){padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);box-shadow:var(--v2-shadow)}
@@ -77,10 +77,10 @@ html.look-clean body[data-view] :is(.view-switch){padding:3px;border:1px solid t
 html.look-clean body[data-view] :is(.view-switch button){border:0!important;border-radius:var(--btn-r)!important;background:transparent;color:var(--v2-ink-2);box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
 html.look-clean body[data-view] :is(.view-switch button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)!important}
 /* 按下縮到 97%；滑過只給滑鼠 */
-html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel],.load-more,.notice-retry,[data-coll-import-confirm],.view-switch button,.search-clear,.card-zoom-close):active,
+html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel],.load-more,.notice-retry,[data-coll-import-confirm],.view-switch button,.search-clear,.card-zoom-close):active,
 html.look-clean body[data-view] header.top :is(.nav button,#go):active{transform:scale(.97)}
 @media (hover:hover) and (pointer:fine){
-  html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.home-cards-more,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.home-preview-ip,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]):hover,
+  html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]):hover,
   html.look-clean body[data-view] header.top :is(.nav button,#go):hover{background:var(--v2-surface);box-shadow:var(--v2-shadow-up)}
   html.look-clean body[data-view] :is(.load-more,.notice-retry,[data-coll-import-confirm]):hover{box-shadow:0 3px 8px rgba(60,45,20,.28)}
   html.look-clean body[data-view] :is(.search-clear,.card-zoom-close):hover{background:rgba(60,45,20,.08)}
@@ -150,6 +150,7 @@ html.look-clean body[data-view] #homeRails .rails-switch button{min-width:96px;f
 html.look-clean body[data-view] #homeRails .home-latest{margin:0;padding:0;border:0;border-radius:0;background:none}
 html.look-clean body[data-view] #homeRails #homeLatestTitle{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .rails-head{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--s3,12px)}
+.rails-sub{margin:12px 4px 0;font-size:15px;line-height:1.4;font-weight:700;color:var(--v2-ink)}
 .rails-head h3{margin:0;font-size:20px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
 .rails-head .meta{font-size:var(--fs-sub);color:var(--v2-ink-2)}
 .rails-rail{display:flex;gap:12px;overflow-x:auto;padding:8px 4px 14px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}

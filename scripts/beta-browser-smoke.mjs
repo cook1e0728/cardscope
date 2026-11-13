@@ -709,10 +709,10 @@ async function runCollectionChecks(browser,viewport){
     await page.waitForFunction(()=>document.body.dataset.view!=='collection',undefined,{timeout:5000});
     assert.equal(await view(),'landing',`${label}: back returns to the home page`);
 
-    // 行情頁：首頁最夯 → 看完整行情 → 上一頁。
+    // 行情頁：首頁最夯 → 看參考價漲跌 → 上一頁。
     await page.locator('[data-rails-tab="trending"]').click();
     const more=page.locator('.rails-more a[data-spa]').first();
-    await waitForVisible(more,`${label}: home 最夯 has no 看完整行情 link`);
+    await waitForVisible(more,`${label}: home 最夯 has no 看參考價漲跌 link`);
     await more.click();
     await page.waitForFunction(()=>document.body.dataset.view==='market',undefined,{timeout:8000});
     assert.equal(new URL(page.url()).searchParams.get('view'),'market');

@@ -25,7 +25,7 @@ test('route: 我的收藏 and 行情 are SPA views — pushState then restore, p
 });
 
 test('market page entries: home 最夯 link (a[data-spa]), the collection page text link, the footer link; the top bar stays at three buttons', () => {
-  assert.match(rails, /<p class="rails-more"><a href="\/\?view=market" data-spa>看完整行情<\/a><\/p>/);
+  assert.match(rails, /<p class="rails-more"><a href="\/\?view=market" data-spa>看參考價漲跌<\/a><\/p>/);
   assert.match(ui, /<a class="coll-market-link" href="\/\?view=market" data-spa>看卡牌行情<\/a>/);
   assert.match(html, /<a href="\/\?view=market" data-spa>行情<\/a>/);
   assert.equal((html.match(/<nav class="bottom"[\s\S]*?<\/nav>/)[0].match(/<button /g) || []).length, 3);
