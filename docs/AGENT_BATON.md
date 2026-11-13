@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-13：**朋友回饋第二輪**（fdd7707）：Weiß Schwarz 導覽名稱改「黑白雙翼」（taxonomy displayNameZh，game-switcher 優先用它；各處寫死的芙莉蓮標籤、SEO 名稱「黑白雙翼 Weiß Schwarz」、隱私頁資料來源表一併改；內容仍只收芙莉蓮系列）；側欄系列清單附商品縮圖（官方圖放大 80px 裁外圈 16px，顯示 48px）。正式站 402px 已確認。**朋友另提、尚未做**：最夯應改成「主流新彈的話題卡」（例：OP 新彈大隱藏、寶可夢 MUR／SAR、30 週年），以新卡為主；先以寶可夢、航海王、WS、UA 為主（UA 尚未收錄）；航海王稀有度要把異圖卡分出來。
 - 2026-11-13：**朋友 iPhone 回饋**（79d9400、2aa16f1）：首頁「本彈高稀有度卡預覽」的「查看完整卡表（遊戲）」在手機擠成三行，改成「完整卡表 ›」不換行（全名在 aria-label）；手機卡牆原本把價格來源藏起來，改成在漲跌下一行顯示，來源文字由 CM／TCG 改成「Cardmarket 參考價／TCGplayer 市價」。正式站 402px 已確認。朋友問「是買取還是 eBay 成交價」：目前兩者都沒有，非寶可夢的卡沒有價格。
 - 2026-11-13：**行情榜部署後空白已修**：c132ca6 前端讀取失敗 3 秒後重試一次、仍失敗清掉 pending；902edbe 根本原因是 price_movers 冷的要掃約 50 萬資料頁（熱 1 秒、冷超過 12 秒，超過 supabaseFetch 預設 12 秒上限），改開機預熱並用 BROWSE_HEAVY_TIMEOUT_MS（25 秒）。部署切換期間 /api/price-movers 全程 200，行情頁 40 張卡正常。898 測試全過。若之後仍慢，可考慮為 price_movers 加物化快照。
 - 2026-11-13：**重新設計已上線**：使用者同意後 redesign-v2 合併進 main（1b43455），CI 綠、Render 已部署。正式站驗證時發現側欄沒有版本與系列（系列橫幅比 side-nav.js 早建好，留在 #hero 被藏），56e7337 讓 dock() 把 #seriesBand 跟著 #gameContext 搬進側欄，已上線確認（寶可夢、航海王）。側板開卡、行情頁漲跌榜與時事正常。待辦：部署後第一個 /api/price-movers 會 502（冷快取逾時），當下那位訪客看不到漲跌榜、前端沒有重試；主控台有 View Transition「skipTransition」AbortError 未接住（無害但吵）；通用 toast；真機與螢幕閱讀器實測；redesign-v2 分支可刪。
