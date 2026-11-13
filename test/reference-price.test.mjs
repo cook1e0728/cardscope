@@ -268,18 +268,18 @@ test('card wall badge: source and price kind are spelled out, the observation da
   const context = harness();
   const card = { id: 'p1', game: 'pokemon', referencePrice: { amount: 12.3, currency: 'EUR', source: 'cardmarket', variant: 'holo', observedAt: '2026-10-22T22:00:00Z' } };
   const out = vm.runInContext(`cardReferenceMarkup(${JSON.stringify(card)},'p1')`, context);
-  assert.match(out, /<span class="cr-amount">€12\.30<\/span><small class="cr-src" title="Cardmarket；€12\.30；更新於 2026\/10\/22；參考價，不是成交價" aria-hidden="true">CM<\/small><small class="cr-var" aria-hidden="true">閃卡<\/small>/, '卡牆一行：金額＋來源縮寫＋極短版本，完整來源與觀測日在 title');
+  assert.match(out, /<span class="cr-amount">€12\.30<\/span><small class="cr-src" title="Cardmarket；€12\.30；更新於 2026\/10\/22；參考價，不是成交價" aria-hidden="true">Cardmarket<\/small><small class="cr-var" aria-hidden="true">閃卡<\/small>/, '卡牆：金額＋來源平台名（縮寫 CM 使用者看不懂）＋極短版本，完整來源與觀測日在 title');
   assert.doesNotMatch(out, /cr-label/, '不再有獨立的來源文字行');
   assert.match(out, /aria-label="Cardmarket 參考 €12\.30，/);
   assert.match(out, /class="card-reference-tip" aria-hidden="true">Cardmarket 平台參考價（閃卡 Holo），更新於 2026\/10\/22；不是成交價或台灣行情<\/small>/, '滑過、聚焦或按住時顯示的提示');
   assert.match(out, /data-card-open="p1"/, '點價格也開啟詳細頁');
   const twd = vm.runInContext(`cardReferenceMarkup(${JSON.stringify({ ...card, referencePrice: { ...card.referencePrice, amountTwd: 452 } })},'p1')`, context);
-  assert.match(twd, /<span class="cr-amount">NT\$452<\/span><small class="cr-src"[^>]*>CM<\/small><small class="cr-var"[^>]*>閃卡<\/small><small class="cr-original" aria-hidden="true">€12\.30<\/small>/, '新台幣為主，原幣小字保留給清單模式（格狀用 CSS 隱藏）');
+  assert.match(twd, /<span class="cr-amount">NT\$452<\/span><small class="cr-src"[^>]*>Cardmarket<\/small><small class="cr-var"[^>]*>閃卡<\/small><small class="cr-original" aria-hidden="true">€12\.30<\/small>/, '新台幣為主，原幣小字保留給清單模式（格狀用 CSS 隱藏）');
   assert.match(twd, /aria-label="Cardmarket 參考 約 NT\$452（€12\.30），/);
   for (const bad of [{ ...card, referencePrice: undefined }, { ...card, game: 'onepiece' }, { ...card, referencePrice: { ...card.referencePrice, amount: 0 } }, { ...card, referencePrice: { ...card.referencePrice, currency: 'USD' } }])
     assert.equal(vm.runInContext(`cardReferenceMarkup(${JSON.stringify(bad)},'p1')`, context), '', JSON.stringify(bad.referencePrice));
   const usd = vm.runInContext(`cardReferenceMarkup(${JSON.stringify({ ...card, referencePrice: { amount: 4.5, amountTwd: 145, currency: 'USD', source: 'tcgplayer', variant: 'holofoil', observedAt: '2026-11-03T00:00:00Z' } })},'p1')`, context);
-  assert.match(usd, /<span class="cr-amount">NT\$145<\/span><small class="cr-src" title="TCGplayer；US\$4\.50[^"]*" aria-hidden="true">TCG<\/small><small class="cr-var"[^>]*>[^<]+<\/small><small class="cr-original" aria-hidden="true">US\$4\.50<\/small>/,'Cardmarket 沒有價時改顯示 TCGplayer 美元價');
+  assert.match(usd, /<span class="cr-amount">NT\$145<\/span><small class="cr-src" title="TCGplayer；US\$4\.50[^"]*" aria-hidden="true">TCGplayer<\/small><small class="cr-var"[^>]*>[^<]+<\/small><small class="cr-original" aria-hidden="true">US\$4\.50<\/small>/,'Cardmarket 沒有價時改顯示 TCGplayer 美元價');
   assert.match(usd, /TCGplayer 平台參考價（美國市場，經 TCG API）/);
   assert.match(ui, /referenceMarkup/, 'cardMarkup 的格狀與清單兩種版面都用它');
   assert.equal([...ui.matchAll(/\$\{referenceMarkup/g)].length, 2);
