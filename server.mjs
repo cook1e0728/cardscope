@@ -1116,7 +1116,7 @@ async function marketEventsResponse(game,now=Date.now()){
   const events=mergeMarketEvents(marketEventsFor(null,from,now),catalog.filter(event=>event.date>=from)).filter(event=>!game||event.game===game);
   return {data:events,meta:{note:'發售日與官方消息，不代表會影響價格。',generatedAt:new Date(now).toISOString()}};
 }
-// 參考價漲跌榜（/api/price-movers）：資料庫函式 price_movers 算好排名，這裡只換算新台幣；一小時快取、合併同時的請求，失敗不快取。
+// 參考價漲跌榜（/api/price-movers）：資料庫函式 price_movers 算好排名，這裡只換算新台幣；一小時快取、合併同時的請求，失敗不快取。冷啟動時要掃約 50 萬個資料頁（熱的 1 秒、冷的超過 12 秒），所以用 25 秒上限，並在開機時預熱。
 const PRICE_MOVERS_TTL_MS=3600000,PRICE_MOVERS_DAYS=14,PRICE_MOVERS_MIN_EUR=5,priceMoversCache=createBoundedSnapshotCache({ttlMs:PRICE_MOVERS_TTL_MS,maxStaleMs:24*60*60*1000,serveStaleWhileRevalidate:true});
 function buildPriceMovers(rows,fx,now=Date.now()){
   const up=[],down=[];
@@ -1126,7 +1126,7 @@ function buildPriceMovers(rows,fx,now=Date.now()){
   return {data:{up,down},meta:{provider:'cardmarket',windowDays:PRICE_MOVERS_DAYS,minAmount:PRICE_MOVERS_MIN_EUR,currency:'EUR',note:'這是歐洲平台的參考價，不是成交價或台灣行情；新台幣以今日匯率換算，未含運費與關稅，也不是買賣建議。',generatedAt:new Date(now).toISOString()}};
 }
 async function loadPriceMovers(){
-  const snapshot=await priceMoversCache.get(async()=>{const [rows,fx]=await Promise.all([supabaseFetch('/rpc/price_movers',{method:'POST',body:JSON.stringify({p_days:PRICE_MOVERS_DAYS,p_min:PRICE_MOVERS_MIN_EUR,p_limit:20})}),getTwdRates()]);return buildPriceMovers(rows,fx)});
+  const snapshot=await priceMoversCache.get(async()=>{const [rows,fx]=await Promise.all([supabaseFetch('/rpc/price_movers',{method:'POST',body:JSON.stringify({p_days:PRICE_MOVERS_DAYS,p_min:PRICE_MOVERS_MIN_EUR,p_limit:20}),signal:AbortSignal.timeout(BROWSE_HEAVY_TIMEOUT_MS)}),getTwdRates()]);return buildPriceMovers(rows,fx)});
   return snapshot.data;
 }
 // 最熱的卡（/api/hot-cards）：資料庫函式 card_hot_top 排名；近 7 天至少被開 3 次才上榜（避免從排名反推個人行為），不回傳次數；一小時快取，失敗不快取。
@@ -1352,7 +1352,7 @@ server.listen(port,()=>{
   if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false'){priceSnapshot.start();priceArchive.start();tcgapiPricing.start()}
   console.log(`CardScope is running at http://localhost:${port}`);
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
-  if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));
+  if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));loadPriceMovers().catch(error=>console.error('price movers warm-up failed',error.message));
     // Coverage pages through every card and printing (about a minute cold); start it after the lighter warm-ups so the first visitor after a restart does not wait for it.
     setTimeout(()=>{coverageWarm=loadCatalogCoverage().catch(error=>console.error('coverage warm-up failed',error.message))},30000).unref();
     // The sitemap scans every card (about a minute cold, 24-hour cache): build it after the other warm-ups so a crawler's first request is not the one that waits.

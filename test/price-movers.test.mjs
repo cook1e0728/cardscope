@@ -68,3 +68,10 @@ test('漲跌榜第一次讀取失敗（例如部署後 502）會再試一次；�
   await failing.priceMoversShared.request();
   assert.equal(calls, 4, '失敗後不留著壞掉的結果，下一次會重新請求');
 });
+
+test('漲跌榜的資料庫函式冷啟動很慢：開機預熱，而且不用預設的 12 秒上限', async () => {
+  const {readFile} = await import('node:fs/promises');
+  const server = await readFile(new URL('../server.mjs', import.meta.url), 'utf8');
+  assert.match(server, /'\/rpc\/price_movers'[^\n]*signal:AbortSignal\.timeout\(BROWSE_HEAVY_TIMEOUT_MS\)/);
+  assert.match(server, /CATALOG_WARM_ON_START[^\n]*loadPriceMovers\(\)\.catch/);
+});
