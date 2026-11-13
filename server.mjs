@@ -1160,7 +1160,6 @@ async function loadPackPrizes(){
         games.push({game:rule.game,seriesId:series.id,region:series.region,seriesName:series.nameZh||series.nameJa||series.nameEn||series.officialCode,releaseDate:series.releaseDate,data:picked.map(card=>prizeRow(card,series))});break search;
       }
     }
-    // shortcut: 置頂卡經 getCard 讀，那裡沒有 providerId，所以不會標「異圖」；真的要置頂異圖時再補。
     const pinnedCards=[];
     for(const id of PACK_PRIZE_PINNED){const card=(await getCard(id).catch(()=>null))?.card;if(card)pinnedCards.push(card)}
     const pokemonPinned=pinnedCards.filter(card=>card.game==='pokemon');if(pokemonPinned.length)await attachReferencePrices(pokemonPinned);

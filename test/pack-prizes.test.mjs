@@ -58,6 +58,8 @@ test('卡片：航海王 SEC 以上；同稀有度異圖在原版前；SR 異圖
   assert.deepEqual(prizeCards('onepiece','SEC',cards).map(c=>c.providerId),['OP17-033_p1','OP17-081_p1','OP17-118_p1','OP17-119_p2','OP17-118','OP17-119']);
   assert.equal(isAltArt({providerId:'OP17-118_p1'}),true);
   assert.equal(isAltArt({providerId:'20042'}),false);
+  assert.equal(isAltArt({id:'onepiece-official-eb05-006-p2'}),true,'置頂卡只有 id 也要認得');
+  assert.equal(isAltArt({id:'onepiece-official-eb05-006'}),false);
 });
 
 test('卡片：寶可夢 SAR 以上（含 FUR／MUR），同稀有度參考價高的先，沒價格的排後面；最多 10 張',()=>{

@@ -34,7 +34,8 @@ export function prizeSeriesCandidates(series,{game,code}={},today=new Date().toI
 }
 
 // 航海王異圖：官方卡號後面帶 _p1、_p2…（同卡號、稀有度不變）。
-export const isAltArt=card=>/_p\d+$/i.test(String(card?.providerId||''));
+// 官方編號 EB05-006_p2；單卡讀取（置頂卡）沒有 providerId 時看卡片 id 的 -p2 結尾。
+export const isAltArt=card=>/_p\d+$/i.test(String(card?.providerId||''))||/^onepiece-.*-p\d+$/i.test(String(card?.id||''));
 // 先比新台幣（歐元與美元參考價混在一起時才可比），沒有匯率時才比原幣。
 const priceOf=card=>Number(card?.referencePrice?.amountTwd)||Number(card?.referencePrice?.amount)||0;
 // 同一張卡（跨版本合併）在這一彈的版本：稀有度、卡號以它為準（重印可能比頂層稀有度低）。
