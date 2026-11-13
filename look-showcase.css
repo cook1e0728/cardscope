@@ -72,6 +72,8 @@ html.look-clean .cs1-fan,html.look-clean .cs1-strip,html.look-clean .cs1-replay.
   /* 手牌區佔第二欄、往左延伸；高度撐住前三列，兔子卡搬進來當主角 */
   html.look-clean body[data-view="landing"] .hero>.cs1-fan{display:block;position:relative;z-index:1;grid-column:2;grid-row:1/4;justify-self:end;align-self:center;width:580px;height:380px;margin:0;pointer-events:none;transform-origin:right center}
   html.look-clean body[data-view="landing"] .cs1-fan>.hero-art{position:absolute;left:185px;top:44px;width:210px;margin:0;z-index:6}
+  /* 手牌（.cs1-fan，380px）晚一點才由 JS 插進來：先把兔子卡預留同樣高，hero 不會在載入後長高 17px */
+  html.look-clean body[data-view="landing"] .hero>.hero-art{min-height:380px}
   html.look-clean body[data-view="landing"] .hero>.home-search{max-width:520px}
 }
 @media (min-width:1200px) and (max-width:1379px){

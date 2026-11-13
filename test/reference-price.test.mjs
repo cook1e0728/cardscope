@@ -259,7 +259,7 @@ test('browse: a Pokemon series page says how many of its cards have a reference 
 // ---------------------------------------------------------------- the pages
 
 const harness = () => {
-  const context = vm.createContext({ e: esc, rn: region => ({ JP: '日版', TW: '台版', US: '美版' }[region] || region), ln: language => ({ 'ja-JP': '日文', 'zh-TW': '繁中', 'en-US': '英文' }[language] || language), cardGameId: card => typeof card?.game === 'object' ? card.game.id : card?.game, MARKET_VARIANTS: { holo: '閃卡 Holo', reverse: '逆閃 Reverse' }, marketDate: value => value ? String(value).slice(0, 10).replaceAll('-', '/') : '' });
+  const context = vm.createContext({ e: esc, tipMarkup: () => '', rn: region => ({ JP: '日版', TW: '台版', US: '美版' }[region] || region), ln: language => ({ 'ja-JP': '日文', 'zh-TW': '繁中', 'en-US': '英文' }[language] || language), cardGameId: card => typeof card?.game === 'object' ? card.game.id : card?.game, MARKET_VARIANTS: { holo: '閃卡 Holo', reverse: '逆閃 Reverse' }, marketDate: value => value ? String(value).slice(0, 10).replaceAll('-', '/') : '' });
   vm.runInContext(`${slice(ui, 'const REFERENCE_SOURCE_NAMES=', 'function cardGameLabel')}\nconst setCodeText=value=>String(value||'');const printingLanguage=(p)=>ln(p?.language);\n${slice(ui, 'function versionPriceTable', '// 收錄版本列')}`, context);
   return context;
 };
@@ -493,21 +493,23 @@ test('detail price row: big NT$ amount, change, source and date, disclaimer, ope
   const run = card => vm.runInContext(`detailPriceMarkup(${JSON.stringify(card)})`, context);
   const out = run(base);
   assert.match(out, /^<button type="button" class="detail-price" data-detail-price title="平台參考價，不是成交價或台灣行情；點一下看價格走勢"/);
-  assert.match(out, /<b class="dp-amount">NT\$ 11,730<\/b><span class="dp-chg cr-up">▲3\.2% 近 7 天<\/span><small class="dp-note">Cardmarket 參考 · 11-05 · 非成交價<\/small>/);
-  assert.match(out, /aria-label="NT\$ 11,730，近 7 天上漲 3\.2%（比 10-29），Cardmarket 參考 11-05；平台參考價，不是成交價或台灣行情；開啟價格分頁"/);
-  assert.match(run({ ...base, referencePrice: { ...base.referencePrice, changePct: -1.5 } }), /class="dp-chg cr-down">▼1\.5% 近 7 天/);
-  assert.match(run({ ...base, referencePrice: { ...base.referencePrice, changePct: 0 } }), /class="dp-chg cr-flat">近 7 天持平/);
+  assert.match(out, /<b class="dp-amount">NT\$ 11,730<\/b><span class="dp-chg cr-up">▲3\.2% 近 7 天（比 10-29）<\/span><small class="dp-note">Cardmarket 參考 · 11-05 · 非成交價<\/small>/, '漲跌只有一個基準與一種寫法：「近 7 天」加上比較日，和卡牆、aria-label 同一個來源');
+  assert.match(out, /aria-label="NT\$ 11,730，近 7 天上漲 3\.2%（比 10-29），Cardmarket 參考 11-05；平台參考價，不是成交價或台灣行情；跳到價格區塊"/);
+  assert.match(run({ ...base, referencePrice: { ...base.referencePrice, changePct: -1.5 } }), /class="dp-chg cr-down">▼1\.5% 近 7 天（比 10-29）</);
+  assert.match(run({ ...base, referencePrice: { ...base.referencePrice, changePct: 0 } }), /class="dp-chg cr-flat">近 7 天持平（比 10-29）</);
   assert.doesNotMatch(run({ ...base, referencePrice: { ...base.referencePrice, changePct: undefined } }), /dp-chg/);
   assert.match(run({ ...base, referencePrice: { ...base.referencePrice, amountTwd: undefined } }), /<b class="dp-amount">€94\.00<\/b>/, '沒有匯率時顯示原幣');
   for (const bad of [{ ...base, referencePrice: undefined }, { ...base, game: { id: 'onepiece' } }, { ...base, referencePrice: { ...base.referencePrice, amount: 0 } }]) assert.equal(run(bad), '', JSON.stringify(bad.referencePrice));
   // 比快照新的同來源、同版本即時價：改用它，漲跌以 changeBase 重算；較舊或版本不同就不採用
   const live = (records, ref = { ...base.referencePrice, changeBase: 90 }) => vm.runInContext(`detailPriceMarkup(${JSON.stringify({ ...base, referencePrice: ref })},${JSON.stringify(records)})`, context);
   const rec = over => ({ priceType: 'market', market: 'Cardmarket', variant: 'holo', currency: 'EUR', amount: 99, priceTwd: 12000, observedAt: '2026-11-06T02:00:00Z', ...over });
-  assert.match(live([rec()]), /NT\$ 12,000<\/b><span class="dp-chg cr-up">▲10% 近 7 天<\/span><small class="dp-note">Cardmarket 參考 · 11-06/);
+  assert.match(live([rec()]), /NT\$ 12,000<\/b><span class="dp-chg cr-up">▲10% 近 7 天（比 10-29）<\/span><small class="dp-note">Cardmarket 參考 · 11-06/);
   assert.match(live([rec({ observedAt: '2026-11-04T00:00:00Z' })]), /NT\$ 11,730/);
   assert.match(live([rec({ variant: 'normal' })]), /NT\$ 11,730/);
   assert.doesNotMatch(live([rec()], { ...base.referencePrice, changeBase: undefined }), /dp-chg/, '沒有比較基準就不顯示漲跌');
-  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\}\$\{detailPriceMarkup\(c,m\.records\)\}<div class="detail-actions"><div class="detail-collect"/, '價格列在卡名（與原文名）正下方');
+  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\}\$\{priceSlot\}<div class="detail-actions"><div class="detail-collect"/, '價格列（先畫占位，市場資料回來後換成真的價格列）在卡名（與原文名）正下方');
+  assert.match(ui, /const priceSlot=detailPriceMarkup\(c,\[\]\)\?'<div class="detail-price-slot" data-price-slot aria-busy="true">/);
+  assert.match(ui, /slot\.outerHTML=detailPriceMarkup\(c,m\.records\)/);
   assert.match(ui, /if\(!ref\)return card\?\.referencePriceFailed&&cardGameId\(card\)==='pokemon'\?'<button type="button" class="detail-price detail-price-retry" data-detail-price-retry>/, '參考價逾時留重試鈕');
-  assert.match(ui, /querySelector\('\[data-detail-price\]'\)\?\.addEventListener\('click',\(\)=>\{box\.querySelector\('\[data-detail-tab="market"\]'\)\?\.click\(\)/, '沿用價格分頁按鈕的點擊，才會觸發 PriceTimeline.load');
+  assert.match(ui, /querySelector\('\[data-detail-price\]'\)\?\.addEventListener\('click',jumpToPrice\)/, '價格列捲到價格區塊（走勢區塊進入視窗時才載入）');
 });

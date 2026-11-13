@@ -86,16 +86,17 @@ test('card tile (grid, list and rarity-group views) escapes every external strin
 test('card detail view escapes names, numbers, sources, links, prices and reports', async () => {
   const card = hostileCard(), market = { records: [{ provider: HOSTILE, priceType: HOSTILE, currency: HOSTILE, amount: 5, priceTwd: 100, market: HOSTILE, observedAt: HOSTILE, variant: HOSTILE, region: HOSTILE, setCode: HOSTILE, rarity: HOSTILE, sourceUrl: HOSTILE_URL }], meta: { warning: HOSTILE, priceTypes: { [HOSTILE]: HOSTILE }, exchangeRates: { source: HOSTILE, updatedAt: HOSTILE } } };
   const fetch = async url => ({ ok: true, json: async () => /\/market$/.test(url) ? { data: market } : /reports/.test(url) ? { data: { reports: [{ platform: HOSTILE, currency: HOSTILE, price: 1 }] } } : { data: card } });
-  const h = harness({ fetch });
+  // deep：價格區塊（[data-price-body]）是階段 4 起市場資料回來後才填的子節點，假 DOM 把它當同一個子節點，一併檢查
+  const h = harness({ fetch, deep: true });
   h.run(`C={games:[{id:'pokemon',nameZh:${JSON.stringify(HOSTILE)}}],series:[{id:'hostile-series',nameZh:${JSON.stringify(HOSTILE)},officialCode:${JSON.stringify(HOSTILE)},region:'JP'}],cards:[]};game='pokemon'`);
   await h.run('openCard("x")');
-  const detail = h.byId.get('detail').innerHTML;
+  const detail = h.byId.get('detail').innerHTML + h.byId.get('detail').querySelector('[data-price-body]').innerHTML;
   assertSafe(detail, 'detail');
   assert.ok(detail.includes(ESCAPED));
   assert.ok(!detail.includes(`href="${HOSTILE_URL}`) && !detail.includes('href="https://example.test/"'), 'the source link cannot break out of href');
   // 沒有 https 的來源網址不會變成連結
   const plain = hostileCard({ printings: [{ ...card.printings[0], sourceUrl: 'javascript:alert(1)' }] });
-  const h2 = harness({ fetch: async url => ({ ok: true, json: async () => /\/market$/.test(url) ? { data: { records: [], meta: {} } } : /reports/.test(url) ? { data: { reports: [] } } : { data: plain } }) });
+  const h2 = harness({ deep: true, fetch: async url => ({ ok: true, json: async () => /\/market$/.test(url) ? { data: { records: [], meta: {} } } : /reports/.test(url) ? { data: { reports: [] } } : { data: plain } }) });
   await h2.run('openCard("x")');
   assert.ok(!/href="javascript:/i.test(h2.byId.get('detail').innerHTML));
 });
@@ -135,16 +136,22 @@ test('search suggestions escape names, numbers, rarity and the suggestion text',
   assert.ok(lists.some(n => n.innerHTML.includes(ESCAPED)));
 });
 
-test('the collection dialog escapes saved card snapshots (they also come from imported backup files)', () => {
+test('the collection page escapes saved card snapshots (they also come from imported backup files)', () => {
   const meta = { v: 1, id: 'h1', game: 'pokemon', nameZh: HOSTILE, nameEn: HOSTILE, officialCardNumber: HOSTILE, rarity: HOSTILE, region: HOSTILE, version: HOSTILE, image: HOSTILE_URL, note: HOSTILE, finish: HOSTILE, seriesId: HOSTILE, choices: [{ cardId: HOSTILE, region: HOSTILE, set: HOSTILE, number: HOSTILE, rarity: HOSTILE, variant: HOSTILE }], ambiguous: true };
   const h = harness({ withStore: true, localStore: { 'cardscope-watchlist': JSON.stringify({ h1: 2 }), 'cardscope-watchlist-meta': JSON.stringify({ h1: meta }) } });
   h.run(`C={games:[],series:[],cards:[]};game='all'`);
-  h.node('collectionDialog');
-  h.run('collectionUi.prices={h1:[{provider:"cardmarket",currency:' + JSON.stringify(HOSTILE) + ',amount:1,amountTwd:30,snapshotDate:' + JSON.stringify(HOSTILE) + ',variant:' + JSON.stringify(HOSTILE) + '}]};collectionUi.pricesState="ready";collectionUi.progress=' + JSON.stringify(HOSTILE));
-  h.run('renderCollection()');
-  const dialog = h.byId.get('collectionDialog').innerHTML;
-  assertSafe(dialog, 'collection dialog');
-  assert.ok(dialog.includes(ESCAPED));
+  for (const id of ['cardsSection', 'sideColl', 'collExtras', 'collManage', 'collManageBtn', 'collMenu', 'collSummary', 'collImportHost', 'collStatus', 'collSeries']) h.node(id);
+  h.byId.get('body').dataset.view = 'collection';
+  h.run('collectionUi.filter.game="pokemon";collectionUi.prices={h1:[{provider:"cardmarket",currency:' + JSON.stringify(HOSTILE) + ',amount:1,amountTwd:30,snapshotDate:' + JSON.stringify(HOSTILE) + ',variant:' + JSON.stringify(HOSTILE) + '}]};collectionUi.pricesState="ready";collectionUi.progress=' + JSON.stringify(HOSTILE));
+  h.run('renderCollectionPage()');
+  for (const [id, label] of [['cards', 'wall'], ['sideColl', 'side list'], ['collSummary', 'summary'], ['collImportHost', 'import preview']]) assertSafe(h.byId.get(id).innerHTML || 'x', label);
+  assert.ok(h.byId.get('cards').innerHTML.includes(ESCAPED), 'the wall shows the saved names, escaped');
+  assert.ok(h.byId.get('sideColl').innerHTML.includes(ESCAPED), 'the side list shows the saved series, escaped');
+  assertSafe(h.run('collectionEditorHtml("h1")'), 'side panel editor (note, version and choices)');
+  assert.ok(h.run('collectionEditorHtml("h1")').includes(ESCAPED));
+  assertSafe(h.run('valueHtml(collectionValuation())'), 'reference total detail');
+  assertSafe(h.run('rowPriceHtml(collectionItems()[0],collectionValuation())'), 'price lines in the side panel');
+  assertSafe(h.run('collectionSeriesHtml()') || 'x', 'series progress');
 });
 
 test('series band (tabs, tiles, selected-series box, home preview) escapes series and region text', () => {
@@ -171,6 +178,8 @@ test('series band (tabs, tiles, selected-series box, home preview) escapes serie
 test('price movers escape names, series codes and image urls', async () => {
   const row = (over = {}) => ({ cardId: HOSTILE, name: HOSTILE, nameJa: HOSTILE, cardNumber: HOSTILE, seriesCode: HOSTILE, seriesName: HOSTILE, imageUrl: HOSTILE_URL, currency: HOSTILE, changePercent: 250, from: { date: HOSTILE, amount: 5, amountTwd: 100 }, to: { date: HOSTILE, amount: 20, amountTwd: 400 }, ...over });
   const root = { fetch: async () => ({ ok: true, json: async () => ({ data: { up: [row()], down: [row({ changePercent: -50 })] }, meta: { windowDays: HOSTILE, minAmount: HOSTILE, note: HOSTILE } }) }) };
+  // 來源、觀測時間、範圍都收在 ⓘ 裡；ⓘ 的標記由 ui-actions.js 產生，所以用真的那一份
+  vm.runInNewContext(await read('ui-actions.js'), { window: root, document: { addEventListener() {} }, Object });
   vm.runInNewContext(movers, { window: root, ...root });
   const section = { hidden: true, innerHTML: '', classList: { add() {} } };
   await root.renderPriceMovers(section);
@@ -180,7 +189,7 @@ test('price movers escape names, series codes and image urls', async () => {
 
 test('market events escape titles, sources and links, and only https links are drawn', async () => {
   const section = { hidden: true, innerHTML: '' };
-  const window = { document: { getElementById: () => section, body: { dataset: { view: 'landing', game: 'all' } } }, fetch: async () => ({ ok: true, json: async () => ({ data: [{ date: '2099-01-02', game: HOSTILE, title: HOSTILE, source: HOSTILE, url: 'https://example.test/"><img src=x onerror=1>' }, { date: '2099-01-01', game: 'pokemon', title: HOSTILE, source: HOSTILE, url: 'javascript:alert(1)' }], meta: { note: HOSTILE } }) }) };
+  const window = { document: { getElementById: () => section, body: { dataset: { view: 'market', game: 'all' } } }, fetch: async () => ({ ok: true, json: async () => ({ data: [{ date: '2099-01-02', game: HOSTILE, title: HOSTILE, source: HOSTILE, url: 'https://example.test/"><img src=x onerror=1>' }, { date: '2099-01-01', game: 'pokemon', title: HOSTILE, source: HOSTILE, url: 'javascript:alert(1)' }], meta: { note: HOSTILE } }) }) };
   vm.runInNewContext(events, { window });
   await new Promise(resolve => setImmediate(resolve));
   await new Promise(resolve => setImmediate(resolve));

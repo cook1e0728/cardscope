@@ -8,7 +8,7 @@ const start=ui.indexOf('let seriesIndex=null'),end=ui.indexOf('function cardMark
 
 // The label helpers read C.series, browse, activeSearch, rn and setCodeText from the page; stub just those.
 function labels({series=[],browse={seriesId:''},activeSearch=null}={}){
-  const context=vm.createContext({C:{series},browse,activeSearch,e:value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;'),
+  const context=vm.createContext({C:{series},browse,activeSearch,inCollectionView:()=>false,e:value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;'),
     rn:(region,game)=>region==='TW'&&game==='onepiece'?'亞洲日文版':({JP:'日版',TW:'台版',US:'美版'}[region]||region||'版本待補'),
     setCodeText:value=>/^unspecified$/i.test(String(value||'').trim())?'':String(value||'')});
   vm.runInContext(ui.slice(start,end),context);

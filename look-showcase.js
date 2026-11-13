@@ -20,10 +20,10 @@
   }
 
   /* ---------- 2. 目前頁標記（頂欄與 dock）：landing＝搜尋、game＝圖鑑 ---------- */
-  // 首頁的「搜尋」「圖鑑」是同一頁內的捲動：被點的那個兩處（頂欄與 dock）一起亮；開著我的收藏對話框時亮「我的收藏」。
+  // 首頁的「搜尋」「圖鑑」是同一頁內的捲動：被點的那個兩處（頂欄與 dock）一起亮；在我的收藏頁時亮「我的收藏」。
   let picked=null;
   function syncNav(){
-    const view=doc.body.dataset.view,cur=doc.querySelector('dialog.collection-dialog[open]')?'collection':view==='game'?'browse':view==='landing'?picked||'search':undefined;
+    const view=doc.body.dataset.view,cur=view==='collection'?'collection':view==='game'?'browse':view==='landing'?picked||'search':undefined;
     doc.querySelectorAll('[data-nav]').forEach(b=>b.dataset.nav===cur?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   }
 
@@ -167,9 +167,9 @@
   };
   const stepDefs=()=>[
     {t:['#homeSearch','.top .search'],h:'先從這裡找卡',p:'輸入卡名、卡號或系列；也可以點旁邊的範例直接試試。'},
-    {t:[mobile()?'#mobileQuickGrid':'#channels'],h:'挑一個遊戲開始翻閱',p:'選一個作品，直接進入它的圖鑑。'},
-    {t:['#homeLatest h2','#homeLatest .home-latest-tabs','#homeLatest .series-band-rail'],h:'最新系列放在這裡',p:'可依遊戲切換分頁，點系列磚就能看完整卡表。'},
-    {t:['nav.bottom [data-nav="collection"]'],h:'我的收藏',p:'卡片上的收藏鈕加入的卡，都會集中在這裡；這條列也能快速切換搜尋與圖鑑。'}
+    mobile()?{t:['nav.bottom [data-nav="browse"]'],h:'點「圖鑑」挑一個遊戲',p:'從底部的「圖鑑」選一個作品，直接進入它的圖鑑。'}:{t:['#channels'],h:'挑一個遊戲開始翻閱',p:'選一個作品，直接進入它的圖鑑。'},
+    {t:['#homeRails .rails-switch'],h:'最新、最夯、最熱',p:'切換分頁看最新系列、參考價漲幅最大的卡，和本站最多人開的卡。'},
+    {t:['nav.bottom [data-nav="collection"]','header.top .nav [data-nav="collection"]'],h:'我的收藏',p:'卡片上加入收藏的卡，都會集中在這裡。'}
   ].filter(s=>union(s.t));
 
   function closeTour(mark){
@@ -230,29 +230,20 @@
     setTimeout(()=>{
       const tick=()=>{if(mobile())return;/* 等待期間視窗縮成手機寬度：照手機規則不自動開 */
         if(tour||!landing()||$('#modal.open'))return;
-        if((!firstVis('#channels .channel,#mobileQuickGrid .mqg-tile')||stepDefs().length<4)&&Date.now()-t0<3000)return setTimeout(tick,150);
+        if((!firstVis('#channels .channel')||stepDefs().length<4)&&Date.now()-t0<3000)return setTimeout(tick,150);
         startTour();
       };tick();
     },1400);
   }
 
-  /* ---------- 5. 手機：我的收藏列與「下載清單 CSV」收進「更多工具」，卡牆往上提；頂欄 placeholder 縮短 ---------- */
-  function foldTools(){
-    const s=$('#watchlistSummary');if(!s)return;
-    const mq=matchMedia('(max-width:760px)'),sync=()=>{
-      const d=s.closest('.cs-more');
-      if(mq.matches&&!d){const n=el('details','cs-more'),cards=$('#cards');(cards||s).after(n);n.append(el('summary','','更多工具：我的收藏、下載清單'),s)} // 手機放在卡牆下方
-      else if(!mq.matches&&d){$('#cardTools')?.append(s);d.remove()} // 桌面不包，版面維持原樣
-    };
-    sync();mq.addEventListener('change',sync);
-  }
+  /* ---------- 5. 頂欄 placeholder 縮短（我的收藏摘要已在階段 3 併進卡牆工具列，不再於手機折進「更多工具」） ---------- */
   function shortPlaceholder(){
     const q=$('#q');if(!q)return;const full=q.placeholder,mq=matchMedia('(max-width:760px)'),sync=()=>{q.placeholder=mq.matches?'卡名或卡號':full};
     sync();mq.addEventListener('change',sync);
   }
 
   function init(){
-    splitTitle();syncNav();foldTools();shortPlaceholder();
+    splitTitle();syncNav();shortPlaceholder();
     // 重看導覽：桌面在「版本」那一列，手機在標題小卡內
     const mk=(cls)=>{const b=el('button',cls,'✦ 重看導覽');b.type='button';b.classList.add('cs1-replay');b.onclick=()=>startTour();return b};
     $('.browse-regions')?.append(mk(''));

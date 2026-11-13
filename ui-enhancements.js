@@ -1,5 +1,7 @@
 const uiLocal={get(key,fallback){try{return localStorage.getItem(key)||fallback}catch{return fallback}},set(key,value){try{localStorage.setItem(key,value);return true}catch{return false}}};
-let cardViewMode='grid';
+// ⓘ 說明按鈕的標記由 ui-actions.js 的 window.infoTip 產生；沒載入時（單元測試）就不顯示。
+const tipMarkup=(label,body)=>typeof window!=='undefined'&&window.infoTip?window.infoTip(label,body):'';
+let cardViewMode='grid',cardGroupMode='none',wallMixed=false;
 let activeDetailCardId=null,detailReturnCardId=null;
 let favoritesOnly=uiLocal.get('cardscope-favorites-only','0')==='1';
 const legacyFavoriteIds=readUiArray('cardscope-favorites');
@@ -71,8 +73,6 @@ series=function(){
 
 function readUiArray(key){try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value.map(String):[]}catch{return[]}}
 function readUiObject(key){try{const value=JSON.parse(localStorage.getItem(key)||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch{return{}}}
-function saveUiArray(key,value){uiLocal.set(key,JSON.stringify([...value]))}
-function saveUiObject(key,value){uiLocal.set(key,JSON.stringify(value))}
 // ADR 0044 Q12：畫面一律顯示稀有度代碼（SAR），全名放 title；NONE 顯示「無標記」。沿用 index.html 的 rarityCanonicalCode／rarityRankings。
 function rarityInfo(raw,gameId){
   const value=String(raw??'').trim();
@@ -100,7 +100,7 @@ function referenceAmountText(amount,currency){const value=Number(amount);return 
 function referenceChangeInfo(ref){
   const pct=ref?.changePct==null?NaN:Number(ref.changePct);if(!Number.isFinite(pct))return null;
   const from=String(ref.changeFrom||'').slice(5,10),since=/^\d{2}-\d{2}$/.test(from)?`（比 ${from}）`:'',dir=pct>0?'up':pct<0?'down':'flat',text=`${Math.abs(pct).toLocaleString('en-US',{maximumFractionDigits:1})}%`;
-  return {dir,mark:dir==='up'?`▲${text}`:dir==='down'?`▼${text}`:'持平',say:dir==='flat'?`近 7 天持平${since}`:`近 7 天${dir==='up'?'上漲':'下跌'} ${text}${since}`};
+  return {dir,label:dir==='flat'?`近 7 天持平${since}`:`${dir==='up'?'▲':'▼'}${text} 近 7 天${since}`,mark:dir==='up'?`▲${text}`:dir==='down'?`▼${text}`:'持平',say:dir==='flat'?`近 7 天持平${since}`:`近 7 天${dir==='up'?'上漲':'下跌'} ${text}${since}`};
 }
 // 卡牆與詳細頁共用的有效參考價條件：只有寶可夢、金額為正、Cardmarket 歐元或 TCGplayer 美元。
 function usableReference(card){const ref=card?.referencePrice,amount=Number(ref?.amount);return cardGameId(card)==='pokemon'&&ref&&Number.isFinite(amount)&&amount>0&&(ref.currency==='EUR'||ref.currency==='USD'&&ref.source==='tcgplayer')?ref:null}
@@ -112,8 +112,8 @@ function cardReferenceMarkup(card,openId){
   const short=REFERENCE_SOURCE_SHORT[ref.source]||String(source).slice(0,3).toUpperCase(),shortVariant=variant.split(' ')[0];
   return `<div class="card-price card-reference" data-card-open="${e(openId)}" tabindex="0" role="button" aria-label="${e(text+(chg?'，'+chg.say:'')+'，'+tip+'；開啟卡片詳細資料')}"><span class="cr-amount">${e(money)}</span>${chg&&chg.dir!=='flat'?`<small class="cr-chg cr-${chg.dir}" aria-hidden="true">${e(chg.mark)}</small>`:''}<small class="cr-src" title="${e(`${source}；${original}${seen?`；更新於 ${seen}`:''}；參考價，不是成交價`)}" aria-hidden="true">${e(short)}</small>${shortVariant?`<small class="cr-var" aria-hidden="true">${e(shortVariant)}</small>`:''}${money===original?'':`<small class="cr-original" aria-hidden="true">${e(original)}</small>`}<small class="card-reference-tip" aria-hidden="true">${e(tip)}</small></div>`;
 }
-// 詳細頁卡名下方的價格列：點它切到「價格」分頁（沿用分頁按鈕的點擊，才會觸發走勢載入）。沒有參考價就不畫，也不放 0。
-// 價格分頁用的是比快照新的即時價；同來源、同版本的即時價較新時改用它，漲跌也用它對 7 天前重算，兩處數字才一致。
+// 詳細頁卡名下方的價格列：點它捲到下方的「價格」區塊（沒有分頁，走勢區塊進入視窗才載入）。沒有參考價就不畫，也不放 0。
+// 價格區塊用的是比快照新的即時價；同來源、同版本的即時價較新時改用它，漲跌也用它對 7 天前重算，兩處數字才一致。
 function liveReference(ref,records){
   const source=REFERENCE_SOURCE_NAMES[ref.source],live=(Array.isArray(records)?records:[]).find(r=>r.priceType==='market'&&r.market===source&&(r.variant||'')===(ref.variant||'')&&r.currency===ref.currency&&Number(r.amount)>0&&Number(r.priceTwd)>0&&Date.parse(r.observedAt)>Date.parse(ref.observedAt));
   if(!live)return ref;const base=Number(ref.changeBase),pct=base>0?(Number(live.amount)-base)/base*100:NaN,taipei=new Date(Date.parse(live.observedAt)+8*3600000).toISOString().slice(0,10);
@@ -124,7 +124,7 @@ function detailPriceMarkup(card,records){
   let ref=usableReference(card);if(!ref)return card?.referencePriceFailed&&cardGameId(card)==='pokemon'?'<button type="button" class="detail-price detail-price-retry" data-detail-price-retry><b class="dp-retry">參考價暫時讀不到</b><small class="dp-note">按一下重新讀取</small></button>':'';ref=liveReference(ref,records);
   const source=REFERENCE_SOURCE_NAMES[ref.source]||String(ref.source||'參考來源'),twd=Number(ref.amountTwd),money=twd>0?`NT$ ${twd.toLocaleString('en-US')}`:referenceAmountText(ref.amount,ref.currency),chg=referenceChangeInfo(ref),date=String(ref.snapshotDate||'').slice(5,10),
     note=`${source} 參考${/^\d{2}-\d{2}$/.test(date)?` · ${date}`:''} · 非成交價`,disclaimer='平台參考價，不是成交價或台灣行情';
-  return `<button type="button" class="detail-price" data-detail-price title="${e(disclaimer+'；點一下看價格走勢')}" aria-label="${e(`${money}，${chg?chg.say+'，':''}${source} 參考${date?' '+date:''}；${disclaimer}；開啟價格分頁`)}"><b class="dp-amount">${e(money)}</b>${chg?`<span class="dp-chg cr-${chg.dir}">${e(chg.dir==='flat'?'近 7 天持平':chg.mark+' 近 7 天')}</span>`:''}<small class="dp-note">${e(note)}</small></button>`;
+  return `<button type="button" class="detail-price" data-detail-price title="${e(disclaimer+'；點一下看價格走勢')}" aria-label="${e(`${money}，${chg?chg.say+'，':''}${source} 參考${date?' '+date:''}；${disclaimer}；跳到價格區塊`)}"><b class="dp-amount">${e(money)}</b>${chg?`<span class="dp-chg cr-${chg.dir}">${e(chg.label)}</span>`:''}<small class="dp-note">${e(note)}</small></button>`;
 }
 function cardGameLabel(card){const catalogName=G(card.game).nameZh;if(catalogName)return catalogName;return (window.CARD_GAMES||[]).find(item=>item.id===card.game)?.name||card.game||'IP 待補'}
 // 數量就是收藏：數量 > 0 即「已收藏」，☆ 只是把數量設成 1（或詢問後移除）的快速鍵。
@@ -152,7 +152,7 @@ migrateLegacyFavorites();
 function touchMeta(key){
   if(!watchQuantity(key)){delete watchlistMeta[key];return}
   const card=renderedCards.get(key)||allKnownCards().find(item=>String(item.id)===key);
-  if(card)watchlistMeta[key]={...watchlistMeta[key],...cardSnapshot(card,key),v:1};
+  if(card&&!card.__collection)watchlistMeta[key]={...watchlistMeta[key],...cardSnapshot(card,key),v:1};
 }
 
 const cardscopeBaseFilteredCards=typeof filteredCards==='function'?filteredCards:null;
@@ -203,16 +203,36 @@ function resilientImage(src,alt,message,options={}){
 
 function installViewToggle(){
   const tools=$('cardTools');if(!tools||$('cardViewSwitch'))return;
-  const host=document.createElement('div');host.id='cardViewSwitch';host.className='view-switch';host.setAttribute('aria-label','卡片瀏覽模式');
-  host.innerHTML=`<button type="button" data-view="grid">圖鑑模式</button><button type="button" data-view="list">清單模式</button><button type="button" data-view="rarity">稀有度分組</button>`;
-  tools.prepend(host);host.onclick=event=>{const button=event.target.closest('[data-view]');if(!button)return;cardViewMode=button.dataset.view;if(cardViewMode==='rarity'&&!String(cardFilters.sort).startsWith('rarity-')){cardFilters.sort='rarity-desc';const sortControl=$('cardSort');if(sortControl)sortControl.value='rarity-desc'}drawViewButtons();if(game!=='all'&&cardViewMode==='rarity')loadCardsPage(true);else cards(currentCardRows,true)};drawViewButtons();
+  // 工具列一排（決定 11）：顯示方式｜分組｜稀有度｜排序｜收藏狀態都放進 #cardControls；桌機折行、手機橫向捲動，不另開一套。
+  const controls=document.createElement('div');controls.id='cardControls';controls.className='card-controls';
+  const segment=(id,label,key,items)=>{const host=document.createElement('div');host.id=id;host.className='view-switch';host.setAttribute('role','group');host.setAttribute('aria-label',label);host.innerHTML=items.map(([value,text])=>`<button type="button" data-${key}="${value}" aria-pressed="false">${text}</button>`).join('');return host};
+  const display=segment('cardViewSwitch','顯示方式','view',[['grid','圖鑑'],['list','清單']]),group=segment('cardGroupSwitch','分組','group',[['none','不分組'],['rarity','依稀有度']]);
+  controls.append(display,group,...tools.querySelectorAll(':scope > .filter-field'));tools.prepend(controls);
+  display.onclick=event=>{const button=event.target.closest('[data-view]');if(!button||button.dataset.view===cardViewMode)return;cardViewMode=button.dataset.view;drawViewButtons();cards(currentCardRows,true)};
+  group.onclick=event=>{const button=event.target.closest('[data-group]');if(!button||button.dataset.group===cardGroupMode)return;cardGroupMode=button.dataset.group;if(cardGroupMode==='rarity'&&!String(cardFilters.sort).startsWith('rarity-')){cardFilters.sort='rarity-desc';const sortControl=$('cardSort');if(sortControl)sortControl.value='rarity-desc'}drawViewButtons();if(game!=='all'&&!activeSearch&&cardGroupMode==='rarity')loadCardsPage(true);else cards(currentCardRows,true)};
+  drawViewButtons();
 }
-function drawViewButtons(){document.querySelectorAll('#cardViewSwitch [data-view]').forEach(button=>button.classList.toggle('on',button.dataset.view===cardViewMode))}
+function drawViewButtons(){
+  const mark=(selector,attribute,current)=>document.querySelectorAll(selector).forEach(button=>{const on=button.dataset[attribute]===current;button.classList.toggle('on',on);button.setAttribute('aria-pressed',String(on))});
+  mark('#cardViewSwitch [data-view]','view',cardViewMode);mark('#cardGroupSwitch [data-group]','group',cardGroupMode);
+}
 
+// 混合牆（決定：卡片三行）：搜尋結果，或載入的卡跨了不同遊戲、系列、版本（日／台…）。同名同號的卡要靠遊戲、系列、版本標籤分辨；單一系列頁已經是同一批，不重複顯示。
+function wallIsMixed(rows){
+  if(typeof activeSearch!=='undefined'&&activeSearch)return true;
+  if(typeof browse!=='undefined'&&browse?.seriesId&&!inCollectionView())return false;
+  const games=new Set(),series=new Set(),regions=new Set();
+  for(const card of rows||[]){games.add(cardGameId(card));series.add(card.seriesId||card.printings?.find(p=>p.seriesId)?.seriesId||'');regions.add(card.region||card.printings?.[0]?.region||'')}
+  return games.size>1||series.size>1||regions.size>1;
+}
 function cardActionsMarkup(card){
   const key=entryKey(card);renderedCards.set(key,card);if(renderedCards.size>800)renderedCards.delete(renderedCards.keys().next().value);
-  const id=e(key),quantity=watchQuantity(key),favorite=quantity>0,starLabel=favorite?`已收藏 ${quantity} 張，按一下移除`:'加入我的收藏（數量 1）';
-  return `<div class="card-actions" data-action="card-actions"><button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="${id}" aria-pressed="${favorite}" aria-label="${starLabel}" title="${starLabel}">${favorite?'★':'☆'}</button><div class="watchlist-inline" data-action="watchlist" aria-label="我的收藏張數"><button type="button" data-watch-decrement="${id}" aria-label="減少數量"${quantity?'':' disabled'}>−</button><span data-watch-quantity="${id}">${quantity}</span><button type="button" data-watch-increment="${id}" aria-label="增加數量">＋</button></div></div>`;
+  const id=e(key),quantity=watchQuantity(key),title=e(name(card));
+  // 收藏是一個動作（決定 3c、10）：沒收藏＝一顆 ☆（按一下加入 1 張）；收藏了＝「− 數量 ＋」，減到 0 就是取消。數量不是按鈕，三格合起來剛好 44＋24＋44px，放得進手機一排 3 張的卡寬。
+  const body=quantity
+    ?`<div class="watchlist-inline" data-action="watchlist" role="group" aria-label="${title}，已收藏 ${quantity} 張"><button type="button" data-watch-decrement="${id}" aria-label="${quantity===1?`取消收藏：${title}（目前 1 張）`:`減少一張：${title}（目前 ${quantity} 張）`}">−</button><span class="watch-quantity" data-watch-quantity="${id}">${quantity}</span><button type="button" data-watch-increment="${id}" aria-label="增加一張：${title}（目前 ${quantity} 張）">＋</button></div>`
+    :`<button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="${id}" aria-pressed="false" aria-label="加入我的收藏：${title}（目前 0 張）" title="加入我的收藏">☆</button>`;
+  return `<div class="card-actions" data-action="card-actions" data-card-key="${id}">${body}</div>`;
 }
 
 // Three sticker tiers for the binder theme: top (SAR/UR/SEC…), high (SR/AR/RRR…), and everything else.
@@ -234,7 +254,7 @@ let seriesIndex=null,seriesIndexSource=null;
 const CARD_REGION_ORDER=['JP','TW','US','KR','CN','ASIA'];
 function cardSeriesLabel(card){
   if(seriesIndexSource!==C.series){seriesIndexSource=C.series;seriesIndex=new Map((C.series||[]).map(row=>[row.id,row]))}
-  if(browse?.seriesId&&!activeSearch)return '';
+  if(browse?.seriesId&&!activeSearch&&!inCollectionView())return '';
   const id=card.seriesId||card.printings?.find(p=>p.seriesId)?.seriesId,row=seriesIndex.get(id),label=String(row?.nameZh||row?.nameJa||row?.nameEn||row?.officialCode||setCodeText(card.printings?.[0]?.localSetCode)||'').replace(/^.*?系列｜/,'');
   return label?`<div class="card-series" title="${e([row?.officialCode,label].filter(Boolean).join('・'))}">${e(label)}</div>`:'';
 }
@@ -245,11 +265,14 @@ function cardVersionBadges(card){
   return `<span class="card-versions" role="group" aria-label="收錄版本：${e(regions.map(r=>rn(r,card.game)).join('、'))}">${regions.map(r=>`<span class="badge region-chip" aria-hidden="true">${e(rn(r,card.game).replace(/版$/,''))}</span>`).join('')}</span>`;
 }
 function cardMarkup(card){
-  const source=image(card),price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),rarityHtml=cardRarityMarkup(card),versionMarkup=cardVersionBadges(card),seriesMarkup=cardSeriesLabel(card),gameLabel=cardGameLabel(card),picture=resilientImage(source,name(card),'這張卡尚未收錄可公開顯示的圖片',{...cardWatermarkOptions(card,source),fallbacks:[...cardImageSourceCandidates(card),...(card.fallbackImageUrls||[])]}),id=e(cardOpenId(card)),priceMarkup=cardPriceLabel(price),referenceMarkup=cardReferenceMarkup(card,cardOpenId(card));
+  const source=image(card),price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),rarityHtml=cardRarityMarkup(card),mixed=wallMixed,versionMarkup=mixed?cardVersionBadges(card):'',seriesMarkup=mixed?cardSeriesLabel(card):'',gameLabel=cardGameLabel(card),picture=resilientImage(source,name(card),'這張卡尚未收錄可公開顯示的圖片',{...cardWatermarkOptions(card,source),fallbacks:[...cardImageSourceCandidates(card),...(card.fallbackImageUrls||[])]}),id=e(cardOpenId(card)),priceMarkup=cardPriceLabel(price),referenceMarkup=cardReferenceMarkup(card,cardOpenId(card));
+  const variant=card.metadata?.variantName||card.printings?.find(p=>p.metadata?.variantName)?.metadata?.variantName,flags=`${variant?`<span class="badge variant-badge">${e(variant)}</span>`:''}${card.__ambiguous?'<span class="badge">版本待確認</span>':''}${listingBadge(card)}`,owned=watchQuantity(entryKey(card))>0?' is-owned':'';
   const openLabel=`開啟${name(card)}的卡片詳細資料`;
   const openControl=`<button type="button" class="card-open-hit" data-card-open="${id}" aria-label="${e(openLabel)}"></button>`;
-  if(cardViewMode==='list')return `<article class="card card-list">${openControl}<div class="art">${picture}</div><div class="card-list-main"><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3>${seriesMarkup}<div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${rarityHtml}</span>${versionMarkup}${(()=>{const variant=card.metadata?.variantName||card.printings?.find(p=>p.metadata?.variantName)?.metadata?.variantName;return variant?`<span class="badge variant-badge">${e(variant)}</span>`:''})()}${listingBadge(card)}${priceMarkup?`<strong>${priceMarkup}</strong>`:''}${referenceMarkup||(priceMarkup?'':'<span class="meta">參考價待補</span>')}</div>${cardActionsMarkup(card)}</article>`;
-  return `<article class="card">${openControl}<div class="art">${picture}</div><span class="badge ip-badge">${e(gameLabel)}</span><h3>${e(name(card))}</h3>${seriesMarkup}<div class="meta"><span class="card-no">${e(number)}</span><span class="card-sep"> · </span><span class="card-rarity" data-tier="${rarityTier(rarity)}">${rarityHtml}</span></div>${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}${referenceMarkup}${versionMarkup}${(()=>{const variant=card.metadata?.variantName||card.printings?.find(p=>p.metadata?.variantName)?.metadata?.variantName;return variant?`<span class="badge variant-badge">${e(variant)}</span>`:''})()}${listingBadge(card)}${cardActionsMarkup(card)}</article>`;
+  if(cardViewMode==='list')return `<article class="card card-list${owned}">${openControl}<div class="art">${picture}</div><div class="card-list-main">${mixed?`<span class="badge ip-badge">${e(gameLabel)}</span>`:''}<h3>${e(name(card))}</h3>${seriesMarkup}<div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${rarityHtml}</span>${versionMarkup}${flags}${priceMarkup?`<strong>${priceMarkup}</strong>`:''}${referenceMarkup||(priceMarkup?'':'<span class="meta">參考價待補</span>')}</div>${cardActionsMarkup(card)}</article>`;
+  // 卡片三行：卡名（旁邊是收藏）、卡號＋稀有度、價格（有才顯示）。遊戲、系列、版本只在混合牆出現。
+  const pricing=priceMarkup||referenceMarkup?`<div class="card-pricing">${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}${referenceMarkup}</div>`:'';
+  return `<article class="card${mixed?' card-mixed':''}${owned}">${openControl}<div class="art">${picture}</div>${mixed?`<div class="card-ctx"><span class="badge ip-badge">${e(gameLabel)}</span>${seriesMarkup}${versionMarkup}</div>`:''}<h3>${e(name(card))}</h3><div class="meta"><span class="card-no">${e(number)}</span><span class="card-sep"> · </span><span class="card-rarity" data-tier="${rarityTier(rarity)}">${rarityHtml}</span></div>${pricing}${flags?`<div class="card-flags">${flags}</div>`:''}${cardActionsMarkup(card)}</article>`;
 }
 
 function activateCardActions(root=$('cards')){
@@ -263,10 +286,10 @@ function activateCardActions(root=$('cards')){
 function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img src="/assets/brand/web/rabbit-offline.webp" alt="奔跑中的 CardScope 兔子" loading="lazy"><div><b>兔子還在尋找卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
 
 function renderCardRows(rows){
-  if(cardViewMode!=='rarity')return rows.length?rows.map(cardMarkup).join(''):renderCardEmpty();
+  if(cardGroupMode!=='rarity')return rows.length?rows.map(cardMarkup).join(''):renderCardEmpty();
   const groups=new Map();rows.forEach(card=>{const rarity=cardRarityLabel(card),gameLabel=cardGameLabel(card),key=`${card.game||'unknown'}\u0000${rarity}`;if(!groups.has(key))groups.set(key,{gameId:cardGameId(card)||'unknown',gameLabel,rarity,cards:[]});groups.get(key).cards.push(card)});
   const direction=cardFilters.sort==='rarity-asc'?'asc':'desc',gameOrder=new Map((window.CARD_GAMES||[]).map((item,index)=>[item.id,index])),ordered=[...groups.values()].sort((a,b)=>(gameOrder.get(a.gameId)??999)-(gameOrder.get(b.gameId)??999)||compareRarityLabels(a.gameId,a.rarity,b.rarity,direction));
-  return ordered.length?ordered.map(({gameId,gameLabel,rarity,cards:cardsForRarity},groupIndex)=>`<section class="rarity-group" aria-labelledby="rarity-${groupIndex}"><header><h3 id="rarity-${groupIndex}"><span>${e(gameLabel)}</span>｜<span>${rarityMarkup(rarity,gameId)||e(rarity)}</span></h3><span>${cardsForRarity.length.toLocaleString()} 張</span></header><div class="cards rarity-group-cards">${cardsForRarity.map(cardMarkup).join('')}</div></section>`).join(''):renderCardEmpty();
+  return ordered.length?ordered.map(({gameId,gameLabel,rarity,cards:cardsForRarity},groupIndex)=>`<section class="rarity-group" aria-labelledby="rarity-${groupIndex}"><header><h3 id="rarity-${groupIndex}"><span>${e(gameLabel)}</span>｜<span>${rarityMarkup(rarity,gameId)||e(rarity)}</span></h3><span>${cardsForRarity.length.toLocaleString()} 張</span></header><div class="cards rarity-group-cards${cardViewMode==='list'?' list-view':''}">${cardsForRarity.map(cardMarkup).join('')}</div></section>`).join(''):renderCardEmpty();
 }
 
 // ── 分頁標題 ──
@@ -276,6 +299,7 @@ let detailTitleInfo=null;
 function pageTitleFor(view){
   const v=view||{},text=value=>String(value??'').trim(),gameTitle=`${text(v.game)}卡牌圖鑑｜${TITLE_SITE}`;
   if(v.kind==='collection')return `我的收藏｜${TITLE_SITE}`;
+  if(v.kind==='market')return `卡牌參考價漲跌與時事｜${TITLE_SITE}`;
   if(v.kind==='about')return `資料收錄狀態｜${TITLE_SITE}`;
   if(v.kind==='privacy')return `隱私說明｜${TITLE_SITE}`;
   if(v.kind==='search'&&text(v.query))return `「${text(v.query)}」搜尋結果｜${TITLE_SITE}`;
@@ -290,8 +314,9 @@ function cardTitleParts(c,selected){
 }
 function currentTitleView(){
   const label=id=>G(id).nameZh||(window.CARD_GAMES||[]).find(item=>item.id===id)?.name||id;
-  if(document.getElementById('collectionDialog')?.open)return{kind:'collection'};
   if(detailTitleInfo&&$('modal')?.classList.contains('open'))return{kind:'card',...detailTitleInfo};
+  if(inCollectionView())return{kind:'collection'};
+  if(document.body?.dataset?.view==='market')return{kind:'market'};
   if(typeof activeSearch!=='undefined'&&activeSearch?.q)return{kind:'search',query:activeSearch.q};
   if(document.body?.dataset?.view==='about')return{kind:'about'};
   if(document.body?.dataset?.view==='privacy')return{kind:'privacy'};
@@ -334,27 +359,35 @@ cards=function(rows,keepSource=false){
   const shown=filteredCards(currentCardRows),host=$('cards');
   if(waiting&&!shown.length)return;
   
-  cardDisplayState='ready';host.classList.toggle('list-view',cardViewMode==='list');host.classList.toggle('rarity-view',cardViewMode==='rarity');drawViewButtons();
-  $('filterSummary').textContent=`目前載入 ${currentCardRows.length.toLocaleString()} 張，篩選後 ${shown.length.toLocaleString()} 張${favoritesOnly?'；目前只看我的收藏':''}${missingOnlyActive()?'；目前只看缺的卡':''}；${priceScopeNote()}`;
+  cardDisplayState='ready';wallMixed=wallIsMixed(currentCardRows);host.classList.toggle('list-view',cardViewMode==='list');host.classList.toggle('rarity-view',cardGroupMode==='rarity');drawViewButtons();
+  setFilterSummary(`目前載入 ${currentCardRows.length.toLocaleString()} 張，篩選後 ${shown.length.toLocaleString()} 張${favoritesOnly?'；目前只看我的收藏':''}${missingOnlyActive()?'；目前只看缺的卡':''}`);
   host.innerHTML=renderCardRows(shown);
   if(typeof primeCardImages==='function')primeCardImages(host.dataset.cardscopeGame||game,browse);
   activateCardActions(host);renderFavoritesControl();renderWatchlistSummary();renderSeriesProgress();syncPageTitle();
 };
 
 function renderFavoritesControl(){
-  const control=$('favoritesOnly');if(!control)return;
-  control.classList.toggle('on',favoritesOnly);control.setAttribute('aria-pressed',String(favoritesOnly));control.textContent=`只看我的收藏（${collectionIds().length}）`;
+  const current=missingOnlyActive()?'missing':favoritesOnly?'owned':'all';
+  document.querySelectorAll('#collectionState [data-coll-state]').forEach(button=>{const on=button.dataset.collState===current;button.classList.toggle('on',on);button.setAttribute('aria-pressed',String(on))});
+}
+// 收藏狀態一組三選一（全部／已收藏／還缺）。「已收藏」沿用既有的 cardscope-favorites-only；「還缺」只在系列頁、不記住（換系列就回到全部）。
+function setCollectionState(state){
+  favoritesOnly=state==='owned';missingOnly=state==='missing';if(missingOnly)missingOnlySeries=browse.seriesId;
+  uiLocal.set('cardscope-favorites-only',favoritesOnly?'1':'0');cards(currentCardRows,true);
 }
 
-// ☆ 與詳細頁的按鈕共用：未收藏 → 數量 1；已收藏 → 詢問後移除（品況、版本與備註會一併刪除）。回傳是否有變動。
+// ☆ 與詳細頁的按鈕共用：未收藏 → 數量 1；已收藏 → 取消。取消會一併刪掉品況、版本與備註，所以有這些資料、或一次要取消多張時先問；單張又沒填任何東西就直接取消（決定 10）。回傳是否有變動。
+const hasCollectionNotes=key=>{const meta=watchlistMeta[String(key)];return Boolean(meta&&(meta.condition||meta.finish||meta.note))};
 function toggleFavorite(id){
   const key=String(id),quantity=watchQuantity(key);
   if(!quantity){setWatchQuantity(key,1);return true}
-  const meta=watchlistMeta[key],title=meta?.v?name(meta):(renderedCards.get(key)?name(renderedCards.get(key)):key);
-  if(!confirm(`從「我的收藏」移除 ${title}（${quantity} 張）？品況、版本與備註也會一併刪除。`))return false;
+  if(quantity>1||hasCollectionNotes(key)){
+    const meta=watchlistMeta[key],title=meta?.v?name(meta):(renderedCards.get(key)?name(renderedCards.get(key)):key);
+    if(!confirm(`從「我的收藏」移除 ${title}（${quantity} 張）？品況、版本與備註也會一併刪除。`))return false;
+  }
   setWatchQuantity(key,0);return true;
 }
-// ± 按鈕：減到 0 等於移除，走同一個詢問。
+// ± 按鈕：減到 0 等於取消，走同一個判斷。
 function stepWatchQuantity(id,step){const key=String(id),next=watchQuantity(key)+step;if(next<1&&watchQuantity(key)>0)toggleFavorite(key);else if(next>=1)setWatchQuantity(key,next)}
 
 function showCollectionToast(){
@@ -367,7 +400,7 @@ function showCollectionToast(){
 function setWatchQuantity(id,quantity){
   const key=String(id),previous=watchQuantity(key),next=Math.max(0,Math.min(999,Number(quantity)||0));
   if(next)watchlist[key]=next;else delete watchlist[key];
-  touchMeta(key);persistCollection();cards(currentCardRows,true);renderDetailCollect();if(previous===0&&next>0)showCollectionToast();
+  touchMeta(key);persistCollection();repaintCollected(key,previous,next);if(previous===0&&next>0)showCollectionToast();
 }
 
 function watchlistEntries(){
@@ -377,6 +410,37 @@ function watchlistEntries(){
 function watchlistTotals(){
   const totals=new Map();watchlistEntries().forEach(({card,quantity})=>{if(!card||card.__watchlistSnapshot)return;const price=priceFor(card),amount=price&&Number(price.price),currency=price&&String(price.currency||'').trim();if(!Number.isFinite(amount)||!currency)return;totals.set(currency,(totals.get(currency)||0)+amount*quantity)});return totals;
 }
+// 收藏數量變動後只重畫動到的那張卡的收藏區（B7：整片重繪會讓圖片閃一下、鍵盤焦點掉光）。
+// 只有開著「已收藏／還缺」篩選、而且這張卡進出了牆面時，才整片重繪。
+function repaintCollected(key,previous,next){
+  // 收藏頁：卡進出牆（0 ↔ 1）要重畫整面牆與側欄；其餘只重畫那一張，再更新摘要。
+  if(inCollectionView()){
+    if(previous===0||next===0){renderCollectionPage();renderDetailCollect();return}
+    refreshCardCollect(key,next);refreshCollectionValue();renderDetailCollect();return;
+  }
+  if((favoritesOnly||missingOnlyActive())&&(previous===0||next===0)){cards(currentCardRows,true);renderDetailCollect();return}
+  refreshCardCollect(key,next);renderFavoritesControl();renderWatchlistSummary();renderSeriesProgress();renderDetailCollect();
+}
+// 同一張卡在牆上可能出現不只一處（清單、分組），逐一處理；焦點在被換掉的按鈕上時，換完放回同一個位置。
+function refreshCardCollect(key,next){
+  const boxes=[...(document.querySelectorAll?.('#cards .card-actions')||[])].filter(box=>box.dataset.cardKey===key);
+  if(!boxes.length)return;
+  const card=renderedCards.get(key);if(!card){cards(currentCardRows,true);return}
+  for(const box of boxes){
+    const active=box.contains(document.activeElement)?document.activeElement:null,role=active?(active.hasAttribute('data-watch-decrement')?'[data-watch-decrement]':'[data-watch-increment]'):'';
+    box.insertAdjacentHTML('afterend',cardActionsMarkup(card));const fresh=box.nextElementSibling,article=box.closest('.card');box.remove();
+    article?.classList.toggle('is-owned',next>0);activateCardActions(article||fresh.parentElement);
+    if(active)(next>0?fresh.querySelector(role):fresh.querySelector('[data-favorite-id]'))?.focus({preventScroll:true});
+  }
+  announceCollect(`${name(card)}：${next>0?`已收藏 ${next} 張`:'已取消收藏'}`);
+}
+// 螢幕閱讀器：按鈕被換掉後 aria-live 不會報，所以用一個固定的隱藏播報區。
+function announceCollect(text){
+  let live=document.getElementById('collectLive');
+  if(!live){live=document.createElement('div');live.id='collectLive';live.className='sr-only';live.setAttribute('role','status');live.setAttribute('aria-live','polite');document.body.append(live)}
+  live.textContent=text;
+}
+
 
 // 「我的收藏」= 數量 > 0 的卡；款數與總張數在網格、摘要與收藏視窗用同一組函式。
 function collectionIds(){return Object.keys(watchlist).filter(id=>watchQuantity(id)>0)}
@@ -399,17 +463,20 @@ function seriesProgressState(){
 }
 const progressBar=(p,label)=>`<div class="series-progress-bar" role="progressbar" aria-label="${e(label)}" aria-valuemin="0" aria-valuemax="${p.total}" aria-valuenow="${p.owned}"><i style="width:${p.percent}%"></i></div>`;
 function renderSeriesProgress(){
-  const host=$('seriesProgress');if(!host)return;
-  const p=seriesProgressState();
+  const host=$('seriesProgress'),missingButton=$('missingOnly');
+  const p=host||missingButton?seriesProgressState():null;
+  // 「還缺」是收藏狀態那一組的第三顆：只有系列頁（算得出進度）才出現
+  if(missingButton){missingButton.hidden=!p;if(p)missingButton.textContent=`還缺 ${p.missing}`}
+  if(!host)return;
   if(!p){host.hidden=true;host.innerHTML='';return}
-  const active=missingOnlyActive();
   host.hidden=false;
-  host.innerHTML=`<div class="series-progress-row"><b>集卡進度</b><span>已收藏 ${p.owned} / 共 ${p.total} 張（${p.percent}%）</span><button type="button" id="missingOnly" class="favorites-filter${active?' on':''}" aria-pressed="${active}">只看缺的卡（${p.missing}）</button></div>${progressBar(p,'本系列集卡進度')}${active&&p.hasMore?'<small class="meta">只篩選已載入的卡；還有卡沒載入，按「載入更多卡片」才會看到其餘缺的卡。</small>':''}`;
+  host.innerHTML=`<span class="series-progress-text">已收藏 ${p.owned}／共 ${p.total} 張</span>${progressBar(p,'本系列集卡進度')}${missingOnlyActive()&&p.hasMore?'<small class="meta">只篩選已載入的卡；還有卡沒載入，按「載入更多卡片」才會看到其餘缺的卡。</small>':''}`;
 }
 function renderWatchlistSummary(){
   const host=$('watchlistSummary');if(!host)return;
   const entries=watchlistEntries(),totals=watchlistTotals(),verified=[...totals].map(([currency,amount])=>`${e(currency)} ${amount.toLocaleString()}`).join(' ／ ');
-  host.innerHTML=`<div><b>我的收藏</b><span> 共 ${collectionTotal()} 張</span><small>僅儲存在此裝置，不會送出採購或販售。</small>${verified?`<em>已驗證總價：${verified}</em>`:game==='pokemon'?'<em>收購價總計：寶可夢沒有店家收購資料，參考價見「我的收藏」</em>':'<em>已驗證總價：目前沒有可加總的價格</em>'}</div><button type="button" id="downloadWatchlist"${entries.length?'':' disabled'}>下載清單 CSV</button>`;
+  const total=verified?`已驗證總價：${verified}`:game==='pokemon'?'收購價總計：寶可夢沒有店家收購資料，參考價見「我的收藏」':'已驗證總價：目前沒有可加總的價格';
+  host.innerHTML=`<span class="wl-count"><b>我的收藏</b> 共 ${collectionTotal()} 張</span>${tipMarkup('我的收藏的儲存方式與總價',`<p>僅儲存在此裝置，不會送出採購或販售。</p><p>${total}</p>`)}<button type="button" id="downloadWatchlist" title="下載清單 CSV"${entries.length?'':' disabled'}>下載 CSV</button>`;
   const button=$('downloadWatchlist');if(button)button.onclick=downloadWatchlistCsv;
 }
 
@@ -422,10 +489,12 @@ function downloadWatchlistCsv(){
 }
 
 function installCardUtilities(){
-  const tools=$('cardTools');if(!tools||$('favoritesOnly'))return;
-  const favoriteButton=document.createElement('button');favoriteButton.type='button';favoriteButton.id='favoritesOnly';favoriteButton.className='favorites-filter';favoriteButton.setAttribute('aria-pressed',String(favoritesOnly));favoriteButton.onclick=()=>{favoritesOnly=!favoritesOnly;uiLocal.set('cardscope-favorites-only',favoritesOnly?'1':'0');cards(currentCardRows,true)};
-  const summary=document.createElement('div');summary.id='watchlistSummary';summary.className='watchlist-summary';const progress=document.createElement('div');progress.id='seriesProgress';progress.className='series-progress';progress.hidden=true;progress.onclick=event=>{if(!event.target.closest('#missingOnly'))return;missingOnly=!missingOnlyActive();missingOnlySeries=browse.seriesId;cards(currentCardRows,true)};
-  tools.append(favoriteButton,summary,progress);renderFavoritesControl();renderWatchlistSummary();renderSeriesProgress();
+  const tools=$('cardTools');if(!tools||$('collectionState'))return;
+  const state=document.createElement('div');state.id='collectionState';state.className='view-switch collection-state';state.setAttribute('role','group');state.setAttribute('aria-label','收藏狀態');
+  state.innerHTML='<button type="button" data-coll-state="all" aria-pressed="true">全部</button><button type="button" id="favoritesOnly" data-coll-state="owned" aria-pressed="false">已收藏</button><button type="button" id="missingOnly" data-coll-state="missing" aria-pressed="false" hidden>還缺</button>';
+  state.onclick=event=>{const button=event.target.closest('[data-coll-state]');if(button)setCollectionState(button.dataset.collState)};
+  const summary=document.createElement('div');summary.id='watchlistSummary';summary.className='watchlist-summary';const progress=document.createElement('div');progress.id='seriesProgress';progress.className='series-progress';progress.hidden=true;
+  ($('cardControls')||tools).append(state);tools.append(summary,progress);renderFavoritesControl();renderWatchlistSummary();renderSeriesProgress();
 }
 
 function cardTextBlock(card){
@@ -586,10 +655,7 @@ function openCardZoom(source,alt,options={}){
 }
 
 function activateDetailInteractions(){
-  document.querySelectorAll('[data-detail-tab]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-detail-tab]').forEach(x=>{const on=x===button;x.classList.toggle('on',on);x.setAttribute('aria-selected',String(on));x.tabIndex=on?0:-1});document.querySelectorAll('[data-detail-panel]').forEach(panel=>panel.hidden=panel.dataset.detailPanel!==button.dataset.detailTab)});
-  document.querySelectorAll('.detail-tabs[role="tablist"]').forEach(list=>list.onkeydown=event=>{const tabs=[...list.querySelectorAll('[role="tab"]')].filter(tab=>!tab.hidden),index=tabs.indexOf(document.activeElement),last=tabs.length-1,next={ArrowRight:index>=last?0:index+1,ArrowLeft:index<=0?last:index-1,Home:0,End:last}[event.key];if(index<0||next===undefined)return;event.preventDefault();tabs[next].focus();tabs[next].click()});
   document.querySelectorAll('[data-text-mode]').forEach(button=>button.onclick=()=>{document.querySelectorAll('[data-text-mode]').forEach(x=>x.classList.toggle('on',x===button));document.querySelectorAll('[data-text-panel]').forEach(panel=>panel.hidden=panel.dataset.textPanel!==button.dataset.textMode)});
-  document.querySelectorAll('[data-card-step]').forEach(button=>button.onclick=()=>openAdjacentCard(Number(button.dataset.cardStep)));
   document.querySelectorAll('.tilt-card').forEach(tilt=>{
     const surface=tilt.querySelector('.tilt-card-surface');
     const reset=()=>{surface.style.setProperty('--tilt-x','0deg');surface.style.setProperty('--tilt-y','0deg');surface.style.setProperty('--shine-opacity','0')};
@@ -600,7 +666,7 @@ function activateDetailInteractions(){
 }
 
 function detailRows(){const rows=filteredCards(currentCardRows||[]);return rows.length?rows:(currentCardRows||[])}
-function openAdjacentCard(step){const rows=detailRows(),index=rows.findIndex(card=>String(cardOpenId(card))===String(activeDetailCardId));if(index<0||rows.length<2)return;openCard(cardOpenId(rows[(index+step+rows.length)%rows.length]))}
+function openAdjacentCard(step){const rows=detailRows(),index=rows.findIndex(card=>String(cardOpenId(card))===String(activeDetailCardId));if(index<0||rows.length<2)return;const next=cardOpenId(rows[(index+step+rows.length)%rows.length]);detailTile(next)?.scrollIntoView({block:'nearest',inline:'nearest'});openCard(next)}
 
 // ADR 0044 Q10：資料來源 id 轉成人看得懂的名稱（名稱對照 data/source-registry.json；未知 id 照原樣顯示）。
 const DETAIL_SOURCE_NAMES={'pokemon-card-official-jp':'日本官方卡片搜尋','pokemon-jp':'日本官方卡片搜尋','pokemon-tw-official':'台灣官方卡片搜尋','pokemon-tw':'台灣官方卡片搜尋','asia-pokemon-card-official-tw':'台灣官方卡片搜尋',tcgdex:'TCGdex','tcgdex-ja':'TCGdex','tcgdex-zh-tw':'TCGdex','tcgdex-zh-hant-tw':'TCGdex',pokemontcg:'PokemonTCG',ygoprodeck:'YGOPRODeck','cardscope-yugioh-cache':'YGOPRODeck','yugioh-official-us':'遊戲王美國官方卡片資料庫','yugioh-neuron':'遊戲王官方 Neuron 資料庫','onepiece-official':'ONE PIECE 官方卡表','onepiece-official-p':'ONE PIECE 官方卡表','onepiece-official-runtime':'ONE PIECE 官方卡表','onepiece-official-tw':'ONE PIECE 台灣官方卡表','onepiece-official-tw-p':'ONE PIECE 台灣官方卡表','onepiece-tw':'ONE PIECE 台灣官方卡表','optcg-api':'OPTCG API','weiss-schwarz-official':'Weiß Schwarz 官方卡表','haikyu-official':'排球少年卡牌官方卡表'};
@@ -616,15 +682,21 @@ function detailInfoMeta(c,ps,selected){
     sources=[...new Set([...ps.map(p=>p.source),c.source].filter(Boolean).map(id=>DETAIL_SOURCE_NAMES[id]||id))],link=/^https:\/\//.test(selected?.sourceUrl||'')?` <a href="${e(selected.sourceUrl)}" target="_blank" rel="noopener noreferrer">原始頁面</a>`:'',updated=ps.map(p=>p.updatedAt).filter(Boolean).map(String).sort().at(-1);
   return `<section class="dpanel dpanel-source"><h3 class="dpanel-title">系列與來源</h3><dl class="card-identity detail-meta"><div><dt>系列</dt><dd>${seriesName?`${e(seriesName)}${tags?`（${e(tags)}）`:''}`:`系列待補${tags?`（${e(tags)}）`:''}`}</dd></div><div><dt>資料來源</dt><dd>${sources.length?e(sources.join('、')):'來源待補'}${link}</dd></div>${updated?`<div><dt>更新時間</dt><dd><time datetime="${e(updated)}">${e(updated.slice(0,10))}</time></dd></div>`:''}</dl></section>`;
 }
-// 分頁：資訊／價格（走勢在價格分頁內）。使用者回報的送出 API 已在 10-28 刪除，分頁與面板一併拿掉。
-const DETAIL_TABS=[['info','資訊'],['market','價格']];
-function detailTabsMarkup(){return `<div class="detail-tabs" role="tablist" aria-label="卡片資訊分頁">${DETAIL_TABS.map(([key,label],index)=>`<button type="button" role="tab" id="detail-tab-${key}" class="${index?'':'on'}" data-detail-tab="${key}" aria-selected="${index===0}" aria-controls="detail-panel-${key}" tabindex="${index?-1:0}">${label}</button>`).join('')}</div>`}
-function detailPanel(key,hidden,body){return `<section role="tabpanel" id="detail-panel-${key}" aria-labelledby="detail-tab-${key}" tabindex="0" data-detail-panel="${key}"${hidden?' hidden':''}>${body}</section>`}
+// ADR 0042／0044：參考價走勢不拖慢詳細頁開啟。階段 4 起沒有分頁，價格區塊一直排在資訊下面：走勢區塊捲進視窗（或按頂端的「價格」）才請求（price-timeline.js）。
+function bindPriceTrend(gameId,market,card){
+  const slot=document.querySelector('#detail [data-price-trend]');if(!slot||!window.PriceTimeline)return;
+  const load=()=>{
+    if(slot.dataset.loaded)return;slot.dataset.loaded='1';
+    if(gameId==='pokemon'||gameId?.id==='pokemon')window.PriceTimeline.loadGraded?.(document.querySelector('#detail [data-graded-prices]'),{market,card});
+    const art=document.querySelector('#detail .detail-art img');window.PriceTimeline.load(slot,{market,cardNumber:card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||'',details:document.querySelector('#detail .ptl-details'),shared:market?.meta?.sharedPriceCardIds?.length>0,image:art?.currentSrc||art?.src||'',cards:art?[art]:[],regionLabel:region=>region?rn(region,gameId):'',variantLabel:variant=>typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variant]||variant})
+  };
+  if(typeof IntersectionObserver!=='function')return load();
+  const watch=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){watch.disconnect();load()}},{rootMargin:'300px 0px'});
+  // 看外面的區塊而不是空的 slot：index.html 的 .price-trend:empty 是 display:none，沒有盒子的元素 IntersectionObserver 永遠不回報。
+  watch.observe(slot.closest('.dpanel-trend')||slot);
+}
 
-// ADR 0042／0044：參考價走勢只在使用者打開「價格」分頁時才請求（price-timeline.js），不拖慢詳細頁開啟。
-function bindPriceTrend(gameId,market,card){const slot=document.querySelector('#detail [data-price-trend]'),tab=document.querySelector('#detail [data-detail-tab="market"]');if(!slot||!tab||!window.PriceTimeline)return;tab.addEventListener('click',()=>{if(gameId==='pokemon'||gameId?.id==='pokemon')window.PriceTimeline.loadGraded?.(document.querySelector('#detail [data-graded-prices]'),{market,card});const art=document.querySelector('#detail .detail-art img');window.PriceTimeline.load(slot,{market,cardNumber:card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||'',details:document.querySelector('#detail .ptl-details'),shared:market?.meta?.sharedPriceCardIds?.length>0,image:art?.currentSrc||art?.src||'',cards:art?[art]:[],regionLabel:region=>region?rn(region,gameId):'',variantLabel:variant=>typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variant]||variant})})}
-
-// 價格分頁的跨版本對照表（server 的 market 回應 versions）：一個版本（printing）一組，只並列各版本自己的價格——不排名、不算最便宜、不加總，來源／價格種類／variant 不同的各佔一列。
+// 價格區塊的跨版本對照表（server 的 market 回應 versions）：一個版本（printing）一組，只並列各版本自己的價格——不排名、不算最便宜、不加總，來源／價格種類／variant 不同的各佔一列。
 // 沒有價格的版本照實寫「目前沒有可靠價格」；只有一個版本時不畫表（和收錄版本列重複）。表格在窄螢幕於自己的容器內橫向捲動，頁面不橫向溢出。
 function versionPriceTable(market,gameId,selectedCardId){
   const versions=Array.isArray(market?.versions)?market.versions:[];if(versions.length<2)return '';
@@ -637,7 +709,7 @@ function versionPriceTable(market,gameId,selectedCardId){
     if(!version.prices?.length)return `<tr>${label}<td colspan="5" class="vp-none">${typeof noPriceSource==='function'&&noPriceSource(gameId)?'尚未接入價格來源':'目前沒有參考價'}</td></tr>`;
     return version.prices.map((price,index)=>`<tr>${index?`<th scope="row" class="vp-same"><span class="sr-only">${e(rn(version.region,gameId))}</span></th>`:label}<td>${e(price.source)}${price.origin==='snapshot'?' <small>每日快照</small>':''}</td><td>${e(types[price.priceType]||price.priceType)}${price.variant?` <small>${e(variantName(price.variant))}</small>`:''}</td><td>${amount(price.amount,price.currency)}</td><td>${twd(price.amountTwd)}</td><td>${seen(price.observedAt)}</td></tr>`).join('');
   }).join('');
-  return `<section class="dpanel dpanel-prices"><h4 class="dpanel-title">各版本價格對照</h4><p class="meta">只並列各版本自己的價格，不判斷哪裡比較便宜；來源、價格種類與版本不同的價格不合併，新台幣為換算參考。</p><div class="version-prices" role="region" aria-label="各版本價格對照，可左右捲動" tabindex="0"><table class="version-price-table"><thead><tr><th scope="col">版本</th><th scope="col">來源</th><th scope="col">價格種類</th><th scope="col">原幣</th><th scope="col">新台幣</th><th scope="col">更新日期</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+  return `<section class="dpanel dpanel-prices"><h4 class="dpanel-title">各版本價格對照</h4>${tipMarkup('各版本價格對照的規則','<p>只並列各版本自己的價格，不判斷哪裡比較便宜；來源、價格種類與版本不同的價格不合併，新台幣為換算參考。</p>')}<div class="version-prices" role="region" aria-label="各版本價格對照，可左右捲動" tabindex="0"><table class="version-price-table"><thead><tr><th scope="col">版本</th><th scope="col">來源</th><th scope="col">價格種類</th><th scope="col">原幣</th><th scope="col">新台幣</th><th scope="col">更新日期</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
 }
 
 // 收錄版本列：平行卡（圖片網址或卡 ID 帶 _p1／_r2）標「異圖 N」；航海王台灣版是日文印刷，語言顯示日文（只改顯示）；遊戲王卡號顯示印刷編號，密碼放次要資訊。
@@ -649,147 +721,100 @@ function renderDetailCollect(){
   const slot=document.querySelector('#detail [data-detail-collect]');if(!slot)return;
   const key=slot.dataset.detailCollect,quantity=watchQuantity(key),focused=slot.contains(document.activeElement)?document.activeElement.dataset.collectAct:'';
   slot.innerHTML=quantity?`<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="true" title="已收藏，按一下移除">★ 已收藏 ×${quantity}</button><span class="detail-collect-step" role="group" aria-label="收藏張數"><button type="button" data-collect-act="dec" aria-label="減少數量">−</button><button type="button" data-collect-act="inc" aria-label="增加數量">＋</button></span>`:'<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</button>';
+  if(quantity)slot.innerHTML+=collectionEditorHtml(key);
+  slot.oninput=event=>{if(event.target.dataset?.collField)onCollectionField(event.target,key)};
+  slot.onchange=event=>{const pick=event.target.dataset?.collPick;if(pick&&event.target.value)chooseCollectionVersion(pick,event.target.value)};
   slot.onclick=event=>{const act=event.target.closest('[data-collect-act]')?.dataset.collectAct;if(act==='toggle')toggleFavorite(key);else if(act==='dec')stepWatchQuantity(key,-1);else if(act==='inc')stepWatchQuantity(key,1)};
   if(focused)(slot.querySelector(`[data-collect-act="${focused}"]`)||slot.querySelector('[data-collect-act="toggle"]'))?.focus();
 }
 
+// ── 詳細資料（REDESIGN_PLAN 階段 4）：桌機 ≥1000px 是右側側板（卡牆仍可看、可捲、可點），其餘寬度是全螢幕一頁 ──
+const panelQuery=typeof matchMedia==='function'?matchMedia('(min-width:1000px)'):null;
+window.detailMode=()=>panelQuery?.matches?'panel':'page';
+// 側板不鎖整頁（沒有 aria-modal）；全螢幕才是真的對話框
+function syncDetailMode(){
+  const modal=$('modal');if(!modal)return;
+  const panel=window.detailMode()==='panel';modal.dataset.mode=panel?'panel':'page';
+  for(const node of [modal,modal.querySelector('.dialog')])if(node){if(panel)node.removeAttribute('aria-modal');else node.setAttribute('aria-modal','true')}
+}
+panelQuery?.addEventListener?.('change',syncDetailMode);
+const detailTile=id=>{const hit=[...document.querySelectorAll('#cards .card-open-hit')].find(item=>item.dataset.cardOpen===String(id));return hit?.closest('.card')||hit||null};
+// 側板開關會讓卡牆變窄（6→4 欄）、卡換行：改變前後量同一張卡的位置，把差距捲回去，使用者正在看的那張不會跳走。
+function holdPlace(id,change){
+  const tile=id==null?null:detailTile(id),rect=tile?.getBoundingClientRect(),visible=Boolean(rect&&rect.bottom>0&&rect.top<window.innerHeight),before=visible?rect.top:0;
+  change();
+  if(visible&&tile.isConnected){const delta=tile.getBoundingClientRect().top-before;if(Math.abs(delta)>1)window.scrollBy({top:delta,behavior:'instant'})}
+}
+// 卡牆上標出現在開著的那張（aria-current）；上一張／下一張的位置與可用狀態跟著卡牆走
+function syncWall(){
+  const active=activeDetailCardId==null?'':String(activeDetailCardId);
+  document.querySelectorAll('#cards .card-open-hit').forEach(hit=>{if(active&&hit.dataset.cardOpen===active)hit.setAttribute('aria-current','true');else hit.removeAttribute('aria-current')});
+  const rows=detailRows(),index=active?rows.findIndex(card=>String(cardOpenId(card))===active):-1,position=$('detailPos'),jump=document.querySelector('#modal [data-detail-jump]');
+  if(position)position.textContent=index>=0?`${index+1} / ${rows.length}`:'';
+  document.querySelectorAll('#modal [data-card-step]').forEach(button=>{button.disabled=!(index>=0&&rows.length>1)});
+  if(jump)jump.disabled=!$('detailPriceTitle');
+}
+// 唯一的關閉入口（Esc、關閉鈕、返回、站內連結都走這裡）：作廢還在路上的請求，關閉前後同樣守住卡牆的位置
+window.closeCardDetail=function(){
+  holdPlace(activeDetailCardId,()=>{$('modal').classList.remove('open')});
+  detailRequestVersion++;activeDetailCardId=null;syncWall();
+};
+function jumpToPrice(){
+  const title=$('detailPriceTitle');if(!title)return;
+  title.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.hasAttribute('data-cs-paused')?'auto':'smooth'});
+  title.focus({preventScroll:true});
+}
+// 方向鍵換卡：側板常駐，所以只有焦點在側板、卡牆或沒有焦點時才換；搜尋框、側欄、工具列、選單、滑桿的方向鍵是它們自己的。
+function canStepWithKey(event){
+  const target=event.target;
+  if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return false;
+  if(target?.closest?.('input,select,textarea,[contenteditable="true"],[contenteditable=""],[role="combobox"],[role="listbox"],[role="slider"],[role="tab"],[role="radio"],[role="menu"]'))return false;
+  if(window.detailMode()!=='panel')return true;
+  return !target||target===document.body||target===document.documentElement||Boolean(target.closest?.('#modal,#cards'));
+}
+// 先畫卡牆已有的資料（卡名、卡號、稀有度、卡圖）；沒有對應的卡牆資料（網址直開、搜尋建議）就畫骨架
+function detailPreviewRow(id){return [...(currentCardRows||[]),...(typeof C!=='undefined'&&C?.cards||[])].find(card=>String(cardOpenId(card))===String(id)||String(card.id)===String(id))||null}
+function detailPreviewMarkup(card){
+  const sources=cardImageSourceCandidates(card),url=sources[0]||image(card),picture=resilientImage(url,name(card),'這張卡尚未收錄可公開顯示的圖片',{...cardWatermarkOptions(card,url),fallbacks:[...sources,...(card.fallbackImageUrls||[])]});
+  return `<div class="detail detail-flow detail-preview" data-ip="${e(cardGameId(card))}"><div class="detail-visual"><div class="detail-visual-stage"><div class="detail-art">${picture}</div></div><h2>${e(name(card))}</h2><dl class="card-identity"><div><dt>卡號</dt><dd>${e(cardNumberLabel(card))}</dd></div><div><dt>稀有度</dt><dd>${cardRarityMarkup(card)}</dd></div></dl></div><div class="detail-flow-main"><div class="dsk dsk-flow" aria-busy="true"><span class="sr-only" role="status">正在載入卡片資料…</span><div class="dsk-text" aria-hidden="true"><span class="dsk-line s"></span><span class="dsk-line m"></span><span class="dsk-line m"></span><span class="dsk-line s"></span></div></div></div></div>`;
+}
+const detailPainted=phase=>{syncWall();if(typeof CustomEvent==='function')document.dispatchEvent?.(new CustomEvent('cardscope:detail',{detail:{phase}}))};
+
+// 三段畫：①點下去立刻畫卡牆已有的資料；②卡片 API 回來後補上版本、系列、卡面文字（價格區塊標 aria-busy）；③市場資料回來後只填價格區塊。每一段回來都先確認還是現在要看的那張卡（stale），不是就丟掉。
 openCard=async function(id,options={}){
   // A slower earlier answer must not paint over the card clicked last (and leave the URL, position and shown card disagreeing).
-  const version=++detailRequestVersion,stale=()=>version!==detailRequestVersion,refocus=Boolean(options.keepPosition&&document.activeElement?.closest?.('#detail [data-version-card]'));
-  if(!options.keepPosition){activeDetailCardId=id;detailReturnCardId=id}if(!options.keepPosition)detailTitleInfo=null;$('modal').classList.add('open');
+  const version=++detailRequestVersion,stale=()=>version!==detailRequestVersion,box=$('detail'),refocus=Boolean(options.keepPosition&&document.activeElement?.closest?.('#detail [data-version-card]'));
+  if(!options.keepPosition){activeDetailCardId=id;detailReturnCardId=id}if(!options.keepPosition)detailTitleInfo=null;
+  if(!$('modal').classList.contains('open'))holdPlace(id,()=>$('modal').classList.add('open'));
   // 換版本時保留目前內容、只標記忙碌（變淡），不閃回骨架；新內容換上或失敗時拿掉
-  if(options.keepPosition&&$('detail').querySelector('.detail'))$('detail').setAttribute('aria-busy','true');else{$('detail').removeAttribute('aria-busy');$('detail').textContent='正在載入…'}
+  if(options.keepPosition&&box.querySelector('.detail'))box.setAttribute('aria-busy','true');
+  else{box.removeAttribute('aria-busy');const row=detailPreviewRow(id);box.innerHTML=row?detailPreviewMarkup(row):typeof detailSkeleton==='function'?detailSkeleton():'正在載入…';detailPainted('preview')}
   try{
     const cr=await fetch('/api/cards/'+encodeURIComponent(id)+'?open=1'),cb=await cr.json();
     if(stale())return;
     if(!cr.ok)throw Error(cb.error);
-    const [marketResult]=await Promise.allSettled([fetch('/api/cards/'+encodeURIComponent(id)+'/market')]),marketResponse=marketResult.status==='fulfilled'?marketResult.value:null,mb=marketResponse?.ok?await marketResponse.json().catch(()=>({data:{records:[],meta:{}}})):{data:{records:[],meta:{warning:'行情服務暫時無法回應；卡片資料仍可正常查看。'}}},c=cb.data,m=mb.data||{records:[],meta:{}};
-    if(stale())return;
-    const ps=c.printings||[],ref=ps.find(p=>p.region==='JP')||ps.find(p=>p.region==='TW')||ps.find(p=>p.region==='US')||ps.find(p=>p.region==='KR')||ps[0],selectedPrinting=ps.find(p=>p.cardId&&String(p.cardId)===String(id))||ps.find(p=>c.referencePrintingId&&String(p.id??p.cardId)===String(c.referencePrintingId))||ps.find(p=>p.region===c.region&&p.language===c.language)||ref,versions=versionOrder(ps).map(p=>{const diff=[];if(ref&&p!==ref&&p.localCardNumber&&p.localCardNumber!==ref.localCardNumber)diff.push('卡號不同');if(ref&&p!==ref&&p.rarity&&ref.rarity&&p.rarity!==ref.rarity)diff.push('稀有度不同');const switchable=p!==selectedPrinting&&p.cardId&&String(p.cardId)!==String(selectedPrinting?.cardId),body=`<b>${e(rn(p.region,c.game))}</b>${p===selectedPrinting?' · <span class="badge">目前顯示</span>':''} · ${e(printingLanguage(p,cardGameId(c)))} · ${e(setCodeText(p.localSetCode)||'系列未標示')} · ${e(p.localCardNumber)}${parallelLabel(p,cardGameId(c))?` · <span class="badge">${e(parallelLabel(p,cardGameId(c)))}</span>`:''}${p.rarity?` · ${rarityMarkup(p.rarity,cardGameId(c))}`:''}${p.metadata?.variantName?` · ${e(p.metadata.variantName)}`:''}${diff.length?`<br><span class="meta">版本差異：${e(diff.join('、'))}</span>`:''}${switchable?'<br><span class="meta">點擊查看此版本的卡圖</span>':''}`;return switchable?`<button type="button" class="state version-switch" data-version-card="${e(p.cardId)}">${body}</button>`:`<div class="state${p===selectedPrinting?' is-current':''}"${p===selectedPrinting?' aria-current="true"':''}>${body}</div>`}).join(''),markets=m.records?.length?m.records.map(r=>`<div class="market"><b>${e(r.provider)}</b> · ${e(r.priceType)} · ${e(r.currency)} ${Number(r.amount).toLocaleString()}</div>`).join(''):'<div class="state">目前沒有可靠對應價格，不以假價格補空白。</div>';
-    const detailImageSources=cardImageSourceCandidates(c,selectedPrinting),detailImageUrl=detailImageSources[0]||image(c),detailSet=detailRows(),detailIndex=detailSet.findIndex(card=>String(cardOpenId(card))===String(activeDetailCardId)),position=detailIndex>=0?`${detailIndex+1} / ${detailSet.length}`:'',zhPart=zhParts(c.nameZh),zhName=zhPart.name||'中文名稱待補',gid=cardGameId(c),rarities=[...new Set([c.rarity,...ps.map(p=>p.rarity)].filter(Boolean).map(rarityText).map(value=>rarityMarkup(value,gid,true)))].join('、')||'稀有度待補';
+    const c=cb.data;
+    const ps=c.printings||[],ref=ps.find(p=>p.region==='JP')||ps.find(p=>p.region==='TW')||ps.find(p=>p.region==='US')||ps.find(p=>p.region==='KR')||ps[0],selectedPrinting=ps.find(p=>p.cardId&&String(p.cardId)===String(id))||ps.find(p=>c.referencePrintingId&&String(p.id??p.cardId)===String(c.referencePrintingId))||ps.find(p=>p.region===c.region&&p.language===c.language)||ref,versions=versionOrder(ps).map(p=>{const diff=[];if(ref&&p!==ref&&p.localCardNumber&&p.localCardNumber!==ref.localCardNumber)diff.push('卡號不同');if(ref&&p!==ref&&p.rarity&&ref.rarity&&p.rarity!==ref.rarity)diff.push('稀有度不同');const switchable=p!==selectedPrinting&&p.cardId&&String(p.cardId)!==String(selectedPrinting?.cardId),body=`<b>${e(rn(p.region,c.game))}</b>${p===selectedPrinting?' · <span class="badge">目前顯示</span>':''} · ${e(printingLanguage(p,cardGameId(c)))} · ${e(setCodeText(p.localSetCode)||'系列未標示')} · ${e(p.localCardNumber)}${parallelLabel(p,cardGameId(c))?` · <span class="badge">${e(parallelLabel(p,cardGameId(c)))}</span>`:''}${p.rarity?` · ${rarityMarkup(p.rarity,cardGameId(c))}`:''}${p.metadata?.variantName?` · ${e(p.metadata.variantName)}`:''}${diff.length?`<br><span class="meta">版本差異：${e(diff.join('、'))}</span>`:''}${switchable?'<br><span class="meta">點擊查看此版本的卡圖</span>':''}`;return switchable?`<button type="button" class="state version-switch" data-version-card="${e(p.cardId)}">${body}</button>`:`<div class="state${p===selectedPrinting?' is-current':''}"${p===selectedPrinting?' aria-current="true"':''}>${body}</div>`}).join('');
+    const detailImageSources=cardImageSourceCandidates(c,selectedPrinting),detailImageUrl=detailImageSources[0]||image(c),zhPart=zhParts(c.nameZh),zhName=zhPart.name||'中文名稱待補',gid=cardGameId(c),rarities=[...new Set([c.rarity,...ps.map(p=>p.rarity)].filter(Boolean).map(rarityText).map(value=>rarityMarkup(value,gid,true)))].join('、')||'稀有度待補';
     const collectKey=[selectedPrinting?.cardId,id,c.id].filter(Boolean).map(String).find(key=>watchQuantity(key)>0)||String(selectedPrinting?.cardId||id),watermarkOptions=cardWatermarkOptions(c,detailImageUrl),zoomSourceAttribute=detailImageSources.length?`data-card-zoom-src="${e(detailImageSources[0])}" data-card-zoom-sources="${e(JSON.stringify(detailImageSources))}" data-card-zoom-alt="${e(name(c))}" data-card-embedded-sample="${watermarkOptions.embeddedSample?'1':'0'}" data-card-suppress-sample="${watermarkOptions.suppressOverlay?'1':'0'}"`:'';
     detailTitleInfo=cardTitleParts(c,selectedPrinting);syncPageTitle();const crumbSeries=printingSeries(c,selectedPrinting),detailCrumbs=crumbsMarkup([...crumbTrail(gid,crumbSeries?.region||selectedPrinting?.region,crumbSeries),{label:name(c)}]);
-    $('detail').removeAttribute('aria-busy');$('detail').innerHTML=`${detailCrumbs}<div class="detail detail-tabs-layout" data-ip="${e(gid)}"><div class="detail-visual"><div class="detail-visual-stage"><button class="detail-nav detail-prev" data-card-step="-1" aria-label="上一張卡" title="上一張卡">&#8592;</button><div class="detail-art tilt-card" tabindex="0" ${zoomSourceAttribute} aria-label="${detailImageUrl?'點擊放大卡圖；移動游標可傾斜查看':'卡片圖片待補'}"><div class="tilt-card-surface">${resilientImage(detailImageUrl,name(c),'這張卡尚未收錄可公開顯示的圖片',{...watermarkOptions,fallbacks:[...detailImageSources,...(c.fallbackImageUrls||[])]})}<span class="tilt-shine" aria-hidden="true"></span></div></div><button class="detail-nav detail-next" data-card-step="1" aria-label="下一張卡" title="下一張卡">&#8594;</button></div><div class="detail-position"><span>${e(position)}</span><small>${detailImageUrl?'點擊卡圖可放大；移動游標可傾斜查看':'圖片來源待補'}</small></div><h2>${e(name(c))}</h2>${zhPart.name&&original(c)?`<div class="detail-subname">${e(original(c))}</div>`:""}${detailPriceMarkup(c,m.records)}<div class="detail-actions"><div class="detail-collect" data-detail-collect="${e(collectKey)}" role="group" aria-label="我的收藏"></div></div><section class="dpanel dpanel-facts"><h3 class="dpanel-title">卡片資料</h3><dl class="card-identity">${zhPart.name&&!zhPart.note&&!["derived-same-name","derived-cross-series"].includes(c.metadata?.nameZhBasis)?"":`<div><dt>中文名</dt><dd>${e(zhName)}${zhPart.note?` <small class="meta" title="台版來源在名稱後附加的標記">${e(zhPart.note)}</small>`:''}${c.nameZh&&['derived-same-name','derived-cross-series'].includes(c.metadata?.nameZhBasis)?` <small class="meta" title="${c.metadata.nameZhBasis==='derived-cross-series'?'台版未收錄這張卡；中文名沿用其他系列同日文名卡片的台版官方名稱':'台版未收錄這張卡；中文名沿用同系列同日文名卡片的台版官方名稱'}">參考同名譯名</small>`:''}</dd></div>`}<div><dt>卡號</dt><dd>${detailNumber(c,selectedPrinting)}${listingNote(c)}</dd></div><div><dt>稀有度</dt><dd>${rarities}${ps.filter(p=>p.metadata?.rarityBeforeOfficial?.rarity&&p.rarity).map(p=>` <small class="meta" title="依日本官方卡片資料修正；原資料來源標為 ${e(p.metadata.rarityBeforeOfficial.rarity)}">${e(rn(p.region,c.game))}依官方修正（原資料為 ${e(p.metadata.rarityBeforeOfficial.rarity)}）</small>`).join('')}</dd></div></dl></section><p class="detail-ip">${e(c.game?.nameZh||G(c.game).nameZh||c.game)}</p></div><div>${detailTabsMarkup()}${detailPanel('info',false,`${detailInfoMeta(c,ps,selectedPrinting)}${cardTextBlock(c)}<section class="dpanel dpanel-versions"><h3 class="dpanel-title">收錄版本</h3><p class="meta">每個版本分別標示語言、卡號與稀有度；沒有日版時依序顯示台版、美版、韓版或其他版本。</p><div class="version-list">${versions||'<div class="state">版本待補</div>'}</div></section>`)}${detailPanel('market',true,`<section class="dpanel dpanel-trend"><h3 class="dpanel-title">價格走勢</h3><div class="price-trend" data-price-trend="${e(id)}"></div></section><div class="graded-prices" data-graded-prices></div><details class="ptl-details"><summary>這個價格怎麼來的？各版本明細</summary><p class="meta">平台參考價，不是成交價或台灣行情；新台幣用今日匯率換算，過去的點也一樣。價格變動約 2% 以上或滿 7 天才新增一筆紀錄，沒紀錄的日子沿用前一筆。</p>${versionPriceTable(m,c.game&&typeof c.game==='object'?c.game.id:c.game,selectedPrinting?.cardId)}${typeof marketBlock==='function'?marketBlock(m,c.game):`<p class="meta">${e(m.meta?.warning||'不同價格性質不混算。')}</p>${markets}`}</details>`)}</div></div>`;renderedCards.set(collectKey,c);activateDetailInteractions();bindPriceTrend(c.game,m,c);const bindDetailPrice=()=>{const box=$('detail');box.querySelector('[data-detail-price]')?.addEventListener('click',()=>{box.querySelector('[data-detail-tab="market"]')?.click();$('detail-panel-market')?.focus()});const retry=box.querySelector('[data-detail-price-retry]');if(retry)retry.onclick=async()=>{retry.disabled=true;retry.querySelector('.dp-note').textContent='正在重新讀取…';let fresh=null;try{const r=await fetch('/api/cards/'+encodeURIComponent(id),{cache:'no-store'});fresh=r.ok?(await r.json()).data:null}catch{}if(stale())return;retry.outerHTML=detailPriceMarkup(fresh||c,m.records);bindDetailPrice()}};bindDetailPrice();renderDetailCollect();$('detail').querySelectorAll('[data-version-card]').forEach(button=>{button.onclick=()=>openCard(button.dataset.versionCard,{keepPosition:true})});if(refocus){const current=$('detail').querySelector('.version-list [aria-current="true"]');if(current){current.tabIndex=-1;current.focus()}}
-  }catch(error){if(stale())return;$('detail').removeAttribute('aria-busy');$('detail').innerHTML=`<div class="state">${e(failText('卡片資料載入失敗：',error))} <button type="button" class="notice-retry" data-detail-retry>重試</button></div>`;const retry=$('detail').querySelector('[data-detail-retry]');retry.onclick=()=>openCard(id,options);if(refocus)retry.focus()}
+    const priceSlot=detailPriceMarkup(c,[])?'<div class="detail-price-slot" data-price-slot aria-busy="true"><p class="state" role="status">正在讀取價格…</p></div>':'';
+    box.removeAttribute('aria-busy');box.innerHTML=`${detailCrumbs}<div class="detail detail-flow" data-ip="${e(gid)}"><div class="detail-visual"><div class="detail-visual-stage"><div class="detail-art tilt-card" tabindex="0" ${zoomSourceAttribute} aria-label="${detailImageUrl?'點擊放大卡圖；移動游標可傾斜查看':'卡片圖片待補'}"><div class="tilt-card-surface">${resilientImage(detailImageUrl,name(c),'這張卡尚未收錄可公開顯示的圖片',{...watermarkOptions,fallbacks:[...detailImageSources,...(c.fallbackImageUrls||[])]})}<span class="tilt-shine" aria-hidden="true"></span></div></div></div><div class="detail-position">${detailImageUrl?tipMarkup('卡圖操作','點擊卡圖可放大；移動游標可傾斜查看。'):'<small>圖片來源待補</small>'}</div><h2>${e(name(c))}</h2>${zhPart.name&&original(c)?`<div class="detail-subname">${e(original(c))}</div>`:""}${priceSlot}<div class="detail-actions"><div class="detail-collect" data-detail-collect="${e(collectKey)}" role="group" aria-label="我的收藏"></div></div><section class="dpanel dpanel-facts"><h3 class="dpanel-title">卡片資料</h3><dl class="card-identity">${zhPart.name&&!zhPart.note&&!["derived-same-name","derived-cross-series"].includes(c.metadata?.nameZhBasis)?"":`<div><dt>中文名</dt><dd>${e(zhName)}${zhPart.note?` <small class="meta" title="台版來源在名稱後附加的標記">${e(zhPart.note)}</small>`:''}${c.nameZh&&['derived-same-name','derived-cross-series'].includes(c.metadata?.nameZhBasis)?` <small class="meta" title="${c.metadata.nameZhBasis==='derived-cross-series'?'台版未收錄這張卡；中文名沿用其他系列同日文名卡片的台版官方名稱':'台版未收錄這張卡；中文名沿用同系列同日文名卡片的台版官方名稱'}">參考同名譯名</small>`:''}</dd></div>`}<div><dt>卡號</dt><dd>${detailNumber(c,selectedPrinting)}${listingNote(c)}</dd></div><div><dt>稀有度</dt><dd>${rarities}${ps.filter(p=>p.metadata?.rarityBeforeOfficial?.rarity&&p.rarity).map(p=>` <small class="meta" title="依日本官方卡片資料修正；原資料來源標為 ${e(p.metadata.rarityBeforeOfficial.rarity)}">${e(rn(p.region,c.game))}依官方修正（原資料為 ${e(p.metadata.rarityBeforeOfficial.rarity)}）</small>`).join('')}</dd></div></dl></section><section class="dpanel dpanel-versions"><h3 class="dpanel-title">收錄版本</h3>${tipMarkup('收錄版本的顯示規則','每個版本分別標示語言、卡號與稀有度；沒有日版時依序顯示台版、美版、韓版或其他版本。')}<div class="version-list">${versions||'<div class="state">版本待補</div>'}</div></section><p class="detail-ip">${e(c.game?.nameZh||G(c.game).nameZh||c.game)}</p></div><div class="detail-flow-main">${detailInfoMeta(c,ps,selectedPrinting)}${cardTextBlock(c)}<section class="detail-price-section" id="detailPrice" aria-labelledby="detailPriceTitle"><h3 class="detail-section-title" id="detailPriceTitle" tabindex="-1">價格</h3><div data-price-body aria-busy="true"><p class="state" role="status">正在讀取價格…</p></div></section></div></div>`;
+    renderedCards.set(collectKey,c);activateDetailInteractions();renderDetailCollect();box.querySelectorAll('[data-version-card]').forEach(button=>{button.onclick=()=>openCard(button.dataset.versionCard,{keepPosition:true})});if(refocus){const current=box.querySelector('.version-list [aria-current="true"]');if(current){current.tabIndex=-1;current.focus()}}
+    detailPainted('detail');
+    // ③ 市場資料（參考價、走勢、各版本價格）
+    const [marketResult]=await Promise.allSettled([fetch('/api/cards/'+encodeURIComponent(id)+'/market')]),marketResponse=marketResult.status==='fulfilled'?marketResult.value:null,mb=marketResponse?.ok?await marketResponse.json().catch(()=>({data:{records:[],meta:{}}})):{data:{records:[],meta:{warning:'行情服務暫時無法回應；卡片資料仍可正常查看。'}}},m=mb.data||{records:[],meta:{}};
+    if(stale())return;
+    const markets=m.records?.length?m.records.map(r=>`<div class="market"><b>${e(r.provider)}</b> · ${e(r.priceType)} · ${e(r.currency)} ${Number(r.amount).toLocaleString()}</div>`).join(''):'<div class="state">目前沒有可靠對應價格，不以假價格補空白。</div>';
+    const body=box.querySelector('[data-price-body]');body.innerHTML=`<section class="dpanel dpanel-trend"><h4 class="dpanel-title">價格走勢</h4><div class="price-trend" data-price-trend="${e(id)}"></div></section><div class="graded-prices" data-graded-prices></div><details class="ptl-details"><summary>這個價格怎麼來的？各版本明細</summary><p class="meta">平台參考價，不是成交價或台灣行情。${tipMarkup('價格紀錄怎麼算','<p>新台幣用今日匯率換算，過去的點也一樣。</p><p>價格變動約 2% 以上或滿 7 天才新增一筆紀錄，沒紀錄的日子沿用前一筆。</p>')}</p>${versionPriceTable(m,c.game&&typeof c.game==='object'?c.game.id:c.game,selectedPrinting?.cardId)}${typeof marketBlock==='function'?marketBlock(m,c.game):`<p class="meta">${e(m.meta?.warning||'不同價格性質不混算。')}</p>${markets}`}</details>`;body.removeAttribute('aria-busy');
+    const slot=box.querySelector('[data-price-slot]');if(slot)slot.outerHTML=detailPriceMarkup(c,m.records);
+    bindPriceTrend(c.game,m,c);
+    const bindDetailPrice=()=>{const box=$('detail');box.querySelector('[data-detail-price]')?.addEventListener('click',jumpToPrice);const retry=box.querySelector('[data-detail-price-retry]');if(retry)retry.onclick=async()=>{retry.disabled=true;retry.querySelector('.dp-note').textContent='正在重新讀取…';let fresh=null;try{const r=await fetch('/api/cards/'+encodeURIComponent(id),{cache:'no-store'});fresh=r.ok?(await r.json()).data:null}catch{}if(stale())return;retry.outerHTML=detailPriceMarkup(fresh||c,m.records);bindDetailPrice()}};bindDetailPrice();detailPainted('price')
+  }catch(error){if(stale())return;box.removeAttribute('aria-busy');box.innerHTML=`<div class="state">${e(failText('卡片資料載入失敗：',error))} <button type="button" class="notice-retry" data-detail-retry>重試</button></div>`;const retry=box.querySelector('[data-detail-retry]');if(retry){retry.onclick=()=>openCard(id,options);if(refocus)retry.focus()}detailPainted('error')}
 };
 window.openCard=openCard;
 // 換版本載入中（#detail[aria-busy]）舊內容只是變淡：pointer-events 擋得了滑鼠，鍵盤的 Enter／Space／方向鍵還要在捕獲階段另外擋；Escape、Tab 照常。
 (()=>{const busy=event=>$('detail')?.getAttribute('aria-busy')==='true'&&event.target?.closest?.('#detail'),stop=event=>{event.preventDefault();event.stopPropagation()};document.addEventListener('click',event=>{if(busy(event))stop(event)},true);document.addEventListener('keydown',event=>{if(busy(event)&&['Enter',' ','ArrowLeft','ArrowRight','Home','End'].includes(event.key))stop(event)},true)})();
-
-// Phones: the filter selects move into a bottom sheet (BottleNeko pattern). Choices wait for 套用; ×, the
-// backdrop and Escape put back what was there. On wider screens the wrapper is display:contents, so nothing moves.
-function installFilterSheet(){
-  const tools=$('cardTools');if(!tools||$('filterSheet'))return;
-  const selects=['rarityFilter','priceFilter','cardSort'].map(id=>$(id)).filter(Boolean),fields=selects.map(select=>select.closest('.filter-field')).filter(Boolean);if(!fields.length)return;
-  const sheet=document.createElement('div');sheet.id='filterSheet';sheet.className='filter-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-labelledby','filterSheetTitle');
-  sheet.innerHTML='<div class="filter-sheet-head"><b id="filterSheetTitle">篩選與排序</b><button type="button" class="filter-sheet-close" aria-label="取消篩選變更">×</button></div><div class="filter-sheet-body"></div><button type="button" class="filter-sheet-apply">套用</button>';
-  const body=sheet.querySelector('.filter-sheet-body'),backdrop=document.createElement('div');backdrop.className='filter-sheet-backdrop';
-  fields[0].before(sheet);fields.forEach(field=>body.append(field));const favorites=$('favoritesOnly');if(favorites)body.append(favorites);sheet.after(backdrop);
-  const toggle=document.createElement('button');toggle.type='button';toggle.className='filter-sheet-toggle';toggle.setAttribute('aria-haspopup','dialog');sheet.before(toggle);
-  const optionText=select=>select.selectedOptions?.[0]?.textContent?.trim()||'';
-  const summarize=()=>{toggle.innerHTML=`<b>篩選與排序</b><span>${selects.map(optionText).filter(Boolean).map(e).join('・')}</span>`};
-  let snapshot=null,applying=false;
-  const isOpen=()=>sheet.classList.contains('open'),phone=()=>matchMedia('(max-width:760px)').matches;
-  const open=()=>{snapshot=selects.map(select=>select.value);sheet.classList.add('open');backdrop.classList.add('open');document.body.classList.add('filter-sheet-open')};
-  const close=revert=>{if(revert&&snapshot)selects.forEach((select,index)=>{select.value=snapshot[index]});snapshot=null;sheet.classList.remove('open');backdrop.classList.remove('open');document.body.classList.remove('filter-sheet-open');summarize()};
-  // While the sheet is open, hold each change at the sheet so the grid does not reload per select.
-  sheet.addEventListener('change',event=>{if(applying||!isOpen()||!selects.includes(event.target))return;event.stopPropagation();summarize()},true);
-  const apply=()=>{const before=snapshot||[];close(false);applying=true;try{selects.forEach((select,index)=>{if(select.value!==before[index])select.dispatchEvent(new Event('change',{bubbles:true}))})}finally{applying=false}summarize()};
-  toggle.onclick=()=>{if(phone())open()};
-  sheet.querySelector('.filter-sheet-close').onclick=()=>close(true);
-  sheet.querySelector('.filter-sheet-apply').onclick=apply;
-  backdrop.onclick=()=>close(true);
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&isOpen()){event.preventDefault();close(true)}});
-  // Filters can also change from the URL, a game switch or a reset; keep the summary current.
-  // (Observe only the selects' options; the toggle lives inside the tools, so observing them would loop.)
-  const optionsChanged=new MutationObserver(summarize);selects.forEach(select=>{select.addEventListener('change',summarize);optionsChanged.observe(select,{childList:true,subtree:true})});
-  window.refreshFilterSummary=summarize;
-  window.installDialogFocus?.(sheet,{initialFocus:()=>selects[0],returnTarget:()=>toggle});
-  summarize();
-}
-
-// ADR 0047／0049：手機版稀有度分類採用「V1 雙行 Bento 3 欄直選格 ＋ V5 底部拇指懸浮快選盤」；選項與選取邏輯沿用 #rarityFilter，桌面以 CSS 隱藏。
-const RARITY_ZH_META={
-  SAR:{zh:'特殊藝術',tier:'top'},UR:{zh:'金卡極稀有',tier:'top'},MUR:{zh:'極限稀有',tier:'top'},FUR:{zh:'特殊極稀有',tier:'top'},BWR:{zh:'黑白稀有',tier:'top'},HR:{zh:'彩虹稀有',tier:'top'},MA:{zh:'超級攻擊',tier:'top'},
-  SR:{zh:'超稀有閃',tier:'high'},SSR:{zh:'色違超稀有',tier:'high'},CSR:{zh:'角色超稀有',tier:'high'},AR:{zh:'插畫稀有',tier:'high'},CHR:{zh:'角色稀有',tier:'high'},S:{zh:'色違稀有',tier:'high'},K:{zh:'光輝稀有',tier:'high'},ACE:{zh:'ACE王牌',tier:'high'},RRR:{zh:'三閃稀有',tier:'high'},RR:{zh:'雙閃稀有',tier:'high'},
-  TR:{zh:'寶藏稀有',tier:'top'},SP:{zh:'特別平行',tier:'top'},SEC:{zh:'秘藏稀有',tier:'top'},'SEC+':{zh:'頂規秘藏',tier:'top'},SSP:{zh:'超特別卡',tier:'top'},OFR:{zh:'全圖稀有',tier:'high'},L:{zh:'領航卡',tier:'high'},
-  QCSR:{zh:'25週年金鑽',tier:'top'},'Starlight Rare':{zh:'鑽彩最高賞',tier:'top'},'Ghost Rare':{zh:'全息浮雕',tier:'top'},CR:{zh:'收藏家半鑽',tier:'top'},PSR:{zh:'稜鏡半鑽',tier:'top'},'Platinum Secret Rare':{zh:'白金半鑽',tier:'top'},'Ultimate Rare':{zh:'浮雕金亮',tier:'top'},'Secret Rare':{zh:'半鑽高稀有',tier:'top'},
-  'Ultra Rare':{zh:'金亮閃卡',tier:'high'},'Super Rare':{zh:'亮面閃卡',tier:'high'},'Gold Rare':{zh:'黃金閃卡',tier:'high'},
-  '極P':{zh:'極平行最高賞',tier:'top'},'極':{zh:'極稀有',tier:'top'},'秘':{zh:'秘藏稀有',tier:'top'},'頂P':{zh:'頂平行閃',tier:'high'},'頂':{zh:'頂稀有',tier:'high'},
-  R:{zh:'稀有閃卡',tier:'base'},Rare:{zh:'稀有卡',tier:'base'},UC:{zh:'非普通卡',tier:'base'},U:{zh:'非普通卡',tier:'base'},C:{zh:'基礎普卡',tier:'base'},Common:{zh:'基礎普卡',tier:'base'},N:{zh:'基礎普卡',tier:'base'},P:{zh:'特典推廣',tier:'base'},PR:{zh:'特典推廣',tier:'base'},'DON!!':{zh:'咚!!卡',tier:'base'},NONE:{zh:'無標記',tier:'base'}
-};
-function parseRarityOption(option){
-  if(option.value==='all')return{value:'all',code:'全部卡片',zh:'全部稀有度',count:'',tier:'all'};
-  const raw=String(option.textContent||'').trim(),m=raw.match(/^(.*?)(?:[（(]([0-9,]+)[）)])?$/);
-  const label=(m?m[1]:raw).trim(),count=m&&m[2]?m[2]:'';
-  const shortCode=label.replace(/\s+Rare$/i,'').trim()||label;
-  const info=RARITY_ZH_META[option.value]||RARITY_ZH_META[label]||{zh:'系列收錄',tier:'base'};
-  return{value:option.value,code:shortCode,fullCode:label,zh:info.zh,count,tier:info.tier};
-}
-function installRarityPills(){
-  const select=$('rarityFilter'),tools=$('cardTools');if(!select||!tools||typeof MutationObserver==='undefined'||$('rarityPills'))return;
-  const box=document.createElement('div');box.id='rarityBentoBox';box.className='rarity-bento-box';
-  const head=document.createElement('div');head.className='rarity-bento-head';
-  const strip=document.createElement('div');strip.id='rarityPills';strip.className='rarity-pills';strip.setAttribute('role','group');strip.setAttribute('aria-label','稀有度篩選');
-  box.append(head,strip);
-  const hud=document.createElement('aside');hud.id='rarityThumbHud';hud.className='rarity-thumb-hud';hud.setAttribute('aria-label','單手拇指稀有度快選盤');hud.hidden=true;
-  // 捲動自動出現時先收成膠囊，展開版會蓋住約兩成卡牆
-  let signature='',hudCollapsed=true,hudManuallyOpened=false;
-  const pickRarity=val=>{
-    if(!val)return;
-    if(select.value===val){sync();return}
-    select.value=val;
-    select.dispatchEvent(new Event('change',{bubbles:true}));
-  };
-  const updateHudVisibility=()=>{
-    const inGame=typeof game!=='undefined'&&game!=='all'&&!box.hidden;
-    if(!inGame){hud.hidden=true;return}
-    const rect=box.getBoundingClientRect();
-    const scrolledPast=rect.bottom<64;
-    hud.hidden=!(scrolledPast||hudManuallyOpened);
-  };
-  const sync=()=>{
-    const options=[...select.options].filter(option=>!option.hidden&&!option.disabled),next=options.map(option=>option.value+'|'+option.textContent).join('||');
-    const hide=options.length<2;
-    strip.hidden=hide;box.hidden=hide;
-    const parsed=options.map(parseRarityOption);
-    const totalSum=parsed.reduce((acc,item)=>acc+(Number(String(item.count).replace(/,/g,''))||0),0);
-    // 「全部」用伺服器的總數（含稀有度待補），和上方「共 N 張」一致
-    const serverTotal=Number(typeof browse!=='undefined'&&browse?.total);
-    if(parsed[0]&&parsed[0].value==='all'&&(serverTotal||totalSum)>0)parsed[0].count=(serverTotal||totalSum).toLocaleString();
-    const cur=parsed.find(item=>item.value===select.value)||parsed[0]||{code:'全部卡片',count:''};
-    head.innerHTML=`<div class="rarity-bento-title"><b>稀有度直選</b><span>免展開 · 點擊即換</span></div><div class="rarity-bento-actions"><button type="button" class="rarity-hud-Jump" data-open-hud="1">${hudManuallyOpened?'隱藏拇指盤':'✦ 底部拇指盤'}</button>${select.value!=='all'?'<button type="button" class="rarity-bento-reset" data-rarity-reset="all">重置全部</button>':''}</div>`;
-    if(next!==signature){
-      const focused=strip.contains(document.activeElement)?document.activeElement.dataset.rarity:null;
-      signature=next;
-      strip.innerHTML=parsed.map(item=>`<button type="button" data-rarity="${e(item.value)}" data-tier="${e(item.tier)}"><span class="rp-top"><b class="rp-code">${e(item.code)}</b>${item.tier!=='all'?`<i class="rp-dot is-${e(item.tier)}" aria-hidden="true"></i>`:''}</span><small class="rp-meta">${e(item.value==='all'?(item.count?`共 ${item.count} 張`:'全部稀有度'):`${item.zh}${item.count?` · ${item.count} 張`:''}`)}</small></button>`).join('');
-      if(focused!=null)[...strip.children].find(button=>button.dataset.rarity===focused)?.focus({preventScroll:true});
-    }
-    [...strip.children].forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.rarity===select.value)));
-    hud.classList.toggle('is-collapsed',hudCollapsed);
-    hud.innerHTML=hudCollapsed
-      ?`<button type="button" class="rarity-hud-pill" data-hud-toggle="0"><span>✦ 稀有度：<b>${e(cur.code)}${cur.count?` (${e(cur.count)})`:''}</b></span><small>展開拇指盤 ▴</small></button>`
-      :`<div class="rarity-hud-head"><span class="rarity-hud-title">✦ 拇指稀有度快選盤（點選即換）</span><button type="button" class="rarity-hud-close" data-hud-toggle="1">收合為膠囊 ▾</button></div><div class="rarity-hud-grid" role="group" aria-label="底部稀有度快選">${parsed.map(item=>`<button type="button" data-rarity="${e(item.value)}" aria-pressed="${item.value===select.value}"><b>${item.value===select.value?'✓ ':''}${e(item.code)}</b><small>${e(item.value==='all'?(item.count?`${item.count} 張`:'全部'):`${item.zh}${item.count?` · ${item.count}`:''}`)}</small></button>`).join('')}</div>`;
-    updateHudVisibility();
-  };
-  head.onclick=event=>{
-    if(event.target.closest('[data-rarity-reset]')){pickRarity('all');return}
-    if(event.target.closest('[data-open-hud]')){hudManuallyOpened=!hudManuallyOpened;if(hudManuallyOpened)hudCollapsed=false;sync();return}
-  };
-  strip.addEventListener('click',event=>{const button=event.target.closest('[data-rarity]');if(!button||select.value===button.dataset.rarity)return;select.value=button.dataset.rarity;select.dispatchEvent(new Event('change',{bubbles:true}))});
-  hud.addEventListener('click',event=>{
-    const toggleBtn=event.target.closest('[data-hud-toggle]');
-    if(toggleBtn){hudCollapsed=toggleBtn.dataset.hudToggle==='1';sync();return}
-    const button=event.target.closest('[data-rarity]');
-    if(!button)return;
-    pickRarity(button.dataset.rarity);
-  });
-  window.addEventListener('scroll',updateHudVisibility,{passive:true});
-  new MutationObserver(sync).observe(select,{childList:true,subtree:true});select.addEventListener('change',sync);
-  if(document.body)new MutationObserver(updateHudVisibility).observe(document.body,{attributes:true,attributeFilter:['data-view','data-game']});
-  tools.append(box);document.body.append(hud);sync();
-}
-
 
 function installFeatureTour(){
   if($('cardscopeFeatureTour'))return;
@@ -799,23 +824,8 @@ function installFeatureTour(){
   if(footer)footer.insertAdjacentElement('beforebegin',section);else if(notice)notice.insertAdjacentElement('afterend',section);
 }
 
-async function installCatalogHealthLegacy(){
-  if(document.getElementById('catalogHealth'))return;
-  const section=document.createElement('details');section.id='catalogHealth';section.className='catalog-health';
-  section.innerHTML='<summary>資料完整度與圖片權利狀態</summary><p class="health-note">正在讀取資料健康報告…</p>';
-  const footer=document.querySelector('.brand-footer');if(footer)footer.insertAdjacentElement('beforebegin',section);
-  try{
-    const response=await fetch('/api/catalog/health',{cache:'no-store'}),body=await response.json();if(!response.ok)throw Error(body.error||'讀取失敗');
-    const labels={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王',haikyuu:'排球少年','weiss-schwarz':'葬送的芙莉蓮','dragonball-fw':'七龍珠超 Fusion World'},games=body.data?.games||{};
-    const status=$('status'),enforceHealthTotal=()=>{const totalLabel=enhancementCoverageLabel(body.data,Array.isArray(C?.cards)?C.cards.length:null),expected=`${totalLabel}；${P.length.toLocaleString()} 筆實體商品（持續補齊中）。`;if(status&&status.textContent!==expected)status.textContent=expected};
-    enforceHealthTotal();if(status){const observer=new MutationObserver(enforceHealthTotal);observer.observe(status,{childList:true,characterData:true,subtree:true});setTimeout(()=>observer.disconnect(),120000)}
-    const riskDisplay=body.data?.policy?.unverifiedImageDisplayEnabled===true;
-    section.innerHTML=`<summary>資料完整度與圖片權利狀態</summary><div class="health-grid">${Object.entries(labels).map(([id,label])=>{const row=games[id]||{};return`<div class="health-item"><b>${e(label)}｜${Number(row.cards||0).toLocaleString()} 張</b><span>中文名 ${Number(row.chineseNames||0).toLocaleString()} · 稀有度 ${Number(row.rarities||0).toLocaleString()}</span><span>圖片網址 ${Number(row.cardsWithImageUrls??row.displayableImages??0).toLocaleString()} · 明確授權 ${Number(row.displayableImages||0).toLocaleString()}</span></div>`}).join('')}</div><p class="health-note">${riskDisplay?'站方已明確接受風險，目前會顯示來源提供但尚未記錄展示授權的卡圖；這不代表卡圖已獲授權，收到權利通知時應下架。':'只有具明確權利狀態且未過期的圖片才會顯示。'} 官方總卡數尚未核定，因此不顯示假完成率。來源政策版本 ${e(body.data?.policy?.version||'—')}，檢查日 ${e(body.data?.policy?.reviewedAt||'—')}。</p>`;
-  }catch(error){section.innerHTML=`<summary>資料完整度與圖片權利狀態</summary><p class="health-note">健康報告暫時無法讀取：${e(error.message)}</p>`}
-}
-
-const enhancementStyle=document.createElement('style');enhancementStyle.textContent=`.unified-image-fallback{width:100%;height:100%;background:repeating-linear-gradient(135deg,#f4f4f4,#f4f4f4 10px,#ededed 10px,#ededed 20px);gap:5px;align-content:center}.unified-image-fallback b{color:#555}.unified-image-fallback small{max-width:150px}.view-switch{display:flex;align-self:end;margin-right:auto}.view-switch button,.detail-tabs button,.text-switch button{border:1px solid #d5d5d5;background:#fff;padding:8px 12px;cursor:pointer}.view-switch button:first-child,.detail-tabs button:first-child,.text-switch button:first-child{border-radius:9px 0 0 9px}.view-switch button:last-child,.detail-tabs button:last-child,.text-switch button:last-child{border-radius:0 9px 9px 0}.view-switch button.on,.detail-tabs button.on,.text-switch button.on{background:#111;color:#fff;border-color:#111}.cards.list-view{grid-template-columns:1fr;gap:8px}.card-list{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(180px,auto);gap:14px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px}.card-list .art{width:76px;aspect-ratio:5/7}.card-list h3{white-space:normal;margin:0}.card-list-facts{display:grid;grid-template-columns:repeat(2,minmax(80px,auto));gap:3px 12px;align-items:center}.detail-tabs-layout{grid-template-columns:270px 1fr}.detail-visual-stage{position:relative;padding:0 23px}.tilt-card{perspective:1000px;overflow:visible;background:transparent;outline:none}.tilt-card:focus-visible{box-shadow:0 0 0 4px var(--y)}.tilt-card-surface{position:relative;width:100%;height:100%;overflow:hidden;border-radius:13px;transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transform-style:preserve-3d;transition:transform .18s ease;box-shadow:0 16px 35px #0002}.tilt-card-surface>img,.tilt-card-surface>.image-fallback{width:100%;height:100%;object-fit:contain}.tilt-shine{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--shine-x,50%) var(--shine-y,50%),#fff9 0,transparent 38%);mix-blend-mode:screen;opacity:var(--shine-opacity,0);transition:opacity .18s}.detail-nav{position:absolute;top:45%;z-index:2;width:38px;height:38px;border:1px solid #ddd;border-radius:50%;background:#fffc;box-shadow:0 4px 14px #0002;cursor:pointer;font-size:20px}.detail-prev{left:-19px}.detail-next{right:-19px}.detail-position{display:flex;justify-content:space-between;gap:10px;margin:10px 3px 0;color:var(--muted);font-size:12px}.detail-tabs{display:flex;gap:0;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:16px}.detail-tabs button{white-space:nowrap;border-radius:0!important;border-width:0 0 3px}.card-rules-text{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:14px;margin-top:8px}.card-rules-text small{display:block;color:#8a6500;margin-top:10px}.text-switch{display:flex}.feature-tour{overflow:hidden}.feature-tour-head{display:flex;align-items:end;justify-content:space-between;margin-bottom:12px}.feature-eyebrow,.feature-kicker{display:block;font-size:11px;font-weight:900;letter-spacing:.14em}.feature-eyebrow{color:#888}.tour-pause{border:1px solid #ddd;border-radius:999px;background:#fff;padding:7px 13px;cursor:pointer}.feature-stage{position:relative;min-height:265px}.feature-slide{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(310px,.95fr);align-items:center;gap:35px;padding:34px 42px;border-radius:24px;opacity:0;visibility:hidden;transform:translateX(28px);transition:opacity .45s ease,transform .45s ease,visibility .45s}.feature-slide.on{opacity:1;visibility:visible;transform:none}.feature-slide.yellow{background:linear-gradient(120deg,#ffe669,#fff3b8)}.feature-slide.aqua{background:linear-gradient(120deg,#6ee2d6,#c8f9f4)}.feature-slide.violet{background:linear-gradient(120deg,#c69bff,#e5d4ff)}.feature-slide h3{font-size:clamp(24px,3vw,40px);line-height:1.08;margin:8px 0 14px}.feature-slide p{font-size:16px;max-width:630px}.tour-dots{display:flex;justify-content:center;gap:7px;margin-top:12px}.tour-dots button{width:9px;height:9px;padding:0;border:0;border-radius:99px;background:#ccc;cursor:pointer;transition:width .25s}.tour-dots button.on{width:28px;background:#111}.tour-products{height:185px;display:flex;justify-content:center;align-items:end;gap:12px}.tour-products i{display:block;width:92px;height:142px;border:5px solid #fff;border-radius:11px;background:linear-gradient(150deg,#e73154 0 48%,#291c64 49%);box-shadow:0 18px 25px #0002;transform:rotate(-7deg)}.tour-products i:nth-child(2){height:170px;background:linear-gradient(145deg,#00a99a 0 52%,#102a47 53%);transform:none}.tour-products i:nth-child(3){background:linear-gradient(145deg,#ff8b32 0 52%,#7d2047 53%);transform:rotate(7deg)}.tour-search{display:flex;flex-wrap:wrap;align-content:center;gap:10px;padding:26px;border:2px solid #111;border-radius:22px;background:#fffd;box-shadow:0 18px 30px #0001}.tour-search b{flex-basis:100%;font-size:30px}.tour-search span{background:#111;color:#fff;border-radius:999px;padding:7px 12px}.tour-search em{flex-basis:100%;font-style:normal;color:#555}.tour-card-demo{height:190px;display:flex;align-items:center;justify-content:center;gap:25px;perspective:1000px}.tour-card-demo div{width:118px;height:168px;border:6px solid #fff;border-radius:12px;background:linear-gradient(145deg,#f6d948 0 35%,#0a9a93 36% 68%,#1c173e 69%);box-shadow:18px 18px 28px #0003;transform:rotateY(-16deg) rotateX(7deg)}.tour-card-demo span{padding:13px;border-radius:12px;background:#111;color:#fff}@media(prefers-reduced-motion:reduce){.feature-slide,.tilt-card-surface,.tour-dots button{transition:none!important}}@media(max-width:760px){.view-switch{width:100%}.view-switch button{flex:1}.card-list{grid-template-columns:58px 1fr}.card-list .art{width:58px}.card-list-facts{grid-column:2;grid-template-columns:repeat(2,1fr)}.detail-tabs-layout{grid-template-columns:1fr}.detail-tabs{position:sticky;top:0;background:#fff;z-index:1}.detail-visual{max-width:280px;margin:auto}.detail-position small{display:none}.feature-stage{min-height:390px}.feature-slide{grid-template-columns:1fr;padding:25px;gap:8px}.feature-slide h3{font-size:27px}.tour-products,.tour-card-demo{height:145px}.tour-products i{width:65px;height:105px}.tour-products i:nth-child(2){height:125px}.tour-card-demo div{width:85px;height:125px}.tour-search{padding:18px}.tour-search b{font-size:24px}}`;document.head.append(enhancementStyle);
-const utilityStyle=document.createElement('style');utilityStyle.textContent=`.view-switch{flex-wrap:wrap;gap:0}.view-switch button{font-weight:800}.cards.rarity-view{display:block}.rarity-group{margin:0 0 24px}.rarity-group>header{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;padding:10px 13px;border-left:4px solid var(--y);background:var(--soft);border-radius:8px}.rarity-group>header h3{margin:0;font-size:17px}.rarity-group>header span{color:var(--muted);font-size:13px}.rarity-group-cards{grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 14px}.card-actions{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:8px}.favorite-toggle{width:32px;height:30px;padding:0;border:1px solid #d4d4d4;border-radius:8px;background:#fff;color:#666;font-size:20px;line-height:1;cursor:pointer}.favorite-toggle[aria-pressed=true]{color:#b18b00;border-color:#e0c534;background:#fff8bf}.watchlist-inline{display:inline-flex;align-items:center;gap:3px;border:1px solid #d4d4d4;border-radius:8px;overflow:hidden;background:#fff}.watchlist-inline button{width:24px;height:28px;padding:0;border:0;background:#f5f5f5;font-size:18px;line-height:1;cursor:pointer}.watchlist-inline button:disabled{color:#aaa;cursor:not-allowed}.watchlist-inline span{min-width:22px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}.card-list{grid-template-columns:76px minmax(0,1fr) minmax(180px,auto) auto}.card-list .card-actions{margin:0;display:grid;gap:5px}.card-list .favorite-toggle{justify-self:center}.card-list .watchlist-inline{justify-self:end}.favorites-filter{align-self:end;border:1px solid #d4d4d4;border-radius:9px;background:#fff;padding:8px 12px;font-weight:800;cursor:pointer}.favorites-filter.on{background:#111;color:#fff;border-color:#111}.watchlist-summary{display:flex;align-items:center;justify-content:space-between;gap:13px;flex:1 1 360px;min-width:260px;color:#444}.watchlist-summary>div{display:grid;gap:2px}.watchlist-summary span{color:var(--muted);font-size:13px}.watchlist-summary small{color:var(--muted);font-size:12px}.watchlist-summary em{font-style:normal;color:#7b6100;font-size:12px}.watchlist-summary button{border:1px solid #d4d4d4;border-radius:9px;background:#fff;padding:8px 11px;font-weight:800;cursor:pointer;white-space:nowrap}.watchlist-summary button:disabled{color:#aaa;cursor:not-allowed}.cards-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:16px;min-height:155px;padding:24px;border:1px dashed #d4d4d4;border-radius:14px;color:var(--muted)}.cards-empty img{width:68px;height:68px;object-fit:contain;opacity:.72}.cards-empty b{display:block;color:#444}.cards-empty p{margin:5px 0 0}.feature-tour{margin:8px 0 18px;padding:0;border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden}.feature-tour summary{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;list-style:none}.feature-tour summary::-webkit-details-marker{display:none}.help-summary-copy{display:grid;gap:2px;flex:1}.help-summary-copy small{color:var(--muted);font-size:13px}.feature-tour summary img{width:34px;height:34px;object-fit:contain;opacity:.78}.help-summary-chevron{font-size:20px;transition:transform .2s}.feature-tour[open] .help-summary-chevron{transform:rotate(180deg)}.help-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 14px 14px}.help-item{padding:13px;border-radius:10px;background:var(--soft)}.help-item b{font-size:14px}.help-item p{margin:6px 0 0;color:#555;font-size:13px;line-height:1.55}@media(max-width:1100px){.rarity-group-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:760px){.view-switch{width:100%}.view-switch button{flex:1}.card-list{grid-template-columns:58px 1fr}.card-list .art{width:58px}.card-list-facts{grid-column:2;grid-template-columns:repeat(2,1fr)}.card-list .card-actions{grid-column:2;display:flex;justify-self:start}.watchlist-summary{flex-basis:100%;min-width:0}.watchlist-summary button{margin-left:auto}.help-grid{grid-template-columns:1fr}.cards-empty{align-items:flex-start}.cards-empty img{width:54px;height:54px}}`;document.head.append(utilityStyle);
+const enhancementStyle=document.createElement('style');enhancementStyle.textContent=`.unified-image-fallback{width:100%;height:100%;background:repeating-linear-gradient(135deg,#f4f4f4,#f4f4f4 10px,#ededed 10px,#ededed 20px);gap:5px;align-content:center}.unified-image-fallback b{color:#555}.unified-image-fallback small{max-width:150px}.view-switch{display:flex;align-self:end;margin-right:auto}.view-switch button,.text-switch button{border:1px solid #d5d5d5;background:#fff;padding:8px 12px;cursor:pointer}.view-switch button:first-child,.text-switch button:first-child{border-radius:9px 0 0 9px}.view-switch button:last-child,.text-switch button:last-child{border-radius:0 9px 9px 0}.view-switch button.on,.text-switch button.on{background:#111;color:#fff;border-color:#111}.cards.list-view{grid-template-columns:1fr;gap:8px}.card-list{display:grid;grid-template-columns:76px minmax(0,1fr) minmax(180px,auto);gap:14px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px}.card-list .art{width:76px;aspect-ratio:5/7}.card-list h3{white-space:normal;margin:0}.card-list-facts{display:grid;grid-template-columns:repeat(2,minmax(80px,auto));gap:3px 12px;align-items:center}.detail-flow{grid-template-columns:270px 1fr}.detail-visual-stage{position:relative}.tilt-card{perspective:1000px;overflow:visible;background:transparent;outline:none}.tilt-card:focus-visible{box-shadow:0 0 0 4px var(--y)}.tilt-card-surface{position:relative;width:100%;height:100%;overflow:hidden;border-radius:13px;transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transform-style:preserve-3d;transition:transform .18s ease;box-shadow:0 16px 35px #0002}.tilt-card-surface>img,.tilt-card-surface>.image-fallback{width:100%;height:100%;object-fit:contain}.tilt-shine{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--shine-x,50%) var(--shine-y,50%),#fff9 0,transparent 38%);mix-blend-mode:screen;opacity:var(--shine-opacity,0);transition:opacity .18s}.detail-position{display:flex;justify-content:space-between;gap:10px;margin:10px 3px 0;color:var(--muted);font-size:12px}.card-rules-text{white-space:pre-wrap;background:var(--soft);border-radius:10px;padding:14px;margin-top:8px}.card-rules-text small{display:block;color:#8a6500;margin-top:10px}.text-switch{display:flex}.feature-tour{overflow:hidden}@media(prefers-reduced-motion:reduce){.tilt-card-surface{transition:none!important}}@media(max-width:760px){.view-switch{width:100%}.view-switch button{flex:1}.card-list{grid-template-columns:58px 1fr}.card-list .art{width:58px}.card-list-facts{grid-column:2;grid-template-columns:repeat(2,1fr)}.detail-flow{grid-template-columns:1fr}.detail-visual{max-width:280px;margin:auto}.detail-position small{display:none}}`;document.head.append(enhancementStyle);
+const utilityStyle=document.createElement('style');utilityStyle.textContent=`.view-switch{flex-wrap:wrap;gap:0}.view-switch button{font-weight:800}.cards.rarity-view{display:block}.rarity-group{margin:0 0 24px}.rarity-group>header{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;padding:10px 13px;border-left:4px solid var(--y);background:var(--soft);border-radius:8px}.rarity-group>header h3{margin:0;font-size:17px}.rarity-group>header span{color:var(--muted);font-size:13px}.rarity-group-cards{grid-template-columns:repeat(6,minmax(0,1fr));gap:22px 14px}.card-actions{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:8px}.favorite-toggle{width:32px;height:30px;padding:0;border:1px solid #d4d4d4;border-radius:8px;background:#fff;color:#666;font-size:20px;line-height:1;cursor:pointer}.favorite-toggle[aria-pressed=true]{color:#b18b00;border-color:#e0c534;background:#fff8bf}.watchlist-inline{display:inline-flex;align-items:center;gap:3px;border:1px solid #d4d4d4;border-radius:8px;overflow:hidden;background:#fff}.watchlist-inline button{width:24px;height:28px;padding:0;border:0;background:#f5f5f5;font-size:18px;line-height:1;cursor:pointer}.watchlist-inline button:disabled{color:#aaa;cursor:not-allowed}.watchlist-inline span{min-width:22px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}.card-list{grid-template-columns:76px minmax(0,1fr) minmax(180px,auto) auto}.card-list .card-actions{margin:0;display:grid;gap:5px}.card-list .favorite-toggle{justify-self:center}.card-list .watchlist-inline{justify-self:end}.watchlist-summary{display:flex;align-items:center;justify-content:space-between;gap:13px;flex:1 1 360px;min-width:260px;color:#444}.watchlist-summary>div{display:grid;gap:2px}.watchlist-summary span{color:var(--muted);font-size:13px}.watchlist-summary small{color:var(--muted);font-size:12px}.watchlist-summary em{font-style:normal;color:#7b6100;font-size:12px}.watchlist-summary button{border:1px solid #d4d4d4;border-radius:9px;background:#fff;padding:8px 11px;font-weight:800;cursor:pointer;white-space:nowrap}.watchlist-summary button:disabled{color:#aaa;cursor:not-allowed}.cards-empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:16px;min-height:155px;padding:24px;border:1px dashed #d4d4d4;border-radius:14px;color:var(--muted)}.cards-empty img{width:68px;height:68px;object-fit:contain;opacity:.72}.cards-empty b{display:block;color:#444}.cards-empty p{margin:5px 0 0}.feature-tour{margin:8px 0 18px;padding:0;border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden}.feature-tour summary{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;list-style:none}.feature-tour summary::-webkit-details-marker{display:none}.help-summary-copy{display:grid;gap:2px;flex:1}.help-summary-copy small{color:var(--muted);font-size:13px}.feature-tour summary img{width:34px;height:34px;object-fit:contain;opacity:.78}.help-summary-chevron{font-size:20px;transition:transform .2s}.feature-tour[open] .help-summary-chevron{transform:rotate(180deg)}.help-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 14px 14px}.help-item{padding:13px;border-radius:10px;background:var(--soft)}.help-item b{font-size:14px}.help-item p{margin:6px 0 0;color:#555;font-size:13px;line-height:1.55}@media(max-width:1100px){.rarity-group-cards{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:760px){.view-switch{width:100%}.view-switch button{flex:1}.card-list{grid-template-columns:58px 1fr}.card-list .art{width:58px}.card-list-facts{grid-column:2;grid-template-columns:repeat(2,1fr)}.card-list .card-actions{grid-column:2;display:flex;justify-self:start}.watchlist-summary{flex-basis:100%;min-width:0}.watchlist-summary button{margin-left:auto}.help-grid{grid-template-columns:1fr}.cards-empty{align-items:flex-start}.cards-empty img{width:54px;height:54px}}`;document.head.append(utilityStyle);
 const zoomStyle=document.createElement('style');zoomStyle.textContent=`.tilt-card.can-zoom{cursor:zoom-in}.card-identity{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}.card-identity>div{padding:8px 10px;border-radius:9px;background:var(--soft)}.card-identity dt{font-size:11px;color:var(--muted);font-weight:800}.card-identity dd{margin:2px 0 0;font-weight:800}.card-zoom{position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:22px;background:#090909e8;cursor:zoom-out}.card-zoom.open{display:grid}.card-zoom img{display:block;max-width:min(94vw,900px);max-height:94vh;object-fit:contain;filter:drop-shadow(0 24px 45px #000)}.card-zoom-close{position:fixed;right:18px;top:16px;z-index:1;width:44px;height:44px;border:1px solid #fff5;border-radius:50%;background:#111;color:#fff;font-size:27px;cursor:pointer}@media(max-width:520px){.card-identity{grid-template-columns:1fr}.card-zoom{padding:10px}}`;document.head.append(zoomStyle);
 const interactiveZoomStyle=document.createElement('style');interactiveZoomStyle.textContent=`body.card-zoom-open{overflow:hidden}.card-zoom{display:none;grid-template-rows:minmax(0,1fr) auto;gap:12px;padding:58px 16px 16px;background:#090909ed;color:#fff;cursor:default;overscroll-behavior:contain}.card-zoom.open{display:grid}.card-zoom-viewport{position:relative;min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;touch-action:none;cursor:grab;outline:none}.card-zoom-viewport:active{cursor:grabbing}.card-zoom-viewport:focus-visible{box-shadow:inset 0 0 0 3px var(--y)}.card-zoom-canvas{position:relative;width:100%;height:100%;display:grid;place-items:center;overflow:visible}.card-zoom-media{position:relative;display:grid;place-items:center;max-width:100%;max-height:100%;container-type:inline-size;transform-origin:center center;will-change:transform}.card-zoom-image{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 18px 34px #000)}.card-zoom-media .card-sample-watermark-zoom{left:7%;right:7%;top:58%;font-size:clamp(22px,15cqi,78px);letter-spacing:.08em;white-space:nowrap}.card-zoom-fallback{display:grid;place-items:center;text-align:center;color:#ddd;font-size:18px;line-height:1.6}.card-zoom-fallback small{font-size:12px;color:#aaa}.card-zoom-toolbar{position:relative;z-index:2;display:flex;align-items:center;justify-self:center;gap:4px;max-width:100%;padding:7px;border:1px solid #fff3;border-radius:13px;background:#151515ee;box-shadow:0 10px 30px #0008;color:#fff;overflow-x:auto}.card-zoom-toolbar button{border:1px solid #fff3;border-radius:8px;background:#292929;color:#fff;padding:7px 10px;cursor:pointer;white-space:nowrap}.card-zoom-toolbar button:hover,.card-zoom-toolbar button:focus-visible{background:#444;border-color:#fff8}.card-zoom-toolbar button:disabled{opacity:.38;cursor:not-allowed}.card-zoom-toolbar output{min-width:72px;padding:0 4px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}.card-zoom-quality{margin-left:5px;color:#bbb;font-size:11px;white-space:nowrap}.card-zoom-quality.is-low-resolution{color:#ffd66b}.card-zoom-divider{flex:0 0 1px;width:1px;height:25px;margin:0 3px;background:#fff4}.card-zoom-close{position:fixed;right:18px;top:14px;z-index:3;width:44px;height:44px;border:1px solid #fff5;border-radius:50%;background:#111;color:#fff;font-size:27px;line-height:1;cursor:pointer}.card-zoom-close:hover,.card-zoom-close:focus-visible{background:#333;outline:2px solid var(--y);outline-offset:2px}@media(max-width:520px){.card-identity{grid-template-columns:1fr}.card-zoom{gap:8px;padding:54px 8px 8px}.card-zoom-canvas{width:100%;height:100%}.card-zoom-toolbar{justify-self:stretch;justify-content:flex-start;gap:2px;padding:5px}.card-zoom-toolbar button{padding:7px 6px;font-size:12px}.card-zoom-toolbar output{min-width:57px;font-size:12px}.card-zoom-quality{margin-left:3px}.card-zoom-divider{height:21px;margin:0 1px}}@media(prefers-reduced-motion:reduce){.card-zoom-media{transition:none}}`;document.head.append(interactiveZoomStyle);
 const nextStageStyle=document.createElement('style');
@@ -920,60 +930,29 @@ function installMobileCompactHeader(){
   window.syncMobileHeaderScope=sync;
 }
 
-// ADR 0049：手機版探索首頁 2×5 圓角方格入口（10 格：各 IP × 主要版本，附紅底「新發售（30 天內）／即將發售／收錄中」小標，一鍵直達該遊戲與版本）。桌面版隱藏。
-function installMobileQuickGrid(){
-  const channelsEl=$('channels'),regionSelect=$('browseRegion');
-  if(!channelsEl||$('mobileQuickGrid'))return;
-  const grid=document.createElement('div');grid.id='mobileQuickGrid';grid.className='mobile-quick-grid';grid.setAttribute('role','group');grid.setAttribute('aria-label','手機快速探索入口');
-  // 10 格＝手機 5 欄剛好兩排；導覽改由標題小卡的「重看導覽」進入（加入七龍珠超後拿掉原本補空位的新手導覽格）。
-  const items=[
-    {game:'pokemon',region:'JP',label:'寶可夢日文',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
-    {game:'pokemon',region:'TW',label:'寶可夢繁中',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
-    {game:'pokemon',region:'US',label:'寶可夢美版',logo:'/assets/ip-logos/pokemon.svg',tag:'收錄中',hot:false},
-    {game:'onepiece',region:'ASIA',label:'航海王英文',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
-    {game:'onepiece',region:'TW',label:'航海王日文',logo:'/assets/ip-logos/onepiece.png',tag:'收錄中',hot:false},
-    {game:'yugioh',region:'US',label:'遊戲王美版',logo:'/assets/ip-logos/yugioh.png',tag:'收錄中',hot:false},
-    {game:'weiss-schwarz',region:'JP',label:'芙莉蓮日文',logo:'/assets/ip-logos/weiss-schwarz.png',tag:'熱門收錄',hot:false},
-    {game:'haikyuu',region:'JP',label:'排球少年日文',logo:'/assets/ip-logos/haikyuu.svg',tag:'收錄中',hot:false},
-    {game:'dragonball-fw',region:'TW',label:'七龍珠超',logo:'/assets/ip-logos/dragonball-fw.png',tag:'收錄中',hot:false},
-    {game:'all',region:'all',label:'我的收藏冊',logo:'/assets/brand/web/rabbit-success-160.webp',tag:'收藏冊',hot:false,action:'collection'}
-  ];
-  grid.innerHTML=items.map(item=>`<button type="button" class="mqg-tile" data-mqg-game="${e(item.game)}" data-mqg-region="${e(item.region)}"${item.action?` data-mqg-action="${e(item.action)}"`:''} data-ip="${e(item.game)}"><span class="mqg-art"><img src="${e(item.logo)}" alt="" loading="lazy"><span class="mqg-badge${item.hot?' is-hot':''}">${e(item.tag)}</span></span><b class="mqg-label">${e(item.label)}</b></button>`).join('');
-  // 角標依目錄的發售日計算（tag 只是目錄載入前的預設）；首頁每次重繪時由 index.html 呼叫
-  window.syncMobileQuickGrid=()=>{
-    const rows=Array.isArray(C?.series)?C.series:[];if(!rows.length)return;
-    // 台灣日期；「新發售」只給 30 天內，90 天會讓 10 格中 7 格都是紅標而失去意義。
-    const today=window.taipeiDate(),since=window.taipeiDate(30);
-    grid.querySelectorAll('.mqg-tile:not([data-mqg-action])').forEach(btn=>{
-      const own=rows.filter(row=>row.game===btn.dataset.mqgGame&&row.region===btn.dataset.mqgRegion),badge=btn.querySelector('.mqg-badge');if(!badge)return;
-      const tag=own.some(row=>row.releaseDate>today)?'即將發售':own.some(row=>row.releaseDate&&row.releaseDate<=today&&row.releaseDate>=since)?'新發售':'收錄中';
-      badge.textContent=tag;badge.classList.toggle('is-hot',tag!=='收錄中');
-    });
-  };
-  window.syncMobileQuickGrid();
-  grid.onclick=event=>{
-    const btn=event.target.closest('.mqg-tile');if(!btn)return;
-    if(btn.dataset.mqgAction==='collection'&&typeof window.openCollection==='function')return window.openCollection();
-    const g=btn.dataset.mqgGame,r=btn.dataset.mqgRegion;
-    if(regionSelect&&r)regionSelect.value=r;
-    if(typeof window.choose==='function')window.choose(g);
-    window.syncMobileHeaderScope?.();
-  };
-  channelsEl.before(grid);
-}
-
 installTrendTransparency();
 installReportTemplate();
 installFeatureTour();
 installCatalogHealth();
 installRarityOptionMemory();
 installDetailModalAccessibility();
+syncDetailMode();
+// 頂端列（上一張／下一張／跳到價格）在 #detail 之外，換卡重畫時焦點不會掉
+document.addEventListener('click',event=>{
+  if(!event.target.closest?.('#modal'))return;
+  const step=event.target.closest?.('[data-card-step]');if(step&&!step.disabled)return openAdjacentCard(Number(step.dataset.cardStep));
+  if(event.target.closest?.('[data-detail-jump]'))jumpToPrice();
+});
+// 卡牆重畫（換系列、篩選、載入更多、收藏單張重畫）後，標記與「3 / 48」跟著更新
+if($('cards')&&typeof MutationObserver==='function'){let frame=0;new MutationObserver(()=>{if(!frame)frame=requestAnimationFrame(()=>{frame=0;syncWall()})}).observe($('cards'),{childList:true,subtree:true})}
+// 手機／平板的全螢幕詳細頁：左右滑換卡（走勢圖、表格、輸入元件上的橫向手勢、螢幕邊緣的返回手勢不算）
+(()=>{let start=null;
+  document.addEventListener('touchstart',event=>{const t=event.touches[0];start=!event.target.closest?.('#modal')||window.detailMode()==='panel'||event.touches.length!==1||$('cardZoom')?.classList.contains('open')||t.clientX<24||t.clientX>innerWidth-24||event.target.closest?.('.ptl-chart,.version-prices,.ptl-table,input,select,textarea,[role="slider"],[role="region"]')?null:{x:t.clientX,y:t.clientY}},{passive:true});
+  document.addEventListener('touchend',event=>{if(!start)return;const t=event.changedTouches[0],dx=t.clientX-start.x,dy=t.clientY-start.y;start=null;if(Math.abs(dx)>=64&&Math.abs(dx)>Math.abs(dy)*1.6)openAdjacentCard(dx<0?1:-1)},{passive:true});
+})();
 installViewToggle();
 installCardUtilities();
-installFilterSheet();
-installRarityPills();
 installMobileCompactHeader();
-installMobileQuickGrid();
 // 分頁標題跟著內容走：換頁面種類（body data-*）、開關詳細頁（#modal class）、瀏覽／搜尋事件時重算。
 if(typeof MutationObserver!=='undefined'&&document.body){const watch=(node,filter)=>node&&new MutationObserver(syncPageTitle).observe(node,{attributes:true,attributeFilter:filter});watch($('modal'),['class']);watch(document.body,['data-view','data-game'])}
 document.addEventListener('cardscope:browse',syncPageTitle);document.addEventListener('cardscope:search',syncPageTitle);
@@ -989,10 +968,10 @@ document.querySelectorAll('nav.bottom [data-jump]').forEach(button=>{button.oncl
 const bottomWatchlist=document.querySelector('nav.bottom [data-jump="watchlistSummary"]');
 if(bottomWatchlist&&$('cardTools')&&typeof ResizeObserver==='function')new ResizeObserver(()=>{bottomWatchlist.hidden=!$('watchlistSummary')?.getClientRects().length}).observe($('cardTools'));
 // Return focus to the tile of the card last shown (arrow keys can move past the one that was opened).
-window.installDialogFocus?.($('modal'),{initialFocus:()=>$('close'),returnTarget:()=>detailReturnCardId&&[...document.querySelectorAll('[data-card-open]')].find(item=>item.dataset.cardOpen===String(detailReturnCardId))});
+window.installDialogFocus?.($('modal'),{initialFocus:()=>$('close'),trap:()=>window.detailMode()!=='panel',returnTarget:()=>detailReturnCardId&&[...document.querySelectorAll('[data-card-open]')].find(item=>item.dataset.cardOpen===String(detailReturnCardId))});
 
-// An Escape already handled (the zoom view closes itself first) must not also close the detail dialog.
-document.addEventListener('keydown',event=>{if(event.defaultPrevented)return;if(event.key==='Escape'&&$('cardZoom')?.classList.contains('open')){closeCardZoom();return}if(!$('modal')?.classList.contains('open'))return;if($('cardZoom')?.classList.contains('open'))return;if(event.key==='ArrowLeft')openAdjacentCard(-1);if(event.key==='ArrowRight')openAdjacentCard(1);if(event.key==='Escape')$('modal').classList.remove('open')});
+// An Escape already handled (the zoom view closes itself first) must not also close the detail. Closing the detail on Escape lives in navigation-state.js (it knows the history entry); here only the zoom view and the arrow keys.
+document.addEventListener('keydown',event=>{if(event.defaultPrevented)return;if(event.key==='Escape'&&$('cardZoom')?.classList.contains('open')){closeCardZoom();return}if(!$('modal')?.classList.contains('open')||$('cardZoom')?.classList.contains('open'))return;const step={ArrowLeft:-1,ArrowRight:1}[event.key];if(step&&canStepWithKey(event))openAdjacentCard(step)});
 
 const referencePriceStyle=document.createElement('style');
 referencePriceStyle.textContent=`
@@ -1019,20 +998,20 @@ referencePriceStyle.textContent=`
 `;
 document.head.append(referencePriceStyle);
 const detailTabsStyle=document.createElement('style');
-detailTabsStyle.textContent=`.detail-tabs [hidden]{display:none!important}.rarity-code{text-decoration:none;cursor:help}.rarity-full{font-size:12px}.detail-meta{margin:0 0 14px}
-.collection-dialog{width:min(760px,calc(100vw - 16px));max-height:calc(100dvh - 16px);padding:0;border:1px solid var(--rule,#d9d1c0);border-radius:14px;background:#fff;color:inherit}.collection-dialog::backdrop{background:#0008}.coll{display:grid;gap:12px;padding:16px}.coll header{display:flex;align-items:center;justify-content:space-between;gap:12px}.coll h2{margin:0;font-size:20px}.coll header button{min-width:44px}.coll h3{margin:0 0 6px;font-size:16px}.coll-stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px 8px;border:1px solid var(--rule,#d9d1c0);border-radius:10px;background:#FBF9F4;text-align:center}.coll-stat{display:grid;gap:2px;min-width:0}.coll-stat b{font-size:18px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}.coll-stat span{font-size:11px;color:var(--ink-2,#5a5348);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.coll-binder-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:56px;padding:10px 14px;border:1.5px solid #D49B1B;border-radius:12px;background:linear-gradient(135deg,#1F1B16 0%,#2B2A26 100%);color:#FFF8E7;text-align:left;cursor:pointer;box-sizing:border-box}.coll-binder-left{display:flex;align-items:center;gap:10px;min-width:0}.coll-binder-left img{width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid #D49B1B;flex:none}.coll-binder-copy{display:grid;gap:2px;min-width:0}.coll-binder-copy b{font-size:15px;color:#FFF8E7}.coll-binder-copy small{font-size:11px;color:#E7BA4C}.coll-binder-right{font-size:13px;font-weight:700;color:#E7BA4C;white-space:nowrap;font-variant-numeric:tabular-nums}.coll-local{margin:0;padding:10px 12px;border-radius:8px;background:var(--paper-2,#f8f5ee);border:1px solid var(--rule,#d9d1c0);font-size:14px}.coll-value{padding:10px 12px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-value p{margin:6px 0 0}.coll-sums{display:grid;gap:6px;margin:0;padding:0;list-style:none}.coll-sums li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.coll-sums b{font-size:18px}.coll-sums small{color:var(--ink-2,#5a5348)}.coll-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.coll-item{content-visibility:auto;contain-intrinsic-size:auto 220px;display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px 12px;padding:10px;border:1px solid var(--rule,#d9d1c0);border-radius:8px}.coll-art{position:relative;width:64px;aspect-ratio:5/7;overflow:hidden;border-radius:6px;background:var(--paper-2,#f8f5ee)}.coll-art .card-sample-watermark{font-size:9px;letter-spacing:.04em}.coll-art img{width:100%;height:100%;object-fit:contain}.coll-art .image-fallback{font-size:11px}.coll-main{min-width:0;overflow-wrap:anywhere}.coll-name{display:block}.coll-badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.coll-price{display:grid;gap:2px;margin-top:6px;font-size:13px}.coll-skip{color:var(--ink-2,#5a5348)}.coll-fields,.coll-pick,.coll-actions{grid-column:1/-1}.coll-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.coll-fields label,.coll-pick{display:grid;gap:2px;font-size:13px;font-weight:700}.coll-fields input,.coll-fields select,.coll-pick select{width:100%;font:inherit;font-weight:400}.coll-note-field{grid-column:1/-1}.coll-actions,.coll-tools{display:flex;flex-wrap:wrap;gap:8px}.coll-actions{justify-content:flex-end}@media(min-width:720px){.coll-fields{grid-template-columns:90px repeat(2,minmax(0,1fr))}}@media(max-width:520px){.coll{padding:12px}.coll-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.coll-tools button{width:100%;min-height:44px}}`;
+detailTabsStyle.textContent=`.rarity-code{text-decoration:none;cursor:help}.rarity-full{font-size:12px}.detail-meta{margin:0 0 14px}`;
 document.head.append(detailTabsStyle);
 const seriesProgressStyle=document.createElement('style');
 seriesProgressStyle.textContent=`.series-progress{display:grid;gap:8px;flex:1 1 100%;width:100%;margin-top:8px;padding:10px 12px;border:1px solid #D9D1C0;border-radius:10px;background:#FBF9F4;color:#1F1B16;box-sizing:border-box}.series-progress[hidden]{display:none}.series-progress-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}.series-progress-row span{font-variant-numeric:tabular-nums}.series-progress #missingOnly{min-height:44px;margin-left:auto}.series-progress-bar{height:10px;border-radius:999px;background:#E6DFCE;overflow:hidden}.series-progress-bar i{display:block;height:100%;border-radius:999px;background:#1F1B16}.coll-series-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.coll-series-list li{display:grid;gap:4px}.coll-series-name{font-weight:700;overflow-wrap:anywhere}.coll-series-count{font-size:13px;color:#5A5348;font-variant-numeric:tabular-nums}.coll-import{display:grid;gap:8px;padding:12px;border:2px solid #D49B1B;border-radius:10px;background:#FFF8E7;color:#1F1B16}.coll-import h3,.coll-import p{margin:0}.coll-import ul{margin:6px 0 0;padding-left:20px}.coll-import summary{min-height:44px;display:flex;align-items:center;cursor:pointer}.coll-replace{display:flex;align-items:center;gap:8px;min-height:44px}.coll-replace input{width:20px;height:20px;flex:none}.coll-import-actions{display:flex;flex-wrap:wrap;gap:8px}.coll-import-actions button{min-height:44px}`;
 document.head.append(seriesProgressStyle);
 
-// 頂欄／底部導覽的「我的收藏」呼叫 window.openCollection()（ADR 0045，v0 免登入）：清單可編輯張數／品況／版本／備註、看參考總值、匯出入 JSON 備份、下載 CSV。資料只在這台裝置。
-const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:'',pending:null};
+// 「我的收藏」是獨立一頁（?view=collection；window.openCollection 走 navigation-state.js 的 window.openView，網址與上一頁由它管）。免登入（ADR 0045），資料只在這台裝置。
+// 左側欄只列有收藏的遊戲／系列；中間是卡牆（階段 3 的卡片與工具列，資料來自本機快照）；點卡開右側側板，品況・閃卡版本・備註在側板（renderDetailCollect）；匯出入、CSV、各系列進度收在工具列右邊的「管理」選單。
+const collectionUi={prices:{},priceMeta:null,pricesState:'idle',failed:new Set(),progress:'',pending:null,filter:{game:'',series:''},showSeries:false,active:false};
 const COLLECTION_REASONS={slab:'鑑定卡不計入',none:'尚無參考價快照',choose:'請選擇版本',['no-match']:'所選版本沒有對應的參考價'};
 function collectionItems(){return CS.itemsFromLegacy([],watchlist,watchlistMeta).filter(item=>item.quantity>0)}
-const collectionDialog=()=>$('collectionDialog'),collectionRowEl=id=>[...document.querySelectorAll('#collectionDialog [data-coll-id]')].find(item=>item.dataset.collId===id);
-const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collStatus');if(node)node.textContent=collectionUi.progress};
-const typingInCollection=()=>/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName||'')&&collectionDialog()?.contains(document.activeElement);
+const inCollectionView=()=>document.body?.dataset?.view==='collection';
+// 收藏頁的狀態列是 #collStatus；其他頁（在側板改品況）沒有這個節點，改用螢幕閱讀器的播報區。
+const collectionStatus=text=>{collectionUi.progress=text||'';const node=$('collStatus');if(node)node.textContent=collectionUi.progress;else if(text)announceCollect(text)};
 function finishLabel(key){return key===''?'未指定':(typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[key])||key}
 // 這張卡只有一種價格版本時，版本欄預設選它（只是顯示，不寫入；估值本來就會用唯一的版本）。
 function shownFinish(item){return item.finish||CS.soleFinish((collectionUi.prices[item.id]||[]).filter(price=>!price.stale))}
@@ -1058,32 +1037,56 @@ function valueHtml(valuation){
   const fx=collectionUi.priceMeta?.exchangeRates,sums=Object.entries(CS.PROVIDER_LABELS).filter(([key])=>valuation.byProvider[key]).map(([key,label])=>{const row=valuation.byProvider[key];return `<li><span>${e(label)} 參考價小計</span><b>約 NT$ ${Math.round(row.twd).toLocaleString()}</b><small>${row.entries} 款${row.missingFx?`；${row.missingFx} 款缺匯率未換算`:''}</small></li>`}).join('');
   return `<h3>參考總值</h3>${sums?`<ul class="coll-sums">${sums}</ul>`:'<p>目前沒有可計入的參考價。</p>'}<p class="meta">${valuation.counted}／${valuation.total} 款有參考價${valuation.uncounted.length?`；其餘 ${valuation.uncounted.length} 款未計入（原因標在各卡）`:''}。${valuation.dateFrom?`快照日期 ${e(valuation.dateFrom)}${valuation.dateTo!==valuation.dateFrom?` 至 ${e(valuation.dateTo)}`:''}。`:''}不同來源不相加；品況不調整價格。${fx?.source==='fallback'?'匯率為備用值，僅供概略。':fx?.updatedAt?`匯率日期 ${e(fx.updatedAt)}。`:''}</p><p class="meta">${e(collectionUi.priceMeta?.note||'參考價不是成交價或台灣行情。')}</p>`;
 }
-// 「涵蓋遊戲」：收藏裡不同遊戲的數量（卡片資料還沒補齊的不算）。
-function collectionGameCount(){return new Set(collectionIds().map(id=>watchlistMeta[id]?.game).filter(Boolean)).size}
+// 收藏頁摘要裡的一行參考總值（詳細的小計、來源、日期、匯率收在旁邊的 ⓘ，內容是上面的 valueHtml）。
+function collectionValueLine(valuation){
+  const state=collectionUi.pricesState;
+  if(state==='loading'||state==='idle')return '參考總值查詢中…';
+  if(state==='error')return '參考價暫時無法取得';
+  const sums=Object.entries(CS.PROVIDER_LABELS).filter(([key])=>valuation.byProvider[key]).map(([key,label])=>`${label} 參考價約 NT$ ${Math.round(valuation.byProvider[key].twd).toLocaleString()}`);
+  return sums.length?`參考總值：${sums.join('；')}`:'目前沒有可計入的參考價';
+}
+// 側板裡這張卡的參考價列（只有收藏頁查過價格才有）。
+function panelPriceHtml(key){const item=collectionItems().find(row=>row.id===key);return item&&collectionUi.pricesState==='ready'&&collectionUi.prices[key]?rowPriceHtml(item,collectionValuation()):''}
 function refreshCollectionValue(){
-  const valuation=collectionValuation(),host=$('collValue');if(host)host.innerHTML=valueHtml(valuation);
-  collectionItems().forEach(item=>{const cell=collectionRowEl(item.id)?.querySelector('.coll-price');if(cell)cell.innerHTML=rowPriceHtml(item,valuation)});
-  const idsCount=collectionIds().length,cardsCount=collectionTotal();
-  const total=$('collTotal');if(total)total.textContent=`共 ${idsCount} 款、${cardsCount} 張`;
-  const statIds=$('collStatIds');if(statIds)statIds.textContent=String(idsCount);
-  const statCards=$('collStatCards');if(statCards)statCards.textContent=String(cardsCount);
-  const statGames=$('collStatGames');if(statGames)statGames.textContent=String(collectionGameCount());
-  const statPriced=$('collStatPriced');if(statPriced)statPriced.textContent=String(valuation.counted||0);
-  const binderTotal=$('collBinderTotal');if(binderTotal)binderTotal.textContent=`已擁有 ${cardsCount} 張卡 ›`;
+  const valuation=collectionValuation(),count=$('collSumCount');
+  if(count)count.textContent=`共 ${collectionIds().length} 款、${collectionTotal()} 張`;
+  const line=$('collValue');if(line)line.textContent=collectionValueLine(valuation);
+  const detail=$('collValueDetail');if(detail)detail.innerHTML=valueHtml(valuation);
+  const price=document.querySelector('#detail [data-detail-collect] .coll-price');if(price)price.innerHTML=panelPriceHtml(price.closest('[data-detail-collect]').dataset.detailCollect);
 }
 // Alt-art versions can share region, set and number; add the id only when the label alone would not tell them apart.
 function choiceLabels(choices,gameId){const labels=choices.map(choice=>[choice.cardId,[rn(choice.region,gameId),choice.set,choice.number,choice.rarity,choice.variant].filter(Boolean).join(' · ')]);return labels.map(([cardId,label])=>[cardId,labels.filter(row=>row[1]===label).length>1?`${label} · ${cardId}`:label])}
-function collectionRowHtml(item,valuation){
-  const meta=watchlistMeta[item.id]||{},known=!!meta.v,title=known?name(meta):collectionUi.failed.has(item.id)?`查無這張卡的資料（${item.id}）`:`卡片資料載入中（${item.id}）`,qty=item.quantity||1,id=e(item.id);
-  const facts=known?[e(meta.officialCardNumber||'卡號待補'),meta.rarity?rarityMarkup(meta.rarity,meta.game):'稀有度待補'].join(' · '):'',badges=known?`${meta.region?`<span class="badge">${e(rn(meta.region,meta.game))}</span>`:''}${meta.version?`<span class="badge variant-badge">${e(meta.version)}</span>`:''}${meta.ambiguous?'<span class="badge">版本待確認</span>':''}`:'';
-  const pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[],meta.game).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
-  return `<li class="coll-item" data-coll-id="${id}"><div class="coll-art">${known&&meta.image?resilientImage(meta.image,title,'圖片來源尚未收錄'):missingImageMarkup('')}</div><div class="coll-main"><b class="coll-name">${e(title)}</b><div class="meta">${facts}</div><div class="coll-badges">${badges}</div><div class="coll-price">${rowPriceHtml(item,valuation)}</div></div>${pick}<div class="coll-actions"><label class="coll-qty">張數<input type="number" inputmode="numeric" min="1" max="999" step="1" value="${qty}" data-coll-field="quantity"></label><button type="button" data-collection-open="${id}">查看</button><button type="button" data-coll-remove="${id}" aria-label="從我的收藏移除${e(title)}">移除</button></div><details class="coll-edit"${collectionUi.editOpen?.has(item.id)?' open':''}><summary>編輯品況・版本・備註</summary><div class="coll-fields"><label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([key,label])=>`<option value="${e(key)}"${key===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>版本<select data-coll-field="finish">${finishChoices(item).map(key=>`<option value="${e(key)}"${CS.finishKey(key)===CS.finishKey(shownFinish(item))?' selected':''}>${e(finishLabel(key))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label></div></details></li>`;
+// 卡牆的列：把本機快照整理成與 /api/cards 相同形狀，卡片、工具列、側板都沿用圖鑑那一套。還沒補到快照的卡先顯示「資料載入中」，由 resolveCollection 補齊。
+const collectionGameName=id=>G(id).nameZh||(window.CARD_GAMES||[]).find(item=>item.id===id)?.name||id;
+function collectionWallRow(item){
+  const meta=watchlistMeta[item.id]||{},known=Boolean(meta.v),region=meta.region||item.region||'',seriesId=meta.seriesId||item.seriesId||'',variant={variantName:meta.version||''},
+    pendingName=collectionUi.failed.has(item.id)?`查無這張卡的資料（${item.id}）`:`卡片資料載入中（${item.id}）`;
+  return{id:item.id,game:meta.game||item.game||'',region,seriesId,nameZh:known?meta.nameZh||'':pendingName,nameEn:known?meta.nameEn||'':'',nameJa:known?meta.nameJa||'':'',nameKo:known?meta.nameKo||'':'',officialCardNumber:meta.officialCardNumber||'',rarity:meta.rarity||'',imageUrl:meta.image||'',physicalCardIds:[item.id],metadata:variant,
+    printings:[{cardId:item.id,region,seriesId,rarity:meta.rarity||'',localCardNumber:meta.officialCardNumber||'',imageUrl:meta.image||'',metadata:variant}],__collection:true,__ambiguous:Boolean(meta.ambiguous)};
+}
+const collectionRowMatches=row=>{const filter=collectionUi.filter;return(!filter.game||row.game===filter.game)&&(!filter.series||row.seriesId===filter.series)};
+// 側欄：有收藏的遊戲（後面是款數），選了某個遊戲才展開它底下有收藏的系列。選中＝粗體＋左側線（aria-pressed），不只靠顏色。
+function collectionSideHtml(rows){
+  if(!rows.length)return '<p class="meta coll-side-empty">還沒有收藏</p>';
+  const filter=collectionUi.filter,games=new Map(),series=new Map(),order=new Map((window.CARD_GAMES||[]).map((item,index)=>[item.id,index]));
+  rows.forEach(row=>{if(!row.game)return;games.set(row.game,(games.get(row.game)||0)+1);if(row.seriesId&&row.game===filter.game)series.set(row.seriesId,(series.get(row.seriesId)||0)+1)});
+  const button=(attrs,label,count,on)=>`<button type="button" class="coll-side-btn${on?' on':''}" ${attrs} aria-pressed="${on}"><span class="coll-side-name">${e(label)}</span><span class="coll-side-count">${count}</span></button>`;
+  const sub=[...series].map(([id,count])=>[id,count,seriesLabel(id)]).sort((a,b)=>a[2].localeCompare(b[2],'zh-Hant')).map(([id,count,label])=>`<li>${button(`data-coll-game="${e(filter.game)}" data-coll-series="${e(id)}"`,label,count,filter.series===id)}</li>`).join('');
+  const list=[...games].sort((a,b)=>(order.get(a[0])??999)-(order.get(b[0])??999)).map(([id,count])=>`<li>${button(`data-coll-game="${e(id)}"`,collectionGameName(id),count,filter.game===id&&!filter.series)}${filter.game===id&&sub?`<ul class="coll-side-sub">${sub}</ul>`:''}</li>`).join('');
+  return `<ul class="coll-side-list"><li>${button('data-coll-all','全部收藏',rows.length,!filter.game&&!filter.series)}</li>${list}</ul>`;
+}
+window.collectionFilterLabel=()=>{const filter=collectionUi.filter;return filter.series?seriesLabel(filter.series):filter.game?collectionGameName(filter.game):'全部收藏'};
+// 側板的收藏資料（品況・閃卡版本・備註）：只在已收藏時出現；每次輸入就存（沿用原本的做法）。
+function collectionEditorHtml(key){
+  const item=collectionItems().find(row=>row.id===key);if(!item)return '';
+  const meta=watchlistMeta[key]||{},id=e(key),pick=meta.ambiguous?`<label class="coll-pick">選擇你持有的版本<select data-coll-pick="${id}"><option value="">請選擇…</option>${choiceLabels(meta.choices||[],meta.game).map(([cardId,label])=>`<option value="${e(cardId)}">${e(label)}</option>`).join('')}</select></label>`:'';
+  return `<div class="coll-edit" role="group" aria-label="這張卡的收藏資料">${pick}<label>品況<select data-coll-field="condition">${CS.CONDITIONS.map(([k,label])=>`<option value="${e(k)}"${k===item.condition?' selected':''}>${e(label)}</option>`).join('')}</select></label><label>閃卡版本<select data-coll-field="finish">${finishChoices(item).map(k=>`<option value="${e(k)}"${CS.finishKey(k)===CS.finishKey(shownFinish(item))?' selected':''}>${e(finishLabel(k))}</option>`).join('')}</select></label><label class="coll-note-field">備註<input type="text" maxlength="${CS.LIMITS.noteMax}" value="${e(item.note)}" data-coll-field="note" autocomplete="off"></label><div class="coll-price">${panelPriceHtml(key)}</div></div>`;
 }
 function seriesLabel(seriesId){const row=(typeof C!=='undefined'&&C.series||[]).find(item=>item.id===seriesId);return row?`${titleName(row)||seriesId}${row.region?`（${rn(row.region,row.game)}）`:''}`:seriesId}
 function collectionSeriesHtml(){
   const {rows,seriesCount,unknown}=CS.seriesBreakdown(collectionItems(),10),note=unknown?`<p class="meta">另有 ${unknown} 款還沒有系列資料；打開該系列的卡牆（圖鑑 → 系列）就會自動補上。</p>`:'';
   if(!rows.length)return note;
-  return `<h3>各系列進度${seriesCount>rows.length?`（前 ${rows.length} 名，共 ${seriesCount} 個系列）`:''}</h3><ul class="coll-series-list">${rows.map(row=>{const total=seriesTotals.get(row.seriesId),p=total&&CS.seriesProgress(row.owned,total),label=seriesLabel(row.seriesId);return `<li><span class="coll-series-name">${e(label)}</span><span class="coll-series-count">${p?`已收藏 ${p.owned} / 共 ${p.total} 張（${p.percent}%）`:`已收藏 ${row.owned} 張（${seriesTotalFailed.has(row.seriesId)?'總數暫時查不到':'總數查詢中…'}）`}</span>${p?progressBar(p,`${label} 集卡進度`):''}</li>`}).join('')}</ul>${note}`;
+  return `<h3 id="collSeriesTitle" tabindex="-1">各系列進度${seriesCount>rows.length?`（前 ${rows.length} 名，共 ${seriesCount} 個系列）`:''}</h3><ul class="coll-series-list">${rows.map(row=>{const total=seriesTotals.get(row.seriesId),p=total&&CS.seriesProgress(row.owned,total),label=seriesLabel(row.seriesId);return `<li><span class="coll-series-name">${e(label)}</span><span class="coll-series-count">${p?`已收藏 ${p.owned} / 共 ${p.total} 張（${p.percent}%）`:`已收藏 ${row.owned} 張（${seriesTotalFailed.has(row.seriesId)?'總數暫時查不到':'總數查詢中…'}）`}</span>${p?progressBar(p,`${label} 集卡進度`):''}</li>`}).join('')}</ul>${note}`;
 }
 // 前 10 名系列的卡數各查一次（limit=1 只取 meta.total）；查不到的不擋畫面。
 async function loadSeriesTotals(){
@@ -1094,23 +1097,15 @@ async function loadSeriesTotals(){
       if(!response.ok||!(total>0))throw Error('no total');seriesTotals.set(row.seriesId,total);
     }catch{seriesTotalFailed.add(row.seriesId)}
   }));
-  const host=$('collSeries');if(host)host.innerHTML=collectionSeriesHtml();
+  renderCollectionSeries();
 }
 // 匯入預覽：確認前不動既有收藏。
 function importPreviewHtml(){
   const pending=collectionUi.pending;if(!pending)return '';
   const {parsed,replace}=pending,plan=CS.planImport(collectionItems(),parsed.items,replace),bad=parsed.problems,empty=!parsed.items.length,nothing=!plan.added&&!plan.updated&&!plan.removed;
-  return `<section class="coll-import" id="collImport" aria-label="匯入預覽"><h3>匯入預覽</h3><p class="meta">${e(pending.fileName)}（${parsed.format==='csv'?'CSV':'JSON 備份'}，共 ${parsed.rows} 筆資料）。按下確認前不會改動你的收藏；同一張卡取較大的數量，不會相加，重複匯入不會翻倍。</p><p class="coll-import-counts" role="status"><b>將新增 ${plan.added} 筆、更新 ${plan.updated} 筆、略過 ${bad.length} 筆格式錯誤</b>${replace?`；移除目前有、檔案裡沒有的 ${plan.removed} 筆`:''}${plan.unchanged?`（另有 ${plan.unchanged} 筆內容相同，不變）`:''}</p>${bad.length?`<details><summary>看略過的原因（${bad.length>20?'前 20 筆':`${bad.length} 筆`}）</summary><ul>${bad.slice(0,20).map(({index,reason})=>`<li>第 ${index} 筆：${e(reason)}</li>`).join('')}</ul></details>`:''}${empty?'<p class="coll-skip">檔案裡沒有可匯入的資料。</p>':''}<label class="coll-replace"><input type="checkbox" data-coll-replace${replace?' checked':''}${empty?' disabled':''}> 以匯入檔取代全部（目前的收藏會被刪除，會再問一次）</label><div class="coll-import-actions"><button type="button" data-coll-import-confirm${empty||nothing?' disabled':''}>${replace?'取代全部收藏':'確認匯入'}</button><button type="button" data-coll-import-cancel>取消</button></div></section>`;
+  return `<section class="coll-import" id="collImport" aria-label="匯入預覽"><h3 id="collImportTitle" tabindex="-1">匯入預覽</h3><p class="meta">${e(pending.fileName)}（${parsed.format==='csv'?'CSV':'JSON 備份'}，共 ${parsed.rows} 筆資料）。按下確認前不會改動你的收藏；同一張卡取較大的數量，不會相加，重複匯入不會翻倍。</p><p class="coll-import-counts" role="status"><b>將新增 ${plan.added} 筆、更新 ${plan.updated} 筆、略過 ${bad.length} 筆格式錯誤</b>${replace?`；移除目前有、檔案裡沒有的 ${plan.removed} 筆`:''}${plan.unchanged?`（另有 ${plan.unchanged} 筆內容相同，不變）`:''}</p>${bad.length?`<details><summary>看略過的原因（${bad.length>20?'前 20 筆':`${bad.length} 筆`}）</summary><ul>${bad.slice(0,20).map(({index,reason})=>`<li>第 ${index} 筆：${e(reason)}</li>`).join('')}</ul></details>`:''}${empty?'<p class="coll-skip">檔案裡沒有可匯入的資料。</p>':''}<label class="coll-replace"><input type="checkbox" data-coll-replace${replace?' checked':''}${empty?' disabled':''}> 以匯入檔取代全部（目前的收藏會被刪除，會再問一次）</label><div class="coll-import-actions"><button type="button" data-coll-import-confirm${empty||nothing?' disabled':''}>${replace?'取代全部收藏':'確認匯入'}</button><button type="button" data-coll-import-cancel>取消</button></div></section>`;
 }
-function renderCollection(){
-  const dialog=collectionDialog();if(!dialog)return;
-  collectionUi.editOpen=new Set([...dialog.querySelectorAll('.coll-edit[open]')].map(box=>box.closest('[data-coll-id]')?.dataset.collId).filter(Boolean));const items=collectionItems(),valuation=collectionValuation(),idsCount=collectionIds().length,cardsCount=collectionTotal(),gameCount=collectionGameCount();
-  const overviewHtml=`<div class="coll-stats-grid" aria-label="收藏統計摘要"><div class="coll-stat"><b id="collStatIds">${idsCount}</b><span>收藏款數</span></div><div class="coll-stat"><b id="collStatCards">${cardsCount}</b><span>收藏總張數</span></div><div class="coll-stat"><b id="collStatGames">${gameCount}</b><span>涵蓋遊戲</span></div><div class="coll-stat"><b id="collStatPriced">${valuation.counted||0}</b><span>已估值款數</span></div></div><button type="button" class="coll-binder-banner" data-coll-binder><span class="coll-binder-left"><img src="/assets/brand/web/rabbit-success-160.webp" alt=""><span class="coll-binder-copy"><b>TCG 收藏冊</b><small>本機免登入 · 即時估值與清單管理</small></span></span><span class="coll-binder-right" id="collBinderTotal">已擁有 ${cardsCount} 張卡 ›</span></button>`;
-  dialog.innerHTML=`<div class="coll"><header><h2 id="collectionTitle" tabindex="-1">我的收藏</h2><button type="button" data-collection-close aria-label="關閉我的收藏">×</button></header><div class="coll-top"><div class="coll-tools"><button type="button" data-coll-export${items.length?'':' disabled'} title="把收藏存成 JSON 備份檔">匯出備份</button><button type="button" data-coll-import title="匯入 JSON 備份或 CSV 清單">匯入</button><input type="file" id="collFile" accept="application/json,.json,text/csv,.csv" hidden><button type="button" id="collectionCsv"${items.length?'':' disabled'} title="下載清單 CSV">下載 CSV</button><button type="button" data-coll-explore>探索加卡</button></div><p class="coll-status" id="collStatus" role="status" aria-live="polite">${e(collectionUi.progress)}</p></div>${overviewHtml}<p class="coll-local" role="note"><b>只存在這台裝置</b>：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期「匯出備份」。</p>${importPreviewHtml()}${items.length?`<section class="coll-series" id="collSeries" aria-label="各系列集卡進度">${collectionSeriesHtml()}</section><p class="meta" id="collTotal">共 ${idsCount} 款、${cardsCount} 張</p><section class="coll-value" id="collValue" aria-label="參考總值">${valueHtml(valuation)}</section><ul class="coll-list" id="collList">${items.map(item=>collectionRowHtml(item,valuation)).join('')}</ul>`:'<div class="state">還沒有收藏。在卡片上按星號或「＋」就會出現在這裡；也可以匯入之前的備份。</div>'}</div>`;
-  const csv=$('collectionCsv');if(csv)csv.onclick=()=>{downloadWatchlistCsv();collectionStatus(`已下載清單 CSV（${items.length} 款）。`)};
-}
-const rerenderCollection=()=>{if(collectionDialog()?.open&&!typingInCollection())renderCollection()};
-function refreshGrid(){renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true);renderDetailCollect()}
+function refreshGrid(){if(inCollectionView()){renderCollectionPage();renderDetailCollect();return}renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true);renderDetailCollect()}
 
 // 把 items 寫回三個既有 localStorage 鍵；畫面快照（名稱、圖、地區）依 id 沿用。
 function applyItems(items){
@@ -1153,7 +1148,7 @@ async function loadCollectionPrices(){
   if(!ids.length){collectionUi.pricesState='ready';refreshCollectionValue();return}
   collectionUi.pricesState='loading';
   try{for(let index=0;index<ids.length;index+=100){const response=await fetch('/api/prices/reference',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cardIds:ids.slice(index,index+100)})});if(!response.ok)throw Error(`HTTP ${response.status}`);const body=(await response.json()).data;body.cards.forEach(row=>{collectionUi.prices[row.cardId]=row.prices});collectionUi.priceMeta=body.meta}collectionUi.pricesState='ready'}catch{collectionUi.pricesState='error'}
-  rerenderCollection();if(typingInCollection())refreshCollectionValue();
+  refreshCollectionValue();
 }
 
 function downloadFile(filename,type,text){const url=URL.createObjectURL(new Blob([text],{type})),link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),0)}
@@ -1162,8 +1157,8 @@ async function importCollectionFile(file){
   if(file.size>CS.LIMITS.fileMaxChars){collectionStatus('沒有匯入：檔案過大（上限 2 MB）。既有收藏沒有變動。');return}
   let text='';try{text=await file.text()}catch{collectionStatus('讀不到這個檔案。既有收藏沒有變動。');return}
   const parsed=CS.parseImport(text);
-  if(parsed.error){collectionUi.pending=null;renderCollection();collectionStatus(`沒有匯入：${parsed.error}。既有收藏沒有變動。`);return}
-  collectionUi.pending={parsed,fileName:file.name,replace:false};collectionStatus('');renderCollection();$('collImport')?.scrollIntoView({block:'nearest'});
+  if(parsed.error){collectionUi.pending=null;renderCollectionExtras();collectionStatus(`沒有匯入：${parsed.error}。既有收藏沒有變動。`);return}
+  collectionUi.pending={parsed,fileName:file.name,replace:false};collectionStatus('');renderCollectionExtras();$('collImportTitle')?.focus();$('collImport')?.scrollIntoView({block:'nearest'});
 }
 async function confirmCollectionImport(){
   const pending=collectionUi.pending;if(!pending)return;
@@ -1172,53 +1167,153 @@ async function confirmCollectionImport(){
   if(plan.items.length>CS.LIMITS.itemsMax)return collectionStatus(`匯入後會超過 ${CS.LIMITS.itemsMax.toLocaleString('en-US')} 款上限，沒有匯入。`);
   if(pending.replace&&!confirm(`這會刪除目前的 ${existing.length} 款收藏，只留下匯入檔的 ${plan.items.length} 款，無法復原。真的要取代全部嗎？`))return;
   if(!commitItems(plan.items))return collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），匯入已取消，既有收藏沒有變動。');
-  collectionUi.pending=null;refreshGrid();renderCollection();
+  collectionUi.pending=null;refreshGrid();renderCollectionExtras();
   collectionStatus(`已匯入：新增 ${plan.added} 筆、更新 ${plan.updated} 筆${plan.removed?`、移除 ${plan.removed} 筆`:''}${skipped?`、略過 ${skipped} 筆格式錯誤`:''}。`);
-  collectionUi.pricesState='idle';await resolveCollection();await loadCollectionPrices();rerenderCollection();loadSeriesTotals();
+  collectionUi.pricesState='idle';await resolveCollection();rerenderCollection();await loadCollectionPrices();if(collectionUi.showSeries)loadSeriesTotals();
 }
-function onCollectionField(input){
-  const row=input.closest('[data-coll-id]'),id=row?.dataset.collId,field=input.dataset.collField;if(!id||!field)return;
-  if(field==='quantity'){const value=Number(input.value);if(!Number.isInteger(value)||value<1||value>CS.LIMITS.quantityMax)return;watchlist[id]=value}
-  else watchlistMeta[id]={...watchlistMeta[id],id,[field]:field==='note'?input.value.slice(0,CS.LIMITS.noteMax):input.value};
+// 側板的欄位（品況／閃卡版本／備註）：每次輸入就存。數量用卡牆與側板上的 − ＋，不在這裡改。
+function onCollectionField(input,id){
+  const field=input.dataset.collField;if(!id||!field)return;
+  watchlistMeta[id]={...watchlistMeta[id],id,[field]:field==='note'?input.value.slice(0,CS.LIMITS.noteMax):input.value};
   if(!persistCollection())collectionStatus('無法寫入瀏覽器儲存空間，這次的變更關掉頁面後會消失；請先匯出備份。');
-  refreshCollectionValue();if(field==='quantity')refreshGrid();
+  refreshCollectionValue();
 }
-function removeCollectionItem(id){
-  const meta=watchlistMeta[id],title=meta?.v?name(meta):id;
-  if(!confirm(`從「我的收藏」移除 ${title}？品況、版本與備註也會一併刪除。`))return;
-  delete watchlist[id];delete watchlistMeta[id];persistCollection();refreshGrid();renderCollection();$('collectionTitle')?.focus();collectionStatus(`已移除 ${title}。`);
+// 舊資料的作品層 ID 對到多張實體卡時，在側板選你持有的那個版本：換成實體卡 ID，再補快照與參考價。
+function chooseCollectionVersion(from,to){
+  const items=collectionItems(),item=items.find(row=>row.id===from);if(!item||!to)return;
+  applyItems(CS.mergeItems(items.filter(row=>row.id!==from),[{...item,id:to}]).items);refreshGrid();
+  if($('modal')?.classList.contains('open'))openCard(to,{keepPosition:true});
+  resolveCollection().then(()=>loadCollectionPrices()).then(rerenderCollection);
 }
-function installCollectionDialog(){
-  let dialog=collectionDialog();if(dialog)return dialog;
-  dialog=document.createElement('dialog');dialog.id='collectionDialog';dialog.className='collection-dialog';dialog.setAttribute('aria-labelledby','collectionTitle');document.body.append(dialog);
-  dialog.addEventListener('close',syncPageTitle);
-  dialog.addEventListener('click',event=>{
-    const target=event.target;if(target===dialog||target.closest('[data-collection-close]'))return dialog.close();
-    const open=target.closest('[data-collection-open]');if(open){dialog.close();return openCard(open.dataset.collectionOpen)}
-    const remove=target.closest('[data-coll-remove]');if(remove)return removeCollectionItem(remove.dataset.collRemove);
-    if(target.closest('[data-coll-binder]')){const list=$('collList')||$('collValue');if(list)return list.scrollIntoView({behavior:'smooth',block:'start'});dialog.close();return typeof browse==='function'&&browse()}
-    if(target.closest('[data-coll-explore]')){dialog.close();return typeof browse==='function'&&browse()}
-    if(target.closest('[data-coll-export]')){const items=collectionItems(),filename=`cardscope-collection-${window.taipeiDate()}.json`;downloadFile(filename,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(items)));return collectionStatus(`已匯出 ${items.length} 款、${collectionTotal()} 張，備份檔 ${filename}（在瀏覽器的下載資料夾）。`)}
-    if(target.closest('[data-coll-import]'))return $('collFile')?.click();
-    if(target.closest('[data-coll-import-confirm]'))return confirmCollectionImport();
-    if(target.closest('[data-coll-import-cancel]')){collectionUi.pending=null;renderCollection();return collectionStatus('已取消匯入，收藏沒有變動。')}
-  });
-  dialog.addEventListener('input',event=>{if(event.target.dataset?.collField)onCollectionField(event.target)});
-  dialog.addEventListener('change',event=>{
-    const target=event.target;
-    if(target.dataset?.collReplace!==undefined&&collectionUi.pending){collectionUi.pending.replace=target.checked;renderCollection();$('collImport')?.querySelector('[data-coll-replace]')?.focus();return}
-    if(target.id==='collFile'){const file=target.files?.[0];target.value='';importCollectionFile(file);return}
-    if(target.dataset?.collField==='quantity')target.value=String(watchQuantity(target.closest('[data-coll-id]')?.dataset.collId)||1);
-    if(target.dataset?.collPick&&target.value){const from=target.dataset.collPick,items=collectionItems(),item=items.find(row=>row.id===from);if(!item)return;applyItems(CS.mergeItems(items.filter(row=>row.id!==from),[{...item,id:target.value}]).items);refreshGrid();renderCollection();resolveCollection().then(()=>loadCollectionPrices()).then(rerenderCollection)}
-  });
-  return dialog;
-}
-function openCollection(){
-  const dialog=installCollectionDialog();collectionUi.prices={};collectionUi.pricesState='idle';collectionUi.progress='';collectionUi.pending=null;
-  renderCollection();if(!dialog.open)dialog.showModal();syncPageTitle();loadSeriesTotals();
-  if(collectionItems().length)resolveCollection().then(changed=>{if(changed){refreshGrid();rerenderCollection()}return loadCollectionPrices()});
-}
+function openCollection(){return window.openView?.('collection')}
 window.openCollection=openCollection;
+
+// 工具列右邊的「管理」按鈕與卡牆上方的狀態／摘要／匯入預覽／系列進度，第一次進收藏頁才建立。
+function ensureCollectionHosts(){
+  if(!$('collExtras')){
+    const extras=document.createElement('div');extras.id='collExtras';extras.className='coll-extras';
+    extras.innerHTML='<p class="coll-status" id="collStatus" role="status" aria-live="polite"></p><div class="coll-summary" id="collSummary" hidden></div><div id="collImportHost"></div><section class="coll-series" id="collSeries" aria-label="各系列集卡進度" hidden></section>';
+    $('cards').before(extras);
+  }
+  if(!$('collManage')){
+    const box=document.createElement('div');box.id='collManage';box.className='coll-manage';
+    box.innerHTML='<button type="button" id="collManageBtn" class="coll-manage-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="collMenu">管理 <span aria-hidden="true">▾</span></button><div class="coll-menu" id="collMenu" role="menu" aria-label="管理我的收藏" hidden><button type="button" role="menuitem" data-coll-export title="把收藏存成 JSON 備份檔">匯出備份</button><button type="button" role="menuitem" data-coll-import title="匯入 JSON 備份或 CSV 清單">匯入備份</button><button type="button" role="menuitem" id="collectionCsv" title="下載清單 CSV">下載 CSV</button><button type="button" role="menuitemcheckbox" aria-checked="false" data-coll-series-toggle>各系列進度</button></div><input type="file" id="collFile" accept="application/json,.json,text/csv,.csv" hidden>';
+    $('cardTools').append(box);
+  }
+}
+const collectionSummaryHtml=()=>`<b id="collSumCount"></b><span class="coll-sum-value" id="collValue"></span>${tipMarkup('參考總值與儲存方式','<div id="collValueDetail"></div><p>收藏只存在這台裝置：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期用「管理 → 匯出備份」存檔。</p>')}<a class="coll-market-link" href="/?view=market" data-spa>看卡牌行情</a>`;
+const collectionEmptyHtml=()=>'<div class="coll-empty"><img src="/assets/brand/web/rabbit-profile.webp" alt="" width="120" height="120" loading="lazy"><p>還沒有收藏。在卡片上按 ☆ 就會收在這裡。</p><button type="button" class="coll-empty-cta" data-coll-explore>去圖鑑找卡</button></div>';
+function renderCollectionSeries(){
+  const host=$('collSeries');if(!host)return;
+  host.hidden=!collectionUi.showSeries||!collectionItems().length;if(!host.hidden)host.innerHTML=collectionSeriesHtml();
+}
+function renderCollectionExtras(){
+  ensureCollectionHosts();
+  const empty=!collectionItems().length,summary=$('collSummary'),importHost=$('collImportHost'),html=importPreviewHtml(),status=$('collStatus');
+  document.querySelectorAll('#collMenu [data-coll-export],#collectionCsv').forEach(button=>{button.disabled=empty});
+  if(status&&status.textContent!==collectionUi.progress)status.textContent=collectionUi.progress;
+  summary.hidden=empty;if(!empty&&!summary.firstChild)summary.innerHTML=collectionSummaryHtml();
+  if(importHost.__html!==html){importHost.innerHTML=html;importHost.__html=html}
+  document.querySelector('#collMenu [data-coll-series-toggle]')?.setAttribute('aria-checked',String(collectionUi.showSeries));
+  renderCollectionSeries();refreshCollectionValue();
+}
+function renderCollectionPage(){
+  if(!inCollectionView()||!$('cards'))return;
+  ensureCollectionHosts();
+  const host=$('cards'),active=document.activeElement,wasInWall=Boolean(active?.closest?.('#cards')),focusKey=active?.closest?.('#cards .card')?.querySelector('[data-card-open]')?.dataset.cardOpen;
+  const all=collectionItems().map(collectionWallRow),filter=collectionUi.filter;
+  if(filter.game&&!all.some(row=>row.game===filter.game)){filter.game='';filter.series=''}
+  if(filter.series&&!all.some(row=>row.game===filter.game&&row.seriesId===filter.series))filter.series='';
+  const rows=all.filter(collectionRowMatches),filtered=Boolean(filter.game||filter.series);
+  cardDisplayState='ready';host.classList.remove('game-entry-grid');$('loadMore').style.display='none';
+  if(typeof showApplied==='function')showApplied(null);
+  if(typeof syncCardsMode==='function')syncCardsMode();
+  $('cardsTitle').textContent='我的收藏';$('cardsMeta').textContent=filtered?`${window.collectionFilterLabel()}：${rows.length} 款`:'';
+  $('cardsSection').classList.toggle('coll-is-empty',!all.length);$('cardTools').hidden=false;
+  // shortcut: renders whole collection, add paging if collections exceed ~500 cards
+  if(all.length)cards(rows);
+  else{currentCardRows=[];refreshRarityOptions([]);$('filterSummary').textContent='';host.classList.remove('list-view','rarity-view');host.innerHTML=collectionEmptyHtml()}
+  $('sideColl').innerHTML=collectionSideHtml(all);
+  renderCollectionExtras();window.cardscopeSideNav?.refresh?.();syncPageTitle();
+  if(wasInWall){const hit=focusKey&&[...host.querySelectorAll('[data-card-open]')].find(button=>button.dataset.cardOpen===focusKey);(hit||$('cardsTitle'))?.focus?.({preventScroll:true})}
+}
+const rerenderCollection=()=>{if(inCollectionView())renderCollectionPage()};
+// 進入收藏頁（不是每次重畫）：價格與篩選從頭來，補齊快照後再查參考價。
+function enterCollectionPage(){
+  Object.assign(collectionUi,{active:true,prices:{},priceMeta:null,pricesState:'idle',progress:'',pending:null,showSeries:false,filter:{game:'',series:''}});
+  if(collectionItems().length)resolveCollection().then(changed=>{if(changed)rerenderCollection();return loadCollectionPrices()});
+}
+
+// ── 管理選單：按鈕開關；↑↓／Home／End 移動、Esc 關掉並把焦點還給按鈕、Tab 離開就關。 ──
+const manageItems=()=>[...document.querySelectorAll('#collMenu [role^="menuitem"]:not(:disabled)')];
+function setManageMenu(open,focusFirst){
+  const menu=$('collMenu'),button=$('collManageBtn');if(!menu||!button)return;
+  menu.hidden=!open;button.setAttribute('aria-expanded',String(open));
+  if(open&&focusFirst)manageItems()[0]?.focus();
+}
+function exportCollection(){
+  const items=collectionItems(),filename=`cardscope-collection-${window.taipeiDate()}.json`;downloadFile(filename,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(items)));
+  collectionStatus(`已匯出 ${items.length} 款、${collectionTotal()} 張，備份檔 ${filename}（在瀏覽器的下載資料夾）。`);
+}
+function onManageItem(item){
+  setManageMenu(false);
+  const back=()=>$('collManageBtn')?.focus();
+  if('collExport' in item.dataset){exportCollection();back()}
+  else if('collImport' in item.dataset)$('collFile')?.click();
+  else if(item.id==='collectionCsv'){downloadWatchlistCsv();collectionStatus(`已下載清單 CSV（${collectionItems().length} 款）。`);back()}
+  else if('collSeriesToggle' in item.dataset){collectionUi.showSeries=!collectionUi.showSeries;renderCollectionExtras();if(collectionUi.showSeries){loadSeriesTotals();$('collSeriesTitle')?.focus()}else back()}
+}
+function onCollectionClick(event){
+  const target=event.target;if(!target?.closest)return;
+  const menu=$('collMenu'),toggle=target.closest('#collManageBtn'),item=target.closest('#collMenu [role^="menuitem"]');
+  if(toggle&&menu){const open=menu.hidden;setManageMenu(open,open&&event.detail===0);return}
+  if(item&&!item.disabled)return onManageItem(item);
+  if(menu&&!menu.hidden&&!target.closest('#collManage'))setManageMenu(false);
+  const side=target.closest('#sideColl .coll-side-btn');
+  if(side){
+    const filter=collectionUi.filter,data=side.dataset,inSide=Boolean($('sideNav')?.contains(document.activeElement));
+    if(data.collSeries){filter.game=data.collGame;filter.series=data.collSeries}else{filter.game=data.collGame||'';filter.series=''}
+    renderCollectionPage();
+    if(inSide)[...document.querySelectorAll('#sideColl .coll-side-btn')].find(button=>button.dataset.collGame===data.collGame&&button.dataset.collSeries===data.collSeries)?.focus();
+    return;
+  }
+  if(target.closest('[data-coll-explore]'))return Promise.resolve(window.openView?.('')).then(()=>{const tabs=$('channels');if(!tabs)return;window.scrollBelowHeader?.(tabs,8);(tabs.querySelector('.channel.on')||tabs.querySelector('.channel'))?.focus({preventScroll:true})});
+  if(target.closest('[data-coll-import-confirm]'))return confirmCollectionImport();
+  if(target.closest('[data-coll-import-cancel]')){collectionUi.pending=null;renderCollectionExtras();collectionStatus('已取消匯入，收藏沒有變動。');$('collManageBtn')?.focus()}
+}
+function onCollectionKey(event){
+  const button=$('collManageBtn'),menu=$('collMenu');if(!button||!menu)return;
+  const onButton=event.target===button,inMenu=Boolean(event.target.closest?.('#collMenu'));if(!onButton&&!inMenu)return;
+  const open=!menu.hidden,key=event.key;
+  if(key==='Escape'&&open){event.preventDefault();setManageMenu(false);button.focus();return}
+  if(key==='Tab'&&open){setManageMenu(false);return}
+  if(!['ArrowDown','ArrowUp','Home','End'].includes(key))return;
+  event.preventDefault();if(!open)setManageMenu(true);
+  const list=manageItems();if(!list.length)return;
+  const at=list.indexOf(document.activeElement),last=list.length-1;
+  list[key==='Home'?0:key==='End'?last:key==='ArrowDown'?(at+1)%list.length:at<=0?last:at-1].focus();
+}
+function onCollectionChange(event){
+  const target=event.target;
+  if(target.dataset?.collReplace!==undefined&&collectionUi.pending){collectionUi.pending.replace=target.checked;renderCollectionExtras();document.querySelector('#collImport [data-coll-replace]')?.focus();return}
+  if(target.id==='collFile'){const file=target.files?.[0];target.value='';importCollectionFile(file)}
+}
+document.addEventListener('click',onCollectionClick);
+document.addEventListener('keydown',onCollectionKey);
+document.addEventListener('change',onCollectionChange);
+// 收藏頁沒有遊戲的 renderGameLanding：render() 走到「全部遊戲」時改畫收藏牆；離開收藏頁就把 active 清掉，下次進來再重新補快照與查價。
+if(typeof renderGameLanding==='function'){
+  const baseLanding=renderGameLanding;
+  renderGameLanding=function(){
+    if(!inCollectionView())return baseLanding.apply(this,arguments);
+    if(!collectionUi.active)enterCollectionPage();
+    renderCollectionPage();
+  };
+}
+if(typeof render==='function'){
+  const baseRender=render;
+  render=function(){const result=baseRender.apply(this,arguments);if(!inCollectionView())collectionUi.active=false;return result};
+}
 
 // 搜尋框即時建議：輸入停 0.25 秒後查 /api/search（6 筆），在框下列出卡片；↑↓ 選、Enter 開卡、Esc 關。
 // 查詢若帶稀有度（阿爾宙斯UR），第一列說明已拆成「卡名＋稀有度」；Enter 沒選列時照原本的搜尋流程。

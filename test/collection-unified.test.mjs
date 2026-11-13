@@ -16,7 +16,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp
 function collection({ stored = {}, legacy = [], watchlist = {}, confirmAnswer = true, failWrites = false } = {}) {
   const storage = new Map(Object.entries(stored)), asked = [];
   const sandbox = vm.createContext({
-    CS, watchlist, watchlistMeta: {}, legacyFavoriteIds: legacy, renderedCards: new Map(), currentCardRows: [], asked,
+    CS, watchlist, watchlistMeta: {}, legacyFavoriteIds: legacy, renderedCards: new Map(), currentCardRows: [], asked, repaints: [], repaintCollected: (...args) => { sandbox.repaints.push(args); sandbox.renderDetailCollect(); },
     uiLocal: { get: (key, fallback) => storage.get(key) || fallback, set: (key, value) => { if (failWrites) return false; storage.set(key, value); return true; } },
     name: card => card.nameZh, cards() {}, renderDetailCollect() {}, showCollectionToast() {}, allKnownCards: () => [], cardSnapshot: (card, key) => ({ id: key, nameZh: card.nameZh }),
     confirm: message => { asked.push(message); return confirmAnswer; }
@@ -43,7 +43,7 @@ test('migration: old stars become quantity 1 once, counts stay, the old keys are
   assert.equal(failing.storage.has('cardscope-collection-unified'), false, 'not marked done, so the next load tries again');
 });
 
-test('star and ± share one number: add -> 1, remove asks first, ± never goes below the confirm', () => {
+test('star and ± share one number: add -> 1, removing a bare card is one press, notes or several copies ask first, ± never goes below the confirm', () => {
   const c = collection({ legacy: [], watchlist: {} });
   c.sandbox.renderedCards.set('a', { nameZh: '皮卡丘' });
   assert.equal(c.run('isFavorite("a")'), false);
@@ -55,6 +55,14 @@ test('star and ± share one number: add -> 1, remove asks first, ± never goes b
   c.run('stepWatchQuantity("a",-1)');
   assert.equal(c.run('watchQuantity("a")'), 1);
   assert.equal(c.sandbox.asked.length, 0, 'no question while the card stays in the collection');
+  // decision 10: one copy and nothing filled in (no condition, version or note) cancels at once, without a question
+  c.run('stepWatchQuantity("a",-1)');
+  assert.equal(c.run('watchQuantity("a")'), 0);
+  assert.equal(c.sandbox.asked.length, 0, 'a bare single copy is cancelled without asking');
+  assert.deepEqual(c.sandbox.repaints.at(-1), ['a', 1, 0], 'one single-card repaint per change');
+  // a saved condition, version or note is lost on cancel, so that asks
+  c.run('toggleFavorite("a")');
+  c.run('watchlistMeta.a={...watchlistMeta.a,condition:"NM"}');
   c.sandbox.confirm = () => { c.sandbox.asked.push('declined'); return false; };
   c.run('toggleFavorite("a")');
   c.run('stepWatchQuantity("a",-1)');
@@ -67,6 +75,20 @@ test('star and ± share one number: add -> 1, remove asks first, ± never goes b
   assert.equal(c.run('"a" in watchlistMeta'), false, 'removing also drops the saved condition and note');
   assert.equal(c.run('stepWatchQuantity("never",-1)'), undefined, 'a card that is not collected stays that way');
   assert.equal(c.run('watchQuantity("never")'), 0);
+  // several copies are also a loss worth one question, even with nothing filled in
+  c.run('setWatchQuantity("multi",3)');
+  c.sandbox.asked.length = 0;
+  c.sandbox.confirm = () => { c.sandbox.asked.push('multi'); return false; };
+  c.run('toggleFavorite("multi")');
+  assert.equal(c.sandbox.asked.length, 1);
+  assert.equal(c.run('watchQuantity("multi")'), 3);
+  for (const field of ['finish', 'note']) {
+    c.run('setWatchQuantity("n-' + field + '",1)');
+    c.run('watchlistMeta["n-' + field + '"]={...watchlistMeta["n-' + field + '"],' + field + ':"x"}');
+    c.run('toggleFavorite("n-' + field + '")');
+    assert.equal(c.sandbox.asked.length, 2 + (field === 'note' ? 1 : 0), field + ' also asks');
+    assert.equal(c.run('watchQuantity("n-' + field + '")'), 1);
+  }
 });
 
 test('one count everywhere: 款數 and 張數 come from quantity only, so the filter button and the collection window agree', () => {
@@ -74,22 +96,37 @@ test('one count everywhere: 款數 and 張數 come from quantity only, so the fi
   assert.deepEqual(JSON.parse(c.run('JSON.stringify(collectionIds())')), ['a', 'b']);
   assert.equal(c.run('collectionTotal()'), 3);
   assert.doesNotMatch(ui, /favoriteIds/, 'no second star list is kept');
-  assert.match(ui, /control\.textContent=`只看我的收藏（\$\{collectionIds\(\)\.length\}）`/);
+  // the 全部／已收藏／還缺 group reuses the stored cardscope-favorites-only switch; the count lives in the summary line, not on the button
+  assert.match(ui, /const current=missingOnlyActive\(\)\?'missing':favoritesOnly\?'owned':'all'/);
+  assert.match(ui, /uiLocal\.set\('cardscope-favorites-only',favoritesOnly\?'1':'0'\)/);
   assert.match(ui, /filteredCards=function\(rows\)\{const result=cardscopeBaseFilteredCards\(rows\);const owned=favoritesOnly\?result\.filter\(card=>isFavorite\(entryKey\(card\)\)\)/);
   assert.match(ui, /function collectionItems\(\)\{return CS\.itemsFromLegacy\(\[\],watchlist,watchlistMeta\)\.filter\(item=>item\.quantity>0\)\}/);
   assert.match(ui, /const quantity=CS\.collectedQuantity\(item\);if\(quantity>0\)watchlist\[item\.id\]=quantity/, 'importing an old star-only backup gives quantity 1');
 });
 
-test('collection window: region names follow the game, and the meaningless 最近瀏覽系列 stat is replaced by 涵蓋遊戲', () => {
-  assert.match(ui, /rn\(meta\.region,meta\.game\)/);
+test('collection page: wall rows keep the saved snapshot, the side list counts only games that are known, and version labels follow the game', () => {
   assert.match(ui, /choiceLabels\(meta\.choices\|\|\[\],meta\.game\)/);
   assert.match(ui, /bindPriceTrend\(c\.game,m,c\)/);
-  assert.doesNotMatch(ui, /最近瀏覽系列|collStatRecent|recentSeriesCount/);
-  const c = collection({ watchlist: { a: 1, b: 2, c: 1 } });
-  c.sandbox.watchlistMeta = { a: { game: 'pokemon' }, b: { game: 'onepiece' }, c: {} };
-  vm.runInContext(between('function collectionGameCount', 'function refreshCollectionValue'), c.sandbox);
-  assert.equal(c.run('collectionGameCount()'), 2, 'cards without a known game are not counted');
-  assert.match(ui, /function shownFinish\(item\)\{return item\.finish\|\|CS\.soleFinish\(/, 'a card with one price version shows it as the default 版本 (display only)');
+  assert.doesNotMatch(ui, /最近瀏覽系列|collStatRecent|recentSeriesCount|collectionGameCount/);
+  const meta = { a: { v: 1, game: 'pokemon', region: 'JP', seriesId: 's1', nameZh: '皮卡丘', officialCardNumber: '025', rarity: 'RR', image: 'https://x.test/a.png', version: '版本 2' }, b: { v: 1, game: 'onepiece' }, c: {} };
+  const sandbox = vm.createContext({ collectionUi: { filter: { game: '', series: '' }, failed: new Set() }, watchlistMeta: meta, G: () => ({}), window: { CARD_GAMES: [{ id: 'pokemon', name: '寶可夢' }, { id: 'onepiece', name: '航海王' }] }, e: esc, seriesLabel: id => id });
+  vm.runInContext(between('const collectionGameName', 'window.collectionFilterLabel'), sandbox);
+  const run = code => vm.runInContext(code, sandbox);
+  const rows = ['a', 'b', 'c'].map(id => run(`collectionWallRow({id:'${id}'})`));
+  assert.deepEqual([rows[0].region, rows[0].seriesId, rows[0].printings[0].cardId, rows[0].printings[0].imageUrl, rows[0].printings[0].metadata.variantName, rows[0].__collection], ['JP', 's1', 'a', 'https://x.test/a.png', '版本 2', true]);
+  assert.match(rows[2].nameZh, /卡片資料載入中（c）/, 'an entry without a snapshot says so');
+  sandbox.collectionUi.failed.add('c');
+  assert.match(run("collectionWallRow({id:'c'})").nameZh, /查無這張卡的資料（c）/);
+  sandbox.rows = rows;
+  const side = run('collectionSideHtml(rows)');
+  assert.match(side, /全部收藏<\/span><span class="coll-side-count">3</);
+  assert.equal(side.match(/data-coll-game=/g).length, 2, 'cards without a known game get no game button');
+  assert.doesNotMatch(side, /data-coll-series=/, 'series only open under the chosen game');
+  run("collectionUi.filter.game='pokemon'");
+  assert.match(run('collectionSideHtml(rows)'), /data-coll-game="pokemon" data-coll-series="s1"/);
+  assert.equal(run("collectionRowMatches({game:'pokemon',seriesId:'s1'})"), true);
+  assert.equal(run("collectionRowMatches({game:'onepiece',seriesId:''})"), false);
+  assert.match(ui, /function shownFinish\(item\)\{return item\.finish\|\|CS\.soleFinish\(/, 'a card with one price version shows it as the default 閃卡版本 (display only)');
 });
 
 // --- detail page: 收錄版本
@@ -103,7 +140,7 @@ const detail = vm.createContext({
   cardGameId: card => typeof card?.game === 'object' ? card.game.id : card?.game,
   DETAIL_SOURCE_NAMES: {}
 });
-vm.runInContext(`${lnSource};\n${between('function cardNumberLabel', 'function cardPriceLabel')}\n${between('// 系列名要跟隨', '// 分頁')}\n${between('// 收錄版本列', '// 詳細頁的收藏按鈕')}`, detail);
+vm.runInContext(`${lnSource};\n${between('function cardNumberLabel', 'function cardPriceLabel')}\n${between('// 系列名要跟隨', '// ADR 0042')}\n${between('// 收錄版本列', '// 詳細頁的收藏按鈕')}`, detail);
 const run = code => vm.runInContext(code, detail);
 
 test('收錄版本: One Piece Taiwan printings read 日文, not 繁體中文; other games keep the stored language', () => {
@@ -152,8 +189,8 @@ test('收錄版本: Yu-Gi-Oh! shows the printed number first with the passcode a
 test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the grid quantity, 44px targets', () => {
   const c = collection({ watchlist: {} });
   const slot = { dataset: { detailCollect: 'k1' }, innerHTML: '', contains: () => false, querySelector: () => null };
-  Object.assign(c.sandbox, { document: { querySelector: () => slot, activeElement: null } });
-  vm.runInContext(between('function renderDetailCollect', 'openCard=async function'), c.sandbox);
+  Object.assign(c.sandbox, { document: { querySelector: () => slot, activeElement: null }, collectionEditorHtml: () => '', onCollectionField() {}, chooseCollectionVersion() {} });
+  vm.runInContext(between('function renderDetailCollect', '// ── 詳細資料（REDESIGN_PLAN'), c.sandbox);
   c.run('renderDetailCollect()');
   assert.match(slot.innerHTML, /data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</);
   assert.doesNotMatch(slot.innerHTML, /data-collect-act="inc"/);
@@ -167,16 +204,13 @@ test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the 
   click('dec');
   assert.equal(c.run('watchQuantity("k1")'), 0, 'the last − removes after the same confirm as the star');
   assert.match(slot.innerHTML, /☆ 加入收藏/);
-  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>(?:\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\})(?:\$\{detailPriceMarkup\(c,m\.records\)\})?<div class="detail-actions"><div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name (the reference price row may sit between)');
+  assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>(?:\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\})(?:\$\{priceSlot\})?<div class="detail-actions"><div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name (the reference price row may sit between)');
   assert.match(ui, /\.detail-collect button\{min-width:44px;min-height:44px/);
 });
 
 // --- phone quick grid
-test('手機快速入口: 10 tiles fill two rows of five; the tour is reached from 重看導覽, not a filler tile', () => {
-  assert.doesNotMatch(ui, /label:'遊戲王日文'/);
-  assert.doesNotMatch(ui, /label:'新手導覽'/);
-  const items = ui.slice(ui.indexOf('const items=['), ui.indexOf('];', ui.indexOf('const items=[')));
-  assert.equal((items.match(/\{game:'/g) || []).length, 10);
+test('手機快速入口: the 2x5 grid is gone (the sidebar sheet owns game navigation); the tour is still reached from 重看導覽', () => {
+  assert.doesNotMatch(ui, /installMobileQuickGrid|mobile-quick-grid|mqg-tile/);
+  assert.doesNotMatch(ui, /label:'遊戲王日文'|label:'新手導覽'/);
   assert.match(readFileSync(new URL('../look-showcase.js', import.meta.url), 'utf8'), /重看導覽/);
-  assert.match(ui, /label:'遊戲王美版'/, 'the US tile stays');
 });

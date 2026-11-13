@@ -14,7 +14,7 @@ function load(setup = '') {
   const modal = { classList: { contains: () => modal.open }, open: false };
   const context = vm.createContext({ document, window: {}, console });
   context.window = context;
-  vm.runInContext(`var game='all',browse={seriesId:'',total:0},C={series:[]},cardFilters={rarity:'all'},seriesTotals=new Map(),activeSearch=null,
+  vm.runInContext(`var inCollectionView=()=>document.body.dataset.view==='collection',game='all',browse={seriesId:'',total:0},C={series:[]},cardFilters={rarity:'all'},seriesTotals=new Map(),activeSearch=null,
     G=id=>({nameZh:({pokemon:'寶可夢',onepiece:'航海王'})[id]||''}),$=id=>id==='modal'?globalThis.__modal:null,
     zhParts=name=>({name:name||''}),original=c=>c.nameJa||c.nameEn||'',printingSeries=(c,selected)=>selected?.series||c.series,
     rarityInfo=raw=>({code:raw||'NONE'}),cardRarityRaw=c=>c.rarity,cardGameId=c=>c.game;${setup}`, context);
@@ -33,6 +33,7 @@ test('exact title copy matches the server (providers/seo.mjs)', () => {
   assert.equal(title({ kind: 'series', name: '151', region: '日版', game: '寶可夢', count: null }), '151 卡表｜日版寶可夢｜CardScope', 'the count is dropped when unknown');
   assert.equal(title({ kind: 'card', name: '皮卡丘', original: 'ピカチュウ', number: '025/165', rarity: 'RR', series: '151' }), '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
   assert.equal(title({ kind: 'collection' }), '我的收藏｜CardScope');
+  assert.equal(title({ kind: 'market' }), '卡牌參考價漲跌與時事｜CardScope');
   assert.equal(title({ kind: 'about' }), '資料收錄狀態｜CardScope');
   assert.equal(title({ kind: 'privacy' }), '隱私說明｜CardScope');
 });
@@ -72,14 +73,15 @@ test('the page kinds produce distinct titles from real page state', () => {
   record('about', '資料收錄狀態｜CardScope');
   h.run("document.body.dataset.view='privacy'");
   record('privacy', '隱私說明｜CardScope');
-  h.document.getElementById = id => id === 'collectionDialog' ? { open: true } : null;
+  h.run("document.body.dataset.view='collection'");
   record('collection', '我的收藏｜CardScope');
-  h.document.getElementById = () => null;
+  h.run("document.body.dataset.view='market'");
+  record('market', '卡牌參考價漲跌與時事｜CardScope');
   h.run("document.body.dataset.view='';game='pokemon'");
   h.modal.open = true;
   h.run("detailTitleInfo={name:'皮卡丘',original:'ピカチュウ',number:'025/165',rarity:'RR',series:'151'}");
   record('card detail', '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
-  assert.equal(seen.size, 8);
+  assert.equal(seen.size, 9);
 });
 
 test('closing the card detail or the collection restores the title of the page underneath', () => {
@@ -94,10 +96,10 @@ test('closing the card detail or the collection restores the title of the page u
   h.modal.open = false;
   h.run('syncPageTitle()');
   assert.equal(h.document.title, underneath, 'closing the modal returns to the series title');
-  h.document.getElementById = () => ({ open: true });
+  h.run("document.body.dataset.view='collection'");
   h.run('syncPageTitle()');
   assert.equal(h.document.title, '我的收藏｜CardScope');
-  h.document.getElementById = () => ({ open: false });
+  h.run("document.body.dataset.view=''");
   h.run('syncPageTitle()');
   assert.equal(h.document.title, underneath, 'closing the collection returns to the series title');
 });
@@ -124,5 +126,5 @@ test('openCard sets the title from the loaded card, resets it on a new open, and
   assert.match(ui, /if\(!options\.keepPosition\)detailTitleInfo=null;/, 'a new card clears the previous card title info');
   assert.match(ui, /detailTitleInfo=cardTitleParts\(c,selectedPrinting\);syncPageTitle\(\);/, 'the detail view sets the title when its content is drawn');
   assert.match(ui, /new MutationObserver\(syncPageTitle\)/, 'closing the modal or switching view re-syncs');
-  assert.match(ui, /dialog\.addEventListener\('close',syncPageTitle\)/, 'closing the collection re-syncs');
+  assert.match(ui, /watch\(document\.body,\['data-view','data-game'\]\)/, 'entering or leaving the collection or market page re-syncs');
 });

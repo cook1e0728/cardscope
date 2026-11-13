@@ -72,7 +72,7 @@ test('no served source has an inline event-handler attribute, a javascript: URL,
 // A tiny DOM stand-in: addEventListener records the listeners, and `dispatch` runs them the way a capture/bubble listener on document would.
 function fakeDocument() {
   const listeners = [];
-  return { listeners, addEventListener: (type, fn, capture) => listeners.push({ type, fn, capture: Boolean(capture) }), dispatch: (type, event) => listeners.filter(l => l.type === type).forEach(l => l.fn(event)) };
+  return { listeners, querySelectorAll: () => [], addEventListener: (type, fn, capture) => listeners.push({ type, fn, capture: Boolean(capture) }), dispatch: (type, event) => listeners.filter(l => l.type === type).forEach(l => l.fn(event)) };
 }
 
 test('ui-actions.js: data-do clicks reach the current window function; unknown actions and non-functions are ignored; image errors are handled in the capture phase', async () => {

@@ -57,6 +57,44 @@ test('card detail markup is a labelled modal dialog wired to the focus helper',(
 });
 
 test('Escape handled by the zoom view (and arrow keys handled by the tab list) do not also act on the detail dialog',()=>{
-  const listener=ui.slice(ui.lastIndexOf("document.addEventListener('keydown'"));
+  const listener=ui.slice(ui.indexOf("document.addEventListener('keydown',event=>{if(event.defaultPrevented)return;"));
   assert.match(listener,/^document\.addEventListener\('keydown',event=>\{if\(event\.defaultPrevented\)return;/);
+});
+
+// ---- 階段 4：桌機側板不鎖 Tab，手機／平板全螢幕才鎖；視窗寬度跨過 1000px 時即時切換 ----
+test('side panel mode (trap off): focus still moves in and returns, but Tab is never held inside',()=>{
+  const h=harness();let panel=true;
+  h.context.window.installDialogFocus(h.modal,{doc:h.doc,initialFocus:()=>h.close,trap:()=>!panel});
+  h.opener.focus();
+  h.setOpen(true);
+  assert.equal(h.doc.activeElement,h.close,'focus still moves into the panel when it opens');
+  h.last.focus();
+  assert.equal(h.tab().defaultPrevented,false,'Tab from the last control leaves the panel for the wall');
+  assert.equal(h.tab(true).defaultPrevented,false);
+  h.doc.activeElement=h.doc.body;
+  assert.equal(h.tab().defaultPrevented,false,'focus on the page is not pulled back in');
+  h.setOpen(false);
+  assert.equal(h.doc.activeElement,h.opener,'closing returns focus to the card that opened it');
+});
+
+test('crossing the breakpoint while open switches between free Tab and the full-screen trap',()=>{
+  const h=harness();let panel=true;
+  h.context.window.installDialogFocus(h.modal,{doc:h.doc,initialFocus:()=>h.close,trap:()=>!panel});
+  h.opener.focus();h.setOpen(true);
+  h.last.focus();
+  assert.equal(h.tab().defaultPrevented,false,'wide: free');
+  panel=false;
+  h.last.focus();
+  assert.equal(h.tab().defaultPrevented,true,'narrow (rotated phone, resized window): the full-screen page traps again');
+  assert.equal(h.doc.activeElement,h.close);
+  h.doc.activeElement=h.doc.body;
+  h.tab();
+  assert.equal(h.doc.activeElement,h.close,'focus that is out on the page is pulled into the full-screen page');
+  panel=true;
+  h.last.focus();
+  assert.equal(h.tab().defaultPrevented,false,'back to wide: free again');
+});
+
+test('the card detail installs the focus helper with trap = full-screen mode only',()=>{
+  assert.match(ui,/installDialogFocus\?\.\(\$\('modal'\),\{initialFocus:\(\)=>\$\('close'\),trap:\(\)=>window\.detailMode\(\)!=='panel'/);
 });

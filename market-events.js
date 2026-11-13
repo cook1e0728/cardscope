@@ -1,4 +1,4 @@
-// 卡牌時事：把 /api/market-events 畫進首頁與遊戲頁。近期排前面，即將發生的標「即將」；只是發售日與官方消息，不代表會影響價格。
+// 卡牌時事：把 /api/market-events 畫進行情頁（?view=market）；其他頁不顯示也不請求。近期排前面，即將發生的標「即將」；只是發售日與官方消息，不代表會影響價格。
 (root=>{
   const LIMIT=8,GAMES={pokemon:'寶可夢',yugioh:'遊戲王',onepiece:'航海王',haikyuu:'排球少年','weiss-schwarz':'芙莉蓮','dragonball-fw':'七龍珠超'};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -9,7 +9,7 @@
   function render(){
     const section=root.document?.getElementById('eventsSection');if(!section)return;
     const view=root.document.body?.dataset||{},game=view.game&&view.game!=='all'?view.game:null;
-    if(view.view==='about'||view.view==='privacy'){section.hidden=true;return}
+    if(view.view!=='market'){section.hidden=true;return}
     pending=pending||root.fetch('/api/market-events').then(r=>r.ok?r.json():null).catch(()=>null);
     pending.then(body=>{
       if(!body)pending=null;

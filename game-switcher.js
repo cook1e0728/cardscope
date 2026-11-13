@@ -86,10 +86,12 @@
       scrollTo({top:0,behavior:behavior()});box?.focus({preventScroll:true});box?.select?.();
     },
     browse(){
-      const quick=document.getElementById('mobileQuickGrid'),tabs=visible(quick)?quick:document.getElementById('channels');if(!tabs)return;
-      scope.scrollBelowHeader?.(tabs,8);(tabs.querySelector('.channel.on')||tabs.querySelector('.channel')||tabs.querySelector('.mqg-tile'))?.focus({preventScroll:true});
+      // 我的收藏、行情沒有遊戲列：先回首頁再跳到遊戲列
+      if(['collection','market'].includes(document.body?.dataset?.view)&&typeof scope.openView==='function')return Promise.resolve(scope.openView('')).then(()=>navigate.browse());
+      const tabs=document.getElementById('channels');if(!tabs)return;
+      scope.scrollBelowHeader?.(tabs,8);(tabs.querySelector('.channel.on')||tabs.querySelector('.channel'))?.focus({preventScroll:true});
     },
-    // ui-enhancements.js owns the favourites; it should expose window.openCollection(). Until it does, open the same list through its page controls:
+    // 我的收藏是獨立一頁（?view=collection，ui-enhancements.js 的 window.openCollection 走 navigation-state.js 的 window.openView）。沒有它時，退回用遊戲頁的收藏控制項：
     // a game page's "只看收藏" filter and 我的收藏 summary (a game is chosen first when none is open).
     async collection(){
       if(typeof scope.openCollection==='function')return scope.openCollection();

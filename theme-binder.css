@@ -58,7 +58,7 @@ body[data-view="game"] .cards .card .ip-badge{display:none}
 .card-rarity[data-tier="high"]{background:#B8BCC4;color:#22252A}
 
 /* Fewer pills: square-ish controls in the binder look. */
-.view-switch button,.tabs .tab,.filter-sheet-toggle,.chip,.badge{border-radius:6px}
+.view-switch button,.tabs .tab,.chip,.badge{border-radius:6px}
 
 /* Remaining pills in the binder look: squared buttons whose selected state uses the IP colour like the index
    tabs, square status labels, and the buyback rise as a price sticker. The body prefix outranks the
@@ -297,7 +297,7 @@ button.applied-chip:hover{border-color:var(--ink);background:#fff}
 .notice[data-state="error"]{border-color:#B3261E;background:#FBEDEB}
 .notice-retry{border-radius:6px;background:var(--ink);border-color:var(--ink)}
 .notice-retry:focus-visible{outline-color:var(--ip-ink)}
-.channel.on .channel-art,.game-entry:hover,.game-entry:focus-visible{box-shadow:none}
+.channel.on .channel-art{box-shadow:none}
 .selected-product{background:var(--paper-2);border-color:var(--rule)}
 .channel-art{background:#fff}
 .tabs .tab.on,.tab.on{border-bottom-color:var(--ip-ink)}

@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import {
   DEFAULT_BASE_URL, SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, canonicalUrl, cardSeo, cardSitemapEntries, chunkEntries, dateOnly, escapeHtml,
-  jsonLdScript, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries
+  jsonLdScript, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo
 } from '../providers/seo.mjs';
 
 const BASE = 'https://cardscope.onrender.com';
@@ -133,7 +133,8 @@ test('sitemap helpers: index and url set format, escaped URLs, 40,000-URL files,
   assert.deepEqual(chunkEntries(many).map(part => part.length), [SITEMAP_MAX_URLS, SITEMAP_MAX_URLS, 1]);
   assert.equal(chunkEntries(many.slice(0, 5), 10 ** 9).length, 1, 'a size above 40,000 is capped');
   assert.deepEqual(chunkEntries([]), []);
-  assert.deepEqual(pageSitemapEntries(BASE, ['pokemon', 'yugioh']).map(entry => entry.loc), [`${BASE}/`, `${BASE}/?game=pokemon`, `${BASE}/?game=yugioh`, `${BASE}/?view=about`, `${BASE}/?view=privacy`]);
+  assert.deepEqual(pageSitemapEntries(BASE, ['pokemon', 'yugioh']).map(entry => entry.loc), [`${BASE}/`, `${BASE}/?game=pokemon`, `${BASE}/?game=yugioh`, `${BASE}/?view=about`, `${BASE}/?view=privacy`, `${BASE}/?view=market`]);
+  assert.equal(pageSitemapEntries(BASE, ['pokemon']).some(entry => entry.loc.includes('collection')), false, 'the collection page lives on the visitor\'s device: not in the sitemap');
   assert.equal(dateOnly('2026-10-14 08:19:19.5761+00'), '2026-10-14');
   assert.equal(dateOnly('nonsense'), '');
 
@@ -343,6 +344,25 @@ test('HTTP: ?view=about and ?view=privacy have their own title, canonical and de
   }
 });
 
+test('HTTP: ?view=market has its own title, canonical and description and is in the sitemap; ?view=collection is noindex and not', async () => {
+  const market = await get('/?view=market');
+  assert.equal(market.status, 200);
+  assert.match(head(market.body), /<title>卡牌參考價漲跌與時事｜CardScope<\/title>/);
+  assert.match(head(market.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?view=market">/);
+  assert.match(head(market.body), /<meta name="description" content="[^"]*參考價不是成交價[^"]*">/);
+  assert.equal(market.body.includes('name="robots"'), false, 'the market page is indexable');
+  const collection = await get('/?view=collection');
+  assert.equal(collection.status, 200);
+  assert.match(head(collection.body), /<title>我的收藏｜CardScope<\/title>/);
+  assert.match(head(collection.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?view=collection">/);
+  assert.match(head(collection.body), /<meta name="robots" content="noindex">/, 'local data: nothing for a crawler to index');
+  const pages = await get('/sitemaps/pages.xml');
+  assert.match(pages.body, /view=market/);
+  assert.doesNotMatch(pages.body, /view=collection/);
+  assert.equal(viewSeo({ view: 'collection', baseUrl: BASE }).noindex, true);
+  assert.equal(viewSeo({ view: 'market', baseUrl: BASE }).noindex, undefined);
+});
+
 test('HTTP: a card page with art uses the small twitter card; the default image gets 1200x630 and the large one', async () => {
   const art = head((await get('/?game=pokemon&card=pokemon-tcgdex-ja-sv6a-090')).body);
   assert.match(art, /<meta name="twitter:card" content="summary">/);
@@ -390,7 +410,7 @@ test('HTTP: pages.xml needs no database', async () => {
   const pages = await get('/sitemaps/pages.xml');
   assert.equal(pages.status, 200);
   assert.match(pages.type, /^application\/xml/);
-  assert.deepEqual([...pages.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/', ...['pokemon', 'onepiece', 'yugioh', 'haikyuu', 'weiss-schwarz', 'dragonball-fw'].map(game => `https://seo.example.test/?game=${game}`), 'https://seo.example.test/?view=about', 'https://seo.example.test/?view=privacy']);
+  assert.deepEqual([...pages.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].replaceAll('&amp;', '&')), ['https://seo.example.test/', ...['pokemon', 'onepiece', 'yugioh', 'haikyuu', 'weiss-schwarz', 'dragonball-fw'].map(game => `https://seo.example.test/?game=${game}`), 'https://seo.example.test/?view=about', 'https://seo.example.test/?view=privacy', 'https://seo.example.test/?view=market']);
 });
 
 test('HTTP: a failed sitemap build is a 503 and is not cached; concurrent requests share one build; keyset paging covers every card once', async () => {

@@ -67,10 +67,10 @@ test('empty search: symbols-only hint is shown; suggestion reason codes are Chin
 });
 
 test('arrow keys do not change the card behind an open zoom view; landing nav and series URLs scroll to the wall', () => {
-  assert.match(ui, /if\(\$\('cardZoom'\)\?\.classList\.contains\('open'\)\)return;if\(event\.key==='ArrowLeft'\)/);
+  assert.match(ui, /if\(!\$\('modal'\)\?\.classList\.contains\('open'\)\|\|\$\('cardZoom'\)\?\.classList\.contains\('open'\)\)return;const step=\{ArrowLeft:-1,ArrowRight:1\}\[event\.key\];if\(step&&canStepWithKey\(event\)\)openAdjacentCard\(step\)/);
   assert.match(nav, /const landOnSeries=[^;]*state\.series\|\|state\.rarity!=='all'[^;]*history\.state\?\.scrollY==null/);
   assert.match(nav, /if\(landOnSeries\)requestAnimationFrame\(\(\)=>window\.scrollBelowHeader\?\.\(node\('cardsTitle'\)\)\)/);
-  assert.match(showcase, /dialog\.collection-dialog\[open\]'\)\?'collection'/, 'dock and top bar both mark 我的收藏 while the dialog is open');
+  assert.match(showcase, /view==='collection'\?'collection'/, 'dock and top bar both mark 我的收藏 on the collection page');
 });
 
 test('filter summary: 稀有度待補 is only claimed when no rarity filter narrows the result', () => {

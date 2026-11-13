@@ -146,12 +146,16 @@ test('series wall: progress needs the server total, only an unfiltered total is 
   w.run('seriesProgressState()');
   assert.equal(w.persisted.length, 1, 'saved once, not on every redraw');
   w.sandbox.nodes.seriesProgress = { hidden: true, innerHTML: '' };
+  w.sandbox.nodes.missingOnly = { hidden: true, textContent: '' };
   w.run('renderSeriesProgress()');
   const html = w.sandbox.nodes.seriesProgress.innerHTML;
   assert.equal(w.sandbox.nodes.seriesProgress.hidden, false);
-  assert.match(html, /已收藏 2 \/ 共 10 張（20%）/);
+  assert.match(html, /<span class="series-progress-text">已收藏 2／共 10 張<\/span>/, 'one line of text; the percentage lives in the 4px line');
   assert.match(html, /role="progressbar"[^>]*aria-valuemax="10"[^>]*aria-valuenow="2"/);
-  assert.match(html, /id="missingOnly" class="favorites-filter" aria-pressed="false">只看缺的卡（8）/);
+  // 「還缺 N」是收藏狀態那一組的第三顆，不再放在進度那一塊
+  assert.equal(w.sandbox.nodes.missingOnly.hidden, false);
+  assert.equal(w.sandbox.nodes.missingOnly.textContent, '還缺 8');
+  assert.doesNotMatch(html, /missingOnly/);
 
   // a rarity-filtered total is not the series total: nothing is remembered and nothing is shown until an unfiltered one is seen
   const filtered = wall({ rows, rarity: 'SR', total: 3 });
@@ -178,13 +182,14 @@ test('只看缺的卡: applies only to the series it was switched on in, hides c
   assert.equal(w.run('missingOnlyActive()'), false, 'another series starts with the switch off');
   w.sandbox.browse.seriesId = 's1';
   w.sandbox.nodes.seriesProgress = { hidden: true, innerHTML: '' };
+  w.sandbox.nodes.missingOnly = { hidden: true, textContent: '' };
   w.run('renderSeriesProgress()');
-  assert.match(w.sandbox.nodes.seriesProgress.innerHTML, /aria-pressed="true"/);
+  assert.equal(w.sandbox.nodes.missingOnly.textContent, '還缺 9');
   assert.match(w.sandbox.nodes.seriesProgress.innerHTML, /只篩選已載入的卡；還有卡沒載入/);
   // the card filter used by the wall
   assert.match(ui, /return missingOnlyActive\(\)\?owned\.filter\(card=>!isFavorite\(entryKey\(card\)\)\):owned/);
   assert.match(ui, /activateCardActions\(host\);renderFavoritesControl\(\);renderWatchlistSummary\(\);renderSeriesProgress\(\);/);
-  assert.match(ui, /progress\.onclick=event=>\{if\(!event\.target\.closest\('#missingOnly'\)\)return;missingOnly=!missingOnlyActive\(\);missingOnlySeries=browse\.seriesId/);
+  assert.match(ui, /function setCollectionState\(state\)\{\s*favoritesOnly=state==='owned';missingOnly=state==='missing';if\(missingOnly\)missingOnlySeries=browse\.seriesId;/, 'the segmented 全部／已收藏／還缺 group drives the same switches');
   assert.match(ui, /seriesId:printing\?\.seriesId\|\|card\.seriesId\}/, 'a new collection entry stores its series when it is added');
 });
 
@@ -216,12 +221,12 @@ test('import dialog wiring: preview before writing, replace needs the checkbox a
   assert.match(ui, /data-coll-replace/);
   assert.match(ui, /if\(pending\.replace&&!confirm\(`這會刪除目前的/);
   assert.match(ui, /if\(file\.size>CS\.LIMITS\.fileMaxChars\)\{collectionStatus\('沒有匯入：檔案過大（上限 2 MB）/);
-  assert.match(ui, /const parsed=CS\.parseImport\(text\);\s*if\(parsed\.error\)\{collectionUi\.pending=null;renderCollection\(\);collectionStatus/);
+  assert.match(ui, /const parsed=CS\.parseImport\(text\);\s*if\(parsed\.error\)\{collectionUi\.pending=null;renderCollectionExtras\(\);collectionStatus/);
   const importFlow = between('async function importCollectionFile', 'function onCollectionField');
   assert.doesNotMatch(importFlow.slice(0, importFlow.indexOf('async function confirmCollectionImport')), /applyItems|commitItems|persistCollection/, 'choosing a file only previews');
   assert.match(importFlow, /if\(!commitItems\(plan\.items\)\)return collectionStatus\('無法寫入瀏覽器儲存空間/);
   assert.match(ui, /系列 ID','遊戲','地區'/, 'CSV keeps its columns and adds the series ones at the end');
-  assert.match(ui, /<h3>各系列進度/);
+  assert.match(ui, /各系列進度/);
   assert.match(ui, /CS\.seriesBreakdown\(collectionItems\(\),10\)/);
 });
 

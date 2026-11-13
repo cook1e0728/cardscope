@@ -51,7 +51,7 @@
     const rect = button.getBoundingClientRect(), wrap = make('div', 'fx-burst'), star = make('span', 'fx-burst-star');
     wrap.style.left = rect.left + rect.width / 2 + 'px'; wrap.style.top = rect.top + rect.height / 2 + 'px';
     star.textContent = '★'; wrap.append(star);
-    star.animate([{ transform: 'scale(.6)', opacity: .9 }, { transform: 'scale(1.9)', opacity: 0 }], { duration: 480, easing: EASE });
+    star.animate([{ transform: 'scale(.6)', opacity: .9 }, { transform: 'scale(1.9)', opacity: 0 }], { duration: 480, easing: EASE, fill: 'forwards' }); // forwards: 不然 480ms 播完到 650ms 移除前，星星會彈回不透明閃一下
     for (let i = 0; i < 8; i++) {
       const dot = make('span', 'fx-burst-dot'), angle = (i / 8) * Math.PI * 2 + Math.random() * .4, dist = 22 + Math.random() * 14;
       wrap.append(dot);
@@ -82,8 +82,9 @@
           started = true;
           source.style.viewTransitionName = ''; // 舊畫面已拍好；名字必須唯一，不能和彈窗主圖同時存在
           result = original.apply(this, args);
-          // 最多等 0.5 秒讓彈窗內容畫好；網路慢就放棄飛行，彈窗照常晚點出現
-          await Promise.race([Promise.resolve(result).catch(() => {}), sleep(500)]);
+          // openCard 先用卡牆已有的資料同步畫出卡圖；最多再等 0.5 秒（網址直開、搜尋建議沒有卡牆資料時卡圖要等 API），網路慢就放棄飛行，詳細資料照常晚點出現
+          const until = Date.now() + 500;
+          while (!popupImage() && Date.now() < until) await sleep(30);
           target = popupImage();
           if (target) { target.style.viewTransitionName = 'fx-card'; await Promise.race([target.decode?.().catch(() => {}), sleep(200)]); }
         });
@@ -112,7 +113,7 @@
   }, true);
 
   // ---- 3. 價格圖畫入 ----
-  // 圖在隱藏的分頁裡時不演（等它真的看得到），每張圖只演一次；hover、換範圍重畫都不會再演。
+  // 圖還沒捲進視窗時不演（等它真的看得到），每張圖只演一次；hover、換範圍重畫都不會再演。
   const charts = new WeakSet();
   const chartIO = typeof IntersectionObserver === 'function' ? new IntersectionObserver(entries => entries.forEach(entry => {
     if (!entry.isIntersecting) return;
@@ -127,7 +128,7 @@
       if (len) path.animate([{ strokeDasharray: len, strokeDashoffset: len }, { strokeDasharray: len, strokeDashoffset: 0 }], { duration: 700, easing: 'cubic-bezier(.4,0,.2,1)' });
     });
     chart.querySelector('.ptl-area')?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 700, easing: 'ease-out' });
-    const big = (chart.closest('[data-price-trend]') || chart.closest('[role="tabpanel"]') || doc).querySelector('.ptl-big');
+    const big = (chart.closest('[data-price-trend]') || chart.closest('[data-price-body]') || doc).querySelector('.ptl-big');
     if (big) countUp(big);
   }
   // 數字 0 → 原值；結尾還原成當初渲染的原字串。中途 price-timeline 自己改了字（使用者開始拖動）就讓位。

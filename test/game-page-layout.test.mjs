@@ -6,7 +6,7 @@ const [html,css,ui]=await Promise.all(['../index.html','../catalog-layout.css','
 
 test('game pages are marked before first paint and kept in sync by render',()=>{
   assert.ok(html.indexOf("document.body.dataset.view=")<html.indexOf('class="skip-link"'),'the view is set before any content paints');
-  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)\{document\.body\.dataset\.view=gameView\?'game':siteView==='about'\|\|siteView==='privacy'\?siteView:'landing';document\.body\.dataset\.game=game\}placeTrends\(gameView\);/);
+  assert.match(html,/function render\(\)\{const gameView=game!=='all';if\(document\.body\?\.dataset\)\{document\.body\.dataset\.view=gameView\?'game':\['about','privacy','collection','market'\]\.includes\(siteView\)\?siteView:'landing';document\.body\.dataset\.game=game\}placeTrends\(gameView\);/);
 });
 
 test('game pages open on series and cards; the landing keeps its introduction',()=>{
@@ -16,13 +16,15 @@ test('game pages open on series and cards; the landing keeps its introduction',(
   assert.match(html,/if\(gameView\)\{if\(cardsSection\.nextElementSibling!==trends\)cardsSection\.after\(trends\)\}/);
 });
 
-test('phone filters live in a bottom sheet that waits for 套用',()=>{
-  assert.match(ui,/installCardUtilities\(\);\r?\ninstallFilterSheet\(\);/);
-  assert.match(ui,/sheet\.addEventListener\('change',event=>\{if\(applying\|\|!isOpen\(\)\|\|!selects\.includes\(event\.target\)\)return;event\.stopPropagation\(\);/);
-  assert.match(ui,/backdrop\.onclick=\(\)=>close\(true\)/,'the backdrop discards changes');
-  assert.match(ui,/installDialogFocus\?\.\(sheet,/,'the sheet traps focus like the detail dialog');
-  assert.match(css,/\.filter-sheet\{display:contents\}/,'wide screens keep the inline toolbar');
-  assert.match(css,/\.card-tools\{backdrop-filter:none\}/,'the fixed sheet is positioned against the viewport');
+// 重新設計 v2 階段 3（決定 11）：工具列只有一套。手機不再有「篩選與排序」底部面板，同一排橫向捲動。
+test('the card toolbar is one row for every width: no phone bottom sheet, no second copy of the filters',async()=>{
+  const v2=await readFile(new URL('../look-v2.css',import.meta.url),'utf8');
+  assert.doesNotMatch(ui,/installFilterSheet|filter-sheet-toggle|filter-sheet-apply|refreshFilterSummary/,'the phone sheet is gone');
+  assert.match(ui,/installCardUtilities\(\);/);
+  assert.match(ui,/controls\.id='cardControls'/,'display | grouping | rarity | sort | collection state live in one container');
+  assert.match(ui,/controls\.append\(display,group,\.\.\.tools\.querySelectorAll\(':scope > \.filter-field'\)\)/,'the existing rarity and sort selects are moved, not copied');
+  assert.match(ui,/\(\$\('cardControls'\)\|\|tools\)\.append\(state\)/,'the collection state group is the last item of the same row');
+  assert.match(v2,/@media \(max-width:760px\)\{[\s\S]*#cardControls\{flex-wrap:nowrap;overflow-x:auto/,'phones scroll the one row sideways instead of wrapping into a second set');
 });
 
 test('the series band replaces the old title band and the game-page 商品圖鑑',async()=>{
@@ -52,7 +54,7 @@ test('the landing is search first; statistics, health and the purple CTA live on
   assert.match(html,/data-example="桃歹郎"/);
   assert.doesNotMatch(html,/class="tabs"|最新收錄/,'the dead 最新收錄 tab row is gone');
   assert.match(html,/href="\/\?view=about"/,'the footer links to the data status');
-  assert.match(html,/\['about','privacy'\]\.includes\(p\.get\('view'\)\)\?p\.get\('view'\):'landing'/,'the view is set before first paint');
+  assert.match(html,/\['about','privacy','collection','market'\]\.includes\(p\.get\('view'\)\)\?p\.get\('view'\):'landing'/,'the view is set before first paint');
   assert.match(theme,/body:not\(\[data-view="about"\]\) #coverageStatus/);
   assert.match(theme,/body:not\(\[data-view="about"\]\) \.brand-showcase/);
   assert.match(theme,/body\[data-view="landing"\] section\.section:has\(> #series\)/,'the empty 商品圖鑑 frame is gone from the landing');
@@ -70,10 +72,7 @@ test('UI 收尾（ADR 0047）：分頁籤附數量、手機稀有度膠囊列、
   assert.match(band,/<span class="count" aria-hidden="true">\$\{count\}<\/span>/,'tab count comes from lists already in memory');
   assert.match(band,/aria-label="\$\{esc\(`\$\{text\}，\$\{count\} \$\{unit\}`\)\}"/,'screen readers hear the unit, e.g. 朱／紫系列，12 個系列');
   assert.match(clean,/\.series-band-tabs \.count\{[^}]*font-variant-numeric:tabular-nums/);
-  assert.match(ui,/function installRarityPills\(\)/);
-  assert.match(ui,/select\.dispatchEvent\(new Event\('change',\{bubbles:true\}\)\)/,'pills drive the existing #rarityFilter');
-  assert.match(clean,/\.rarity-pills\{display:none\}/,'desktop keeps the select');
-  assert.match(clean,/\.rarity-pills button\[aria-pressed="true"\]:before\{content:"✓ "\}/,'the selected pill is not colour-only');
+  assert.doesNotMatch(ui,/installRarityPills|rarity-pills|RARITY_ZH_META/,'階段 3：手機稀有度快選已移除，稀有度只用工具列的下拉（決定 9）');
   const nav=await readFile(new URL('../navigation-state.js',import.meta.url),'utf8');assert.match(nav,/AbortError'\)return/,'cancelling the share sheet is not an error');
   assert.match(nav,/field\.readOnly=true/,'the last fallback is a selectable read-only URL field');
   assert.match(clean,/\.detail-meta a\{[^}]*min-height:44px/);

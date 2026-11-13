@@ -5,6 +5,7 @@
   const allowedRegions=new Set(['all','JP','TW','US','CN','KR','ASIA']);
   const allowedSorts=new Set(['number-asc','number-desc','rarity-desc','rarity-asc','price-asc','price-desc','release-desc']);
   const allowedPrices=new Set(['all','priced','unpriced']);
+  const SITE_VIEWS=['about','privacy','collection','market'];
   let restoring=false;
 
   const node=id=>document.getElementById(id);
@@ -22,10 +23,15 @@
     if('activeDetailCardId'in window)window.activeDetailCardId=null;
   }
 
+  // ui-enhancements.js owns the open/close of the detail (it also keeps the card the user was looking at from jumping when the side panel changes the wall width).
   function closeDetail(){
+    if(typeof window.closeCardDetail==='function'){window.closeCardDetail();return}
     node('modal')?.classList.remove('open');
     clearActiveDetailCard();
   }
+  const panelMode=()=>window.detailMode?.()==='panel';
+  // 搜尋框、選單、滑桿自己處理 Esc／方向鍵；側板常駐時不能被這裡搶走。
+  const editable=target=>Boolean(target?.closest?.('input,select,textarea,[contenteditable="true"],[contenteditable=""],[role="combobox"],[role="listbox"],[role="slider"]'));
 
   function moveSecondaryContent(){
     const main=document.querySelector('main.wrap'),brand=main?.querySelector('.brand-showcase'),guidance=node('betaGuidanceTitle')?.closest('.beta-guidance'),coverage=node('coverageStatus');
@@ -36,12 +42,14 @@
 
   function readLocation(){
     const params=new URLSearchParams(location.search),requestedGame=clean(params.get('game'))||'all',requestedRegion=clean(params.get('region'))||'all';
+    const view=['all',...SITE_VIEWS].includes(clean(params.get('view')))?clean(params.get('view')):'';
     return {
-      game:allowedGames.has(requestedGame)?requestedGame:'all',
+      // 我的收藏、行情是獨立頁，不屬於哪個遊戲：帶了 game 也當全部遊戲
+      game:allowedGames.has(requestedGame)&&!['collection','market'].includes(view)?requestedGame:'all',
       region:allowedRegions.has(requestedRegion)?requestedRegion:'all',
       series:clean(params.get('series')),
-      // view=all: a game's full card list; view=about: the data-status page; view=privacy: privacy and data sources.
-      view:['all','about','privacy'].includes(clean(params.get('view')))?clean(params.get('view')):'',
+      // view=all: a game's full card list; view=about: the data-status page; view=privacy: privacy and data sources; view=collection: 我的收藏 (this device only); view=market: 行情 (price movers and events).
+      view,
       rarity:clean(params.get('rarity'))||'all',
       price:allowedPrices.has(clean(params.get('price')))?clean(params.get('price')):'all',
       sort:allowedSorts.has(clean(params.get('sort')))?clean(params.get('sort')):'number-asc',
@@ -53,7 +61,7 @@
   }
 
   function urlFor(overrides={}){
-    const params=new URLSearchParams(),selectedGame=overrides.game??game,region=overrides.region??node('browseRegion')?.value??'all',series=overrides.series??browse?.seriesId??'',rarity=overrides.rarity??cardFilters?.rarity??'all',price=overrides.price??cardFilters?.price??'all',sort=overrides.sort??cardFilters?.sort??'number-asc',query=overrides.query??node('q')?.value?.trim()??'',card=overrides.card??currentCardId(),view=overrides.view??(selectedGame==='all'?(['about','privacy'].includes(document.body?.dataset?.view)?document.body.dataset.view:''):!series&&browse?.all?'all':''),pages=overrides.pages??Math.max(1,Math.ceil(number(browse?.offset,0)/PAGE_SIZE));
+    const params=new URLSearchParams(),selectedGame=overrides.game??game,region=overrides.region??node('browseRegion')?.value??'all',series=overrides.series??browse?.seriesId??'',rarity=overrides.rarity??cardFilters?.rarity??'all',price=overrides.price??cardFilters?.price??'all',sort=overrides.sort??cardFilters?.sort??'number-asc',query=overrides.query??node('q')?.value?.trim()??'',card=overrides.card??currentCardId(),view=overrides.view??(selectedGame==='all'?(SITE_VIEWS.includes(document.body?.dataset?.view)?document.body.dataset.view:''):!series&&browse?.all?'all':''),pages=overrides.pages??Math.max(1,Math.ceil(number(browse?.offset,0)/PAGE_SIZE));
     if(selectedGame&&selectedGame!=='all')params.set('game',selectedGame);
     if(region&&region!=='all')params.set('region',region);
     if(series)params.set('series',series);
@@ -72,10 +80,13 @@
     history.replaceState({...history.state,scrollY:Math.max(0,Math.round(window.scrollY||0))},'',location.href);
   }
 
+  // history.state.cardEntry marks the one entry that was pushed when a card was opened from the list. Closing the detail steps back
+  // only from that entry; after the list changed under an open side panel (new series, search, filter) the entry is a different one
+  // and closing just drops card= from it, so Esc never walks back to the previous series.
   function writeUrl(mode='replace',overrides={}){
     if(restoring)return;
-    const method=mode==='push'?'pushState':'replaceState';
-    history[method]({...history.state,scrollY:Math.max(0,Math.round(window.scrollY||0))},'',urlFor(overrides));
+    const method=mode==='push'?'pushState':'replaceState',url=urlFor(overrides),cardEntry=(mode==='push'?overrides.cardEntry:history.state?.cardEntry)===true&&/[?&]card=/.test(url);
+    history[method]({...history.state,scrollY:Math.max(0,Math.round(window.scrollY||0)),cardEntry},'',url);
   }
 
   async function copyCurrentUrl(button){
@@ -97,29 +108,32 @@
   if(typeof originalChoose==='function')window.choose=async id=>{
     saveScroll();
     const result=await originalChoose(id);
-    if(!restoring)writeUrl('push',{game:id,rarity:'all',query:'',card:'',pages:1});
+    if(!restoring)writeUrl('push',{game:id,rarity:'all',query:'',pages:1});
     return result;
   };
 
   const originalOpenProduct=window.openProduct;
   if(typeof originalOpenProduct==='function')window.openProduct=async id=>{
-    saveScroll();const result=await originalOpenProduct(id);if(!restoring)writeUrl('push',{series:browse?.seriesId||'',query:'',card:'',pages:1});return result;
+    saveScroll();const result=await originalOpenProduct(id);if(!restoring)writeUrl('push',{series:browse?.seriesId||'',query:'',pages:1});return result;
   };
 
   const originalOpenCard=window.openCard;
   // 只有「從列表第一次打開」才新增歷史；已開著時換上一張／下一張只改網址，關閉時才能一步退回列表。切換版本（keepPosition）不動網址，網址仍指向列表中的那張卡。
   if(typeof originalOpenCard==='function')window.openCard=async(id,options)=>{
-    saveScroll();if(!restoring&&!options?.keepPosition){const open=node('modal')?.classList.contains('open');writeUrl(open?'replace':'push',{card:id});if(!open)openedFromList=true}const result=await originalOpenCard(id,options);installDetailShare();return result;
+    saveScroll();if(!restoring&&!options?.keepPosition){const open=node('modal')?.classList.contains('open');writeUrl(open?'replace':'push',{card:id,cardEntry:!open})}const result=await originalOpenCard(id,options);installDetailShare();return result;
   };
+  // openCard 每畫一次（先畫卡牆已有的資料、再畫完整內容）分享鈕都會被換掉，畫完就補回去
+  document.addEventListener('cardscope:detail',installDetailShare);
 
-  // 從列表點開的卡，關閉時退回上一筆歷史（按返回鍵就離開列表，不會重開這張卡）；從分享連結直接進來的，只把 card 參數拿掉。
-  let openedFromList=false,skipRestore=false;
+  // 從列表點開的卡，關閉時退回上一筆歷史（按返回鍵就離開列表，不會重開這張卡）；從分享連結直接進來、或開著側板又換過系列／搜尋的，只把 card 參數拿掉。
+  let skipRestore=false;
   function closeDetailWithHistory(){
+    const back=history.state?.cardEntry===true;
     closeDetail();
-    if(openedFromList){openedFromList=false;skipRestore=true;history.back()}else writeUrl('replace',{card:''});
+    if(back){skipRestore=true;setTimeout(()=>{skipRestore=false},1500);history.back()}else writeUrl('replace',{card:''});
   }
   async function restore(state=readLocation()){
-    restoring=true;openedFromList=false;
+    restoring=true;
     // 貼網址／重新整理帶搜尋、又沒有存過捲動位置：讓 search() 把畫面捲到結果；有存過位置（返回、重新整理）就以它為準，search() 不要再捲。
     const landOnResults=Boolean(state.query)&&!state.scrollY&&history.state?.scrollY==null;window.cardscopeKeepScroll=!landOnResults;
     // 系列／稀有度網址同理：沒有存過位置時，載入完成後捲到卡牆（固定頂欄下方），不要停在首屏頂端。
@@ -135,7 +149,7 @@
       if(node('cardSort'))node('cardSort').value=state.sort;
       if(node('q'))node('q').value=state.query;
       if(node('heroQ'))node('heroQ').value=state.query;
-      if(typeof siteView!=='undefined')siteView=['about','privacy'].includes(state.view)?state.view:'';
+      if(typeof siteView!=='undefined')siteView=SITE_VIEWS.includes(state.view)?state.view:'';
       // The game page opens on the series (or full list) named in the URL, without first loading the default newest series.
       window.cardscopeEntry=state.game!=='all'&&(state.series||state.view==='all')?{series:state.series,all:!state.series&&state.view==='all'}:null;
       await originalChoose?.(state.game);
@@ -153,31 +167,41 @@
     }
   }
 
-  for(const id of ['browseRegion','rarityFilter','priceFilter','cardSort'])node(id)?.addEventListener('change',()=>setTimeout(()=>writeUrl('push',{pages:1,card:''}),0));
-  node('go')?.addEventListener('click',()=>setTimeout(()=>writeUrl('push',{query:node('q')?.value?.trim()||'',card:'',pages:1}),0));
-  node('q')?.addEventListener('keydown',event=>{if(event.key==='Enter')setTimeout(()=>writeUrl('push',{query:node('q')?.value?.trim()||'',card:'',pages:1}),0)});
+  for(const id of ['browseRegion','rarityFilter','priceFilter','cardSort'])node(id)?.addEventListener('change',()=>setTimeout(()=>writeUrl('push',{pages:1}),0));
+  node('go')?.addEventListener('click',()=>setTimeout(()=>writeUrl('push',{query:node('q')?.value?.trim()||'',pages:1}),0));
+  node('q')?.addEventListener('keydown',event=>{if(event.key==='Enter')setTimeout(()=>writeUrl('push',{query:node('q')?.value?.trim()||'',pages:1}),0)});
   node('loadMore')?.addEventListener('click',()=>setTimeout(()=>writeUrl('replace'),0));
   node('close')?.addEventListener('click',()=>{if(!restoring)closeDetailWithHistory()});
   node('modal')?.addEventListener('click',event=>{if(event.target===node('modal')&&!restoring)closeDetailWithHistory()});
+  // 側板（桌機）常駐時：Esc 在任何地方都只關側板（側欄、卡牆、側板內都是），但搜尋框、選單裡的 Esc 留給它們自己（清字、關建議）；ⓘ 說明先關（ui-actions.js 已 preventDefault）。
   document.addEventListener('keydown',event=>{
-    if(event.key!=='Escape'||restoring||node('cardZoom')?.classList.contains('open')||!node('modal')?.classList.contains('open'))return;
+    if(event.key!=='Escape'||event.defaultPrevented||restoring||node('cardZoom')?.classList.contains('open')||!node('modal')?.classList.contains('open'))return;
+    if(panelMode()&&editable(event.target))return;
     event.preventDefault();
     closeDetailWithHistory();
   },true);
   // index.html announces a browse view the page picked (newest series) or the user chose (series tile, 全部卡片), and searches it started itself (example chips, cancelled conditions).
-  document.addEventListener('cardscope:browse',event=>{if(!restoring)writeUrl(event.detail?.push?'push':'replace',{pages:1,card:'',query:''})});
-  document.addEventListener('cardscope:search',event=>{if(!restoring)writeUrl('push',{query:event.detail?.q||'',card:'',pages:1})});
+  document.addEventListener('cardscope:browse',event=>{if(!restoring)writeUrl(event.detail?.push?'push':'replace',{pages:1,query:''})});
+  document.addEventListener('cardscope:search',event=>{if(!restoring)writeUrl('push',{query:event.detail?.q||'',pages:1})});
   // 站內連結（頁尾、麵包屑；標記 data-spa）：不整頁重載，存下捲動位置後 pushState 再依新網址還原。詳細頁開著時先關掉（不用 history.back，新網址是新的一步）。帶修飾鍵、非左鍵、別的網域照瀏覽器預設。
   document.addEventListener('click',event=>{
     const link=event.target.closest?.('a[data-spa]');
     if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const url=new URL(link.getAttribute('href'),location.href);if(url.origin!==location.origin)return;
     event.preventDefault();if(restoring)return;
-    saveScroll();if(node('modal')?.classList.contains('open')){openedFromList=false;closeDetail()}
+    saveScroll();if(node('modal')?.classList.contains('open'))closeDetail();
     history.pushState({},'',url.pathname+url.search+url.hash);
     // restore() 結束前排了一個 rAF 把捲動拉回 scrollY；錨點的捲動排在它後面
     restore(readLocation()).then(()=>requestAnimationFrame(()=>{const target=url.hash&&document.getElementById(decodeURIComponent(url.hash.slice(1)));if(target)window.scrollBelowHeader?window.scrollBelowHeader(target):target.scrollIntoView();/* 焦點跟著移到新內容（錨點目標或主內容），不留在已關掉的詳細頁或被重畫掉的節點上 */const focusTo=target||node('main');if(focusTo?.focus){if(focusTo.getAttribute?.('tabindex')==null)focusTo.tabIndex=-1;focusTo.focus({preventScroll:true})}}));
   });
+  // 頂欄、底部導覽的「我的收藏」：不整頁重載，pushState 後依新網址還原（上一頁回到原本那頁）。已經在該頁就只回到頁首。
+  window.openView=view=>{
+    if(restoring)return;
+    if(view&&document.body?.dataset?.view===view){window.scrollTo({top:0,behavior:'auto'});node(view==='market'?'marketTitle':'cardsTitle')?.focus?.({preventScroll:true});return}
+    saveScroll();if(node('modal')?.classList.contains('open'))closeDetail();
+    history.pushState({},'',view?`${location.pathname}?view=${view}`:location.pathname);
+    return restore(readLocation()).then(()=>{window.scrollTo({top:0,behavior:'auto'});node(view==='market'?'marketTitle':view==='collection'?'cardsTitle':'main')?.focus?.({preventScroll:true})});
+  };
   window.addEventListener('beforeunload',saveScroll);
   window.addEventListener('popstate',()=>{if(skipRestore){skipRestore=false;return}return restore(readLocation())});
   if('scrollRestoration'in history)history.scrollRestoration='manual';

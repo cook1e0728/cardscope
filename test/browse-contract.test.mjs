@@ -148,7 +148,7 @@ test('rarity order is game-specific in both directions and keeps unknown values 
 test('rarity grouping follows the selected high-to-low or low-to-high order',()=>{
   const h=createHarness(undefined,true);
   const rows="[{id:'c',game:'pokemon',nameZh:'普通卡',rarity:'C',officialCardNumber:'003'},{id:'sar',game:'pokemon',nameZh:'特別卡',rarity:'SAR',officialCardNumber:'001'},{id:'u',game:'pokemon',nameZh:'未知卡',rarity:'尚待對照',officialCardNumber:'002'}]";
-  h.run(`rarityRankings=${JSON.stringify(rarityRankings)};C={games:[{id:'pokemon',nameZh:'寶可夢'}],cards:[]};cardViewMode='rarity';cardFilters.sort='rarity-desc'`);
+  h.run(`rarityRankings=${JSON.stringify(rarityRankings)};C={games:[{id:'pokemon',nameZh:'寶可夢'}],cards:[]};cardGroupMode='rarity';cardFilters.sort='rarity-desc'`);
   const high=h.run(`renderCardRows(${rows})`);
   assert.ok(high.indexOf('>SAR<')<high.indexOf('>C<'));
   assert.ok(high.indexOf('>C<')<high.indexOf('>尚待對照<'));
@@ -177,7 +177,7 @@ test('selected IP loading keeps only cards belonging to that IP',async()=>{
 
 test('cross-IP rarity mode creates one group for each IP and rarity pair',()=>{
   const h=createHarness(undefined,true);
-  const rendered=h.run(`C={games:[{id:'pokemon',nameZh:'寶可夢'},{id:'onepiece',nameZh:'航海王'}],cards:[]};cardViewMode='rarity';renderCardRows([
+  const rendered=h.run(`C={games:[{id:'pokemon',nameZh:'寶可夢'},{id:'onepiece',nameZh:'航海王'}],cards:[]};cardGroupMode='rarity';renderCardRows([
     {id:'pk-sr',game:'pokemon',nameZh:'寶可夢 SR',officialCardNumber:'PK-1',rarity:'SR',region:'JP'},
     {id:'op-sr',game:'onepiece',nameZh:'航海王 SR',officialCardNumber:'OP-1',rarity:'SR',region:'JP'},
     {id:'pk-r',game:'pokemon',nameZh:'寶可夢 R',officialCardNumber:'PK-2',rarity:'R',region:'JP'},
