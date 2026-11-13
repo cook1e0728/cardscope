@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {PACK_PRIZE_GAMES,prizeSeriesCandidates,prizeCards,prizeRow,isAltArt} from '../providers/pack-prizes.mjs';
+import {PACK_PRIZE_GAMES,prizeSeriesCandidates,prizeCards,prizeRow,isAltArt,mergePrizeRows} from '../providers/pack-prizes.mjs';
 
 // 本彈大獎的挑選規則（providers/pack-prizes.mjs）。系列與卡片樣本取自 2026-11 正式站的實際資料形狀。
 const rule=game=>PACK_PRIZE_GAMES.find(r=>r.game===game);
@@ -95,4 +95,18 @@ test('prizeRow：中文名優先、帶系列代號與異圖標記，不帶原始
 test('手動置頂清單是合法 JSON，pinned 是字串陣列',async()=>{
   const data=JSON.parse(await readFile(new URL('../data/pack-prizes.json',import.meta.url),'utf8'));
   assert.ok(Array.isArray(data.pinned)&&data.pinned.every(id=>typeof id==='string'));
+});
+
+test('同一彈各版本合併：台版優先、缺的卡用日版補、缺的參考價借同卡號日版並標 priceRegion；異圖 -p 編號分開算',()=>{
+  const R=(cardId,cardNumber,rarity,extra={})=>({cardId,cardNumber,rarity,altArt:/-p\d+$/.test(cardId),...extra});
+  const tw=[R('tw-134','134','FUR'),R('tw-124','124','SAR')];
+  const jp=[R('jp-124','124','SAR',{referencePrice:{amount:4.5,currency:'EUR',amountTwd:150}}),R('jp-129','129','SAR',{referencePrice:{amount:25,currency:'EUR',amountTwd:840}})];
+  const out=mergePrizeRows('pokemon',[{region:'TW',rows:tw},{region:'JP',rows:jp}]);
+  assert.deepEqual(out.map(r=>r.cardId),['tw-134','jp-129','tw-124'],'FUR 先，同 SAR 價高的先');
+  assert.equal(out[2].referencePrice.amountTwd,150);
+  assert.equal(out[2].priceRegion,'JP');
+  assert.equal(out[1].priceRegion,undefined,'日版自己的卡不標借價');
+  assert.equal(tw[1].referencePrice,undefined,'不改到傳入的資料');
+  const op=mergePrizeRows('onepiece',[{region:'TW',rows:[R('onepiece-official-eb05-061','EB05-061','SEC'),R('onepiece-official-eb05-061-p1','EB05-061','SEC')]},{region:'ASIA',rows:[R('onepiece-asia-eb05-061-p1','EB05-061','SEC'),R('onepiece-asia-eb05-061-p2','EB05-061','SEC')]}]);
+  assert.deepEqual(op.map(r=>r.cardId),['onepiece-official-eb05-061-p1','onepiece-asia-eb05-061-p2','onepiece-official-eb05-061']);
 });

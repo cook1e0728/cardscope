@@ -67,6 +67,7 @@ test('最夯＝本彈大獎：每個遊戲一排、標題寫遊戲與系列；�
   assert.match(out,/置頂卡<\/b><\/div><span[^>]*>[^<]*<\/span><small>OP-17<\/small>/,'精選那排卡上寫遊戲與系列');
   assert.doesNotMatch(out.slice(out.indexOf('世界最強的戰士')),/<small>OP-17/,'各遊戲那排已有標題，卡上不重複');
   assert.match(out,/參考價約 NT\$1,234/,'寶可夢有參考價才顯示');
+  assert.match(rails.trendingPanel(prizes([{game:'pokemon',seriesName:'x',data:[prizeRow(4,{game:'pokemon',referencePrice:{amountTwd:840},priceRegion:'JP'})]}])),/日版參考價約 NT\$840/,'借日版價格要寫明');
   assert.doesNotMatch(out.slice(0,out.indexOf('30th')),/參考價約/,'其他遊戲不放價格');
   assert.match(out,/\[ⓘ 本彈大獎怎麼挑\|[^\]]*近 90 天[^\]]*參考價不是成交價/);
   assert.match(out,/<a href="\/\?view=market" data-spa>看參考價漲跌<\/a>/);

@@ -57,3 +57,19 @@ export function prizeRow(card,series){
     rarity:rarityIn(card,series?.id)||null,altArt:isAltArt(card),seriesCode:series?.officialCode||null,seriesName:series?.nameZh||series?.nameJa||series?.nameEn||null,
     game:card.game||series?.game||null,imageUrl:card.imageUrl||null,referencePrice:card.referencePrice||null};
 }
+
+// 同一彈各版本（台灣→日本→亞洲）挑出來的卡合成一排：同卡號（含異圖 -p 編號）只留第一個版本的；
+// 台版常缺卡、也沒有參考價，缺的卡用日版補，缺的價格借同卡號別版的（標 priceRegion，前端寫「日版參考價」）。
+const rowKey=row=>`${String(row.cardNumber||'').split('/')[0].replace(/^0+(?=\d)/,'').toUpperCase()}|${(String(row.cardId||'').match(/-p\d+$/i)||[''])[0]}`;
+const rowPrice=row=>Number(row?.referencePrice?.amountTwd)||Number(row?.referencePrice?.amount)||0;
+export function mergePrizeRows(game,versions,limit=PACK_PRIZE_LIMIT){
+  const byKey=new Map();
+  for(const {region,rows} of versions||[])for(const row of rows||[]){
+    if(!row?.cardNumber)continue;
+    const key=rowKey(row),have=byKey.get(key);
+    if(!have)byKey.set(key,{...row});
+    else if(!rowPrice(have)&&rowPrice(row))Object.assign(have,{referencePrice:row.referencePrice,priceRegion:region});
+  }
+  const rank=row=>rarityRank(game,row.rarity);
+  return [...byKey.values()].sort((a,b)=>rank(a)-rank(b)||b.altArt-a.altArt||rowPrice(b)-rowPrice(a)||String(a.cardNumber).localeCompare(String(b.cardNumber),'en',{numeric:true})).slice(0,limit);
+}

@@ -18,7 +18,7 @@ import { auditCatalogLinks, catalogProvidersNeedingSync, closeInterruptedCatalog
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
 import { foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './providers/search-query.mjs';
 import { normalizeProduct } from './providers/products.mjs';
-import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, prizeCards, prizeRow, prizeSeriesCandidates } from './providers/pack-prizes.mjs';
+import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, prizeCards, mergePrizeRows, prizeRow, prizeSeriesCandidates } from './providers/pack-prizes.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
@@ -1138,7 +1138,7 @@ async function loadHotCards(){
   return snapshot.data;
 }
 // 本彈大獎（/api/pack-prizes，首頁「最夯」）：寶可夢、航海王、黑白雙翼各取近 90 天最新主流彈的最高稀有度卡（規則在 providers/pack-prizes.mjs），
-// 加上 data/pack-prizes.json 的手動置頂。一彈不到 3 張大獎（例如資料還沒補齊）就往前找下一彈，每個遊戲最多看 3 彈。一小時快取，失敗不快取。
+// 加上 data/pack-prizes.json 的手動置頂。同一彈的台版、日版、亞洲版合成一排（互補缺卡與參考價），合起來不到 3 張大獎就往前找下一彈，每個遊戲最多看 3 彈。一小時快取，失敗不快取。
 const PACK_PRIZE_PINNED=JSON.parse(readFileSync(new URL('./data/pack-prizes.json',import.meta.url),'utf8')).pinned||[],packPrizesCache=createBoundedSnapshotCache({ttlMs:3600000,maxStaleMs:24*60*60*1000,serveStaleWhileRevalidate:true});
 async function prizeBrowse(game,options){
   if(supabaseConfigured())return (await browseDatabaseCards(game,options)).data;
@@ -1152,12 +1152,17 @@ async function loadPackPrizes(){
     if(catalog.fallbackReason)throw new Error(`catalog fallback: ${catalog.fallbackReason}`);
     const games=[];
     for(const rule of PACK_PRIZE_GAMES){
-      search:for(const release of prizeSeriesCandidates(catalog.series,rule,today).slice(0,3))for(const series of release){
-        const cards=await prizeBrowse(rule.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:BROWSE_PAGE_MAX,offset:0});
-        if(rule.game==='pokemon')await attachReferencePrices(cards);
-        const picked=prizeCards(rule.game,rule.top,cards,{seriesId:series.id});
-        if(picked.length<3)continue;
-        games.push({game:rule.game,seriesId:series.id,region:series.region,seriesName:series.nameZh||series.nameJa||series.nameEn||series.officialCode,releaseDate:series.releaseDate,data:picked.map(card=>prizeRow(card,series))});break search;
+      for(const release of prizeSeriesCandidates(catalog.series,rule,today).slice(0,3)){
+        const versions=[];
+        for(const series of release){
+          const cards=await prizeBrowse(rule.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:BROWSE_PAGE_MAX,offset:0});
+          if(rule.game==='pokemon')await attachReferencePrices(cards);
+          versions.push({region:series.region,rows:prizeCards(rule.game,rule.top,cards,{seriesId:series.id,limit:BROWSE_PAGE_MAX}).map(card=>prizeRow(card,series))});
+        }
+        const data=mergePrizeRows(rule.game,versions);
+        if(data.length<3)continue;
+        const [series]=release;
+        games.push({game:rule.game,seriesId:series.id,region:series.region,seriesName:series.nameZh||series.nameJa||series.nameEn||series.officialCode,releaseDate:series.releaseDate,data});break;
       }
     }
     const pinnedCards=[];

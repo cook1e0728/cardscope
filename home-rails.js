@@ -34,13 +34,13 @@
     return `<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}</div>`+
       `<div class="trend-card-head"><b>${esc(name)}</b></div>`+
       `<span class="trend-card-number is-wrap">${esc([row.rarity,row.altArt?'異圖':'',row.cardNumber].filter(Boolean).join(' · '))}</span>`+
-      (twd>0?`<small>${esc(`參考價約 NT$${Math.round(twd).toLocaleString('en-US')}`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>';
+      (twd>0?`<small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價約 NT$${Math.round(twd).toLocaleString('en-US')}`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>';
   }
   const prizeRail=(title,rows,mixed=false)=>`<h4 class="rails-sub">${esc(title)}</h4><div class="rails-rail">${rows.map(row=>prizeCard(row,mixed)).join('')}</div>`;
   // prizes：undefined＝還在讀；{pinned,games}＝讀完（API 失敗也當空的）
   function trendingPanel(prizes){
     const days=Number(prizes?.meta?.windowDays)||90;
-    const info=root.infoTip('本彈大獎怎麼挑',`<p><b>系列</b>寶可夢、航海王、黑白雙翼各取近 ${days} 天最新的主流補充包（不含預組、禮盒、周邊、特典；航海王只看 OP／EB／PRB），優先台灣版。</p><p><b>卡片</b>只列最高稀有度（寶可夢 SAR 以上、航海王 SEC／SP／TR、黑白雙翼 SP 以上），航海王異圖排在原版前；寶可夢有參考價時同稀有度價高的先，參考價不是成交價。</p>`);
+    const info=root.infoTip('本彈大獎怎麼挑',`<p><b>系列</b>寶可夢、航海王、黑白雙翼各取近 ${days} 天最新的主流補充包（不含預組、禮盒、周邊、特典；航海王只看 OP／EB／PRB），優先台灣版；台版缺的卡用同一彈日版補上。</p><p><b>卡片</b>只列最高稀有度（寶可夢 SAR 以上、航海王 SEC／SP／TR、黑白雙翼 SP 以上），航海王異圖排在原版前；寶可夢有參考價時同稀有度價高的先；台版沒有參考價時借同卡號日版的價格並標「日版參考價」。參考價不是成交價。</p>`);
     const rows=prizes?[...(prizes.pinned.length?[prizeRail('精選',prizes.pinned,true)]:[]),...prizes.games.map(g=>prizeRail([gameName(g.game)||g.game,g.seriesName].filter(Boolean).join(' · '),g.data))]:[];
     const body=!prizes?quiet('讀取中…'):rows.length?rows.join(''):quiet('近期沒有新彈的大獎資料');
     return head('本彈大獎','各遊戲最新主流彈的最高稀有度卡',info)+body+'<p class="rails-more"><a href="/?view=market" data-spa>看參考價漲跌</a></p>';
