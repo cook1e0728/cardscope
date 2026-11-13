@@ -134,7 +134,7 @@ CardScope 不需要登入，不放 cookie，也不追蹤你。
 | 寶可夢 | 日版：日本官方卡片搜尋（pokemon-card.com）與 TCGdex。台版：台灣官方卡片搜尋（asia.pokemon-card.com/tw）與 TCGdex 繁中資料。美版：Pokémon TCG API。 | 日版、台版：多數外連官方卡片搜尋的圖，不轉存。部分用 TCGdex 的圖；日版少數缺圖的卡用 TCGplayer 的圖（卡圖標「TCGplayer 卡圖」）。美版：Pokémon TCG API 提供的圖。少數日版舊卡借用同一張卡的英文版圖，畫面上會標「暫用英文版」。 | 有，僅部分卡。Cardmarket 歐洲市場「平台參考價」（歐元）與 TCGplayer 美國市場參考價（美元），經 TCGdex 或 TCG API 取得，再用每日匯率換算新台幣。不是成交價，也不是台灣行情。台版沒有價格。詳細頁另有「鑑定卡成交價」（PSA、BGS、CGC 等，來自 PokemonPriceTracker 彙整的 eBay 等成交紀錄），開卡時才查，不儲存，不是每張卡都有。 |
 | 航海王 | 台灣、亞洲英文、美國英文三份官方卡表（onepiece-cardgame.com）。 | 官方卡表的圖，由 CardScope 伺服器代為讀取後轉給你，不儲存。美版圖有官方 SAMPLE 浮水印，保留不去除。 | 沒有。 |
 | 遊戲王 | 卡片基本資料：YGOPRODeck。日版版本與日文卡名：官方卡片資料庫（日文版 db.yugioh-card.com）。 | YGOPRODeck 的圖（CardScope 會轉存一份到自己的儲存空間以免一直連線對方）；日版圖外連官方卡片資料庫，不轉存。 | 有，僅美版／英文版。YGOPRODeck 的「參考價」（美元，該站未標示平台），換算新台幣。找不到該版本價格時，改顯示跨版本最低參考價並標明。日版沒有價格。 |
-| 葬送的芙莉蓮（Weiß Schwarz） | 官方卡表：日版（ws-tcg.com）與英文版（en.ws-tcg.com），只收芙莉蓮系列。 | 官方卡表的圖，外連不轉存，保留官方 SAMPLE 浮水印。 | 沒有。 |
+| 黑白雙翼（Weiß Schwarz） | 官方卡表：日版（ws-tcg.com）與英文版（en.ws-tcg.com），只收芙莉蓮系列。 | 官方卡表的圖，外連不轉存，保留官方 SAMPLE 浮水印。 | 沒有。 |
 | 排球少年 | 官方卡表（Takara Tomy，Vobaca!! BREAK）。 | 官方卡表的圖，外連不轉存。 | 沒有。 |
 | 七龍珠超 Fusion World | 官方繁體中文卡表（dbs-cardgame.com/fw/asia-tc），加官方日文與英文卡表補名稱與英文版。 | 官方卡表的圖，外連不轉存。台版卡圖是日文印刷版。 | 沒有。 |
 
@@ -158,7 +158,7 @@ CardScope 不需要登入，不放 cookie，也不追蹤你。
         <tr><th scope="row">寶可夢</th><td>…</td><td>…</td><td>…</td></tr>
         <tr><th scope="row">航海王</th><td>…</td><td>…</td><td>沒有</td></tr>
         <tr><th scope="row">遊戲王</th><td>…</td><td>…</td><td>…</td></tr>
-        <tr><th scope="row">葬送的芙莉蓮（Weiß Schwarz）</th><td>…</td><td>…</td><td>沒有</td></tr>
+        <tr><th scope="row">黑白雙翼（Weiß Schwarz）</th><td>…</td><td>…</td><td>沒有</td></tr>
         <tr><th scope="row">排球少年</th><td>…</td><td>…</td><td>沒有</td></tr>
         <tr><th scope="row">七龍珠超 Fusion World</th><td>…</td><td>…</td><td>沒有</td></tr>
       </tbody>

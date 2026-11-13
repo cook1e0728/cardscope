@@ -144,3 +144,16 @@ test('系列橫幅比側欄腳本早建好時，dock() 會把它跟著錨點搬�
   assert.match(dock,/\$\('seriesBand'\)/);
   assert.match(dock,/anchor\.nextElementSibling!==band\)anchor\.after\(band\)/);
 });
+
+test('系列清單附縮圖：有圖的系列顯示裁切後的商品圖，同一清單沒圖的系列文字仍對齊', ()=>{
+  assert.match(cssAll, /#sideNav \.band-tile:has\(\.band-tile-art img\)\{grid-template-columns:48px/);
+  assert.match(cssAll, /#sideNav \.band-tile-art img\{[^}]*display:block[^}]*clip-path:inset\(16px/);
+  assert.doesNotMatch(cssAll, /#sideNav \.band-tile-art img\{display:none\}/);
+});
+
+test('Weiß Schwarz 在導覽顯示為「黑白雙翼」（不是作品名芙莉蓮）', async ()=>{
+  const taxonomy = JSON.parse(await readFile(new URL('../data/game-taxonomy.json', import.meta.url), 'utf8'));
+  assert.equal(taxonomy.systems.find(s=>s.id==='weiss-schwarz').displayNameZh, '黑白雙翼');
+  assert.match(switcher, /name:system\.displayNameZh\|\|singleWork\?\.nameZh/);
+  assert.match(switcher, /id:'weiss-schwarz'[^}]*displayNameZh:'黑白雙翼'/);
+});

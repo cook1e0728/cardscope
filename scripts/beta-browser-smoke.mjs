@@ -25,7 +25,7 @@ const gameLabels={
   onepiece:'航海王',
   yugioh:'遊戲王',
   haikyuu:'排球少年',
-  'weiss-schwarz':'葬送的芙莉蓮',
+  'weiss-schwarz':'黑白雙翼',
   'dragonball-fw':'七龍珠超'
 };
 const gameCodes={pokemon:'SV',onepiece:'OP',yugioh:'YS',haikyuu:'HV','weiss-schwarz':'S','dragonball-fw':'DB'};

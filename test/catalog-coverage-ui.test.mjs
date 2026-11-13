@@ -13,7 +13,7 @@ test('coverage status surface renders five IPs from the public coverage response
   assert.match(html,/id="coverageStatus"/);
   assert.match(html,/id="coverageStatusGrid"/);
   assert.match(html,/id="coverageStatusSource"/);
-  for(const label of ['寶可夢','航海王','遊戲王','葬送的芙莉蓮','排球少年'])assert.match(html,new RegExp(label));
+  for(const label of ['寶可夢','航海王','遊戲王','黑白雙翼','排球少年'])assert.match(html,new RegExp(label));
   assert.match(html,/games\[id\]\|\|\{\}/);
   assert.match(html,/目前觀測/);
   assert.match(html,/中文名/);

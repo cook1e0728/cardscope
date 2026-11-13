@@ -1,6 +1,6 @@
 // 卡牌時事：把 /api/market-events 畫進行情頁（?view=market）；其他頁不顯示也不請求。近期排前面，即將發生的標「即將」；只是發售日與官方消息，不代表會影響價格。
 (root=>{
-  const LIMIT=8,GAMES={pokemon:'寶可夢',yugioh:'遊戲王',onepiece:'航海王',haikyuu:'排球少年','weiss-schwarz':'芙莉蓮','dragonball-fw':'七龍珠超'};
+  const LIMIT=8,GAMES={pokemon:'寶可夢',yugioh:'遊戲王',onepiece:'航海王',haikyuu:'排球少年','weiss-schwarz':'黑白雙翼','dragonball-fw':'七龍珠超'};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   // 純函式：即將發生的由近到遠排最前，接著已發生的由新到舊，只取前幾筆。
   function arrange(events,today,limit=LIMIT){const list=Array.isArray(events)?events:[],soon=list.filter(e=>e.date>today).sort((a,b)=>a.date<b.date?-1:1),past=list.filter(e=>e.date<=today).sort((a,b)=>a.date<b.date?1:-1);return [...soon,...past].slice(0,limit)}
