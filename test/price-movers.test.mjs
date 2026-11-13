@@ -47,3 +47,24 @@ test('cards sharing a Cardmarket product leave the movers and get a note on the 
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(html, /meta\.sharedPriceCardIds\?\.length/);
 });
+
+test('漲跌榜第一次讀取失敗（例如部署後 502）會再試一次；兩次都失敗就清掉，下次再請求', async () => {
+  const {default: vm} = await import('node:vm');
+  const {readFile} = await import('node:fs/promises');
+  const source = await readFile(new URL('../price-movers.js', import.meta.url), 'utf8');
+  const replies = [{ok: false, status: 502}, {ok: true, json: async () => ({data: {up: [1], down: []}})}];
+  let calls = 0;
+  const window = {fetch: async () => replies[Math.min(calls++, replies.length - 1)]};
+  vm.runInNewContext(source, {window, fetch: window.fetch, setTimeout: fn => fn()});
+  const body = await window.priceMoversShared.request();
+  assert.equal(calls, 2);
+  assert.deepEqual(body.data.up, [1]);
+
+  calls = 0;
+  const failing = {fetch: async () => { calls++; throw new Error('offline'); }};
+  vm.runInNewContext(source, {window: failing, fetch: failing.fetch, setTimeout: fn => fn()});
+  assert.equal(await failing.priceMoversShared.request(), null);
+  assert.equal(calls, 2);
+  await failing.priceMoversShared.request();
+  assert.equal(calls, 4, '失敗後不留著壞掉的結果，下一次會重新請求');
+});

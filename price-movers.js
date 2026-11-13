@@ -21,7 +21,9 @@
   }
   const rail=(rows,up,title)=>`<h3 class="movers-head">${title}</h3><div class="trend-rail">${rows.length?rows.map(row=>card(row,up)).join(''):'<div class="trend-empty"><b>目前沒有符合條件的卡</b></div>'}</div>`;
   let pending=null;
-  const request=()=>pending=pending||fetch('/api/price-movers').then(r=>r.ok?r.json():null).catch(()=>null);
+  // 部署後第一個請求常因冷快取逾時（502）：隔 3 秒再試一次；仍失敗就清掉，下次進頁再試
+  const get=()=>fetch('/api/price-movers').then(r=>r.ok?r.json():Promise.reject(new Error(String(r.status))));
+  const request=()=>pending=pending||get().catch(()=>new Promise(done=>setTimeout(done,3000)).then(get)).catch(()=>{pending=null;return null});
   // 標題旁的 ⓘ：來源與連結、前後觀測時間、適用範圍（PRODUCT_PLAN 第 6 節）；漲跌榜與首頁的最夯用同一份。
   function info(up,down,meta){
     const rows=[...up,...down],from=rows.map(row=>row.from?.date).filter(Boolean).sort()[0],to=rows.map(row=>row.to?.date).filter(Boolean).sort().at(-1);
