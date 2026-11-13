@@ -138,3 +138,9 @@ test('瀏覽器驗收（smoke）涵蓋側欄：桌機、平板抽屜、手機選
   assert.match(smoke,/goBack/);
   assert.doesNotMatch(smoke,/mobile-quick-grid \.mqg-tile/);
 });
+
+test('系列橫幅比側欄腳本早建好時，dock() 會把它跟著錨點搬進側欄（正式站曾因此看不到版本與系列）',()=>{
+  const dock=source.slice(source.indexOf('function dock(){'),source.indexOf('// ---- 狀態'));
+  assert.match(dock,/\$\('seriesBand'\)/);
+  assert.match(dock,/anchor\.nextElementSibling!==band\)anchor\.after\(band\)/);
+});

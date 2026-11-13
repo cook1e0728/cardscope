@@ -70,6 +70,8 @@
     place(doc.querySelector('.browse-regions'),slots.region,body.dataset.side==='results');
     // #gameContext 是 series-band.js 放系列橫幅的錨點（anchor.after(band)）：搬一次，橫幅之後重建也都落在側欄裡
     const anchor=$('gameContext');if(anchor&&anchor.parentNode!==slots.series)slots.series.prepend(anchor);
+    // 系列資料比本腳本早到時，橫幅已經接在舊位置的錨點後面：跟著錨點搬過來，否則側欄沒有版本與系列
+    const band=$('seriesBand');if(anchor&&band&&anchor.nextElementSibling!==band)anchor.after(band);
   }
 
   // ---- 狀態：body[data-side]、收合、開關 ----
