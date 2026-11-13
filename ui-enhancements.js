@@ -94,7 +94,7 @@ function cardNumberLabel(card){return card.officialCardNumber||card.printings?.f
 function cardPriceLabel(price){return price&&Number.isFinite(Number(price.price))&&price.currency?`${e(price.currency)} ${Number(price.price).toLocaleString()} 買取`:''}
 // 卡牆參考價（只有寶可夢）：browse 回應的 referencePrice＝該 printing 最新一筆 Cardmarket 每日快照（EUR，7 天內）；有 amountTwd 時以新台幣為主。格狀只留一行「NT$ 金額＋來源平台名（Cardmarket／TCGplayer；使用者回饋縮寫看不懂）＋極短版本」，原幣、觀測日、完整來源名放 title／aria-label／滑過或長按（:active）提示，清單模式保留原幣；沒有資料就不顯示，不放 0。
 // Cardmarket 沒有這張卡的價格時，改用 TCG API 轉來的 TCGplayer 美元市價（多為美國市場上的日版卡行情）。
-const REFERENCE_SOURCE_NAMES={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'},REFERENCE_SOURCE_SHORT={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'};
+const REFERENCE_SOURCE_NAMES={cardmarket:'Cardmarket',tcgplayer:'TCGplayer'},REFERENCE_SOURCE_SHORT={cardmarket:'Cardmarket 參考價',tcgplayer:'TCGplayer 市價'};
 function referenceAmountText(amount,currency){const value=Number(amount);return Number.isFinite(value)?`${currency==='EUR'?'€':currency==='USD'?'US$':currency+' '}${value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`:''}
 // 近 7 天漲跌（server 的 referencePrice.changePct／changeFrom）：台灣慣例紅漲綠跌；沒有 changePct 就回 null，畫面不放 0。
 function referenceChangeInfo(ref){

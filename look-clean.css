@@ -403,7 +403,9 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean .cards .card:not(.card-list) .card-rarity{padding:0 4px;font-size:12px}
   html.look-clean .cards .card:not(.card-list) .card-price{font-size:12px}
   html.look-clean .cards .card:not(.card-list) .card-reference{gap:0 3px;flex-wrap:wrap}
-  html.look-clean .cards .card:not(.card-list) .card-reference .cr-var,html.look-clean .cards .card:not(.card-list) .card-reference .cr-src{display:none}
+  html.look-clean .cards .card:not(.card-list) .card-reference .cr-var{display:none}
+  /* 手機也要看得到價格來源（使用者回饋：不知道是買取、成交還是平台參考價）；放在漲跌下一行 */
+  html.look-clean .cards .card:not(.card-list) .card-reference .cr-src{order:3;flex-basis:100%;font-size:12px;line-height:1.2;opacity:.75}
   html.look-clean .cards .card:not(.card-list) .card-reference .cr-chg{flex-basis:100%;font-size:11px;line-height:1.2}
   html.look-clean .cards .card:not(.card-list)>.badge:not(.ip-badge){font-size:12px;padding:0 4px}
   html.look-clean .cards .card:not(.card-list) .watchlist-inline{display:none}
