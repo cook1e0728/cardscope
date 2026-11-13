@@ -28,19 +28,20 @@
       `<div class="rails-empty"><img src="/assets/brand/web/rabbit-offline.webp" alt="" width="128" height="85" loading="lazy"><p>熱門排行統計中，累積幾天後就會出現</p></div>`;
     return head(`近 ${days} 天最多人開的卡`,'本站被開啟次數',info)+body;
   }
-  function prizeCard(row){
+  // 卡號那行可換行（手機上 EB05-006、SFN/S136-002SSP 會被截掉）；遊戲與系列已寫在每排標題，只有「精選」那排才在卡上寫。
+  function prizeCard(row,mixed){
     const name=row.name||row.cardNumber||'未命名卡片',twd=row.game==='pokemon'?Number(row.referencePrice?.amountTwd):0;
     return `<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}</div>`+
       `<div class="trend-card-head"><b>${esc(name)}</b></div>`+
-      `<span class="trend-card-number">${esc([row.rarity,row.altArt?'異圖':'',row.cardNumber].filter(Boolean).join(' · '))}</span>`+
-      `<small>${esc(twd>0?`參考價約 NT$${Math.round(twd).toLocaleString('en-US')}`:[gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small></button>`;
+      `<span class="trend-card-number is-wrap">${esc([row.rarity,row.altArt?'異圖':'',row.cardNumber].filter(Boolean).join(' · '))}</span>`+
+      (twd>0?`<small>${esc(`參考價約 NT$${Math.round(twd).toLocaleString('en-US')}`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>';
   }
-  const prizeRail=(title,rows)=>`<h4 class="rails-sub">${esc(title)}</h4><div class="rails-rail">${rows.map(prizeCard).join('')}</div>`;
+  const prizeRail=(title,rows,mixed=false)=>`<h4 class="rails-sub">${esc(title)}</h4><div class="rails-rail">${rows.map(row=>prizeCard(row,mixed)).join('')}</div>`;
   // prizes：undefined＝還在讀；{pinned,games}＝讀完（API 失敗也當空的）
   function trendingPanel(prizes){
     const days=Number(prizes?.meta?.windowDays)||90;
     const info=root.infoTip('本彈大獎怎麼挑',`<p><b>系列</b>寶可夢、航海王、黑白雙翼各取近 ${days} 天最新的主流補充包（不含預組、禮盒、周邊、特典；航海王只看 OP／EB／PRB），優先台灣版。</p><p><b>卡片</b>只列最高稀有度（寶可夢 SAR 以上、航海王 SEC／SP／TR、黑白雙翼 SP 以上），航海王異圖排在原版前；寶可夢有參考價時同稀有度價高的先，參考價不是成交價。</p>`);
-    const rows=prizes?[...(prizes.pinned.length?[prizeRail('精選',prizes.pinned)]:[]),...prizes.games.map(g=>prizeRail([gameName(g.game)||g.game,g.seriesName].filter(Boolean).join(' · '),g.data))]:[];
+    const rows=prizes?[...(prizes.pinned.length?[prizeRail('精選',prizes.pinned,true)]:[]),...prizes.games.map(g=>prizeRail([gameName(g.game)||g.game,g.seriesName].filter(Boolean).join(' · '),g.data))]:[];
     const body=!prizes?quiet('讀取中…'):rows.length?rows.join(''):quiet('近期沒有新彈的大獎資料');
     return head('本彈大獎','各遊戲最新主流彈的最高稀有度卡',info)+body+'<p class="rails-more"><a href="/?view=market" data-spa>看參考價漲跌</a></p>';
   }
