@@ -1,6 +1,6 @@
 # UA 收錄：第二個 Supabase 資料庫計畫書
 
-狀態：完成（2026-11-14）。兩項都已同意（ADR 0057）；第 0–5 段完成，正式站已上線 UA（11,170 張）。第二個專案 `cardscope-ip2`（`kcqtmmurmggitbivonll`）卡表結構見 `supabase/ip2/20261114120000_ip2_catalog_schema.sql`。未做：第二庫尚未加進舊主機 pg_dump 備份。
+狀態：完成（2026-11-14）。兩項都已同意（ADR 0057）；第 0–5 段完成，正式站已上線 UA（11,170 張）。第二個專案 `cardscope-ip2`（`kcqtmmurmggitbivonll`）卡表結構見 `supabase/ip2/20261114120000_ip2_catalog_schema.sql`。2026-11-15 第二庫已加進舊主機 pg_dump 每日備份。
 
 ## 為什麼
 
