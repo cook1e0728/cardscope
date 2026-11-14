@@ -123,7 +123,7 @@ test('taxonomy keeps card systems separate from current and planned franchises',
   assert.equal(weiss.nameZh,'Weiß Schwarz');
   assert.equal(weiss.franchises.find(item=>item.id==='frieren').status,'active');
   assert.equal(weiss.franchises.find(item=>item.id==='rezero').status,'planned');
-  assert.equal(taxonomy.systems.find(system=>system.id==='union-arena').enabled,false);
+  assert.equal(taxonomy.systems.find(system=>system.id==='union-arena').status,'active');
   assert.equal(taxonomy.assetPolicy.officialPermissionRequired,true);
 });
 

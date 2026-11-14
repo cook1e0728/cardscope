@@ -1160,7 +1160,10 @@ const CATALOG_EVENTS_TTL_MS=3600000,HOME_EVENTS_PAST_DAYS=45;let catalogEventsCa
 function loadCatalogEvents(now=Date.now()){
   if(catalogEventsCache&&now-catalogEventsCache.at<CATALOG_EVENTS_TTL_MS)return catalogEventsCache.promise;
   const day=offset=>new Date(now+offset*86400000).toISOString().slice(0,10),entry={at:now,promise:null};
-  entry.promise=supabaseFetch(`/tcg_series?select=game_id,region,release_date,name_zh,name_ja,name_en,source_url&release_date=gte.${day(-PRICE_HISTORY_DAYS)}&release_date=lte.${day(60)}&order=release_date.asc&limit=500`).then(catalogEventsFrom).catch(error=>{catalogEventsCache=null;throw error});
+  const path=`/tcg_series?select=game_id,region,release_date,name_zh,name_ja,name_en,source_url&release_date=gte.${day(-PRICE_HISTORY_DAYS)}&release_date=lte.${day(60)}&order=release_date.asc&limit=500`;
+  // 第二庫（UNION ARENA）的發售日另外問，失敗或逾時只少 UA 的活動。
+  const second=secondDbConfigured()?withTimeout(supabaseFetch(path,{db:'ip2'}),SECOND_DB_TIMEOUT_MS).catch(error=>{console.error('second database events failed',error.message);return []}):Promise.resolve([]);
+  entry.promise=Promise.all([supabaseFetch(path,{db:'main'}),second]).then(([main,extra])=>catalogEventsFrom([...(main||[]),...(extra||[])])).catch(error=>{catalogEventsCache=null;throw error});
   catalogEventsCache=entry;return entry.promise;
 }
 async function marketEventsResponse(game,now=Date.now()){

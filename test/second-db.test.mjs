@@ -138,3 +138,22 @@ test('a search with no hit anywhere can take its typo suggestion from the second
     assert.equal(result.body.meta.suggestion?.q,'テスト獣UA');
   });
 });
+
+test('market events include second-project release dates; a failing second project only drops those',async()=>{
+  const soon=new Date(Date.now()+5*86400000).toISOString().slice(0,10);
+  const row=(game,name,host)=>({game_id:game,region:'JP',release_date:soon,name_ja:name,source_url:`https://${host}/x`});
+  const events=query=>query.get('select').startsWith('game_id,region,release_date');
+  const main=mockProject({tcg_series:(_,query)=>events(query)?[row('pokemon','テスト弾','www.pokemon-card.com')]:[]});
+  const second=mockProject({tcg_series:(_,query)=>events(query)?[row('union-arena','UA テスト','www.unionarena-tcg.com')]:[]});
+  await withApp('events',{main,second},async get=>{
+    const body=(await get('/api/market-events')).body;
+    assert.ok(body.data.some(e=>e.game==='union-arena'&&e.source==='UNION ARENA 官網'),'UA release from the second project');
+    assert.ok(body.data.some(e=>e.game==='pokemon'));
+  });
+  const main2=mockProject({tcg_series:(_,query)=>events(query)?[row('pokemon','テスト弾','www.pokemon-card.com')]:[]});
+  await withApp('events-down',{main:main2,secondUrl:'http://127.0.0.1:9'},async get=>{
+    const body=(await get('/api/market-events')).body;
+    assert.ok(!body.data.some(e=>e.game==='union-arena'));
+    assert.ok(body.data.some(e=>e.game==='pokemon'),'main events survive');
+  });
+});

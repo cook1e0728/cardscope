@@ -215,16 +215,15 @@
     {
       "id": "union-arena",
       "kind": "card-game-system",
-      "status": "planned",
-      "enabled": false,
-      "nameZh": "Union Arena",
+      "status": "active",
+      "nameZh": "UNION ARENA",
       "nameOriginal": "UNION ARENA",
       "nameEn": "UNION ARENA",
       "languages": ["日文"],
       "regions": ["JP"],
       "categoryVisual": null,
       "franchises": [],
-      "noteZh": "保留擴充位置；有可核對的系列與授權素材後再啟用。"
+      "noteZh": "卡表在第二個資料庫（docs/UA_SECOND_DB_PLAN.md）；伺服器沒設 SUPABASE2_* 時沒有資料。"
     }
   ]
 }

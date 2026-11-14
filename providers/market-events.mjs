@@ -5,7 +5,7 @@ export const MARKET_EVENTS=[
 ];
 const UPCOMING_DAYS=45,REGIONS={JP:'日版',US:'美版',TW:'台版',ASIA:'亞洲版'};
 // 時事來源顯示給人看的網站名稱；沒對到的照舊顯示網域
-const SOURCE_NAMES={'pokemon-card.com':'寶可夢卡牌日本官網','asia.pokemon-card.com':'寶可夢卡牌繁中官網','asia-tc.onepiece-cardgame.com':'航海王卡牌繁中官網','asia-en.onepiece-cardgame.com':'航海王卡牌亞洲英文官網','dbs-cardgame.com':'七龍珠超卡牌官網','takaratomy.co.jp':'TAKARA TOMY 官網','ws-tcg.com':'Weiß Schwarz 官網','tcgdex.net':'TCGdex 卡牌資料庫','api.tcgdex.net':'TCGdex 卡牌資料庫','pokemontcg.io':'Pokémon TCG 資料庫','ygoprodeck.com':'YGOPRODeck 資料庫'};
+const SOURCE_NAMES={'pokemon-card.com':'寶可夢卡牌日本官網','asia.pokemon-card.com':'寶可夢卡牌繁中官網','asia-tc.onepiece-cardgame.com':'航海王卡牌繁中官網','asia-en.onepiece-cardgame.com':'航海王卡牌亞洲英文官網','dbs-cardgame.com':'七龍珠超卡牌官網','takaratomy.co.jp':'TAKARA TOMY 官網','ws-tcg.com':'Weiß Schwarz 官網','unionarena-tcg.com':'UNION ARENA 官網','tcgdex.net':'TCGdex 卡牌資料庫','api.tcgdex.net':'TCGdex 卡牌資料庫','pokemontcg.io':'Pokémon TCG 資料庫','ygoprodeck.com':'YGOPRODeck 資料庫'};
 // game 為 null 時回傳所有遊戲
 export function marketEventsFor(game,from,now=Date.now()){const until=new Date(now+UPCOMING_DAYS*86400000).toISOString().slice(0,10);return MARKET_EVENTS.filter(event=>(!game||event.game===game)&&event.date>=from&&event.date<=until)}
 // 目錄列 → 事件；沒有 https 來源或名稱的不列，不顯示查不到出處的事件。

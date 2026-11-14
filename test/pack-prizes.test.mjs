@@ -109,4 +109,9 @@ test('同一彈各版本合併：台版優先、缺的卡用日版補、缺的�
   assert.equal(tw[1].referencePrice,undefined,'不改到傳入的資料');
   const op=mergePrizeRows('onepiece',[{region:'TW',rows:[R('onepiece-official-eb05-061','EB05-061','SEC'),R('onepiece-official-eb05-061-p1','EB05-061','SEC')]},{region:'ASIA',rows:[R('onepiece-asia-eb05-061-p1','EB05-061','SEC'),R('onepiece-asia-eb05-061-p2','EB05-061','SEC')]}]);
   assert.deepEqual(op.map(r=>r.cardId),['onepiece-official-eb05-061-p1','onepiece-asia-eb05-061-p2','onepiece-official-eb05-061']);
+  assert.equal(mergePrizeRows('pokemon',[{region:'TW',rows:[R('tw-124','124/165','SAR')]},{region:'JP',rows:[R('jp-124','124','SAR')]}]).length,1,'寶可夢的「/總數」不算卡號');
+  const ws=mergePrizeRows('weiss-schwarz',[{region:'JP',rows:[R('w1','SFN/S136-100SP','SP'),R('w2','SFN/S136-101SP','SP'),R('w3','SFN/S136-102SP','SP')]}]);
+  assert.equal(ws.length,3,'斜線前的作品代號相同不代表同一張卡');
+  const ua=mergePrizeRows('union-arena',[{region:'JP',rows:[R('union-arena-ua57bt-stg-1-001','UA57BT/STG-1-001','SR'),R('union-arena-ua57bt-stg-1-001-p1','UA57BT/STG-1-001','SR★'),R('union-arena-ua57bt-stg-1-002-p1','UA57BT/STG-1-002','SR★★★')]}]);
+  assert.deepEqual(ua.map(r=>r.cardId),['union-arena-ua57bt-stg-1-002-p1','union-arena-ua57bt-stg-1-001-p1','union-arena-ua57bt-stg-1-001']);
 });

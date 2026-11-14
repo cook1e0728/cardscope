@@ -24,8 +24,9 @@ const numberOrNull = value => {
 
 const objectOrEmpty = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
+// ★ 留著：UNION ARENA 平行卡的 SR★、SR★★★ 是不同稀有度（其他遊戲沒有用到 ★）。
 export function rarityToken(value){
-  return String(value ?? '').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g,'').replace(/[^\p{L}\p{N}+]/gu,'');
+  return String(value ?? '').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g,'').replace(/[^\p{L}\p{N}+★]/gu,'');
 }
 
 export function rarityDefinition(gameId){
