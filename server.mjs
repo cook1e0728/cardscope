@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, timingSafeEqual } from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { crossVersionLowestPrices, matchYgoprodeckSet, searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createGradedPrices } from './providers/graded-prices.mjs';
@@ -36,6 +37,11 @@ const FX_CACHE_MS = 24 * 60 * 60 * 1000;
 const MARKET_CACHE_MS = 5 * 60 * 1000;
 const fxCache = { data:null, expiresAt:0 };
 const CATALOG_GAME_IDS = new Set(['pokemon','onepiece','yugioh','haikyuu','weiss-schwarz','dragonball-fw']);
+// 第二個 Supabase 專案（docs/UA_SECOND_DB_PLAN.md）收的遊戲：卡片、系列 id 都以「遊戲 id-」開頭。沒設 SUPABASE2_URL／SUPABASE2_SERVICE_KEY 時這些遊戲不存在，正式站照舊。
+const SECOND_DB_GAMES = new Set(['union-arena']);
+if (secondDbConfigured()) for (const game of SECOND_DB_GAMES) CATALOG_GAME_IDS.add(game);
+// 第二庫只是補充：跨遊戲的查詢（目錄、搜尋）等它最多這麼久，逾時或失敗就只回主庫。
+const SECOND_DB_TIMEOUT_MS = Number(process.env.SUPABASE2_TIMEOUT_MS || 4000);
 const CATALOG_REGION_IDS = new Set(['JP','TW','US','CN','KR','ASIA']);
 const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com','asia-en.onepiece-cardgame.com']);
 // Faceted browsing reads the complete selected game before pagination so the
@@ -112,17 +118,26 @@ const providerStatus=()=>({
 });
 
 function supabaseConfigured(){return Boolean(process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY)}
-async function supabaseFetch(pathAndQuery,options={}){
-  const base=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_KEY;
-  if(!base||!key) throw new Error('SUPABASE_NOT_CONFIGURED');
+function secondDbConfigured(){return Boolean(process.env.SUPABASE2_URL&&process.env.SUPABASE2_SERVICE_KEY)}
+// Which project a call goes to: options.db when given, else the scope set by withDb (a game page, a card or series id), else the main one.
+// Prices, reports, stats and sync runs exist only in the main project, whatever the scope.
+const dbScope=new AsyncLocalStorage(),MAIN_ONLY_PATH=/^\/(?:rpc\/)?(?:price_|card_hot|page_stats|catalog_health|catalog_sync|exchange_rates|jp_buyback|reports)/;
+const withDb=(db,task)=>dbScope.run(db,task),dbForGame=game=>SECOND_DB_GAMES.has(String(game||''))?'ip2':'main',dbForId=id=>[...SECOND_DB_GAMES].some(game=>String(id||'').startsWith(`${game}-`))?'ip2':'main';
+function supabaseTarget(pathAndQuery,db){
+  const which=db||(MAIN_ONLY_PATH.test(pathAndQuery)?'main':dbScope.getStore()||'main');
+  const [base,key]=which==='ip2'?[process.env.SUPABASE2_URL,process.env.SUPABASE2_SERVICE_KEY]:[process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_KEY];
+  if(!base||!key)throw new Error(which==='ip2'?'SUPABASE2_NOT_CONFIGURED':'SUPABASE_NOT_CONFIGURED');
+  return {base,key};
+}
+async function supabaseFetch(pathAndQuery,{db,...options}={}){
+  const {base,key}=supabaseTarget(pathAndQuery,db);
   const response=await fetch(`${base}/rest/v1${pathAndQuery}`,{...options,headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',...(options.headers||{})}});
   if(!response.ok){const text=await response.text().catch(()=>'');throw new Error(`SUPABASE_${response.status}:${text.slice(0,200)}`)}
   const text=await response.text(); if(!text)return null; try{return JSON.parse(text)}catch{return null}
 }
 
-async function supabaseFetchPage(pathAndQuery){
-  const base=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_KEY;
-  if(!base||!key)throw new Error('SUPABASE_NOT_CONFIGURED');
+async function supabaseFetchPage(pathAndQuery,{db}={}){
+  const {base,key}=supabaseTarget(pathAndQuery,db);
   const response=await fetch(`${base}/rest/v1${pathAndQuery}`,{headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json',Prefer:'count=exact'}});
   if(!response.ok){const text=await response.text().catch(()=>'');throw new Error(`SUPABASE_${response.status}:${text.slice(0,200)}`)}
   const contentRange=String(response.headers.get('content-range')||''),totalToken=contentRange.split('/').at(-1),total=/^\d+$/.test(totalToken)?Number(totalToken):null;
@@ -183,13 +198,15 @@ const pageStats=createPageStats({db:supabaseFetch,enabled:supabaseConfigured,int
 // 每天被開最多次的卡（使用者 2026-11-12 同意）：只記卡片 ID 與次數、不記是誰開的；前端開卡片時帶 ?open=1，非機器人才算；資料庫每天只留前 50 名（card_hot_add）。
 const cardHot=createCardHotStats({db:supabaseFetch,enabled:supabaseConfigured,intervalMs:Number(process.env.PAGE_STATS_FLUSH_MS)||10*60*1000});
 // C3：資料庫大小。免費方案上限 500 MB，價格快照自動煞車在 440 MB（SNAPSHOT_DB_BRAKE_BYTES），所以 430 MB 就先讓外部監測亮燈。公開端點只給 ok／near-limit／unknown，不給位元組數。
-const DB_NEAR_LIMIT_BYTES=430*1024*1024,STORAGE_CACHE_MS=60*60*1000,STORAGE_RETRY_MS=60*1000,storageCache={data:null,expiresAt:0,promise:null,retryAt:0};
-function loadStorageReport(){
-  if(!supabaseConfigured())return Promise.resolve(null);
+const DB_NEAR_LIMIT_BYTES=430*1024*1024,STORAGE_CACHE_MS=60*60*1000,STORAGE_RETRY_MS=60*1000,storageCaches={main:{data:null,expiresAt:0,promise:null,retryAt:0},ip2:{data:null,expiresAt:0,promise:null,retryAt:0}};
+// db 'ip2' is the second project (its own 500 MB); asking it every hour also keeps that free project from pausing after 7 idle days.
+function loadStorageReport(db='main'){
+  if(!(db==='ip2'?secondDbConfigured():supabaseConfigured()))return Promise.resolve(null);
+  const storageCache=storageCaches[db];
   if(storageCache.data&&storageCache.expiresAt>Date.now())return Promise.resolve(storageCache.data);
   if(storageCache.promise)return storageCache.promise;
   if(Date.now()<storageCache.retryAt)return Promise.resolve(storageCache.data);
-  return storageCache.promise=supabaseFetch('/rpc/db_size_report',{method:'POST',body:'{}',signal:AbortSignal.timeout(15000)}).then(report=>{if(!Number.isFinite(Number(report?.databaseBytes)))throw new Error('bad db_size_report');storageCache.data=report;storageCache.expiresAt=Date.now()+STORAGE_CACHE_MS;return report}).catch(error=>{console.warn('db size report failed',error?.message);storageCache.retryAt=Date.now()+STORAGE_RETRY_MS;return storageCache.data}).finally(()=>{storageCache.promise=null});
+  return storageCache.promise=supabaseFetch('/rpc/db_size_report',{db,method:'POST',body:'{}',signal:AbortSignal.timeout(15000)}).then(report=>{if(!Number.isFinite(Number(report?.databaseBytes)))throw new Error('bad db_size_report');storageCache.data=report;storageCache.expiresAt=Date.now()+STORAGE_CACHE_MS;return report}).catch(error=>{console.warn('db size report failed',db,error?.message);storageCache.retryAt=Date.now()+STORAGE_RETRY_MS;return storageCache.data}).finally(()=>{storageCache.promise=null});
 }
 const storageStatus=report=>{const bytes=Number(report?.databaseBytes);return !Number.isFinite(bytes)?'unknown':bytes>=DB_NEAR_LIMIT_BYTES?'near-limit':'ok'};
 // Cached results are also bounded by size: 400 page-sized RPC results of ~200 KB each would otherwise pin about 80 MB.
@@ -443,10 +460,13 @@ async function browseDatabaseSeriesCards(game,options={}){
   const result=buildBrowsePage(cards,{...options,printingByCard,imageByCard,facetStatus:'complete',priceByCard:await seriesPriceMap(cards,options.sort)});
   return {...result,errors:{printings:null,images:imageResult.status==='complete'?null:'圖片資料暫時無法讀取'}};
 }
+// Every query below for one game goes to that game's project (withDb scope), including the rarity table and facets.
 async function browseDatabaseCards(game,options){
-  if(options.seriesId)return browseDatabaseSeriesCards(game,options);
-  if(databaseFastBrowseEligible(options))return browseDatabasePageFast(game,options);
-  return browseDatabaseCardsFiltered(game,options);
+  return withDb(dbForGame(game),()=>{
+    if(options.seriesId)return browseDatabaseSeriesCards(game,options);
+    if(databaseFastBrowseEligible(options))return browseDatabasePageFast(game,options);
+    return browseDatabaseCardsFiltered(game,options);
+  });
 }
 // Rarity filter and the name / release / rarity sorts run inside the database (browse_cards_filtered + browse_cards_facets, migration 20261016110000):
 // the server asks for one page plus the total and facets and never loads a whole game (Pokemon is 55k cards and 105k printings; one such request
@@ -676,13 +696,14 @@ async function loadCatalogCoverageUncached(){
   const fallback=await loadFallbackCatalog();
   if(!supabaseConfigured())return buildFallbackCatalogCoverage(fallback);
   try{
-    const printingRelation=createCoverageRelation('tcg_printings',BROWSE_PRINTING_SELECT,'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required'),imageRelation=createCoverageRelation('card_images',BROWSE_IMAGE_SELECT,'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at');
+    const printingRelation=createCoverageRelation('tcg_printings',BROWSE_PRINTING_SELECT,'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required'),imageRelation=createCoverageRelation('card_images',BROWSE_IMAGE_SELECT,'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at'),secondRelations={printing:createCoverageRelation('tcg_printings',BROWSE_PRINTING_SELECT,'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required'),image:createCoverageRelation('card_images',BROWSE_IMAGE_SELECT,'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at')};
     const results=await Promise.all([
       supabaseFetchAll('/tcg_series?select=id,gameId:game_id,region,language,providerId:provider_id,sourceUrl:source_url,updatedAt:updated_at,metadata&order=game_id,region,id').then(rows=>({rows,status:'complete'})).catch(error=>({rows:[],status:'unknown',error:publicReason('coverage series failed',error)})),
-      ...[...CATALOG_GAME_IDS].map(gameId=>loadCoverageGame(gameId,printingRelation,imageRelation))
+      // A second-project game reads its own project with its own relation state, so a failure there does not mark the main project's relations unknown.
+      ...[...CATALOG_GAME_IDS].map(gameId=>dbForGame(gameId)==='ip2'?withDb('ip2',()=>loadCoverageGame(gameId,secondRelations.printing,secondRelations.image)):loadCoverageGame(gameId,printingRelation,imageRelation))
     ]),seriesResult=results[0],cardGroups=results.slice(1),printingResult={status:printingRelation.status,error:printingRelation.error},imageResult={status:imageRelation.status,error:imageRelation.error},games={},allTimestamps=[],baseline=catalogBaselineReport(seriesResult.rows);
     for(const group of cardGroups){
-      const options={cardStatus:group.status,printingStatus:printingResult.status,imageStatus:imageResult.status},entry=slimCoverageGame(adjustCoverageGame(finishCoverage(group.acc,group.gameId,options),options));
+      const relations=dbForGame(group.gameId)==='ip2'?secondRelations:{printing:printingRelation,image:imageRelation},options={cardStatus:group.status,printingStatus:relations.printing.status,imageStatus:relations.image.status},entry=slimCoverageGame(adjustCoverageGame(finishCoverage(group.acc,group.gameId,options),options));
       // 該遊戲的卡片查詢失敗或逾時時，卡數是「不知道」不是 0：給 null，前端顯示「待補」。
       if(group.status!=='complete')entry.cards=null;
       games[group.gameId]=entry;allTimestamps.push(entry.sourceTimestamp);
@@ -761,15 +782,17 @@ function rateLimited(req,pathname){
   return !(pathname.startsWith('/api/images/')?imageLimiter:apiLimiter)(ip);
 }
 async function loadAdminCatalogHealth(){
-  const [summary,missingChinese,missingSeries,pendingPrintingImages,pendingCardImages,storage]=await Promise.all([
+  const [summary,missingChinese,missingSeries,pendingPrintingImages,pendingCardImages,storage,secondStorage]=await Promise.all([
     loadCatalogHealth(),
     supabaseFetch('/tcg_cards?select=id,game:game_id,officialCardNumber:official_card_number,nameJa:name_ja,nameEn:name_en&name_zh=is.null&order=game_id,id&limit=50'),
     supabaseFetch('/tcg_cards?select=id,game:game_id,officialCardNumber:official_card_number,nameZh:name_zh,nameJa:name_ja,nameEn:name_en&series_id=is.null&order=game_id,id&limit=50'),
     supabaseFetch('/tcg_printings?select=id,cardId:card_id,region,language,sourceUrl:source_url,imageRightsStatus:image_rights_status&image_url=not.is.null&image_rights_status=eq.not-provided&order=id&limit=50'),
     supabaseFetch('/card_images?select=id,cardId:card_id,source,sourceUrl:source_url,imageRightsStatus:image_rights_status&image_url=not.is.null&image_rights_status=eq.not-provided&order=id&limit=50'),
-    loadStorageReport()
+    loadStorageReport(),
+    // 第二庫（UA 等）的容量，與主庫分開算：各有 500 MB。
+    loadStorageReport('ip2')
   ]);
-  return {summary,missing:{chineseNames:missingChinese,series:missingSeries},rightsReview:{printings:pendingPrintingImages,images:pendingCardImages},storage:storage||{error:'unavailable'},sources:publicSourcePolicies()};
+  return {summary,missing:{chineseNames:missingChinese,series:missingSeries},rightsReview:{printings:pendingPrintingImages,images:pendingCardImages},storage:storage||{error:'unavailable'},...(secondDbConfigured()?{secondStorage:secondStorage||{error:'unavailable'}}:{}),sources:publicSourcePolicies()};
 }
 const officialProductCache={data:null,expiresAt:0};
 function japaneseDate(value){const m=String(value||'').match(/(\d{4})年\s*(\d{1,2})月(\d{1,2})日/);return m?`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`:null}
@@ -866,14 +889,22 @@ function loadCatalogShared(){
   return refresh();
 }
 const loadCatalog=async()=>structuredClone(await loadCatalogShared());
+const CATALOG_GAMES_PATH='/tcg_games?select=id,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko&order=id',CATALOG_SERIES_PATH='/tcg_series?select=id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,language,releaseDate:release_date,aliases,sourceUrl:source_url,imageUrl:image_url,imageKind:image_kind,metadata&order=release_date.desc';
+// The second project's games and series join the catalog (its cards are fetched per page as usual); a failure or timeout there only drops those rows.
+async function loadSecondDbCatalogRows(){
+  if(!secondDbConfigured())return {games:[],series:[]};
+  try{return await withTimeout(withDb('ip2',async()=>{const [games,series]=await Promise.all([supabaseFetch(CATALOG_GAMES_PATH),supabaseFetchAll(CATALOG_SERIES_PATH)]);return {games:games||[],series:series||[]}}),SECOND_DB_TIMEOUT_MS)}
+  catch(error){console.error('second database catalog failed; main catalog only',error.message);return {games:[],series:[]}}
+}
 async function loadCatalogUncached(){
   const fallback=await loadFallbackCatalog();
   if(!supabaseConfigured())return canonicalizeCatalog({...fallback,source:'catalog.json'});
   try{
-    const [games,series,cards]=await Promise.all([
-      supabaseFetch('/tcg_games?select=id,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko&order=id'),
-      supabaseFetchAll('/tcg_series?select=id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,language,releaseDate:release_date,aliases,sourceUrl:source_url,imageUrl:image_url,imageKind:image_kind,metadata&order=release_date.desc'),
-      supabaseFetch('/tcg_cards?select=id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases&order=created_at.asc&limit=250')
+    const [games,series,cards,second]=await Promise.all([
+      supabaseFetch(CATALOG_GAMES_PATH),
+      supabaseFetchAll(CATALOG_SERIES_PATH),
+      supabaseFetch('/tcg_cards?select=id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases&order=created_at.asc&limit=250'),
+      loadSecondDbCatalogRows()
     ]);
     const cardIds=(cards||[]).map(c=>`"${String(c.id).replaceAll('"','')}"`).join(','),[printings,images]=cardIds?await Promise.all([
       supabaseFetchAll(`/tcg_printings?${new URLSearchParams({select:BROWSE_PRINTING_SELECT,card_id:`in.(${cardIds})`})}`),
@@ -882,7 +913,7 @@ async function loadCatalogUncached(){
     const printingByCard=new Map(),imageByCard=new Map();
     for(const p of printings||[]){const list=printingByCard.get(p.cardId)||[];list.push(p);printingByCard.set(p.cardId,list)}
     for(const i of images||[]){const list=imageByCard.get(i.cardId)||[];list.push(i);imageByCard.set(i.cardId,list)}
-    const databaseCards=(cards||[]).map(c=>{const ps=printingByCard.get(c.id)||[],imgs=imageByCard.get(c.id)||[],primary=imgs.find(browseHasUsableImage)||ps.find(browseHasUsableImage);return {...c,region:ps[0]?.region||null,language:ps[0]?.language||null,imageUrl:primary?.imageUrl||null,imageSource:primary?.source||null,imageRightsStatus:primary?.imageRightsStatus||null,printings:ps,images:imgs}}),merged={version:3,updatedAt:new Date().toISOString(),source:'supabase+catalog.json',games:mergeCatalogRows(fallback.games,games||[]),series:mergeCatalogRows(fallback.series,series||[],{keepFallbackOnly:false}),cards:mergeCatalogRows(fallback.cards,databaseCards,{keepFallbackOnly:false})};
+    const databaseCards=(cards||[]).map(c=>{const ps=printingByCard.get(c.id)||[],imgs=imageByCard.get(c.id)||[],primary=imgs.find(browseHasUsableImage)||ps.find(browseHasUsableImage);return {...c,region:ps[0]?.region||null,language:ps[0]?.language||null,imageUrl:primary?.imageUrl||null,imageSource:primary?.source||null,imageRightsStatus:primary?.imageRightsStatus||null,printings:ps,images:imgs}}),merged={version:3,updatedAt:new Date().toISOString(),source:'supabase+catalog.json',games:mergeCatalogRows(fallback.games,[...(games||[]),...second.games]),series:mergeCatalogRows(fallback.series,[...(series||[]),...second.series],{keepFallbackOnly:false}),cards:mergeCatalogRows(fallback.cards,databaseCards,{keepFallbackOnly:false})};
     return canonicalizeCatalog(merged);
   }catch(error){return canonicalizeCatalog({...fallback,source:'catalog.json',fallbackReason:publicReason('catalog load failed; using catalog.json',error)})}
 }
@@ -937,16 +968,31 @@ const searchTimedOut=error=>/57014|statement timeout|aborted due to timeout|Time
 // search_fold_names (migration 20261023140000) lists names whose folded form contains the folded query; we cut the matching span out of each. Fewer than 3 folded characters has no trigram index, so no retry.
 async function foldedNameSpans(name){
   const folded=foldSearch(name);if(folded.length<3)return [];
-  try{const rows=await supabaseFetch('/rpc/search_fold_names',{method:'POST',body:JSON.stringify({p_fold:folded,p_limit:5})});return [...new Set((Array.isArray(rows)?rows:[]).map(row=>foldedSpan(row?.name,folded)).filter(span=>span&&span.toLowerCase()!==String(name).trim().toLowerCase()))].slice(0,3)}
+  try{const ask=db=>supabaseFetch('/rpc/search_fold_names',{db,method:'POST',body:JSON.stringify({p_fold:folded,p_limit:5})}),[rows,secondRows]=await Promise.all([ask('main'),secondDbConfigured()?withTimeout(ask('ip2'),SECOND_DB_TIMEOUT_MS).catch(()=>[]):[]]);return [...new Set([...(Array.isArray(rows)?rows:[]),...(Array.isArray(secondRows)?secondRows:[])].map(row=>foldedSpan(row?.name,folded)).filter(span=>span&&span.toLowerCase()!==String(name).trim().toLowerCase()))].slice(0,3)}
   catch(error){console.error('search fold retry failed',error.message);return []}
 }
 // Typo help for a search with no result: search_name_suggestion (migration 20261023150000, pg_trgm on the card names) returns the closest name, or NULL when nothing is close. Called only on zero results.
 async function suggestCardName(name,region){
   const query=String(name||'').trim();if(query.length<3)return null;
-  try{const value=await supabaseFetch('/rpc/search_name_suggestion',{method:'POST',body:JSON.stringify({p_q:query,p_region:region==='ALL'?null:region})}),text=typeof value==='string'?value.trim():'';return text&&text.toLowerCase()!==query.toLowerCase()?{q:text,reason:'相近的卡名'}:null}
+  try{const ask=db=>supabaseFetch('/rpc/search_name_suggestion',{db,method:'POST',body:JSON.stringify({p_q:query,p_region:region==='ALL'?null:region})});let value=await ask('main');if(typeof value!=='string'&&secondDbConfigured())value=await withTimeout(ask('ip2'),SECOND_DB_TIMEOUT_MS).catch(()=>null);const text=typeof value==='string'?value.trim():'';return text&&text.toLowerCase()!==query.toLowerCase()?{q:text,reason:'相近的卡名'}:null}
   catch(error){console.error('search name suggestion failed',error.message);return null}
 }
+// Search across both projects: the main project's results come first, exactly as before; the second project fills a page the main one could not
+// fill, its own results continuing at offset - (main total). Asked only then, so most searches cost nothing more; a failure or timeout there keeps the main answer.
+// shortcut: second-project hits always rank after every main hit (no cross-project relevance merge), and while main pages are full the total counts main only
+// (it grows on the first page that reaches the second project); merge by matchRank and ask both for counts if UA results feel buried.
 async function searchCatalogDatabase(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT,{offset=0,rarities=[]}={}){
+  const main=await withDb('main',()=>searchCatalogDatabaseIn(rawQuery,region,limit,{offset,rarities}));
+  if(!secondDbConfigured()||!main.searched||main.cards.length>=limit)return main;
+  const mainTotal=main.cards.length?offset+main.cards.length:Number(main.total)||0,secondOffset=Math.max(offset-mainTotal,0);
+  let second;try{second=await withTimeout(withDb('ip2',()=>searchCatalogDatabaseIn(rawQuery,region,limit-main.cards.length,{offset:secondOffset,rarities})),SECOND_DB_TIMEOUT_MS)}
+  catch(error){console.error('second database search failed; main results only',error.message);return main}
+  if(!second.cards.length&&!second.total)return main;
+  const secondTotal=Number(second.total)||secondOffset+second.cards.length,timings={...main.timings};
+  for(const [name,ms] of Object.entries(second.timings||{}))timings[`second-${name}`]=ms;
+  return {...main,cards:[...main.cards,...second.cards],candidateCount:main.candidateCount+second.candidateCount,mayHaveMore:second.mayHaveMore,matchedSeries:main.matchedSeries||second.matchedSeries,timings,total:mainTotal+secondTotal,paged:Boolean(main.cards.length?main.paged:second.paged)};
+}
+async function searchCatalogDatabaseIn(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT,{offset=0,rarities=[]}={}){
   const rarityValues=rarityMatchValues(rarities),filtered=region!=='ALL'||rarityValues.length>0;
   if(!supabaseConfigured())return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
   const terms=searchQueryTerms(rawQuery);if(!terms.length)return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
@@ -1015,7 +1061,12 @@ async function loadCardDetailRpc(cardId){
   const hydrated=detail.cards.map(c=>({...c,printings:c.printings||[],region:c.printings?.[0]?.region||null,language:c.printings?.[0]?.language||null,...cardImageFields(c,c.printings)})),cards=canonicalizeCatalog({cards:hydrated}).cards,canonical=cards.find(c=>c.id===cardId)||cards[0];
   return {catalog:{source:'supabase-full-catalog',cards:[canonical],series:detail.series,games:detail.games.filter(g=>g.id===canonical.game)},card:canonical};
 }
+// A second-project card id is looked up only there; with that project not configured the card does not exist.
 async function loadCardFromDatabase(cardId){
+  const db=dbForId(cardId);if(db==='ip2'&&!secondDbConfigured())return null;
+  return withDb(db,()=>loadCardFromDatabaseIn(cardId));
+}
+async function loadCardFromDatabaseIn(cardId){
   if(!supabaseConfigured())return null;const viaRpc=await loadCardDetailRpc(cardId);if(viaRpc!==undefined)return viaRpc;const safe=String(cardId).replace(/[(),]/g,''),cardSelect='id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata',params=new URLSearchParams({select:cardSelect,or:`(id.eq.${safe},canonical_id.eq.${safe})`,limit:'100'}),cards=await supabaseFetch(`/tcg_cards?${params}`);if(!cards?.length)return null;
   // A card linked into another canonical (e.g. a JP card joining its TW twin, ADR 0003) must bring that canonical's other printings along.
   const knownIds=new Set(cards.map(c=>c.id)),siblingCanonicals=[...new Set(cards.map(c=>c.canonicalId).filter(id=>id&&id!==safe))];
@@ -1201,11 +1252,12 @@ async function loadSeoForCard(cardId){
 }
 async function loadSeoForSeries(seriesId){
   let series=null,printingCount=null;
-  if(supabaseConfigured()){
+  const db=dbForId(seriesId);if(db==='ip2'&&!secondDbConfigured())return null;
+  if(supabaseConfigured())await withDb(db,async()=>{
     const rows=await supabaseFetch(`/tcg_series?${new URLSearchParams({select:'id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,releaseDate:release_date',id:`eq.${seriesId}`,limit:'1'})}`);series=rows?.[0]||null;
     // The count is a nicety: never let it hold the page back or fail it.
     if(series)printingCount=await withTimeout(supabaseFetchPage(`/tcg_printings?${new URLSearchParams({select:'id',series_id:`eq.${seriesId}`,limit:'1'})}`).then(page=>page.total),800).catch(()=>null);
-  }else series=(await loadCatalog()).series.find(s=>s.id===seriesId)||null;
+  });else series=(await loadCatalog()).series.find(s=>s.id===seriesId)||null;
   return series?seriesSeo({series,baseUrl:PUBLIC_BASE_URL,printingCount}):null;
 }
 // 有 card／series 參數時改寫 head；查詢失敗或逾時就回原本的 index（200），查無才回 404。
@@ -1217,13 +1269,18 @@ async function serveSeoIndex(res,target){
 }
 // Keyset paging (id > last) keeps every page cheap however deep the table is.
 async function forEachKeysetPage(table,select,onRows){let last=null;for(let pages=0;pages<1000;pages++){const params=new URLSearchParams({select,order:'id.asc',limit:String(SITEMAP_PAGE_SIZE)});if(last!==null)params.set('id',`gt.${last}`);const rows=await supabaseFetch(`/${table}?${params}`);if(!Array.isArray(rows))throw new Error('SITEMAP_BAD_RESPONSE');onRows(rows);if(rows.length<SITEMAP_PAGE_SIZE)return;const next=rows.at(-1)?.id;if(!next||next===last)throw new Error('SITEMAP_PAGING_STALLED');last=next}throw new Error('SITEMAP_TOO_MANY_PAGES')}
-async function buildSitemaps(){
-  const groups=new Map(),seriesRows=[];
+async function collectSitemapRows(groups,seriesRows){
   // 先用資料庫一次分組好的結果（public.sitemap_card_groups，約 1 秒）；失敗或格式不符才退回逐頁抓卡片（冷啟動 40–60 秒）。
   let grouped=null;try{const rows=await supabaseFetch('/rpc/sitemap_card_groups',{method:'POST',body:'{}',signal:AbortSignal.timeout(45000)});if(Array.isArray(rows)&&rows.length&&rows.every(r=>Array.isArray(r)&&typeof r[0]==='string'))grouped=rows}catch(error){console.error('sitemap rpc failed',error.message)}
   if(grouped)for(const [id,game,lastmod] of grouped)groups.set(id,{id,game:game||null,lastmod:lastmod||null});
   else await forEachKeysetPage('tcg_cards','id,canonical_id,game_id,updated_at,name_zh,name_ja,name_en,name_ko',rows=>mergeCardSitemapRows(rows,groups));
   await forEachKeysetPage('tcg_series','id,game_id,region,official_code,name_zh,name_ja,name_en,name_ko,updated_at',rows=>seriesRows.push(...rows));
+}
+async function buildSitemaps(){
+  const groups=new Map(),seriesRows=[];
+  await withDb('main',()=>collectSitemapRows(groups,seriesRows));
+  // 第二庫的卡與系列另外收齊才併入：中途失敗不留半套，主庫照常。
+  if(secondDbConfigured()){const secondGroups=new Map(),secondSeries=[];try{await withDb('ip2',()=>collectSitemapRows(secondGroups,secondSeries));for(const [id,entry] of secondGroups)groups.set(id,entry);seriesRows.push(...secondSeries)}catch(error){console.error('second database sitemap failed; main rows only',error.message)}}
   const generated=new Date().toISOString().slice(0,10),cardFiles=chunkEntries(cardSitemapEntries(PUBLIC_BASE_URL,groups),SITEMAP_URLS_PER_FILE).map(renderUrlSet),index=[{loc:`${PUBLIC_BASE_URL}/sitemaps/pages.xml`,lastmod:generated},{loc:`${PUBLIC_BASE_URL}/sitemaps/series.xml`,lastmod:generated},...cardFiles.map((_,i)=>({loc:`${PUBLIC_BASE_URL}/sitemaps/cards-${i+1}.xml`,lastmod:generated}))];
   return {index:renderSitemapIndex(index),pages:renderUrlSet(pageSitemapEntries(PUBLIC_BASE_URL,[...CATALOG_GAME_IDS])),series:renderUrlSet(seriesSitemapEntries(PUBLIC_BASE_URL,seriesRows)),cards:cardFiles,cardCount:groups.size};
 }
@@ -1259,7 +1316,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(url.pathname==='/api/catalog/coverage'&&req.method==='GET'){return json(res,200,{data:await loadCatalogCoverage()},SHORT_CACHE)}
   // 外部監測（UptimeRobot 預設 HEAD）只需確認服務活著並保持喚醒，不查資料庫。
   if(url.pathname==='/api/catalog/health'&&req.method==='HEAD'){res.writeHead(200,{'content-type':'application/json; charset=utf-8','cache-control':'no-store'});return res.end()}
-  if(url.pathname==='/api/catalog/health'&&req.method==='GET'){const [health,storage]=await Promise.all([loadCatalogHealth(),loadStorageReport()]);return json(res,200,{data:{...health,storage:{status:storageStatus(storage)}}})}
+  if(url.pathname==='/api/catalog/health'&&req.method==='GET'){const [health,storage,secondStorage]=await Promise.all([loadCatalogHealth(),loadStorageReport(),loadStorageReport('ip2')]);return json(res,200,{data:{...health,storage:{status:storageStatus(storage)},...(secondDbConfigured()?{secondStorage:{status:storageStatus(secondStorage)}}:{})}})}
   if(url.pathname==='/api/catalog/sources'&&req.method==='GET'){return json(res,200,{data:publicSourcePolicies(),meta:sourcePolicySummary()})}
   if(url.pathname==='/api/admin/catalog/health'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；請使用 Authorization Bearer 或 x-scrape-token 標頭'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{return json(res,200,{data:await loadAdminCatalogHealth()})}catch(e){return json(res,502,{error:e.message})}}
   if(url.pathname==='/api/admin/page-stats'&&req.method==='GET'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；請使用 Authorization Bearer 或 x-scrape-token 標頭'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const days=Math.min(366,Math.max(1,Math.floor(Number(url.searchParams.get('days')))||30));try{const [rows,hotRows]=await Promise.all([supabaseFetch(`/page_stats_daily?select=day,counts,updatedAt:updated_at&order=day.desc&limit=${days}`),supabaseFetch(`/card_hot_daily?select=day,counts,updatedAt:updated_at&order=day.desc&limit=${days}`).catch(()=>null)]);return json(res,200,{data:{days:rows,pending:pageStats.pending(),cardHot:{days:hotRows,pending:cardHot.pending()}}})}catch(e){return json(res,502,{error:e.message,pending:pageStats.pending()})}}

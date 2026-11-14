@@ -1,6 +1,6 @@
 # UA 收錄：第二個 Supabase 資料庫計畫書
 
-狀態：進行中（2026-11-14）。兩項都已同意（ADR 0057）；第 0、1 段完成：第二個專案 `cardscope-ip2`（`kcqtmmurmggitbivonll`）已建立並套用卡表結構（`supabase/ip2/20261114120000_ip2_catalog_schema.sql`）。
+狀態：進行中（2026-11-14）。兩項都已同意（ADR 0057）；第 0、1、2 段完成：第二個專案 `cardscope-ip2`（`kcqtmmurmggitbivonll`）已建立並套用卡表結構（`supabase/ip2/20261114120000_ip2_catalog_schema.sql`）。
 
 ## 為什麼
 
@@ -50,10 +50,20 @@
 |---|---|---|
 | 0 | 使用者同意上面兩項、寫 ADR | ADR 合併 |
 | 1 | 建第二個專案、套用資料表結構 | 新庫有表與 RPC，空表查詢正常（2026-11-14 完成：17 表、1 檢視、38 函式、索引、觸發器、權限與主庫比對一致，只差函式內換行 CRLF→LF；空表呼叫各 RPC、寫入測試後回滾都正常；新庫 12 MB） |
-| 2 | 伺服器分流（含測試：沒設第二庫、第二庫失敗、跨庫合併） | `npm test`、`npm run check`；沒設環境變數時正式站行為不變 |
+| 2 | 伺服器分流（含測試：沒設第二庫、第二庫失敗、跨庫合併） | `npm test`、`npm run check`；沒設環境變數時正式站行為不變（2026-11-14 完成，見下方「第 2 段做法」） |
 | 3 | 匯入腳本與 UA 資料 | 11,170 張、抽查 20 張卡名／稀有度／圖片；新庫大小紀錄 |
 | 4 | 導覽、稀有度、本彈大獎加 UA | 本機手機寬度看過 |
 | 5 | Render 設環境變數、部署 | 正式站 UA 頁、搜尋、詳細頁、本彈大獎；主站其他遊戲不受影響 |
+
+## 第 2 段做法（2026-11-14）
+
+- `server.mjs`：`supabaseFetch`／`supabaseFetchPage` 依 `options.db` 或 AsyncLocalStorage 範圍（`withDb`）選庫；`dbForGame`、`dbForId`（id 以 `union-arena-` 開頭）決定範圍。價格、回報、統計、匯率、買取、同步紀錄的路徑（`MAIN_ONLY_PATH`）永遠走主庫。
+- 單一遊戲：`browseDatabaseCards`（含稀有度表、facets）、`loadCardFromDatabase`、`loadSeoForSeries` 進第二庫範圍。
+- 跨遊戲：目錄（遊戲與系列清單）併入第二庫的列，等最多 `SUPABASE2_TIMEOUT_MS`（預設 4 秒）；搜尋先問主庫，主庫填不滿一頁才問第二庫，接在主庫結果後面（排序不跨庫比較、主庫整頁時總數只算主庫，程式內註明）；零結果的拼寫建議與摺疊重試兩庫都問；sitemap 另外收第二庫的卡與系列，失敗不留半套；覆蓋率的 UA 有自己的關聯狀態。
+- 健康檢查：`/api/catalog/health` 有設第二庫時多 `secondStorage.status`（每小時查一次 `db_size_report`，也讓第二庫不因 7 天沒活動被暫停）；管理端點多 `secondStorage` 詳細。
+- `CATALOG_GAME_IDS` 只在有設 `SUPABASE2_URL`＋`SUPABASE2_SERVICE_KEY` 時加入 `union-arena`：第 5 段在 Render 設好環境變數，UA API 才會開。
+- 測試 `test/second-db.test.mjs`（兩個模擬庫）：沒設第二庫、各類請求走對的庫、搜尋補頁、第二庫錯誤或連不上、拼寫建議。
+- 尚未做：近期發售活動（`/api/market-events` 的系列發售日）、商品圖（`tcg_products`）只看主庫；本彈大獎的 UA 留第 4 段。
 
 ## 風險
 
