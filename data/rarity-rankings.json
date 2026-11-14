@@ -306,8 +306,8 @@
       "evidenceUrls": [
         "https://www.unionarena-tcg.com/jp/cardlist/"
       ],
-      "orderingNoteZh": "官方卡表的稀有度篩選為 SR、R、U、C、PcSR、PcR、PcC、UR、SP、PR、OBC；平行卡在詳細頁另標星數（例：SR★、SR★★★），官方沒有公布高低順序。CardScope 依星數多的平行卡、UR、SP、一般稀有度排列，プレシャス補充包（Pc 開頭）排在同級一般卡之後，OBC 與 PR 放最後。此排序僅用於圖鑑導覽，不代表價格。",
-      "canonicalCodes": ["SR★★★", "SR★★", "SR★", "UR", "SP", "SR", "PcSR★★★", "PcSR★★", "PcSR★", "PcSR", "R★★★", "R★★", "R★", "R", "PcR★★★", "PcR★★", "PcR★", "PcR", "U★★★", "U★★", "U★", "U", "C★★★", "C★★", "C★", "C", "PcC★★★", "PcC★★", "PcC★", "PcC", "OBC", "PR"],
+      "orderingNoteZh": "官方卡表的稀有度篩選為 SR、R、U、C、PcSR、PcR、PcC、UR、SP、PR、OBC；平行卡在詳細頁另標星數（例：SR★、SR★★★），官方沒有公布高低順序。CardScope 依星數多的平行卡、UR、SP、一般稀有度排列，プレシャス補充包（Pc 開頭）排在同級一般卡之後，OBC 與 PR 放後面；アクションポイントカード官方沒有稀有度，另列 AP、AP★ 放最後方便篩選。此排序僅用於圖鑑導覽，不代表價格。",
+      "canonicalCodes": ["SR★★★", "SR★★", "SR★", "UR", "SP", "SR", "PcSR★★★", "PcSR★★", "PcSR★", "PcSR", "R★★★", "R★★", "R★", "R", "PcR★★★", "PcR★★", "PcR★", "PcR", "U★★★", "U★★", "U★", "U", "C★★★", "C★★", "C★", "C", "PcC★★★", "PcC★★", "PcC★", "PcC", "OBC", "PR", "AP★", "AP"],
       "canonicalLabels": {},
       "aliases": {},
       "highToLow": [
@@ -342,9 +342,13 @@
         ["PcC★"],
         ["PcC"],
         ["OBC"],
-        ["PR"]
+        ["PR"],
+        ["AP★"],
+        ["AP"]
       ],
       "lowToHigh": [
+        ["AP"],
+        ["AP★"],
         ["PR"],
         ["OBC"],
         ["PcC"],

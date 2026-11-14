@@ -65,6 +65,15 @@
 - 測試 `test/second-db.test.mjs`（兩個模擬庫）：沒設第二庫、各類請求走對的庫、搜尋補頁、第二庫錯誤或連不上、拼寫建議。
 - 尚未做：近期發售活動（`/api/market-events` 的系列發售日）、商品圖（`tcg_products`）只看主庫；本彈大獎的 UA 留第 4 段。
 
+## 第 3、4 段做法（2026-11-14）
+
+- 匯入 `scripts/import-union-arena.mjs plan <檔>`：商品下拉選單（119 個）→ 逐商品 POST 卡表 → 稀有度篩選對應（全站查詢結果太多時官方回 0 筆，R、U、C 改成逐商品查）→ 平行卡逐張讀詳細頁的星數（`_p` 編號和星數不一一對應，`_p2` 也可能是 SR★★★）→ 商品頁補充包發售日（依商品名比對，只補 BT）。每個請求間隔 1.1 秒、連線中斷重試，進度存在 `<檔>.partial`，中斷後重跑接著做。`apply <檔>` 用 `SUPABASE2_*` 只新增不覆蓋。
+- id：卡號 `UA01BT/CGH-1-004` → `union-arena-ua01bt-cgh-1-004`，平行卡 `_p1` → `-p1`（同 canonical id）；系列 `union-arena-ua01bt`，沒有【】代號的商品用官方商品編號（例：`union-arena-570702`）。同一張卡在多個商品出現時算第一個列出它的商品。
+- 稀有度：存官方詳細頁的寫法（SR★、SR★★★、PcSR★…）；`rarityToken` 改成保留 ★（其他遊戲沒有用到 ★，2026-11-14 查過主庫）。排名見 `data/rarity-rankings.json` 的 `union-arena`（星數多的平行卡 > UR > SP > SR > Pc 系列 > R…，只供導覽）。
+- 本彈大獎：`{game:'union-arena', top:'SR★', code: UA/EX..BT}`。順手修 `mergePrizeRows` 合併鍵：原本所有遊戲都取卡號斜線前，黑白雙翼（`SFN/S136-100R`）與 UA 整彈會併成一張而永遠不顯示；改成只對寶可夢切斜線。
+- 近期發售：`loadCatalogEvents` 另問第二庫的系列發售日，失敗或逾時只少 UA。
+- 導覽：`data/game-taxonomy.json`、`game-switcher.js` 啟用 UA（名稱「UNION ARENA」，沒有 logo）；各處遊戲名稱對照、`navigation-state.js` 允許清單、系列分組（ST 起始牌組、BT 補充包、其他特別商品／推廣卡）。
+
 ## 風險
 
 - 跨庫搜尋多一次網路來回，搜尋可能慢 0.1–0.5 秒；第二庫逾時要短，不能拖慢主站。

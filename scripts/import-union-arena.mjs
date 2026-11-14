@@ -3,7 +3,7 @@
 // 同 ADR 0034 的規則：只收文字事實與官方圖片網址（外連，不轉存）；每個請求間隔至少 1 秒。
 //   node scripts/import-union-arena.mjs plan  <plan.json>   抓官方卡表、產生計畫檔（不寫資料庫）
 //   node scripts/import-union-arena.mjs apply <plan.json>   把計畫檔寫進第二庫（需 SUPABASE2_URL、SUPABASE2_SERVICE_KEY）
-// 寫入只新增（ignore-duplicates），既有列不改；重跑安全。
+// 寫入只新增（ignore-duplicates），既有列不改；重跑安全。抓取中斷時進度存在 <plan.json>.partial，重跑會接著做。
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
@@ -23,9 +23,10 @@ export function parseUaSeries(html) {
     .map(([, value, label]) => ({ value, label: decode(label), code: decode(label).match(/【([A-Z0-9]+)】/)?.[1] || null }));
 }
 
-/** 卡表結果頁 → [{ key, number, parallel, name, image }]；key 是官方 card_no（平行卡帶 _p1、_p2）。 */
+/** 卡表結果頁 → [{ key, number, parallel, name, image }]；key 是官方 card_no（平行卡帶 _p1、_p2）。
+ *  alt 讀到 `">` 為止：官方不跳脫卡名裡的引號（例：UA12BT/BLK-1-029 "潰す"一択だ）。 */
 export function parseUaCards(html) {
-  return [...html.matchAll(/detail_iframe\.php\?card_no=([^"]+)"[^>]*>\s*<img[^>]*data-src="([^"]+)"[^>]*alt="([^"]*)"/g)].map(([, key, image, alt]) => {
+  return [...html.matchAll(/detail_iframe\.php\?card_no=([^"]+)"[^>]*>\s*<img[^>]*data-src="([^"]+)"[^>]*alt="(.*?)">/g)].map(([, key, image, alt]) => {
     key = decode(key);
     const number = key.replace(/_p\d+$/, ''), parallel = Number(key.match(/_p(\d+)$/)?.[1] || 0);
     return { key, number, parallel, name: decode(alt).slice(number.length).trim() || null, image: new URL(decode(image), UA_ORIGIN).href };
@@ -46,7 +47,8 @@ export function boosterDate(entry, boosters = []) {
   return boosters.find(b => b.precious === precious && sameName(b.name) === name)?.date || null;
 }
 
-const slug = text => lower(text).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+// 卡號裡的 ★（例：アクションポイントカード UA15BT/SAO-1-AP01★）是另一張卡，id 寫成 -star，不能和 AP01 撞號。
+const slug = text => lower(text).replace(/★/g, '-star').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 export const uaSeriesId = series => `union-arena-${series.code ? lower(series.code) : series.value}`;
 export const uaCardId = card => `union-arena-${slug(card.number)}${card.parallel ? `-p${card.parallel}` : ''}`;
 
@@ -62,7 +64,8 @@ export function buildUaRows({ series, cardsBySeries, rarityByKey, rarityLabelByK
       source: UA_SOURCE, provider_id: entry.value, metadata: { officialSeriesId: entry.value, cardsCount: list.length } });
     for (const item of list) {
       if (cards.has(item.key)) continue;
-      const id = uaCardId(item), rarity = rarityLabelByKey[item.key] || rarityByKey[item.key] || null, setCode = item.number.split('/')[0];
+      // アクションポイントカード官方沒有稀有度，給一個導覽用的分組（AP、AP★）。
+      const ap = item.number.match(/[-_]AP\d+(★?)$/), id = uaCardId(item), rarity = rarityLabelByKey[item.key] || rarityByKey[item.key] || (ap ? `AP${ap[1]}` : null), setCode = item.number.split('/')[0];
       if (!rarity) missingRarity.push(item.key);
       cards.set(item.key, { id, canonical_id: `union-arena-${slug(item.number)}`, game_id: 'union-arena', series_id: seriesId, official_card_number: item.number,
         rarity, name_ja: item.name, name_zh: null, name_en: null, name_ko: null, aliases: [item.name, item.number].filter(Boolean),
@@ -73,46 +76,62 @@ export function buildUaRows({ series, cardsBySeries, rarityByKey, rarityLabelByK
         source: UA_SOURCE, provider_id: item.key, image_rehost_required: false, image_rights_status: 'not-provided', metadata: {}, data_status: 'incomplete' });
     }
   }
+  const ids = new Set(), clash = [...cards.values()].find(card => ids.size === ids.add(card.id).size);
+  if (clash) throw new Error(`UA_DUPLICATE_ID:${clash.id}`);
   return { series: seriesRows, cards: [...cards.values()], printings, missingRarity };
 }
 
 async function officialText(url, body = null) {
   for (let attempt = 1; ; attempt++) {
-    const response = await fetch(url, { method: body ? 'POST' : 'GET', headers: { 'User-Agent': UA, ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, body, signal: AbortSignal.timeout(60000) });
+    let response;
+    // 連線中斷（fetch failed、逾時）也重試；2026-11-14 跑到一半遇過一次。
+    try { response = await fetch(url, { method: body ? 'POST' : 'GET', headers: { 'User-Agent': UA, ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, body, signal: AbortSignal.timeout(60000) }); }
+    catch (error) { if (attempt >= 5) throw error; await pause(attempt * 5000); continue; }
     if (response.ok) return response.text();
-    if (attempt === 3 || ![429, 500, 502, 503, 504].includes(response.status)) throw new Error(`UA_${response.status}:${url}`);
+    if (attempt >= 3 || ![429, 500, 502, 503, 504].includes(response.status)) throw new Error(`UA_${response.status}:${url}`);
     await pause(attempt * 1500);
   }
 }
 
-export async function collectUa({ fetchText = officialText, delay = DELAY_MS, log = () => {} } = {}) {
-  const series = parseUaSeries(await fetchText(`${UA_ORIGIN}/jp/cardlist/`));
+/** progress：上次中斷時存下的進度（同一個物件會邊抓邊填）；save(progress) 在每個階段與每 50 張平行卡後呼叫，讓重跑接著做。 */
+export async function collectUa({ fetchText = officialText, delay = DELAY_MS, log = () => {}, progress = {}, save = () => {} } = {}) {
+  const p = progress;
+  p.series ??= parseUaSeries(await fetchText(`${UA_ORIGIN}/jp/cardlist/`));
+  const series = p.series;
   if (series.length < 100) throw new Error(`UA_SERIES_TOO_FEW:${series.length}`);
-  const cardsBySeries = {}, rarityByKey = {};
+  p.cardsBySeries ??= {};
   for (const entry of series) {
+    if (p.cardsBySeries[entry.value]) continue;
     await pause(delay);
-    cardsBySeries[entry.value] = parseUaCards(await fetchText(UA_LIST, new URLSearchParams({ series: entry.value }).toString()));
-    log(`${entry.value} ${cardsBySeries[entry.value].length} ${entry.label}`);
+    p.cardsBySeries[entry.value] = parseUaCards(await fetchText(UA_LIST, new URLSearchParams({ series: entry.value }).toString()));
+    log(`${entry.value} ${p.cardsBySeries[entry.value].length} ${entry.label}`);
   }
+  save(p);
   const ask = async form => { await pause(delay); return parseUaCards(await fetchText(UA_LIST, new URLSearchParams(form).toString())); };
+  p.rarityByKey ??= {}; p.raritiesDone ??= [];
   for (const rarity of UA_RARITIES) {
+    if (p.raritiesDone.includes(rarity)) continue;
     // 全站查詢結果太多時官方回 0 筆（2026-11-14 的 R、U、C）：改成逐商品查。
     let list = await ask({ 'rare[]': rarity });
-    if (!list.length) for (const entry of series) if (cardsBySeries[entry.value].length) list = list.concat(await ask({ series: entry.value, 'rare[]': rarity }));
-    for (const card of list) rarityByKey[card.key] = rarityByKey[card.key] && rarityByKey[card.key] !== rarity ? `${rarityByKey[card.key]}|${rarity}` : rarity;
+    if (!list.length) for (const entry of series) if (p.cardsBySeries[entry.value].length) list = list.concat(await ask({ series: entry.value, 'rare[]': rarity }));
+    for (const card of list) p.rarityByKey[card.key] = p.rarityByKey[card.key] && p.rarityByKey[card.key] !== rarity ? `${p.rarityByKey[card.key]}|${rarity}` : rarity;
+    p.raritiesDone.push(rarity); save(p);
     log(`rarity ${rarity} ${list.length}`);
   }
-  // 平行卡的星數（SR★、SR★★★…）只在詳細頁，且和 _p 編號不一一對應（_p2 也可能是 ★★★）：逐張讀。
-  const rarityLabelByKey = {}, parallels = Object.values(cardsBySeries).flat().filter(card => card.parallel);
+  // 平行卡的星數（SR★、SR★★★…）只在詳細頁，且和 _p 編號不一一對應（_p2 也可能是 ★★★）：逐張讀；讀不到記 null。
+  p.rarityLabelByKey ??= {};
+  const parallels = Object.values(p.cardsBySeries).flat().filter(card => card.parallel && !(card.key in p.rarityLabelByKey));
   for (const [index, card] of parallels.entries()) {
     await pause(delay);
     const label = (await fetchText(`${UA_ORIGIN}/jp/cardlist/detail_iframe.php?card_no=${encodeURIComponent(card.key)}`)).match(/class="rareData">([^<]+)</)?.[1];
-    if (label) rarityLabelByKey[card.key] = decode(label);
+    p.rarityLabelByKey[card.key] = label ? decode(label) : null;
+    if (index % 50 === 49) save(p);
     if (index % 200 === 0) log(`parallel ${index}/${parallels.length}`);
   }
+  save(p);
   await pause(delay);
   const boosters = parseUaBoosters(await fetchText(`${UA_ORIGIN}/jp/products/`));
-  return { fetchedAt: new Date().toISOString(), series, cardsBySeries, rarityByKey, rarityLabelByKey, boosters };
+  return { fetchedAt: new Date().toISOString(), series, cardsBySeries: p.cardsBySeries, rarityByKey: p.rarityByKey, rarityLabelByKey: p.rarityLabelByKey, boosters };
 }
 
 async function insertOnly(path, rows, onConflict) {
@@ -132,9 +151,11 @@ export const PRODUCT_CATEGORY_ROW = { id: 'singles', name_en: 'Singles', name_zh
 
 async function main([mode, file]) {
   if (mode === 'plan' && file) {
-    const raw = await collectUa({ log: line => console.error(line) });
+    const partial = `${file}.partial`, progress = fs.existsSync(partial) ? JSON.parse(fs.readFileSync(partial, 'utf8')) : {};
+    const raw = await collectUa({ log: line => console.error(line), progress, save: value => fs.writeFileSync(partial, JSON.stringify(value)) });
     const rows = buildUaRows(raw);
     fs.writeFileSync(file, JSON.stringify({ ...rows, raw }, null, 1));
+    fs.rmSync(partial, { force: true });
     console.log(`series ${rows.series.length}, cards ${rows.cards.length}, printings ${rows.printings.length}, missing rarity ${rows.missingRarity.length}`);
   } else if (mode === 'apply' && file) {
     const plan = JSON.parse(fs.readFileSync(file, 'utf8'));

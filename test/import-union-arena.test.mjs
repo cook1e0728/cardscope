@@ -53,3 +53,28 @@ test('booster release dates match the products page by name; precious boosters o
   assert.equal(boosterDate({ code: 'UA18BT', label: '勝利の女神：NIKKE 【UA18BT】' }, boosters), '2022-03-22');
   assert.equal(boosterDate({ code: 'UA18ST', label: '勝利の女神：NIKKE 【UA18ST】' }, boosters), null, 'start decks get no date');
 });
+
+test('a rerun resumes from saved progress', async () => {
+  const cards = parseUaCards(LIST), series = parseUaSeries(INDEX);
+  const progress = { series: Array.from({ length: 100 }, (_, i) => ({ value: String(i), label: 'x', code: null })).concat(series), cardsBySeries: { 570101: cards, 570702: [] }, rarityByKey: {}, raritiesDone: [...UA_RARITIES], rarityLabelByKey: {} };
+  for (let i = 0; i < 100; i++) progress.cardsBySeries[String(i)] = [];
+  const asked = [], saved = [];
+  const fetchText = async url => { asked.push(url); return url.includes('detail_iframe') ? '<span class="rareData">SR★</span>' : ''; };
+  const raw = await collectUa({ fetchText, delay: 0, progress, save: value => saved.push(Object.keys(value.rarityLabelByKey).length) });
+  assert.deepEqual(asked.map(url => url.replace(/\?.*/, '').split('/').at(-1)), ['detail_iframe.php', ''], 'only the missing parallel and the products page');
+  assert.equal(raw.rarityLabelByKey['UA01BT/CGH-1-004_p1'], 'SR★');
+  assert.ok(saved.length >= 2);
+});
+
+test('action point cards get an AP group; a starred AP card is its own id; duplicate ids stop the build', () => {
+  const ap = (key, name = 'アクションポイントカード') => ({ key, number: key, parallel: 0, name, image: 'https://x/i.png' });
+  const series = [{ value: '570115', label: 'ソードアート・オンライン 【UA15BT】', code: 'UA15BT' }];
+  const rows = buildUaRows({ series, cardsBySeries: { 570115: [ap('UA15BT/SAO-1-AP01'), ap('UA15BT/SAO-1-AP01★'), ap('UAPR/IMS_AP04')] }, rarityByKey: {} });
+  assert.deepEqual(rows.cards.map(c => [c.id, c.rarity]), [['union-arena-ua15bt-sao-1-ap01', 'AP'], ['union-arena-ua15bt-sao-1-ap01-star', 'AP★'], ['union-arena-uapr-ims-ap04', 'AP']]);
+  assert.deepEqual(rows.missingRarity, []);
+  assert.throws(() => buildUaRows({ series, cardsBySeries: { 570115: [ap('UA15BT/SAO-1-AP01'), ap('UA15BT/SAO 1 AP01')] }, rarityByKey: {} }), /UA_DUPLICATE_ID/);
+});
+
+test('a card name with unescaped quotes is read whole', () => {
+  assert.equal(parseUaCards(li('UA12BT/BLK-1-029', 'UA12BT/BLK-1-029 "潰す"一択だ'))[0].name, '"潰す"一択だ');
+});
