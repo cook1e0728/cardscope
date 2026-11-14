@@ -55,6 +55,7 @@ test('every served page: script-src has no unsafe-inline, script-src-attr is non
     // the other directives are unchanged
     assert.match(csp, /style-src 'self' 'unsafe-inline' https:\/\/fonts\.googleapis\.com/);
     assert.match(csp, /img-src [^;]*https:\/\/www\.dbs-cardgame\.com/);
+    assert.match(csp, /img-src [^;]*https:\/\/www\.unionarena-tcg\.com/, 'UNION ARENA card images are hotlinked from the official site');
     assert.match(csp, /frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'$/);
   });
 });
