@@ -123,6 +123,13 @@ test('樣式：三個模式的 media query、版面寬度與收合',()=>{
   assert.match(css,/body\[data-view="game"\] \.side-sheet-btn\{display:flex\}/);
 });
 
+test('樣式：≥1600px 卡牆頁外框放寬到 1640px（只動 data-side 頁，不動預設 1440px）',()=>{
+  const m=css.match(/@media \(min-width:1600px\)\{([^}]*\}[^}]*\}[^}]*)\}/);
+  assert.ok(m,'有 ≥1600px 區段');
+  assert.match(m[1],/html:has\(body\[data-side\]\)\{--shell-max:1640px\}/);
+  assert.match(m[1],/body\[data-side\] header\.top \.wrap\{max-width:var\(--shell-max\)\}/,'頂欄同寬，才和側欄對齊');
+});
+
 test('樣式：暫停動態與 prefers-reduced-motion 時側欄沒有動畫，也沒有 transition:all、沒有小於 12px 的字、沒有小於 44px 的最小尺寸',()=>{
   assert.match(css,/@media \(prefers-reduced-motion:reduce\)\{#sideNav,#sideScrim\{transition:none!important\}\}/);
   assert.match(css,/html\[data-cs-paused\] #sideNav,html\[data-cs-paused\] #sideScrim\{transition:none!important\}/);

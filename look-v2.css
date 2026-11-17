@@ -479,6 +479,13 @@ html.look-clean body[data-view] #cards .card:has(.card-open-hit[aria-current="tr
   html.look-clean body[data-side]:has(#modal.open) #main{max-width:calc(var(--shell-max) - var(--side-w) - var(--panel-w));margin-right:var(--panel-w)}
   html.look-clean body[data-side]:has(#modal.open) .cards:not(.list-view){grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 }
+/* 寬螢幕（L3）：≥1600px 的卡牆頁（遊戲頁、搜尋結果、我的收藏）外框上限放寬到 1640px，和首頁一致；
+   側欄、卡牆、側板都用 --shell-max 算位置，所以只改這一個值：不開側板 6→7 欄（卡寬約 170px）、開側板 4→5 欄（約 158px，不比現在小）。
+   頂欄內容同步放寬到同寬，才和側欄對齊。1000–1599px 與 ≤760px 不變；行情頁不是 data-side，不受影響。 */
+@media (min-width:1600px){
+  html:has(body[data-side]){--shell-max:1640px}
+  html.look-clean body[data-side] header.top .wrap{max-width:var(--shell-max)}
+}
 
 /* ===== 11. 階段 5：我的收藏頁（?view=collection）與行情頁（?view=market）=====
    收藏頁＝遊戲頁的骨架（左側欄＋卡牆＋右側側板），側欄改列「有收藏的遊戲／系列」，收藏的匯出入收進工具列右邊的「管理」選單；
