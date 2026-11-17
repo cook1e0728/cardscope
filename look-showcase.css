@@ -281,3 +281,16 @@ html.look-clean #homeRails .rails-switch [hidden]{display:none!important}
 @media (min-width:1600px){
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.cs1-fan{scale:.72}
 }
+
+/* ===== L5：橫列（遊戲列、首頁系列卡列、最夯卡列）不顯示原生捲軸，改用兩端淡出提示還能捲（觸控與鍵盤照常捲）。
+   淡出用 scroll-driven animation，--fl／--fr 隨捲動位置變化；不能捲或瀏覽器不支援時為 0，等於沒有淡出。翻頁鈕在 look-v2.css。 ===== */
+@property --fl{syntax:"<length>";inherits:false;initial-value:0px}
+@property --fr{syntax:"<length>";inherits:false;initial-value:0px}
+@keyframes l5-edge{0%{--fl:0px;--fr:40px}6%{--fl:40px}94%{--fr:40px}100%{--fl:40px;--fr:0px}}
+html.look-clean :is(body[data-view="landing"] .channels,body:not([data-side]) .series-band-rail,.rails-rail){scrollbar-width:none}
+html.look-clean :is(body[data-view="landing"] .channels,body:not([data-side]) .series-band-rail,.rails-rail)::-webkit-scrollbar{display:none}
+@supports (animation-timeline:scroll(x)){
+  html.look-clean :is(body[data-view="landing"] .channels,body:not([data-side]) .series-band-rail,.rails-rail){
+    animation:l5-edge linear both;animation-timeline:scroll(self x);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--fl),#000 calc(100% - var(--fr)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--fl),#000 calc(100% - var(--fr)),transparent)}
+}

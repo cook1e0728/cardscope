@@ -209,13 +209,13 @@ test('桌機（≥1000px）是側板、其餘全螢幕：模式由寬度決定�
   assert.match(ui, /panelQuery\?\.addEventListener\?\.\('change',syncDetailMode\)/, '視窗跨過 1000px 時即時切換模式');
 });
 
-test('寬螢幕（L4）：≥1600px 側板加寬成「卡圖｜資料與價格」兩欄；<1600px 維持單欄，卡牆仍用 --panel-w 讓位', () => {
-  const m = css.match(/@media \(min-width:1600px\)\{([\s\S]*?)\r?\n\}/);
-  assert.ok(m, '有 ≥1600px 區段');
-  assert.match(m[1], /:root\{--panel-w:640px\}/, '只在寬螢幕改側板寬度');
-  assert.match(m[1], /#modal \.detail\{grid-template-columns:216px minmax\(0,1fr\)/, '左欄卡圖、右欄資料與價格');
-  assert.match(css, /@media \(min-width:1000px\)\{[^@]*#modal \.detail\{grid-template-columns:minmax\(0,1fr\)/, '1000–1599px 仍是單欄');
-  assert.ok(css.indexOf('--panel-w:640px') > css.indexOf('--panel-w:clamp(360px,34vw,440px)'), '寬螢幕覆寫排在預設之後');
+test('寬螢幕（L4、L5 修正）：≥1800px 側板加寬成「卡圖｜資料與價格」兩欄；<1800px 維持單欄，卡牆仍用 --panel-w 讓位', () => {
+  const m = css.match(/@media \(min-width:1800px\)\{([\s\S]*?)\r?\n\}/);
+  assert.ok(m, '有 ≥1800px 區段');
+  assert.match(m[1], /:root\{--panel-w:760px\}/, '只在寬螢幕改側板寬度');
+  assert.match(m[1], /#modal \.detail\{grid-template-columns:288px minmax\(0,1fr\)/, '左欄卡圖、右欄資料與價格');
+  assert.match(css, /@media \(min-width:1000px\)\{[^@]*#modal \.detail\{grid-template-columns:minmax\(0,1fr\)/, '1000–1799px 仍是單欄');
+  assert.ok(css.indexOf('--panel-w:760px') > css.indexOf('--panel-w:clamp(360px,34vw,440px)'), '寬螢幕覆寫排在預設之後');
   const visual = ui.indexOf('class="detail-visual"', ui.indexOf('detail-flow" data-ip'));
   assert.ok(visual > 0 && visual < ui.indexOf('class="detail-flow-main"', visual), '卡圖欄先於資料欄：DOM 順序就是 Tab 順序，不用 order 重排');
 });
