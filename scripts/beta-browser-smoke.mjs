@@ -176,7 +176,7 @@ async function waitForVisible(locator,message){
 // Phones (≤760px) keep the game list in the sidebar's bottom sheet (side-nav.js), opened from the bottom nav 圖鑑; wider screens show #channels on the landing page and the docked sidebar on game pages.
 const IP_ENTRY='#channels .channel';
 // 遊戲數跟著 data/game-taxonomy.json 走，新增遊戲不必再改這裡（寫死 6 在加入 Union Arena 後讓 CI 一直紅）。
-const IP_COUNT=JSON.parse(readFileSync(new URL('../data/game-taxonomy.json',import.meta.url),'utf8')).gameSystems.filter(system=>system.id!=='all'&&system.status==='active').length;
+const IP_COUNT=JSON.parse(readFileSync(new URL('../data/game-taxonomy.json',import.meta.url),'utf8')).systems.filter(system=>system.id!=='all'&&system.status==='active').length;
 const isPhone=page=>page.viewportSize().width<=760;
 async function waitForIpEntry(page,message){
   if(isPhone(page))await page.locator(IP_ENTRY).first().waitFor({state:'attached',timeout:8000}).catch(error=>{throw new Error(`${message}: ${error.message}`)});
