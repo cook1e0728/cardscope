@@ -115,7 +115,7 @@ async function proxyOnePieceImage(res,value){
 const providerStatus=()=>({
   ygoprodeck:{enabled:true,capability:'免費遊戲王卡片資料與各版本 set price 參考價（24 小時快取；圖片需自行保存）'},
   kapaipai:{enabled:false,capability:'等待公開頁面結構與存取方式確認'},
-  snkrdunk:{enabled:false,capability:'只提供外連（link-only），不抓資料；授權申請中（permission-pending）'},
+  snkrdunk:{enabled:false,capability:'只提供外連（link-only），不抓資料；尚未申請授權（not-requested）'},
   yuyutei:{enabled:Boolean(process.env.SCRAPE_SECRET),capability:'遊々亭買取行情；建議每日排程一次'},
   reportsDb:{enabled:Boolean(process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY),capability:'Supabase：回報、多語名稱、日版行情、匯率'}
 });
