@@ -1452,6 +1452,13 @@ server.listen(port,()=>{
   if(supabaseConfigured()){pageStats.start();cardHot.start()}
   if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false'){priceSnapshot.start();priceArchive.start();tcgapiPricing.start()}
   console.log(`CardScope is running at http://localhost:${port}`);
+  // P0：啟動時用正式金鑰取 token 並查一次 Browse 搜尋，log 只印狀態碼（不印金鑰、token、回應內容）。shortcut: 一次性驗證，P1 上線後移除。
+  if(process.env.EBAY_CLIENT_ID&&process.env.EBAY_CLIENT_SECRET&&process.env.EBAY_P0_CHECK!=='false')(async()=>{try{
+    const auth=Buffer.from(`${process.env.EBAY_CLIENT_ID}:${process.env.EBAY_CLIENT_SECRET}`).toString('base64');
+    const t=await fetch('https://api.ebay.com/identity/v1/oauth2/token',{method:'POST',headers:{Authorization:`Basic ${auth}`,'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope',signal:AbortSignal.timeout(10000)});
+    const token=t.ok?(await t.json()).access_token:null;let browse='skipped';
+    if(token){const b=await fetch('https://api.ebay.com/buy/browse/v1/item_summary/search?q=pikachu&category_ids=183454&limit=1',{headers:{Authorization:`Bearer ${token}`,'X-EBAY-C-MARKETPLACE-ID':'EBAY_US'},signal:AbortSignal.timeout(10000)});browse=b.status;await b.body?.cancel?.()}
+    console.log(`ebay p0 check: token=${t.status} browse=${browse}`)}catch(error){console.log(`ebay p0 check: failed ${error.name}`)}})();
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
   if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));loadPriceMovers().catch(error=>console.error('price movers warm-up failed',error.message));loadPackPrizes().catch(error=>console.error('pack prizes warm-up failed',error.message));
     // Coverage pages through every card and printing (about a minute cold); start it after the lighter warm-ups so the first visitor after a restart does not wait for it.
