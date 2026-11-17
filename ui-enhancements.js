@@ -687,7 +687,7 @@ function bindPriceTrend(gameId,market,card){
   const slot=document.querySelector('#detail [data-price-trend]');if(!slot||!window.PriceTimeline)return;
   const load=()=>{
     if(slot.dataset.loaded)return;slot.dataset.loaded='1';
-    if(gameId==='pokemon'||gameId?.id==='pokemon')window.PriceTimeline.loadGraded?.(document.querySelector('#detail [data-graded-prices]'),{market,card});
+    if(gameId==='pokemon'||gameId?.id==='pokemon')window.PriceTimeline.loadGraded?.(document.querySelector('#detail [data-graded-prices]'),{market,card});else window.PriceTimeline.loadSnkrdunk?.(document.querySelector('#detail [data-graded-prices]'),{card});
     const art=document.querySelector('#detail .detail-art img');window.PriceTimeline.load(slot,{market,cardNumber:card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||'',details:document.querySelector('#detail .ptl-details'),shared:market?.meta?.sharedPriceCardIds?.length>0,image:art?.currentSrc||art?.src||'',cards:art?[art]:[],regionLabel:region=>region?rn(region,gameId):'',variantLabel:variant=>typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variant]||variant})
   };
   if(typeof IntersectionObserver!=='function')return load();
