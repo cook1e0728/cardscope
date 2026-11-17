@@ -23,7 +23,8 @@ function safeUrl(value, root) {
 // "025/165" 與 "25/165" 視為同一張；有分母時標題也要有分母，避免 "PSA 10" 之類的數字誤中卡號 10。
 const TOKEN = /(?<![A-Za-z0-9])([A-Za-z]{0,3})(\d{1,4})(?:\s*\/\s*(\d{1,4}))?(?![A-Za-z0-9])/g;
 // 鑑定級別（PSA 10、BGS 9.5）不是卡號。
-const GRADE = /(?<![A-Za-z0-9])(?:PSA|BGS|CGC|SGC|TAG|ACE|CSG)\s*\d+(?:\.\d)?(?![A-Za-z0-9])/gi;
+const GRADE = /(?<![A-Za-z0-9])(?:PSA|BGS|CGC|SGC|TAG|ACE|CSG|ARS)\s*\d+(?:\.\d)?(?![A-Za-z0-9])/gi;
+const isGraded = title => new RegExp(GRADE.source, 'i').test(String(title ?? ''));
 const normalizeToken = (prefix, digits, total) => `${prefix.toLowerCase()}${Number(digits)}${total ? `/${Number(total)}` : ''}`;
 export const normalizeCardNumber = value => { const m = /^([A-Za-z]{0,3})(\d{1,4})(?:\/(\d{1,4}))?$/.exec(String(value ?? '').trim()); return m ? normalizeToken(m[1], m[2], m[3]) : null; };
 export function titleHasNumber(title, number) {
@@ -58,7 +59,8 @@ export function summarizeListing(item) {
 
 export function pickListings(body, number) {
   const rows = Array.isArray(body?.itemSummaries) ? body.itemSummaries : [];
-  return rows.filter(item => titleHasNumber(item?.title, number)).map(summarizeListing).filter(Boolean).slice(0, EBAY_MAX_ITEMS);
+  // 鑑定卡另有成交區，掛牌區只留裸卡；只排除不重排（eBay 顯示規定）。
+  return rows.filter(item => !isGraded(item?.title) && titleHasNumber(item?.title, number)).map(summarizeListing).filter(Boolean).slice(0, EBAY_MAX_ITEMS);
 }
 
 const taipeiDay = ms => new Date(ms + 8 * 3600e3).toISOString().slice(0, 10);

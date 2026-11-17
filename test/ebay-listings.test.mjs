@@ -126,3 +126,11 @@ test('results are cached for an hour and the cache is bounded', async () => {
   await lookup({ name: 'Pikachu', number: '1' });
   assert.equal(searches(), 5);
 });
+
+test('graded listings (PSA/BGS/CGC/SGC/ARS + grade) are excluded and eBay order is kept', async () => {
+  const { pickListings } = await import('../providers/ebay-listings.mjs');
+  const item = (id, title) => ({ itemId: id, title, price: { value: '5.00', currency: 'USD' }, itemWebUrl: 'https://www.ebay.com/itm/' + id });
+  const titles = ['Charizard 125/197 NM', 'PSA 10 Charizard 125/197', 'Charizard 125/197 BGS 9.5', 'ARS10 Charizard 125/197', 'Charizard 125/197 LP'];
+  const out = pickListings({ itemSummaries: titles.map((t, i) => item(String(i), t)) }, '125/197');
+  assert.deepEqual(out.map(x => x.title), ['Charizard 125/197 NM', 'Charizard 125/197 LP']);
+});
