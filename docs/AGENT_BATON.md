@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-17：使用者決定**收藏改成雲端同步，用同步碼（不做帳號）**，排在第 2 波之後。規格見 `docs/NEXT_PHASE_PLAN.md` 的 Y 節（Y1–Y5：存副庫、同步碼只存雜湊、沿用 `collection-store.js` 驗證、每筆最後修改者勝、ADR 0059 修改 ADR 0045）。第 2 波做完前不要開工。
 - 2026-11-16：**下一階段計畫已由使用者批准：`docs/NEXT_PHASE_PLAN.md`**（Fable 起草；Opus 帶 sonnet-worker 施作）。方向：電腦版版面有效利用空間（不換風格）、eBay 掛牌價（官方 Browse API，不加入分潤計畫）＋eBay 鑑定卡成交價（沿用第三方彙整）、SNKRDUNK 先寄授權信且回覆前只放外連（規約禁止爬蟲，不抓）、資安與合規一起做。已採用的建議：只買網域、暫不營利、新價格來源不寫主庫。**接手先做第 1 波**（計畫第 4 節：worker A＝S0→S1→S2、worker B＝P4(b)(c)＋C1–C4、worker C＝L2），不用等使用者。**等使用者的事**：eBay 開發者正式金鑰（P0，沒有金鑰前 P1／P2 不開工）、寄 SNKRDUNK 授權信（草稿 `docs/research/price-sources/inquiries-20261116.md`，未寄）、買網域、選首頁預覽版本（L0，預覽稿在本機 `docs/design-previews/`，不在 git；選定前 L1／L3／L4 不開工）。這次只寫文件，沒改程式。
 - 2026-11-16 補：使用者**首頁預覽選 A（資訊儀表板）**：搜尋在左、漲幅榜在右；下方大獎卡牆配右欄（跌幅榜、時事），shell 約 1640px。L1／L3／L4 可以開工，照 `docs/design-previews/home-desktop.html` 的 A 版（本機檔，不在 git）。eBay 開發者帳號已建好正式環境金鑰組（名稱 CookieTCG）；**尚未確認**：帳號刪除通知豁免是否已提交、金鑰是否已設到 Render（`EBAY_CLIENT_ID`／`EBAY_CLIENT_SECRET`）、正式金鑰打 Browse 搜尋是否回 200。SNKRDUNK／SODA 官網沒有公開信箱，只有網頁詢問表單（soda-inc.jp 的 CONTACT），授權信要走表單，回信信箱用卡牌專用信箱；仍未送出。
 - 2026-11-15：外部提供的「架構優化與部署規劃」文件已對照原始碼：Phase 1 四項中三項前提不成立（`data/catalog.json` 只有 5.9 KB 且已延遲載入；`onrender.com` 設不了 Cloudflare 快取規則，`s-maxage` 要等自有網域；主庫最大的是 `tcg_cards` 117 MB、`tcg_printings` 106 MB，清價格壓不到 250 MB；頁尾已有權利聲明）。成立的兩個小洞已併入 NEXT_PHASE_PLAN（S1：`serveSeoIndex` 沒有快取標頭；C2：頁尾官方連結缺七龍珠與 UA）。該文件 Phase 2 的網域／301／Cloudflare 步驟可在買網域後直接用。主庫 428 MB、副庫 55 MB。
