@@ -6,6 +6,7 @@
 // out of scope for this baseline.
 import assert from 'node:assert/strict';
 import {resolve} from 'node:path';
+import {readFileSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 
 const modulePath=process.env.PLAYWRIGHT_MODULE||resolve(process.cwd(),'node_modules','playwright','index.mjs');
@@ -174,6 +175,8 @@ async function waitForVisible(locator,message){
 
 // Phones (≤760px) keep the game list in the sidebar's bottom sheet (side-nav.js), opened from the bottom nav 圖鑑; wider screens show #channels on the landing page and the docked sidebar on game pages.
 const IP_ENTRY='#channels .channel';
+// 遊戲數跟著 data/game-taxonomy.json 走，新增遊戲不必再改這裡（寫死 6 在加入 Union Arena 後讓 CI 一直紅）。
+const IP_COUNT=JSON.parse(readFileSync(new URL('../data/game-taxonomy.json',import.meta.url),'utf8')).gameSystems.filter(system=>system.id!=='all'&&system.status==='active').length;
 const isPhone=page=>page.viewportSize().width<=760;
 async function waitForIpEntry(page,message){
   if(isPhone(page))await page.locator(IP_ENTRY).first().waitFor({state:'attached',timeout:8000}).catch(error=>{throw new Error(`${message}: ${error.message}`)});
@@ -260,7 +263,7 @@ async function runViewport(browser,viewport){
     // Phones search from the header capsule (#q); the large landing form is desktop-only.
     try{await waitForVisible(page.locator('#homeSearch:visible, #q:visible').first(),'the landing search box did not render')}
     catch(error){throw new Error(`${error.message}; pageErrors=${pageErrors.join(' | ')}; cards=${await page.locator('#cards').innerText().catch(()=>'<unavailable>')}`,{cause:error})}
-    assert.equal(new Set(await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(id=>id&&id!=='all'))).size,6,`${viewport.name} should show six IP entry tiles`);
+    assert.equal(new Set(await page.locator(IP_ENTRY).evaluateAll(items=>items.map(item=>item.dataset.ip).filter(id=>id&&id!=='all'))).size,IP_COUNT,`${viewport.name} should show ${IP_COUNT} IP entry tiles`);
     assert.equal(await page.locator('.mobile-quick-grid').count(),0,`${viewport.name} the 2x5 quick grid is gone (the sidebar owns game navigation)`);
     assert.equal(await page.locator('#sideNav:visible').count(),0,`${viewport.name} the landing has no sidebar`);
     assert.equal(await page.locator('#cards .game-entry').count(),0,`${viewport.name} the landing keeps only one game chooser`);
