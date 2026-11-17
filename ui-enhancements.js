@@ -687,6 +687,8 @@ function bindPriceTrend(gameId,market,card){
   const slot=document.querySelector('#detail [data-price-trend]');if(!slot||!window.PriceTimeline)return;
   const load=()=>{
     if(slot.dataset.loaded)return;slot.dataset.loaded='1';
+    // P2：eBay 現售掛牌價排在鑑定卡成交價上面（掛牌在上、成交在下），所有遊戲都查；沒有英文名時 loadEbay 不查、區塊留空不顯示
+    const graded=document.querySelector('#detail [data-graded-prices]'),ebay=graded&&document.createElement('div');if(ebay){ebay.setAttribute('data-ebay-listings','');graded.before(ebay);window.PriceTimeline.loadEbay?.(ebay,{card})}
     if(gameId==='pokemon'||gameId?.id==='pokemon')window.PriceTimeline.loadGraded?.(document.querySelector('#detail [data-graded-prices]'),{market,card});else window.PriceTimeline.loadSnkrdunk?.(document.querySelector('#detail [data-graded-prices]'),{card});
     const art=document.querySelector('#detail .detail-art img');window.PriceTimeline.load(slot,{market,cardNumber:card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||'',details:document.querySelector('#detail .ptl-details'),shared:market?.meta?.sharedPriceCardIds?.length>0,image:art?.currentSrc||art?.src||'',cards:art?[art]:[],regionLabel:region=>region?rn(region,gameId):'',variantLabel:variant=>typeof MARKET_VARIANTS!=='undefined'&&MARKET_VARIANTS[variant]||variant})
   };

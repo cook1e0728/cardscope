@@ -222,6 +222,15 @@ test('price timeline (graded table, comparison, events, records) escapes labels 
   const T = sandbox.window.PriceTimeline;
   assertSafe(T.gradedMarkup({ status: 'ok', name: HOSTILE, setName: HOSTILE, grades: [{ grade: HOSTILE, medianTwd: 100, medianUsd: 3, count: 1, minUsd: 1, maxUsd: 5, lastSaleDate: '2026-10-01' }] }), 'graded table');
   assertSafe(T.gradedMarkup({ status: HOSTILE }) || '<p>none</p>', 'graded status');
+  // S2：eBay 的標題、賣家名稱、狀態是外部不可信字串；連結與圖片網址也要跳脫，非 eBay 主機的整筆不畫。
+  const listing = (extra = {}) => ({ itemId: '1', title: HOSTILE, price: { value: '9.99', currency: 'USD' }, shipping: { value: '1.50', currency: 'USD' }, condition: HOSTILE, seller: HOSTILE, image: 'https://i.ebayimg.com/images/g/a.jpg', itemWebUrl: 'https://www.ebay.com/itm/1', itemEndDate: null, ...extra });
+  const ebay = T.ebayMarkup({ status: 'ok', items: [listing(), listing({ itemWebUrl: 'https://www.ebay.com/itm/"><img src=x onerror=1>', image: 'https://i.ebayimg.com/"><img src=x onerror=1>.jpg' }), listing({ itemWebUrl: HOSTILE_URL }), listing({ image: HOSTILE_URL })] });
+  assertSafe(ebay, 'ebay listings');
+  assert.ok(ebay.includes(ESCAPED), 'ebay title, seller and condition are escaped');
+  assert.equal(ebay.match(/<li class="ebay-item">/g).length, 3, 'a listing with a non-eBay link is dropped');
+  assert.ok(!ebay.includes(HOSTILE_URL) && !ebay.includes('example.test'), 'non-eBay hosts are never output');
+  assert.equal(ebay.match(/<img /g).length, 2, 'a non-eBay image is not drawn');
+  assertSafe(T.ebayMarkup({ status: HOSTILE }), 'ebay status');
   // 價格分頁本體：假 DOM（任何子節點都存在）＋ 帶惡意字串的歷史資料，收集所有被寫入的 innerHTML。
   const writes = [];
   const make = () => new Proxy({ dataset: {}, style: {}, children: [], isConnected: true, classList: { add() {}, remove() {}, toggle() {} }, getBoundingClientRect: () => ({ left: 0, top: 0, width: 600, height: 300 }) }, {

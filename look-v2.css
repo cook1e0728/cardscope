@@ -454,6 +454,23 @@ html.look-clean .detail-visual>.dpanel-versions{order:5;margin-top:var(--s4)}
 html.look-clean .detail .detail-section-title{scroll-margin-top:calc(var(--btn-h) + 20px);margin:var(--s6) 0 var(--s3);font-size:20px;line-height:1.3}
 .detail-section-title:focus-visible{outline:2px solid var(--v2-ink);outline-offset:4px}
 .detail-price-section [data-price-body]>.state{margin:0}
+/* P2：eBay 現售掛牌價（側板價格區）：自成一區，排在鑑定卡成交價上面；單欄排法，≥1600px 的 352px 右欄與手機都不橫向溢出（長標題與賣家名稱自己換行） */
+.ebay-listings .meta{margin:0 0 8px;font-size:var(--fs-sub);font-weight:400;color:var(--v2-ink-2)}
+.ebay-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.ebay-item{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:start;padding:8px;border-radius:8px;background:#fff}
+.ebay-item:not(:has(.ebay-img)){grid-template-columns:minmax(0,1fr)}
+.ebay-img{width:64px;height:64px;object-fit:contain;border-radius:4px;background:var(--v2-page)}
+.ebay-body{display:grid;gap:4px;min-width:0}
+.ebay-title{display:block;padding:2px 0;color:var(--v2-ink);font-size:14px;font-weight:600;line-height:1.35;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
+.ebay-money{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
+.ebay-price{font-size:16px;font-variant-numeric:tabular-nums}
+.ebay-ship,.ebay-meta{font-size:var(--fs-sub);color:var(--v2-ink-2)}
+.ebay-meta{display:flex;flex-wrap:wrap;gap:0 12px;overflow-wrap:anywhere}
+.ebay-listings .ebay-note{margin:0;font-weight:400}
+.ebay-listings .ebay-foot{margin:10px 0 0;font-size:var(--fs-sub);font-weight:400;color:var(--v2-ink-2)}
+.ebay-word{font-weight:800;letter-spacing:-.01em;color:var(--v2-ink)}
+.ebay-foot a{display:flex;width:fit-content;align-items:center;min-height:44px;color:var(--v2-ink);text-decoration:underline;text-underline-offset:3px}
+:is(.ebay-title,.ebay-foot a):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:4px}
 /* 先畫的卡牆資料還在等 API：下面一欄的灰色骨架 */
 html.look-clean .dsk.dsk-flow{grid-template-columns:minmax(0,1fr)}
 /* 卡牆上現在開著的那張：粗外框（不只靠顏色）；用方向鍵換卡時 scrollIntoView 不被頂欄蓋住 */

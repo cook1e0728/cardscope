@@ -281,10 +281,42 @@
     return !ids.length&&jp.length===1?`set=${encodeURIComponent(jp[0].localSetCode)}&number=${encodeURIComponent(jp[0].localCardNumber)}`:null;
   }
   const usd=value=>value==null?'—':`US$${Number(value).toLocaleString('en-US',{maximumFractionDigits:2})}`;
+  // 標題不能省「鑑定卡」：這區只有 PSA／BGS 等鑑定卡成交，沒有裸卡成交價。
+  const GRADED_TITLE='eBay 鑑定卡成交價（第三方彙整，未驗證）',gradedSection=text=>`<div class="ptl-now"><h4>${GRADED_TITLE}</h4><p class="meta">${esc(text)}</p></div>`;
   function gradedMarkup(data){
     const notes={'no-match':'找不到能確定是同一張卡的鑑定卡資料，所以不顯示價格。','no-sales':'對到這張卡，但目前沒有鑑定卡成交紀錄。','daily-limit':'今天的鑑定卡查詢次數已用完，明天再試。'};
-    if(data?.status!=='ok')return notes[data?.status]?`<div class="ptl-now"><h4>鑑定卡成交價</h4><p class="meta">${esc(notes[data.status])}</p></div>`:'';
-    return `<div class="ptl-now"><h4>鑑定卡成交價</h4><p class="meta">第三方彙整，未驗證。對到：${esc(data.name)}${data.setName?`（${esc(data.setName)}）`:''}</p><div class="ptl-table" role="region" aria-label="鑑定卡成交價，可捲動" tabindex="0"><table><thead><tr><th scope="col">級別</th><th scope="col">成交中位數</th><th scope="col">美元</th><th scope="col">筆數</th><th scope="col">最低～最高</th><th scope="col">最後成交</th></tr></thead><tbody>${data.grades.map(row=>`<tr><td><b>${esc(row.grade)}</b></td><td><b>${row.medianTwd!=null?`NT$${esc(row.medianTwd.toLocaleString('en-US'))}`:'—'}</b></td><td>${esc(usd(row.medianUsd))}</td><td>${esc(row.count)}${row.count<3?'（筆數少，僅供參考）':''}</td><td>${esc(usd(row.minUsd))}～${esc(usd(row.maxUsd))}</td><td>${row.lastSaleDate?esc(iso(row.lastSaleDate)):'—'}</td></tr>`).join('')}</tbody></table></div><small>eBay 與 Fanatics 的成交彙整，資料來自 PokemonPriceTracker；筆數的統計期間來源沒有說明，新台幣用今日匯率換算。不是買賣建議。</small></div>`;
+    if(data?.status!=='ok')return notes[data?.status]?gradedSection(notes[data.status]):'';
+    return `<div class="ptl-now"><h4>${GRADED_TITLE}</h4><p class="meta">對到：${esc(data.name)}${data.setName?`（${esc(data.setName)}）`:''}</p><div class="ptl-table" role="region" aria-label="鑑定卡成交價，可捲動" tabindex="0"><table><thead><tr><th scope="col">級別</th><th scope="col">成交中位數</th><th scope="col">美元</th><th scope="col">筆數</th><th scope="col">最低～最高</th><th scope="col">最後成交</th></tr></thead><tbody>${data.grades.map(row=>`<tr><td><b>${esc(row.grade)}</b></td><td><b>${row.medianTwd!=null?`NT$${esc(row.medianTwd.toLocaleString('en-US'))}`:'—'}</b></td><td>${esc(usd(row.medianUsd))}</td><td>${esc(row.count)}${row.count<3?'（筆數少，僅供參考）':''}</td><td>${esc(usd(row.minUsd))}～${esc(usd(row.maxUsd))}</td><td>${row.lastSaleDate?esc(iso(row.lastSaleDate)):'—'}</td></tr>`).join('')}</tbody></table></div><small>eBay 與 Fanatics 的成交彙整，資料來自 PokemonPriceTracker；筆數的統計期間來源沒有說明，新台幣用今日匯率換算。不是買賣建議。</small></div>`;
+  }
+  // P2：eBay 現售掛牌價（/api/ebay-listings）。照 API 回傳順序列前 5 筆，不重排；掛牌不是成交價，自成一區，不和其他來源的數字同列。
+  // eBay 標題、賣家、狀態是外部不可信字串，全部經 esc；連結與圖片網址再驗一次 https 與 eBay 主機（用正規式不用 URL，沙箱沒有 URL 也一樣）。
+  const EBAY_SHOWN=5,EBAY_AGREEMENT='https://www.ebay.com/help/policies/member-behaviour-policies/user-agreement?id=4259';
+  const ebayLink=value=>/^https:\/\/([a-z0-9-]+\.)*ebay\.com(?=[\/?#]|$)/i.test(String(value||''))?String(value):null,ebayImage=value=>/^https:\/\/([a-z0-9-]+\.)*ebayimg\.com(?=[\/?#]|$)/i.test(String(value||''))?String(value):null;
+  const ebayMoney=amount=>Number.isFinite(Number(amount?.value))?`${amount.currency==='USD'?'US$':`${amount.currency} `}${Number(amount.value).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`:'';
+  // 純函式：可畫的掛牌（連結要合格、已結束的不列），順序不動。
+  const ebayItems=(items,now=Date.now())=>(Array.isArray(items)?items:[]).filter(item=>ebayLink(item?.itemWebUrl)&&item.title&&ebayMoney(item.price)&&!(Date.parse(item.itemEndDate)<now)).slice(0,EBAY_SHOWN);
+  const EBAY_NOTES={'no-match':'目前沒有對得上這張卡的掛牌。',limited:'今天的 eBay 查詢次數已用完，明天再試。','not-configured':'eBay 掛牌資料目前沒有開放。',loading:'正在讀取 eBay 掛牌…'};
+  function ebayMarkup(data){
+    const items=data?.status==='ok'?ebayItems(data.items):[],note=items.length?'':EBAY_NOTES[data?.status==='ok'?'no-match':data?.status]||'暫時讀不到。';
+    const rows=items.map(item=>{const image=ebayImage(item.image),ship=item.shipping?(Number(item.shipping.value)===0?'免運費':`運費 ${ebayMoney(item.shipping)}`):'運費另計';
+      return `<li class="ebay-item">${image?`<img class="ebay-img" src="${esc(image)}" alt="" width="64" height="64" loading="lazy" decoding="async" referrerpolicy="no-referrer">`:''}<div class="ebay-body"><a class="ebay-title" href="${esc(ebayLink(item.itemWebUrl))}" target="_blank" rel="noopener noreferrer">${esc(item.title)}<span class="sr-only">（eBay 外部網站，另開分頁）</span></a><div class="ebay-money"><b class="ebay-price">${esc(ebayMoney(item.price))}</b><span class="ebay-ship">${esc(ship)}</span></div><div class="ebay-meta">${item.condition?`<span>狀態：${esc(item.condition)}</span>`:''}${item.seller?`<span>賣家：${esc(item.seller)}</span>`:''}</div></div></li>`}).join('');
+    return `<section class="ptl-now ebay-listings"><h4>eBay 現售掛牌價</h4><p class="meta">現售掛牌，不是成交價；依 eBay 搜尋結果，不保證就是這張卡。</p>${rows?`<ol class="ebay-list">${rows}</ol>`:`<p class="ebay-note" role="status">${esc(note)}</p>`}<p class="ebay-foot">資料來源：<span class="ebay-word">eBay</span>。<a href="${EBAY_AGREEMENT}" target="_blank" rel="noopener noreferrer">eBay 使用者協議<span class="sr-only">（外部網站，另開分頁）</span></a></p></section>`;
+  }
+  // 英文名＋卡號；沒有英文名、或字元不合伺服器的白名單就不查（省一次 400）。
+  function ebayQueryString(card){
+    const name=String(card?.nameEn||'').trim(),number=String(card?.officialCardNumber||(card?.printings||[]).find(printing=>printing?.localCardNumber)?.localCardNumber||'').trim();
+    return /^[\p{L}\p{N} '.:&,!-]{1,60}$/u.test(name)&&/^[A-Za-z]{0,3}\d{1,4}(?:\/[A-Za-z0-9]{1,5})?$/.test(number)?`name=${encodeURIComponent(name)}&number=${encodeURIComponent(number)}`:null;
+  }
+  async function loadEbay(slot,{card,fetchFn=root.fetch.bind(root)}={}){
+    const query=ebayQueryString(card);
+    if(!slot||!query||slot.dataset.ebayState)return;
+    slot.dataset.ebayState='loading';slot.innerHTML=ebayMarkup({status:'loading'});
+    let body=null,status=0;
+    try{const response=await fetchFn(`/api/ebay-listings?${query}`);status=response.status;if(response.ok)body=await response.json()}catch{body=null}
+    if(!slot.isConnected)return;
+    // 400＝伺服器認為這張卡的名稱或卡號不能查：整區不顯示，不寫「讀不到」
+    if(status===400){slot.innerHTML='';return}
+    slot.dataset.ebayState=body?'done':'';slot.innerHTML=ebayMarkup(body?.data);
   }
   async function loadGraded(slot,{card,market,fetchFn=root.fetch.bind(root)}={}){
     const query=gradedQuery(card,market);
@@ -295,10 +327,10 @@
     try{const response=await fetchFn(`/api/graded-prices?${query}`);if(response.ok)body=await response.json()}catch{body=null}
     if(!slot.isConnected)return;
     slot.dataset.gradedState=body?'done':'';
-    slot.innerHTML=gradedMarkup(body?.data)+snkrdunkMarkup(card);
+    slot.innerHTML=(gradedMarkup(body?.data)||gradedSection(body?'目前沒有成交資料來源。':'暫時讀不到。'))+snkrdunkMarkup(card);
   }
-  // 沒有鑑定卡查詢（或不是寶可夢）的卡，價格區塊底下仍放 SNKRDUNK 外連；已經載入過的區塊不覆蓋。
-  function loadSnkrdunk(slot,{card}={}){if(!slot||slot.dataset.gradedState)return;slot.dataset.gradedState='done';slot.innerHTML=snkrdunkMarkup(card)}
+  // 沒有鑑定卡查詢（台版、其他遊戲）的卡，明寫沒有成交資料來源，底下仍放 SNKRDUNK 外連；已經載入過的區塊不覆蓋。
+  function loadSnkrdunk(slot,{card}={}){if(!slot||slot.dataset.gradedState)return;slot.dataset.gradedState='done';slot.innerHTML=gradedSection('目前沒有成交資料來源。')+snkrdunkMarkup(card)}
 
-  root.PriceTimeline={gradedQuery,gradedMarkup,loadGraded,loadSnkrdunk,snkrdunkUrl,snkrdunkMarkup,versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,productUrl,gradedSearchUrl,dayText,sourceTime,load};
+  root.PriceTimeline={ebayMarkup,ebayItems,ebayQueryString,loadEbay,gradedQuery,gradedMarkup,loadGraded,loadSnkrdunk,snkrdunkUrl,snkrdunkMarkup,versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,productUrl,gradedSearchUrl,dayText,sourceTime,load};
 })(typeof window!=='undefined'?window:globalThis);
