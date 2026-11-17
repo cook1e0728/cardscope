@@ -81,6 +81,20 @@ SNKRDUNK 若同意授權，另開一包做 provider，不在本計畫範圍。
 | S2 | 新端點守則：eBay 金鑰只存在 Render 環境變數；錯誤訊息不外洩上游內容；快取有上限；輸入全部白名單驗證；A3 的跳脫測試加入 eBay 標題與賣家名稱（這是外部不可信字串）；eBay 回傳的商品連結與圖片網址必須是 `https:` 且主機在 eBay 白名單內才輸出，外連加 `rel="noopener noreferrer"`；每日上限的計數在記憶體，重啟會歸零，所以 eBay 上限設得遠低於官方額度（例如每天 1,000 次） |
 | S3 | 網域上線（使用者買好後）：照 SITE_IMPROVEMENT_PLAN 的 C2；Cloudflare 的 TTL、SSL 步驟、301 保留路徑可直接用 11-15 那份外部文件的 Phase 2。`.js`／`.css` 要先加版本號才能長快取 |
 
+### Y. 收藏雲端同步（同步碼，2026-11-17 使用者決定；排在第 2 波之後）
+
+目的：同一個人的幾台裝置共用一份收藏，不用手動匯出匯入。**不做帳號**、不收信箱或任何個資；之後若要帳號，同一份資料再綁上去即可，不重做。這會修改 ADR 0045「收藏只存在這台裝置」，要寫 ADR 0059。
+
+| 包 | 內容 | 主要檔案 | 完成的樣子 |
+|---|---|---|---|
+| Y1 | 副庫（`ip2`，`SUPABASE2_*`）建一張表：`sync_key_hash`（主鍵，同步碼的 SHA-256）、`items` jsonb、`updated_at`、`revision`。RLS 全關、只給 service role；**不放主庫**。migration 加進副庫的 migration 流程（照 `docs/UA_SECOND_DB_PLAN.md`） | 副庫 migration | 表存在、匿名角色讀不到 |
+| Y2 | 端點：`POST /api/sync/pull`、`POST /api/sync/push`。同步碼放 request body（不放網址），伺服器只拿雜湊值查表。寫入時每筆收藏都用 `collection-store.js` 的同一套驗證（`problem`／`normalizeItem`、`LIMITS`），整份上限沿用 `LIMITS.itemsMax` 與 `fileMaxChars`。`revision` 做樂觀鎖：不符回 409，前端先拉再合併。限流比一般 API 更嚴（同一 IP 每分鐘數次），同步碼格式不對直接 400，不查庫。回應 `no-store` | `server.mjs`、`test/collection-sync.test.mjs` | 測試涵蓋：驗證拒絕壞資料、409、限流、碼格式、回應不含雜湊 |
+| Y3 | 合併規則：每筆收藏加 `updatedAt`；兩邊同一張卡取較新的；刪除留墓碑（`deleted:true`＋時間），30 天後清掉。純函式放 `collection-store.js`，有單元測試 | `collection-store.js`、`test/collection-store.test.mjs` | 兩台交錯新增、修改、刪除，結果一致 |
+| Y4 | 前端：收藏頁「管理」選單加「雲端同步」。開啟時在瀏覽器產生同步碼（`crypto.getRandomValues`，至少 128 bit，顯示成好抄的分組字串）＋ QR 碼讓另一台掃；另一台輸入或掃碼加入。同步碼只存 localStorage。時機：開收藏頁、收藏有變動後幾秒、切回分頁時。離線或伺服器失敗只顯示狀態，本機照用。可「停止同步」（只斷本機）與「刪除雲端資料」（整份刪除，確認後才做）。QR 碼若需要套件，先找專案內有沒有現成的；沒有就只給文字碼 | `ui-enhancements.js`、`collection-store.js`、`look-v2.css` | 兩個瀏覽器設定檔實測同步；離線不壞 |
+| Y5 | 文件：ADR 0059、隱私說明改寫（雲端存什麼、存哪、同步碼要像密碼一樣保管、弄丟救不回、怎麼刪除）、資料來源頁不用改 | `docs/adr/0059-*.md`、隱私說明 | 頁面與 ADR 一致 |
+
+安全要點：同步碼等於密碼，不進網址、不進伺服器紀錄；伺服器只存雜湊；回應與錯誤訊息不回傳任何雜湊或其他人的資料；收藏內容只接受驗證過的欄位。容量估計：每人約幾十 KB，副庫目前 55 MB，綽綽有餘；在 `/api/catalog/health` 既有的容量檢查之外不另加監控。
+
 ### C. 合規
 
 | 包 | 內容 |
@@ -96,6 +110,7 @@ SNKRDUNK 若同意授權，另開一包做 provider，不在本計畫範圍。
 - **第 1 波（可平行，檔案不重疊）**：worker A＝S0→S1→S2（`server.mjs`、測試）；worker B＝P4(b)(c)＋C1–C4（文件、頁尾、registry）；worker C＝L2（行情頁，獨立檔案）。
 - **第 2 波**：P1（接在 worker A 之後用 `server.mjs`）→ P2 → P3 → P5；另一線 L1 → L3 → L4（等 L0 選定）。P5 與 L4 都動詳細側板，L4 先、P5 後。
 - **第 3 波**：L5、P6、S3（等網域）。
+- **第 2 波之後**：Y1 → Y2 → Y3 → Y4 → Y5（收藏雲端同步）。Y2 與 P1 都動 `server.mjs`，不要同時做。Y4 是介面變更，合併前先給使用者看截圖。
 - 每完成一包：測試全過、更新 `docs/AGENT_BATON.md`、commit 並 push。合併進 main 即上線，版面類的包要先給使用者看截圖。
 
 ## 5. 驗證
