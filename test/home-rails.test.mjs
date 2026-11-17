@@ -102,7 +102,7 @@ function fakeDom(){
 
 test('預設：最熱有資料就選最熱，兩個請求各打一次；首頁不再打 /api/price-movers（漲跌榜只在行情頁）',async()=>{
   const dom=fakeDom();
-  const {calls}=load({doc:dom.doc,responses:{'/api/hot-cards':ok({data:[hotRow(1),hotRow(2)],meta:{windowDays:7,minOpens:3}}),'/api/pack-prizes':ok(prizes([{game:'onepiece',seriesName:'OP-17',data:[prizeRow(1)]}]))}});
+  const {calls}=load({doc:dom.doc,responses:{'/api/hot-cards':ok({data:[1,2,3,4,5,6].map(i=>hotRow(i)),meta:{windowDays:7,minOpens:3}}),'/api/pack-prizes':ok(prizes([{game:'onepiece',seriesName:'OP-17',data:[prizeRow(1)]}]))}});
   assert.equal(dom.section.dataset.pending,'','等最熱回來前先藏起面板，避免先亮最新再跳');
   await tick();await tick();await tick();
   assert.equal(dom.selected(),'hot');
@@ -188,4 +188,88 @@ test('樣式：面板先保留高度、分段按鈕沿用 .view-switch、手機�
   assert.match(html,/class="view-switch rails-switch" role="tablist"/);
   assert.match(css,/#homeRails \.trend-card:active\{transform:scale\(\.97\)\}/);
   assert.doesNotMatch(css.slice(css.indexOf('/* ===== 8.'),css.indexOf('/* ===== 9.')),/transition:all|font-size:\s*(?:[0-9]|1[01])(?:\.\d+)?px|@keyframes|animation:/);
+});
+
+// ---- L1：不足一排的分頁不顯示、寬螢幕右側面板 ----
+test('榜上只有 1–5 張卡：該分頁不顯示、回到最新；0 張或 6 張以上照舊；鍵盤略過被藏起來的分頁',async()=>{
+  const dom=fakeDom();
+  load({doc:dom.doc,responses:{'/api/hot-cards':ok({data:[hotRow(1),hotRow(2),hotRow(3)],meta:{}}),'/api/pack-prizes':ok(prizes([{game:'onepiece',seriesName:'OP-17',data:[1,2,3,4,5,6].map(i=>prizeRow(i))}]))}});
+  await tick();await tick();await tick();
+  assert.deepEqual(dom.tabs.map(tab=>!!tab.hidden),[false,false,true],'最熱只有 3 張，藏起來；最夯 6 張，留著');
+  assert.equal(dom.selected(),undefined,'沒有選最熱，維持 HTML 預設的最新');
+  dom.handlers.keydown({target:dom.tabs[1],key:'ArrowRight',preventDefault(){}});
+  assert.equal(dom.selected(),'latest','最後一個可見分頁再按右鍵，略過被藏起來的最熱回到第一個');
+  const few=fakeDom();
+  load({doc:few.doc,responses:{'/api/pack-prizes':ok(prizes([{game:'onepiece',seriesName:'OP-17',data:[prizeRow(1),prizeRow(2)]}],[prizeRow(3)]))}});
+  few.handlers.click({target:few.tabs[1]});assert.equal(few.selected(),'trending');
+  await tick();await tick();await tick();
+  assert.equal(few.tabs[1].hidden,true,'精選＋各遊戲合計只有 3 張，最夯藏起來');
+  assert.equal(few.selected(),'latest','正在看的分頁被藏起來，回到最新');
+  const none=fakeDom();load({doc:none.doc,responses:{'/api/pack-prizes':ok(prizes([])),'/api/hot-cards':ok({data:[]})}});
+  await tick();await tick();await tick();
+  assert.deepEqual(none.tabs.map(tab=>!!tab.hidden),[false,false,false],'0 張沿用安靜的空白狀態，分頁還在');
+});
+
+function asideDom(){
+  const mk=(tag='div')=>({tag,attrs:{},children:[],hidden:false,innerHTML:'',id:'',className:'',setAttribute(k,v){this.attrs[k]=v},append(...nodes){this.children.push(...nodes)},after(node){this.next=node}});
+  const hero=mk("section"),made=[],base=fakeDom();base.section.after=function(node){this.next=node};
+  const doc={...base.doc,createElement:tag=>{const node=mk(tag);made.push(node);return node},getElementById:id=>id==='hero'?hero:base.doc.getElementById(id)};
+  return {doc,hero,rails:base.section,made,byId:id=>made.find(node=>node.id===id)};
+}
+const moverBody=(n=6)=>({data:{up:Array.from({length:n},(_,i)=>moverRow(i+1)),down:Array.from({length:n},(_,i)=>moverRow(i+1,{changePercent:-30,cardId:`pokemon-down-${i}`}))},meta:{windowDays:14,minAmount:5,note:''}});
+const eventBody={data:[{date:'2099-12-01',game:'pokemon',title:'<script>1</script>新彈'},{date:'2026-01-01',game:'yugioh',title:'舊聞'},null,{date:3,title:'壞資料'}],meta:{}};
+// 把 home-rails 在已有 doc 與 matchMedia 的環境裡重新跑一遍（load() 時 ctx.document 已經指到假 DOM，所以 init 只跑一次，這裡直接取得結果）
+function loadWide(doc,responses,wide=true){
+  const calls=[],ctx={infoTip:(label,body)=>`[ⓘ ${label}|${body}]`,setTimeout:fn=>{fn();return 0},document:doc,matchMedia:()=>({matches:wide,addEventListener:(type,fn)=>(ctx.listeners=ctx.listeners||[]).push(fn)})};
+  ctx.window=ctx;ctx.fetch=url=>{calls.push(url);return Promise.resolve(responses[url]||{ok:false,status:404,json:async()=>({})})};
+  vm.createContext(ctx);vm.runInContext(moversSrc,ctx);vm.runInContext(railsSrc,ctx);
+  return {ctx,calls};
+}
+
+test('寬螢幕右側面板：漲、跌各取前 5 筆、時事取前 6 筆；卡名跳脫；點卡用 data-do；沒有行內事件',async()=>{
+  const dom=asideDom();
+  const {calls}=loadWide(dom.doc,{'/api/price-movers':ok(moverBody()),'/api/market-events':ok(eventBody)});
+  await tick();await tick();await tick();await tick();
+  const up=dom.byId('homeMoversUp'),down=dom.byId('homeMoversDown'),events=dom.byId('homeEvents'),aside=dom.byId('homeAside');
+  assert.ok(dom.hero.next===up&&dom.rails.next===aside,'漲最多在搜尋區之後，右欄在榜單之後');
+  assert.equal(up.innerHTML.match(/class="mover-row"/g).length,5);assert.equal(down.innerHTML.match(/class="mover-row"/g).length,5);
+  assert.match(up.innerHTML,/漲最多/);assert.match(up.innerHTML,/↑ \+/);assert.match(down.innerHTML,/跌最多/);assert.match(down.innerHTML,/↓ -30%/);
+  assert.match(down.innerHTML,/<a href="\/\?view=market" data-spa>/);
+  assert.match(up.innerHTML,/data-do="openCard" data-arg="pokemon-up-1"/);
+  assert.equal(events.innerHTML.match(/<li>/g).length,2,'壞資料列被濾掉');
+  assert.doesNotMatch(events.innerHTML,/<script>/);assert.match(events.innerHTML,/即將/);
+  assert.equal(aside.hidden,false);
+  assert.doesNotMatch(up.innerHTML+down.innerHTML+events.innerHTML,/\son[a-z]+=|style=/);
+  assert.ok(calls.includes('/api/price-movers')&&calls.includes('/api/market-events'));
+});
+
+test('寬螢幕右側面板：資料缺了那一塊就藏起來；兩塊都缺右欄整個藏起來；窄螢幕不去要資料，變寬才開始',async()=>{
+  const dom=asideDom();
+  loadWide(dom.doc,{'/api/price-movers':ok({data:{up:[moverRow(1)],down:[]},meta:{}}),'/api/market-events':{ok:false,status:500,json:async()=>({})}});
+  await tick();await tick();await tick();await tick();
+  assert.equal(dom.byId('homeMoversUp').hidden,false);assert.equal(dom.byId('homeMoversDown').hidden,true);assert.equal(dom.byId('homeEvents').hidden,true);
+  assert.equal(dom.byId('homeAside').hidden,true,'右欄兩塊都空就整個藏起來，榜單佔滿');
+  const failed=asideDom();
+  loadWide(failed.doc,{'/api/price-movers':{ok:false,status:502,json:async()=>({})}});
+  await tick();await tick();await tick();await tick();
+  assert.equal(failed.byId('homeMoversUp').hidden,true,'API 失敗：搜尋區佔滿');assert.equal(failed.byId('homeAside').hidden,true);
+  const narrow=asideDom();
+  const {ctx,calls}=loadWide(narrow.doc,{'/api/price-movers':ok(moverBody()),'/api/market-events':ok(eventBody)},false);
+  await tick();await tick();
+  assert.equal(calls.filter(url=>/price-movers|market-events/.test(url)).length,0,'窄螢幕不要資料');
+  assert.equal(ctx.listeners.length,1,'視窗之後變寬才開始');
+});
+
+test('樣式：≥1200px 首頁多欄（搜尋左／漲幅右、榜單左／跌幅與時事右）、缺一塊另一塊佔滿、<1200px 面板不顯示、.wrap 放寬',async()=>{
+  const showcase=await read('look-showcase.css');
+  const block=showcase.slice(showcase.indexOf('首頁電腦版多欄'));
+  assert.match(block,/\.home-panel,\.home-aside\{display:none\}/,'預設不顯示（窄螢幕單欄）');
+  assert.match(block,/@media \(min-width:1200px\)\{[^]*grid-template-columns:minmax\(0,1fr\) var\(--home-aside\)/);
+  assert.match(block,/\.wrap\{max-width:1640px\}/);
+  assert.match(block,/#hero:has\(~ #homeMoversUp\[hidden\]\)[^{]*\{grid-column:1\/-1\}/);
+  assert.match(block,/#homeRails:has\(~ #homeAside\[hidden\]\)[^{]*\{grid-column:1\/-1\}/);
+  assert.match(block,/\.home-panel\[hidden\],\.home-aside\[hidden\]\{display:none!important\}/);
+  assert.match(block,/#homeRails \.rails-switch \[hidden\]\{display:none!important\}/,'被藏起來的分頁按鈕');
+  assert.doesNotMatch(block,/font-size:\s*(?:[0-9]|1[01])(?:\.\d+)?px|transition:\s*all/);
+  assert.doesNotMatch(block.replace(/@media \(hover:hover\) and \(pointer:fine\)\{[^}]*\}/g,''),/:hover/,':hover 只放在 (hover:hover) 裡');
 });
