@@ -9,6 +9,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { crossVersionLowestPrices, matchYgoprodeckSet, searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createGradedPrices } from './providers/graded-prices.mjs';
+import { createEbayListings } from './providers/ebay-listings.mjs';
 import { createPriceSnapshotController } from './providers/price-snapshot.mjs';
 import { createPageStats, createCardHotStats, isBot } from './providers/page-stats.mjs';
 import { createTcgapiPricing } from './providers/tcgapi-pricing.mjs';
@@ -1308,6 +1309,13 @@ async function gradedPrices(res,params){
   try{const fx=await getTwdRates();return json(res,200,{data:await gradedLookup({tcgPlayerId:params.get('tcgPlayerId'),set:params.get('set'),number:params.get('number')},fx.rates?.USD)})}
   catch(error){return failJson(res,502,'graded prices failed',error)}
 }
+// eBay 現售掛牌價：金鑰只在 Render 環境變數；缺金鑰回 200 空結果，上游錯誤只回通用訊息。
+const ebayLookup=createEbayListings({clientId:process.env.EBAY_CLIENT_ID,clientSecret:process.env.EBAY_CLIENT_SECRET,fetchFn:fetch});
+async function ebayListings(res,params){
+  const input={name:params.get('name')||'',set:params.get('set')||'',number:params.get('number')||''};
+  try{const data=await ebayLookup(input);return data.status==='unsupported'?json(res,400,{error:'參數無效'}):json(res,200,{data})}
+  catch(error){return failJson(res,502,'ebay listings failed',error)}
+}
 // 記憶體警戒（2026-10-21 Render 免費方案 512 MB 被 OOM 重啟，免費方案沒有請求紀錄）：RSS 超過門檻時，把當下處理中的請求寫進日誌，下次就知道是哪個請求。
 const MEMORY_WARN_BYTES=(Number(process.env.MEMORY_WARN_MB)||380)*1024*1024,inflightRequests=new Set();let memoryWarnedAt=0;
 setInterval(()=>{const m=process.memoryUsage();if(m.rss<MEMORY_WARN_BYTES||Date.now()-memoryWarnedAt<60000)return;memoryWarnedAt=Date.now();console.warn('memory high',JSON.stringify({rssMb:Math.round(m.rss/1048576),heapMb:Math.round(m.heapUsed/1048576),inflight:[...inflightRequests].slice(0,15)}))},2000).unref();
@@ -1315,6 +1323,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(rateLimited(req,url.pathname))return json(res,429,{error:'請求太頻繁，請稍後再試'},{'Retry-After':'60'});
   if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
   if(url.pathname==='/api/graded-prices'&&req.method==='GET')return gradedPrices(res,url.searchParams);
+  if(url.pathname==='/api/ebay-listings'&&req.method==='GET')return ebayListings(res,url.searchParams);
   if(url.pathname==='/api/providers')return json(res,200,{data:providerStatus()});
   if(url.pathname==='/api/catalog/image-status'&&req.method==='GET'){try{return json(res,200,{data:await yugiohImageStatus(supabaseFetch)})}catch(e){return failJson(res,502,'image status failed',e)}}
   if(url.pathname==='/api/admin/catalog/cache-images'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!imageCollectionAllowed('yugioh'))return json(res,409,{error:'來源尚未明確允許保存卡圖，圖片快取已暫停'});try{return json(res,200,{data:await cacheYugiohImages(supabaseFetch,{limit:Number(process.env.CARD_IMAGE_CACHE_LIMIT||15000),concurrency:Number(process.env.CARD_IMAGE_CACHE_CONCURRENCY||4)})})}catch(e){return json(res,502,{error:e.message})}}
@@ -1452,13 +1461,6 @@ server.listen(port,()=>{
   if(supabaseConfigured()){pageStats.start();cardHot.start()}
   if(supabaseConfigured()&&process.env.CATALOG_WARM_ON_START!=='false'){priceSnapshot.start();priceArchive.start();tcgapiPricing.start()}
   console.log(`CardScope is running at http://localhost:${port}`);
-  // P0：啟動時用正式金鑰取 token 並查一次 Browse 搜尋，log 只印狀態碼（不印金鑰、token、回應內容）。shortcut: 一次性驗證，P1 上線後移除。
-  if(process.env.EBAY_CLIENT_ID&&process.env.EBAY_CLIENT_SECRET&&process.env.EBAY_P0_CHECK!=='false')(async()=>{try{
-    const auth=Buffer.from(`${process.env.EBAY_CLIENT_ID}:${process.env.EBAY_CLIENT_SECRET}`).toString('base64');
-    const t=await fetch('https://api.ebay.com/identity/v1/oauth2/token',{method:'POST',headers:{Authorization:`Basic ${auth}`,'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope',signal:AbortSignal.timeout(10000)});
-    const token=t.ok?(await t.json()).access_token:null;let browse='skipped';
-    if(token){const b=await fetch('https://api.ebay.com/buy/browse/v1/item_summary/search?q=pikachu&category_ids=183454&limit=1',{headers:{Authorization:`Bearer ${token}`,'X-EBAY-C-MARKETPLACE-ID':'EBAY_US'},signal:AbortSignal.timeout(10000)});browse=b.status;await b.body?.cancel?.()}
-    console.log(`ebay p0 check: token=${t.status} browse=${browse}`)}catch(error){console.log(`ebay p0 check: failed ${error.name}`)}})();
   // Load the catalog and product feed now so the first visitor after a deploy does not wait 2-4 s for them.
   if(process.env.CATALOG_WARM_ON_START!=='false'&&supabaseConfigured()){loadCatalog().catch(error=>console.error('catalog warm-up failed',error.message));loadCatalogHealth().catch(error=>console.error('health warm-up failed',error.message));loadProductSets().catch(error=>console.error('product warm-up failed',error.message));loadTrendSnapshot().catch(error=>console.error('trend warm-up failed',error.message));loadPriceMovers().catch(error=>console.error('price movers warm-up failed',error.message));loadPackPrizes().catch(error=>console.error('pack prizes warm-up failed',error.message));
     // Coverage pages through every card and printing (about a minute cold); start it after the lighter warm-ups so the first visitor after a restart does not wait for it.
