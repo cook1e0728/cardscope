@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-18：**P6 已上線**（9dec62f，CI 綠）。ADR 0058；registry 補 PokemonPriceTracker（approved-api，免費層限非商業，營利前要換）；eBay imageDisplayPolicies 改 risk-accepted（API 條款文本讀不到，未逐條確認）；providers/registry.mjs ebay refreshHours 24→1；資料來源頁 eBay 掛牌列改「已上線（詳細頁）」。未處理：server.mjs SNKRDUNK 狀態文字寫「授權申請中」但授權信未寄；providerStatus() 沒列 eBay 與鑑定價。**第 2 波剩 L5、S3（網域，等使用者買）**。
 - 2026-11-18：**P5 已上線**（使用者看過截圖同意；b16cdd7）。詳細側板價格區最上面「各平台價格」總覽：Cardmarket／TCGplayer 兩欄表（原幣與更新日併入小字，取代舊「各平台比價」表），eBay 掛牌／鑑定卡成交只標有沒有並跳轉（scroll-margin-top 64px），SNKRDUNK 外連。拿掉舊表的「到 eBay 看 PSA 10 已售」外連。CI 第一次在 market endpoint 測試（#921）失敗，重跑通過，判定不穩定測試；/api/hot-cards 測試本機也偶發失敗。**下一步：L5、P6（ADR 0058、registry）、S3（網域）**。
 - 2026-11-18：**L4、P2、P3 已上線**（使用者看過截圖同意；18b1b76，CI 綠，966 測試）。L4：≥1600px 側板 640px 兩欄。P2：詳細側板 eBay 現售掛牌（英文名＋卡號查，照 eBay 順序前 5 筆，排除鑑定卡標題，網址只收 https ebay.com／ebayimg.com，附使用者協議連結；CSP img-src 加 i.ebayimg.com）。P3：鑑定卡成交區標題「第三方彙整，未驗證」，無資料寫「目前沒有成交資料來源。」。正式站 API 實測 Charizard ex 125/197、Pikachu 025/165 皆 ok 10 筆、標題對得上。沒有英文名或卡號像 OP05-060 的卡不查 eBay（航海王多數）。**下一步：P5 各平台價格總覽**。待使用者決定：官方 eBay 標誌、掛牌標題連結改黑字、查詢是否帶系列代號。
 - 2026-11-17：**第 2 波 L1、L3 已上線**（使用者看過截圖後同意合併；75eb6e4，CI 綠）。L1：≥1200px 首頁搜尋左、漲幅右，榜單配跌幅與時事右欄，.wrap 1640px；榜單 1–5 張的分頁隱藏（0 張保留，因冒煙測試要點最夯）。L3：≥1600px 卡牆頁 --shell-max 1640px，7 欄／開側板 5 欄。正式站 1920 確認右欄與遊戲入口磚都在、無水平捲動。**下一步：L4 詳細側板兩欄 → P2 eBay 掛牌顯示（含日版核對）→ P3 → P5**，版面類合併前給截圖。本機預覽注意：Windows CRLF 讓 inline script CSP 雜湊對不上，預覽 proxy 要放寬 script-src（正式站無此問題）。
