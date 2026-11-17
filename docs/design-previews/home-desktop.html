@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>首頁電腦版預覽｜CardScope</title>
+<style>
+/* 預覽稿：沿用 ADR 0056 卡冊紙感的顏色，不是正式樣式 */
+:root{--page:#F8F5EE;--surface:#fff;--sunken:#EFEAE0;--line:#E7E1D4;--ink:#171717;--muted:#6B6456;--night:#16132A;--gold:#E8B84A;--up:#C4000F;--down:#1F6F43;--r:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:15px/1.55 "Noto Sans TC",system-ui,sans-serif}
+button{font:inherit;cursor:pointer}
+.switch{position:sticky;top:0;z-index:5;display:flex;gap:12px;align-items:center;padding:10px 24px;background:#fffbe8;border-bottom:1px solid #e6d9a8;font-size:14px}
+.switch b{margin-right:8px}
+.switch button{padding:8px 16px;border-radius:999px;border:1px solid var(--ink);background:#fff}
+.switch button[aria-pressed=true]{background:var(--ink);color:#fff}
+.switch span{color:var(--muted)}
+.top{background:var(--night);color:#fff}
+.top div{max-width:var(--shell);margin:auto;padding:12px 28px;display:flex;justify-content:space-between;align-items:center}
+.top strong{font-size:18px;letter-spacing:.02em}
+.top nav{display:flex;gap:8px}
+.top nav span{padding:7px 14px;border-radius:999px;background:#fff;color:var(--ink);font-size:13px}
+.shell{max-width:var(--shell);margin:auto;padding:24px 28px 64px}
+h2{margin:0;font-size:18px}
+.head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.head small,.muted{color:var(--muted);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.hero{background:var(--night);color:#fff;border-radius:20px;padding:32px 36px}
+.hero h1{margin:0 0 6px;font-size:40px;letter-spacing:.02em}
+.hero p{margin:0 0 18px;color:#cfcbe6}
+.search{display:flex;max-width:620px;background:#fff;border-radius:12px;overflow:hidden}
+.search span{flex:1;padding:14px 16px;color:var(--muted)}
+.search b{padding:14px 22px;background:var(--gold);color:var(--ink)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chips span{padding:5px 12px;border:1px solid #4a4670;border-radius:999px;font-size:13px;color:#e6e3f7}
+.games{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin:18px 0 24px}
+.games span{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 8px;text-align:center;font-size:13px;font-weight:600}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--sunken);font-size:13px}
+.tabs button[aria-pressed=true]{background:var(--surface);border-color:var(--ink);font-weight:700}
+.cards{display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;min-width:0}
+.card img{display:block;width:100%;aspect-ratio:63/88;object-fit:cover;border-radius:8px;background:var(--sunken)}
+.card b{display:block;margin-top:8px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card small{color:var(--muted);font-size:12px}
+.price{display:flex;justify-content:space-between;align-items:baseline;margin-top:2px;font-size:13px;font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.down{color:var(--down)}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.rows li:first-child{border-top:0}
+.rows img{width:40px;aspect-ratio:63/88;object-fit:cover;border-radius:4px;background:var(--sunken)}
+.rows b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rows small{color:var(--muted);font-size:12px}
+.rows em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.rows em small{display:block;font-weight:400}
+.news{list-style:none;margin:0;padding:0}
+.news li{padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.news li:first-child{border-top:0}
+.news time{display:inline-block;width:52px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.note{margin-top:10px;font-size:12px;color:var(--muted)}
+
+/* A：資訊儀表板。搜尋在左、行情在右，一個畫面看完三件事 */
+body[data-v=a]{--shell:1640px}
+body[data-v=a] .hero-row{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:20px}
+body[data-v=a] .main{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:20px;align-items:start}
+body[data-v=a] .cards{grid-template-columns:repeat(5,minmax(0,1fr))}
+body[data-v=a] .side{display:grid;gap:20px}
+body[data-v=a] .b-only{display:none}
+
+/* B：滿版卡冊。卡圖當主角，行情與時事收在下方並排 */
+body[data-v=b]{--shell:1760px}
+body[data-v=b] .hero{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px;padding:26px 36px}
+body[data-v=b] .hero h1{font-size:32px}
+body[data-v=b] .cards{grid-template-columns:repeat(10,minmax(0,1fr))}
+body[data-v=b] .main{display:grid;gap:24px}
+body[data-v=b] .below{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:start}
+body[data-v=b] .a-only{display:none}
+body[data-v=b] .hero-stats{display:flex;gap:28px;text-align:right}
+body[data-v=b] .hero-stats b{display:block;font-size:26px}
+body[data-v=b] .hero-stats small{color:#cfcbe6}
+
+@media(max-width:1300px){body[data-v] .hero-row,body[data-v] .main,body[data-v] .below{grid-template-columns:1fr}body[data-v] .cards{grid-template-columns:repeat(5,minmax(0,1fr))}}
+</style>
+</head>
+<body data-v="a">
+<div class="switch"><b>預覽稿（不是正式站）</b>
+  <button data-set="a" aria-pressed="true">A　資訊儀表板</button>
+  <button data-set="b" aria-pressed="false">B　滿版卡冊</button>
+  <span id="desc"></span></div>
+
+<div class="top"><div><strong>CardScope</strong><nav><span>搜尋</span><span>圖鑑</span><span>行情</span><span>我的收藏</span></nav></div></div>
+
+<div class="shell">
+  <div class="hero-row">
+    <section class="hero">
+      <div>
+        <h1>跨版本卡牌圖鑑</h1>
+        <p>輸入卡名或卡號，日版、台版、美版並排對照，附參考價。</p>
+        <div class="search"><span>卡名／卡號／系列，例如：皮卡丘、OP05</span><b>搜尋</b></div>
+        <div class="chips"><span>皮卡丘</span><span>魯夫</span><span>SV8a 030</span><span>Charizard</span><span>黑魔導 UR</span></div>
+      </div>
+      <div class="hero-stats b-only"><div><b>81,777</b><small>張卡</small></div><div><b>7</b><small>個遊戲</small></div><div><b>每日</b><small>更新參考價</small></div></div>
+    </section>
+    <section class="panel a-only">
+      <div class="head"><h2>近 14 天漲最多</h2><small>寶可夢參考價</small></div>
+      <ul class="rows" data-rows="up" data-n="4"></ul>
+    </section>
+  </div>
+
+  <div class="games" id="games"></div>
+
+  <div class="main">
+    <section class="panel">
+      <div class="head"><h2>本彈大獎</h2><div class="tabs" id="tabs"></div></div>
+      <div class="muted" id="series" style="margin:-4px 0 12px"></div>
+      <div class="cards" id="cards"></div>
+      <div class="note">不足一排時用同一彈的次高稀有度補滿，不留空格。</div>
+    </section>
+
+    <aside class="side a-only">
+      <section class="panel"><div class="head"><h2>近 14 天跌最多</h2><small>寶可夢參考價</small></div><ul class="rows" data-rows="down" data-n="5"></ul></section>
+      <section class="panel"><div class="head"><h2>卡牌時事</h2><small>官方消息與發售日</small></div><ul class="news" data-news="6"></ul></section>
+    </aside>
+
+    <div class="below b-only">
+      <section class="panel"><div class="head"><h2>近 14 天漲最多</h2><small>寶可夢參考價</small></div><ul class="rows" data-rows="up" data-n="6"></ul></section>
+      <section class="panel"><div class="head"><h2>近 14 天跌最多</h2><small>寶可夢參考價</small></div><ul class="rows" data-rows="down" data-n="6"></ul></section>
+      <section class="panel"><div class="head"><h2>卡牌時事</h2><small>官方消息與發售日</small></div><ul class="news" data-news="8"></ul></section>
+    </div>
+  </div>
+</div>
+
+<script>window.PREVIEW={"games": [{"game": "pokemon", "series": "30th CELEBRATION", "date": "2026-09-16", "cards": [{"n": "超夢ex", "no": "134", "r": "FUR", "img": "https://asia.pokemon-card.com/tw/card-img/tw00020042.png", "twd": null, "chg": null}, {"n": "夢幻ex", "no": "135", "r": "FUR", "img": "https://asia.pokemon-card.com/tw/card-img/tw00020043.png", "twd": null, "chg": null}, {"n": "夢幻ex", "no": "129", "r": "SAR", "img": "https://product-images.tcgplayer.com/fit-in/400x400/719553.jpg", "twd": 919, "chg": -4.6}, {"n": "皮卡丘ex", "no": "127", "r": "SAR", "img": "https://asia.pokemon-card.com/tw/card-img/tw00020038.png", "twd": 699, "chg": -5.9}, {"n": "耿鬼ex", "no": "131", "r": "SAR", "img": "https://product-images.tcgplayer.com/fit-in/400x400/719554.jpg", "twd": 666, "chg": 0}, {"n": "皮卡丘ex", "no": "126", "r": "SAR", "img": "https://asia.pokemon-card.com/tw/card-img/tw00020037.png", "twd": 642, "chg": 2}, {"n": "仙子伊布ex", "no": "130", "r": "SAR", "img": "https://asia.pokemon-card.com/tw/card-img/tw00020039.png", "twd": 633, "chg": 0}, {"n": "超夢ex", "no": "128", "r": "SAR", "img": "https://product-images.tcgplayer.com/fit-in/400x400/719552.jpg", "twd": 454, "chg": -5.5}, {"n": "基拉祈ex", "no": "132", "r": "SAR", "img": "https://asia.pokemon-card.com/tw/card-img/tw00020040.png", "twd": 361, "chg": -13.1}, {"n": "甲賀忍蛙ex", "no": "125", "r": "SAR", "img": "https://asia.pokemon-card.com/tw/card-img/tw00020036.png", "twd": 204, "chg": -5.9}]}, {"game": "onepiece", "series": "特殊補充包 ONE PIECE Heroines Edition【EB-05】", "date": "2026-10-31", "cards": [{"n": "白金漢絲媞希女士", "no": "EB05-006", "r": "SP卡", "img": "https://asia-tc.onepiece-cardgame.com/images/cardlist/card/EB05-006_p2.png?261016", "twd": null, "chg": null}, {"n": "妮可・羅賓", "no": "EB05-016", "r": "SP卡", "img": "https://asia-tc.onepiece-cardgame.com/images/cardlist/card/EB05-016_p2.png?261016", "twd": null, "chg": null}, {"n": "賓什莫克・麗珠", "no": "EB05-031", "r": "SP卡", "img": "https://asia-tc.onepiece-cardgame.com/images/cardlist/card/EB05-031_p1.png?261016", "twd": null, "chg": null}, {"n": "娜美", "no": "EB05-061", "r": "SEC", "img": "https://asia-tc.onepiece-cardgame.com/images/cardlist/card/EB05-061_p1.png?261016", "twd": null, "chg": null}, {"n": "娜美", "no": "EB05-061", "r": "SEC", "img": "https://asia-tc.onepiece-cardgame.com/images/cardlist/card/EB05-061.png?261016", "twd": null, "chg": null}]}, {"game": "weiss-schwarz", "series": "葬送的芙莉蓮 Vol.2", "date": "2026-08-28", "cards": [{"n": "旅の絆 フリーレン＆ヒンメル", "no": "SFN/S136-002SSP", "r": "SSP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_002ssp.png", "twd": null, "chg": null}, {"n": "なでなでは一日十分まで ゼーリエ＆メトーデ", "no": "SFN/S136-026SSP", "r": "SSP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_026ssp.png", "twd": null, "chg": null}, {"n": "歩幅を合わせて フェルン＆シュタルク", "no": "SFN/S136-052SSP", "r": "SSP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_052ssp.png", "twd": null, "chg": null}, {"n": "千年以上生きるエルフ フリーレン", "no": "SFN/S136-003SP", "r": "SP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_003sp.png", "twd": null, "chg": null}, {"n": "旅の日常 ハイター", "no": "SFN/S136-005SP", "r": "SP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_005sp.png", "twd": null, "chg": null}, {"n": "旅の日常 アイゼン", "no": "SFN/S136-006SP", "r": "SP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_006sp.png", "twd": null, "chg": null}, {"n": "旅の日常 ヒンメル", "no": "SFN/S136-007SP", "r": "SP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_007sp.png", "twd": null, "chg": null}, {"n": "“一級魔法使い”ラント", "no": "SFN/S136-028SP", "r": "SP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_028sp.png", "twd": null, "chg": null}, {"n": "“一級魔法使い”ゲナウ", "no": "SFN/S136-029SP", "r": "SP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_029sp.png", "twd": null, "chg": null}, {"n": "「大陸魔法協会」の創始者 ゼーリエ", "no": "SFN/S136-030SP", "r": "SP", "img": "https://ws-tcg.com/wordpress/wp-content/images/cardlist/s/sfn_s136/sfn_s136_030sp.png", "twd": null, "chg": null}]}, {"game": "union-arena", "series": "Re:ゼロから始める異世界生活 Vol.2", "date": "2026-10-30", "cards": [{"n": "エミリア", "no": "EX17BT/REZ-2-011", "r": "SR★★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-011_p2.png?v9", "twd": null, "chg": null}, {"n": "レム", "no": "EX17BT/REZ-2-018", "r": "SR★★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-018_p2.png?v9", "twd": null, "chg": null}, {"n": "ラム", "no": "EX17BT/REZ-2-006", "r": "SR★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-006_p2.png?v9", "twd": null, "chg": null}, {"n": "フェリス", "no": "EX17BT/REZ-2-016", "r": "SR★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-016_p1.png?v9", "twd": null, "chg": null}, {"n": "ベアトリス", "no": "EX17BT/REZ-2-025", "r": "SR★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-025_p2.png?v9", "twd": null, "chg": null}, {"n": "エキドナ", "no": "EX17BT/REZ-2-030", "r": "SR★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-030_p2.png?v9", "twd": null, "chg": null}, {"n": "エミリア", "no": "EX17BT/REZ-2-058", "r": "SR★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-058_p2.png?v9", "twd": null, "chg": null}, {"n": "フェルト", "no": "EX17BT/REZ-2-062", "r": "SR★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-062_p1.png?v9", "twd": null, "chg": null}, {"n": "プリシラ・バーリエル", "no": "EX17BT/REZ-2-065", "r": "SR★★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-065_p1.png?v9", "twd": null, "chg": null}, {"n": "ラム", "no": "EX17BT/REZ-2-006", "r": "SR★", "img": "https://www.unionarena-tcg.com/jp/images/cardlist/card/EX17BT_REZ-2-006_p1.png?v9", "twd": null, "chg": null}]}], "up": [{"n": "Dark Houndoom", "s": "ex7", "no": "37", "img": "https://images.pokemontcg.io/ex7/37.png", "p": 689.2, "a": 398, "b": 3142}, {"n": "鳳王", "s": "ex10", "no": "27", "img": "https://images.pokemontcg.io/ex10/27.png", "p": 508.4, "a": 483, "b": 2936}, {"n": "勇基拉", "s": "ecard3", "no": "69", "img": "https://images.pokemontcg.io/ecard3/69.png", "p": 490.7, "a": 199, "b": 1174}, {"n": "波克基古", "s": "ecard2", "no": "39", "img": "https://images.pokemontcg.io/ecard2/39.png", "p": 365.1, "a": 3642, "b": 16941}, {"n": "Dark Weezing", "s": "base5", "no": "14", "img": "https://images.pokemontcg.io/base5/14.png", "p": 323.4, "a": 232, "b": 983}, {"n": "可達鴨", "s": "base6", "no": "88", "img": "https://images.pokemontcg.io/base6/88.png", "p": 284.4, "a": 366, "b": 1409}, {"n": "炎帝", "s": "smp", "no": "SM219", "img": "https://images.pokemontcg.io/smp/SM219.png", "p": 256.7, "a": 562, "b": 2004}, {"n": "沙奈朵", "s": "ex1", "no": "7", "img": "https://images.pokemontcg.io/ex1/7.png", "p": 255.2, "a": 304, "b": 1079}], "down": [{"n": "Dark Gyarados", "s": "base5", "no": "25", "img": "https://images.pokemontcg.io/base5/25.png", "p": -96.4, "a": 14477, "b": 528}, {"n": "急凍鳥", "s": "base3", "no": "17", "img": "https://images.pokemontcg.io/base3/17.png", "p": -90.4, "a": 5235, "b": 503}, {"n": "Dark Machamp", "s": "base5", "no": "27", "img": "https://images.pokemontcg.io/base5/27.png", "p": -89.3, "a": 3058, "b": 328}, {"n": "Dark Magneton", "s": "base5", "no": "28", "img": "https://images.pokemontcg.io/base5/28.png", "p": -86.3, "a": 1953, "b": 268}, {"n": "百變怪", "s": "base3", "no": "18", "img": "https://images.pokemontcg.io/base3/18.png", "p": -85.4, "a": 2483, "b": 362}, {"n": "雷伊布", "s": "base2", "no": "20", "img": "https://images.pokemontcg.io/base2/20.png", "p": -84, "a": 2547, "b": 408}, {"n": "鬼斯通", "s": "base3", "no": "21", "img": "https://images.pokemontcg.io/base3/21.png", "p": -83.2, "a": 2408, "b": 405}, {"n": "皮可西", "s": "base2", "no": "17", "img": "https://images.pokemontcg.io/base2/17.png", "p": -82.4, "a": 1345, "b": 237}], "events": [{"d": "2026-12-03", "g": "yugioh", "t": "美版 新系列發售：Glorious Victors", "s": "YGOPRODeck 資料庫"}, {"d": "2026-11-12", "g": "yugioh", "t": "美版 新系列發售：Magnificent Maestros", "s": "YGOPRODeck 資料庫"}, {"d": "2026-11-06", "g": "pokemon", "t": "美版 新系列發售：Delta Reign", "s": "Pokémon TCG 資料庫"}, {"d": "2026-11-06", "g": "pokemon", "t": "Mega Evolution—Delta Reign 英文版發售", "s": "Pokémon 官方"}, {"d": "2026-11-05", "g": "yugioh", "t": "美版 新系列發售：Ultimate Tournament Pack 2", "s": "YGOPRODeck 資料庫"}, {"d": "2026-10-31", "g": "onepiece", "t": "台版 新系列發售：特殊補充包 ONE PIECE Heroines Edition【EB-05】", "s": "航海王卡牌繁中官網"}, {"d": "2026-10-30", "g": "union-arena", "t": "日版 新系列發售：Re:ゼロから始める異世界生活 Vol.2", "s": "UNION ARENA 官網"}, {"d": "2026-10-30", "g": "onepiece", "t": "亞洲版 新系列發售：額外補充包 -ONE PIECE Heroines Edition vol.2- [EB-05]", "s": "航海王卡牌亞洲英文官網"}]};</script>
+<script>
+const D=window.PREVIEW,$=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const NAMES={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'黑白雙翼',haikyuu:'排球少年','dragonball-fw':'七龍珠超','union-arena':'UNION ARENA'};
+const DESC={a:'搜尋在左、行情在右；下方大獎卡牆配右欄。一個畫面看完搜尋、新卡、行情。',b:'卡圖當主角，一排 10 張；行情與時事在下方三欄並排。'};
+$('#games').innerHTML=['全部遊戲',...Object.values(NAMES)].map(n=>`<span>${n}</span>`).join('');
+const twd=n=>n?`NT$${Math.round(n).toLocaleString()}`:'—';
+function showGame(i){
+  const g=D.games[i];
+  $('#tabs').innerHTML=D.games.map((x,j)=>`<button data-game="${j}" aria-pressed="${j===i}">${NAMES[x.game]||x.game}</button>`).join('');
+  $('#series').textContent=`${g.series}${g.date?'　發售 '+g.date:''}`;
+  $('#cards').innerHTML=g.cards.map(c=>`<article class="card"><img loading="lazy" referrerpolicy="no-referrer" src="${esc(c.img)}" alt=""><b>${esc(c.n)}</b><small>${esc(c.no)}・${esc(c.r)}</small><div class="price"><span>${twd(c.twd)}</span>${c.chg!=null?`<span class="${c.chg>=0?'up':'down'}">${c.chg>=0?'▲':'▼'}${Math.abs(c.chg)}%</span>`:''}</div></article>`).join('');
+}
+document.querySelectorAll('[data-rows]').forEach(el=>{const up=el.dataset.rows==='up';el.innerHTML=D[el.dataset.rows].slice(0,+el.dataset.n).map(c=>`<li><img loading="lazy" referrerpolicy="no-referrer" src="${esc(c.img)}" alt=""><div><b>${esc(c.n)}</b><small>${esc(c.s)}・${esc(c.no)}</small></div><em class="${up?'up':'down'}">${up?'▲':'▼'}${Math.abs(c.p)}%<small>${twd(c.a)} → ${twd(c.b)}</small></em></li>`).join('')});
+document.querySelectorAll('[data-news]').forEach(el=>{el.innerHTML=D.events.slice(0,+el.dataset.news).map(e=>`<li><time>${esc(e.d.slice(5).replace('-','/'))}</time>${esc(NAMES[e.g]||'')}｜${esc(e.t)}</li>`).join('')});
+document.addEventListener('click',e=>{
+  const set=e.target.closest('[data-set]'),game=e.target.closest('[data-game]');
+  if(set){document.body.dataset.v=set.dataset.set;document.querySelectorAll('[data-set]').forEach(b=>b.setAttribute('aria-pressed',b===set));$('#desc').textContent=DESC[set.dataset.set]}
+  if(game)showGame(+game.dataset.game);
+});
+$('#desc').textContent=DESC.a;showGame(0);
+</script>
+</body>
+</html>

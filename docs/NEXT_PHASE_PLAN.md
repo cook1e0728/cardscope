@@ -3,6 +3,20 @@
 > 起草：Fable（2026-11-16）。拍板後由 Opus 帶 sonnet-worker 施作。
 > 一律在 `main` 的最新狀態上開新分支做（本機目前停在舊分支 `claude/weiss-en`，落後 main 77 個提交，**不要在上面動工**）。
 
+## 0. 這一回合要做的事（2026-11-17，使用者說「進行下一階段網站打造」）
+
+整份計畫已於 11-16 批准；首頁預覽選 **A**；網域晚點再買（S3 延後，不擋其他工作）。這一回合啟動施作：
+
+1. **把計畫文件推上 main**：本機分支 `plan/next-phase`（工作樹 `.claude/worktrees/plan-docs`，領先 main 2 個提交，只有文件）。先把 A 版預覽稿 `docs/design-previews/home-desktop.html` 用 `git add -f` 一併提交（該資料夾在本機排除清單裡，不進 git 的話施作方看不到；`docs/` 不會被網站對外提供），然後 `git push origin plan/next-phase:main`。提交訊息帶 `[skip render]`，不觸發部署。上次這個推送被權限分類器擋下；若再被擋，改成讓施作 session 直接從 `plan/next-phase` 分支開工，並請使用者手動推。
+2. **開一個 Opus 主導的 session 做第 1 波**（依使用者的固定分工：Fable 寫計畫、Opus 指揮、Sonnet 施作）。從 main 開新工作樹，交接內容：
+   - 先讀 `docs/AGENT_BATON.md`、`docs/NEXT_PHASE_PLAN.md`、`AGENTS.md`。
+   - 第 1 波三條線派給 sonnet-worker（檔案不重疊）：A＝S0→S1→S2（`server.mjs`、測試）；B＝P4(b)(c)＋C1–C4（文件、頁尾、`data/source-registry.json`、`price-timeline.js` 的 SNKRDUNK 外連）；C＝L2（行情頁改網格）。
+   - 第 1 波做完接第 2 波的版面線：L1 → L3 → L4，照 A 版預覽。P1／P2（eBay 掛牌）要等使用者把金鑰設到 Render 並提交帳號刪除通知豁免，沒完成前不開工。
+   - 規則：每包測試全過才提交；**合併進 main 就是上線**，看得到的版面變更（L 系列、P4 的外連按鈕、頁尾）合併前先給使用者看截圖；純伺服器與文件的包（S0–S2、C 的文件部分）測試與 CI 綠了可直接合併。每包更新接力棒。新價格來源不寫主庫。伺服器不得對 snkrdunk.com 發請求。
+3. **這個 session 留著等使用者的三件事**：SNKRDUNK 表單的署名與卡牌信箱完整地址（拿到後我填表單、停在送出前給使用者看）；eBay 金鑰設到 Render＋帳號刪除通知豁免；買網域（建議 `cardscopetw.com`）。
+
+驗證：推送後 `git log origin/main -3` 看得到計畫提交、Render 沒有新部署；Opus session 回報時，我對照 diff 與測試結果再向使用者報告，不照單全收。
+
 ## 1. 背景
 
 使用者定下的方向：電腦版太空曠，要更精緻也更好用；價格要加日本 SNKRDUNK 與歐美 eBay；資安與避免侵權要一起顧到。
