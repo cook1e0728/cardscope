@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-18：**站名改為「好卡在 CardSeek」已上線**（1961d78）。使用者看得到的標題、OG、PWA（short_name「好卡在」）、頁首頁尾、SEO、提示文字都改；內部 key、事件名、備份格式 id（cardscope-collection）、User-Agent、啟動訊息（測試靠它）、網址與 cardscopetw 信箱不變。商標查過（智慧局文字近似）：「好卡在」「CARDSEEK」無同名；「卡好找」已被民傑資科註冊 009 類，不用。網域 cardseek.cc／.net／.io RDAP 查無註冊，.com／.app 已被註冊，等使用者買。SNKRDUNK 信改 CardSeek，仍未寄（寄送：cardscopetw 帳號寄 info@soda-inc.com，需使用者明確同意）。
 - 2026-11-18：**P6 已上線**（9dec62f，CI 綠）。ADR 0058；registry 補 PokemonPriceTracker（approved-api，免費層限非商業，營利前要換）；eBay imageDisplayPolicies 改 risk-accepted（API 條款文本讀不到，未逐條確認）；providers/registry.mjs ebay refreshHours 24→1；資料來源頁 eBay 掛牌列改「已上線（詳細頁）」。未處理：server.mjs SNKRDUNK 狀態文字寫「授權申請中」但授權信未寄；providerStatus() 沒列 eBay 與鑑定價。**第 2 波剩 L5、S3（網域，等使用者買）**。
 - 2026-11-18：**P5 已上線**（使用者看過截圖同意；b16cdd7）。詳細側板價格區最上面「各平台價格」總覽：Cardmarket／TCGplayer 兩欄表（原幣與更新日併入小字，取代舊「各平台比價」表），eBay 掛牌／鑑定卡成交只標有沒有並跳轉（scroll-margin-top 64px），SNKRDUNK 外連。拿掉舊表的「到 eBay 看 PSA 10 已售」外連。CI 第一次在 market endpoint 測試（#921）失敗，重跑通過，判定不穩定測試；/api/hot-cards 測試本機也偶發失敗。**下一步：L5、P6（ADR 0058、registry）、S3（網域）**。
 - 2026-11-18：**L4、P2、P3 已上線**（使用者看過截圖同意；18b1b76，CI 綠，966 測試）。L4：≥1600px 側板 640px 兩欄。P2：詳細側板 eBay 現售掛牌（英文名＋卡號查，照 eBay 順序前 5 筆，排除鑑定卡標題，網址只收 https ebay.com／ebayimg.com，附使用者協議連結；CSP img-src 加 i.ebayimg.com）。P3：鑑定卡成交區標題「第三方彙整，未驗證」，無資料寫「目前沒有成交資料來源。」。正式站 API 實測 Charizard ex 125/197、Pikachu 025/165 皆 ok 10 筆、標題對得上。沒有英文名或卡號像 OP05-060 的卡不查 eBay（航海王多數）。**下一步：P5 各平台價格總覽**。待使用者決定：官方 eBay 標誌、掛牌標題連結改黑字、查詢是否帶系列代號。
