@@ -485,6 +485,12 @@ html.look-clean body[data-view] #cards .card:has(.card-open-hit[aria-current="tr
 @media (min-width:1600px){
   html:has(body[data-side]){--shell-max:1640px}
   html.look-clean body[data-side] header.top .wrap{max-width:var(--shell-max)}
+  /* 詳細側板（L4）：≥1600px 加寬成「卡圖｜資料與價格」兩欄（左欄 .detail-visual：卡圖、卡名、收藏、卡片資料、收錄版本；右欄 .detail-flow-main：資訊、卡面文字、#detailPrice 價格區）。
+     P5 價格表與 P2 eBay 掛牌區放進右欄的 .detail-price-section，約 350px 寬，窄表格自己換行。卡牆讓出的寬度照舊用 --panel-w 算：開側板 4 欄，卡寬約 147–157px（原本 5 欄 155–163px，同樣高於 140px 下限）。
+     DOM 順序就是視覺順序（左欄先、右欄後），Tab 不用改。<1600px 與 ≤760px 維持單欄。 */
+  :root{--panel-w:640px}
+  html.look-clean #modal .detail{grid-template-columns:216px minmax(0,1fr);gap:var(--s5);align-items:start}
+  html.look-clean #modal .detail-visual .detail-art{max-width:none}
 }
 
 /* ===== 11. 階段 5：我的收藏頁（?view=collection）與行情頁（?view=market）=====
