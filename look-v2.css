@@ -490,6 +490,24 @@ body:is([data-view="collection"],[data-view="market"]) section.section:has(> #se
 body[data-view="market"] #cardsSection,
 body:not([data-view="market"]) :is(#trendsSection,#eventsSection,#marketIntro){display:none!important}
 body[data-view="market"] #marketIntro{display:block;padding:22px 0 0}
+/* 行情頁網格（L2）：≥761px 漲幅｜跌幅並排、卡片排成格；≥1200px 版面放寬到 --shell-max，時事移到右欄；≤760px 維持原本的橫向列 */
+@media (min-width:761px){
+  body[data-view="market"] #trendsSection .movers-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
+  body[data-view="market"] #trendsSection .trend-rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;overflow:visible}
+  body[data-view="market"] #trendsSection .trend-rail .trend-card{width:auto;min-width:0}
+  body[data-view="market"] #trendsSection .trend-rail .trend-empty{grid-column:1/-1}
+  body[data-view="market"] #eventsSection ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (min-width:1200px){
+  html.look-clean body[data-view="market"] #main{display:grid;grid-template-columns:minmax(0,1fr) 320px;column-gap:24px;align-items:start;max-width:var(--shell-max)}
+  body[data-view="market"] #main>*{grid-column:1/-1}
+  body[data-view="market"] #main>#trendsSection{grid-column:1;grid-row:2}
+  body[data-view="market"] #main>#eventsSection{grid-column:2;grid-row:2;margin-top:48px;padding-top:10px}
+  body[data-view="market"] #eventsSection li{grid-template-columns:64px minmax(0,1fr)}
+  /* 只有其中一塊有內容時，那一塊佔滿整列 */
+  body[data-view="market"] #main>#trendsSection:has(~ #eventsSection[hidden]),body[data-view="market"] #main>#trendsSection[hidden]+#eventsSection{grid-column:1/-1}
+  body[data-view="market"] #eventsSection ul{grid-template-columns:minmax(0,1fr)}
+}
 .market-intro h2{margin:0;font-size:var(--fs-title);line-height:1.15}
 .market-intro h2:focus-visible{outline:2px solid var(--v2-ink);outline-offset:4px}
 /* 「看完整行情」「看卡牌行情」：文字連結，高 44px */
@@ -556,3 +574,11 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .coll-edit :is(select,input):focus-visible{outline:2px solid var(--v2-ink);outline-offset:1px}
 .coll-price{display:grid;gap:2px;font-size:var(--fs-sub);font-weight:400}
 .coll-price:empty{display:none}
+
+/* === wave1 lane B: sources/footer === */
+.ptl-snkrdunk{display:grid;gap:8px;justify-items:start}
+.ptl-snkrdunk h4,.ptl-snkrdunk p{margin:0}
+.ptl-ext-link{display:inline-flex;align-items:center;min-height:var(--btn-h);padding:0 18px;border:1px solid var(--v2-line);border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-weight:700;text-decoration:none}
+.ptl-ext-link::after{content:"↗";margin-left:6px}
+@media (hover:hover) and (pointer:fine){.ptl-ext-link:hover{border-color:var(--v2-ink)}}
+.ptl-ext-link:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
