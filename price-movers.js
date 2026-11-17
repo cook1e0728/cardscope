@@ -21,7 +21,7 @@
       `<span class="trend-card-number">${esc([row.seriesCode,row.cardNumber].filter(Boolean).join(' · '))}</span><strong>${esc(price)}</strong>`+
       `<small>${esc(eur(row.from.amount))} → ${esc(eur(row.to.amount))}<br>${esc(md(row.from.date))} → ${esc(md(row.to.date))}</small></button>`;
   }
-  const rail=(rows,up,title)=>`<h3 class="movers-head">${title}</h3><div class="trend-rail">${rows.length?rows.map(row=>card(row,up)).join(''):'<div class="trend-empty"><b>目前沒有符合條件的卡</b></div>'}</div>`;
+  const rail=(rows,up,title)=>`<div class="movers-col"><h3 class="movers-head">${title}</h3><div class="trend-rail">${rows.length?rows.map(row=>card(row,up)).join(''):'<div class="trend-empty"><b>目前沒有符合條件的卡</b></div>'}</div></div>`;
   let pending=null;
   // 部署後第一個請求常因冷快取逾時（502）：隔 3 秒再試一次；仍失敗就清掉，下次進頁再試
   const get=()=>fetch('/api/price-movers').then(r=>r.ok?r.json():Promise.reject(new Error(String(r.status))));
@@ -44,7 +44,7 @@
       // 標題下只留一句「不是成交價」；其餘都收進 ⓘ。
       const info=root.priceMoversShared.info(up,down,meta);
       section.innerHTML=`<div class="title"><div><h2>近 ${esc(meta.windowDays||14)} 天參考價漲跌（寶可夢）</h2><div class="title-note"><span class="meta">歐洲平台參考價，不是成交價</span>${info}</div></div></div>`+
-        rail(up,true,'漲幅')+rail(down,false,'跌幅');
+        `<div class="movers-cols">${rail(up,true,'漲幅')}${rail(down,false,'跌幅')}</div>`;
     });
   };
 })(window);
