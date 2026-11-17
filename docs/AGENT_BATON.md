@@ -1,13 +1,14 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-17（台灣）｜更新者：Claude Code（桌電）
+> 上次更新：2026-11-18（台灣）｜更新者：Claude Code（桌電）
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-18：**L4、P2、P3 已上線**（使用者看過截圖同意；18b1b76，CI 綠，966 測試）。L4：≥1600px 側板 640px 兩欄。P2：詳細側板 eBay 現售掛牌（英文名＋卡號查，照 eBay 順序前 5 筆，排除鑑定卡標題，網址只收 https ebay.com／ebayimg.com，附使用者協議連結；CSP img-src 加 i.ebayimg.com）。P3：鑑定卡成交區標題「第三方彙整，未驗證」，無資料寫「目前沒有成交資料來源。」。正式站 API 實測 Charizard ex 125/197、Pikachu 025/165 皆 ok 10 筆、標題對得上。沒有英文名或卡號像 OP05-060 的卡不查 eBay（航海王多數）。**下一步：P5 各平台價格總覽**。待使用者決定：官方 eBay 標誌、掛牌標題連結改黑字、查詢是否帶系列代號。
 - 2026-11-17：**第 2 波 L1、L3 已上線**（使用者看過截圖後同意合併；75eb6e4，CI 綠）。L1：≥1200px 首頁搜尋左、漲幅右，榜單配跌幅與時事右欄，.wrap 1640px；榜單 1–5 張的分頁隱藏（0 張保留，因冒煙測試要點最夯）。L3：≥1600px 卡牆頁 --shell-max 1640px，7 欄／開側板 5 欄。正式站 1920 確認右欄與遊戲入口磚都在、無水平捲動。**下一步：L4 詳細側板兩欄 → P2 eBay 掛牌顯示（含日版核對）→ P3 → P5**，版面類合併前給截圖。本機預覽注意：Windows CRLF 讓 inline script CSP 雜湊對不上，預覽 proxy 要放寬 script-src（正式站無此問題）。
 - 2026-11-17：**第 1 波施作完成（Opus＋3 個 sonnet-worker）**，分支 `claude/next-phase-wave1-85f9c7`，**已上線**（PR #25 → 5d0342b，正式站確認 SNKRDUNK 外連、行情網格 CSS、5 個工作天、SEO 頁 no-cache＋ETag 都在）。內容：S1 SEO 頁 no-cache＋ETag；S2 上游錯誤不外洩與快取上限測試；S0 盤點 A1、A2、A4、A5、A6 早已完成，A3 只缺 series-navigator（已補），git 歷史掃金鑰 0 命中；L2 行情頁網格（≥1200px 時事右欄，卡片 2 欄，手機不變）；SNKRDUNK 只放外連（全遊戲，伺服器不請求 snkrdunk.com，有測試擋），registry link-only；資料來源第二張表；權利人聯絡流程（#rights，**5 個工作天內回信**，使用者 11-17 決定）；頁尾補七龍珠與 UA 官網；修 CI 冒煙測試遊戲數改讀 taxonomy（UA 加入後寫死 6 一直紅）。測試 939。SNKRDUNK 授權信寄出後頁面才改成「已申請」。npm test 偶有 1 項不穩定失敗，未查出是哪項。正式站 `/api/price-movers` 曾回「資料暫時無法讀取」，稍後恢復（行情頁 76 張卡、網格正常），判定為冷啟動暫時性。
 - 2026-11-17：使用者決定**收藏改成雲端同步，用同步碼（不做帳號）**，排在第 2 波之後。規格見 `docs/NEXT_PHASE_PLAN.md` 的 Y 節（Y1–Y5：存副庫、同步碼只存雜湊、沿用 `collection-store.js` 驗證、每筆最後修改者勝、ADR 0059 修改 ADR 0045）。第 2 波做完前不要開工。
