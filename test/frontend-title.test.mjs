@@ -26,31 +26,31 @@ function load(setup = '') {
 test('exact title copy matches the server (providers/seo.mjs)', () => {
   const { run } = load();
   const title = view => run(`pageTitleFor(${JSON.stringify(view)})`);
-  assert.equal(title({ kind: 'home' }), 'CardScope｜TCG 卡牌圖鑑');
-  assert.equal(title({ kind: 'game', game: '寶可夢' }), '寶可夢卡牌圖鑑｜CardScope');
-  assert.equal(title({ kind: 'search', query: '皮卡丘' }), '「皮卡丘」搜尋結果｜CardScope');
-  assert.equal(title({ kind: 'series', name: '151', region: '日版', game: '寶可夢', count: 207 }), '151 卡表｜日版寶可夢・共 207 張｜CardScope');
-  assert.equal(title({ kind: 'series', name: '151', region: '日版', game: '寶可夢', count: null }), '151 卡表｜日版寶可夢｜CardScope', 'the count is dropped when unknown');
-  assert.equal(title({ kind: 'card', name: '皮卡丘', original: 'ピカチュウ', number: '025/165', rarity: 'RR', series: '151' }), '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
-  assert.equal(title({ kind: 'collection' }), '我的收藏｜CardScope');
-  assert.equal(title({ kind: 'market' }), '卡牌參考價漲跌與時事｜CardScope');
-  assert.equal(title({ kind: 'about' }), '資料收錄狀態｜CardScope');
-  assert.equal(title({ kind: 'privacy' }), '隱私說明｜CardScope');
+  assert.equal(title({ kind: 'home' }), '好卡在 CardSeek｜TCG 卡牌圖鑑');
+  assert.equal(title({ kind: 'game', game: '寶可夢' }), '寶可夢卡牌圖鑑｜好卡在 CardSeek');
+  assert.equal(title({ kind: 'search', query: '皮卡丘' }), '「皮卡丘」搜尋結果｜好卡在 CardSeek');
+  assert.equal(title({ kind: 'series', name: '151', region: '日版', game: '寶可夢', count: 207 }), '151 卡表｜日版寶可夢・共 207 張｜好卡在 CardSeek');
+  assert.equal(title({ kind: 'series', name: '151', region: '日版', game: '寶可夢', count: null }), '151 卡表｜日版寶可夢｜好卡在 CardSeek', 'the count is dropped when unknown');
+  assert.equal(title({ kind: 'card', name: '皮卡丘', original: 'ピカチュウ', number: '025/165', rarity: 'RR', series: '151' }), '皮卡丘（ピカチュウ） 025/165 RR｜151｜好卡在 CardSeek');
+  assert.equal(title({ kind: 'collection' }), '我的收藏｜好卡在 CardSeek');
+  assert.equal(title({ kind: 'market' }), '卡牌參考價漲跌與時事｜好卡在 CardSeek');
+  assert.equal(title({ kind: 'about' }), '資料收錄狀態｜好卡在 CardSeek');
+  assert.equal(title({ kind: 'privacy' }), '隱私說明｜好卡在 CardSeek');
 });
 
 test('missing card parts are omitted cleanly, with no stray separators', () => {
   const { run } = load();
   const title = view => run(`pageTitleFor(${JSON.stringify({ kind: 'card', ...view })})`);
-  assert.equal(title({ name: '皮卡丘' }), '皮卡丘｜CardScope');
-  assert.equal(title({ name: '皮卡丘', original: 'ピカチュウ' }), '皮卡丘（ピカチュウ）｜CardScope');
-  assert.equal(title({ name: '皮卡丘', number: '025/165' }), '皮卡丘 025/165｜CardScope');
-  assert.equal(title({ name: '皮卡丘', rarity: 'SAR', series: '151' }), '皮卡丘 SAR｜151｜CardScope');
-  assert.equal(title({ name: '皮卡丘', number: ' ', rarity: '', series: null }), '皮卡丘｜CardScope');
+  assert.equal(title({ name: '皮卡丘' }), '皮卡丘｜好卡在 CardSeek');
+  assert.equal(title({ name: '皮卡丘', original: 'ピカチュウ' }), '皮卡丘（ピカチュウ）｜好卡在 CardSeek');
+  assert.equal(title({ name: '皮卡丘', number: '025/165' }), '皮卡丘 025/165｜好卡在 CardSeek');
+  assert.equal(title({ name: '皮卡丘', rarity: 'SAR', series: '151' }), '皮卡丘 SAR｜151｜好卡在 CardSeek');
+  assert.equal(title({ name: '皮卡丘', number: ' ', rarity: '', series: null }), '皮卡丘｜好卡在 CardSeek');
   for (const text of [title({ name: '皮卡丘', series: '151' }), title({ name: 'x', original: 'y' })]) assert.ok(!/｜｜|（）|\s{2}|\s｜/.test(text), text);
   // 沒有可用資料時退回首頁標題，而不是印出「undefined」
-  assert.equal(run('pageTitleFor({kind:"card"})'), 'CardScope｜TCG 卡牌圖鑑');
-  assert.equal(run('pageTitleFor({kind:"search",query:" "})'), 'CardScope｜TCG 卡牌圖鑑');
-  assert.equal(run('pageTitleFor(null)'), 'CardScope｜TCG 卡牌圖鑑');
+  assert.equal(run('pageTitleFor({kind:"card"})'), '好卡在 CardSeek｜TCG 卡牌圖鑑');
+  assert.equal(run('pageTitleFor({kind:"search",query:" "})'), '好卡在 CardSeek｜TCG 卡牌圖鑑');
+  assert.equal(run('pageTitleFor(null)'), '好卡在 CardSeek｜TCG 卡牌圖鑑');
 });
 
 test('the page kinds produce distinct titles from real page state', () => {
@@ -62,25 +62,25 @@ test('the page kinds produce distinct titles from real page state', () => {
     assert.ok(!seen.has(h.document.title), `${label} duplicates ${seen.get(h.document.title)}`);
     seen.set(h.document.title, label);
   };
-  record('home', 'CardScope｜TCG 卡牌圖鑑');
+  record('home', '好卡在 CardSeek｜TCG 卡牌圖鑑');
   h.run("game='pokemon'");
-  record('game', '寶可夢卡牌圖鑑｜CardScope');
+  record('game', '寶可夢卡牌圖鑑｜好卡在 CardSeek');
   h.run("browse.seriesId='s1';browse.total=207");
-  record('series', '151 卡表｜日版寶可夢・共 207 張｜CardScope');
+  record('series', '151 卡表｜日版寶可夢・共 207 張｜好卡在 CardSeek');
   h.run("browse.seriesId='';game='all';activeSearch={q:'皮卡丘'}");
-  record('search', '「皮卡丘」搜尋結果｜CardScope');
+  record('search', '「皮卡丘」搜尋結果｜好卡在 CardSeek');
   h.run("activeSearch=null;document.body.dataset.view='about'");
-  record('about', '資料收錄狀態｜CardScope');
+  record('about', '資料收錄狀態｜好卡在 CardSeek');
   h.run("document.body.dataset.view='privacy'");
-  record('privacy', '隱私說明｜CardScope');
+  record('privacy', '隱私說明｜好卡在 CardSeek');
   h.run("document.body.dataset.view='collection'");
-  record('collection', '我的收藏｜CardScope');
+  record('collection', '我的收藏｜好卡在 CardSeek');
   h.run("document.body.dataset.view='market'");
-  record('market', '卡牌參考價漲跌與時事｜CardScope');
+  record('market', '卡牌參考價漲跌與時事｜好卡在 CardSeek');
   h.run("document.body.dataset.view='';game='pokemon'");
   h.modal.open = true;
   h.run("detailTitleInfo={name:'皮卡丘',original:'ピカチュウ',number:'025/165',rarity:'RR',series:'151'}");
-  record('card detail', '皮卡丘（ピカチュウ） 025/165 RR｜151｜CardScope');
+  record('card detail', '皮卡丘（ピカチュウ） 025/165 RR｜151｜好卡在 CardSeek');
   assert.equal(seen.size, 9);
 });
 
@@ -89,16 +89,16 @@ test('closing the card detail or the collection restores the title of the page u
   h.run("game='pokemon';browse.seriesId='s1'");
   h.run('syncPageTitle()');
   const underneath = h.document.title;
-  assert.equal(underneath, '151 卡表｜台版寶可夢｜CardScope');
+  assert.equal(underneath, '151 卡表｜台版寶可夢｜好卡在 CardSeek');
   h.modal.open = true; h.run("detailTitleInfo={name:'皮卡丘',original:'',number:'',rarity:'',series:'151'}");
   h.run('syncPageTitle()');
-  assert.equal(h.document.title, '皮卡丘｜151｜CardScope');
+  assert.equal(h.document.title, '皮卡丘｜151｜好卡在 CardSeek');
   h.modal.open = false;
   h.run('syncPageTitle()');
   assert.equal(h.document.title, underneath, 'closing the modal returns to the series title');
   h.run("document.body.dataset.view='collection'");
   h.run('syncPageTitle()');
-  assert.equal(h.document.title, '我的收藏｜CardScope');
+  assert.equal(h.document.title, '我的收藏｜好卡在 CardSeek');
   h.run("document.body.dataset.view=''");
   h.run('syncPageTitle()');
   assert.equal(h.document.title, underneath, 'closing the collection returns to the series title');
@@ -107,11 +107,11 @@ test('closing the card detail or the collection restores the title of the page u
 test('the series count uses the known total first and the unfiltered listing total second', () => {
   const h = load("C={series:[{id:'s1',nameZh:'151',region:'JP'}]};game='pokemon';browse.seriesId='s1';");
   h.run('browse.total=60;cardFilters.rarity="RR"'); h.run('syncPageTitle()');
-  assert.equal(h.document.title, '151 卡表｜日版寶可夢｜CardScope', 'a filtered listing total is not the series size');
+  assert.equal(h.document.title, '151 卡表｜日版寶可夢｜好卡在 CardSeek', 'a filtered listing total is not the series size');
   h.run('cardFilters.rarity="all"'); h.run('syncPageTitle()');
-  assert.equal(h.document.title, '151 卡表｜日版寶可夢・共 60 張｜CardScope');
+  assert.equal(h.document.title, '151 卡表｜日版寶可夢・共 60 張｜好卡在 CardSeek');
   h.run('seriesTotals.set("s1",207)'); h.run('syncPageTitle()');
-  assert.equal(h.document.title, '151 卡表｜日版寶可夢・共 207 張｜CardScope');
+  assert.equal(h.document.title, '151 卡表｜日版寶可夢・共 207 張｜好卡在 CardSeek');
 });
 
 test('a failure while computing the title keeps the current title instead of throwing', () => {

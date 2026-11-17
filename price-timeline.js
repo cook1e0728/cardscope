@@ -118,7 +118,7 @@
   // 純函式：SNKRDUNK（日本）的搜尋頁外連，P4(b)。只在瀏覽器組網址、讓使用者自己點開；本站的程式不對 SNKRDUNK 發任何請求（它的規約禁止擷取，書面授權申請中，見 data/source-registry.json）。
   // 關鍵字＝卡名（優先日文名，沒有才用英文名）＋卡號；沒有卡名就不給連結，只有卡號搜不準。
   const snkrdunkUrl=(card,cardNumber)=>{const name=String(card?.nameJa||card?.nameEn||'').trim();if(!name)return null;const number=String(cardNumber||card?.officialCardNumber||(card?.printings||[]).find(printing=>printing?.localCardNumber)?.localCardNumber||'').trim();return `https://snkrdunk.com/search?keywords=${encodeURIComponent([name,number].filter(Boolean).join(' '))}`};
-  const snkrdunkMarkup=(card,cardNumber)=>{const url=snkrdunkUrl(card,cardNumber);return url?`<div class="ptl-now ptl-snkrdunk"><h4>日本行情</h4><p class="meta">SNKRDUNK 是日本的交易平台。CardScope 沒有取得它的資料授權，所以這裡只有連結，不顯示它的價格。</p><a class="ptl-ext-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">到 SNKRDUNK 查看<span class="sr-only">（外部網站，另開分頁）</span></a></div>`:''};
+  const snkrdunkMarkup=(card,cardNumber)=>{const url=snkrdunkUrl(card,cardNumber);return url?`<div class="ptl-now ptl-snkrdunk"><h4>日本行情</h4><p class="meta">SNKRDUNK 是日本的交易平台。CardSeek 沒有取得它的資料授權，所以這裡只有連結，不顯示它的價格。</p><a class="ptl-ext-link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">到 SNKRDUNK 查看<span class="sr-only">（外部網站，另開分頁）</span></a></div>`:''};
   const gradedSearchUrl=(name,number)=>`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent([name,number,'PSA 10'].filter(Boolean).join(' '))}&LH_Sold=1&LH_Complete=1`;
 
   const motionOff=()=>{if(root.matchMedia?.('(prefers-reduced-motion:reduce)').matches)return true;try{return /^(1|true)$/.test(root.localStorage.getItem('cardscope-motion-paused')||'')}catch{return false}};

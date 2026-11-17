@@ -337,7 +337,7 @@ html.look-clean .brand-footer p,html.look-clean .brand-footer small{max-width:60
 html.look-clean .brand-footer p{word-break:keep-all;overflow-wrap:anywhere;text-wrap:pretty}
 html.look-clean .brand-footer a{display:inline-block;padding:var(--s3) 0;color:var(--lc-ink);text-underline-offset:3px}
 html.look-clean .brand-footer b{font-weight:700;color:var(--lc-ink)}
-/* 頁尾所有文字 13px 以上（catalog-layout.css 底層是 12px，摘要列與「CardScope」標題會繼承到）；連結列：每個連結 44px 高（字級 16px），連結之間 24px */
+/* 頁尾所有文字 13px 以上（catalog-layout.css 底層是 12px，摘要列與「CardSeek」標題會繼承到）；連結列：每個連結 44px 高（字級 16px），連結之間 24px */
 html.look-clean .brand-footer{font-size:16px}
 html.look-clean .brand-footer .footer-links ul{display:flex;flex-wrap:wrap;gap:0 var(--s5);margin:var(--s2) 0 0;padding:0;list-style:none}
 html.look-clean .brand-footer .footer-links a{display:inline-flex;align-items:center;min-height:44px;padding:0;font-size:16px}

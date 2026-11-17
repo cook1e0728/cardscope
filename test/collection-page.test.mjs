@@ -59,7 +59,7 @@ function importHarness(existing) {
 const fileOf = (text, name = 'backup.json') => ({ name, size: text.length, text: async () => text });
 const mine = [{ id: 'a', canonicalId: '', favorite: false, quantity: 3, condition: 'NM', finish: '', note: 'keep me' }];
 
-test('import: a file that is not a CardScope backup, too big or unreadable leaves the existing collection untouched and says so', async () => {
+test('import: a file that is not a CardSeek backup, too big or unreadable leaves the existing collection untouched and says so', async () => {
   for (const text of ['{ nope', JSON.stringify({ app: 'other', version: 2, items: [] }), backup([]).replace('"version":2', '"version":9')]) {
     const sb = importHarness(mine);
     await sb.importCollectionFile(fileOf(text));

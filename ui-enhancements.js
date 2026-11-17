@@ -283,7 +283,7 @@ function activateCardActions(root=$('cards')){
   root.querySelectorAll('[data-watch-decrement]').forEach(button=>{button.onclick=event=>{event.stopPropagation();stepWatchQuantity(button.dataset.watchDecrement,-1)}});
 }
 
-function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img src="/assets/brand/web/rabbit-offline.webp" alt="奔跑中的 CardScope 兔子" loading="lazy"><div><b>兔子還在尋找卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
+function renderCardEmpty(){return `<div class="cards-empty mascot-empty"><img src="/assets/brand/web/rabbit-offline.webp" alt="奔跑中的 CardSeek 兔子" loading="lazy"><div><b>兔子還在尋找卡片</b><p>若是尚未發售商品，代表官方尚未公開卡表；圖片待補時也會保留卡片資料。</p></div></div>`}
 
 function renderCardRows(rows){
   if(cardGroupMode!=='rarity')return rows.length?rows.map(cardMarkup).join(''):renderCardEmpty();
@@ -294,7 +294,7 @@ function renderCardRows(rows){
 
 // ── 分頁標題 ──
 // 文案與 providers/seo.mjs 的伺服器端標題一致；畫面內容變動時由 syncPageTitle 依目前狀態重算，所以關掉詳細頁自然回到底下頁面的標題。
-const TITLE_SITE='CardScope',TITLE_REGIONS={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲版'};
+const TITLE_SITE='好卡在 CardSeek',TITLE_REGIONS={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲版'};
 let detailTitleInfo=null;
 function pageTitleFor(view){
   const v=view||{},text=value=>String(value??'').trim(),gameTitle=`${text(v.game)}卡牌圖鑑｜${TITLE_SITE}`;
@@ -825,7 +825,7 @@ window.openCard=openCard;
 
 function installFeatureTour(){
   if($('cardscopeFeatureTour'))return;
-  const section=document.createElement('details');section.id='cardscopeFeatureTour';section.className='feature-tour section';section.setAttribute('aria-label','CardScope 使用說明');
+  const section=document.createElement('details');section.id='cardscopeFeatureTour';section.className='feature-tour section';section.setAttribute('aria-label','CardSeek 使用說明');
   section.innerHTML='<summary><span class="help-summary-copy"><b>快速使用說明</b><small>稀有度分組與我的收藏</small></span><img src="/assets/brand/web/cardscope-rabbit-mark-96.webp" alt="" loading="lazy"><span class="help-summary-chevron" aria-hidden="true">⌄</span></summary><div class="help-grid"><article class="help-item"><b>先選瀏覽方式</b><p>圖鑑模式看卡面，清單模式看欄位；需要依真實稀有度整理時，切換稀有度分組。</p></article><article class="help-item"><b>我的收藏</b><p>卡片上的星號與張數只儲存在此裝置（不用登入）；在「我的收藏」可編輯品況、版本、備註，看平台參考價總值，並匯出備份。</p></article><article class="help-item"><b>資料不足會明確標示</b><p>沒有可靠卡圖、名稱或價格時保留待補提示，不以生成內容補成官方資料。</p></article></div>';
   const footer=document.querySelector?.('.brand-footer'),notice=$('notice');
   if(footer)footer.insertAdjacentElement('beforebegin',section);else if(notice)notice.insertAdjacentElement('afterend',section);
@@ -902,7 +902,7 @@ function installCatalogHealth(){
   const loadCoverage=()=>window.coverageOnce?.()||fetch('/api/catalog/coverage',{cache:'no-store'}).then(async response=>{const body=await response.json();if(!response.ok)throw Error(body.error||'讀取失敗');return body}),coverageRequest=window.onAboutView?new Promise(resolve=>window.onAboutView(()=>resolve(loadCoverage()))):loadCoverage();
   coverageRequest.then(body=>{const data=body.data||{},games=data.games||{},labels={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'黑白雙翼',haikyuu:'排球少年','dragonball-fw':'七龍珠超 Fusion World','union-arena':'UNION ARENA'},totalLabel=enhancementCoverageLabel(data,Array.isArray(C?.cards)?C.cards.length:null),updated=betaDate(data.updatedAt||data.updated_at),items=Object.entries(labels).map(([id,label])=>{const row=games[id]||{},cards=healthNumber(row,['cards','cardCount','card_count']),expected=healthNumber(row,['expectedCards','expected_cards','officialTotal','official_total']),names=healthNumber(row,['chineseNames','chinese_names','translatedNames','translated_names']),rarities=healthNumber(row,['rarities','rarityCount','rarity_count']),images=healthNumber(row,['displayableImages','displayable_images']),imageUrls=healthNumber(row,['cardsWithImageUrls','cards_with_image_urls']),metricStatus=betaValue(row,['completeness','status','dataStatus','data_status'],'未核定'),scope=typeof row.scope==='object'?betaValue(row,['scope.kind'],'目前收錄資料'):betaValue(row,['scope','coverage','region'],'目前收錄資料');return`<article class="health-item" data-game="${e(id)}"><div class="health-item-heading"><b>${e(label)}</b><span>${cards===null?'卡片數待補':`${cards.toLocaleString()} 張`}</span></div><span class="health-scope">${e(scope)} · ${e(metricStatus)}</span>${healthMetric('中文名',names,cards)}${healthMetric('稀有度',rarities,cards)}${healthMetric('可顯示圖片',images,cards,{showGap:true})}${healthMetric('已有圖片網址',imageUrls,cards)}${expected===null?'<small class="health-status">完整分母未核定，不顯示假完成率。</small>':''}</article>`}).join('');section.innerHTML=`<summary>資料完整度與圖片權利狀態</summary><div class="health-head"><div><b>各遊戲分開檢視</b><span>${e(totalLabel)}；報告更新：${e(updated)}</span></div><span class="health-head-status">${e(data.metricStatus?.cards||'以目前資料列計算')}</span></div><div class="health-grid">${items}</div><p class="health-note">圖片是否可顯示依來源與目前權利狀態判斷；顯示圖片不等於已取得著作權授權。完整分母尚未核定的 IP 只顯示收錄量與欄位覆蓋，不把收錄量冒充完整度。<a href="#betaGuidanceTitle">查看勘誤與權利通知方式</a></p>`;const betaUpdated=document.getElementById('betaUpdatedAt');if(betaUpdated&&data.updatedAt)betaUpdated.textContent=`${String(data.updatedAt).slice(0,10)} · 覆蓋報告`}).catch(error=>{const totalLabel=enhancementCoverageLabel(null,Array.isArray(C?.cards)?C.cards.length:null);section.innerHTML=`<summary>資料完整度與圖片權利狀態</summary><p class="health-note">完整度報告暫時無法讀取：${e(error.message)}；${e(totalLabel)}；資料庫總數待核。</p>`})
 }
-function installReportTemplate(){const button=document.getElementById('copyReportTemplate');if(!button||button.dataset.ready)return;button.dataset.ready='1';button.onclick=async()=>{const template='CardScope 勘誤／權利通知\n卡片 ID：\n官方卡號：\nIP／版本：\n來源網址：\n問題描述：\n可供核對的官方連結：';const status=document.getElementById('betaCopyStatus');try{await navigator.clipboard.writeText(template);if(status)status.textContent='已複製模板'}catch{if(status)status.textContent='目前無法自動複製，請依上方欄位手動整理'}}}
+function installReportTemplate(){const button=document.getElementById('copyReportTemplate');if(!button||button.dataset.ready)return;button.dataset.ready='1';button.onclick=async()=>{const template='CardSeek 勘誤／權利通知\n卡片 ID：\n官方卡號：\nIP／版本：\n來源網址：\n問題描述：\n可供核對的官方連結：';const status=document.getElementById('betaCopyStatus');try{await navigator.clipboard.writeText(template);if(status)status.textContent='已複製模板'}catch{if(status)status.textContent='目前無法自動複製，請依上方欄位手動整理'}}}
 // ADR 0049：手機版單行緊湊頂欄（左側：遊戲 Logo 下拉＋版本下拉；右側：膠囊搜尋框＋圓形放大鏡鈕）。桌面版以 CSS 隱藏。
 function installMobileCompactHeader(){
   const bar=document.querySelector('.top .bar'),searchBox=bar?.querySelector('.search'),regionSelect=$('browseRegion');

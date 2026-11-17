@@ -71,7 +71,7 @@ test('import CSV: reads the file the 下載清單 CSV button writes (BOM, quotes
   assert.deepEqual(out.items[1], own('a-2'));
   assert.deepEqual(out.problems.map(p => p.index), [3, 4, 5]);
   assert.match(out.problems[1].reason, /品況/);
-  assert.match(CS.parseImport('a,b\n1,2').error, /不是 CardScope 匯出的 CSV/);
+  assert.match(CS.parseImport('a,b\n1,2').error, /不是 CardSeek 匯出的 CSV/);
   assert.equal(CS.parseImport('卡片 ID,數量\nx,2\n\n\ny,3\n').items.length, 2, 'blank lines are ignored, LF-only files work');
   assert.deepEqual(CS.parseCsv('a,"b ""q"" c",\r\n"x\r\ny",z'), [['a', 'b "q" c', ''], ['x\r\ny', 'z']]);
 });

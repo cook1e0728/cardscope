@@ -9,8 +9,8 @@ const [manifestText, sw, server] = await Promise.all(['manifest.webmanifest', 's
 const manifest = JSON.parse(manifestText);
 
 test('manifest has the install fields and real icon files', async () => {
-  assert.equal(manifest.name, 'CardScope 卡牌圖鑑');
-  assert.equal(manifest.short_name, 'CardScope');
+  assert.equal(manifest.name, '好卡在 CardSeek 卡牌圖鑑');
+  assert.equal(manifest.short_name, '好卡在');
   assert.equal(manifest.start_url, '/');
   assert.equal(manifest.display, 'standalone');
   assert.equal(manifest.theme_color, '#F8F5EE');

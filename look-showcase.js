@@ -62,7 +62,7 @@
     const a=pts[i-2]||pts[i-1],b=pts[i-1],c=p,e=pts[i+1]||p;
     return d+` C${b[0]+(c[0]-a[0])/6} ${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6} ${c[1]-(e[1]-b[1])/6} ${c[0]} ${c[1]}`;
   },'');
-  /* 兔子形象圖：進場跳進來、星星閃爍、偶爾一道流星、游標傾斜卡面與光澤（這是 CardScope 自己的插畫，不是卡圖） */
+  /* 兔子形象圖：進場跳進來、星星閃爍、偶爾一道流星、游標傾斜卡面與光澤（這是 CardSeek 自己的插畫，不是卡圖） */
   const lively=()=>matchMedia('(prefers-reduced-motion:no-preference)').matches&&!root.hasAttribute('data-cs-paused');
   function runComet(comet){if(!comet||!lively())return;comet.classList.remove('go');void comet.offsetWidth;comet.classList.add('go')}
   function decorateRabbit(art){

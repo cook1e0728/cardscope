@@ -47,7 +47,7 @@
   // The one validator behind both the old parseBackup and the import preview. Whole-file problems reject the file; single bad items are skipped with a reason.
   function readBackupJson(text){
     let data;try{data=JSON.parse(text)}catch{return{error:'不是有效的 JSON 檔案'}}
-    if(!plain(data)||data.app!==BACKUP_APP)return{error:'不是 CardScope 收藏備份檔'};
+    if(!plain(data)||data.app!==BACKUP_APP)return{error:'不是 CardSeek 收藏備份檔'};
     if(!BACKUP_VERSIONS.includes(data.version))return{error:'備份檔版本不支援'};
     if(!Array.isArray(data.items))return{error:'備份檔缺少 items'};
     if(data.items.length>LIMITS.itemsMax)return{error:`備份檔超過 ${LIMITS.itemsMax.toLocaleString('en-US')} 筆上限`};
@@ -91,7 +91,7 @@
   const CSV_COLUMNS={'卡片 ID':'id','作品層 ID':'canonicalId','數量':'quantity','品況':'condition','版本':'finish','備註':'note','系列 ID':'seriesId','遊戲':'game','地區':'region'};
   function readBackupCsv(text){
     const table=parseCsv(text),header=table[0]||[],cols=header.map(name=>CSV_COLUMNS[name.trim()]);
-    if(!cols.includes('id')||!cols.includes('quantity'))return{error:'不是 CardScope 匯出的 CSV（缺少「卡片 ID」或「數量」欄）'};
+    if(!cols.includes('id')||!cols.includes('quantity'))return{error:'不是 CardSeek 匯出的 CSV（缺少「卡片 ID」或「數量」欄）'};
     if(table.length-1>LIMITS.itemsMax)return{error:`CSV 超過 ${LIMITS.itemsMax.toLocaleString('en-US')} 筆上限`};
     const unquote=value=>value.replace(/^'(?=\s*[=+@-])/,'');
     return{rows:table.slice(1).map(cells=>{
@@ -103,7 +103,7 @@
     })};
   }
 
-  // Import preview input: a CardScope JSON backup or CSV. Every check runs here, before anything is written; bad rows are skipped with the reason.
+  // Import preview input: a CardSeek JSON backup or CSV. Every check runs here, before anything is written; bad rows are skipped with the reason.
   function parseImport(text){
     if(typeof text!=='string'||!text.trim())return{error:'檔案是空的'};
     text=text.replace(/^﻿/,''); // 記事本／Excel 存的 UTF-8 檔開頭有 BOM，JSON.parse 會失敗

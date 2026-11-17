@@ -1,7 +1,7 @@
 // SEO 純函式：標題、描述、canonical、Open Graph／Twitter、JSON-LD、robots.txt 與 sitemap。
 // 不碰網路與資料庫；server.mjs 負責查資料後把結果交給這裡。所有輸出字串都已跳脫。
 
-export const SITE_NAME = 'CardScope';
+export const SITE_NAME = '好卡在 CardSeek';
 export const DEFAULT_BASE_URL = 'https://cardscope.onrender.com';
 export const DEFAULT_IMAGE_PATH = '/assets/brand/web/og-default-1200x630.png';
 export const DEFAULT_IMAGE_SIZE = { width: 1200, height: 630 };
@@ -10,7 +10,7 @@ export const SITEMAP_MAX_URLS = 40000;
 const GAME_NAMES = { pokemon: '寶可夢', onepiece: '航海王', yugioh: '遊戲王', haikyuu: '排球少年', 'weiss-schwarz': '黑白雙翼 Weiß Schwarz', 'dragonball-fw': '七龍珠超 Fusion World' };
 const REGION_LABELS = { JP: '日版', TW: '台版', US: '美版', CN: '陸版', KR: '韓版', ASIA: '亞洲版' };
 const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com', 'asia-en.onepiece-cardgame.com']);
-const DESCRIPTION_TAIL = 'CardScope 提供卡圖與版本對照，可用中、日、英文名稱查詢。';
+const DESCRIPTION_TAIL = 'CardSeek 提供卡圖與版本對照，可用中、日、英文名稱查詢。';
 const DESCRIPTION_MAX = 150;
 
 const text = value => (value === null || value === undefined ? '' : String(value)).trim();
@@ -93,7 +93,7 @@ export function cardSeo({ card, series = null, game = null, baseUrl = DEFAULT_BA
   let rarity = rawRarity && rawRarity.toUpperCase() !== 'NONE' ? pickFirst(rarityLabel(gameId, rawRarity), printing?.rarityLabel, rawRarity) : '';
   if (rarity.toUpperCase() === 'NONE') rarity = '';
   const seriesLabel = seriesName(series), edition = [region, setCode, number].filter(Boolean).join(' ');
-  // 照人實際會搜的詞：{名稱}（{原文名}）{卡號} {稀有度}｜{系列}｜CardScope，缺的部分整段略過。
+  // 照人實際會搜的詞：{名稱}（{原文名}）{卡號} {稀有度}｜{系列}｜CardSeek，缺的部分整段略過。
   const title = [[`${names.primary}${names.alternate ? `（${names.alternate}）` : ''}`, number, rarity].filter(Boolean).join(' '), seriesLabel, SITE_NAME].filter(Boolean).join('｜');
   const intro = `${names.primary}${names.alternate ? `（${names.alternate}）` : ''}是${gameLabel}卡牌`;
   const where = seriesLabel ? `，收錄於${region}「${seriesLabel}」${setCode ? `${setCode} ` : ''}系列` : edition ? `，${edition}` : '';
@@ -114,7 +114,7 @@ export function cardSeo({ card, series = null, game = null, baseUrl = DEFAULT_BA
 }
 
 // 首頁與遊戲頁（?game=X）：標題、描述、canonical 與預設分享圖；沒有 summary，所以不產生 noscript 摘要。
-const HOME_DESCRIPTION = 'CardScope 收錄寶可夢、遊戲王、航海王等 TCG 卡牌，可用中、日、英文名稱搜尋，並依系列與稀有度瀏覽。';
+const HOME_DESCRIPTION = 'CardSeek 收錄寶可夢、遊戲王、航海王等 TCG 卡牌，可用中、日、英文名稱搜尋，並依系列與稀有度瀏覽。';
 export function homeSeo({ gameId = '', baseUrl = DEFAULT_BASE_URL } = {}) {
   const base = normalizeBaseUrl(baseUrl), label = gameId ? gameName(gameId) : '';
   return {
@@ -125,13 +125,13 @@ export function homeSeo({ gameId = '', baseUrl = DEFAULT_BASE_URL } = {}) {
 
 // ?view=about／privacy／market：站內頁各有自己的標題與 canonical，也都列進 sitemap。行情頁只有參考價與官方公告，沒有登入或個人資料。
 export const VIEW_PAGES = {
-  about: { title: `資料收錄狀態｜${SITE_NAME}`, description: 'CardScope 各遊戲的收錄張數、欄位完整度與資料更新時間，公開說明卡牌資料的來源與缺口。' },
-  privacy: { title: `隱私說明｜${SITE_NAME}`, description: 'CardScope 不需登入、不放追蹤碼；收藏只存在你的瀏覽器，這裡說明站上蒐集與不蒐集哪些資料。' },
+  about: { title: `資料收錄狀態｜${SITE_NAME}`, description: 'CardSeek 各遊戲的收錄張數、欄位完整度與資料更新時間，公開說明卡牌資料的來源與缺口。' },
+  privacy: { title: `隱私說明｜${SITE_NAME}`, description: 'CardSeek 不需登入、不放追蹤碼；收藏只存在你的瀏覽器，這裡說明站上蒐集與不蒐集哪些資料。' },
   market: { title: `卡牌參考價漲跌與時事｜${SITE_NAME}`, description: '寶可夢卡近期的歐洲平台參考價漲跌榜，以及各遊戲近期的發售日與官方消息；參考價不是成交價。' }
 };
 // ?view=collection（我的收藏）的內容只存在使用者自己的裝置，伺服器沒有東西可收錄：有標題與 canonical，但標 noindex，也不進 sitemap。
 export const LOCAL_VIEW_PAGES = {
-  collection: { title: `我的收藏｜${SITE_NAME}`, description: 'CardScope 的收藏只存在這台裝置，不用登入、不會上傳。', noindex: true }
+  collection: { title: `我的收藏｜${SITE_NAME}`, description: 'CardSeek 的收藏只存在這台裝置，不用登入、不會上傳。', noindex: true }
 };
 export function viewSeo({ view = '', baseUrl = DEFAULT_BASE_URL } = {}) {
   const page = Object.hasOwn(VIEW_PAGES, view) ? VIEW_PAGES[view] : Object.hasOwn(LOCAL_VIEW_PAGES, view) ? LOCAL_VIEW_PAGES[view] : null;
