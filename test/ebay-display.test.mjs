@@ -105,6 +105,6 @@ test('the CSP lets the listing thumbnails load from eBay and nothing else new', 
 
 test('bindPriceTrend puts the eBay block right above the graded block, inside the same lazy trigger', async () => {
   const ui = await readFile(new URL('../ui-enhancements.js', import.meta.url), 'utf8');
-  assert.match(ui, /graded\.before\(ebay\);window\.PriceTimeline\.loadEbay\?\.\(ebay,\{card\}\)/);
+  assert.match(ui, /graded\.before\(ebay\);window\.PriceTimeline\.loadEbay\?\.\(ebay,\{card,onState:/);
   assert.ok(ui.indexOf('graded.before(ebay)') > ui.indexOf("slot.dataset.loaded='1'") && ui.indexOf('graded.before(ebay)') < ui.indexOf('PriceTimeline.load(slot'));
 });

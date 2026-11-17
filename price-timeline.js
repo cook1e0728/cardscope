@@ -127,7 +127,7 @@
   function mount(slot,lines,options){
     const off=motionOff(),gid=`ptl-fill-${++seq}`,notes=options.shared?'<div class="ptl-warn">這張卡的價格和其他卡共用同一筆商品資料，可能不是這張卡自己的價格。</div>':'';
     let line=lines[0],start=0,shownStart=0,shownLo=0,shownHi=0,index=0,pos=0,dotY=null,pin=null,shown=0,timer=0,tween=0,dragging=false,zoom=0,period='day',bars=[],barAt=0;const avgOn={5:true,20:false};
-    slot.innerHTML=`<div class="ptl-head">${options.image?`<img class="ptl-mini" src="${esc(options.image)}" alt="">`:''}<div class="ptl-readout"><div class="ptl-when" data-r="when"></div><div class="ptl-big" data-r="big"></div><div class="ptl-say" data-r="say" aria-live="polite"></div><div class="ptl-held" data-r="prev"></div><dl class="ptl-cells"><div><dt>原幣</dt><dd data-r="cOrig"></dd></div><div><dt>來源更新（台北）</dt><dd data-r="cSrc"></dd></div><div><dt>狀態</dt><dd data-r="cState"></dd></div><div><dt>當天事件</dt><dd data-r="cEvent"></dd></div></dl></div></div><p class="ptl-plain" data-r="plain"></p><div data-r="jump"></div><div data-r="trend"><div class="ptl-top">${lines.length>1?`<div class="ptl-lines" data-r="lines" role="group" aria-label="選擇版本">${lines.map((item,i)=>`<button type="button" class="ptl-chip${i?'':' on'}" data-line="${i}" aria-pressed="${!i}">${esc(item.label)}</button>`).join('')}</div>`:''}<div class="ptl-seg" data-r="ranges" role="group" aria-label="時間範圍"></div><div class="ptl-seg" data-r="period" role="group" aria-label="圖表粒度"><button type="button" class="ptl-seg-btn on" data-period="day" aria-pressed="true">每天</button><button type="button" class="ptl-seg-btn" data-period="week" aria-pressed="false">每週</button><button type="button" class="ptl-seg-btn" data-period="month" aria-pressed="false">每月</button></div></div><div class="ptl-short" data-r="barNote" hidden></div><div data-r="chartArea"><div class="ptl-chart" data-r="chart"><svg data-r="svg" aria-hidden="true"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#211C17" stop-opacity=".16"/><stop offset="1" stop-color="#211C17" stop-opacity="0"/></linearGradient></defs><g data-r="base"></g><rect class="ptl-band" data-r="band"/><line class="ptl-pin" data-r="pinLine"/><path class="ptl-past" data-r="past"/><line class="ptl-guide" data-r="guide"/><circle class="ptl-ring" data-r="ring" r="8"/><circle class="ptl-dot" data-r="dot" r="8"/><rect class="ptl-tip" data-r="tip" y="2" height="24" rx="4"/><text class="ptl-tip-text" data-r="tipText" y="19" text-anchor="middle"></text></svg></div><div class="ptl-controls"><button type="button" class="ptl-play" data-r="play"></button><input data-r="range" type="range" aria-label="拖動時間軸選日期"><div class="ptl-avgs" data-r="avgs" role="group" aria-label="平均線"></div><button type="button" class="ptl-chip" data-r="pin" aria-pressed="false"></button></div><p class="ptl-caption" data-r="caption"></p><details class="ptl-bar-detail" data-r="barOnly" hidden><summary>看這段的最高和最低</summary><p data-r="barText"></p></details></div><div class="ptl-events" data-r="events"></div></div><div data-r="short" class="ptl-short" hidden>才剛開始記錄這張卡的價格，還看不出漲跌。</div>${notes}<section class="ptl-now ptl-market"><h4>行情與比價</h4><div data-r="low"></div><div data-r="platforms"></div></section><div data-r="records"></div>`;
+    slot.innerHTML=`<div class="ptl-head">${options.image?`<img class="ptl-mini" src="${esc(options.image)}" alt="">`:''}<div class="ptl-readout"><div class="ptl-when" data-r="when"></div><div class="ptl-big" data-r="big"></div><div class="ptl-say" data-r="say" aria-live="polite"></div><div class="ptl-held" data-r="prev"></div><dl class="ptl-cells"><div><dt>原幣</dt><dd data-r="cOrig"></dd></div><div><dt>來源更新（台北）</dt><dd data-r="cSrc"></dd></div><div><dt>狀態</dt><dd data-r="cState"></dd></div><div><dt>當天事件</dt><dd data-r="cEvent"></dd></div></dl></div></div><p class="ptl-plain" data-r="plain"></p><div data-r="jump"></div><div data-r="trend"><div class="ptl-top">${lines.length>1?`<div class="ptl-lines" data-r="lines" role="group" aria-label="選擇版本">${lines.map((item,i)=>`<button type="button" class="ptl-chip${i?'':' on'}" data-line="${i}" aria-pressed="${!i}">${esc(item.label)}</button>`).join('')}</div>`:''}<div class="ptl-seg" data-r="ranges" role="group" aria-label="時間範圍"></div><div class="ptl-seg" data-r="period" role="group" aria-label="圖表粒度"><button type="button" class="ptl-seg-btn on" data-period="day" aria-pressed="true">每天</button><button type="button" class="ptl-seg-btn" data-period="week" aria-pressed="false">每週</button><button type="button" class="ptl-seg-btn" data-period="month" aria-pressed="false">每月</button></div></div><div class="ptl-short" data-r="barNote" hidden></div><div data-r="chartArea"><div class="ptl-chart" data-r="chart"><svg data-r="svg" aria-hidden="true"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#211C17" stop-opacity=".16"/><stop offset="1" stop-color="#211C17" stop-opacity="0"/></linearGradient></defs><g data-r="base"></g><rect class="ptl-band" data-r="band"/><line class="ptl-pin" data-r="pinLine"/><path class="ptl-past" data-r="past"/><line class="ptl-guide" data-r="guide"/><circle class="ptl-ring" data-r="ring" r="8"/><circle class="ptl-dot" data-r="dot" r="8"/><rect class="ptl-tip" data-r="tip" y="2" height="24" rx="4"/><text class="ptl-tip-text" data-r="tipText" y="19" text-anchor="middle"></text></svg></div><div class="ptl-controls"><button type="button" class="ptl-play" data-r="play"></button><input data-r="range" type="range" aria-label="拖動時間軸選日期"><div class="ptl-avgs" data-r="avgs" role="group" aria-label="平均線"></div><button type="button" class="ptl-chip" data-r="pin" aria-pressed="false"></button></div><p class="ptl-caption" data-r="caption"></p><details class="ptl-bar-detail" data-r="barOnly" hidden><summary>看這段的最高和最低</summary><p data-r="barText"></p></details></div><div class="ptl-events" data-r="events"></div></div><div data-r="short" class="ptl-short" hidden>才剛開始記錄這張卡的價格，還看不出漲跌。</div>${notes}<section class="ptl-now ptl-market"><h4>這個版本的行情</h4><div data-r="low"></div></section><div data-r="records"></div>`;
     const $=name=>slot.querySelector(`[data-r="${name}"]`),pad={l:66,r:14,t:32,b:26},events=options.events||[];
     const last=()=>line.days.length-1;
     const domain=()=>{const values=line.days.slice(start).map(d=>d.twd);return [Math.min(...values),Math.max(...values)]};
@@ -252,7 +252,6 @@
     $('lines')?.addEventListener('click',event=>{const button=event.target.closest('[data-line]');if(!button)return;for(const chip of $('lines').children){const on=chip===button;chip.classList.toggle('on',on);chip.setAttribute('aria-pressed',String(on))}setLine(lines[Number(button.dataset.line)])});
     $('pin').addEventListener('click',()=>{stop();pin=pin==null?index:null;select(index)});
     if(typeof root.ResizeObserver==='function')new root.ResizeObserver(draw).observe(chart);
-    if(options.platforms?.recent.length){const {text,recent,stale}=options.platforms,link=row=>row.url?`<a href="${esc(row.url)}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 看這張</a>`:options.searchName?`<a href="${esc(searchUrl(row.provider,options.searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'';$('platforms').innerHTML=`<h5>各平台比價</h5><p>${esc(text)}</p><div class="ptl-table" role="region" aria-label="各平台比價，可捲動" tabindex="0"><table><thead><tr><th scope="col">平台與版本</th><th scope="col">新台幣</th><th scope="col">原幣</th><th scope="col">紀錄日</th></tr></thead><tbody>${recent.map(row=>`<tr><td><b>${esc(row.market)}</b> ${esc(row.label)}${link(row)?`<br>${link(row)}`:''}</td><td><b>${esc(row.twd)}</b></td><td>${esc(row.original||'—')}</td><td>${esc(md(row.time))}</td></tr>`).join('')}</tbody></table></div>${stale.length?`<h5>過期的舊紀錄，僅供參考</h5><ul class="ptl-stale">${stale.map(row=>`<li>${esc(row.market)} ${esc(row.label)}：${esc(row.twd)}${row.original?`（${esc(row.original)}）`:''}，${esc(md(row.time))} 的紀錄</li>`).join('')}</ul>${[...new Map(stale.map(row=>[row.provider,row])).values()].map(link).join(' ')}`:''}${options.searchName?`<a href="${esc(gradedSearchUrl(options.searchName,options.cardNumber))}" target="_blank" rel="noopener noreferrer">到 eBay 看 PSA 10 鑑定卡已售紀錄</a>`:''}<small>沒有成交量，也沒有台灣行情；不是買賣建議。</small>`}
     setLine(line);
     // 進場和切換版本都直接停在最新；要看變化過程由使用者按播放
   }
@@ -265,12 +264,14 @@
     let history=null;
     try{const response=await fetchFn(`/api/cards/${encodeURIComponent(cardId)}/price-history`);if(response.ok)history=await response.json()}catch{history=null}
     if(!alive())return;
-    if(!history||history.meta?.unavailable||!Array.isArray(history.series)){slot.dataset.ptState='';slot.innerHTML='<div class="state" role="status">價格走勢暫時無法讀取，不影響其他資料；重新開啟這個分頁會再試一次。</div>';if(details)details.open=true;return}
+    if(!history||history.meta?.unavailable||!Array.isArray(history.series)){slot.dataset.ptState='';slot.innerHTML='<div class="state" role="status">價格走勢暫時無法讀取，不影響其他資料；重新開啟這個分頁會再試一次。</div>';if(details)details.open=true;options.onPlatforms?.({platforms:null});return}
     slot.dataset.ptState='done';
     const lines=model(history,options.market,options);
     // 沒有紀錄（例如還沒接價格來源的遊戲）時直接展開明細，由明細說明原因
-    if(!lines.length){slot.innerHTML='';if(details)details.open=true;return}
-    mount(slot,lines,{...options,events:history.meta?.events,platforms:platformSummary(history,options),searchName:(Array.isArray(options.market?.records)?options.market.records:[]).find(record=>record.cardName)?.cardName||''});
+    if(!lines.length){slot.innerHTML='';if(details)details.open=true;options.onPlatforms?.({platforms:{recent:[],stale:[],text:''}});return}
+    mount(slot,lines,{...options,events:history.meta?.events});
+    // 各平台價格總覽在走勢區塊外面（詳細側板最上面），由呼叫端接手畫
+    options.onPlatforms?.({platforms:platformSummary(history,options),searchName:(Array.isArray(options.market?.records)?options.market.records:[]).find(record=>record.cardName)?.cardName||''});
   }
 
   // 鑑定卡：英文版用 TCGplayer 編號、日版用系列代號＋卡號；有兩個以上候選就不查，避免對錯卡。
@@ -307,30 +308,52 @@
     const name=String(card?.nameEn||'').trim(),number=String(card?.officialCardNumber||(card?.printings||[]).find(printing=>printing?.localCardNumber)?.localCardNumber||'').trim();
     return /^[\p{L}\p{N} '.:&,!-]{1,60}$/u.test(name)&&/^[A-Za-z]{0,3}\d{1,4}(?:\/[A-Za-z0-9]{1,5})?$/.test(number)?`name=${encodeURIComponent(name)}&number=${encodeURIComponent(number)}`:null;
   }
-  async function loadEbay(slot,{card,fetchFn=root.fetch.bind(root)}={}){
+  async function loadEbay(slot,{card,fetchFn=root.fetch.bind(root),onState}={}){
     const query=ebayQueryString(card);
-    if(!slot||!query||slot.dataset.ebayState)return;
+    if(!slot||slot.dataset.ebayState)return;
+    if(!query)return onState?.('na');
     slot.dataset.ebayState='loading';slot.innerHTML=ebayMarkup({status:'loading'});
     let body=null,status=0;
     try{const response=await fetchFn(`/api/ebay-listings?${query}`);status=response.status;if(response.ok)body=await response.json()}catch{body=null}
     if(!slot.isConnected)return;
     // 400＝伺服器認為這張卡的名稱或卡號不能查：整區不顯示，不寫「讀不到」
-    if(status===400){slot.innerHTML='';return}
-    slot.dataset.ebayState=body?'done':'';slot.innerHTML=ebayMarkup(body?.data);
+    if(status===400){slot.innerHTML='';return onState?.('na')}
+    slot.dataset.ebayState=body?'done':'';slot.innerHTML=ebayMarkup(body?.data);onState?.(body?ebayState(body.data):'error');
   }
-  async function loadGraded(slot,{card,market,fetchFn=root.fetch.bind(root)}={}){
+  async function loadGraded(slot,{card,market,fetchFn=root.fetch.bind(root),onState}={}){
     const query=gradedQuery(card,market);
     if(!slot||slot.dataset.gradedState)return;
-    if(!query)return loadSnkrdunk(slot,{card});
+    if(!query)return loadSnkrdunk(slot,{card,onState});
     slot.dataset.gradedState='loading';
     let body=null;
     try{const response=await fetchFn(`/api/graded-prices?${query}`);if(response.ok)body=await response.json()}catch{body=null}
     if(!slot.isConnected)return;
     slot.dataset.gradedState=body?'done':'';
     slot.innerHTML=(gradedMarkup(body?.data)||gradedSection(body?'目前沒有成交資料來源。':'暫時讀不到。'))+snkrdunkMarkup(card);
+    onState?.(body?gradedState(body.data):'error');
   }
   // 沒有鑑定卡查詢（台版、其他遊戲）的卡，明寫沒有成交資料來源，底下仍放 SNKRDUNK 外連；已經載入過的區塊不覆蓋。
-  function loadSnkrdunk(slot,{card}={}){if(!slot||slot.dataset.gradedState)return;slot.dataset.gradedState='done';slot.innerHTML=gradedSection('目前沒有成交資料來源。')+snkrdunkMarkup(card)}
+  function loadSnkrdunk(slot,{card,onState}={}){if(!slot||slot.dataset.gradedState)return;slot.dataset.gradedState='done';slot.innerHTML=gradedSection('目前沒有成交資料來源。')+snkrdunkMarkup(card);onState?.('no')}
 
-  root.PriceTimeline={ebayMarkup,ebayItems,ebayQueryString,loadEbay,gradedQuery,gradedMarkup,loadGraded,loadSnkrdunk,snkrdunkUrl,snkrdunkMarkup,versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,productUrl,gradedSearchUrl,dayText,sourceTime,load};
+  // P5：「各平台價格」總覽。上半是 Cardmarket／TCGplayer 的參考價表；下半只標每個來源「有／沒有／查不到」並跳到該區或外連，不把 eBay 數字抄進來。
+  // ebayState／gradedState 把兩個區塊的載入結果收成同一組狀態（yes／no／error／na），由 loadEbay／loadGraded 的 onState 回報。
+  const ebayState=data=>data?.status==='ok'?ebayItems(data.items).length?'yes':'no':data?.status==='no-match'?'no':'error';
+  const gradedState=data=>data?.status==='ok'?'yes':data?.status==='daily-limit'?'error':'no';
+  const OV_NATURE={cardmarket:'參考價',tcgplayer:'市價'},OV_STATE={loading:['讀取中…','wait'],yes:['有','yes'],no:['沒有','no'],error:['查不到','no'],na:['不查詢','no']};
+  const OV_EBAY_ID='ebay-listings',OV_GRADED_ID='graded-prices';
+  function platformsBlock(platforms,searchName){
+    if(platforms===undefined)return '<p class="meta" role="status">正在讀取價格紀錄…</p>';
+    if(!platforms)return '<p class="meta" role="status">暫時讀不到價格紀錄，不影響其他資料。</p>';
+    const {text,recent=[],stale=[]}=platforms,link=row=>row.url?`<a href="${esc(row.url)}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 看這張</a>`:searchName?`<a href="${esc(searchUrl(row.provider,searchName))}" target="_blank" rel="noopener noreferrer">到 ${esc(row.market)} 搜尋這張</a>`:'';
+    const table=recent.length?`<p class="meta">${esc(text)}</p><div class="ptl-table" role="region" aria-label="Cardmarket 與 TCGplayer 參考價，可捲動" tabindex="0"><table><thead><tr><th scope="col">價格性質與版本</th><th scope="col">新台幣（原幣・更新日）</th></tr></thead><tbody>${recent.map(row=>`<tr><td><b>${esc(row.market)} ${esc(OV_NATURE[row.provider]||'參考價')}</b> ${esc(row.label)}${link(row)?`<br>${link(row)}`:''}</td><td><b>${esc(row.twd)}</b><br><small>${row.original?`${esc(row.original)}・`:''}${esc(md(row.time))} 更新</small></td></tr>`).join('')}</tbody></table></div>`:`<p class="meta" role="status">${stale.length?'沒有近期參考價。':'沒有參考價：這張卡沒有 Cardmarket 或 TCGplayer 的價格紀錄。'}</p>`;
+    return table+(stale.length?`<h5>過期的舊紀錄，僅供參考</h5><ul class="ptl-stale">${stale.map(row=>`<li>${esc(row.market)} ${esc(row.label)}：${esc(row.twd)}${row.original?`（${esc(row.original)}）`:''}，${esc(md(row.time))} 的紀錄</li>`).join('')}</ul>${[...new Map(stale.map(row=>[row.provider,row])).values()].map(link).join(' ')}`:'');
+  }
+  // 純函式：platforms 未傳＝還在讀、null＝讀不到；ebay／graded 是 loading／yes／no／error／na。
+  function overviewMarkup({platforms,ebay='loading',graded='loading',card,searchName}={}){
+    const row=(name,state,jump,jumpText)=>{const [label,tone]=OV_STATE[state]||OV_STATE.error;return `<li class="pov-row"><span class="pov-name">${esc(name)}</span><b class="pov-state pov-${tone}">${esc(label)}</b>${jump&&state!=='loading'&&state!=='na'?`<a class="pov-jump" href="#${jump}" data-jump="${jump}">${esc(jumpText)}</a>`:''}</li>`},snkrdunk=snkrdunkUrl(card);
+    const snk=snkrdunk?`<li class="pov-row"><span class="pov-name">SNKRDUNK</span><b class="pov-state pov-no">只有連結</b><a class="pov-jump" href="${esc(snkrdunk)}" target="_blank" rel="noopener noreferrer">到 SNKRDUNK 查看<span class="sr-only">（外部網站，另開分頁）</span></a></li>`:'<li class="pov-row"><span class="pov-name">SNKRDUNK</span><b class="pov-state pov-no">沒有</b></li>';
+    return `<section class="ptl-now pov" aria-labelledby="pov-title"><h4 id="pov-title">各平台價格</h4>${platformsBlock(platforms,searchName)}<h5>其他來源</h5><p class="meta">價格性質不同，不放進同一張表，這裡只標有沒有。</p><ul class="pov-list">${row('eBay 現售掛牌',ebay,OV_EBAY_ID,'看掛牌')}${row('eBay 鑑定卡成交價',graded,OV_GRADED_ID,'看成交')}${snk}</ul></section>`;
+  }
+
+  root.PriceTimeline={overviewMarkup,platformsBlock,ebayState,gradedState,ebayMarkup,ebayItems,ebayQueryString,loadEbay,gradedQuery,gradedMarkup,loadGraded,loadSnkrdunk,snkrdunkUrl,snkrdunkMarkup,versusAverage,model,expand,compareText,highlights,rangeOptions,eventsIn,dateTicks,sweepMs,periodBars,movingAverage,biggestJump,recordRows,platformSummary,searchUrl,productUrl,gradedSearchUrl,dayText,sourceTime,load};
 })(typeof window!=='undefined'?window:globalThis);

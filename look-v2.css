@@ -471,6 +471,19 @@ html.look-clean .detail .detail-section-title{scroll-margin-top:calc(var(--btn-h
 .ebay-word{font-weight:800;letter-spacing:-.01em;color:var(--v2-ink)}
 .ebay-foot a{display:flex;width:fit-content;align-items:center;min-height:44px;color:var(--v2-ink);text-decoration:underline;text-underline-offset:3px}
 :is(.ebay-title,.ebay-foot a):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:4px}
+/* P5：各平台價格總覽（價格區最上面）：Cardmarket／TCGplayer 參考價表在上，其他來源只標有沒有並跳到該區；表格在窄欄改成換行，不用橫向捲動，跳轉連結維持 44px 點擊高度 */
+.price-overview:empty{display:none}
+.pov h5{margin:14px 0 6px}
+.pov .meta{margin:0 0 8px;font-size:var(--fs-sub);font-weight:400;color:var(--v2-ink-2)}
+.pov .ptl-table table{min-width:0}
+.pov .ptl-table td:first-child{overflow-wrap:anywhere}
+.pov-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.pov-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;min-height:44px;padding:0 10px;border-radius:8px;background:#fff}
+.pov-name{font-size:14px;font-weight:600}
+.pov-state{font-size:var(--fs-sub);color:var(--v2-ink)}
+:is(.pov-no,.pov-wait){font-weight:400;color:var(--v2-ink-2)}
+.pov-jump{display:inline-flex;align-items:center;min-height:44px;margin-left:auto;color:var(--v2-ink);font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.pov-jump:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:4px}
 /* 先畫的卡牆資料還在等 API：下面一欄的灰色骨架 */
 html.look-clean .dsk.dsk-flow{grid-template-columns:minmax(0,1fr)}
 /* 卡牆上現在開著的那張：粗外框（不只靠顏色）；用方向鍵換卡時 scrollIntoView 不被頂欄蓋住 */
@@ -612,3 +625,6 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .ptl-ext-link::after{content:"↗";margin-left:6px}
 @media (hover:hover) and (pointer:fine){.ptl-ext-link:hover{border-color:var(--v2-ink)}}
 .ptl-ext-link:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+/* P5：跳到 eBay／鑑定卡區時讓標題留在詳細側板頂列下方 */
+#ebay-listings,#graded-prices{scroll-margin-top:64px}
+.pov .ptl-table th,.pov .ptl-table td{white-space:normal}
