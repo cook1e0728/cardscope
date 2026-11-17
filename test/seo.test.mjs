@@ -282,6 +282,28 @@ test('HTTP: a card or series that does not exist is a 404 with the normal page a
   }
 });
 
+test('HTTP: card and series pages revalidate (no-cache + ETag, 304 on a matching If-None-Match); the 404 page has no ETag', async () => {
+  for (const path of ['/?game=pokemon&card=pokemon-tcgdex-ja-sv6a-090', '/?game=pokemon&series=pokemon-tcgdex-ja-sv6a&region=JP']) {
+    const first = await get(path), etag = first.headers.get('etag');
+    assert.equal(first.status, 200, path);
+    assert.equal(first.headers.get('cache-control'), 'no-cache', path);
+    assert.match(etag, /^"[0-9a-f]{40}"$/, path);
+    for (const header of [etag, `W/${etag}`, `"other", ${etag}`]) {
+      const again = await fetch(`http://127.0.0.1:${appPort}${path}`, { headers: { 'if-none-match': header } });
+      assert.equal(again.status, 304, `${path} with If-None-Match ${header}`);
+      assert.equal(await again.text(), '');
+      assert.equal(again.headers.get('etag'), etag);
+      assert.equal(again.headers.get('cache-control'), 'no-cache');
+    }
+    const stale = await fetch(`http://127.0.0.1:${appPort}${path}`, { headers: { 'if-none-match': '"stale"' } });
+    assert.equal(stale.status, 200, 'a different ETag gets the full page');
+  }
+  const missing = await get('/?game=pokemon&card=no-such-card');
+  assert.equal(missing.status, 404);
+  assert.equal(missing.headers.get('cache-control'), 'no-cache');
+  assert.equal(missing.headers.get('etag'), null);
+});
+
 test('HTTP: every kind of response carries the security headers; pages also carry the enforced CSP', async () => {
   for (const path of ['/', '/?game=pokemon&card=no-such-card', '/?game=pokemon&series=pokemon-tcgdex-ja-sv6a', '/robots.txt', '/sitemaps/pages.xml', '/no-such-file', '/api/providers']) {
     const { headers } = await get(path);

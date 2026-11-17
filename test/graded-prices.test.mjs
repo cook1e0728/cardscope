@@ -69,3 +69,25 @@ test('client markup labels the source and escapes text', () => {
   assert.match(T.gradedMarkup({ status: 'no-match' }), /不顯示價格/);
   assert.equal(T.gradedMarkup({ status: 'not-configured' }), '');
 });
+
+test('an upstream failure surfaces only the status code, never the upstream body, and is not cached', async () => {
+  let calls = 0;
+  const fetchFn = async () => { calls++; return { ok: false, status: 500, text: async () => 'secret upstream detail', json: async () => ({ error: 'secret upstream detail' }) }; };
+  const lookup = createGradedPrices({ apiKey: 'k', fetchFn, now: () => Date.parse('2026-11-03T00:00:00Z') });
+  await assert.rejects(lookup({ set: 'SV2a', number: '201' }), error => error.message === 'GRADED_500' && !/secret/.test(error.message));
+  await assert.rejects(lookup({ set: 'SV2a', number: '201' }), /GRADED_500/);
+  assert.equal(calls, 2, 'a failed lookup is retried, not cached');
+});
+
+test('the lookup cache is capped: the oldest entry is dropped when it is full', async () => {
+  let calls = 0;
+  const fetchFn = async url => { calls++; const number = new URL(url).searchParams.get('search'); return { ok: true, json: async () => ({ data: [{ ...jpCard, cardNumber: `${number}/165` }], metadata: { total: 1 } }) }; };
+  const lookup = createGradedPrices({ apiKey: 'k', fetchFn, maxEntries: 2, dailyLimit: 100, now: () => Date.parse('2026-11-03T00:00:00Z') });
+  for (const number of ['1', '2', '3']) await lookup({ set: 'SV2a', number });
+  assert.equal(calls, 3);
+  await lookup({ set: 'SV2a', number: '3' });
+  await lookup({ set: 'SV2a', number: '2' });
+  assert.equal(calls, 3, 'the two newest are still cached');
+  await lookup({ set: 'SV2a', number: '1' });
+  assert.equal(calls, 4, 'the oldest was evicted');
+});

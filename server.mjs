@@ -72,6 +72,8 @@ const trendCache = {data:null,expiresAt:0,promise:null};
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.webmanifest':'application/manifest+json'};
 // 只公開前端需要的檔案：根目錄的 .js／.css／index.html、assets/、前端讀的兩個 data 檔；server.mjs、providers、docs 等一律 404。
 const PUBLIC_STATIC=/^\/(?:[a-z0-9-]+\.(?:js|css)|manifest\.webmanifest|index\.html|googlefb9a9f93e94c056f\.html|assets\/(?:[\w.-]+\/)*[\w.-]+\.(?:png|jpe?g|webp|svg|ico|woff2?)|data\/(?:rarity-rankings|game-taxonomy)\.json)$/;
+// 內容雜湊 ETag：靜態頁與 SEO 頁共用，If-None-Match 對得上就回 304。
+const etagOf=content=>`"${createHash('sha1').update(content).digest('hex')}"`,etagMatches=(req,etag)=>String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag);
 const SECURITY_HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'SAMEORIGIN','Strict-Transport-Security':'max-age=15552000','Permissions-Policy':'camera=(), microphone=(), geolocation=(), gyroscope=(self), accelerometer=(self)','Cross-Origin-Opener-Policy':'same-origin'};
 // 感測器留給自己：look-effects.js 的手機傾斜卡片要讀 device orientation／motion。
 // 強制：script-src 只允許同源 .js 與 index.html 內 inline <script> 的 SHA-256（啟動時由檔案算出，不用 nonce：nonce 會與 ETag 304、service worker 快取的舊頁對不上）；沒有 unsafe-inline、也沒有 inline 事件屬性（script-src-attr 'none'，改用 ui-actions.js 的事件委派）。擋的是外部腳本、未列出的圖片主機、被嵌入框架。新增卡圖來源時要把主機加進 img-src，否則圖片會被擋；改 index.html 的 inline script 不必動這裡，重啟即重算。
@@ -112,7 +114,7 @@ async function proxyOnePieceImage(res,value){
 const providerStatus=()=>({
   ygoprodeck:{enabled:true,capability:'免費遊戲王卡片資料與各版本 set price 參考價（24 小時快取；圖片需自行保存）'},
   kapaipai:{enabled:false,capability:'等待公開頁面結構與存取方式確認'},
-  snkrdunk:{enabled:false,capability:'等待公開頁面結構與存取方式確認'},
+  snkrdunk:{enabled:false,capability:'只提供外連（link-only），不抓資料；授權申請中（permission-pending）'},
   yuyutei:{enabled:Boolean(process.env.SCRAPE_SECRET),capability:'遊々亭買取行情；建議每日排程一次'},
   reportsDb:{enabled:Boolean(process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_KEY),capability:'Supabase：回報、多語名稱、日版行情、匯率'}
 });
@@ -1264,9 +1266,10 @@ async function loadSeoForSeries(seriesId){
   return series?seriesSeo({series,baseUrl:PUBLIC_BASE_URL,printingCount}):null;
 }
 // 有 card／series 參數時改寫 head；查詢失敗或逾時就回原本的 index（200），查無才回 404。
-async function serveSeoIndex(res,target){
+async function serveSeoIndex(req,res,target){
   let html;try{html=await readFile(join(root,'index.html'),'utf8')}catch{return json(res,404,{error:'Not found'})}
-  const send=(status,body)=>{res.writeHead(status,{'Content-Type':types['.html']});res.end(body)},key=`${target.kind}:${target.id}`;let entry=seoCacheGet(key);
+  // 和首頁靜態檔一致：no-cache＋內容 ETag，換版或卡片資料變了立刻生效，沒變就 304。404 頁不帶 ETag。
+  const send=(status,body)=>{const headers={'Content-Type':types['.html'],'Cache-Control':'no-cache'};if(status===200){const etag=etagOf(body);headers.ETag=etag;if(etagMatches(req,etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}res.writeHead(status,headers);res.end(body)},key=`${target.kind}:${target.id}`;let entry=seoCacheGet(key);
   if(entry===undefined){try{const seo=await withTimeout(target.kind==='card'?loadSeoForCard(target.id):loadSeoForSeries(target.id),SEO_LOAD_TIMEOUT_MS);entry=seo?{seo}:{missing:true};seoCacheSet(key,entry,seo?SEO_CACHE_TTL_MS:SEO_NEGATIVE_TTL_MS)}catch(error){console.error('seo lookup failed',error.message);return send(200,html)}}
   return entry.missing?send(404,applyNoindexToHtml(html)):send(200,applySeoToHtml(html,entry.seo));
 }
@@ -1413,13 +1416,13 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/robots.txt'){res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});return res.end(renderRobotsTxt(PUBLIC_BASE_URL))}
   if((req.method==='GET'||req.method==='HEAD')&&(url.pathname==='/sitemap.xml'||/^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname)))return serveSitemap(res,url.pathname);
   if(req.method==='GET'&&url.pathname==='/')pageStats.record(url.searchParams,req.headers['user-agent'],req.headers['sec-fetch-dest']);
-  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/'){const seoTarget=seoRequestTarget(url);if(seoTarget)return serveSeoIndex(res,seoTarget)}
+  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/'){const seoTarget=seoRequestTarget(url);if(seoTarget)return serveSeoIndex(req,res,seoTarget)}
   let pathname=url.pathname==='/'?'/index.html':url.pathname;if(!PUBLIC_STATIC.test(pathname))return notFound(res,url.pathname);const file=normalize(join(root,pathname));if(!file.startsWith(root))return json(res,403,{error:'Forbidden'});try{const raw=await readFile(file),ext=extname(file),game=url.searchParams.get('game'),
     // 首頁與遊戲頁補 canonical／og:image／遊戲專屬標題（index.html 是靜態檔）；帶 view 的子頁維持原樣。
     // ?view=about／privacy 有自己的標題與 canonical；其他 view 值維持原樣。
     seo=url.pathname!=='/'?null:url.searchParams.has('view')?viewSeo({view:url.searchParams.get('view'),baseUrl:PUBLIC_BASE_URL}):homeSeo({gameId:CATALOG_GAME_IDS.has(game)?game:'',baseUrl:PUBLIC_BASE_URL}),content=seo?applySeoToHtml(raw.toString('utf8'),seo):raw,headers={'Content-Type':types[ext]||'application/octet-stream'};
     // html/js/css: always revalidate (no-cache) with a content ETag, so a deploy reaches browsers at once and an unchanged file is a 304. Images keep their existing handling.
-    if(['.html','.js','.css','.webmanifest'].includes(ext)){const etag=`"${createHash('sha1').update(content).digest('hex')}"`;headers['Cache-Control']='no-cache';headers.ETag=etag;if(String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}
+    if(['.html','.js','.css','.webmanifest'].includes(ext)){const etag=etagOf(content);headers['Cache-Control']='no-cache';headers.ETag=etag;if(etagMatches(req,etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}
     res.writeHead(200,headers);res.end(content)}catch{notFound(res,url.pathname)}
 };
 // 任何未預期的例外只讓這一個請求失敗，不讓整個服務崩潰（2026-10-23 審查：壞掉的 % 編碼曾讓程序結束）。

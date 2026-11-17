@@ -175,6 +175,24 @@ test('series band (tabs, tiles, selected-series box, home preview) escapes serie
   assertSafe(dom.byId.get('homeLatest').querySelector('.rail, .series-band-rail')?.innerHTML || dom.byId.get('homeLatest').innerHTML || 'x', 'home latest');
 });
 
+test('series navigator (rising-cards rail and series cards) escapes names and only draws https links', () => {
+  const h = harness({ deep: true });
+  const made = [];
+  h.context.document.querySelector = selector => selector === 'main .notice' ? h.node('notice') : null;
+  h.context.document.createElement = () => { const n = h.node(); made.push(n); return n; };
+  h.run("C={games:[],series:[],cards:[]};game='pokemon'");
+  h.run(navigator);
+  const trend = (over = {}) => ({ cardName: HOSTILE, cardNumber: HOSTILE, setCode: HOSTILE, imageUrl: HOSTILE_URL, currency: HOSTILE, changePercent: HOSTILE, previousPrice: 1, price: 2, updatedAt: HOSTILE, cardUrl: HOSTILE_URL, ...over });
+  h.run(`trendRows=[${JSON.stringify(trend())},${JSON.stringify(trend({ cardUrl: 'javascript:alert(1)' }))}];renderTrends()`);
+  const markup = made.map(n => n.innerHTML).join('');
+  assertSafe(markup, 'rising-cards rail');
+  assert.ok(markup.includes(ESCAPED));
+  assert.ok(!/href="javascript:/i.test(markup), 'non-https links are dropped');
+  const card = h.run(`seriesCard(${JSON.stringify({ id: HOSTILE, game: 'pokemon', region: 'JP', officialCode: HOSTILE, nameZh: HOSTILE, nameJa: HOSTILE, nameEn: HOSTILE, imageUrl: HOSTILE_URL, productType: HOSTILE })})`);
+  assertSafe(card, 'series card');
+  assert.ok(card.includes(ESCAPED));
+});
+
 test('price movers escape names, series codes and image urls', async () => {
   const row = (over = {}) => ({ cardId: HOSTILE, name: HOSTILE, nameJa: HOSTILE, cardNumber: HOSTILE, seriesCode: HOSTILE, seriesName: HOSTILE, imageUrl: HOSTILE_URL, currency: HOSTILE, changePercent: 250, from: { date: HOSTILE, amount: 5, amountTwd: 100 }, to: { date: HOSTILE, amount: 20, amountTwd: 400 }, ...over });
   const root = { fetch: async () => ({ ok: true, json: async () => ({ data: { up: [row()], down: [row({ changePercent: -50 })] }, meta: { windowDays: HOSTILE, minAmount: HOSTILE, note: HOSTILE } }) }) };

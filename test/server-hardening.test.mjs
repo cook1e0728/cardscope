@@ -232,6 +232,24 @@ test('/.well-known/security.txt is plain text with the contact mailbox, a year-o
   });
 });
 
+test('/api/graded-prices: an upstream failure is a generic 502 with no upstream text, and bad identifiers never reach the upstream',async()=>{
+  // The server takes global fetch at import, so wrap it first: the price provider and the FX source answer here, everything else (the test's own requests) passes through.
+  const realFetch=globalThis.fetch,seen=[];
+  globalThis.fetch=(input,init)=>{const target=String(input?.url||input);if(target.startsWith('https://www.pokemonpricetracker.com/')){seen.push(target);return Promise.resolve(new Response('{"error":"upstream secret detail","key":"leaky-key"}',{status:500}))}if(target.startsWith('https://open.er-api.com/'))return Promise.resolve(new Response('{}',{status:503}));return realFetch(input,init)};
+  try{
+    await withServer('graded-leak',{env:{POKEMONPRICETRACKER_API_KEY:'leaky-key'}},async base=>{
+      const response=await fetch(base+'/api/graded-prices?set=SV2a&number=201'),text=await response.text();
+      assert.equal(response.status,502);
+      assert.equal(JSON.parse(text).error,'資料暫時無法讀取');
+      assert.equal(/secret|leaky|GRADED_|pokemonpricetracker/i.test(text),false,text);
+      assert.equal(seen.length,1);
+      const rejected=await (await fetch(base+'/api/graded-prices?set=%3Cimg%3E&number=1%2F2')).json();
+      assert.equal(rejected.data.status,'unsupported');
+      assert.equal(seen.length,1,'an identifier that fails the whitelist makes no upstream request');
+    });
+  }finally{globalThis.fetch=realFetch}
+});
+
 test('admin scrape route refuses GET, and a wrong token gets 401',async()=>{
   await withServer('admin',{env:{SCRAPE_SECRET:'admin-secret'}},async base=>{
     assert.equal((await fetch(base+'/api/admin/scrape/yuyutei',{headers:{'x-scrape-token':'admin-secret'}})).status,404);
