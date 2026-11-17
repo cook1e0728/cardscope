@@ -1,7 +1,7 @@
 // Provider registry keeps source capabilities explicit. Disabled adapters are placeholders only;
 // they must not be enabled until their public access method and parser have been verified.
 export const providerRegistry = {
-  ebay: { market:'GLOBAL', mode:'api', enabledEnv:'EBAY_CLIENT_ID', priceTypes:['listing'], refreshHours:24 },
+  ebay: { market:'GLOBAL', mode:'api', enabledEnv:'EBAY_CLIENT_ID', priceTypes:['listing'], refreshHours:1 },
   justtcg: { market:'US', mode:'api', enabledEnv:'JUSTTCG_API_KEY', priceTypes:['market'], refreshHours:24 },
   ygoprodeck: { market:'GLOBAL', mode:'free-api', enabled:true, priceTypes:['market'], refreshHours:24, note:'遊戲王免費卡片資料與跨平台最低參考價；圖片需下載後自行保存，不直接 hotlink' },
   yuyutei: { market:'JP', mode:'public-page', enabledEnv:'SCRAPE_SECRET', priceTypes:['buyback'], refreshHours:24 },

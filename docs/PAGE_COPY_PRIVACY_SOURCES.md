@@ -37,6 +37,7 @@ CardScope 不需要登入，不放 cookie，也不追蹤你。
 **連到別人的伺服器**
 - 本站網頁字型向 Google Fonts 載入。
 - 多數卡圖直接從官方網站或資料來源的伺服器載入（詳見「資料來源」）。載入時，對方的伺服器會看到你的 IP 與瀏覽器資訊，這由他們各自的政策管理，不在 CardScope 的控制內。
+- 詳細頁的 eBay 現售掛牌：開卡時 CardScope 的伺服器只把卡名與卡號送到 eBay 查詢（不含你的 IP 或個人資料）；掛牌縮圖由你的瀏覽器直接向 eBay 的圖片伺服器（ebayimg.com）載入，對方會看到你的 IP 與瀏覽器資訊。
 - 航海王的卡圖由 CardScope 的伺服器代為讀取後轉給你，所以官方網站看到的是我們的伺服器，不是你。圖片不會被儲存。
 - 主機與網路服務（Render、Cloudflare）可能依一般運作留存連線紀錄，這也不在本站控制內。
 - 連到外部的連結（官方卡表、商品頁等）點下去之後，就適用對方的隱私政策。
@@ -105,6 +106,7 @@ CardScope 不需要登入，不放 cookie，也不追蹤你。
   <ul>
     <li>網頁字型向 Google Fonts 載入。</li>
     <li>多數卡圖直接從官方網站或資料來源的伺服器載入（見<a href="#sources">資料來源</a>）。載入時對方會看到你的 IP 與瀏覽器資訊，這由他們各自的政策管理。</li>
+    <li>詳細頁的 eBay 現售掛牌：開卡時 CardScope 的伺服器只把卡名與卡號送到 eBay 查詢（不含你的 IP 或個人資料）；掛牌縮圖由你的瀏覽器直接向 eBay 的圖片伺服器（ebayimg.com）載入，對方會看到你的 IP 與瀏覽器資訊。</li>
     <li>航海王的卡圖由 CardScope 的伺服器代為讀取後轉給你，圖片不會被儲存。</li>
     <li>主機與網路服務（Render、Cloudflare）可能依一般運作留存連線紀錄，不在本站控制內。</li>
     <li>點到外部連結之後，就適用對方的隱私政策。</li>
@@ -131,7 +133,7 @@ CardScope 不需要登入，不放 cookie，也不追蹤你。
 
 | 遊戲 | 卡片資料來源 | 卡圖來源 | 價格 |
 |---|---|---|---|
-| 寶可夢 | 日版：日本官方卡片搜尋（pokemon-card.com）與 TCGdex。台版：台灣官方卡片搜尋（asia.pokemon-card.com/tw）與 TCGdex 繁中資料。美版：Pokémon TCG API。 | 日版、台版：多數外連官方卡片搜尋的圖，不轉存。部分用 TCGdex 的圖；日版少數缺圖的卡用 TCGplayer 的圖（卡圖標「TCGplayer 卡圖」）。美版：Pokémon TCG API 提供的圖。少數日版舊卡借用同一張卡的英文版圖，畫面上會標「暫用英文版」。 | 有，僅部分卡。Cardmarket 歐洲市場「平台參考價」（歐元）與 TCGplayer 美國市場參考價（美元），經 TCGdex 或 TCG API 取得，再用每日匯率換算新台幣。不是成交價，也不是台灣行情。台版沒有價格。詳細頁另有「鑑定卡成交價」（PSA、BGS、CGC 等，來自 PokemonPriceTracker 彙整的 eBay 等成交紀錄），開卡時才查，不儲存，不是每張卡都有。 |
+| 寶可夢 | 日版：日本官方卡片搜尋（pokemon-card.com）與 TCGdex。台版：台灣官方卡片搜尋（asia.pokemon-card.com/tw）與 TCGdex 繁中資料。美版：Pokémon TCG API。 | 日版、台版：多數外連官方卡片搜尋的圖，不轉存。部分用 TCGdex 的圖；日版少數缺圖的卡用 TCGplayer 的圖（卡圖標「TCGplayer 卡圖」）。美版：Pokémon TCG API 提供的圖。少數日版舊卡借用同一張卡的英文版圖，畫面上會標「暫用英文版」。 | 有，僅部分卡。Cardmarket 歐洲市場「平台參考價」（歐元）與 TCGplayer 美國市場參考價（美元），經 TCGdex 或 TCG API 取得，再用每日匯率換算新台幣。不是成交價，也不是台灣行情。台版沒有價格。詳細頁另有三個獨立區塊，見下方「其他來源」：eBay 現售掛牌價、eBay 鑑定卡成交價（第三方彙整，未驗證）、SNKRDUNK 外連。 |
 | 航海王 | 台灣、亞洲英文、美國英文三份官方卡表（onepiece-cardgame.com）。 | 官方卡表的圖，由 CardScope 伺服器代為讀取後轉給你，不儲存。美版圖有官方 SAMPLE 浮水印，保留不去除。 | 沒有。 |
 | 遊戲王 | 卡片基本資料：YGOPRODeck。日版版本與日文卡名：官方卡片資料庫（日文版 db.yugioh-card.com）。 | YGOPRODeck 的圖（CardScope 會轉存一份到自己的儲存空間以免一直連線對方）；日版圖外連官方卡片資料庫，不轉存。 | 有，僅美版／英文版。YGOPRODeck 的「參考價」（美元，該站未標示平台），換算新台幣。找不到該版本價格時，改顯示跨版本最低參考價並標明。日版沒有價格。 |
 | 黑白雙翼（Weiß Schwarz） | 官方卡表：日版（ws-tcg.com）與英文版（en.ws-tcg.com），只收芙莉蓮系列。 | 官方卡表的圖，外連不轉存，保留官方 SAMPLE 浮水印。 | 沒有。 |
@@ -143,6 +145,14 @@ CardScope 不需要登入，不放 cookie，也不追蹤你。
 - 價格的新鮮度：參考價超過 7 天沒更新就不顯示。匯率來自 ExchangeRate-API（每日更新），畫面上有原幣金額與匯率日期。
 - 掛牌價、店家買取價、成交價是不同東西，CardScope 不會混在一起，也不會把平台參考價標成成交價。
 - TODO（等決定 5）：發現錯誤請寄到〈信箱〉或填〈勘誤表單〉。決定前不要上線這一行。
+
+### 其他來源（詳細頁價格區，來源決定見 `docs/adr/0058-*.md`）
+
+| 項目 | 資料與卡圖 | 價格 | 狀態 |
+|---|---|---|---|
+| eBay 現售掛牌價 | eBay 官方 Browse API，開卡時才查、不存進資料庫；只顯示標題含卡號的固定價刊登（鑑定卡標題排除），照 eBay 回傳順序列前 5 筆，不依價格重排；縮圖、標題、賣家都屬該筆刊登，連回 eBay；有 eBay 使用者協議連結；不是分潤連結。只有同時有英文名、且卡號格式合規的卡才會查（例如航海王 OP05-060 這類卡號不查）。 | 現售的掛牌價，不是成交價，不會和參考價混在同一列。 | 已上線（需金鑰；未設金鑰時顯示「目前沒有開放」） |
+| eBay 鑑定卡成交價 | 只有寶可夢；PokemonPriceTracker 彙整 eBay、Fanatics 的成交紀錄，開卡時才查、不儲存。 | PSA、BGS、CGC 等鑑定卡的成交價，第三方彙整、未驗證；沒有裸卡成交價。台版與其他遊戲寫「目前沒有成交資料來源」。 | 已上線，不是每張卡都有 |
+| SNKRDUNK（日本） | 只有連結：詳細頁「到 SNKRDUNK 查看」連到它的搜尋頁；CardScope 不向它要資料，也不收它的圖片與文字。 | 不顯示。它的規約禁止擷取，我們還沒有取得書面授權（詢問信尚未寄出，寄出前不寫「已申請」）。 | 僅外連 |
 
 ### 貼上用的標記草稿
 
@@ -180,10 +190,10 @@ CSP 不必改：頁面只有文字與連結，沒有新圖片或腳本。
 
 六個遊戲：providers/catalog-baseline.mjs 的 REQUIRED_GAME_IDS（pokemon、onepiece、yugioh、weiss-schwarz、haikyuu、dragonball-fw）；中文名取 data/catalog.json 的 games 與 index.html 第 309 行 labels（'葬送的芙莉蓮'、'七龍珠超 Fusion World'）。
 
-來源登記：data/source-registry.json（version 3，reviewedAt 2026-10-11）。啟用的 runtime 來源：pokemontcg、tcgdex-zh-tw、tcgdex-pricing、ygoprodeck、onepiece-official-runtime、weiss-schwarz-official、haikyu-official、dbs-fw-official、yugioh-neuron、ebay、exchangerate-api。
+來源登記：data/source-registry.json（version 3，reviewedAt 2026-11-18）。啟用的 runtime 來源：pokemontcg、tcgdex-zh-tw、tcgdex-pricing、ygoprodeck、onepiece-official-runtime、weiss-schwarz-official、haikyu-official、dbs-fw-official、yugioh-neuron、ebay、pokemonpricetracker、exchangerate-api。
   - 註冊表沒有 pokemon-card-official-jp、pokemon-tw-official、yugioh-official-us、optcg-api 的 sources 列，只在 imageDisplayPolicies 與 ui-enhancements.js 第 544 行 DETAIL_SOURCE_NAMES 出現；這四個的事實取自下列 ADR，不是註冊表。lead 若要嚴格以註冊表為準，這是一個缺口。
   - optcg-api：只出現在 data/catalog.json、註冊表政策與前端名稱表，原始碼沒有現行 provider；表格沒列。
-  - ebay：註冊表為啟用，但 server.mjs 的 unifiedMarket 只組 yuyutei（被 metadataCollection:'denied' 擋掉）、ygoprodeck、tcgdex 三個任務，沒有 eBay；providerStatus 也沒列 eBay。表格沒列 eBay 價格。
+  - ebay：2026-11-18 已上線（providers/ebay-listings.mjs、/api/ebay-listings、price-timeline.js 的 ebayMarkup；ADR 0058）。早期寫「沒有 eBay」已過時。pokemonpricetracker 同日補登註冊表。snkrdunk：只外連，test/snkrdunk-no-fetch.test.mjs 擋住任何對它的請求。
   - 遊々亭（yuyutei）：2026-10-12 回信拒絕任何重用，collectionEnabled false；表格沒列。
 
 寶可夢：

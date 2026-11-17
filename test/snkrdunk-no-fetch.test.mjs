@@ -104,7 +104,7 @@ test('C1-C4 pages: sources table lists eBay as planned and SNKRDUNK as link-only
   const tables = sources.match(/<table class="source-table">[\s\S]*?<\/table>/g);
   assert.equal(tables.length, 2);
   assert.match(tables[1], /<th scope="row">UNION ARENA<\/th>/);
-  assert.match(tables[1], /<th scope="row">eBay 現售掛牌價<\/th>[\s\S]*規劃中，尚未上線/);
+  assert.match(tables[1], /<th scope="row">eBay 現售掛牌價<\/th>[\s\S]*已上線（詳細頁）/);
   assert.match(tables[1], /<th scope="row">SNKRDUNK（日本）<\/th>[\s\S]*僅外連/);
   assert.doesNotMatch(tables[1], /已向|已申請|申請中/, '授權信寄出前，頁面不寫已申請');
   const rights = html.match(/<section class="info-page" id="rights"[\s\S]*?<\/section>/)[0];
