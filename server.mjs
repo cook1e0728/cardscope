@@ -20,7 +20,7 @@ import { auditCatalogLinks, catalogProvidersNeedingSync, closeInterruptedCatalog
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
 import { foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './providers/search-query.mjs';
 import { normalizeProduct } from './providers/products.mjs';
-import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, SERIES_HIT_RELEASES, prizeCards, mergePrizeRows, prizeRow, prizeSeriesCandidates, seriesHitRows } from './providers/pack-prizes.mjs';
+import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, SERIES_HIT_FETCH, SERIES_HIT_PER_GAME, buildSeriesHits, prizeCards, mergePrizeRows, prizeRow, prizeSeriesCandidates } from './providers/pack-prizes.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
@@ -1202,22 +1202,6 @@ async function prizeBrowse(game,options){
   const catalog=await loadCatalog(),cards=catalog.cards.filter(card=>card.game===game);
   return buildBrowsePage(cards,{...options,printingByCard:buildPrintingIndex(cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id}))))}).data;
 }
-// 一彈（各版本）的大獎列：/api/pack-prizes 與 /api/series-hits 共用，一小時內同一彈只讀一次資料庫；失敗不快取。
-const releasePrizeCache=new Map();
-async function releasePrizeRows(rule,release){
-  const key=`${rule.game}|${release.map(s=>s.id).join(',')}`,now=Date.now(),cached=releasePrizeCache.get(key);
-  if(cached&&now-cached.at<3600000)return cached.rows;
-  const versions=[];
-  for(const series of release){
-    const cards=await prizeBrowse(rule.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:BROWSE_PAGE_MAX,offset:0});
-    if(rule.game==='pokemon')await attachReferencePrices(cards);
-    versions.push({region:series.region,rows:prizeCards(rule.game,rule.top,cards,{seriesId:series.id,limit:BROWSE_PAGE_MAX}).map(card=>prizeRow(card,series))});
-  }
-  const rows=mergePrizeRows(rule.game,versions);
-  for(const [k,v] of releasePrizeCache)if(now-v.at>=3600000)releasePrizeCache.delete(k);
-  releasePrizeCache.set(key,{at:now,rows});
-  return rows;
-}
 async function loadPackPrizes(){
   const snapshot=await packPrizesCache.get(async()=>{
     const catalog=await loadCatalog(),today=new Date().toISOString().slice(0,10),seriesById=new Map((catalog.series||[]).map(s=>[s.id,s]));
@@ -1226,7 +1210,13 @@ async function loadPackPrizes(){
     const games=[];
     for(const rule of PACK_PRIZE_GAMES){
       for(const release of prizeSeriesCandidates(catalog.series,rule,today).slice(0,3)){
-        const data=await releasePrizeRows(rule,release);
+        const versions=[];
+        for(const series of release){
+          const cards=await prizeBrowse(rule.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:BROWSE_PAGE_MAX,offset:0});
+          if(rule.game==='pokemon')await attachReferencePrices(cards);
+          versions.push({region:series.region,rows:prizeCards(rule.game,rule.top,cards,{seriesId:series.id,limit:BROWSE_PAGE_MAX}).map(card=>prizeRow(card,series))});
+        }
+        const data=mergePrizeRows(rule.game,versions);
         if(data.length<3)continue;
         const [series]=release;
         games.push({game:rule.game,seriesId:series.id,region:series.region,seriesName:series.nameZh||series.nameJa||series.nameEn||series.officialCode,releaseDate:series.releaseDate,data});break;
@@ -1240,17 +1230,16 @@ async function loadPackPrizes(){
   });
   return snapshot.data;
 }
-// 系列卡的大獎縮圖（/api/series-hits，首頁「最新系列」卡片）：每個遊戲最近 SERIES_HIT_RELEASES 彈各取最高稀有度的前 3 張（沒有價格、不含遊戲沒有大獎規則的系列）。
-// 用的是同一組挑選規則與同一份資料（releasePrizeRows），只是把「第一彈就停」改成每彈都留。一小時快取，失敗不快取。
+// 系列卡的縮圖（/api/series-hits，首頁「最新系列」卡片）：不看本彈大獎的資格（PACK_PRIZE_GAMES），首頁會顯示的系列（每個遊戲最新 SERIES_HIT_PER_GAME 個、各版本）
+// 各取稀有度排名最高的 3 張有圖的卡（排名依 data/rarity-rankings.json，挑選規則在 providers/pack-prizes.mjs 的 buildSeriesHits）。每個系列一次卡表查詢（不抓參考價），
+// 同時最多 6 個；沒有任何稀有度資訊的系列不放縮圖。一小時快取，失敗不快取。
 const seriesHitsCache=createBoundedSnapshotCache({ttlMs:3600000,maxStaleMs:24*60*60*1000,serveStaleWhileRevalidate:true});
 async function loadSeriesHits(){
   const snapshot=await seriesHitsCache.get(async()=>{
     const catalog=await loadCatalog(),today=new Date().toISOString().slice(0,10);
     if(catalog.fallbackReason)throw new Error(`catalog fallback: ${catalog.fallbackReason}`);
-    const jobs=PACK_PRIZE_GAMES.flatMap(rule=>prizeSeriesCandidates(catalog.series,rule,today).slice(0,SERIES_HIT_RELEASES).map(release=>({rule,release})));
-    const settled=await Promise.allSettled(jobs.map(async({rule,release})=>({game:rule.game,seriesIds:release.map(s=>s.id),code:release[0].officialCode||null,hits:seriesHitRows(await releasePrizeRows(rule,release))})));
-    if(jobs.length&&settled.every(item=>item.status==='rejected'))throw settled[0].reason;
-    return {data:{sets:settled.filter(item=>item.status==='fulfilled'&&item.value.hits.length).map(item=>item.value),meta:{releasesPerGame:SERIES_HIT_RELEASES,generatedAt:new Date().toISOString()}}};
+    const sets=await buildSeriesHits({series:catalog.series,today,fetchCards:series=>prizeBrowse(series.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:SERIES_HIT_FETCH,offset:0})});
+    return {data:{sets,meta:{perGame:SERIES_HIT_PER_GAME,generatedAt:new Date().toISOString()}}};
   });
   return snapshot.data;
 }

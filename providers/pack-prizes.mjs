@@ -1,9 +1,9 @@
 // 首頁「最夯＝本彈大獎」（docs/AGENT_BATON.md 2026-11-13 提案）：每個主流遊戲取近 90 天最新的主流補充包，列出最高稀有度的卡。
 // 只有挑選規則，沒有 I/O；server.mjs 的 loadPackPrizes 負責讀卡與快取。
 import {DECK_RE,ACCESSORY_RE,PROMO_RE} from './products.mjs';
-import {rarityRank} from './normalize.mjs';
+import {rarityRank,rarityDisplayLabel,rarityCanonicalCode} from './normalize.mjs';
 
-export const PACK_PRIZE_WINDOW_DAYS=90,PACK_PRIZE_LIMIT=10,SERIES_HIT_RELEASES=4,SERIES_HIT_COUNT=3;
+export const PACK_PRIZE_WINDOW_DAYS=90,PACK_PRIZE_LIMIT=10,SERIES_HIT_PER_GAME=6,SERIES_HIT_COUNT=3,SERIES_HIT_FETCH=30;
 // top：這個稀有度（含）以上才算大獎，排名依 data/rarity-rankings.json。code：只收這些系列代號（航海王只看 OP／EB／PRB）。
 export const PACK_PRIZE_GAMES=Object.freeze([
   {game:'pokemon',top:'SAR'},
@@ -78,6 +78,35 @@ export function mergePrizeRows(game,versions,limit=PACK_PRIZE_LIMIT){
   return [...byKey.values()].sort((a,b)=>rank(a)-rank(b)||b.altArt-a.altArt||rowPrice(b)-rowPrice(a)||String(a.cardNumber).localeCompare(String(b.cardNumber),'en',{numeric:true})).slice(0,limit);
 }
 
-// 首頁最新系列卡片的大獎縮圖：已排好稀有度的大獎列（mergePrizeRows 的結果）取前 count 張有圖的，只留顯示用欄位（不含參考價）。
-export const seriesHitRows=(rows,count=SERIES_HIT_COUNT)=>(rows||[]).filter(row=>row?.cardId&&row.imageUrl)
-  .slice(0,count).map(({cardId,name,cardNumber,rarity,altArt,imageUrl})=>({cardId,name,cardNumber,rarity,altArt:Boolean(altArt),imageUrl}));
+// 首頁最新系列卡片的縮圖（/api/series-hits）：不受本彈大獎資格限制，任何遊戲、任何版本（含美版）的系列都挑。
+// 首頁會顯示的系列：每個遊戲已發售的最新 perGame 個（日期新到舊，同日依 日→台→亞→美→韓→陸）。
+const HIT_REGIONS=['JP','TW','ASIA','US','KR','CN'],regionAt=region=>{const i=HIT_REGIONS.indexOf(region);return i<0?99:i};
+export function bandSeries(series,today,perGame=SERIES_HIT_PER_GAME){
+  const byGame=new Map();
+  for(const s of series||[]){if(s?.id&&s.game&&s.releaseDate&&s.releaseDate<=today){if(!byGame.has(s.game))byGame.set(s.game,[]);byGame.get(s.game).push(s)}}
+  return [...byGame.values()].flatMap(list=>list.sort((a,b)=>b.releaseDate.localeCompare(a.releaseDate)||regionAt(a.region)-regionAt(b.region)||String(a.id).localeCompare(String(b.id))).slice(0,perGame));
+}
+// 這個系列稀有度排名最高的 count 張有圖的卡（排名依 data/rarity-rankings.json，排名不明的排最後；沒有稀有度字串、或只有「無標記」（NONE，沒有稀有度記號）的卡不收，
+// 所以完全沒稀有度資訊的系列回空陣列）。同稀有度異圖在前，再依卡號；同卡號（含異圖 -p 編號）、同名同稀有度（常是同一張的平行版）只留一張。rarityLabel 是詳細頁用的稀有度顯示名稱（例如「SP卡」→「SP 卡」）。不含參考價。
+export function pickSeriesHits(series,cards,count=SERIES_HIT_COUNT){
+  const {game,id}=series,seen=new Set();
+  return (cards||[]).filter(card=>card?.id&&card.imageUrl&&rarityIn(card,id)&&rarityCanonicalCode(game,rarityIn(card,id))!=='NONE')
+    .map(card=>({card,rank:rarityRank(game,rarityIn(card,id))}))
+    .sort((a,b)=>a.rank-b.rank||isAltArt(b.card)-isAltArt(a.card)||String(a.card.providerId||a.card.id).localeCompare(String(b.card.providerId||b.card.id),'en',{numeric:true}))
+    .map(({card})=>prizeRow(card,series))
+    .filter(row=>{const keys=[row.cardNumber?rowKey(game,row):row.cardId,`${row.name}|${row.rarity}`];if(keys.some(key=>seen.has(key)))return false;keys.forEach(key=>seen.add(key));return true})
+    .slice(0,count).map(({cardId,name,cardNumber,rarity,altArt,imageUrl})=>({cardId,name,cardNumber,rarity,rarityLabel:rarityDisplayLabel(game,rarity),altArt,imageUrl}));
+}
+// fetchCards(series) 由呼叫端提供（伺服器讀資料庫；預覽腳本讀正式站的 /api/cards）。單一系列失敗只略過那一個，全部失敗才丟錯（讓快取不收）。
+export async function buildSeriesHits({series,today,fetchCards,perGame=SERIES_HIT_PER_GAME,concurrency=6}){
+  const list=bandSeries(series,today,perGame),out=new Array(list.length);let next=0,failed=0;
+  await Promise.all(Array.from({length:Math.min(concurrency,list.length)},async()=>{
+    while(next<list.length){
+      const at=next++,item=list[at];
+      try{const hits=pickSeriesHits(item,await fetchCards(item));out[at]=hits.length?{game:item.game,region:item.region||null,seriesIds:[item.id],code:item.officialCode||null,hits}:null}
+      catch{failed++;out[at]=null}
+    }
+  }));
+  if(list.length&&failed===list.length)throw new Error('series hits: every lookup failed');
+  return out.filter(Boolean);
+}

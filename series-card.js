@@ -16,20 +16,22 @@
     const original=[ja,en].find(name=>name&&fold(name)!==fold(title))||'';
     return {title,original:title===zh?original:''};
   }
-  // 這張卡片對應的大獎資料：先比系列 id（同一彈各版本都在 seriesIds），再比遊戲＋系列代號。
+  // 這張卡片對應的縮圖資料：先比系列 id；這個版本沒有卡（或沒資料）時借同遊戲、同代號的其他版本。
+  // 寶可夢美版的系列切法與日／台版不同（同 series-band.js 的 sameSeries），美版只和美版借。
   function setFor(item,sets){
-    const code=String(item?.officialCode||'').toUpperCase();
-    return (Array.isArray(sets)?sets:[]).find(set=>set?.game===item?.game&&(set.seriesIds?.includes(item.id)||(code&&String(set.code||'').toUpperCase()===code)))||null;
+    const list=(Array.isArray(sets)?sets:[]).filter(set=>set?.game===item?.game),code=String(item?.officialCode||'').toUpperCase();
+    return list.find(set=>set.seriesIds?.includes(item.id))||list.find(set=>code&&String(set.code||'').toUpperCase()===code&&(item.game!=='pokemon'||(item.region==='US')===(set.region==='US')))||null;
   }
   // 最多 3 張有圖的縮圖（伺服器已依稀有度排好）；沒有就回空陣列，畫面只放系列圖。
   const hitsOf=(set,count=3)=>(Array.isArray(set?.hits)?set.hits:[]).filter(hit=>hit?.cardId&&hit.imageUrl).slice(0,count);
   const cardCount=item=>[item?.metadata?.cardsCount,item?.metadata?.total,item?.metadata?.printedTotal].map(Number).find(value=>value>0)||0;
-  // 卡片下方一行小資訊：發售日（或即將發售）、收錄張數、最高稀有度；知道才寫。
+  // 卡片下方一行小資訊：發售日（今年省略年份，或即將發售）、收錄張數、最高稀有度；知道才寫。
   function facts(item,hits,today){
     const out=[],date=item?.releaseDate;
-    if(date)out.push(date>today?'即將發售':date.replace(/-/g,'/'));
+    // 今年的日期省略年份（「11/12」），一行放得下「最高 Ultimate Rare」這類長的稀有度名稱
+    if(date)out.push(date>today?'即將發售':(date.slice(0,4)===String(today).slice(0,4)?date.slice(5):date).replace(/-/g,'/'));
     const count=cardCount(item);if(count)out.push(`${count} 張`);
-    if(hits?.[0]?.rarity)out.push(`最高 ${hits[0].rarity}`);
+    if(hits?.[0])out.push(`最高 ${hits[0].rarityLabel||hits[0].rarity}`);
     return out;
   }
   root.homeSeriesCard={names,setFor,hitsOf,facts,cardCount};
