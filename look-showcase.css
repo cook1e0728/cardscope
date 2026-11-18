@@ -289,8 +289,8 @@ html.look-clean #homeRails .rails-switch [hidden]{display:none!important}
 @keyframes l5-edge{0%{--fl:0px;--fr:40px}6%{--fl:40px}94%{--fr:40px}100%{--fl:40px;--fr:0px}}
 html.look-clean :is(body[data-view="landing"] .channels,body:not([data-side]) .series-band-rail,.rails-rail){scrollbar-width:none}
 html.look-clean :is(body[data-view="landing"] .channels,body:not([data-side]) .series-band-rail,.rails-rail)::-webkit-scrollbar{display:none}
-@supports (animation-timeline:scroll(x)){
+@media (prefers-reduced-motion:no-preference){@supports (animation-timeline:scroll(x)){
   html.look-clean :is(body[data-view="landing"] .channels,body:not([data-side]) .series-band-rail,.rails-rail){
     animation:l5-edge linear both;animation-timeline:scroll(self x);
     -webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--fl),#000 calc(100% - var(--fr)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--fl),#000 calc(100% - var(--fr)),transparent)}
-}
+}}
