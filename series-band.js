@@ -64,6 +64,23 @@
       +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>`
       +`<b class="band-tile-name">${esc(name)}</b><span class="band-tile-code">${esc(sub)}</span></button>`;
   }
+  // 首頁最新系列卡片：系列圖＋最多 3 張大獎縮圖，下面固定四列文字（類別與代號／標題兩行／原名／小資訊），同一排的文字列等高對齊。
+  // 名稱與小資訊的規則在 series-card.js；縮圖來自 /api/series-hits（只有寶可夢、航海王、黑白雙翼、UNION ARENA 有大獎規則），沒有資料就只放系列圖。
+  let hitSets=[],hitsAsked=false;
+  function loadHits(){
+    if(hitsAsked||typeof fetch!=='function')return;hitsAsked=true;
+    fetch('/api/series-hits').then(response=>response.ok?response.json():null).then(body=>{if(Array.isArray(body?.sets)&&body.sets.length){hitSets=body.sets;renderHome()}}).catch(()=>{});
+  }
+  function homeCard(item,extra){
+    const SC=window.homeSeriesCard,{title,original}=SC.names(item),code=item.officialCode||'',hits=SC.hitsOf(SC.setFor(item,hitSets)),imageUrl=cover(item),
+      upcoming=item.releaseDate&&item.releaseDate>today(),fresh=!upcoming&&item.releaseDate&&item.releaseDate>=recentSince(),facts=SC.facts(item,hits,today()),
+      show=typeof displayImageUrl==='function'?displayImageUrl:String;
+    const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" data-img-error="retry-type">`:'';
+    const thumbs=hits.length?`<span class="band-card-hits" aria-hidden="true">${hits.map(hit=>`<span class="band-card-hit"><img src="${esc(show(hit.imageUrl))}" alt="" loading="lazy" data-img-error="remove"></span>`).join('')}</span>`:'';
+    return`<button type="button" class="band-tile band-card" data-kind="series" data-id="${esc(item.id)}" data-game="${esc(item.game)}" title="${esc([title,original,code,item.releaseDate].filter(Boolean).join('・'))}">`
+      +`<span class="band-card-visual"><span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||title)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>${thumbs}</span>`
+      +`<span class="band-tile-code">${esc([extra,code].filter(Boolean).join(' · '))}</span><b class="band-tile-name">${esc(title)}</b><span class="band-card-orig">${esc(original)}</span><span class="band-card-facts">${esc(facts.join(' · '))}</span></button>`;
+  }
   // 橫列左右的翻頁鈕：一次捲約八成寬，捲到頭的那側停用；沒有溢出時兩顆都隱藏（觸控裝置用 CSS 隱藏，照常手滑）。
   function railNav(rail){
     if(!rail)return;
@@ -179,8 +196,11 @@
     if(!tabBar){tabBar=document.createElement('div');tabBar.className='series-band-tabs home-latest-tabs';tabBar.setAttribute('role','tablist');tabBar.setAttribute('aria-label','最新系列快速分類');rail.before(tabBar)}
     tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
     tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(!btn)return;homeTab=btn.dataset.homeTab;renderHome()};
-    rail.innerHTML=list.map(item=>tile('series',item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionText(item.region,item.game)||item.region||''].filter(Boolean).join(' '))).join('');
-    railNav(rail);
+    // 縮圖資料晚到時會重畫一次：保留橫列捲到的位置
+    const left=rail.scrollLeft,paint=window.homeSeriesCard?homeCard:(item,extra)=>tile('series',item,extra);
+    rail.innerHTML=list.map(item=>paint(item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionText(item.region,item.game)||item.region||''].filter(Boolean).join(' '))).join('');
+    rail.scrollLeft=left;
+    railNav(rail);if(window.homeSeriesCard)loadHits();
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);

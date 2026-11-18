@@ -20,7 +20,7 @@ import { auditCatalogLinks, catalogProvidersNeedingSync, closeInterruptedCatalog
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
 import { foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './providers/search-query.mjs';
 import { normalizeProduct } from './providers/products.mjs';
-import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, prizeCards, mergePrizeRows, prizeRow, prizeSeriesCandidates } from './providers/pack-prizes.mjs';
+import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, SERIES_HIT_RELEASES, prizeCards, mergePrizeRows, prizeRow, prizeSeriesCandidates, seriesHitRows } from './providers/pack-prizes.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
@@ -1202,6 +1202,22 @@ async function prizeBrowse(game,options){
   const catalog=await loadCatalog(),cards=catalog.cards.filter(card=>card.game===game);
   return buildBrowsePage(cards,{...options,printingByCard:buildPrintingIndex(cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id}))))}).data;
 }
+// 一彈（各版本）的大獎列：/api/pack-prizes 與 /api/series-hits 共用，一小時內同一彈只讀一次資料庫；失敗不快取。
+const releasePrizeCache=new Map();
+async function releasePrizeRows(rule,release){
+  const key=`${rule.game}|${release.map(s=>s.id).join(',')}`,now=Date.now(),cached=releasePrizeCache.get(key);
+  if(cached&&now-cached.at<3600000)return cached.rows;
+  const versions=[];
+  for(const series of release){
+    const cards=await prizeBrowse(rule.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:BROWSE_PAGE_MAX,offset:0});
+    if(rule.game==='pokemon')await attachReferencePrices(cards);
+    versions.push({region:series.region,rows:prizeCards(rule.game,rule.top,cards,{seriesId:series.id,limit:BROWSE_PAGE_MAX}).map(card=>prizeRow(card,series))});
+  }
+  const rows=mergePrizeRows(rule.game,versions);
+  for(const [k,v] of releasePrizeCache)if(now-v.at>=3600000)releasePrizeCache.delete(k);
+  releasePrizeCache.set(key,{at:now,rows});
+  return rows;
+}
 async function loadPackPrizes(){
   const snapshot=await packPrizesCache.get(async()=>{
     const catalog=await loadCatalog(),today=new Date().toISOString().slice(0,10),seriesById=new Map((catalog.series||[]).map(s=>[s.id,s]));
@@ -1210,13 +1226,7 @@ async function loadPackPrizes(){
     const games=[];
     for(const rule of PACK_PRIZE_GAMES){
       for(const release of prizeSeriesCandidates(catalog.series,rule,today).slice(0,3)){
-        const versions=[];
-        for(const series of release){
-          const cards=await prizeBrowse(rule.game,{region:series.region,seriesId:series.id,sort:'rarity-desc',limit:BROWSE_PAGE_MAX,offset:0});
-          if(rule.game==='pokemon')await attachReferencePrices(cards);
-          versions.push({region:series.region,rows:prizeCards(rule.game,rule.top,cards,{seriesId:series.id,limit:BROWSE_PAGE_MAX}).map(card=>prizeRow(card,series))});
-        }
-        const data=mergePrizeRows(rule.game,versions);
+        const data=await releasePrizeRows(rule,release);
         if(data.length<3)continue;
         const [series]=release;
         games.push({game:rule.game,seriesId:series.id,region:series.region,seriesName:series.nameZh||series.nameJa||series.nameEn||series.officialCode,releaseDate:series.releaseDate,data});break;
@@ -1227,6 +1237,20 @@ async function loadPackPrizes(){
     const pokemonPinned=pinnedCards.filter(card=>card.game==='pokemon');if(pokemonPinned.length)await attachReferencePrices(pokemonPinned);
     const pinned=pinnedCards.map(card=>{const seriesId=card.seriesId||card.printings?.[0]?.seriesId;return prizeRow(card,seriesById.get(seriesId))});
     return {pinned,games,meta:{windowDays:PACK_PRIZE_WINDOW_DAYS,limit:PACK_PRIZE_LIMIT,generatedAt:new Date().toISOString()}};
+  });
+  return snapshot.data;
+}
+// 系列卡的大獎縮圖（/api/series-hits，首頁「最新系列」卡片）：每個遊戲最近 SERIES_HIT_RELEASES 彈各取最高稀有度的前 3 張（沒有價格、不含遊戲沒有大獎規則的系列）。
+// 用的是同一組挑選規則與同一份資料（releasePrizeRows），只是把「第一彈就停」改成每彈都留。一小時快取，失敗不快取。
+const seriesHitsCache=createBoundedSnapshotCache({ttlMs:3600000,maxStaleMs:24*60*60*1000,serveStaleWhileRevalidate:true});
+async function loadSeriesHits(){
+  const snapshot=await seriesHitsCache.get(async()=>{
+    const catalog=await loadCatalog(),today=new Date().toISOString().slice(0,10);
+    if(catalog.fallbackReason)throw new Error(`catalog fallback: ${catalog.fallbackReason}`);
+    const jobs=PACK_PRIZE_GAMES.flatMap(rule=>prizeSeriesCandidates(catalog.series,rule,today).slice(0,SERIES_HIT_RELEASES).map(release=>({rule,release})));
+    const settled=await Promise.allSettled(jobs.map(async({rule,release})=>({game:rule.game,seriesIds:release.map(s=>s.id),code:release[0].officialCode||null,hits:seriesHitRows(await releasePrizeRows(rule,release))})));
+    if(jobs.length&&settled.every(item=>item.status==='rejected'))throw settled[0].reason;
+    return {data:{sets:settled.filter(item=>item.status==='fulfilled'&&item.value.hits.length).map(item=>item.value),meta:{releasesPerGame:SERIES_HIT_RELEASES,generatedAt:new Date().toISOString()}}};
   });
   return snapshot.data;
 }
@@ -1355,6 +1379,7 @@ const handleRequest=async(req,res)=>{const url=new URL(req.url,`http://${req.hea
   if(url.pathname==='/api/products'&&req.method==='GET'){try{const catalog=await loadProductSets();return json(res,200,{data:catalog.products,series:catalog.series,meta:productFeedMeta(catalog)},SHORT_CACHE)}catch(e){return failJson(res,502,'products failed',e)}}
   if(url.pathname==='/api/market-events'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});return json(res,200,await marketEventsResponse(url.searchParams.get('game')||null),SHORT_CACHE)}
   if(url.pathname==='/api/pack-prizes'&&req.method==='GET'){try{return json(res,200,await loadPackPrizes(),SHORT_CACHE)}catch(e){console.error('pack prizes failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
+  if(url.pathname==='/api/series-hits'&&req.method==='GET'){try{return json(res,200,await loadSeriesHits(),SHORT_CACHE)}catch(e){console.error('series hits failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/hot-cards'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});try{return json(res,200,await loadHotCards(),SHORT_CACHE)}catch(e){console.error('hot cards failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/price-movers'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:{up:[],down:[]},meta:{unavailable:'not-configured'}});try{return json(res,200,await loadPriceMovers(),SHORT_CACHE)}catch(e){console.error('price movers failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});

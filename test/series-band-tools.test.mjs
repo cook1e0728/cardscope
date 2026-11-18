@@ -56,6 +56,6 @@ test('a borrowed Japanese release date that is still in the future is not used f
 test('the desktop dock is gone, and home latest has no rabbit tile',async()=>{
   const showcase=await readFile(new URL('../look-showcase.css',import.meta.url),'utf8');
   assert.match(showcase,/@media \(min-width:761px\)\{html\.look-clean nav\.bottom\{display:none\}/);
-  assert.match(band,/rail\.innerHTML=list\.map\(item=>tile\('series'/,'home latest starts with the first series');
+  assert.match(band,/rail\.innerHTML=list\.map\(item=>paint\(item,/,'home latest starts with the first series');
   assert.doesNotMatch(band,/mascot/,'no rabbit tile on the game page either');
 });

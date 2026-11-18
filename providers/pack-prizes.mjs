@@ -3,7 +3,7 @@
 import {DECK_RE,ACCESSORY_RE,PROMO_RE} from './products.mjs';
 import {rarityRank} from './normalize.mjs';
 
-export const PACK_PRIZE_WINDOW_DAYS=90,PACK_PRIZE_LIMIT=10;
+export const PACK_PRIZE_WINDOW_DAYS=90,PACK_PRIZE_LIMIT=10,SERIES_HIT_RELEASES=4,SERIES_HIT_COUNT=3;
 // top：這個稀有度（含）以上才算大獎，排名依 data/rarity-rankings.json。code：只收這些系列代號（航海王只看 OP／EB／PRB）。
 export const PACK_PRIZE_GAMES=Object.freeze([
   {game:'pokemon',top:'SAR'},
@@ -77,3 +77,7 @@ export function mergePrizeRows(game,versions,limit=PACK_PRIZE_LIMIT){
   const rank=row=>rarityRank(game,row.rarity);
   return [...byKey.values()].sort((a,b)=>rank(a)-rank(b)||b.altArt-a.altArt||rowPrice(b)-rowPrice(a)||String(a.cardNumber).localeCompare(String(b.cardNumber),'en',{numeric:true})).slice(0,limit);
 }
+
+// 首頁最新系列卡片的大獎縮圖：已排好稀有度的大獎列（mergePrizeRows 的結果）取前 count 張有圖的，只留顯示用欄位（不含參考價）。
+export const seriesHitRows=(rows,count=SERIES_HIT_COUNT)=>(rows||[]).filter(row=>row?.cardId&&row.imageUrl)
+  .slice(0,count).map(({cardId,name,cardNumber,rarity,altArt,imageUrl})=>({cardId,name,cardNumber,rarity,altArt:Boolean(altArt),imageUrl}));
