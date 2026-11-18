@@ -624,7 +624,7 @@ async function runCollectionChecks(browser,viewport){
     await goHome();
     await openCollection();
     assert.equal(new URL(page.url()).searchParams.get('view'),'collection',`${label}: the entry should push ?view=collection`);
-    assert.equal(await page.title(),'我的收藏｜CardScope');
+    assert.equal(await page.title(),'我的收藏｜好卡在 CardSeek');
     assert.equal(await page.locator('[data-coll-explore]').count(),1,`${label}: the empty state has one button to the catalog`);
     assert.match(await page.locator('#cards').innerText(),/還沒有收藏/);
     assert.ok(await overflow()<=0,`${label}: empty collection overflows sideways`);
@@ -719,7 +719,7 @@ async function runCollectionChecks(browser,viewport){
     await more.click();
     await page.waitForFunction(()=>document.body.dataset.view==='market',undefined,{timeout:8000});
     assert.equal(new URL(page.url()).searchParams.get('view'),'market');
-    assert.equal(await page.title(),'卡牌參考價漲跌與時事｜CardScope');
+    assert.equal(await page.title(),'卡牌參考價漲跌與時事｜好卡在 CardSeek');
     assert.equal((await page.locator('#marketTitle').innerText()).trim(),'行情');
     await waitForVisible(page.locator('#trendsSection .trend-card').first(),`${label}: the market page lacks the price movers`);
     assert.match(await page.locator('#trendsSection').innerText(),/歐洲平台參考價，不是成交價/);
