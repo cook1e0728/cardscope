@@ -217,8 +217,8 @@ html.look-clean .cs1-comet{position:absolute;left:0;top:0;width:9px;height:9px;b
 }
 
 /* ===== 首頁電腦版多欄（NEXT_PHASE_PLAN L1；ADR 0056 紙感風格不變）=====
-   ≥1200px：搜尋區（#hero）左、「漲最多」右；下面「最新｜最夯｜最熱」左、「跌最多」與「卡牌時事」右（面板由 home-rails.js 插入）。
-   ≤1199px 維持單欄，這些面板不顯示（home-rails.js 也不去要資料）。某一塊沒資料時 home-rails.js 設 hidden，另一塊佔滿整列，不留空欄。
+   ≥1200px：搜尋區（#hero）與「最新｜最夯｜最熱」在左；右欄 #homeAside 是單一欄，「漲最多」「跌最多」「卡牌時事」疊在裡面，欄內用同一個間距（面板由 home-rails.js 插入）。
+   ≤1199px 維持單欄，這些面板不顯示（home-rails.js 也不去要資料）。某一塊沒資料時 home-rails.js 設 hidden；三塊都沒資料才把右欄藏起來，搜尋區與榜單佔滿整列。
    榜上只有 1–5 張卡時 home-rails.js 把整個分頁藏起來。 */
 .home-panel,.home-aside{display:none}
 .home-panel[hidden],.home-aside[hidden]{display:none!important}
@@ -227,16 +227,14 @@ html.look-clean #homeRails .rails-switch [hidden]{display:none!important}
   html.look-clean body[data-view="landing"]{--home-aside:340px}
   /* 上限和即將放寬的卡牆一致；頂欄與內容同寬才對得齊 */
   html.look-clean body[data-view="landing"] .wrap{max-width:1640px}
-  html.look-clean body[data-view="landing"]:not([data-side]) #main{display:grid;grid-template-columns:minmax(0,1fr) var(--home-aside);column-gap:var(--s6);align-items:start}
+  html.look-clean body[data-view="landing"]:not([data-side]) #main{display:grid;grid-template-columns:minmax(0,1fr) var(--home-aside);grid-template-rows:auto 1fr;column-gap:var(--s6);align-items:start}
   html.look-clean body[data-view="landing"]:not([data-side]) #main>*{grid-column:1/-1}
   html.look-clean body[data-view="landing"]:not([data-side]) #main>#hero{grid-column:1;grid-row:1}
   html.look-clean body[data-view="landing"]:not([data-side]) #main>#homeRails{grid-column:1;grid-row:2}
-  html.look-clean body[data-view="landing"]:not([data-side]) #main>#homeMoversUp{grid-column:2;grid-row:1}
-  html.look-clean body[data-view="landing"]:not([data-side]) #main>#homeAside{grid-column:2;grid-row:2;display:grid;gap:var(--s5);margin-top:var(--s6)}
-  html.look-clean body[data-view="landing"]:not([data-side]) #main>#hero:has(~ #homeMoversUp[hidden]),
+  html.look-clean body[data-view="landing"]:not([data-side]) #main>#homeAside{grid-column:2;grid-row:1/span 2;align-self:start;display:grid;gap:var(--s5);margin-top:var(--s5)}
+  html.look-clean body[data-view="landing"]:not([data-side]) #main>#hero:has(~ #homeAside[hidden]),
   html.look-clean body[data-view="landing"]:not([data-side]) #main>#homeRails:has(~ #homeAside[hidden]){grid-column:1/-1}
   html.look-clean body[data-view="landing"]:not([data-side]) .home-panel{display:block;margin-top:0;padding:var(--s4) var(--s5) var(--s3);border-radius:16px;background:var(--v2-surface);box-shadow:var(--v2-shadow)}
-  html.look-clean body[data-view="landing"]:not([data-side]) #main>#homeMoversUp{margin-top:var(--s5)}
   html.look-clean body[data-view="landing"] .home-panel .rails-head h2{margin:0;font-size:20px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
   html.look-clean body[data-view="landing"] .home-panel .rails-head .meta{font-size:var(--fs-sub,13px);color:var(--v2-ink-2)}
   html.look-clean body[data-view="landing"] .home-panel .rails-note{padding:var(--s4) 0}

@@ -231,7 +231,7 @@ test('寬螢幕右側面板：漲、跌各取前 5 筆、時事取前 6 筆；�
   const {calls}=loadWide(dom.doc,{'/api/price-movers':ok(moverBody()),'/api/market-events':ok(eventBody)});
   await tick();await tick();await tick();await tick();
   const up=dom.byId('homeMoversUp'),down=dom.byId('homeMoversDown'),events=dom.byId('homeEvents'),aside=dom.byId('homeAside');
-  assert.ok(dom.hero.next===up&&dom.rails.next===aside,'漲最多在搜尋區之後，右欄在榜單之後');
+  assert.ok(dom.rails.next===aside&&aside.children[0]===up&&aside.children[1]===down&&aside.children[2]===events,'右欄在榜單之後，漲最多、跌最多、時事依序疊在同一欄裡（欄內用同一個間距）');
   assert.equal(up.innerHTML.match(/class="mover-row"/g).length,5);assert.equal(down.innerHTML.match(/class="mover-row"/g).length,5);
   assert.match(up.innerHTML,/漲最多/);assert.match(up.innerHTML,/↑ \+/);assert.match(down.innerHTML,/跌最多/);assert.match(down.innerHTML,/↓ -30%/);
   assert.match(down.innerHTML,/<a href="\/\?view=market" data-spa>/);
@@ -243,16 +243,16 @@ test('寬螢幕右側面板：漲、跌各取前 5 筆、時事取前 6 筆；�
   assert.ok(calls.includes('/api/price-movers')&&calls.includes('/api/market-events'));
 });
 
-test('寬螢幕右側面板：資料缺了那一塊就藏起來；兩塊都缺右欄整個藏起來；窄螢幕不去要資料，變寬才開始',async()=>{
+test('寬螢幕右側面板：資料缺了那一塊就藏起來；三塊都缺右欄整個藏起來；窄螢幕不去要資料，變寬才開始',async()=>{
   const dom=asideDom();
   loadWide(dom.doc,{'/api/price-movers':ok({data:{up:[moverRow(1)],down:[]},meta:{}}),'/api/market-events':{ok:false,status:500,json:async()=>({})}});
   await tick();await tick();await tick();await tick();
   assert.equal(dom.byId('homeMoversUp').hidden,false);assert.equal(dom.byId('homeMoversDown').hidden,true);assert.equal(dom.byId('homeEvents').hidden,true);
-  assert.equal(dom.byId('homeAside').hidden,true,'右欄兩塊都空就整個藏起來，榜單佔滿');
+  assert.equal(dom.byId('homeAside').hidden,false,'只剩漲最多也留著右欄');
   const failed=asideDom();
   loadWide(failed.doc,{'/api/price-movers':{ok:false,status:502,json:async()=>({})}});
   await tick();await tick();await tick();await tick();
-  assert.equal(failed.byId('homeMoversUp').hidden,true,'API 失敗：搜尋區佔滿');assert.equal(failed.byId('homeAside').hidden,true);
+  assert.equal(failed.byId('homeMoversUp').hidden,true,'API 失敗：三塊都空');assert.equal(failed.byId('homeAside').hidden,true,'三塊都空就整個藏起來，搜尋區與榜單佔滿');
   const narrow=asideDom();
   const {ctx,calls}=loadWide(narrow.doc,{'/api/price-movers':ok(moverBody()),'/api/market-events':ok(eventBody)},false);
   await tick();await tick();
@@ -266,7 +266,7 @@ test('樣式：≥1200px 首頁多欄（搜尋左／漲幅右、榜單左／跌�
   assert.match(block,/\.home-panel,\.home-aside\{display:none\}/,'預設不顯示（窄螢幕單欄）');
   assert.match(block,/@media \(min-width:1200px\)\{[^]*grid-template-columns:minmax\(0,1fr\) var\(--home-aside\)/);
   assert.match(block,/\.wrap\{max-width:1640px\}/);
-  assert.match(block,/#hero:has\(~ #homeMoversUp\[hidden\]\)[^{]*\{grid-column:1\/-1\}/);
+  assert.match(block,/#hero:has\(~ #homeAside\[hidden\]\)[^{]*\{grid-column:1\/-1\}/);
   assert.match(block,/#homeRails:has\(~ #homeAside\[hidden\]\)[^{]*\{grid-column:1\/-1\}/);
   assert.match(block,/\.home-panel\[hidden\],\.home-aside\[hidden\]\{display:none!important\}/);
   assert.match(block,/#homeRails \.rails-switch \[hidden\]\{display:none!important\}/,'被藏起來的分頁按鈕');

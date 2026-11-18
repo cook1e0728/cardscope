@@ -68,8 +68,8 @@
     const hero=doc.getElementById('hero');if(!hero||!shared()||!doc.createElement)return;
     const make=(tag,id,label,html)=>{const node=doc.createElement(tag);node.id=id;node.className=tag==='aside'?'home-aside':'home-panel';node.setAttribute('aria-label',label);node.innerHTML=html;return node};
     const wait=quiet('讀取中…'),up=make('section','homeMoversUp','近期參考價漲最多',wait),down=make('section','homeMoversDown','近期參考價跌最多',wait),events=make('section','homeEvents','卡牌時事',wait);
-    const aside=make('aside','homeAside','參考價跌幅與卡牌時事','');aside.append(down,events);hero.after(up);rails.after(aside);
-    const settle=()=>{aside.hidden=down.hidden&&events.hidden};
+    const aside=make('aside','homeAside','參考價跌幅與卡牌時事','');aside.append(up,down,events);rails.after(aside);
+    const settle=()=>{aside.hidden=up.hidden&&down.hidden&&events.hidden};
     const start=()=>{
       shared().request().catch(()=>null).then(body=>{
         const list=key=>cleanMovers(body?.data?.[key]),rise=list('up'),fall=list('down'),meta=body?.meta||{},info=rise.length||fall.length?shared().info(rise,fall,meta):'';

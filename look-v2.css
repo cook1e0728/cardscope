@@ -638,21 +638,27 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 html.look-clean body{line-height:1.65}
 html.look-clean :is(.info-page,.about-intro,.beta-guidance-copy,.coverage-status-head,.market-intro) p{max-width:min(100%,64em)}
 
-/* ---- 一-1 版本工具列：左邊標籤＋選單＋說明，右邊重看導覽，同一條中線 ---- */
-html.look-clean body[data-view="landing"] .hero>.browse-regions{align-items:center;justify-content:flex-start;gap:var(--s2);margin-top:var(--s3);padding:var(--s2) var(--s4);border-top:0;border-radius:var(--lc-r-md);background:var(--v2-surface);box-shadow:var(--v2-shadow)}
-html.look-clean body[data-view="landing"] .hero>.browse-regions label{flex:none;font-size:14px;font-weight:700;line-height:1;color:var(--v2-ink)}
-html.look-clean body[data-view="landing"] .hero>.browse-regions select{flex:0 1 160px;min-height:var(--btn-h);border:0;background-color:var(--v2-well);box-shadow:var(--v2-shadow-in);font-size:14px;font-weight:700;color:var(--v2-ink)}
-html.look-clean body[data-view="landing"] .hero>.browse-regions .info-tip>summary{font-size:18px}
-html.look-clean body[data-view="landing"] .hero>.browse-regions .cs1-replay{margin-left:auto;border-color:var(--v2-line);background:var(--v2-well);color:var(--v2-ink);font-size:14px;font-weight:700}
+/* ---- 一-1 版本篩選（L5 第二輪）：不再自成一條白底橫幅，改和「最新／最夯」分段鈕同一列：分段鈕在左，版本選單＋說明＋重看導覽在右。
+   版本列的 DOM 在 .hero 裡、分段鈕在下一個區塊 #homeRails 裡，所以用絕對定位疊到分段鈕那一列：hero 底下 +32px（= .home-rails 的 margin-top）、列高 52px（= 分段鈕）。
+   side-nav.js 把它搬進側欄、或 ≤760px（版本選單在頂欄）時，這些規則不適用。 */
+@media (min-width:761px){
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions{position:absolute;z-index:1;top:calc(100% + var(--s6));right:calc(-1*var(--s7));height:52px;margin:0;padding:0;border:0;align-items:center;justify-content:flex-end;gap:var(--s2);background:none;box-shadow:none}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions label{flex:none;font-size:14px;font-weight:700;line-height:1;color:var(--v2-ink)}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions select{flex:0 0 140px;min-height:var(--btn-h);border:0;background-color:var(--v2-well);box-shadow:var(--v2-shadow-in);font-size:14px;font-weight:700;color:var(--v2-ink)}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions .info-tip>summary{font-size:18px}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions .cs1-replay{margin-left:var(--s2);border-color:var(--v2-line);background:var(--v2-well);color:var(--v2-ink);font-size:14px;font-weight:700}
+}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view="landing"] .hero>.browse-regions .cs1-replay:hover{background:var(--v2-line)}}
 html.look-clean body[data-view="landing"] .hero>.browse-regions .cs1-replay:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 
-/* ---- 一-2 三排對齊：最新／最夯分段鈕、系列分頁、系列卡列都從同一條左界線起算；分頁是第二層（小字、細底線） ---- */
-html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{margin-top:var(--s4)}
-html.look-clean body[data-view="landing"] #homeRails .series-band-tabs button{min-height:var(--btn-h);padding-inline:var(--s3);font-size:14px;font-weight:500}
-html.look-clean body[data-view="landing"] #homeRails .series-band-tabs button:first-child{padding-left:0}
+/* ---- 一-2 三排對齊（L5 第二輪補）：最新／最夯分段鈕、系列分頁、系列卡列從同一條左界線起算，列與列之間固定 24px（--s5）；
+   分頁每個標籤左右不留內距、標籤之間固定 24px，底線的長度就是標籤（含數字）的長度；分頁是第二層（14px、細底線） ---- */
+html.look-clean body[data-view="landing"] #homeRails .rails-panels{margin-top:var(--s5)}
+html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{margin-top:0;gap:0 var(--s5)}
+html.look-clean body[data-view="landing"] #homeRails .series-band-tabs button{min-height:var(--btn-h);padding-inline:0;font-size:14px;font-weight:500}
 html.look-clean body[data-view="landing"] #homeRails .series-band-tabs button.on{font-weight:700}
 html.look-clean body[data-view="landing"] #homeRails .series-band-tabs .count{font-size:var(--fs-note)}
+html.look-clean body[data-view="landing"] #homeRails .home-latest .series-band-rail{padding-top:var(--s5)}
 html.look-clean .rails-sub{font-size:var(--fs-body)}
 html.look-clean .rails-note,html.look-clean .rails-empty p{font-size:var(--fs-body)}
 
