@@ -645,6 +645,7 @@ html.look-clean body[data-view="landing"] .hero>.browse-regions select{flex:0 1 
 html.look-clean body[data-view="landing"] .hero>.browse-regions .info-tip>summary{font-size:18px}
 html.look-clean body[data-view="landing"] .hero>.browse-regions .cs1-replay{margin-left:auto;border-color:var(--v2-line);background:var(--v2-well);color:var(--v2-ink);font-size:14px;font-weight:700}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view="landing"] .hero>.browse-regions .cs1-replay:hover{background:var(--v2-line)}}
+html.look-clean body[data-view="landing"] .hero>.browse-regions .cs1-replay:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 
 /* ---- 一-2 三排對齊：最新／最夯分段鈕、系列分頁、系列卡列都從同一條左界線起算；分頁是第二層（小字、細底線） ---- */
 html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{margin-top:var(--s4)}
