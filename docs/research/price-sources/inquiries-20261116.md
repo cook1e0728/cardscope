@@ -60,4 +60,5 @@ https://cardseektcg.com
 ## 紀錄
 
 - 寄出：2026-11-19 22:37 從 cardseektcg@gmail.com 寄到 info@soda-inc.com，**被退信**：遠端回 `550 5.2.1 Mailbox is blocked [MSG0029]`，這個信箱不收外部信。要改走其他窗口（例如 SNKRDUNK 站內的お問い合わせ表單），等使用者決定。
+- 改寄：2026-11-19 22:40 同一封信從 cardseektcg@gmail.com 寄到 **info@snkrdunk.com**（SNKRDUNK 特定商取引法頁面公開的信箱；SNKRDUNK 與 SODA 都沒有網頁詢問表單），寄出後 30 秒內沒有退信。
 - 回覆：—
