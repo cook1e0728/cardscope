@@ -711,7 +711,7 @@ html.look-clean body[data-view] #detail .ptl-seg-btn{padding:0 var(--s3);border-
 
 /* ---- 一-5 首頁最新系列卡（L5 第三輪）：一張卡 = 系列圖＋最多 3 張大獎縮圖，下面固定五列（系列圖／類別與代號／標題兩行／原名／小資訊），
    列高寫死，同一排每張卡的文字列上下對齊；沒有縮圖的系列只放系列圖。卡寬 240px（手機 200px），橫列照舊左右捲、兩端淡出。 ---- */
-html.look-clean body[data-view="landing"] #homeRails .band-card{flex:0 0 240px;width:240px;display:grid;grid-template-rows:152px 18px 42px 18px 20px;row-gap:var(--s1);align-content:start;align-items:start;box-sizing:border-box;padding:var(--s3);border:1px solid var(--v2-line);border-radius:var(--lc-r-md);background:var(--v2-surface);text-align:left}
+html.look-clean body[data-view="landing"] #homeRails .band-card{flex:0 0 240px;width:240px;display:grid;grid-template-rows:152px 18px 42px 18px 20px;row-gap:var(--s1);align-content:start;align-items:start;box-sizing:border-box;padding:var(--card-pad);border:1px solid var(--v2-line);border-radius:var(--lc-r-md);background:var(--v2-surface);text-align:left}
 html.look-clean #homeRails .band-card-visual{display:flex;gap:var(--s2);height:152px;min-width:0}
 html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-art{flex:1 1 0;grid-template:minmax(0,1fr)/minmax(0,1fr);width:auto;min-width:0;height:100%}
 html.look-clean #homeRails .band-card-hits{display:flex;flex:none;align-items:center;padding-left:26px}
@@ -734,3 +734,11 @@ html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-facts
   html.look-clean body[data-view="landing"] .home-rails .rails-panels{min-height:0}
   html.look-clean body[data-view="landing"] .feature-tour{margin-top:var(--s5)}
 }
+
+/* ---- 一-6 懸掛對齊（L5 第四輪）：只有一條對齊線 --keyline = 卡片內容的左緣（卡片內距 + 1px 外框）。
+   「最新／最夯」分段鈕裡的第一個字、系列分頁的「最新系列」、卡片裡的系列圖／類別／標題都從這條線起算；
+   卡片的外框、分段鈕的外框與內距往左懸掛在線外。卡片內距、分頁縮排、分段鈕位移全部由 --card-pad 算出，不各寫各的數字。 ---- */
+html.look-clean body[data-view="landing"] #homeRails{--card-pad:var(--s3);--keyline:calc(var(--card-pad) + 1px);--pill-pad:var(--s4);--pill-inset:calc(1px + 3px + var(--pill-pad))}
+html.look-clean body[data-view="landing"] #homeRails .rails-switch{display:inline-flex;width:auto;margin-left:calc(var(--keyline) - var(--pill-inset))}
+html.look-clean body[data-view="landing"] #homeRails .rails-switch button{flex:none;min-width:0;padding-inline:var(--pill-pad)}
+html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{padding-left:var(--keyline)}
