@@ -156,7 +156,7 @@ test('collection page: the 管理 menu holds backup, import, CSV and series prog
   assert.ok(ui.indexOf('id="collStatus"') < ui.indexOf('id="collImportHost"'), 'the status line comes before the import preview');
   assert.match(ui, /collectionStatus\(`已匯出 \$\{items\.length\} 款、\$\{collectionTotal\(\)\} 張，備份檔 \$\{filename\}/);
   assert.match(ui, /<label>品況<select data-coll-field="condition">/, 'condition, finish and note are edited in the side panel');
-  assert.doesNotMatch(ui, /collectionDialog|showModal|collectionUi\.editOpen/, 'the old dialog is gone');
+  assert.doesNotMatch(ui, /collectionDialog|collectionUi\.editOpen/, 'the old dialog is gone (cloud sync has its own native dialog)');
 });
 
 // ---- 雲端同步合併（Y3）----
@@ -221,4 +221,19 @@ test('normalizeSyncCode: 26+ characters of 0-9 A-Z, grouping and case ignored, n
   assert.equal(code.length, 26); assert.equal(CS.normalizeSyncCode(code), code);
   assert.equal(CS.normalizeSyncCode('k3m9-t7q2 xb4v-8zd6 n1hw-5rpj-0c'), code, 'hyphens, spaces and lower case are fine');
   for (const bad of [undefined, null, 5, '', 'ABC', code.slice(1), `${code}!`, `${code}é`, 'A'.repeat(65), 'x'.repeat(300), { toString: () => code }]) assert.equal(CS.normalizeSyncCode(bad), '', `rejects ${String(bad)?.slice(0, 20)}`);
+});
+
+test('generateSyncCode: 28 random 0-9 A-Z characters from crypto.getRandomValues, no modulo bias, and formatSyncCode groups by four', () => {
+  const codes = new Set();
+  for (let i = 0; i < 50; i++) { const code = CS.generateSyncCode({ getRandomValues: array => globalThis.crypto.getRandomValues(array) }); assert.match(code, /^[0-9A-Z]{28}$/); assert.equal(CS.normalizeSyncCode(code), code, 'the generated code passes the server rule'); codes.add(code); }
+  assert.equal(codes.size, 50);
+  // Bytes 252-255 would favour the first four characters if reduced modulo 36, so they are skipped: a source that starts with them still yields a full code.
+  const bytes = [255, 254, 253, 252, ...Array.from({ length: 36 }, (_, i) => i)];
+  let calls = 0;
+  const code = CS.generateSyncCode({ getRandomValues: array => { calls++; array.fill(0); if (calls === 1) bytes.forEach((byte, i) => { array[i] = byte; }); else array.fill(35); return array; } });
+  assert.equal(code.length, 28); assert.ok(code.startsWith('0123456789ABCDEFGHIJKLMNOPQRSTUV'.slice(0, 28)), 'skipped bytes never become characters');
+  assert.equal(CS.formatSyncCode('k3m9t7q2xb4v8zd6n1hw5rpj0c'), 'K3M9-T7Q2-XB4V-8ZD6-N1HW-5RPJ-0C');
+  assert.equal(CS.formatSyncCode(code), code.replace(/(.{4})(?=.)/g, '$1-'));
+  assert.equal(CS.formatSyncCode('nope'), '');
+  assert.equal(CS.normalizeSyncCode(CS.formatSyncCode(code)), code, 'what is shown can be typed back in');
 });

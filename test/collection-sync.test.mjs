@@ -38,6 +38,7 @@ async function fakeDb() {
         Object.assign(row, { items: body.items, revision: body.revision, updated_at: body.updated_at });
         return send(200, [{ revision: row.revision }]);
       }
+      if (req.method === 'DELETE') { rows.delete(hash); return send(204); }
       return send(405, {});
     });
   });
@@ -61,7 +62,7 @@ async function startApp(env) {
     return { status: response.status, headers: response.headers, text, body: text ? JSON.parse(text) : null };
   };
   const stop = () => new Promise(resolve => { if (app.exitCode !== null || app.signalCode !== null) return resolve(); app.once('exit', resolve); app.kill(); });
-  return { port, pull: body => call('/api/sync/pull', body), push: body => call('/api/sync/push', body), raw: (path, raw) => call(path, null, raw), stop };
+  return { port, pull: body => call('/api/sync/pull', body), push: body => call('/api/sync/push', body), del: body => call('/api/sync/delete', body), raw: (path, raw) => call(path, null, raw), stop };
 }
 
 test('pull and push: first write, revision lock, normalised storage, grouped codes, and no hash or code in any response', async () => {
@@ -196,3 +197,54 @@ test('Y1 migration: one table in the second database, RLS on with no policy, onl
   assert.doesNotMatch(sql, /create policy/i, 'no policy: RLS blocks every non-service role');
   assert.doesNotMatch(sql, /grant[^;]*\bto\b[^;]*\b(anon|authenticated|public)\b/i, 'nothing is granted to the open roles');
 });
+
+test('delete: removes only this code cloud row, replies without code or hash, 400 before the database, and the limit and 503 rules apply', async () => {
+  const db = await fakeDb(), app = await startApp({ SUPABASE2_URL: `http://127.0.0.1:${db.port}`, SUPABASE2_SERVICE_KEY: KEY, SYNC_RATE_LIMIT_PER_MINUTE: '1000' });
+  try {
+    await app.push({ code: CODE, revision: 0, items: [live('a')] });
+    await app.push({ code: OTHER, revision: 0, items: [live('b')] });
+    const done = await app.del({ code: CODE });
+    assert.equal(done.status, 200);
+    assert.deepEqual(done.body, { data: { deleted: true } });
+    assert.equal(done.headers.get('cache-control'), 'no-store');
+    assert.ok(!done.text.includes(CODE) && !done.text.includes(sha(CODE)) && !JSON.stringify([...done.headers]).includes(sha(CODE)));
+    assert.ok(!db.rows.has(sha(CODE)) && db.rows.has(sha(OTHER)), 'only the row of this code is gone');
+    const last = db.calls.at(-1);
+    assert.equal(last.method, 'DELETE'); assert.ok(last.authorized);
+    assert.equal(last.query, `?sync_key_hash=eq.${sha(CODE)}`, 'the delete is limited to one key: never an unfiltered delete');
+    assert.equal((await app.del({ code: CODE })).status, 200, 'deleting what is already gone still succeeds');
+    assert.deepEqual((await app.pull({ code: CODE })).body.data, { items: [], revision: 0, updatedAt: null });
+
+    const before = db.calls.length;
+    for (const bad of [{ code: 'short' }, { code: CODE, items: [] }, {}, { code: CODE.toLowerCase().slice(0, 10) }, []]) assert.equal((await app.del(bad)).status, 400);
+    assert.equal((await app.raw('/api/sync/delete', '{oops')).status, 400);
+    assert.equal(db.calls.length, before, 'bad requests never reach the database');
+
+    db.failing.add(sha(BROKEN));
+    const broken = await app.del({ code: BROKEN });
+    assert.equal(broken.status, 502);
+    assert.ok(!broken.text.includes('boom-secret-detail') && !broken.text.includes(BROKEN) && !broken.text.includes(sha(BROKEN)));
+  } finally { await app.stop(); await db.stop(); }
+  const limited = await startApp({ SUPABASE2_URL: '', SUPABASE2_SERVICE_KEY: '' });
+  try {
+    assert.equal((await limited.del({ code: CODE })).status, 503);
+    for (let i = 0; i < 4; i++) await limited.del({ code: 'bad' });
+    assert.equal((await limited.del({ code: CODE })).status, 503, 'sixth request still passes the shared limit');
+    const blocked = await limited.del({ code: CODE });
+    assert.equal(blocked.status, 429);
+    assert.equal(blocked.headers.get('cache-control'), 'no-store');
+  } finally { await limited.stop(); }
+});
+
+test('Y4 cleanup migration: a daily pg_cron job deletes sync rows not written for 180 days, written as a file only', async () => {
+  const { readdir, readFile } = await import('node:fs/promises');
+  const dir = new URL('../supabase/ip2/', import.meta.url), name = (await readdir(dir)).find(file => /^\d{14}_collection_sync_cleanup\.sql$/.test(file));
+  assert.ok(name, 'cleanup migration exists in supabase/ip2');
+  const sql = (await readFile(new URL(name, dir), 'utf8')).replace(/--[^\n]*/g, '');
+  assert.match(sql, /delete from public\.collection_sync where updated_at < now\(\) - interval '180 days'/);
+  assert.match(sql, /security definer/);
+  assert.match(sql, /set search_path to ''/);
+  assert.match(sql, /revoke all on function public\.collection_sync_purge_stale\(\) from public, anon, authenticated/);
+  assert.match(sql, /cron\.schedule\('collection-sync-purge', '\d+ \d+ \* \* \*', 'select public\.collection_sync_purge_stale\(\)'\)/);
+});
+

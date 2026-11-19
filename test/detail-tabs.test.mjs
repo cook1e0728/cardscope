@@ -125,6 +125,6 @@ test('我的收藏：用語統一為「我的收藏」與「張」，並提供 w
   assert.match(ui, /class="watchlist-inline" data-action="watchlist" role="group" aria-label="\$\{title\}，已收藏 \$\{quantity\} 張"/, '卡片上的「− 數量 ＋」是一組，朗讀出卡名與目前張數');
   assert.match(ui, /window\.openCollection=openCollection;/);
   assert.match(ui, /function openCollection\(\)\{return window\.openView\?\.\('collection'\)\}/, '頂欄與底部導覽走 pushState 的收藏頁，不再開對話框');
-  assert.doesNotMatch(ui, /showModal|collectionDialog/);
+  assert.doesNotMatch(ui, /collectionDialog/); // 雲端同步有自己的原生 <dialog>（syncDialog），所以不再禁 showModal
   assert.match(ui, /\$\('cardsTitle'\)\.textContent='我的收藏'/);
 });

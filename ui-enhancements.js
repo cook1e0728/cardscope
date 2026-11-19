@@ -7,6 +7,7 @@ let favoritesOnly=uiLocal.get('cardscope-favorites-only','0')==='1';
 const legacyFavoriteIds=readUiArray('cardscope-favorites');
 const watchlist=readUiObject('cardscope-watchlist');
 const watchlistMeta=readUiObject('cardscope-watchlist-meta');
+let syncState=null; // 雲端同步的本機狀態；在下方「雲端同步」區塊讀入（需要 CollectionStore）
 const rarityOptionMemory=new Map();
 
 function rarityOptionScopeKey(){
@@ -141,7 +142,7 @@ function cardSnapshot(card,key){
   const printing=(card.printings||[]).find(p=>String(p.cardId)===String(key))||null;
   return{id:String(key),canonicalId:String(card.canonicalId||card.id||''),game:cardGameId(card)||'',...(printing?.seriesId||card.seriesId?{seriesId:printing?.seriesId||card.seriesId}:{}),nameZh:card.nameZh||'',nameEn:card.nameEn||'',nameJa:card.nameJa||'',nameKo:card.nameKo||'',officialCardNumber:card.officialCardNumber||printing?.localCardNumber||'',rarity:printing?.rarity||card.rarity||'',region:printing?.region||card.region||card.printings?.[0]?.region||'',version:printing?.metadata?.variantName||card.metadata?.variantName||'',image:(printing?.imageUrl&&!printing.imageRehostRequired?printing.imageUrl:image(card))||''};
 }
-function persistCollection(){return[uiLocal.set('cardscope-watchlist',JSON.stringify(watchlist)),uiLocal.set('cardscope-watchlist-meta',JSON.stringify(watchlistMeta))].every(Boolean)}
+function persistCollection(){if(typeof stampSync==='function')stampSync();return[uiLocal.set('cardscope-watchlist',JSON.stringify(watchlist)),uiLocal.set('cardscope-watchlist-meta',JSON.stringify(watchlistMeta))].every(Boolean)}
 // 舊 ☆ 清單只在第一次載入時搬成數量 1（已有數量的不變）。舊鍵原封不動留作備份；數量寫入成功才記下已搬移，失敗下次載入再搬，不會遺失。
 function migrateLegacyFavorites(){
   if(!CS||uiLocal.get('cardscope-collection-unified','')==='1')return;
@@ -1211,7 +1212,7 @@ function ensureCollectionHosts(){
   }
   if(!$('collManage')){
     const box=document.createElement('div');box.id='collManage';box.className='coll-manage';
-    box.innerHTML='<button type="button" id="collManageBtn" class="coll-manage-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="collMenu">管理 <span aria-hidden="true">▾</span></button><div class="coll-menu" id="collMenu" role="menu" aria-label="管理我的收藏" hidden><button type="button" role="menuitem" data-coll-export title="把收藏存成 JSON 備份檔">匯出備份</button><button type="button" role="menuitem" data-coll-import title="匯入 JSON 備份或 CSV 清單">匯入備份</button><button type="button" role="menuitem" id="collectionCsv" title="下載清單 CSV">下載 CSV</button><button type="button" role="menuitemcheckbox" aria-checked="false" data-coll-series-toggle>各系列進度</button></div><input type="file" id="collFile" accept="application/json,.json,text/csv,.csv" hidden>';
+    box.innerHTML='<button type="button" id="collManageBtn" class="coll-manage-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="collMenu">管理 <span aria-hidden="true">▾</span></button><div class="coll-menu" id="collMenu" role="menu" aria-label="管理我的收藏" hidden><button type="button" role="menuitem" data-coll-export title="把收藏存成 JSON 備份檔">匯出備份</button><button type="button" role="menuitem" data-coll-import title="匯入 JSON 備份或 CSV 清單">匯入備份</button><button type="button" role="menuitem" id="collectionCsv" title="下載清單 CSV">下載 CSV</button><button type="button" role="menuitem" data-coll-sync title="用同步碼在多台裝置同步收藏">雲端同步</button><button type="button" role="menuitemcheckbox" aria-checked="false" data-coll-series-toggle>各系列進度</button></div><input type="file" id="collFile" accept="application/json,.json,text/csv,.csv" hidden>';
     $('cardTools').append(box);
   }
 }
@@ -1256,7 +1257,227 @@ const rerenderCollection=()=>{if(inCollectionView())renderCollectionPage()};
 function enterCollectionPage(){
   Object.assign(collectionUi,{active:true,prices:{},priceMeta:null,pricesState:'idle',progress:'',pending:null,showSeries:false,filter:{game:'',series:''}});
   if(collectionItems().length)resolveCollection().then(changed=>{if(changed)rerenderCollection();return loadCollectionPrices()});
+  syncIfStale();
 }
+
+// ── 雲端同步（docs/NEXT_PHASE_PLAN.md Y4）──
+// 同步碼等於密碼：只放在這台瀏覽器的 localStorage（'cardscope-sync'），只在 POST body 送出，不進網址、不進訊息。
+// 每張卡記一筆 [簽名, 最後改動時間, 是否已刪]：收藏每次寫入（persistCollection）就比對簽名，不同的卡把時間設成現在、不見的卡留墓碑。
+// 開啟同步當下已有的卡：自己新開的記成現在；加入別人的雲端時，雲端已有的卡記成 0（最舊），所以兩邊不一樣時雲端版本優先，這台舊資料不會蓋掉它。
+// 合併規則全在 CollectionStore.mergeSync（新的贏、墓碑保留 30 天）；網路或伺服器出錯只在這裡顯示狀態，本機收藏照常使用。
+const SYNC_KEY='cardscope-sync',SYNC_DEBOUNCE_MS=3000,SYNC_GAP_MS=15000,SYNC_RETRY_MS=60000,SYNC_TOMBSTONE_MS=30*86400000;
+const syncUi={busy:false,again:false,joining:false,status:'idle',text:'',at:0,timer:0,retry:0,stamp:0,applying:false,confirm:'',notice:''};
+function readSyncState(){
+  try{
+    const raw=JSON.parse(uiLocal.get(SYNC_KEY,'null')),code=CS.normalizeSyncCode(raw?.code);
+    if(!code||!raw.records||typeof raw.records!=='object'||Array.isArray(raw.records))return null;
+    const records=Object.create(null);
+    for(const [id,rec] of Object.entries(raw.records))if(Array.isArray(rec)&&typeof rec[0]==='string'&&Number.isFinite(rec[1]))records[id]=[rec[0],rec[1],rec[2]?1:0];
+    return{code,revision:Number.isInteger(raw.revision)&&raw.revision>0?raw.revision:0,dirty:Boolean(raw.dirty),records};
+  }catch{return null}
+}
+syncState=readSyncState();
+const saveSync=()=>syncState?uiLocal.set(SYNC_KEY,JSON.stringify(syncState)):false;
+// 只看使用者會改的欄位；seriesId／game／region 這類補存的提示不算改動。
+function syncSig(item){
+  const text=JSON.stringify([item.canonicalId,item.favorite,item.quantity,item.condition,item.finish,item.note]);
+  let a=0x811c9dc5,b=5381;for(let at=0;at<text.length;at++){const code=text.charCodeAt(at);a=Math.imul(a^code,16777619);b=Math.imul(b,33)^code}
+  return (a>>>0).toString(36)+(b>>>0).toString(36);
+}
+const syncIso=ms=>new Date(ms).toISOString();
+const syncCanon=list=>JSON.stringify(list.map(entry=>JSON.stringify(entry,Object.keys(entry).sort())));
+// persistCollection 每次寫入都會呼叫：簽名不同或還沒有紀錄的卡記成現在，不見的卡記成墓碑；有改動就稍後同步。套用雲端變更時（applying）不記。
+function stampSync(){
+  if(!syncState||syncUi.applying)return;
+  const live=new Map(collectionItems().map(item=>[item.id,item])),records=syncState.records,now=Date.now();let changed=false;
+  for(const [id,item] of live){const sig=syncSig(item),rec=records[id];if(!rec||rec[2]||rec[0]!==sig){records[id]=[sig,now,0];changed=true}}
+  for(const [id,rec] of Object.entries(records))if(!live.has(id)&&!rec[2]){records[id]=[rec[0],now,1];changed=true}
+  if(changed){syncState.dirty=true;syncUi.stamp++;saveSync();syncSoon()}
+}
+// 目前收藏 → 要送出的項目（含墓碑，超過 30 天的墓碑順手清掉）；過不了同一套驗證的項目不送，免得整份被伺服器拒絕。
+function syncEntries(){
+  const live=new Map(collectionItems().map(item=>[item.id,item])),records=syncState.records,cut=Date.now()-SYNC_TOMBSTONE_MS,out=[];
+  for(const item of live.values()){const rec=records[item.id];out.push({...item,updatedAt:syncIso(rec&&!rec[2]?rec[1]:0)})}
+  for(const [id,rec] of Object.entries(records))if(rec[2]&&!live.has(id)){if(rec[1]<cut)delete records[id];else out.push({id,deleted:true,updatedAt:syncIso(rec[1])})}
+  return out.map(CS.normalizeSyncEntry).filter(Boolean);
+}
+async function syncPost(action,body){
+  const control=new AbortController(),timer=setTimeout(()=>control.abort(),15000);
+  try{
+    const response=await fetch(`/api/sync/${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:control.signal,cache:'no-store'});
+    const payload=await response.json().catch(()=>null);
+    return{status:response.status,data:payload?.data,error:payload?.error||''};
+  }finally{clearTimeout(timer)}
+}
+function syncFailText(error){
+  const status=error?.status;
+  if(status===429)return'同步太頻繁了';
+  if(status===503)return'雲端同步目前還沒有開放';
+  if(status===413)return'收藏資料太大，無法同步';
+  if(status===400)return'收藏裡有格式無法同步的資料';
+  if(status===409)return'另一台裝置正好也在同步';
+  if(status===-1)return'無法寫入瀏覽器儲存空間，沒有套用雲端的變更';
+  return'同步服務暫時連不上';
+}
+function syncStatusText(){
+  if(syncUi.status==='syncing')return'同步中…';
+  if(syncUi.status==='offline')return'目前離線，連上網路後會自動同步。';
+  if(syncUi.status==='error')return`${syncUi.text}。本機收藏不受影響，稍後會自動再試。`;
+  if(syncUi.status==='ok')return`已同步（${new Date(syncUi.at).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false})}）。`;
+  return syncState?.dirty?'有改動還沒同步。':'還沒同步。';
+}
+function setSyncStatus(status,text=''){
+  Object.assign(syncUi,{status,text});
+  const node=$('syncState');if(node)node.textContent=syncStatusText();
+}
+function setSyncNotice(text){syncUi.notice=text;const node=$('syncNotice');if(node)node.textContent=text}
+// 套用合併結果：只換收藏內容，畫面快照沿用；寫不進去就整個放棄（commitItems 會還原）。然後以合併結果重建每張卡的紀錄。
+function applyMerged(state,merged,local){
+  const before=new Map(local.map(entry=>[entry.id,syncCanon([entry])])),live=merged.filter(entry=>!entry.deleted).map(({updatedAt,...item})=>item),had=new Set(collectionItems().map(item=>item.id));
+  const changed=merged.filter(entry=>before.get(entry.id)!==syncCanon([entry])).length;
+  syncUi.applying=true;
+  try{if(!commitItems(live))throw{status:-1}}finally{syncUi.applying=false}
+  const items=new Map(collectionItems().map(item=>[item.id,item])),records=Object.create(null);
+  for(const entry of merged){const ts=Date.parse(entry.updatedAt)||0;if(entry.deleted)records[entry.id]=['',ts,1];else if(items.has(entry.id))records[entry.id]=[syncSig(items.get(entry.id)),ts,0]}
+  state.records=records;saveSync();
+  refreshGrid();
+  if(inCollectionView()){
+    collectionStatus(`雲端同步：已套用其他裝置的 ${changed} 筆變更。`);
+    if(live.some(item=>!had.has(item.id))){collectionUi.pricesState='idle';resolveCollection().then(()=>{rerenderCollection();return loadCollectionPrices()}).catch(()=>{})}
+  }
+}
+// 一次同步。快路徑：只有本機有改動、又知道雲端版本時直接寫（一次請求）；版本不符（409）就拉回來合併再寫，最多兩輪。
+async function syncOnce(state){
+  const alive=()=>syncState===state,{code}=state;
+  const finish=(revision,mark)=>{state.revision=revision;state.dirty=syncUi.stamp!==mark;saveSync()};
+  if(state.dirty&&state.revision>0){
+    const mark=syncUi.stamp,sent=await syncPost('push',{code,items:syncEntries(),revision:state.revision});
+    if(!alive())return;
+    if(sent.status===200)return finish(sent.data.revision,mark);
+    if(sent.status!==409)throw sent;
+  }
+  for(let round=0;round<2;round++){
+    const pulled=await syncPost('pull',{code});if(!alive())return;
+    if(pulled.status!==200)throw pulled;
+    const remote=pulled.data.items,revision=pulled.data.revision;
+    if(state.revision>0&&revision===0)return stopSync('雲端資料已經被刪除（可能是另一台裝置刪的），這台裝置已停止同步，本機收藏沒有動。');
+    const local=syncEntries(),mark=syncUi.stamp,merged=CS.mergeSync(local,remote);
+    if(syncCanon(merged)!==syncCanon(local))applyMerged(state,merged,local);
+    if(syncCanon(merged)===syncCanon(CS.mergeSync([],remote)))return finish(revision,mark); // 雲端已經是這一份，不用寫
+    const pushed=await syncPost('push',{code,items:merged,revision});if(!alive())return;
+    if(pushed.status===200)return finish(pushed.data.revision,mark);
+    if(pushed.status!==409)throw pushed;
+  }
+  throw{status:409};
+}
+async function syncNow(){
+  if(!syncState)return;
+  if(syncUi.busy){syncUi.again=true;return}
+  clearTimeout(syncUi.timer);clearTimeout(syncUi.retry);
+  if(typeof navigator!=='undefined'&&navigator.onLine===false)return setSyncStatus('offline');
+  const state=syncState;syncUi.busy=true;syncUi.again=false;setSyncStatus('syncing');
+  try{await syncOnce(state);if(syncState===state){syncUi.at=Date.now();setSyncStatus('ok')}}
+  catch(error){if(syncState===state){setSyncStatus('error',syncFailText(error));syncUi.retry=setTimeout(syncNow,error?.status===429?SYNC_RETRY_MS+5000:SYNC_RETRY_MS)}}
+  finally{syncUi.busy=false;if(syncUi.again&&syncState){syncUi.again=false;syncSoon(500)}}
+}
+function syncSoon(delay=SYNC_DEBOUNCE_MS){if(!syncState)return;clearTimeout(syncUi.timer);syncUi.timer=setTimeout(syncNow,delay)}
+const syncIfStale=force=>{if(syncState&&(force||syncState.dirty||Date.now()-syncUi.at>SYNC_GAP_MS))syncNow()};
+// 開啟：沒有 codeText 就產生新碼；有就是加入別台裝置的碼（雲端要真的有這組資料才加入）。
+async function startSync(codeText){
+  if(syncState||syncUi.joining)return;
+  const joining=String(codeText||'').trim()!=='',code=joining?CS.normalizeSyncCode(codeText):CS.generateSyncCode(),now=Date.now(),known=new Set();
+  if(!code)return setSyncNotice('同步碼格式不對：要 26 個以上的英文字母與數字（橫線、空格與大小寫都沒關係）。');
+  if(joining){
+    syncUi.joining=true;setSyncNotice('正在確認同步碼…');
+    try{
+      const pulled=await syncPost('pull',{code});
+      if(pulled.status!==200)return setSyncNotice(`${syncFailText(pulled)}，沒有加入。`);
+      if(!pulled.data?.revision)return setSyncNotice('找不到這組同步碼的雲端資料。請確認同步碼，或先在原本的裝置開啟雲端同步。');
+      for(const entry of pulled.data.items||[])known.add(entry?.id);
+    }catch{return setSyncNotice('連不上同步服務，請確認網路後再試。')}
+    finally{syncUi.joining=false}
+  }
+  const records=Object.create(null);
+  for(const item of collectionItems())records[item.id]=[syncSig(item),known.has(item.id)?0:now,0];
+  syncState={code,revision:0,dirty:true,records};
+  if(!saveSync()){syncState=null;return setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。')}
+  Object.assign(syncUi,{status:'idle',text:'',notice:'',confirm:''});renderSyncDialog('#syncCode');syncNow();
+}
+// 只清掉這台裝置上的同步碼與紀錄；雲端資料不動，收藏不動。
+function stopSync(notice){
+  clearTimeout(syncUi.timer);clearTimeout(syncUi.retry);syncState=null;
+  try{localStorage.removeItem(SYNC_KEY)}catch{}
+  Object.assign(syncUi,{status:'idle',text:'',again:false,confirm:'',notice});
+  if($('syncDialog')?.open)renderSyncDialog('[data-sync-start]');
+}
+async function deleteCloud(){
+  if(!syncState)return;
+  if(syncUi.busy){syncUi.confirm='';renderSyncDialog('[data-sync-delete]');return setSyncNotice('正在同步中，請等它完成再刪除。')}
+  syncUi.busy=true;const {code}=syncState;
+  try{
+    const done=await syncPost('delete',{code});
+    if(done.status!==200)throw done;
+    stopSync('已刪除雲端資料，這台裝置也已停止同步；這台的收藏都還在。其他裝置下次同步時會發現雲端資料不見而停止同步。');
+  }catch(error){syncUi.confirm='';renderSyncDialog('[data-sync-delete]');setSyncNotice(`${syncFailText(error)}，雲端資料沒有刪除。`)}
+  finally{syncUi.busy=false}
+}
+// ── 雲端同步的對話框（原生 <dialog>：Esc 關閉、焦點留在裡面；內容只用 class，沒有行內事件）──
+function syncDialogHtml(){
+  const top='<div class="sync-top"><h2 id="syncTitle" tabindex="-1">雲端同步</h2><button type="button" class="sync-close" data-sync-close aria-label="關閉">×</button></div>';
+  if(!syncState)return `<div class="sync-box">${top}<p>用一組同步碼，讓你的幾台裝置共用同一份收藏。不用註冊，也不用登入。</p><ul class="sync-facts"><li>同步碼就是密碼：知道的人都能看到並改動這份收藏。它只存在這台裝置，忘記就找不回來，請自己記下來。</li><li>雲端會存卡片、數量、品況、版本與備註，備註請不要寫個人資料。</li><li>超過 180 天沒有任何裝置更新，雲端的資料會被清掉。</li></ul><button type="button" class="sync-btn sync-primary" data-sync-start>開啟雲端同步</button><form class="sync-join" data-sync-join novalidate><label for="syncJoinCode">已經在別台裝置開啟了？輸入那組同步碼</label><div class="sync-row"><input id="syncJoinCode" class="sync-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="80" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" aria-describedby="syncNotice"><button type="submit" class="sync-btn">加入</button></div></form><p class="sync-notice" id="syncNotice" role="status" aria-live="polite">${e(syncUi.notice)}</p></div>`;
+  const stop=syncUi.confirm==='stop',confirm=syncUi.confirm?`<section class="sync-confirm" aria-labelledby="syncConfirmTitle"><h3 id="syncConfirmTitle" tabindex="-1">${stop?'停止同步？':'刪除雲端資料？'}</h3><p>${stop?'只會清掉這台裝置上的同步碼，雲端資料不會刪。之後要再加入，需要這組同步碼，請先確認你已經記下來。':'會把雲端上這組同步碼的收藏整份刪掉，無法復原，這台裝置也會停止同步。這台的收藏不受影響；其他裝置下次同步時發現雲端資料不見了，也會停止同步。'}</p><div class="sync-actions"><button type="button" class="sync-btn sync-danger" data-sync-confirm="${stop?'stop':'delete'}">${stop?'停止同步':'刪除雲端資料'}</button><button type="button" class="sync-btn" data-sync-cancel>取消</button></div></section>`:'';
+  return `<div class="sync-box">${top}<p class="sync-state" id="syncState" role="status" aria-live="polite">${e(syncStatusText())}</p><b id="syncCodeLabel">這台裝置的同步碼</b><div class="sync-codebox"><div class="sync-code" id="syncCode" role="textbox" aria-readonly="true" aria-multiline="true" aria-labelledby="syncCodeLabel" aria-describedby="syncHelp" tabindex="0">${e(CS.formatSyncCode(syncState.code))}</div><button type="button" class="sync-btn" data-sync-copy>複製同步碼</button></div><p class="meta" id="syncHelp">在另一台裝置打開收藏頁，按「管理 → 雲端同步」，輸入這組同步碼就會加入。同步碼等於密碼，請不要公開。</p><p class="sync-notice" id="syncNotice" role="status" aria-live="polite">${e(syncUi.notice)}</p>${confirm||'<div class="sync-actions"><button type="button" class="sync-btn sync-primary" data-sync-now>立即同步</button><button type="button" class="sync-btn" data-sync-stop>停止同步</button></div><div class="sync-actions sync-more"><button type="button" class="sync-btn sync-danger" data-sync-delete>刪除雲端資料</button></div>'}</div>`;
+}
+function renderSyncDialog(focus){
+  const dialog=$('syncDialog');if(!dialog)return;
+  dialog.innerHTML=syncDialogHtml();
+  if(focus)dialog.querySelector(focus)?.focus();
+}
+function openSyncDialog(){
+  let dialog=$('syncDialog');
+  if(!dialog){
+    dialog=document.createElement('dialog');dialog.id='syncDialog';dialog.className='sync-dialog';dialog.setAttribute('aria-labelledby','syncTitle');document.body.append(dialog);
+    dialog.addEventListener('close',()=>{syncUi.confirm='';$('collManageBtn')?.focus()});
+    dialog.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation()}); // 只關這個對話框，不讓頁面上其他 Esc 處理（側板）一起動
+  }
+  syncUi.confirm='';syncUi.notice='';renderSyncDialog();
+  if(!dialog.open){if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','')}
+  $('syncTitle')?.focus();
+  syncIfStale();
+}
+function closeSyncDialog(){const dialog=$('syncDialog');if(!dialog?.open)return;if(typeof dialog.close==='function')dialog.close();else{dialog.removeAttribute('open');$('collManageBtn')?.focus()}}
+async function copySyncCode(){
+  const code=CS.formatSyncCode(syncState?.code||'');if(!code)return;
+  try{await navigator.clipboard.writeText(code);setSyncNotice('已複製同步碼。')}
+  catch{
+    let ok=false;
+    try{const node=$('syncCode'),range=document.createRange(),picked=getSelection();range.selectNodeContents(node);picked.removeAllRanges();picked.addRange(range);ok=document.execCommand('copy')}catch{}
+    setSyncNotice(ok?'已複製同步碼。':'無法自動複製：同步碼已選取，請按 Ctrl＋C 複製。');
+  }
+}
+function onSyncClick(event){
+  const target=event.target;if(!target?.closest)return;
+  if(target.id==='syncDialog')return closeSyncDialog(); // 點到對話框外的暗處
+  const hit=name=>target.closest(`[data-sync-${name}]`);
+  if(hit('close'))return closeSyncDialog();
+  if(hit('start'))return startSync('');
+  if(hit('copy'))return copySyncCode();
+  if(hit('now')){setSyncNotice('');return syncNow()}
+  if(hit('stop')||hit('delete')){syncUi.confirm=hit('stop')?'stop':'delete';return renderSyncDialog('#syncConfirmTitle')}
+  if(hit('cancel')){const was=syncUi.confirm;syncUi.confirm='';return renderSyncDialog(was==='delete'?'[data-sync-delete]':'[data-sync-stop]')}
+  const yes=target.closest('[data-sync-confirm]');
+  if(yes)return yes.dataset.syncConfirm==='delete'?deleteCloud():stopSync('已停止同步：這台裝置上的同步碼已清掉，雲端資料沒有刪，收藏照常使用。');
+}
+function onSyncSubmit(event){
+  const form=event.target?.closest?.('[data-sync-join]');if(!form)return;
+  event.preventDefault();startSync($('syncJoinCode')?.value||'');
+}
+document.addEventListener?.('click',onSyncClick);
+document.addEventListener?.('submit',onSyncSubmit);
+document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='visible')syncIfStale()});
+window.addEventListener?.('online',()=>syncIfStale(true));
+if(syncState?.dirty)syncSoon();
+// ── 雲端同步結束 ──
 
 // ── 管理選單：按鈕開關；↑↓／Home／End 移動、Esc 關掉並把焦點還給按鈕、Tab 離開就關。 ──
 const manageItems=()=>[...document.querySelectorAll('#collMenu [role^="menuitem"]:not(:disabled)')];
@@ -1274,6 +1495,7 @@ function onManageItem(item){
   const back=()=>$('collManageBtn')?.focus();
   if('collExport' in item.dataset){exportCollection();back()}
   else if('collImport' in item.dataset)$('collFile')?.click();
+  else if('collSync' in item.dataset)openSyncDialog();
   else if(item.id==='collectionCsv'){downloadWatchlistCsv();collectionStatus(`已下載清單 CSV（${collectionItems().length} 款）。`);back()}
   else if('collSeriesToggle' in item.dataset){collectionUi.showSeries=!collectionUi.showSeries;renderCollectionExtras();if(collectionUi.showSeries){loadSeriesTotals();$('collSeriesTitle')?.focus()}else back()}
 }

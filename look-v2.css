@@ -619,6 +619,37 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .coll-empty p{margin:0;font-size:var(--fs-body)}
 .coll-empty-cta{white-space:nowrap;min-height:var(--btn-h);padding:0 24px;border:0;border-radius:var(--btn-r);background:var(--v2-ink);color:#fff;font:inherit;font-weight:700;box-shadow:0 1px 2px rgba(60,45,20,.24);cursor:pointer}
 
+/* ---- 雲端同步對話框（管理 → 雲端同步）：原生 <dialog>，窄螢幕留 16px 邊 ---- */
+.sync-dialog{width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:0;border-radius:16px;background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow-pop);overflow:auto}
+.sync-dialog::backdrop{background:rgba(31,27,22,.45)}
+.sync-box{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:16px 18px 20px}
+.sync-box :is(p,ul){margin:0}
+.sync-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sync-top h2{margin:0;font-size:20px}
+.sync-top h2:focus,.sync-confirm h3:focus{outline:none}
+.sync-close{flex:none;width:var(--btn-h);height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--v2-page);color:var(--v2-ink);font:inherit;font-size:24px;line-height:1;cursor:pointer}
+.sync-facts{display:grid;gap:6px;padding-left:20px;font-size:var(--fs-sub);color:var(--v2-ink-2)}
+.sync-btn{flex:none;white-space:nowrap;min-height:var(--btn-h);padding:0 18px;border:0;border-radius:var(--btn-r);background:var(--v2-page);color:var(--v2-ink);font:inherit;font-weight:700;box-shadow:var(--v2-shadow);cursor:pointer}
+.sync-btn:active{transform:scale(.97)}
+.sync-primary{background:var(--v2-ink);color:#fff;box-shadow:0 1px 2px rgba(60,45,20,.24)}
+.sync-danger{background:var(--v2-surface);color:#A4262C;box-shadow:inset 0 0 0 1.5px #A4262C}
+.sync-state{font-weight:700}
+.sync-notice{font-size:var(--fs-sub);color:var(--v2-ink-2)}
+.sync-notice:empty{display:none}
+.sync-codebox{display:grid;justify-items:start;gap:8px}
+.sync-code{box-sizing:border-box;width:100%;padding:12px 14px;border-radius:12px;background:var(--v2-page);box-shadow:var(--v2-shadow-in);font:700 17px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.06em;overflow-wrap:anywhere;user-select:all}
+.sync-join{display:grid;gap:6px;padding-top:12px;border-top:1px solid var(--v2-line)}
+.sync-join label{font-size:var(--fs-sub);font-weight:700}
+.sync-row{display:flex;gap:8px}
+.sync-input{flex:1 1 0;min-width:0;min-height:var(--btn-h);padding:0 12px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;text-transform:uppercase}
+.sync-input::placeholder{text-transform:none}
+.sync-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sync-more{padding-top:12px;border-top:1px solid var(--v2-line)}
+.sync-confirm{display:grid;gap:10px;padding:14px;border-radius:12px;background:var(--v2-page);box-shadow:inset 0 0 0 1.5px var(--v2-ink)}
+.sync-confirm h3{margin:0;font-size:16px}
+.sync-dialog :is(.sync-btn,.sync-close,.sync-input,.sync-code):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+@media (hover:hover) and (pointer:fine){.sync-btn:not(.sync-primary):not(.sync-danger):hover{box-shadow:var(--v2-shadow-up)}}
+
 /* ---- 側板裡的收藏資料：品況、閃卡版本、備註 ---- */
 .coll-edit{flex:1 1 100%;display:grid;gap:10px;margin-top:6px;padding:12px;border-radius:12px;background:var(--v2-page)}
 .coll-edit label{display:grid;gap:4px;font-size:var(--fs-sub);font-weight:700}

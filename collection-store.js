@@ -233,11 +233,18 @@
     return item&&{...item,updatedAt};
   }
   // The sync code is a password: at least 26 characters of 0-9 A-Z (130 bits when random). Spaces and hyphens (grouped display) and case are ignored. '' when unusable.
-  const SYNC_CODE=/^[0-9A-Z]{26,64}$/;
+  const SYNC_CODE=/^[0-9A-Z]{26,64}$/,SYNC_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   function normalizeSyncCode(text){
     const code=typeof text==='string'&&text.length<=200?text.replace(/[\s-]/g,'').toUpperCase():'';
     return SYNC_CODE.test(code)?code:'';
   }
+  // New code: 28 characters of 0-9 A-Z (about 145 bits) from crypto.getRandomValues; bytes >= 252 are skipped so every character is equally likely. Shown as 7 groups of 4.
+  function generateSyncCode(cryptoApi=root.crypto){
+    let code='';
+    while(code.length<28){const bytes=cryptoApi.getRandomValues(new Uint8Array(40));for(const byte of bytes)if(byte<252&&code.length<28)code+=SYNC_ALPHABET[byte%36]}
+    return code;
+  }
+  const formatSyncCode=text=>(normalizeSyncCode(text)||'').replace(/(.{4})(?=.)/g,'$1-');
 
-  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,problem,parseImport,planImport,parseCsv,ownedInSeries,seriesProgress,seriesBreakdown,finishKey,soleFinish,migrateFavorites,collectedQuantity,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate,mergeSync,normalizeSyncEntry,normalizeSyncCode,SYNC_TOMBSTONE_DAYS,SYNC_FUTURE_MS};
+  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,problem,parseImport,planImport,parseCsv,ownedInSeries,seriesProgress,seriesBreakdown,finishKey,soleFinish,migrateFavorites,collectedQuantity,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate,mergeSync,generateSyncCode,formatSyncCode,normalizeSyncEntry,normalizeSyncCode,SYNC_TOMBSTONE_DAYS,SYNC_FUTURE_MS};
 })(typeof window!=='undefined'?window:globalThis);
