@@ -619,6 +619,66 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .coll-empty p{margin:0;font-size:var(--fs-body)}
 .coll-empty-cta{white-space:nowrap;min-height:var(--btn-h);padding:0 24px;border:0;border-radius:var(--btn-r);background:var(--v2-ink);color:#fff;font:inherit;font-weight:700;box-shadow:0 1px 2px rgba(60,45,20,.24);cursor:pointer}
 
+/* ---- 雲端同步對話框（管理 → 雲端同步）：原生 <dialog>，窄螢幕留 16px 邊 ---- */
+.sync-dialog{width:min(480px,calc(100vw - 32px));max-width:420px;max-height:calc(100dvh - 32px);padding:0;border:1px solid var(--v2-line);border-radius:16px;background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow-pop);overflow:auto}
+.sync-dialog::backdrop{background:rgba(31,27,22,.4);backdrop-filter:blur(2px)}
+.sync-box{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:22px 24px 24px}
+.sync-box :is(p,ul){margin:0;text-wrap:pretty}
+.sync-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sync-top h2{margin:0;font-size:19px;font-weight:700;line-height:1.3;letter-spacing:-.01em}
+.sync-top h2:focus,.sync-confirm h3:focus{outline:none}
+.sync-close{flex:none;display:inline-grid;place-items:center;width:var(--btn-h);height:var(--btn-h);margin-right:-8px;border:0;border-radius:var(--btn-r);background:transparent;color:var(--v2-ink-2);font:inherit;font-size:22px;line-height:1;cursor:pointer;transition:transform .14s var(--ease),background-color .14s var(--ease),color .14s var(--ease)}
+.sync-close:active{transform:scale(.95)}
+.sync-hero{display:grid;gap:12px}
+.sync-line{display:block}
+.sync-box :is(.sync-lead,.sync-facts,.meta) b{color:var(--v2-ink);font-weight:700}
+.sync-lead{font-size:14px;line-height:1.65;color:var(--v2-ink-2)}
+.sync-facts{display:grid;gap:4px;padding-left:16px;font-size:12.5px;line-height:1.55;color:var(--v2-ink-2)}
+.sync-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-page);color:var(--v2-ink);font:inherit;font-size:14px;font-weight:700;box-shadow:var(--v2-shadow);cursor:pointer;transition:transform .14s var(--ease),box-shadow .14s var(--ease),background-color .14s var(--ease)}
+.sync-btn:active{transform:scale(.97)}
+.sync-primary{background:var(--v2-ink);color:#fff;box-shadow:0 1px 2px rgba(60,45,20,.24)}
+.sync-google-btn{gap:10px;width:100%;min-height:46px;padding:0 20px;border:1.5px solid var(--v2-ink);background:#fff;color:var(--v2-ink);font-size:15px;box-shadow:0 2px 6px rgba(60,45,20,.1)}
+.sync-google-icon{flex:none;width:20px;height:20px}
+.sync-danger{background:transparent;color:#A4262C;box-shadow:none;padding-inline:10px;font-weight:600}
+.sync-confirm .sync-danger{background:#A4262C;color:#fff;padding-inline:16px;font-weight:700}
+.sync-status-card{display:grid;gap:6px;padding:14px 16px;border:1px solid var(--v2-line);border-radius:12px;background:var(--v2-page)}
+.sync-state{font-size:14px;font-weight:700;line-height:1.5;color:var(--v2-ink);word-break:keep-all}
+.sync-box .meta{font-size:13px;line-height:1.55;color:var(--v2-ink-2)}
+.sync-notice{font-size:13px;line-height:1.5;color:var(--v2-ink-2)}
+.sync-notice:empty{display:none}
+.sync-codebox{display:grid;justify-items:start;gap:10px;padding:14px 16px;border:1px solid var(--v2-line);border-radius:12px;background:var(--v2-page)}
+.sync-codebox b{font-size:13px;color:var(--v2-ink-2)}
+.sync-code{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);font:700 15px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.05em;overflow-wrap:anywhere;user-select:all}
+.sync-join{display:grid;gap:8px;width:100%;padding-top:12px;border-top:1px solid var(--v2-line)}
+.sync-join label{font-size:13px;font-weight:700;color:var(--v2-ink)}
+.sync-row{display:flex;align-items:center;gap:8px}
+.sync-input{flex:1 1 0;min-width:0;min-height:var(--btn-h);padding:0 12px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-size:14px;text-transform:uppercase}
+.sync-input::placeholder{text-transform:none;font-size:13px;color:var(--v2-ink-2)}
+.sync-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding-top:14px;border-top:1px solid var(--v2-line)}
+.sync-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.sync-more{padding-top:12px;border-top:1px solid var(--v2-line)}
+.sync-confirm{display:grid;gap:12px;padding:16px;border-radius:12px;background:var(--v2-page);box-shadow:inset 0 0 0 1.5px var(--v2-ink)}
+.sync-confirm h3{margin:0;font-size:15px;line-height:1.35}
+.sync-confirm p{font-size:13px;line-height:1.6;color:var(--v2-ink-2)}
+.sync-alt{padding-top:6px;border-top:1px solid var(--v2-line)}
+.sync-alt summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:var(--btn-h);padding:0;border-radius:8px;font-size:13px;font-weight:600;color:var(--v2-ink-2);list-style:none;cursor:pointer}
+.sync-alt summary::-webkit-details-marker{display:none}
+.sync-alt summary::marker{content:""}
+.sync-chevron{flex:none;width:16px;height:16px;overflow:visible;color:var(--v2-ink-2);transform-origin:50% 50%;transition:transform .16s var(--ease)}
+.sync-alt[open] summary{color:var(--v2-ink)}
+.sync-alt[open] .sync-chevron{transform:rotate(180deg);color:var(--v2-ink)}
+.sync-alt-body{display:grid;justify-items:start;gap:12px;padding:10px 0 2px}
+.sync-alt-body>[data-sync-start]{width:100%}
+.sync-upgrade{padding-top:12px;border-top:1px solid var(--v2-line)}
+.sync-dialog :is(.sync-btn,.sync-close,.sync-input,.sync-code,.sync-alt summary):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+@media (max-width:480px){.sync-box{padding:18px 18px 20px}}
+@media (hover:hover) and (pointer:fine){
+  .sync-btn:not(.sync-primary):not(.sync-danger):hover{box-shadow:var(--v2-shadow-up)}
+  .sync-close:hover{background:var(--v2-page);color:var(--v2-ink)}
+  .sync-danger:hover{background:rgba(164,38,44,.08)}
+  .sync-confirm .sync-danger:hover{background:#8E1F24}
+}
+
 /* ---- 側板裡的收藏資料：品況、閃卡版本、備註 ---- */
 .coll-edit{flex:1 1 100%;display:grid;gap:10px;margin-top:6px;padding:12px;border-radius:12px;background:var(--v2-page)}
 .coll-edit label{display:grid;gap:4px;font-size:var(--fs-sub);font-weight:700}

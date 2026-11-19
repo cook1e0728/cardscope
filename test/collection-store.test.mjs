@@ -156,5 +156,84 @@ test('collection page: the 管理 menu holds backup, import, CSV and series prog
   assert.ok(ui.indexOf('id="collStatus"') < ui.indexOf('id="collImportHost"'), 'the status line comes before the import preview');
   assert.match(ui, /collectionStatus\(`已匯出 \$\{items\.length\} 款、\$\{collectionTotal\(\)\} 張，備份檔 \$\{filename\}/);
   assert.match(ui, /<label>品況<select data-coll-field="condition">/, 'condition, finish and note are edited in the side panel');
-  assert.doesNotMatch(ui, /collectionDialog|showModal|collectionUi\.editOpen/, 'the old dialog is gone');
+  assert.doesNotMatch(ui, /collectionDialog|collectionUi\.editOpen/, 'the old dialog is gone (cloud sync has its own native dialog)');
+});
+
+// ---- 雲端同步合併（Y3）----
+const T = n => new Date(Date.UTC(2026, 10, 1, 0, 0, n)).toISOString(); // T(n) = 2026-11-01 00:00:nn
+const live = (id, quantity, at, over = {}) => ({ ...item({ id, canonicalId: '', condition: '', finish: '', ...over }), quantity, updatedAt: at });
+const tomb = (id, at) => ({ id, deleted: true, updatedAt: at });
+const NOW = Date.UTC(2026, 10, 2);
+
+test('mergeSync: two devices add, edit and delete in turn; either merge order gives the same collection', () => {
+  const base = [live('x', 1, T(1)), live('z', 2, T(1))];
+  const a = [live('x', 3, T(2)), live('z', 2, T(1)), live('a', 1, T(3))];           // A edits x, adds a
+  const b = [live('x', 5, T(4)), tomb('z', T(2)), live('b', 4, T(3))];              // B deletes z, edits x later, adds b
+  const ab = CS.mergeSync(a, b, NOW), ba = CS.mergeSync(b, a, NOW);
+  assert.deepEqual(ab, ba);
+  assert.deepEqual(ab.map(e => [e.id, e.deleted ? 'deleted' : e.quantity]), [['a', 1], ['b', 4], ['x', 5], ['z', 'deleted']], 'newest edit wins per card; the deletion is kept as a tombstone; both additions survive');
+  assert.deepEqual(CS.mergeSync(ab, base, NOW), ab, 'merging an older copy back in changes nothing');
+  assert.deepEqual(CS.mergeSync(ab, ab, NOW), ab, 'idempotent');
+  // a delete is undone by a later re-add on the other device
+  assert.equal(CS.mergeSync([tomb('z', T(5))], [live('z', 1, T(6))], NOW)[0].quantity, 1);
+  assert.equal(CS.mergeSync([live('z', 1, T(6))], [tomb('z', T(5))], NOW)[0].quantity, 1);
+  // inputs are not touched
+  const frozen = [Object.freeze(live('q', 1, T(1)))];
+  assert.doesNotThrow(() => CS.mergeSync(frozen, [tomb('q', T(2))], NOW));
+});
+
+test('mergeSync: equal times and missing times are decided the same way in both orders', () => {
+  const same = T(7);
+  for (const [p, q] of [[live('m', 1, same), tomb('m', same)], [live('m', 1, same), live('m', 2, same)], [live('m', 1), live('m', 2)], [live('m', 1), live('m', 2, T(1))]]) {
+    assert.deepEqual(CS.mergeSync([p], [q], NOW), CS.mergeSync([q], [p], NOW));
+  }
+  assert.equal(CS.mergeSync([live('m', 1, same)], [tomb('m', same)], NOW)[0].deleted, true, 'on a tie the deletion wins');
+  assert.equal(CS.mergeSync([live('m', 1)], [live('m', 2, T(1))], NOW)[0].quantity, 2, 'an entry with no updatedAt is the oldest');
+  assert.deepEqual(CS.mergeSync(null, undefined, NOW), []);
+  assert.deepEqual(CS.mergeSync([null, 5, { id: '' }, { id: '__proto__', updatedAt: same }, live('ok', 1, same)], [], NOW).map(e => e.id), ['ok'], 'rows without a usable id are dropped');
+});
+
+test('mergeSync: tombstones older than 30 days are dropped, younger ones are kept', () => {
+  const day = 86400000, at = ms => new Date(ms).toISOString().replace(/\.\d+Z$/, 'Z');
+  const kept = tomb('keep', at(NOW - 29 * day)), old = tomb('old', at(NOW - 31 * day));
+  assert.deepEqual(CS.mergeSync([kept, old, live('a', 1, T(1))], [], NOW).map(e => e.id), ['a', 'keep']);
+  assert.deepEqual(CS.mergeSync([], [old], NOW), [], 'an old tombstone arriving from the other side is dropped too');
+  assert.deepEqual(CS.mergeSync([live('old', 1, at(NOW - 40 * day))], [old], NOW), [], 'the deletion won first, then it expired: the card stays deleted');
+  assert.equal(CS.SYNC_TOMBSTONE_DAYS, 30);
+  assert.deepEqual(CS.mergeSync([kept], [], new Date(NOW + 2 * day)).map(e => e.id), [], 'now may be a Date');
+});
+
+test('normalizeSyncEntry: live items pass the import check, tombstones carry only id, deleted and updatedAt', () => {
+  const ok = CS.normalizeSyncEntry({ ...item({ id: 'c1' }), updatedAt: T(1) });
+  assert.equal(ok.id, 'c1'); assert.equal(ok.updatedAt, T(1)); assert.equal(ok.quantity, 2);
+  assert.deepEqual(CS.normalizeSyncEntry(tomb('c2', T(2))), tomb('c2', T(2)));
+  for (const bad of [null, 5, [], {}, item(), { ...item(), updatedAt: 'yesterday' }, { ...item(), updatedAt: '2026-11-01' }, { ...item(), updatedAt: 5 }, { ...item({ quantity: 0, favorite: false }), updatedAt: T(1) },
+    { ...item({ quantity: 1000 }), updatedAt: T(1) }, { ...item({ id: '__proto__' }), updatedAt: T(1) }, { ...item({ id: 'a\nb' }), updatedAt: T(1) },
+    { ...tomb('x', T(1)), quantity: 1 }, { ...tomb('x', T(1)), note: 'hi' }, { id: 'x', deleted: false, updatedAt: T(1) }, { id: 'x', deleted: 'true', updatedAt: T(1) }, { id: '', deleted: true, updatedAt: T(1) }, { deleted: true, updatedAt: T(1) }, { id: 'x', deleted: true }]) {
+    assert.equal(CS.normalizeSyncEntry(bad), null, `rejects ${JSON.stringify(bad)?.slice(0, 60)}`);
+  }
+  const dirty = CS.normalizeSyncEntry({ ...item({ id: 'c3', note: 'a\nb' }), updatedAt: T(1), extra: 'x' });
+  assert.equal(dirty.note, 'a b', 'text is cleaned like an import'); assert.equal('extra' in dirty, false, 'unknown fields are dropped');
+});
+
+test('normalizeSyncCode: 26+ characters of 0-9 A-Z, grouping and case ignored, nothing shorter', () => {
+  const code = 'K3M9T7Q2XB4V8ZD6N1HW5RPJ0C';
+  assert.equal(code.length, 26); assert.equal(CS.normalizeSyncCode(code), code);
+  assert.equal(CS.normalizeSyncCode('k3m9-t7q2 xb4v-8zd6 n1hw-5rpj-0c'), code, 'hyphens, spaces and lower case are fine');
+  for (const bad of [undefined, null, 5, '', 'ABC', code.slice(1), `${code}!`, `${code}é`, 'A'.repeat(65), 'x'.repeat(300), { toString: () => code }]) assert.equal(CS.normalizeSyncCode(bad), '', `rejects ${String(bad)?.slice(0, 20)}`);
+});
+
+test('generateSyncCode: 28 random 0-9 A-Z characters from crypto.getRandomValues, no modulo bias, and formatSyncCode groups by four', () => {
+  const codes = new Set();
+  for (let i = 0; i < 50; i++) { const code = CS.generateSyncCode({ getRandomValues: array => globalThis.crypto.getRandomValues(array) }); assert.match(code, /^[0-9A-Z]{28}$/); assert.equal(CS.normalizeSyncCode(code), code, 'the generated code passes the server rule'); codes.add(code); }
+  assert.equal(codes.size, 50);
+  // Bytes 252-255 would favour the first four characters if reduced modulo 36, so they are skipped: a source that starts with them still yields a full code.
+  const bytes = [255, 254, 253, 252, ...Array.from({ length: 36 }, (_, i) => i)];
+  let calls = 0;
+  const code = CS.generateSyncCode({ getRandomValues: array => { calls++; array.fill(0); if (calls === 1) bytes.forEach((byte, i) => { array[i] = byte; }); else array.fill(35); return array; } });
+  assert.equal(code.length, 28); assert.ok(code.startsWith('0123456789ABCDEFGHIJKLMNOPQRSTUV'.slice(0, 28)), 'skipped bytes never become characters');
+  assert.equal(CS.formatSyncCode('k3m9t7q2xb4v8zd6n1hw5rpj0c'), 'K3M9-T7Q2-XB4V-8ZD6-N1HW-5RPJ-0C');
+  assert.equal(CS.formatSyncCode(code), code.replace(/(.{4})(?=.)/g, '$1-'));
+  assert.equal(CS.formatSyncCode('nope'), '');
+  assert.equal(CS.normalizeSyncCode(CS.formatSyncCode(code)), code, 'what is shown can be typed back in');
 });

@@ -148,6 +148,9 @@ test('F4: 隱私頁寫明每天只統計各類頁面開啟總次數，且前面�
   assert.ok(privacy.includes('<li>伺服器每天統計各類頁面（首頁、遊戲、系列、卡片、搜尋）被開啟的總次數，只留下每天的總數；不記 IP、不記搜尋字詞、不放 cookie，也無法分辨是誰開的。另外每天記錄被開啟最多次的前 50 張卡各被開了幾次，用來排「最熱」，同樣不記錄是誰開的。</li>'));
   assert.ok(privacy.includes('<li>不使用第三方的分析或廣告工具（沒有 Google Analytics、沒有像素、沒有指紋辨識）。</li>'));
   assert.doesNotMatch(privacy, /不使用任何分析/);
-  assert.match(privacy, /最後更新：2026-11-12/);
+  assert.match(privacy, /最後更新：2026-11-20/);
+  assert.match(privacy, /預設只存在你的瀏覽器/); assert.match(privacy, /雲端同步（要自己開啟才會上傳）/);
+  for (const phrase of ['日本東京區', 'Google 帳號登入', 'Supabase Auth 保存你的 Google 信箱與帳號 ID', '同步碼等於密碼', '弄丟了我們找不回來', '按「登出」或「停止同步」', '按「刪除雲端資料」', '180 天', '不強制登入']) assert.ok(privacy.includes(phrase), phrase);
+  assert.doesNotMatch(privacy, /這些資料不會上傳到 CardSeek 的伺服器/, 'the old blanket promise is gone');
   assert.doesNotMatch(privacy, /\son\w+=|javascript:|<script/i);
 });

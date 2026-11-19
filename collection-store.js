@@ -198,5 +198,53 @@
     return{rows:rows.slice(0,limit),seriesCount:rows.length,unknown};
   }
 
-  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,problem,parseImport,planImport,parseCsv,ownedInSeries,seriesProgress,seriesBreakdown,finishKey,soleFinish,migrateFavorites,collectedQuantity,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate};
+  // ---- 雲端同步（docs/NEXT_PHASE_PLAN.md Y）----
+  // 同步用的一筆 = 收藏項目加 updatedAt（ISO 字串），或墓碑 {id,deleted:true,updatedAt}。mergeSync 是純函式：同一 id 取 updatedAt 較新的；
+  // 刪除留墓碑，超過 30 天清掉。兩邊順序對調結果相同（時間相同時墓碑勝，再相同就比欄位字串，所以不依賴順序）。
+  // shortcut: 墓碑過期後清掉，所以停用超過 30 天的裝置回來時，它那邊沒改過的舊項目會把已刪的卡帶回來；要避免就得保留更久或改用版本向量。
+  const SYNC_TOMBSTONE_DAYS=30,SYNC_FUTURE_MS=24*3600*1000;
+  const ISO_TIME=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/;
+  const timeOf=value=>{const ms=typeof value==='string'&&ISO_TIME.test(value)?Date.parse(value):NaN;return Number.isFinite(ms)?ms:0};
+  const stable=entry=>JSON.stringify(entry,Object.keys(entry).sort());
+  // The newer entry wins; on equal time a tombstone beats a live item, then the larger field string (a total order, so the result never depends on argument order).
+  function newer(a,b){
+    const ta=timeOf(a.updatedAt),tb=timeOf(b.updatedAt);
+    if(ta!==tb)return ta>tb?a:b;
+    if(Boolean(a.deleted)!==Boolean(b.deleted))return a.deleted?a:b;
+    return stable(a)>=stable(b)?a:b;
+  }
+  function mergeSync(local,remote,now=Date.now()){
+    const nowMs=now instanceof Date?now.getTime():typeof now==='string'?Date.parse(now):Number(now),winners=new Map();
+    for(const entry of [...(Array.isArray(local)?local:[]),...(Array.isArray(remote)?remote:[])]){
+      if(!plain(entry)||!idOf(entry.id)||UNSAFE_ID.has(entry.id))continue;
+      const hit=winners.get(entry.id);winners.set(entry.id,hit?newer(hit,entry):entry);
+    }
+    const limit=nowMs-SYNC_TOMBSTONE_DAYS*86400000;
+    return[...winners.values()].filter(entry=>!(entry.deleted&&timeOf(entry.updatedAt)<limit)).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
+  }
+  // Untrusted sync entry (the server runs every pushed row through this): a live item passes the same check as an import and gains a valid updatedAt;
+  // a tombstone may carry only id, deleted and updatedAt. Returns a clean entry or null; never throws.
+  function normalizeSyncEntry(raw){
+    if(!plain(raw)||UNSAFE_ID.has(raw.id)||typeof raw.updatedAt!=='string'||!ISO_TIME.test(raw.updatedAt)||!Number.isFinite(Date.parse(raw.updatedAt)))return null;
+    if(raw.deleted!==undefined){
+      return raw.deleted===true&&idOf(raw.id)&&Object.keys(raw).sort().join()==='deleted,id,updatedAt'?{id:raw.id,deleted:true,updatedAt:raw.updatedAt}:null;
+    }
+    const {updatedAt,...rest}=raw,item=normalizeItem(rest);
+    return item&&{...item,updatedAt};
+  }
+  // The sync code is a password: at least 26 characters of 0-9 A-Z (130 bits when random). Spaces and hyphens (grouped display) and case are ignored. '' when unusable.
+  const SYNC_CODE=/^[0-9A-Z]{26,64}$/,SYNC_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  function normalizeSyncCode(text){
+    const code=typeof text==='string'&&text.length<=200?text.replace(/[\s-]/g,'').toUpperCase():'';
+    return SYNC_CODE.test(code)?code:'';
+  }
+  // New code: 28 characters of 0-9 A-Z (about 145 bits) from crypto.getRandomValues; bytes >= 252 are skipped so every character is equally likely. Shown as 7 groups of 4.
+  function generateSyncCode(cryptoApi=root.crypto){
+    let code='';
+    while(code.length<28){const bytes=cryptoApi.getRandomValues(new Uint8Array(40));for(const byte of bytes)if(byte<252&&code.length<28)code+=SYNC_ALPHABET[byte%36]}
+    return code;
+  }
+  const formatSyncCode=text=>(normalizeSyncCode(text)||'').replace(/(.{4})(?=.)/g,'$1-');
+
+  root.CollectionStore={CONDITIONS,LIMITS,PROVIDER_LABELS,BACKUP_APP,BACKUP_VERSION,normalizeItem,problem,parseImport,planImport,parseCsv,ownedInSeries,seriesProgress,seriesBreakdown,finishKey,soleFinish,migrateFavorites,collectedQuantity,mergeItems,exportBackup,parseBackup,itemsFromLegacy,locateCard,valuate,mergeSync,generateSyncCode,formatSyncCode,normalizeSyncEntry,normalizeSyncCode,SYNC_TOMBSTONE_DAYS,SYNC_FUTURE_MS};
 })(typeof window!=='undefined'?window:globalThis);
