@@ -1,13 +1,14 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-18（台灣）｜更新者：Claude Code（桌電）
+> 上次更新：2026-11-19（台灣）｜更新者：Claude Code（桌電）
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-19：**網域 S3 上線**（6d0c85b，CI 綠）：使用者在 Cloudflare 買了 **cardseektcg.com**，DNS 兩筆 CNAME（@、www）指 cardscope.onrender.com（灰雲），Render 自訂網域已設、www 轉 apex。程式預設網址改 https://cardseektcg.com（canonical、sitemap、OG、security.txt），聯絡信箱改 contact@cardseektcg.com（Cloudflare Email Routing 轉寄到使用者 Gmail）。Render 已設 `CANONICAL_REDIRECT=true`：舊網址 cardscope.onrender.com 全路徑 301 到新網域（實測首頁與 /api/catalog/health 都 301，新網域 200）。UptimeRobot 兩個監控（804235519、804670677）已改查新網域。L5 第 2–6 輪對齊（外線／內線兩條對齊線、卡牆固定結構、手機頁尾聲明收成一行）也已上線。SNKRDUNK 信網址仍寫 cardscope.onrender.com，未寄（需使用者明確同意）。待辦：首頁依熱度排序（只是提案）、手機首屏高度、系列頁重複標題。
 - 2026-11-19：**L5 易讀性整理已上線**（fb6aab7，使用者看過 1920／1440／375 截圖同意）：首頁版本工具列、三層左緣對齊、系列卡標題可換行（最多 4 行）、隱藏原生橫捲軸；側板兩欄門檻改 ≥1800px（760px，左 288）、1600–1799 單欄；價格四格兩欄、其他來源狀態字降階、切換鈕 44px；body 行高 1.65。未驗：Cardmarket/TCGplayer 版本膠囊實拍、1920 開側板卡牆欄數、真機。網域：使用者選定 **cardseektcg.com**（取代計畫書的 cardscopetw.com），**尚未購買**。
 - 2026-11-18：**站名改為「好卡在 CardSeek」已上線**（1961d78）。使用者看得到的標題、OG、PWA（short_name「好卡在」）、頁首頁尾、SEO、提示文字都改；內部 key、事件名、備份格式 id（cardscope-collection）、User-Agent、啟動訊息（測試靠它）、網址與 cardscopetw 信箱不變。商標查過（智慧局文字近似）：「好卡在」「CARDSEEK」無同名；「卡好找」已被民傑資科註冊 009 類，不用。網域 cardseek.cc／.net／.io RDAP 查無註冊，.com／.app 已被註冊，等使用者買。SNKRDUNK 信改 CardSeek，仍未寄（寄送：cardscopetw 帳號寄 info@soda-inc.com，需使用者明確同意）。
 - 2026-11-18：**P6 已上線**（9dec62f，CI 綠）。ADR 0058；registry 補 PokemonPriceTracker（approved-api，免費層限非商業，營利前要換）；eBay imageDisplayPolicies 改 risk-accepted（API 條款文本讀不到，未逐條確認）；providers/registry.mjs ebay refreshHours 24→1；資料來源頁 eBay 掛牌列改「已上線（詳細頁）」。未處理：server.mjs SNKRDUNK 狀態文字寫「授權申請中」但授權信未寄；providerStatus() 沒列 eBay 與鑑定價。**第 2 波剩 L5、S3（網域，等使用者買）**。
