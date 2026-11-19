@@ -87,8 +87,9 @@ function rarityMarkup(raw,gameId,showFull=false){
   return `<abbr class="rarity-code"${full?` title="${e(full)}"`:''}>${e(info.text)}</abbr>${showFull&&full&&info.code!=='NONE'?`<small class="meta rarity-full">（${e(full)}）</small>`:''}`;
 }
 function cardRarityRaw(card){return String(card.rarity||card.printings?.find(printing=>printing.rarity)?.rarity||'')}
-function cardRarityLabel(card){return rarityInfo(cardRarityRaw(card),cardGameId(card)).code||'稀有度待補'}
-function cardRarityMarkup(card){return rarityMarkup(cardRarityRaw(card),cardGameId(card))||'稀有度待補'}
+const RARITY_PENDING='稀有度待補';
+function cardRarityLabel(card){return rarityInfo(cardRarityRaw(card),cardGameId(card)).code||RARITY_PENDING}
+function cardRarityMarkup(card){return rarityMarkup(cardRarityRaw(card),cardGameId(card))||RARITY_PENDING}
 // DP-era Japanese cards print no number (metadata.numberStatus 'not-printed'); only a missing value is '卡號待補'.
 function cardNumberLabel(card){return card.officialCardNumber||card.printings?.find(printing=>printing.localCardNumber)?.localCardNumber||(card.metadata?.numberStatus==='not-printed'?'未印卡號':'卡號待補')}
 function cardPriceLabel(price){return price&&Number.isFinite(Number(price.price))&&price.currency?`${e(price.currency)} ${Number(price.price).toLocaleString()} 買取`:''}
@@ -259,20 +260,26 @@ function cardSeriesLabel(card){
   return label?`<div class="card-series" title="${e([row?.officialCode,label].filter(Boolean).join('・'))}">${e(label)}</div>`:'';
 }
 // 有多個版本時並列「日 台」小晶片（整組用 aria-label 讀出完整版本名）；只有一個版本維持原本的「日版」標籤。
+const cardRegions=card=>[...new Set([card.region,...(card.printings||[]).map(p=>p.region)].filter(Boolean))].sort((a,b)=>CARD_REGION_ORDER.indexOf(a)-CARD_REGION_ORDER.indexOf(b));
 function cardVersionBadges(card){
-  const regions=[...new Set([card.region,...(card.printings||[]).map(p=>p.region)].filter(Boolean))].sort((a,b)=>CARD_REGION_ORDER.indexOf(a)-CARD_REGION_ORDER.indexOf(b));
+  const regions=cardRegions(card);
   if(regions.length<2)return `<span class="badge">${e(rn(card.region||card.printings?.[0]?.region,card.game))}</span>`;
   return `<span class="card-versions" role="group" aria-label="收錄版本：${e(regions.map(r=>rn(r,card.game)).join('、'))}">${regions.map(r=>`<span class="badge region-chip" aria-hidden="true">${e(rn(r,card.game).replace(/版$/,''))}</span>`).join('')}</span>`;
 }
+// 混合牆（收藏、搜尋）每張卡的上半部固定兩行：遊戲・版本、系列；沒有系列也留一個空行，同一排的卡名、卡號、收藏鈕才會對齊。
+function cardGameLine(card,gameLabel,versionMarkup){
+  const regions=cardRegions(card),text=[gameLabel,(regions.length?regions:[card.region||card.printings?.[0]?.region]).map(r=>rn(r,card.game)).join('、')].join('・');
+  return `<div class="card-game" title="${e(text)}"><span class="badge ip-badge">${e(gameLabel)}</span><span class="card-dot" aria-hidden="true"> · </span>${versionMarkup}</div>`;
+}
 function cardMarkup(card){
-  const source=image(card),price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),rarityHtml=cardRarityMarkup(card),mixed=wallMixed,versionMarkup=mixed?cardVersionBadges(card):'',seriesMarkup=mixed?cardSeriesLabel(card):'',gameLabel=cardGameLabel(card),picture=resilientImage(source,name(card),'這張卡尚未收錄可公開顯示的圖片',{...cardWatermarkOptions(card,source),fallbacks:[...cardImageSourceCandidates(card),...(card.fallbackImageUrls||[])]}),id=e(cardOpenId(card)),priceMarkup=cardPriceLabel(price),referenceMarkup=cardReferenceMarkup(card,cardOpenId(card));
+  const source=image(card),price=priceFor(card),number=cardNumberLabel(card),rarity=cardRarityLabel(card),rarityHtml=cardRarityMarkup(card),mixed=wallMixed,versionMarkup=mixed?cardVersionBadges(card):'',seriesMarkup=mixed?cardSeriesLabel(card)||'<div class="card-series" aria-hidden="true"></div>':'',gameLabel=cardGameLabel(card),picture=resilientImage(source,name(card),'這張卡尚未收錄可公開顯示的圖片',{...cardWatermarkOptions(card,source),fallbacks:[...cardImageSourceCandidates(card),...(card.fallbackImageUrls||[])]}),id=e(cardOpenId(card)),priceMarkup=cardPriceLabel(price),referenceMarkup=cardReferenceMarkup(card,cardOpenId(card));
   const variant=card.metadata?.variantName||card.printings?.find(p=>p.metadata?.variantName)?.metadata?.variantName,flags=`${variant?`<span class="badge variant-badge">${e(variant)}</span>`:''}${card.__ambiguous?'<span class="badge">版本待確認</span>':''}${listingBadge(card)}`,owned=watchQuantity(entryKey(card))>0?' is-owned':'';
   const openLabel=`開啟${name(card)}的卡片詳細資料`;
   const openControl=`<button type="button" class="card-open-hit" data-card-open="${id}" aria-label="${e(openLabel)}"></button>`;
   if(cardViewMode==='list')return `<article class="card card-list${owned}">${openControl}<div class="art">${picture}</div><div class="card-list-main">${mixed?`<span class="badge ip-badge">${e(gameLabel)}</span>`:''}<h3>${e(name(card))}</h3>${seriesMarkup}<div class="meta">${e(original(card)&&original(card)!==name(card)?original(card):'原名待補')}</div></div><div class="card-list-facts"><b>${e(number)}</b><span>${rarityHtml}</span>${versionMarkup}${flags}${priceMarkup?`<strong>${priceMarkup}</strong>`:''}${referenceMarkup||(priceMarkup?'':'<span class="meta">參考價待補</span>')}</div>${cardActionsMarkup(card)}</article>`;
   // 卡片三行：卡名（旁邊是收藏）、卡號＋稀有度、價格（有才顯示）。遊戲、系列、版本只在混合牆出現。
   const pricing=priceMarkup||referenceMarkup?`<div class="card-pricing">${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}${referenceMarkup}</div>`:'';
-  return `<article class="card${mixed?' card-mixed':''}${owned}">${openControl}<div class="art">${picture}</div>${mixed?`<div class="card-ctx"><span class="badge ip-badge">${e(gameLabel)}</span>${seriesMarkup}${versionMarkup}</div>`:''}<h3>${e(name(card))}</h3><div class="meta"><span class="card-no">${e(number)}</span><span class="card-sep"> · </span><span class="card-rarity" data-tier="${rarityTier(rarity)}">${rarityHtml}</span></div>${pricing}${flags?`<div class="card-flags">${flags}</div>`:''}${cardActionsMarkup(card)}</article>`;
+  return `<article class="card${mixed?' card-mixed':''}${owned}">${openControl}<div class="art">${picture}</div>${mixed?`<div class="card-ctx">${cardGameLine(card,gameLabel,versionMarkup)}${seriesMarkup}</div>`:''}<h3>${e(name(card))}</h3><div class="meta"><span class="card-no">${e(number)}</span><span class="card-sep"> · </span><span class="card-rarity" data-tier="${rarityTier(rarity)}"${rarityHtml===RARITY_PENDING?` title="${RARITY_PENDING}"`:''}>${rarityHtml===RARITY_PENDING?'待補':rarityHtml}</span></div>${pricing}${flags?`<div class="card-flags">${flags}</div>`:''}${cardActionsMarkup(card)}</article>`;
 }
 
 function activateCardActions(root=$('cards')){

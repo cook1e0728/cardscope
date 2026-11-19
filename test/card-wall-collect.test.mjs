@@ -44,10 +44,24 @@ test('a card is three lines: name, number plus rarity, price; game, series and v
   h.run('wallMixed=true');
   const mixed = h.run(`cardMarkup(${JSON.stringify(pikachu)})`);
   assert.match(mixed, /class="card card-mixed"/);
-  assert.match(mixed, /<div class="card-ctx"><span class="badge ip-badge">寶可夢<\/span>.*朱／紫系列.*日版/s, 'game, series and version on a mixed wall');
+  assert.match(mixed, /<div class="card-ctx"><div class="card-game" title="寶可夢・日版"><span class="badge ip-badge">寶可夢<\/span><span class="card-dot"[^>]*> · <\/span><span class="badge">日版<\/span><\/div><div class="card-series"[^>]*>朱／紫系列<\/div><\/div><h3>/, 'mixed wall: line 1 is game · version, line 2 is the series, then the name');
   h.run("cardViewMode='list'");
   assert.doesNotMatch(h.run(`(wallMixed=false,cardMarkup(${JSON.stringify(pikachu)}))`), /ip-badge|card-series/, 'list mode follows the same rule');
   assert.match(h.run(`(wallMixed=true,cardMarkup(${JSON.stringify(pikachu)}))`), /ip-badge/);
+});
+
+test('every mixed-wall card has the same fixed structure, even without a series or a rarity', () => {
+  const h = harness(); setup(h);
+  h.run('wallMixed=true');
+  const bare = h.run(`cardMarkup(${JSON.stringify({ id: 'c9', game: 'pokemon', nameZh: '妙蛙花EX', region: 'JP', printings: [{ id: 'p9', region: 'JP', localCardNumber: '001' }] })})`);
+  assert.match(bare, /<div class="card-ctx"><div class="card-game"[^>]*>.*<\/div><div class="card-series" aria-hidden="true"><\/div><\/div><h3>/s, 'no series: the series line is still there, empty');
+  assert.match(bare, /<span class="card-rarity" data-tier="base" title="稀有度待補">待補<\/span>/, 'the compact chip says 待補 and keeps the full words in title');
+  const full = h.run(`cardMarkup(${JSON.stringify(pikachu)})`);
+  assert.match(full, /<span class="card-rarity" data-tier="[a-z]+"><abbr class="rarity-code">SAR<\/abbr><\/span>/, 'a known rarity is shown as is');
+  const blocks = html => [...html.matchAll(/<(div class="card-ctx"|h3|div class="meta"|div class="card-actions")/g)].map(m => m[1]).join();
+  assert.equal(blocks(bare), blocks(full), 'same blocks in the same order');
+  const multi = h.run(`cardMarkup(${JSON.stringify({ ...pikachu, region: 'TW', printings: [{ region: 'TW', seriesId: 's1' }, { region: 'JP', seriesId: 's1' }] })})`);
+  assert.match(multi, /class="card-game" title="寶可夢・日版、台版"/, 'several versions: the full names are in the title');
 });
 
 test('mixed wall: search results, or loaded cards from different games, series or versions; one series page is never mixed', () => {

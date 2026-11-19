@@ -360,33 +360,38 @@ html.look-clean body[data-view] #watchlistSummary button{margin-left:4px;padding
 /* 卡片：三行 */
 html.look-clean body[data-view] .cards:not(.list-view){gap:16px 14px}
 html.look-clean body[data-view] .cards .card:not(.card-list){
-  display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"art art" "ctx ctx" "name act" "meta meta" "price price" "flags flags";
+  display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"art art" "ctx ctx" "name act" "meta meta" "price price" "flags flags";grid-template-rows:repeat(5,auto) 1fr;
   align-content:start;align-items:center;gap:0 4px;padding:8px 8px 10px;border:0;border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);
   transition:box-shadow .14s var(--ease);
 }
 html.look-clean body[data-view] .cards .card:not(.card-list) .art{grid-area:art;margin:0 0 8px;padding:0;border-radius:8px;background:var(--v2-page)}
 html.look-clean body[data-view] .cards .card:not(.card-list) .art img{border-radius:6px}
-html.look-clean body[data-view] .cards .card:not(.card-list) h3{grid-area:name;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;min-width:0;margin:0;overflow:hidden;overflow-wrap:anywhere;white-space:normal;font-size:14px;font-weight:600;line-height:1.35;letter-spacing:0;color:var(--v2-ink)}
-html.look-clean body[data-view] .cards .card:not(.card-list) .meta{grid-area:meta;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:2px 6px;min-width:0;margin:0;color:var(--v2-ink-2)}
-html.look-clean body[data-view] .cards .card:not(.card-list) .card-no{flex:none;font-size:var(--fs-sub);font-weight:500;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
-html.look-clean body[data-view] .cards .card:not(.card-list) .card-rarity{margin-left:0}
+html.look-clean body[data-view] .cards .card:not(.card-list) h3{grid-area:name;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;min-width:0;min-height:2.7em;margin:0;overflow:hidden;overflow-wrap:anywhere;white-space:normal;font-size:14px;font-weight:700;line-height:1.35;letter-spacing:0;color:var(--v2-ink)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .meta{grid-area:meta;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:2px 6px;min-width:0;margin:0;color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-no{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-sub);font-weight:500;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-rarity{flex:none;margin-left:0;white-space:nowrap}
 html.look-clean body[data-view] .cards .card:not(.card-list) .card-pricing{grid-area:price;min-width:0;margin-top:2px}
 html.look-clean body[data-view] .cards .card:not(.card-list) .card-price{margin:0;font-size:var(--fs-body);font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 /* 側板開著、卡牆 4 欄時，價格＋漲跌＋來源＋版本放不下一行：換行，不要截斷 */
 html.look-clean body[data-view] .cards .card:not(.card-list) .card-reference{flex-wrap:wrap;align-content:flex-start}
 html.look-clean body[data-view] .cards .card:not(.card-list) .card-flags{grid-area:flags;display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-/* 混合牆才有的一行：遊戲、系列、版本 */
-html.look-clean body[data-view] .cards .card:not(.card-list) .card-ctx{grid-area:ctx;display:flex;flex-wrap:wrap;align-items:center;gap:0 6px;min-width:0;margin:0 0 4px;font-size:var(--fs-note);color:var(--v2-ink-2)}
+/* 混合牆才有的兩行（固定各 16px）：遊戲・版本、系列；沒有系列也留空行，同一排的卡名與卡號才對得齊 */
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-ctx{grid-area:ctx;display:block;min-width:0;margin:0 0 4px;font-size:var(--fs-note);line-height:16px;color:var(--v2-ink-2)}
+html.look-clean body[data-view] .cards .card .card-ctx :is(.card-game,.card-series){display:block;height:16px;min-width:0;margin:0;overflow:hidden;font-size:var(--fs-note);line-height:16px;text-overflow:ellipsis;white-space:nowrap}
+html.look-clean body[data-view] .cards .card .card-ctx .card-game{display:flex}
+html.look-clean body[data-view] .cards .card .card-ctx .card-game>*{flex:none;white-space:nowrap}
+html.look-clean body[data-view] .cards .card .card-ctx .card-game>:is(.ip-badge,.badge,.card-versions){flex:0 1 auto;overflow:hidden;text-overflow:ellipsis}
+html.look-clean body[data-view] .cards .card .card-ctx .card-game>.ip-badge{min-width:3em}
+html.look-clean body[data-view] .cards .card .card-ctx .card-game>:is(.badge,.card-versions):not(.ip-badge){min-width:2em}
+html.look-clean body[data-view] .cards .card .card-ctx .card-dot{padding-inline:4px;font-weight:500}
 html.look-clean body[data-view] .cards .card .card-ctx .badge{margin:0;padding:0;border:0;border-radius:0;background:none;font-size:var(--fs-note);font-weight:600;color:var(--v2-ink-2)}
-html.look-clean body[data-view] .cards .card .card-ctx .card-series{flex:0 1 auto;order:0;margin:0;min-width:0;max-width:100%;overflow:hidden;font-size:var(--fs-note);text-overflow:ellipsis;white-space:nowrap}
-html.look-clean body[data-view] .cards .card .card-ctx .card-versions{order:0}
 html.look-clean body[data-view] .cards .card .card-ctx .region-chip{padding:0 6px;border-radius:6px;background:var(--v2-well);font-weight:500}
 /* 收藏：一個動作。沒收藏＝一顆 ☆（卡名右邊；手機在卡號右邊）；收藏了＝「− 數量 ＋」整列放在卡片底部 */
 html.look-clean body[data-view] .cards .card .card-actions{position:relative;top:auto;right:auto;z-index:2;grid-area:act;justify-self:end;align-self:center;display:flex;width:auto;margin:0}
 html.look-clean body[data-view] .cards .card .favorite-toggle{width:44px;height:44px;min-width:44px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;color:var(--v2-ink-2);font-size:22px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
 html.look-clean body[data-view] .cards .card .favorite-toggle:active{transform:scale(.97)}
-html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act"}
-html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{justify-self:stretch;margin-top:6px}
+html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act";grid-template-rows:repeat(6,auto) 1fr}
+html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{justify-self:stretch;align-self:end;margin-top:6px}
 html.look-clean body[data-view] .cards .card .watchlist-inline{display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:hidden}
 html.look-clean body[data-view] .cards .card .watchlist-inline button{flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
 html.look-clean body[data-view] .cards .card .watchlist-inline button:active{transform:scale(.97)}
@@ -409,11 +414,13 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
 /* 手機：一排 3 張（決定 6）；工具列單排橫向捲動（決定 11）；收藏在卡號那一行右邊 */
 @media (max-width:760px){
   html.look-clean body[data-view] .cards:not(.list-view){grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}
-  html.look-clean body[data-view] .cards .card:not(.card-list){padding:6px 6px 8px;border-radius:12px;grid-template-areas:"art art" "ctx ctx" "name name" "meta act" "price price" "flags flags"}
-  html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act"}
+  html.look-clean body[data-view] .cards .card:not(.card-list){padding:6px 6px 8px;border-radius:12px;grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act";grid-template-rows:repeat(6,auto) 1fr}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .card-actions{align-self:end}
   html.look-clean body[data-view] .cards .card:not(.card-list) .art{margin-bottom:6px}
-  html.look-clean body[data-view] .cards .card:not(.card-list) h3{font-size:13px;line-height:1.3}
-  html.look-clean body[data-view] .cards .card:not(.card-list) .meta{flex-direction:column;align-items:flex-start;gap:2px}
+  html.look-clean body[data-view] .cards .card:not(.card-list) h3{min-height:2.6em;font-size:13px;line-height:1.3}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .meta{gap:2px 3px}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .card-no{font-size:12px;letter-spacing:-.02em;font-variant-numeric:normal}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .card-rarity{padding-inline:2px}
   html.look-clean body[data-view] .cards .card:not(.card-list) .card-sep{display:none}
   html.look-clean body[data-view] .cards .card:not(.card-list) .card-price{font-size:var(--fs-sub)}
   html.look-clean body[data-view] .cards .card .favorite-toggle{margin:0 -4px 0 0}
@@ -812,3 +819,28 @@ html.look-clean #detail .dpanel{padding-inline:var(--card-pad)}
 html.look-clean #detail .ptl-details{padding-inline:var(--card-pad)}
 html.look-clean body[data-side] #main #collExtras{padding-left:var(--keyline-off)}
 #sideNav .coll-side-btn{padding-inline:var(--keyline-off)}
+
+/* ---- L6 手機頁尾：聲明收成一行摘要（點開看全文，桌面照舊整段顯示）；連結兩欄、每格 44px ---- */
+.brand-footer .foot-legal{display:none}
+@media (max-width:760px){
+  /* 一排 3 張的卡只有 112px 寬：內線的 13px 邊距會讓卡號＋稀有度塞不進一行，卡內邊距縮成 8px（方框外緣仍在外線上） */
+  html.look-clean body[data-view] .cards .card:not(.card-list){padding-inline:var(--s2)}
+  html.look-clean #cardsSection{margin-top:var(--s4)}
+  html.look-clean #cardsSection .title{margin-bottom:var(--s3)}
+  html.look-clean body[data-view] #cardTools{margin:var(--s2) 0 var(--s3)}
+  html.look-clean body[data-view="collection"] .coll-extras{gap:var(--s2);margin-bottom:var(--s2)}
+  html.look-clean .feature-tour{margin-top:var(--s5)}
+  html.look-clean .brand-footer{margin-top:var(--s4);padding-top:var(--s4);gap:var(--s3)}
+  html.look-clean .brand-footer>img{width:28px;height:28px}
+  html.look-clean .brand-footer>div{min-width:0;flex:1}
+  html.look-clean .brand-footer .foot-legal-full{display:none}
+  html.look-clean .brand-footer .foot-legal{display:block}
+  html.look-clean .brand-footer .foot-legal summary{justify-content:space-between;gap:var(--s2);font-size:13px;font-weight:500;line-height:1.4;color:var(--lc-ink-2)}
+  html.look-clean .brand-footer .foot-legal summary b{flex:none;font-size:13px;color:var(--lc-ink)}
+  html.look-clean .brand-footer .foot-legal summary b:after{content:" ⌄"}
+  html.look-clean .brand-footer .foot-legal[open] summary b:after{content:" ⌃"}
+  html.look-clean .brand-footer .foot-legal p{margin:0 0 var(--s2);font-size:14px;line-height:1.55}
+  html.look-clean .brand-footer .footer-links ul{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--s4);margin:0}
+  html.look-clean .brand-footer .footer-links a{font-size:15px}
+  html.look-clean .brand-footer summary{font-size:15px}
+}
