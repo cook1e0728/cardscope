@@ -735,10 +735,78 @@ html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-facts
   html.look-clean body[data-view="landing"] .feature-tour{margin-top:var(--s5)}
 }
 
-/* ---- 一-6 懸掛對齊（L5 第四輪）：只有一條對齊線 --keyline = 卡片內容的左緣（卡片內距 + 1px 外框）。
-   「最新／最夯」分段鈕裡的第一個字、系列分頁的「最新系列」、卡片裡的系列圖／類別／標題都從這條線起算；
-   卡片的外框、分段鈕的外框與內距往左懸掛在線外。卡片內距、分頁縮排、分段鈕位移全部由 --card-pad 算出，不各寫各的數字。 ---- */
-html.look-clean body[data-view="landing"] #homeRails{--card-pad:var(--s3);--keyline:calc(var(--card-pad) + 1px);--pill-pad:var(--s4);--pill-inset:calc(1px + 3px + var(--pill-pad))}
-html.look-clean body[data-view="landing"] #homeRails .rails-switch{display:inline-flex;width:auto;margin-left:calc(var(--keyline) - var(--pill-inset))}
-html.look-clean body[data-view="landing"] #homeRails .rails-switch button{flex:none;min-width:0;padding-inline:var(--pill-pad)}
-html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{padding-left:var(--keyline)}
+/* ---- 一-6 兩條對齊線（L5 第五輪，取代第四輪的單線）：同一欄裡
+   外線 = 所有方框（卡片、分段鈕、面板、工具列、搜尋區深色底、遊戲小牌）的外緣，不用負邊距往外掛；
+   內線 = 外線 + 外框 1px + --card-pad，所有方框裡的內容（第一個字／第一張圖）與沒有方框的列（分頁標籤、區塊標題、頁尾）都落在這條線上。
+   --keyline-off = 內線離外線的距離，有外框的方框 padding 取 --card-pad，沒外框的（搜尋區、右欄面板、頁尾）padding 取 --keyline-off，
+   分段鈕的字再扣掉外框與鈕內距。全站只有這兩個變數，不各寫各的數字；手機版方框縮緊，內距改 --s3。 ---- */
+html.look-clean{--card-pad:var(--s5);--keyline-off:calc(var(--card-pad) + 1px);--pill-bw:1px;--pill-gap:3px}
+@media (max-width:760px){html.look-clean{--card-pad:var(--s3)}}
+html.look-clean body[data-view="landing"] #homeRails .rails-switch{display:inline-flex;width:auto;margin-left:0}
+html.look-clean body[data-view="landing"] #homeRails .rails-switch button{flex:none;min-width:0;padding-inline:calc(var(--keyline-off) - var(--pill-bw) - var(--pill-gap))}
+html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{padding-left:var(--keyline-off)}
+@media (min-width:761px){
+  html.look-clean body[data-view="landing"] #homeRails .band-card{flex-basis:calc(240px + 2*(var(--card-pad) - var(--s3)));width:calc(240px + 2*(var(--card-pad) - var(--s3)))}
+  html.look-clean body[data-view="landing"] .hero{padding-inline:var(--keyline-off)}
+  html.look-clean body[data-view="landing"] .hero::before{inset-inline:calc(-1*var(--keyline-off))}
+  html.look-clean body[data-view="landing"] .hero>#channels,html.look-clean body[data-view="landing"] .hero>.browse-regions,html.look-clean body[data-view="landing"] .hero>.home-latest{margin-inline:calc(-1*var(--keyline-off))}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions{right:calc(-1*var(--keyline-off))}
+}
+@media (min-width:1200px){
+  html.look-clean body[data-view="landing"]:not([data-side]) .home-panel{padding-left:var(--keyline-off)}
+}
+html.look-clean .feature-tour>summary,html.look-clean .feature-tour>.help-grid{padding-left:var(--keyline-off)}
+html.look-clean .brand-footer{padding-left:var(--keyline-off)}
+html.look-clean body[data-view="landing"] .home-panel .mover-row{padding-inline:0}
+html.look-clean body[data-view="landing"] .home-panel .panel-more a{padding-inline:0}
+@media (hover:hover) and (pointer:fine){html.look-clean body[data-view="landing"] .home-panel .mover-row:hover{box-shadow:calc(-1*var(--s2)) 0 0 var(--v2-page),var(--s2) 0 0 var(--v2-page)}}
+@media (max-width:760px){html.look-clean body[data-view="landing"] .hero>.hero-intro{padding-inline:var(--keyline-off)}}
+
+/* ---- 一-7 卡牆頁（遊戲、搜尋結果、我的收藏）與側欄：卡牆卡片很小，內距收到 --s3（12px），這一頁的內線就是 outer + 1 + 12；
+   側欄的方框（遊戲列、版本與系列的鈕、篩選欄、系列列）全在外線 12px，標題與第一個字都在內線；頂欄 logo 對齊側欄外線、搜尋框對齊卡牆外線。 ---- */
+html.look-clean,html.look-clean body{--keyline-off:calc(var(--card-pad) + 1px)}
+html.look-clean body[data-side]{--card-pad:var(--s3)}
+@media (min-width:761px){
+  html.look-clean body[data-side] header.top .wrap{max-width:var(--shell-max);padding-inline:var(--s3) var(--s6)}
+  html.look-clean body[data-side] header.top .bar>.brand{flex:none;min-width:calc(var(--side-w) + var(--s6) - var(--s3) - var(--s4))}
+  html.look-clean body[data-view="market"] header.top .wrap{max-width:var(--shell-max)}
+}
+html.look-clean body[data-side] #main :is(#seriesCrumbs,#cardsTitle,#cardsMeta,#seriesProgress,#watchlistSummary){padding-left:var(--keyline-off)}
+#sideNav .side-head{padding-left:var(--s3)}
+#sideNav :is(.side-toggle,.side-close){padding-left:var(--keyline-off)}
+#sideNav .side-h,#sideNav .series-band-scope{margin-inline:var(--keyline-off)}
+#sideNav .side-tab-label{margin-left:var(--keyline-off)}
+#sideNav :is(.series-band-regions,.series-band-tabs,.series-band-tools,.browse-regions){padding-inline:0}
+#sideNav :is(.series-band-regions button,.series-band-tabs button){padding-inline:var(--keyline-off)}
+#sideNav .channel[data-ip]{padding-inline:var(--keyline-off)}
+#sideNav .channel-art{place-items:center start}
+#sideNav .band-tile,#sideNav .series-band.is-grid .band-tile{padding-inline:var(--keyline-off)}
+#sideNav .series-band:has(.band-tile-art img) .band-tile:not(:has(.band-tile-art img)){padding-left:calc(var(--keyline-off) + 56px)}
+html.look-clean body[data-view] #cards{padding:0}
+html.look-clean body[data-view] .cards .card:not(.card-list){padding-inline:var(--keyline-off)}
+html.look-clean body[data-view] #cardControls .view-switch button{padding-inline:calc(var(--keyline-off) - var(--pill-bw) - var(--pill-gap))}
+.side-sheet-btn{padding-inline:var(--keyline-off)}
+
+/* ---- 一-8 行情、資料收錄狀態（about）、隱私與來源（info-page）：同一套兩條線。方框（卡片、面板、表格、提示列）在外線，
+   頁面標題、段落、小標與清單（沒有方框的列）在內線；行情卡片小，內距用 --s3，面板類頁面用預設的 --s5。清單的項目符號在內線、文字往右縮。 ---- */
+html.look-clean body[data-view="market"]{--card-pad:var(--s3)}
+html.look-clean body[data-view="market"] :is(#marketIntro h2,#trendsSection .title,#trendsSection .movers-head,#eventsSection .title){padding-left:var(--keyline-off)}
+html.look-clean body[data-view="market"] #trendsSection .trend-rail{padding-inline:0}
+html.look-clean body[data-view="market"] #trendsSection .trend-card{padding-inline:var(--card-pad)!important}
+html.look-clean body[data-view="market"] #eventsSection li{padding-inline:var(--keyline-off)}
+html.look-clean body[data-view="about"] #aboutIntro>:not(.hero-trust){padding-left:var(--keyline-off)}
+html.look-clean body[data-view="about"] :is(.hero-trust,.beta-guidance,.coverage-status,#status){padding-inline:var(--card-pad)}
+html.look-clean body[data-view] .info-page>:is(.title,p,h3){padding-left:var(--keyline-off)}
+html.look-clean body[data-view] .info-page>:is(ul,ol){padding-left:calc(var(--keyline-off) + 20px)}
+html.look-clean body[data-view] .info-page .source-table-wrap :is(caption,th:first-child,td:first-child){padding-left:var(--card-pad)}
+
+/* ---- 一-9 詳細面板：面板（資料、版本、價格）外框在外線、內距 --s4，面板裡的字在內線；沒有方框的列（麵包屑、卡名、副名、小標、說明）也縮到內線。卡圖本身置中，是例外。 ---- */
+html.look-clean #detail{--card-pad:var(--s4);--keyline-off:calc(var(--card-pad) + 1px)}
+html.look-clean #detail :is(nav.crumbs,.detail-visual>h2,.detail-subname,.detail-position,.detail-section-title,p.meta.card-text-empty){padding-left:var(--keyline-off)}
+html.look-clean #detail .dpanel{padding-inline:var(--card-pad)}
+@media (max-width:760px){
+  html.look-clean body[data-view="market"] #trendsSection{padding-left:var(--card-pad)}
+  html.look-clean body[data-view="market"] #trendsSection :is(.title,.movers-head){padding-left:0}
+  html.look-clean body[data-view="about"] .brand-showcase-copy{padding-inline:var(--keyline-off)}
+}
+html.look-clean #detail .ptl-details{padding-inline:var(--card-pad)}
