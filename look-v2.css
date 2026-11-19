@@ -630,8 +630,10 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-close{flex:none;display:inline-grid;place-items:center;width:36px;height:36px;margin-right:-4px;border:0;border-radius:var(--btn-r);background:transparent;color:var(--v2-ink-2);font:inherit;font-size:22px;line-height:1;cursor:pointer;transition:transform .14s var(--ease),background-color .14s var(--ease),color .14s var(--ease)}
 .sync-close:active{transform:scale(.95)}
 .sync-hero{display:grid;gap:12px}
-.sync-lead{font-size:14px;line-height:1.6;color:var(--v2-ink-2)}
-.sync-facts{font-size:12px;line-height:1.5;color:var(--v2-ink-2)}
+.sync-line{display:block}
+.sync-box :is(.sync-lead,.sync-facts,.meta) b{color:var(--v2-ink);font-weight:700}
+.sync-lead{font-size:14px;line-height:1.65;color:var(--v2-ink-2)}
+.sync-facts{display:grid;gap:4px;padding-left:16px;font-size:12.5px;line-height:1.55;color:var(--v2-ink-2)}
 .sync-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-page);color:var(--v2-ink);font:inherit;font-size:14px;font-weight:700;box-shadow:var(--v2-shadow);cursor:pointer;transition:transform .14s var(--ease),box-shadow .14s var(--ease),background-color .14s var(--ease)}
 .sync-btn:active{transform:scale(.97)}
 .sync-primary{background:var(--v2-ink);color:#fff;box-shadow:0 1px 2px rgba(60,45,20,.24)}
@@ -639,8 +641,8 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-google-icon{flex:none;width:20px;height:20px}
 .sync-danger{background:transparent;color:#A4262C;box-shadow:none;padding-inline:10px;font-weight:600}
 .sync-confirm .sync-danger{background:#A4262C;color:#fff;padding-inline:16px;font-weight:700}
-.sync-status-card{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--v2-line);border-radius:12px;background:var(--v2-page)}
-.sync-state{font-size:14px;font-weight:700;line-height:1.45;color:var(--v2-ink)}
+.sync-status-card{display:grid;gap:6px;padding:14px 16px;border:1px solid var(--v2-line);border-radius:12px;background:var(--v2-page)}
+.sync-state{font-size:14px;font-weight:700;line-height:1.5;color:var(--v2-ink);word-break:keep-all}
 .sync-box .meta{font-size:13px;line-height:1.55;color:var(--v2-ink-2)}
 .sync-notice{font-size:13px;line-height:1.5;color:var(--v2-ink-2)}
 .sync-notice:empty{display:none}
