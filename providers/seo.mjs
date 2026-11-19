@@ -126,12 +126,12 @@ export function homeSeo({ gameId = '', baseUrl = DEFAULT_BASE_URL } = {}) {
 // ?view=about／privacy／market：站內頁各有自己的標題與 canonical，也都列進 sitemap。行情頁只有參考價與官方公告，沒有登入或個人資料。
 export const VIEW_PAGES = {
   about: { title: `資料收錄狀態｜${SITE_NAME}`, description: 'CardSeek 各遊戲的收錄張數、欄位完整度與資料更新時間，公開說明卡牌資料的來源與缺口。' },
-  privacy: { title: `隱私說明｜${SITE_NAME}`, description: 'CardSeek 不需登入、不放追蹤碼；收藏只存在你的瀏覽器，這裡說明站上蒐集與不蒐集哪些資料。' },
+  privacy: { title: `隱私說明｜${SITE_NAME}`, description: 'CardSeek 不需登入、不放追蹤碼；收藏預設只存在你的瀏覽器，這裡說明站上蒐集與不蒐集哪些資料。' },
   market: { title: `卡牌參考價漲跌與時事｜${SITE_NAME}`, description: '寶可夢卡近期的歐洲平台參考價漲跌榜，以及各遊戲近期的發售日與官方消息；參考價不是成交價。' }
 };
 // ?view=collection（我的收藏）的內容只存在使用者自己的裝置，伺服器沒有東西可收錄：有標題與 canonical，但標 noindex，也不進 sitemap。
 export const LOCAL_VIEW_PAGES = {
-  collection: { title: `我的收藏｜${SITE_NAME}`, description: 'CardSeek 的收藏只存在這台裝置，不用登入、不會上傳。', noindex: true }
+  collection: { title: `我的收藏｜${SITE_NAME}`, description: 'CardSeek 的收藏預設只存在這台裝置，不用登入；要跨裝置可自己開啟雲端同步。', noindex: true }
 };
 export function viewSeo({ view = '', baseUrl = DEFAULT_BASE_URL } = {}) {
   const page = Object.hasOwn(VIEW_PAGES, view) ? VIEW_PAGES[view] : Object.hasOwn(LOCAL_VIEW_PAGES, view) ? LOCAL_VIEW_PAGES[view] : null;

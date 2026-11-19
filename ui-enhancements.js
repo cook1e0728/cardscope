@@ -1216,7 +1216,7 @@ function ensureCollectionHosts(){
     $('cardTools').append(box);
   }
 }
-const collectionSummaryHtml=()=>`<b id="collSumCount"></b><span class="coll-sum-value" id="collValue"></span>${tipMarkup('參考總值與儲存方式','<div id="collValueDetail"></div><p>收藏只存在這台裝置：不用登入、不會上傳。清除瀏覽器資料或換裝置就會消失，建議定期用「管理 → 匯出備份」存檔。</p>')}<a class="coll-market-link" href="/?view=market" data-spa>看卡牌行情</a>`;
+const collectionSummaryHtml=()=>`<b id="collSumCount"></b><span class="coll-sum-value" id="collValue"></span>${tipMarkup('參考總值與儲存方式','<div id="collValueDetail"></div><p>收藏預設只存在這台裝置，不用登入；開啟「管理 → 雲端同步」才會上傳。清除瀏覽器資料或換裝置就會消失，建議定期用「管理 → 匯出備份」存檔。</p>')}<a class="coll-market-link" href="/?view=market" data-spa>看卡牌行情</a>`;
 const collectionEmptyHtml=()=>'<div class="coll-empty"><img src="/assets/brand/web/rabbit-profile.webp" alt="" width="120" height="120" loading="lazy"><p>還沒有收藏。在卡片上按 ☆ 就會收在這裡。</p><button type="button" class="coll-empty-cta" data-coll-explore>去圖鑑找卡</button></div>';
 function renderCollectionSeries(){
   const host=$('collSeries');if(!host)return;
