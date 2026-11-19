@@ -647,7 +647,11 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-more{padding-top:12px;border-top:1px solid var(--v2-line)}
 .sync-confirm{display:grid;gap:10px;padding:14px;border-radius:12px;background:var(--v2-page);box-shadow:inset 0 0 0 1.5px var(--v2-ink)}
 .sync-confirm h3{margin:0;font-size:16px}
-.sync-dialog :is(.sync-btn,.sync-close,.sync-input,.sync-code):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+.sync-alt{padding-top:10px;border-top:1px solid var(--v2-line)}
+.sync-alt summary{display:flex;align-items:center;min-height:var(--btn-h);font-size:var(--fs-sub);font-weight:700;color:var(--v2-ink-2);cursor:pointer}
+.sync-alt-body{display:grid;gap:10px;padding-top:6px}
+.sync-upgrade{padding-top:10px;border-top:1px solid var(--v2-line)}
+.sync-dialog :is(.sync-btn,.sync-close,.sync-input,.sync-code,.sync-alt summary):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 @media (hover:hover) and (pointer:fine){.sync-btn:not(.sync-primary):not(.sync-danger):hover{box-shadow:var(--v2-shadow-up)}}
 
 /* ---- 側板裡的收藏資料：品況、閃卡版本、備註 ---- */

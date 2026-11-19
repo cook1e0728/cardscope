@@ -1,14 +1,14 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-20（台灣）｜更新者：Claude Code（桌電）
+> 上次更新：2026-11-20（台灣）｜更新者：Antigravity
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-20：**收藏雲端同步，交接給 Antigravity**（Claude 額度不足）。分支 `claude/collection-sync`（已推上 GitHub，**未合併 main、未上線**）：Y1–Y5 同步碼版已完成（1019 測試全過）：副庫 `collection_sync` 表已套用、實測 pull/push/409 正確；`/api/sync/pull|push|delete`；收藏頁「管理 → 雲端同步」對話框；ADR 0059；隱私說明已改寫。**180 天清理排程 `supabase/ip2/20261119180000_collection_sync_cleanup.sql` 只寫檔未套用，套用前要使用者同意。** 使用者看過介面後覺得手抄同步碼太麻煩，**選了改用 Google 帳號登入自動同步**（同步碼留作備案）。下一步照 `docs/COLLECTION_SYNC_GOOGLE_PLAN.md`（使用者尚未正式核准，接手先給使用者看）：先請使用者建 Google OAuth 用戶端、在第二庫開 Google 登入、Render 加 `SUPABASE2_ANON_KEY`（金鑰由使用者自己貼），再實作 PKCE 登入（經自家伺服器交換，不開 CSP、不用 cookie）、Bearer 驗證接到既有 sync 端點、前端主按鈕「用 Google 登入」、隱私說明改寫。介面改動合併前要給使用者看截圖。
+- 2026-11-20：**收藏雲端同步改用 Google 登入（程式與測試已完成，待使用者確認截圖與清理排程後合併上線）**。分支 `claude/collection-sync`（**未合併 main、未上線**）：使用者已核准 `docs/COLLECTION_SYNC_GOOGLE_PLAN.md` 並完成 Google OAuth 用戶端、Supabase 副庫開啟 Google 登入、Render 設定 `SUPABASE2_ANON_KEY`。已完成：伺服器 `GET /api/auth/config`、`POST /api/auth/exchange|refresh|logout`（PKCE 經自家伺服器交換，CSP `connect-src` 維持 `'self'`、不用 cookie）、`/api/sync/pull|push|delete` 支援 `Authorization: Bearer`（`/auth/v1/user` 記憶體快取，鍵 = `sha256('google:' + user.id)` 與同步碼鍵空間隔離）；前端對話框主按鈕「用 Google 登入，自動同步」、同步碼收進「不想登入？改用同步碼」摺疊、已用同步碼裝置登入 Google 自動把同步碼雲端資料併入並停用同步碼、收藏頁標題列同步狀態；隱私說明與 ADR 0059 更新；`npm test` 1022 全過、`npm run check` 過；1440／375 截圖已出給使用者確認。**180 天清理排程 `supabase/ip2/20261119180000_collection_sync_cleanup.sql` 仍只寫檔未套用，等使用者同意。**
 - 2026-11-19：**網域 S3 上線**（6d0c85b，CI 綠）：使用者在 Cloudflare 買了 **cardseektcg.com**，DNS 兩筆 CNAME（@、www）指 cardscope.onrender.com（灰雲），Render 自訂網域已設、www 轉 apex。程式預設網址改 https://cardseektcg.com（canonical、sitemap、OG、security.txt），聯絡信箱改 contact@cardseektcg.com（Cloudflare Email Routing 轉寄到使用者 Gmail）。Render 已設 `CANONICAL_REDIRECT=true`：舊網址 cardscope.onrender.com 全路徑 301 到新網域（實測首頁與 /api/catalog/health 都 301，新網域 200）。UptimeRobot 兩個監控（804235519、804670677）已改查新網域。L5 第 2–6 輪對齊（外線／內線兩條對齊線、卡牆固定結構、手機頁尾聲明收成一行）也已上線。SNKRDUNK 信網址仍寫 cardscope.onrender.com，未寄（需使用者明確同意）。待辦：首頁依熱度排序（只是提案）、手機首屏高度、系列頁重複標題。
 - 2026-11-19：**L5 易讀性整理已上線**（fb6aab7，使用者看過 1920／1440／375 截圖同意）：首頁版本工具列、三層左緣對齊、系列卡標題可換行（最多 4 行）、隱藏原生橫捲軸；側板兩欄門檻改 ≥1800px（760px，左 288）、1600–1799 單欄；價格四格兩欄、其他來源狀態字降階、切換鈕 44px；body 行高 1.65。未驗：Cardmarket/TCGplayer 版本膠囊實拍、1920 開側板卡牆欄數、真機。網域：使用者選定 **cardseektcg.com**（取代計畫書的 cardscopetw.com），**尚未購買**。
 - 2026-11-18：**站名改為「好卡在 CardSeek」已上線**（1961d78）。使用者看得到的標題、OG、PWA（short_name「好卡在」）、頁首頁尾、SEO、提示文字都改；內部 key、事件名、備份格式 id（cardscope-collection）、User-Agent、啟動訊息（測試靠它）、網址與 cardscopetw 信箱不變。商標查過（智慧局文字近似）：「好卡在」「CARDSEEK」無同名；「卡好找」已被民傑資科註冊 009 類，不用。網域 cardseek.cc／.net／.io RDAP 查無註冊，.com／.app 已被註冊，等使用者買。SNKRDUNK 信改 CardSeek，仍未寄（寄送：cardscopetw 帳號寄 info@soda-inc.com，需使用者明確同意）。

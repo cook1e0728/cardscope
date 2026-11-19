@@ -15,49 +15,70 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp
 const ENGINE = [between('function persistCollection', '// 舊 ☆ 清單只在'), between('// 把 items 寫回三個既有 localStorage 鍵', '// 舊資料搬移'), between('// ── 雲端同步（docs/NEXT_PHASE_PLAN.md Y4）──', '// ── 雲端同步結束 ──')].join('\n');
 
 function fakeCloud() {
-  const cloud = { row: null, calls: [], down: false, force: null };
-  cloud.fetch = async (url, { method, headers, body }) => {
-    const action = String(url).split('/').pop(), request = JSON.parse(body);
-    cloud.calls.push({ url: String(url), method, headers, action, request });
+  const cloud = { row: null, googleRow: null, calls: [], down: false, force: null, authUrl: 'https://ip2.example.supabase.co', token: 'access-tok-1', refreshToken: 'refresh-tok-1', email: 'trainer@gmail.com' };
+  cloud.fetch = async (url, { method = 'GET', headers = {}, body } = {}) => {
+    const u = String(url), action = u.split('/').pop(), request = body ? JSON.parse(body) : {};
+    cloud.calls.push({ url: u, method, headers, action, request });
     if (cloud.down) throw new TypeError('fetch failed');
-    const reply = (status, data, error = '') => ({ status, json: async () => (status === 200 ? { data } : { error }) });
+    const reply = (status, data, error = '') => ({ status, ok: status >= 200 && status < 300, json: async () => (status >= 200 && status < 300 ? { data } : { error }) });
     if (cloud.force) return reply(cloud.force, null, 'forced');
-    const keys = Object.keys(request).sort().join(), code = CS.normalizeSyncCode(request.code);
-    if (keys !== (action === 'push' ? 'code,items,revision' : 'code') || !code) return reply(400, null, 'bad request');
-    if (action === 'pull') return reply(200, { items: cloud.row?.items || [], revision: cloud.row?.revision || 0, updatedAt: null });
-    if (action === 'delete') { cloud.row = null; return reply(200, { deleted: true }); }
+    if (u === '/api/auth/config') return reply(200, { url: cloud.authUrl });
+    if (u === '/api/auth/exchange') {
+      if (!request.code || !request.verifier) return reply(400, null, 'bad pkce');
+      return reply(200, { accessToken: cloud.token, refreshToken: cloud.refreshToken, expiresAt: Math.floor(Date.now() / 1000) + 3600, email: cloud.email });
+    }
+    if (u === '/api/auth/refresh') {
+      if (request.refreshToken !== cloud.refreshToken) return reply(401, null, 'expired');
+      cloud.token = 'access-tok-refreshed';
+      return reply(200, { accessToken: cloud.token, refreshToken: cloud.refreshToken, expiresAt: Math.floor(Date.now() / 1000) + 3600, email: cloud.email });
+    }
+    if (u === '/api/auth/logout') return { status: 204, ok: true, json: async () => null };
+    const isGoogle = Boolean(headers?.Authorization);
+    if (isGoogle && headers.Authorization !== `Bearer ${cloud.token}`) return reply(401, null, 'bad token');
+    const keys = Object.keys(request).sort().join(), code = isGoogle ? 'GOOGLE' : CS.normalizeSyncCode(request.code);
+    const expectedKeys = isGoogle ? (action === 'push' ? 'items,revision' : '') : (action === 'push' ? 'code,items,revision' : 'code');
+    if (keys !== expectedKeys || !code) return reply(400, null, 'bad request');
+    const slot = isGoogle ? 'googleRow' : 'row';
+    if (action === 'pull') return reply(200, { items: cloud[slot]?.items || [], revision: cloud[slot]?.revision || 0, updatedAt: null });
+    if (action === 'delete') { cloud[slot] = null; return reply(200, { deleted: true }); }
     const rows = request.items.map(CS.normalizeSyncEntry);
     if (rows.some(row => !row)) return reply(400, null, 'bad entry');
-    if (request.revision === 0 ? cloud.row : cloud.row?.revision !== request.revision) return reply(409, null, 'conflict');
-    cloud.row = { items: CS.mergeSync([], rows), revision: request.revision + 1, code };
-    return reply(200, { revision: cloud.row.revision, updatedAt: null });
+    if (request.revision === 0 ? cloud[slot] : cloud[slot]?.revision !== request.revision) return reply(409, null, 'conflict');
+    cloud[slot] = { items: CS.mergeSync([], rows), revision: request.revision + 1, code };
+    return reply(200, { revision: cloud[slot].revision, updatedAt: null });
   };
   return cloud;
 }
 
-function device(cloud, clock, { online = true, stored = {} } = {}) {
-  const storage = new Map(Object.entries(stored)), timers = new Map(), statuses = [], watchlist = {}, watchlistMeta = {};
+function device(cloud, clock, { online = true, stored = {}, session = {}, search = '' } = {}) {
+  const storage = new Map(Object.entries(stored)), sessionStore = new Map(Object.entries(session)), timers = new Map(), statuses = [], watchlist = {}, watchlistMeta = {};
   let nextTimer = 1;
+  const loc = { origin: 'https://cardseektcg.com', pathname: '/', search, hash: '', href: `https://cardseektcg.com/${search}`, assign(url) { this.href = url; } };
+  const hist = { state: null, replaceState(s, _t, url) { this.state = s; const u = new URL(url, loc.origin); loc.pathname = u.pathname; loc.search = u.search; loc.hash = u.hash; loc.href = u.href; } };
   const sandbox = {
-    CS, watchlist, watchlistMeta, e: esc, $: () => null, window: {}, navigator: { onLine: online }, AbortController, localStorage: { removeItem: key => storage.delete(key) },
+    CS, watchlist, watchlistMeta, e: esc, $: () => null, window: { crypto: globalThis.crypto }, crypto: globalThis.crypto, TextEncoder, Uint8Array, btoa: globalThis.btoa, URLSearchParams,
+    location: loc, history: hist,
+    navigator: { onLine: online }, AbortController,
+    localStorage: { removeItem: key => storage.delete(key) },
+    sessionStorage: { getItem: key => sessionStore.get(key) || null, setItem: (key, val) => sessionStore.set(key, String(val)), removeItem: key => sessionStore.delete(key) },
     document: { addEventListener() {}, visibilityState: 'visible' },
     uiLocal: { get: (key, fallback) => storage.get(key) || fallback, set: (key, value) => { storage.set(key, value); return true; } },
     setTimeout: (fn, ms) => { const id = nextTimer++; timers.set(id, { fn, ms }); return id; }, clearTimeout: id => timers.delete(id),
     Date: class extends Date { static now() { return clock.t; } },
     fetch: (...args) => cloud.fetch(...args),
-    refreshGrid() {}, inCollectionView: () => false, collectionStatus: text => statuses.push(text), collectionUi: { pricesState: 'ready' }, resolveCollection: async () => false, loadCollectionPrices: async () => {}, rerenderCollection() {},
+    refreshGrid() {}, inCollectionView: () => false, collectionStatus: text => statuses.push(text), collectionUi: { pricesState: 'ready', filter: { game: '', series: '' } }, resolveCollection: async () => false, loadCollectionPrices: async () => {}, rerenderCollection() {},
     collectionItems: () => CS.itemsFromLegacy([], watchlist, watchlistMeta).filter(item => item.quantity > 0)
   };
   vm.createContext(sandbox);
   const run = code => vm.runInContext(code, sandbox);
   run(`let syncState=null;\n${ENGINE}`);
   const api = {
-    sandbox, storage, timers, statuses, watchlist, run,
+    sandbox, storage, sessionStore, loc, hist, timers, statuses, watchlist, run,
     qty(id, count, meta = {}) { clock.t += 1000; run(`(()=>{const id=${JSON.stringify(id)};if(${count})watchlist[id]=${count};else delete watchlist[id];Object.assign(watchlistMeta[id]=watchlistMeta[id]||{id},${JSON.stringify(meta)});persistCollection()})()`); },
-    idle: async () => { while (run('syncUi.busy')) await new Promise(resolve => setImmediate(resolve)); },
+    idle: async () => { while (run('syncUi.busy') || run('syncUi.authBusy')) await new Promise(resolve => setImmediate(resolve)); },
     now: async () => { clock.t += 1000; await run('syncNow()'); },
     fire() { const due = [...timers.entries()]; timers.clear(); due.forEach(([, timer]) => timer.fn()); return due.map(([, timer]) => timer.ms); },
-    state: () => run('syncState'), ui: () => run('syncUi'),
+    state: () => run('syncState'), auth: () => run('authState'), ui: () => run('syncUi'),
     counts: () => Object.fromEntries(Object.entries(watchlist).sort())
   };
   return api;
@@ -202,10 +223,12 @@ test('state survives a reload: the same localStorage restores the code, records 
   again.storage.set('cardscope-sync', '{not json'); assert.equal(again.run('readSyncState()'), null);
 });
 
-test('dialog markup: states, grouped code, aria, a confirmation for stop and delete, and nothing inline (strict CSP)', async () => {
+test('dialog markup: states, Google primary button, sync-code details disclosure, grouped code, aria, confirmations, and nothing inline (strict CSP)', async () => {
   const { cloud, clock } = world(), a = device(cloud, clock);
   const off = a.run('syncDialogHtml()');
-  assert.match(off, /data-sync-start>開啟雲端同步</); assert.match(off, /data-sync-join/); assert.match(off, /<label for="syncJoinCode">/);
+  assert.match(off, /data-sync-google>用 Google 登入，自動同步</);
+  assert.match(off, /<details class="sync-alt"><summary>不想登入？改用同步碼<\/summary>/);
+  assert.match(off, /data-sync-start>開啟雲端同步（產生同步碼）</); assert.match(off, /data-sync-join/); assert.match(off, /<label for="syncJoinCode">/);
   assert.match(off, /同步碼就是密碼/); assert.match(off, /180 天/);
   await a.run('startSync("")'); await a.idle();
   const on = a.run('syncDialogHtml()'), grouped = CS.formatSyncCode(code(a));
@@ -228,6 +251,65 @@ test('dialog markup: states, grouped code, aria, a confirmation for stop and del
   assert.doesNotMatch(a.run('syncDialogHtml()'), /<img/, 'notices are escaped');
 });
 
+test('Google login flow: PKCE verifier in sessionStorage, redirect strips ?code= via replaceState, verifier is deleted once used, local & sync-code items merge into Google, logout clears tokens', async () => {
+  const { cloud, clock } = world(), a = device(cloud, clock);
+  a.qty('c1', 2);
+  // Start with a sync code first so we also test upgrading from sync-code to Google
+  await a.run('startSync("")'); await a.idle();
+  assert.equal(cloud.row.items[0].quantity, 2);
+
+  // User clicks "用 Google 登入": verifier stored in sessionStorage, navigated to Supabase authorize URL with S256 challenge
+  await a.run('startGoogleLogin()');
+  const verifier = a.sessionStore.get('cardscope-pkce');
+  assert.ok(verifier && verifier.length >= 43, 'PKCE verifier stored in sessionStorage');
+  assert.match(a.loc.href, /^https:\/\/ip2\.example\.supabase\.co\/auth\/v1\/authorize\?/);
+  assert.match(a.loc.href, /provider=google/);
+  assert.match(a.loc.href, /code_challenge_method=s256/);
+
+  // Simulate returning from Google OAuth with ?view=collection&code=oauth-code-xyz on a device that had sync-code enabled + its own local c2
+  const b = device(cloud, clock, {
+    stored: {
+      'cardscope-sync': a.storage.get('cardscope-sync'),
+      'cardscope-watchlist': a.storage.get('cardscope-watchlist'),
+      'cardscope-watchlist-meta': a.storage.get('cardscope-watchlist-meta')
+    },
+    session: { 'cardscope-pkce': verifier }
+  });
+  b.run("Object.assign(watchlist,JSON.parse(uiLocal.get('cardscope-watchlist','{}')));Object.assign(watchlistMeta,JSON.parse(uiLocal.get('cardscope-watchlist-meta','{}')))");
+  b.qty('c2', 4); // local card added on B before redirect completes
+  b.loc.search = '?view=collection&code=oauth-code-xyz';
+  await b.run('completeGoogleRedirect()');
+  await b.idle();
+  assert.equal(b.loc.search, '?view=collection', '?code= was stripped from the URL by history.replaceState');
+  assert.equal(b.sessionStore.has('cardscope-pkce'), false, 'PKCE verifier was deleted right after exchange');
+  assert.equal(b.state().google, true);
+  assert.equal('code' in b.state(), false, 'sync code is disabled after upgrading to Google');
+  assert.equal(b.auth().email, 'trainer@gmail.com');
+  assert.deepEqual(b.counts(), { c1: 2, c2: 4 }, 'sync-code cloud items (c1) and local items (c2) both merged into Google');
+  assert.deepEqual(cloud.googleRow.items.map(r => [r.id, r.quantity]), [['c1', 2], ['c2', 4]]);
+
+  const gHtml = b.run('syncDialogHtml()');
+  assert.match(gHtml, /已用 trainer@gmail\.com 登入・已同步/);
+  assert.match(gHtml, /data-sync-stop>登出</);
+  assert.match(gHtml, /data-sync-delete>刪除雲端資料</);
+  assert.match(b.run('collectionSyncMeta()'), /^Google 雲端同步・已同步/);
+
+  // Token refresh on 401
+  cloud.token = 'different-server-token'; // forces a 401 on the first attempt, then /api/auth/refresh rotates to 'access-tok-refreshed'
+  b.qty('c2', 5); b.fire(); await b.idle();
+  assert.equal(b.auth().accessToken, 'access-tok-refreshed');
+  assert.equal(cloud.googleRow.items.find(r => r.id === 'c2').quantity, 5);
+
+  // Logout clears authState and syncState, leaves local collection intact
+  await b.run('logoutGoogle()');
+  assert.equal(b.state(), null);
+  assert.equal(b.auth(), null);
+  assert.equal(b.storage.has('cardscope-auth'), false);
+  assert.equal(b.storage.has('cardscope-sync'), false);
+  assert.deepEqual(b.counts(), { c1: 2, c2: 5 }, 'local collection stays after logout');
+  assert.equal(b.run('collectionSyncMeta()'), '未登入・只存在這台裝置');
+});
+
 test('wiring: the 管理 menu item opens the dialog, persistCollection stamps, the page open/visible/online triggers exist, and the dialog never uses inline script', () => {
   assert.match(ui, /data-coll-sync title="用同步碼在多台裝置同步收藏">雲端同步<\/button>/);
   assert.match(ui, /else if\('collSync' in item\.dataset\)openSyncDialog\(\);/);
@@ -239,7 +321,6 @@ test('wiring: the 管理 menu item opens the dialog, persistCollection stamps, t
   const block = between('// ── 雲端同步（docs/NEXT_PHASE_PLAN.md Y4）──', '// ── 雲端同步結束 ──');
   assert.doesNotMatch(block, /innerHTML\s*=\s*[^;]*\bon[a-z]+=/i); assert.doesNotMatch(block, /eval\(|new Function|document\.write/);
   assert.doesNotMatch(block, /console\./, 'the code is never logged');
-  assert.doesNotMatch(block, /location\.(search|hash|href)|history\.(push|replace)State|URLSearchParams/, 'the code never goes near the address bar');
-  for (const selector of ['.sync-dialog', '.sync-dialog::backdrop', '.sync-code', '.sync-btn', '.sync-confirm']) assert.ok(css.includes(selector), selector);
+  for (const selector of ['.sync-dialog', '.sync-dialog::backdrop', '.sync-code', '.sync-btn', '.sync-confirm', '.sync-alt']) assert.ok(css.includes(selector), selector);
   assert.match(css, /\.sync-btn\{[^}]*min-height:var\(--btn-h\)/); assert.match(css, /\.sync-dialog\{width:min\(480px,calc\(100vw - 32px\)\)/);
 });

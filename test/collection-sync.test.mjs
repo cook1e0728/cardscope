@@ -248,3 +248,189 @@ test('Y4 cleanup migration: a daily pg_cron job deletes sync rows not written fo
   assert.match(sql, /cron\.schedule\('collection-sync-purge', '\d+ \d+ \* \* \*', 'select public\.collection_sync_purge_stale\(\)'\)/);
 });
 
+// ---- Google 登入（docs/COLLECTION_SYNC_GOOGLE_PLAN.md）----
+const ANON = 'anon-fixture-key';
+const USER_A = '11111111-2222-3333-4444-555555555555', USER_B = '66666666-7777-8888-9999-000000000000';
+const VALID_VERIFIER = 'v'.repeat(48), VALID_CODE = 'pkce-auth-code-123456';
+const makeJwt = (sub, expSec = Math.floor(Date.now() / 1000) + 3600) => [
+  Buffer.from('{"alg":"HS256"}').toString('base64url'),
+  Buffer.from(JSON.stringify({ sub, exp: expSec })).toString('base64url'),
+  'sig'
+].join('.');
+
+async function fakeDbAndAuth() {
+  const rows = new Map(), calls = [], authCalls = [], tokens = new Map(), refreshMap = new Map();
+  let authFail = 0;
+  const server = createServer((req, res) => {
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', () => {
+      const url = new URL(req.url, 'http://fake'), text = Buffer.concat(chunks).toString('utf8'), body = text ? JSON.parse(text) : null;
+      const send = (status, payload) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(payload === undefined ? '' : JSON.stringify(payload)); };
+      if (url.pathname.startsWith('/auth/v1/')) {
+        authCalls.push({ method: req.method, path: url.pathname, query: url.search, body, apikey: req.headers.apikey, auth: req.headers.authorization || '' });
+        if (req.headers.apikey !== ANON) return send(401, { msg: 'bad apikey' });
+        if (authFail) return send(authFail, { error_description: 'upstream-secret-auth-error' });
+        if (url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'pkce') {
+          if (body?.auth_code === VALID_CODE && body?.code_verifier === VALID_VERIFIER) {
+            const access = makeJwt(USER_A), refresh = 'refresh-token-valid-12345';
+            tokens.set(access, { id: USER_A, email: 'trainer@example.com' });
+            refreshMap.set(refresh, { id: USER_A, email: 'trainer@example.com' });
+            return send(200, { access_token: access, refresh_token: refresh, expires_in: 3600, user: { id: USER_A, email: 'trainer@example.com' } });
+          }
+          return send(400, { error: 'invalid_grant', error_description: 'secret-pkce-mismatch' });
+        }
+        if (url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'refresh_token') {
+          const user = refreshMap.get(body?.refresh_token);
+          if (!user) return send(400, { error: 'invalid_grant', error_description: 'secret-refresh-expired' });
+          const access = makeJwt(user.id), nextRefresh = 'refresh-token-rotated-67890';
+          tokens.set(access, user); refreshMap.set(nextRefresh, user);
+          return send(200, { access_token: access, refresh_token: nextRefresh, expires_at: Math.floor(Date.now() / 1000) + 3600, user });
+        }
+        if (url.pathname === '/auth/v1/user' && req.method === 'GET') {
+          const tok = (req.headers.authorization || '').replace(/^Bearer /, ''), user = tokens.get(tok);
+          if (!user) return send(401, { msg: 'invalid_jwt: secret-jwt-detail' });
+          return send(200, user);
+        }
+        if (url.pathname === '/auth/v1/logout') {
+          const tok = (req.headers.authorization || '').replace(/^Bearer /, '');
+          tokens.delete(tok);
+          return send(204);
+        }
+        return send(404, {});
+      }
+      calls.push({ method: req.method, path: url.pathname, query: url.search, body });
+      if (url.pathname !== '/rest/v1/collection_sync') return send(404, { message: 'no such table' });
+      const hash = (url.searchParams.get('sync_key_hash') || body?.sync_key_hash || '').replace(/^eq\./, '');
+      if (req.method === 'GET') return send(200, rows.has(hash) ? [rows.get(hash)] : []);
+      if (req.method === 'POST') { if (rows.has(hash)) return send(409, { code: '23505' }); rows.set(hash, { items: body.items, revision: body.revision, updated_at: body.updated_at }); return send(201); }
+      if (req.method === 'PATCH') {
+        const row = rows.get(hash), expected = Number((url.searchParams.get('revision') || '').replace(/^eq\./, ''));
+        if (!row || row.revision !== expected) return send(200, []);
+        Object.assign(row, { items: body.items, revision: body.revision, updated_at: body.updated_at });
+        return send(200, [{ revision: row.revision }]);
+      }
+      if (req.method === 'DELETE') { rows.delete(hash); return send(204); }
+      return send(405, {});
+    });
+  });
+  return { port: await listen(server), rows, calls, authCalls, tokens, refreshMap, setAuthFail: code => { authFail = code; }, stop: () => close(server) };
+}
+
+test('auth: /api/auth/config, PKCE exchange, refresh, logout, parameter validation, and upstream error hiding', async () => {
+  const up = await fakeDbAndAuth();
+  const app = await startApp({ SUPABASE2_URL: `http://127.0.0.1:${up.port}`, SUPABASE2_SERVICE_KEY: KEY, SUPABASE2_ANON_KEY: ANON, AUTH_RATE_LIMIT_PER_MINUTE: '1000', SYNC_RATE_LIMIT_PER_MINUTE: '1000' });
+  const post = async (path, body, headers = {}) => {
+    const r = await fetch(`http://127.0.0.1:${app.port}${path}`, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: body === undefined ? '' : JSON.stringify(body) });
+    const text = await r.text();
+    return { status: r.status, headers: r.headers, text, body: text ? JSON.parse(text) : null };
+  };
+  try {
+    const cfg = await (await fetch(`http://127.0.0.1:${app.port}/api/auth/config`)).json();
+    assert.equal(cfg.data.url, `http://127.0.0.1:${up.port}`);
+    assert.equal(JSON.stringify(cfg).includes(ANON), false, 'anon key is never exposed in config');
+
+    // Parameter validation on exchange & refresh before upstream is touched
+    const badExchanges = [
+      {}, { code: VALID_CODE }, { verifier: VALID_VERIFIER }, { code: 'short', verifier: VALID_VERIFIER },
+      { code: VALID_CODE, verifier: 'short-verifier' }, { code: VALID_CODE, verifier: VALID_VERIFIER, extra: 1 },
+      { code: 'bad space', verifier: VALID_VERIFIER }, { code: VALID_CODE, verifier: 'bad space'.repeat(6) }
+    ];
+    for (const bad of badExchanges) {
+      const r = await post('/api/auth/exchange', bad);
+      assert.equal(r.status, 400);
+      assert.equal(r.headers.get('cache-control'), 'no-store');
+    }
+    for (const bad of [{}, { refreshToken: 'short' }, { refreshToken: 'bad token' }, { refreshToken: 'valid-token-1234', extra: 1 }]) {
+      assert.equal((await post('/api/auth/refresh', bad)).status, 400);
+    }
+    assert.equal(up.authCalls.length, 0, 'invalid auth payloads never hit Supabase Auth');
+
+    // Wrong code -> 401 without upstream error text
+    const wrong = await post('/api/auth/exchange', { code: 'wrong-code-123456', verifier: VALID_VERIFIER });
+    assert.equal(wrong.status, 401);
+    assert.equal(wrong.text.includes('secret-pkce-mismatch'), false);
+
+    // Valid exchange
+    const ex = await post('/api/auth/exchange', { code: VALID_CODE, verifier: VALID_VERIFIER });
+    assert.equal(ex.status, 200);
+    assert.equal(ex.headers.get('cache-control'), 'no-store');
+    assert.equal(ex.body.data.email, 'trainer@example.com');
+    assert.ok(ex.body.data.accessToken && ex.body.data.refreshToken && Number.isFinite(ex.body.data.expiresAt));
+    assert.equal(ex.text.includes(USER_A), false, 'raw user.id is not in the JSON body (only inside the opaque token)');
+
+    // Valid refresh
+    const rf = await post('/api/auth/refresh', { refreshToken: ex.body.data.refreshToken });
+    assert.equal(rf.status, 200);
+    assert.equal(rf.body.data.refreshToken, 'refresh-token-rotated-67890');
+
+    // Upstream 500 -> 502 without leaking upstream detail
+    up.setAuthFail(500);
+    const fail502 = await post('/api/auth/refresh', { refreshToken: rf.body.data.refreshToken });
+    assert.equal(fail502.status, 502);
+    assert.equal(fail502.text.includes('upstream-secret-auth-error'), false);
+    up.setAuthFail(0);
+
+    // Logout revokes upstream token and always answers 204 no-store
+    const out = await post('/api/auth/logout', undefined, { Authorization: `Bearer ${rf.body.data.accessToken}` });
+    assert.equal(out.status, 204);
+    assert.equal(out.headers.get('cache-control'), 'no-store');
+    assert.equal(up.tokens.has(rf.body.data.accessToken), false);
+  } finally { await app.stop(); await up.stop(); }
+});
+
+test('sync with Bearer token: caches /auth/v1/user lookup, isolates Google key space from sync codes, and never leaks hashes or tokens', async () => {
+  const up = await fakeDbAndAuth();
+  const app = await startApp({ SUPABASE2_URL: `http://127.0.0.1:${up.port}`, SUPABASE2_SERVICE_KEY: KEY, SUPABASE2_ANON_KEY: ANON, AUTH_RATE_LIMIT_PER_MINUTE: '1000', SYNC_RATE_LIMIT_PER_MINUTE: '1000' });
+  const tokenA = makeJwt(USER_A), tokenB = makeJwt(USER_B);
+  up.tokens.set(tokenA, { id: USER_A, email: 'a@example.com' });
+  up.tokens.set(tokenB, { id: USER_B, email: 'b@example.com' });
+  const callSync = async (action, body, token) => {
+    const headers = { 'content-type': 'application/json', ...(token !== undefined ? { Authorization: token } : {}) };
+    const r = await fetch(`http://127.0.0.1:${app.port}/api/sync/${action}`, { method: 'POST', headers, body: JSON.stringify(body) });
+    const text = await r.text();
+    return { status: r.status, text, body: text ? JSON.parse(text) : null };
+  };
+  try {
+    // Malformed or invalid Bearer -> 401
+    assert.equal((await callSync('pull', {}, 'NotBearer xyz')).status, 401);
+    assert.equal((await callSync('pull', {}, 'Bearer bad space')).status, 401);
+    const badJwt = await callSync('pull', {}, 'Bearer unknown.jwt.token');
+    assert.equal(badJwt.status, 401);
+    assert.equal(badJwt.text.includes('secret-jwt-detail'), false);
+
+    // With Bearer, body must NOT contain code
+    assert.equal((await callSync('pull', { code: CODE }, `Bearer ${tokenA}`)).status, 400);
+    assert.equal((await callSync('push', { code: CODE, revision: 0, items: [live('a')] }, `Bearer ${tokenA}`)).status, 400);
+
+    // Push & pull with Bearer tokenA
+    const userCallsBefore = up.authCalls.filter(c => c.path === '/auth/v1/user').length;
+    const pushed = await callSync('push', { revision: 0, items: [live('g1', 3)] }, `Bearer ${tokenA}`);
+    assert.equal(pushed.status, 200);
+    assert.equal(pushed.body.data.revision, 1);
+    const pulled = await callSync('pull', {}, `Bearer ${tokenA}`);
+    assert.equal(pulled.status, 200);
+    assert.deepEqual(pulled.body.data.items.map(i => [i.id, i.quantity]), [['g1', 3]]);
+    const userCallsAfter = up.authCalls.filter(c => c.path === '/auth/v1/user').length;
+    assert.equal(userCallsAfter - userCallsBefore, 1, 'second sync with the same token hits the in-memory authCache');
+
+    // Stored under sha256('google:' + USER_A), completely separate from sync code and from USER_B
+    const googleHashA = sha(`google:${USER_A}`);
+    assert.ok(up.rows.has(googleHashA));
+    assert.equal((await callSync('pull', {}, `Bearer ${tokenB}`)).body.data.revision, 0, 'USER_B cannot see USER_A data');
+    assert.equal((await app.pull({ code: CODE })).body.data.revision, 0, 'sync code cannot see Google data');
+
+    // No response contains the token, userId, or googleHashA
+    for (const secret of [tokenA, USER_A, googleHashA]) {
+      assert.equal(pushed.text.includes(secret), false);
+      assert.equal(pulled.text.includes(secret), false);
+    }
+
+    // Delete with Bearer
+    const del = await callSync('delete', {}, `Bearer ${tokenA}`);
+    assert.equal(del.status, 200);
+    assert.equal(up.rows.has(googleHashA), false);
+  } finally { await app.stop(); await up.stop(); }
+});
+
+

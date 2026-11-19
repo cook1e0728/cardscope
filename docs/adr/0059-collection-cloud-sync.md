@@ -2,9 +2,9 @@
 status: accepted
 ---
 
-# ADR 0059：收藏雲端同步（同步碼，不用帳號）
+# ADR 0059：收藏雲端同步（Google 登入自動同步＋同步碼備案）
 
-**狀態：已採用（2026-11-19）。依據：使用者 2026-11-17 決定的 `docs/NEXT_PHASE_PLAN.md` Y 節；Y1–Y5 已完成。部分取代 ADR 0045。**
+**狀態：已採用（2026-11-19，2026-11-20 新增 Google 登入）。依據：使用者 2026-11-17 決定的 `docs/NEXT_PHASE_PLAN.md` Y 節（Y1–Y5 同步碼版）與 2026-11-20 `docs/COLLECTION_SYNC_GOOGLE_PLAN.md`。部分取代 ADR 0045。**
 
 ## 背景
 
@@ -17,13 +17,14 @@ ADR 0045 把收藏固定為「只存在這台裝置、不上傳」。代價是�
 
 ## 決定
 
-### 為什麼用同步碼，不用帳號
+### Google 帳號登入（主要方式）與同步碼（備案）
 
-- 帳號要收信箱或第三方登入，要處理忘記密碼、驗證信、刪帳號，也會變成個資。這個功能只需要「兩台裝置認得同一份資料」。
-- 同步碼由瀏覽器產生，等於密碼：不用註冊，也沒有個資可洩漏。代價是弄丟就找不回（見限制）。
-- 將來若要帳號，同一份資料再綁上去即可，不用重做。
+- Y1–Y5 先做完免帳號的同步碼，但使用者看過介面後覺得跨裝置手抄 28 碼太費心，因此 2026-11-20 決定以 **Google 帳號登入自動同步**為主要方式，同步碼收進「不想登入？改用同步碼」摺疊當備案。兩者共用同一張 `collection_sync` 表與同一套合併引擎。
+- **PKCE 全程經自家伺服器**：前端產生 `code_verifier`（暫存 `sessionStorage`，換完即刪）與 S256 `code_challenge`，向 `GET /api/auth/config` 取得副庫的公開 origin 後導向 `<ip2>/auth/v1/authorize?provider=google`。回到網站帶 `?code=` 時立刻 `history.replaceState` 清掉網址上的 code，再 `POST /api/auth/exchange {code, verifier}` 由伺服器以 `SUPABASE2_ANON_KEY` 代打 `<ip2>/auth/v1/token?grant_type=pkce`；換新走 `POST /api/auth/refresh`；登出走 `POST /api/auth/logout`。因此 CSP 的 `connect-src` 維持 `'self'`、不用開放 `*.supabase.co`，也不用 cookie（token 存 `localStorage` 的 `cardscope-auth`）。
+- **同步端點共用**：`/api/sync/pull`、`/api/sync/push`、`/api/sync/delete` 多接受 `Authorization: Bearer <accessToken>`（此時 body 不帶 `code`）。伺服器向 `<ip2>/auth/v1/user` 驗證 token（成功結果以 token 的 SHA-256 為鍵快取在記憶體 1–5 分鐘，上限 2000 筆，且不超過 JWT 的 `exp`），同步鍵 = `sha256('google:' + user.id)`。因為同步碼只含 26–64 個 `0-9A-Z`，而 `'google:'` 含小寫與冒號，兩者的雜湊前字串絕不重疊，鍵空間互不相通。
+- **合併與升級**：第一次登入 Google 時，本機既有收藏與雲端以 `mergeSync` 合併，不覆蓋；若該裝置原本已用同步碼同步，會先把同步碼雲端那份拉下合併進 Google 帳號的收藏，再停用本機同步碼。
 
-### 同步碼
+### 同步碼（不想登入時的備案）
 
 - 瀏覽器用 `crypto.getRandomValues` 產生 28 碼 0-9A-Z（約 145 bit；伺服器接受 26–64 碼），顯示成四碼一組。產生時略過會造成偏差的位元組。
 - 只存在該瀏覽器的 localStorage `cardscope-sync`；只放在 POST body，不進網址、不進 header、不進任何紀錄。
@@ -55,4 +56,4 @@ ADR 0045 把收藏固定為「只存在這台裝置、不上傳」。代價是�
 - **限流以 IP 計**：同一個出口 IP 後面的多人共用額度；Cloudflare 以外直連源站時用連線對端位址。
 - 雲端被另一台裝置刪除時，其他裝置下次同步會發現並自動停止同步，不會重建。
 - 同一個瀏覽器同時開兩個分頁修改收藏沒有特別處理。
-- 本 ADR 不涉及帳號、付費設定或新的資料來源。
+- 使用 Google 登入時，Supabase Auth（副庫 `auth.users`）會保存使用者的 Google 信箱與帳號 ID，僅供辨識同一人的收藏；`collection_sync` 表本身只存 `sha256('google:' + user.id)`，不存信箱，CardSeek 也不寄信或做其他用途。
