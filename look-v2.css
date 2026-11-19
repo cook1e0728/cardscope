@@ -810,3 +810,5 @@ html.look-clean #detail .dpanel{padding-inline:var(--card-pad)}
   html.look-clean body[data-view="about"] .brand-showcase-copy{padding-inline:var(--keyline-off)}
 }
 html.look-clean #detail .ptl-details{padding-inline:var(--card-pad)}
+html.look-clean body[data-side] #main #collExtras{padding-left:var(--keyline-off)}
+#sideNav .coll-side-btn{padding-inline:var(--keyline-off)}
