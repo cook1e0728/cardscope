@@ -4,7 +4,8 @@
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   // 純函式：即將發生的由近到遠排最前，接著已發生的由新到舊，只取前幾筆。
   function arrange(events,today,limit=LIMIT){const list=Array.isArray(events)?events:[],soon=list.filter(e=>e.date>today).sort((a,b)=>a.date<b.date?-1:1),past=list.filter(e=>e.date<=today).sort((a,b)=>a.date<b.date?1:-1);return [...soon,...past].slice(0,limit)}
-  const item=(event,today,showGame)=>`<li><time datetime="${esc(event.date)}">${esc(event.date.slice(5))}${event.date>today?'<span class="soon">即將</span>':''}</time><div>${showGame?`<span class="game">${esc(GAMES[event.game]||event.game)}</span>`:''}<b>${esc(event.title)}</b>${/^https:\/\//.test(event.url)?`<a href="${esc(event.url)}" target="_blank" rel="noopener noreferrer">來源：${esc(event.source)}</a>`:''}</div></li>`;
+  const cleanTitle=value=>String(value??'').replace(/\s*\u2014\s*/g,'：');
+  const item=(event,today,showGame)=>`<li><time datetime="${esc(event.date)}">${esc(event.date.slice(5))}${event.date>today?'<span class="soon">即將</span>':''}</time><div>${showGame?`<span class="game">${esc(GAMES[event.game]||event.game)}</span>`:''}<b>${esc(cleanTitle(event.title))}</b>${/^https:\/\//.test(event.url)?`<a href="${esc(event.url)}" target="_blank" rel="noopener noreferrer">來源：${esc(event.source)}</a>`:''}</div></li>`;
   let pending=null;
   function render(){
     const section=root.document?.getElementById('eventsSection');if(!section)return;

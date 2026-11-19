@@ -41,12 +41,12 @@ html.look-motion[data-cs-paused] #cards .card.cs-pre,
 html.look-motion[data-cs-paused] #cards .card.cs-in{opacity:1;translate:none;transition:none}
 @media print{html.look-motion #cards .card.cs-pre{opacity:1;translate:none}}
 
-/* ---- 3. 暫停動態開關（JS 注入；固定在左下，手機避開底部導覽） ---- */
+/* ---- 3. 暫停動態開關（JS 注入；置於頁尾避免遮擋側欄與內容，手機避開底部導覽） ---- */
 html.look-motion .cs-motion-toggle{
-  position:fixed;left:16px;bottom:16px;z-index:5;display:inline-flex;align-items:center;gap:10px;
+  position:static;display:flex;align-items:center;gap:10px;width:max-content;margin:16px auto 24px;
   min-width:44px;min-height:44px;padding:0 6px 0 14px;border:1px solid #D9D1C0;border-radius:999px;
   background:#fff;color:#1F1B16;font:700 13px/1 'Noto Sans TC',system-ui,sans-serif;white-space:nowrap;cursor:pointer;
-  box-shadow:0 2px 10px #1F1B1614;
+  box-shadow:none;
 }
 html.look-motion .cs-motion-toggle:focus-visible{outline:3px solid #1F1B16;outline-offset:2px}
 html.look-motion .cs-motion-toggle[disabled]{cursor:default;color:#5A5348}
@@ -59,6 +59,6 @@ html.look-motion .cs-motion-state::before{content:"";position:absolute;left:4px;
 html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state{background:#1F1B16;color:#fff;padding:0 32px 0 10px;justify-content:flex-start}
 html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state::before{left:auto;right:4px}
 @media (max-width:760px){
-  /* 手機固定浮鈕會蓋住卡牆，改放頁尾 */
-  html.look-motion .cs-motion-toggle{position:static;display:flex;width:max-content;margin:16px auto calc(62px + 16px + env(safe-area-inset-bottom));box-shadow:none}
+  /* 手機避開底部固定導覽列 */
+  html.look-motion .cs-motion-toggle{margin:16px auto calc(62px + 16px + env(safe-area-inset-bottom))}
 }

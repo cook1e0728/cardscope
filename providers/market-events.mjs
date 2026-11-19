@@ -1,7 +1,7 @@
 // 時事：手動維護的官方消息（整個遊戲層級），加上目錄裡的新系列發售日。都不是針對單張卡，也不代表造成漲跌。
 export const MARKET_EVENTS=[
-  {date:'2026-10-24',game:'pokemon',title:'Mega Evolution—Delta Reign 發售前活動開始',source:'Pokémon 官方',url:'https://www.pokemon.com/us/news/play-at-a-pokemon-tcg-mega-evolution-delta-reign-prerelease-event'},
-  {date:'2026-11-06',game:'pokemon',title:'Mega Evolution—Delta Reign 英文版發售',source:'Pokémon 官方',url:'https://www.pokemon.com/us/pokemon-tcg/mega-evolution-delta-reign'}
+  {date:'2026-10-24',game:'pokemon',title:'Mega Evolution：Delta Reign 發售前活動開始',source:'Pokémon 官方',url:'https://www.pokemon.com/us/news/play-at-a-pokemon-tcg-mega-evolution-delta-reign-prerelease-event'},
+  {date:'2026-11-06',game:'pokemon',title:'Mega Evolution：Delta Reign 英文版發售',source:'Pokémon 官方',url:'https://www.pokemon.com/us/pokemon-tcg/mega-evolution-delta-reign'}
 ];
 const UPCOMING_DAYS=45,REGIONS={JP:'日版',US:'美版',TW:'台版',ASIA:'亞洲版'};
 // 時事來源顯示給人看的網站名稱；沒對到的照舊顯示網域

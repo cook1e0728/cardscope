@@ -268,8 +268,11 @@ html.look-clean #homeRails .rails-switch [hidden]{display:none!important}
   .panel-more a:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:4px}
   @media (hover:hover) and (pointer:fine){.mover-row:hover{background:var(--v2-page)}}
 }
-/* ≥1440px：右欄加寬 */
-@media (min-width:1440px){html.look-clean body[data-view="landing"]{--home-aside:400px}}
+/* ≥1440px：右欄加寬；搜尋欄與範例標籤放寬至 552px，placeholder 不截斷且 5 顆範例標籤排同一行 */
+@media (min-width:1440px){
+  html.look-clean body[data-view="landing"]{--home-aside:400px}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.home-search,html.look-clean body[data-view="landing"]:not([data-side]) .hero>.home-examples{max-width:552px}
+}
 /* 搜尋區變窄：<1600px 放不下整手牌，只留兔子卡單獨放右邊（手牌的卡與星軌隱藏）；≥1600px 手牌縮小（.72）照放 */
 @media (min-width:1200px) and (max-width:1599px){
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.cs1-fan{width:260px;scale:1}

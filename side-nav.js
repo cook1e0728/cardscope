@@ -66,7 +66,7 @@
     }else if(homes.has(el)&&el.parentNode===slot){homes.get(el).before(el)}
   }
   function dock(){
-    place($('channels'),slots.games,usable()&&body.dataset.side!=='collection');
+    place($('channels'),slots.games,(sideOn()||isOpen())&&body.dataset.side!=='collection');
     place(doc.querySelector('.browse-regions'),slots.region,body.dataset.side==='results');
     // #gameContext 是 series-band.js 放系列橫幅的錨點（anchor.after(band)）：搬一次，橫幅之後重建也都落在側欄裡
     const anchor=$('gameContext');if(anchor&&anchor.parentNode!==slots.series)slots.series.prepend(anchor);
@@ -100,11 +100,11 @@
   function open(from){
     if(!usable()||mode()==='inline')return false;
     opener=from||doc.activeElement;
-    side.classList.add('open');reflectOpen();return true;
+    side.classList.add('open');dock();reflectOpen();return true;
   }
   function close(){
     if(!isOpen())return;
-    side.classList.remove('open');reflectOpen();
+    side.classList.remove('open');dock();reflectOpen();
   }
   function syncSide(){
     const results=Boolean($('cardsSection')?.classList.contains('has-results')),next=sideState(body.dataset.view,results);

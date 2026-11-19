@@ -37,9 +37,22 @@
   }
   root.priceMoversShared={request,card,image,info};
   root.renderPriceMovers=section=>{
+    const onMarket=typeof document!=='undefined'&&document.body?.dataset?.view==='market';
+    if(onMarket&&!section.innerHTML){
+      section.hidden=false;section.classList.add('price-movers');
+      section.innerHTML='<div class="trend-empty" role="status"><b>正在讀取參考價漲跌資料…</b></div>';
+    }
     return request().then(body=>{
       const up=body?.data?.up||[],down=body?.data?.down||[],meta=body?.meta||{};
-      if(!up.length&&!down.length){section.hidden=true;section.innerHTML='';pending=null;return}
+      if(!up.length&&!down.length){
+        pending=null;
+        if(onMarket){
+          section.hidden=false;section.classList.add('price-movers');
+          section.innerHTML='<div class="trend-empty"><b>目前沒有近期的參考價漲跌資料</b><p class="meta">待累積前後兩次 Cardmarket 價格快照後會自動列出。</p></div>';
+          return;
+        }
+        section.hidden=true;section.innerHTML='';return;
+      }
       section.hidden=false;section.classList.add('price-movers');
       // 標題下只留一句「不是成交價」；其餘都收進 ⓘ。
       const info=root.priceMoversShared.info(up,down,meta);

@@ -60,14 +60,15 @@
   function moversPanel(up,rows,meta,info){
     return head(`近 ${Number(meta.windowDays)||14} 天參考價${up?'漲':'跌'}最多`,'寶可夢，歐洲平台參考價，不是成交價',info,'h2')+`<ul class="mover-list">${rows.slice(0,MOVERS_N).map(row=>moverRow(row,up)).join('')}</ul>`+(up?'':'<p class="panel-more"><a href="/?view=market" data-spa>看完整漲跌榜與時事</a></p>');
   }
+  const cleanTitle=value=>String(value??'').replace(/\s*\u2014\s*/g,'：');
   function eventsPanel(rows,today){
-    return head('卡牌時事','發售日與官方消息，不代表價格會漲跌','','h2')+`<ul class="event-list">${rows.map(e=>`<li><time datetime="${esc(e.date)}">${esc(e.date.slice(5).replace('-','/'))}${e.date>today?'<span class="soon">即將</span>':''}</time><span>${esc(gameName(e.game)||e.game||'')}｜${esc(e.title)}</span></li>`).join('')}</ul>`;
+    return head('卡牌時事','發售日與官方消息，不代表價格會漲跌','','h2')+`<ul class="event-list">${rows.map(e=>`<li><time datetime="${esc(e.date)}">${esc(e.date.slice(5).replace('-','/'))}${e.date>today?'<span class="soon">即將</span>':''}</time><span>${esc(gameName(e.game)||e.game||'')}｜${esc(cleanTitle(e.title))}</span></li>`).join('')}</ul>`;
   }
   const fill=(node,html)=>{node.hidden=!html;node.innerHTML=html||''};
   function initAside(doc,rails){
     const hero=doc.getElementById('hero');if(!hero||!shared()||!doc.createElement)return;
-    const make=(tag,id,label,html)=>{const node=doc.createElement(tag);node.id=id;node.className=tag==='aside'?'home-aside':'home-panel';node.setAttribute('aria-label',label);node.innerHTML=html;return node};
-    const wait=quiet('讀取中…'),up=make('section','homeMoversUp','近期參考價漲最多',wait),down=make('section','homeMoversDown','近期參考價跌最多',wait),events=make('section','homeEvents','卡牌時事',wait);
+    const make=(tag,id,label,html)=>{const node=doc.createElement(tag);node.id=id;node.className=tag==='aside'?'home-aside':'home-panel';node.setAttribute('aria-label',label);node.innerHTML=html;node.hidden=true;return node};
+    const up=make('section','homeMoversUp','近期參考價漲最多',''),down=make('section','homeMoversDown','近期參考價跌最多',''),events=make('section','homeEvents','卡牌時事','');
     const aside=make('aside','homeAside','參考價跌幅與卡牌時事','');aside.append(up,down,events);rails.after(aside);
     const settle=()=>{aside.hidden=up.hidden&&down.hidden&&events.hidden};
     const start=()=>{

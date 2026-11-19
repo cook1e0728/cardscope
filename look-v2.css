@@ -68,7 +68,7 @@ html.look-clean body[data-view] :is(.load-more,.notice-retry,[data-coll-import-c
 }
 html.look-clean body[data-view] .load-more{padding:0 var(--s6,32px)}
 /* 4c 文字鈕：沒有底與框，只有字 */
-html.look-clean body[data-view] :is(.card-zoom-close,.mobile-scope-pill select,.mobile-region-pill select,.search-clear){
+html.look-clean body[data-view] :is(.mobile-scope-pill select,.mobile-region-pill select,.search-clear){
   background:transparent;border:0;box-shadow:none;color:var(--v2-ink);
   transition:transform .14s var(--ease),background-color .14s var(--ease);
 }
@@ -83,7 +83,7 @@ html.look-clean body[data-view] header.top :is(.nav button,#go):active{transform
   html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]):hover,
   html.look-clean body[data-view] header.top :is(.nav button,#go):hover{background:var(--v2-surface);box-shadow:var(--v2-shadow-up)}
   html.look-clean body[data-view] :is(.load-more,.notice-retry,[data-coll-import-confirm]):hover{box-shadow:0 3px 8px rgba(60,45,20,.28)}
-  html.look-clean body[data-view] :is(.search-clear,.card-zoom-close):hover{background:rgba(60,45,20,.08)}
+  html.look-clean body[data-view] :is(.search-clear):hover{background:rgba(60,45,20,.08)}
   html.look-clean body[data-view] :is(.view-switch button):not(.on):hover{background:rgba(255,255,255,.6);color:var(--v2-ink)}
 }
 /* 焦點框：看得見（WCAG 2.4.7）。用鍵盤觸發的動作不加動畫 */
@@ -203,7 +203,7 @@ body[data-side] :is(#channels,#gameContext):not(#sideNav *){display:none}
 html.side-open{overflow:hidden}
 /* 頂部：收合鈕（inline）／關閉鈕（drawer、sheet） */
 #sideNav .side-head{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:8px 12px 0}
-#sideNav :is(.side-toggle,.side-close){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);padding:0 14px 0 10px;border:0;border-radius:var(--btn-r);background:transparent;color:var(--v2-ink-2);font-size:var(--fs-sub);font-weight:500;transition:transform .14s var(--ease),background-color .14s var(--ease)}
+#sideNav :is(.side-toggle,.side-close){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:var(--btn-h);min-height:var(--btn-h);padding:0 14px 0 10px;border:0;border-radius:var(--btn-r);background:transparent;color:var(--v2-ink-2);font-size:var(--fs-sub);font-weight:500;transition:transform .14s var(--ease),background-color .14s var(--ease)}
 #sideNav :is(.side-toggle,.side-close):active{transform:scale(.97)}
 #sideNav .side-toggle{display:none}
 #sideNav :is(.side-toggle,.side-close,.channel,.band-tile,.series-band-regions button,.series-band-tabs button,.series-band-more,.series-band-filter,.browse-regions select):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
@@ -369,7 +369,7 @@ html.look-clean body[data-view] .cards .card:not(.card-list) .art img{border-rad
 html.look-clean body[data-view] .cards .card:not(.card-list) h3{grid-area:name;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;min-width:0;min-height:2.7em;margin:0;overflow:hidden;overflow-wrap:anywhere;white-space:normal;font-size:14px;font-weight:700;line-height:1.35;letter-spacing:0;color:var(--v2-ink)}
 html.look-clean body[data-view] .cards .card:not(.card-list) .meta{grid-area:meta;display:flex;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:2px 6px;min-width:0;margin:0;color:var(--v2-ink-2)}
 html.look-clean body[data-view] .cards .card:not(.card-list) .card-no{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--fs-sub);font-weight:500;line-height:1.4;font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
-html.look-clean body[data-view] .cards .card:not(.card-list) .card-rarity{flex:none;margin-left:0;white-space:nowrap}
+html.look-clean body[data-view] .cards .card:not(.card-list) .card-rarity{flex:none;margin-left:0;max-width:68%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.look-clean body[data-view] .cards .card:not(.card-list) .card-pricing{grid-area:price;min-width:0;margin-top:2px}
 html.look-clean body[data-view] .cards .card:not(.card-list) .card-price{margin:0;font-size:var(--fs-body);font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 /* 側板開著、卡牆 4 欄時，價格＋漲跌＋來源＋版本放不下一行：換行，不要截斷 */
@@ -587,7 +587,9 @@ body[data-side="collection"] #sideNav :is(.side-sec-games,.side-sec-region,.side
 body[data-view="collection"] .coll-manage{display:block;position:relative;order:2;flex:none}
 html.look-clean body[data-view="collection"] #cardControls{flex:1 1 0}
 body[data-view="collection"] :is(#collectionState,#watchlistSummary,#seriesProgress){display:none!important}
-body[data-view="collection"] .coll-is-empty :is(#cardControls,#filterSummary,.price-info){display:none}
+html.look-clean body[data-view="collection"] #cardTools :is(#filterSummary,.price-info){display:none}
+html.look-clean body[data-view="collection"] .coll-is-empty :is(#cardControls,#filterSummary,.price-info){display:none}
+html.look-clean body[data-view="collection"]:has(.coll-is-empty) .side-sheet-btn{display:none}
 body[data-view="collection"] .coll-is-empty #cardTools{justify-content:flex-end}
 .coll-manage-btn{min-height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-weight:600;box-shadow:var(--v2-shadow);cursor:pointer;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
 .coll-manage-btn:active{transform:scale(.97)}
@@ -615,7 +617,7 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .coll-sums b{font-size:16px}
 .coll-skip{color:var(--v2-ink-2)}
 .coll-empty{grid-column:1/-1;display:grid;justify-items:center;gap:12px;max-width:420px;margin:32px auto;padding:0 16px;text-align:center}
-.coll-empty img{width:120px;height:120px;object-fit:contain}
+.coll-empty img{width:120px;height:120px;object-fit:contain;border-radius:20px;box-shadow:var(--v2-shadow)}
 .coll-empty p{margin:0;font-size:var(--fs-body)}
 .coll-empty-cta{white-space:nowrap;min-height:var(--btn-h);padding:0 24px;border:0;border-radius:var(--btn-r);background:var(--v2-ink);color:#fff;font:inherit;font-weight:700;box-shadow:0 1px 2px rgba(60,45,20,.24);cursor:pointer}
 
@@ -903,4 +905,90 @@ html.look-clean body[data-side] #main #collExtras{padding-left:var(--keyline-off
   html.look-clean .brand-footer .footer-links ul{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--s4);margin:0}
   html.look-clean .brand-footer .footer-links a{font-size:15px}
   html.look-clean .brand-footer summary{font-size:15px}
+}
+
+/* ===== 12. 全站體驗與 Antislop 體檢收尾（高對比放大檢視、無遮擋、無孤字、44px 點擊區、v2 統一） ===== */
+/* 卡片放大檢視：深黑底專用高對比關閉鈕與 ≥44px 縮放工具列 */
+html.look-clean body[data-view] .card-zoom-close{min-width:var(--btn-h);min-height:var(--btn-h);border:1px solid rgba(255,255,255,.35);border-radius:var(--btn-r);background:rgba(255,255,255,.16);color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.45)}
+html.look-clean body[data-view] .card-zoom-close:focus-visible{outline:2px solid #fff;outline-offset:2px}
+html.look-clean body[data-view] .card-zoom-toolbar button{min-width:var(--btn-h);min-height:var(--btn-h);padding:0 10px}
+@media (hover:hover) and (pointer:fine){
+  html.look-clean body[data-view] .card-zoom-close:hover{background:rgba(255,255,255,.28)}
+}
+
+/* 遊戲圖鑑頁：系列標題不重複、6 碼代碼方塊自適應不硬切字 */
+html.look-clean body[data-view="game"] #cardsSection .title{position:relative}
+html.look-clean body[data-view="game"] #selectedProduct.open ~ #cardsSection #cardsTitle{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+html.look-clean body[data-view] .band-tile-art.is-type:before{font-size:clamp(12px,1rem,17px);line-height:1.15;word-break:keep-all;overflow-wrap:normal;padding:4px;text-align:center;max-width:100%}
+
+/* UNION ARENA 遊戲標誌：側欄用緊湊 UA 徽章，首頁大磚做清晰的邊框字標，避免重複印兩次普通字 */
+html.look-clean #sideNav .channel[data-ip="union-arena"] .ip-wordmark{display:none}
+html.look-clean #sideNav .channel[data-ip="union-arena"] .channel-art::before{content:"UA";position:static;inset:auto;transform:none;animation:none;opacity:1;display:grid;place-items:center;width:44px;height:26px;border-radius:6px;background:var(--v2-ink);color:#fff;font:800 12px/1 var(--lc-num);letter-spacing:.06em}
+html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip="union-arena"] .ip-wordmark{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border:1.5px solid var(--v2-ink);border-radius:6px;font:800 13px/1.15 var(--lc-num);letter-spacing:.06em;color:var(--v2-ink)}
+
+/* 補齊 ≥44px 點擊目標與靠右 ⓘ 說明框對齊 */
+html.look-clean .brand-footer .footer-links a{min-width:var(--btn-h)}
+html.look-clean body[data-view] :is(#eventsSection li a,.health-note a){display:inline-flex;align-items:center;min-height:var(--btn-h)}
+.browse-regions .info-tip .info-body,.card-tools .price-info .info-body,.dpanel-versions>.info-tip .info-body,.home-panel .info-tip .info-body{left:auto;right:0}
+
+/* 關於頁與隱私／資料來源頁：避免標題孤字與表格欄折斷 */
+html.look-clean body[data-view="about"] #coverageStatusGrid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+html.look-clean body[data-view="about"] .coverage-status-card header{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px 8px}
+html.look-clean body[data-view="about"] .coverage-status-card h3{word-break:keep-all}
+html.look-clean body[data-view="about"] :is(.beta-guidance-grid article span,.coverage-baseline,.coverage-status-note){text-wrap:pretty}
+html.look-clean body[data-view="privacy"] .source-table th[scope="row"]{white-space:nowrap}
+html.look-clean body[data-view="privacy"] #sources .source-table-wrap:last-of-type .source-table td:last-child{white-space:nowrap}
+html.look-clean body[data-view] .info-page :is(p,li,td),html.look-clean body[data-view] .cards-empty p{text-wrap:pretty}
+html.look-clean body[data-view="privacy"] #privacy>p:first-of-type{text-wrap:balance}
+
+/* 卡牆浮水印、缺圖佔位框、搜尋標題、詳細側板收斂 */
+html.look-clean body[data-view] .cards .card .card-sample-watermark{left:4%;right:4%;font-size:clamp(12px,1.3vw,18px);letter-spacing:.06em}
+html.look-clean body[data-view] .unified-image-fallback{border:0;background:var(--v2-page);color:var(--v2-ink-2)}
+html.look-clean body[data-view] .unified-image-fallback b{color:var(--v2-ink-2);font-size:var(--fs-sub)}
+html.look-clean body[data-view] .cards .card.card-list .unified-image-fallback{padding:4px 2px}
+html.look-clean body[data-view] .cards .card.card-list .unified-image-fallback b{font-size:var(--fs-note);line-height:1.25;word-break:keep-all}
+html.look-clean body[data-view] .cards .card.card-list .unified-image-fallback small{display:none}
+html.look-clean body[data-view] #cardsTitle{text-wrap:balance}
+html.look-clean #detail .detail-position{justify-content:center;padding-left:0;margin-top:8px}
+html.look-clean #detail .detail-position .detail-zoom-hint{display:block;font-size:var(--fs-note);color:var(--v2-ink-2);text-align:center}
+html.look-clean #detail .detail-visual>p.detail-ip{display:none}
+html.look-clean #detail .dpanel-versions :is(.state,.version-switch){text-wrap:pretty}
+html.look-clean #detail .dpanel-versions :is(.state,.version-switch) b{white-space:nowrap}
+html.look-clean #detail .dpanel-versions .ver-seg{display:inline-block;white-space:nowrap}
+html.look-clean #detail .pov .ptl-table th{text-wrap:balance}
+html.look-clean #detail .pov .pov-th-sub{display:inline-block;white-space:nowrap}
+
+/* 行情頁與 v2 紙感樣式統一（移除舊式裝飾紅箭頭與斜切漲跌膠囊） */
+html.look-clean body[data-view="market"] #trendsSection .title h2::before{display:none}
+html.look-clean body[data-view="market"] #trendsSection .trend-rise{padding:2px 6px;border-radius:6px;background:#FBEDEB!important;color:#C4000F!important;clip-path:none;font-family:inherit;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+html.look-clean body[data-view="market"] #trendsSection .trend-fall .trend-rise{background:#E8F3EC!important;color:#1F6F43!important}
+html.look-clean body[data-view="market"] #trendsSection .trend-empty{padding:20px;border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);text-align:center}
+html.look-clean body[data-view="market"] #trendsSection .trend-empty p{margin:6px 0 0;text-wrap:balance}
+
+@media (max-width:760px){
+  /* 放大檢視工具列換行置中，不裁切且每顆 ≥44px */
+  html.look-clean body[data-view] .card-zoom-toolbar{flex-wrap:wrap;justify-content:center;gap:6px;max-width:calc(100vw - 16px);overflow-x:visible}
+  html.look-clean body[data-view] .card-zoom-divider{display:none}
+  html.look-clean body[data-view] .card-zoom-quality{flex-basis:100%;margin-left:0;text-align:center}
+  /* 手機首頁顯示橫向滑動遊戲入口，呼應 Hero 文案 */
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;margin:12px 0 4px;padding:4px 2px 8px;border:0;border-left:0;border-radius:0;background:transparent;scroll-snap-type:x proximity}
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]{flex:0 0 auto;min-width:88px;min-height:var(--btn-h);padding:8px 10px;border-radius:12px;background:var(--v2-surface);box-shadow:var(--v2-shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip] .channel-art{height:28px;width:auto;padding:0;background:transparent}
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip] .channel-art img{max-height:26px;max-width:68px}
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip] .channel-tag{display:none}
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip] b{margin:0;font-size:12px;line-height:1.25;white-space:nowrap;color:var(--v2-ink)}
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip="union-arena"] .ip-wordmark{display:none}
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip="union-arena"] .channel-art::before{content:"UA";position:static;inset:auto;transform:none;animation:none;opacity:1;display:grid;place-items:center;width:40px;height:24px;border-radius:6px;background:var(--v2-ink);color:#fff;font:800 12px/1 var(--lc-num);letter-spacing:.06em}
+  /* 遊戲頁與卡牆手機收斂 */
+  html.look-clean body[data-view] .selected-product-art .band-tile-art.is-type:before{font-size:12px}
+  html.look-clean body[data-view] #watchlistSummary:has(#downloadWatchlist:disabled){display:none}
+  html.look-clean body[data-view] .cards .card .card-sample-watermark{font-size:12px;letter-spacing:.03em}
+  html.look-clean body[data-view] .cards .card:not(.card-list) .unified-image-fallback small{display:none}
+  /* 行情頁手機移除舊式左側紅條，卡片放寬至 148px 避免漲跌幅切邊 */
+  html.look-clean body[data-view="market"] #trendsSection{border:0;border-left:0;border-radius:0;background:transparent;padding:0}
+  html.look-clean body[data-view="market"] #trendsSection .trend-card{flex:0 0 148px;width:148px;padding:10px!important;border:0!important;box-shadow:var(--v2-shadow)}
+  html.look-clean body[data-view="market"] #trendsSection .trend-image{height:140px;border:0}
+}
+@media (max-width:480px){
+  html.look-clean body[data-view="about"] #coverageStatusGrid{grid-template-columns:1fr}
 }
