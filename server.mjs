@@ -24,6 +24,7 @@ import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, SERIES_HIT_
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
+import './collection-store.js'; // 瀏覽器與伺服器共用的收藏驗證與合併規則（掛在 globalThis.CollectionStore）
 import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo } from './providers/seo.mjs';
 
 const nativeFetch = globalThis.fetch;
@@ -784,6 +785,55 @@ function rateLimited(req,pathname){
   if(!ip||!pathname.startsWith('/api/')||adminAuthorized(req))return false;
   return !(pathname.startsWith('/api/images/')?imageLimiter:apiLimiter)(ip);
 }
+// ---- 收藏雲端同步（docs/NEXT_PHASE_PLAN.md Y2）----
+// 同步碼等於密碼：只放在 request body；伺服器只拿它的 SHA-256 當副庫（ip2）的鍵。回應、錯誤訊息與紀錄都不放同步碼或雜湊，也不把副庫的錯誤文字轉給訪客。
+// 寫入整份取代，靠 revision 樂觀鎖（不符回 409，前端先拉再合併）；每筆收藏都過 CollectionStore 的同一套驗證，任何一筆不合格就整份拒絕（不默默丟資料）。
+const CollectionStore=globalThis.CollectionStore,syncLimiter=createRateLimiter({limit:Number(process.env.SYNC_RATE_LIMIT_PER_MINUTE||6)}),SYNC_REVISION_MAX=2147483646;
+const syncHash=code=>createHash('sha256').update(code).digest('hex');
+const syncError=(res,status,error,extra={})=>json(res,status,{error},extra);
+async function handleCollectionSync(req,res,action){
+  const {LIMITS}=CollectionStore;
+  // 同一個 IP 每分鐘幾次（pull 與 push 合計）；先計數再讀內容，亂打的也算。
+  if(!syncLimiter(req.headers['cf-connecting-ip']||req.socket?.remoteAddress||'unknown'))return syncError(res,429,'同步太頻繁，請一分鐘後再試',{'Retry-After':'60'});
+  let body;try{body=await readJsonBody(req,LIMITS.fileMaxChars)}catch(error){return syncError(res,error.message==='BODY_TOO_LARGE'?413:400,error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤')}
+  const keys=Object.keys(body&&typeof body==='object'&&!Array.isArray(body)?body:{}).sort().join(),code=CollectionStore.normalizeSyncCode(body?.code);
+  if(keys!==(action==='pull'?'code':'code,items,revision')||!code)return syncError(res,400,'同步碼或請求格式不正確'); // 格式不對不查庫
+  let clean=null,revision=0;
+  if(action==='push'){
+    ({revision}=body);
+    if(!Number.isInteger(revision)||revision<0||revision>SYNC_REVISION_MAX||!Array.isArray(body.items)||body.items.length>LIMITS.itemsMax)return syncError(res,400,'同步碼或請求格式不正確');
+    const now=Date.now(),seen=new Set(),rows=[];
+    for(const [index,raw] of body.items.entries()){
+      const entry=CollectionStore.normalizeSyncEntry(raw);
+      if(!entry)return json(res,400,{error:'收藏資料格式不正確',index:index+1});
+      if(seen.has(entry.id))return json(res,400,{error:'收藏資料有重複的卡片',index:index+1});
+      seen.add(entry.id);
+      // 裝置時鐘太超前的時間會讓這筆永遠贏過其他裝置：超過一天就當成現在。
+      rows.push(Date.parse(entry.updatedAt)>now+CollectionStore.SYNC_FUTURE_MS?{...entry,updatedAt:new Date(now).toISOString()}:entry);
+    }
+    clean=CollectionStore.mergeSync([],rows,now); // 同時清掉過期的墓碑、排好順序
+    if(JSON.stringify(clean).length>LIMITS.fileMaxChars)return syncError(res,413,'收藏資料過大');
+  }
+  if(!secondDbConfigured())return syncError(res,503,'雲端同步尚未開啟');
+  const hash=syncHash(code);
+  try{
+    if(action==='pull'){
+      const row=(await supabaseFetch(`/collection_sync?sync_key_hash=eq.${hash}&select=items,revision,updated_at&limit=1`,{db:'ip2'}))?.[0];
+      return json(res,200,{data:{items:Array.isArray(row?.items)?row.items:[],revision:row?.revision||0,updatedAt:row?.updated_at||null}});
+    }
+    const updatedAt=new Date().toISOString(),conflict=()=>syncError(res,409,'雲端資料已被另一台裝置更新，請先同步再試一次');
+    if(revision===0){
+      // 第一次寫入：主鍵衝突（別台剛建好）就是版本不符。
+      try{await supabaseFetch('/collection_sync',{db:'ip2',method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({sync_key_hash:hash,items:clean,revision:1,updated_at:updatedAt})})}
+      catch(error){if(String(error.message).startsWith('SUPABASE_409'))return conflict();throw error}
+    }else{
+      // UPDATE ... WHERE revision = 舊值 在資料庫裡是原子的；沒更新到任何一列（版本不符或這組碼沒有資料）就是 409。
+      const rows=await supabaseFetch(`/collection_sync?sync_key_hash=eq.${hash}&revision=eq.${revision}&select=revision`,{db:'ip2',method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({items:clean,revision:revision+1,updated_at:updatedAt})});
+      if(!Array.isArray(rows)||!rows.length)return conflict();
+    }
+    return json(res,200,{data:{revision:revision+1,updatedAt}});
+  }catch{return syncError(res,502,'同步服務暫時無法使用')}
+}
 async function loadAdminCatalogHealth(){
   const [summary,missingChinese,missingSeries,pendingPrintingImages,pendingCardImages,storage,secondStorage]=await Promise.all([
     loadCatalogHealth(),
@@ -1428,6 +1478,7 @@ const handleRequest=async(req,res)=>{
   if(url.pathname==='/api/reports/meta')return json(res,200,{data:{platforms:ALLOWED_PLATFORMS,currencies:ALLOWED_CURRENCIES,maxPrice:MAX_PRICE}});
   // ADR 0045：免登入收藏的參考總值。最多 100 張卡、一次查詢 price_snapshots、不打外部來源。
   if(url.pathname==='/api/prices/reference'&&req.method==='POST'){let body;try{body=await readJsonBody(req,REFERENCE_BODY_MAX_BYTES)}catch(error){return json(res,error.message==='BODY_TOO_LARGE'?413:400,{error:error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤'})}const v=validateReferenceRequest(body);if(v.error)return json(res,400,{error:v.error});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{const [rows,fx]=await Promise.all([supabaseFetch(`/price_snapshots?${new URLSearchParams(referenceQueryParams(v.ids))}`),getTwdRates()]);return json(res,200,{data:buildReferencePrices(rows,v.ids,{fx,amountToTwd})})}catch{return json(res,502,{error:'參考價查詢失敗'})}}
+  if((url.pathname==='/api/sync/pull'||url.pathname==='/api/sync/push')&&req.method==='POST')return handleCollectionSync(req,res,url.pathname.slice(10));
   if(url.pathname==='/api/reports'&&req.method==='GET'){const cardId=url.searchParams.get('cardId'),cardName=url.searchParams.get('cardName'),game=url.searchParams.get('game'),limit=Math.min(Number(url.searchParams.get('limit'))||20,100);if(!cardId&&!cardName)return json(res,400,{error:'請提供 cardId 或 cardName'});if(!supabaseConfigured())return json(res,200,{data:{reports:[],stats:[],total:0},meta:{status:'unavailable',reason:'尚未設定使用者回報資料庫'}});const base=new URLSearchParams();if(cardId)base.set('card_id',`eq.${cardId}`);else base.set('card_name',`ilike.*${cardName.replace(/[\\%_]/g,'\\$&').replace(/\*/g,'_')}*`);/* ilike wildcards in user input are escaped; PostgREST has no escape for *, so a literal * matches any one character */if(game)base.set('game',`eq.${game}`);try{const statsParams=new URLSearchParams(base);statsParams.set('select','currency,price');const recentParams=new URLSearchParams(base);recentParams.set('select',PUBLIC_SELECT);recentParams.set('order','traded_at.desc');recentParams.set('limit',String(limit));const [all,recent]=await Promise.all([supabaseFetch(`/reports?${statsParams}`),supabaseFetch(`/reports?${recentParams}`)]);return json(res,200,{data:{reports:recent,stats:buildStats(all),total:all.length}})}catch{return json(res,502,{error:'資料庫查詢失敗'})}}
   if(url.pathname==='/api/admin/scrape/yuyutei'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!catalogCollectionAllowed('yuyutei'))return json(res,409,{error:'來源權利尚未確認，已由來源政策暫停自動抓取'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});let targetUrl=url.searchParams.get('url');if(req.method==='POST'){try{targetUrl=(await readJsonBody(req)).url||targetUrl}catch{return json(res,400,{error:'JSON 格式錯誤'})}}if(!targetUrl?.startsWith('https://yuyu-tei.jp/buy/'))return json(res,400,{error:'請提供合法的遊々亭買取頁'});try{const {game,setTitle,cards:found}=await scrapeYuyutei(targetUrl),rows=found.map(c=>({source:'yuyutei',game,set_code:c.setCode,set_name:setTitle,card_code:c.cardCode,card_number:c.number,rarity:c.rarity,card_name:c.name,price:c.price,currency:'JPY',card_url:c.cardUrl,image_url:null,scraped_at:new Date().toISOString()}));for(let i=0;i<rows.length;i+=200)await supabaseFetch('/jp_buyback_prices?on_conflict=source,game,set_code,card_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify(rows.slice(i,i+200))});return json(res,200,{data:{message:'抓取並存檔成功',game,setTitle,count:rows.length}})}catch(e){return json(res,502,{error:`抓取失敗：${e.message}`})}}
   if(url.pathname==='/api/catalog/sync-status'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[]});try{const data=await supabaseFetch('/catalog_sync_runs?select=provider,scope,status,rowsSeen:rows_seen,rowsWritten:rows_written,startedAt:started_at,finishedAt:finished_at&provider=not.in.(price-snapshot,price-archive)&order=started_at.desc&limit=12');return json(res,200,{data})}catch(e){return failJson(res,502,'sync status failed',e)}}
