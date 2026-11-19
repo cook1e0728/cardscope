@@ -226,7 +226,7 @@ test('state survives a reload: the same localStorage restores the code, records 
 test('dialog markup: states, Google primary button, sync-code details disclosure, grouped code, aria, confirmations, and nothing inline (strict CSP)', async () => {
   const { cloud, clock } = world(), a = device(cloud, clock);
   const off = a.run('syncDialogHtml()');
-  assert.match(off, /data-sync-google>用 Google 登入，自動同步</);
+  assert.match(off, /data-sync-google><svg class="sync-google-icon"[\s\S]*?<span>用 Google 登入，自動同步<\/span><\/button>/);
   assert.match(off, /<details class="sync-alt"><summary>不想登入？改用同步碼<\/summary>/);
   assert.match(off, /data-sync-start>開啟雲端同步（產生同步碼）</); assert.match(off, /data-sync-join/); assert.match(off, /<label for="syncJoinCode">/);
   assert.match(off, /同步碼就是密碼/); assert.match(off, /180 天/);
