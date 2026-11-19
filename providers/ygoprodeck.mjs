@@ -52,7 +52,7 @@ export async function searchYgoProDeck(query,{limit=10}={}){
       coolstuffincUsd:numeric(card.card_prices?.[0]?.coolstuffinc_price)
     },
     priceType:'market',
-    priceNote:'referencePrices 是 YGOPRODeck 彙整各平台的跨版本最低價，不能當成某個版本的價格；單一版本只能用 sets[].setPriceUsd（來源平台未標示）。不是 CardScope 驗證成交價。',
+    priceNote:'referencePrices 是 YGOPRODeck 彙整各平台的跨版本最低價，不能當成某個版本的價格；單一版本只能用 sets[].setPriceUsd（來源平台未標示）。不是 CardSeek 驗證成交價。',
     observedAt:new Date().toISOString()
   }));
   cache.set(key,{data,expiresAt:Date.now()+CACHE_MS});
