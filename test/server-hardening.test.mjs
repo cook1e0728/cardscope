@@ -222,7 +222,7 @@ test('/.well-known/security.txt is plain text with the contact mailbox, a year-o
     const res=await fetch(base+'/.well-known/security.txt'),body=await res.text();
     assert.equal(res.status,200);
     assert.match(res.headers.get('content-type'),/^text\/plain/);
-    assert.match(body,/^Contact: mailto:cardscopetw@gmail\.com$/m);
+    assert.match(body,/^Contact: mailto:contact@cardseektcg.com$/m);
     assert.match(body,/^Preferred-Languages: zh-TW, en$/m);
     assert.doesNotMatch(body,/placeholder/i);
     const expires=Date.parse(body.match(/^Expires: (.+)$/m)[1]);
@@ -254,5 +254,17 @@ test('admin scrape route refuses GET, and a wrong token gets 401',async()=>{
   await withServer('admin',{env:{SCRAPE_SECRET:'admin-secret'}},async base=>{
     assert.equal((await fetch(base+'/api/admin/scrape/yuyutei',{headers:{'x-scrape-token':'admin-secret'}})).status,404);
     assert.equal((await fetch(base+'/api/admin/scrape/yuyutei',{method:'POST',headers:{'x-scrape-token':'wrong'}})).status,401);
+  });
+});
+
+test('legacy onrender host 301s to the canonical domain only when CANONICAL_REDIRECT is on',async()=>{
+  const {request}=await import('node:http');
+  const get=(base,host,path)=>new Promise((resolve,reject)=>{const u=new URL(base);request({host:u.hostname,port:u.port,path,headers:{host}},res=>{res.resume();resolve({status:res.statusCode,location:res.headers.location})}).on('error',reject).end()});
+  await withServer('redirect-on',{env:{CANONICAL_REDIRECT:'true',PUBLIC_BASE_URL:'https://cardseektcg.com'}},async base=>{
+    assert.deepEqual(await get(base,'cardscope.onrender.com','/?game=pokemon&card=a'),{status:301,location:'https://cardseektcg.com/?game=pokemon&card=a'});
+    assert.equal((await get(base,'cardseektcg.com','/robots.txt')).status,200);
+  });
+  await withServer('redirect-off',{env:{CANONICAL_REDIRECT:'false'}},async base=>{
+    assert.equal((await get(base,'cardscope.onrender.com','/robots.txt')).status,200);
   });
 });

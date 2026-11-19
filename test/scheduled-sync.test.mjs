@@ -19,7 +19,7 @@ test('the catalog freshness check repeats while the instance stays up',()=>{
 
 test('production is pinged often enough to stay inside the 15-minute sleep window',()=>{
   assert.match(workflow,/cron: '\*\/10 \* \* \* \*'/);
-  assert.match(workflow,/https:\/\/cardscope\.onrender\.com\/\)/);
+  assert.match(workflow,/https:\/\/cardseektcg.com\/\)/);
   assert.doesNotMatch(workflow.match(/^.*curl .*$/m)[0],/\/api\//,'the ping must not trigger database work');
 });
 

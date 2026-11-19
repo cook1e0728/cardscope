@@ -8,7 +8,7 @@ import {
   jsonLdScript, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo
 } from '../providers/seo.mjs';
 
-const BASE = 'https://cardscope.onrender.com';
+const BASE = 'https://cardseektcg.com';
 const printing = (over = {}) => ({ id: 'p1', cardId: 'pokemon-tcgdex-ja-sv6a-090', seriesId: 'pokemon-tcgdex-ja-sv6a', region: 'JP', language: 'ja-JP', localSetCode: 'SV6a', localCardNumber: '090', rarity: 'SAR', imageUrl: null, ...over });
 const card = (over = {}) => ({ id: 'pokemon-tcgdex-ja-sv6a-090', game: 'pokemon', nameZh: '桃歹郎ex', nameJa: 'モモワロウex', nameEn: null, nameKo: null, officialCardNumber: '090', rarity: 'SAR', imageUrl: null, printings: [printing()], ...over });
 const series = { id: 'pokemon-tcgdex-ja-sv6a', game: 'pokemon', officialCode: 'SV6a', nameZh: '黑夜漫遊者', nameJa: 'ナイトワンダラー', region: 'JP', releaseDate: '2024-06-07' };
@@ -100,7 +100,7 @@ test('every string is HTML-escaped in the head and the noscript summary, and "$&
   assert.equal((out.match(/name="description"/g) || []).length, 1, 'the old description is replaced, not duplicated');
   assert.equal((out.match(/property="og:title"/g) || []).length, 1);
   assert.equal((out.match(/property="og:type"/g) || []).length, 1, 'tags we do not override stay');
-  assert.match(out, /<link rel="canonical" href="https:\/\/cardscope\.onrender\.com\/\?game=pokemon&amp;card=/);
+  assert.match(out, /<link rel="canonical" href="https:\/\/cardseektcg.com\/\?game=pokemon&amp;card=/);
   assert.match(out, /<meta name="twitter:card" content="summary">/);
   assert.match(out, /<body><noscript>/);
   assert.equal(applyNoindexToHtml(html).includes('<meta name="robots" content="noindex"></head>'), true);
@@ -125,10 +125,10 @@ test('robots.txt allows everything but /api/, and points to the sitemap index', 
 test('sitemap helpers: index and url set format, escaped URLs, 40,000-URL files, canonical card rows', () => {
   const urlset = renderUrlSet([{ loc: `${BASE}/?game=pokemon&card=a`, lastmod: '2026-10-14' }, { loc: `${BASE}/` }]);
   assert.match(urlset, /^<\?xml version="1.0" encoding="UTF-8"\?>\n<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
-  assert.ok(urlset.includes('<url><loc>https://cardscope.onrender.com/?game=pokemon&amp;card=a</loc><lastmod>2026-10-14</lastmod></url>'));
-  assert.ok(urlset.includes('<url><loc>https://cardscope.onrender.com/</loc></url>'));
+  assert.ok(urlset.includes('<url><loc>https://cardseektcg.com/?game=pokemon&amp;card=a</loc><lastmod>2026-10-14</lastmod></url>'));
+  assert.ok(urlset.includes('<url><loc>https://cardseektcg.com/</loc></url>'));
   const index = renderSitemapIndex([{ loc: `${BASE}/sitemaps/cards-1.xml`, lastmod: '2026-10-15' }]);
-  assert.ok(index.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>https://cardscope.onrender.com/sitemaps/cards-1.xml</loc><lastmod>2026-10-15</lastmod></sitemap></sitemapindex>'));
+  assert.ok(index.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>https://cardseektcg.com/sitemaps/cards-1.xml</loc><lastmod>2026-10-15</lastmod></sitemap></sitemapindex>'));
   const many = Array.from({ length: SITEMAP_MAX_URLS * 2 + 1 }, (_, i) => ({ loc: `u${i}` }));
   assert.deepEqual(chunkEntries(many).map(part => part.length), [SITEMAP_MAX_URLS, SITEMAP_MAX_URLS, 1]);
   assert.equal(chunkEntries(many.slice(0, 5), 10 ** 9).length, 1, 'a size above 40,000 is capped');
@@ -398,7 +398,7 @@ test('HTTP: /.well-known/security.txt is served as plain text with the contact m
   const page = await get('/.well-known/security.txt');
   assert.equal(page.status, 200);
   assert.match(page.type, /^text\/plain/);
-  assert.match(page.body, /^Contact: mailto:cardscopetw@gmail\.com$/m);
+  assert.match(page.body, /^Contact: mailto:contact@cardseektcg.com$/m);
   assert.match(page.body, /^Preferred-Languages: zh-TW, en$/m);
   assert.doesNotMatch(page.body, /placeholder/i);
   const expires = Date.parse(page.body.match(/^Expires: (.+)$/m)[1]);

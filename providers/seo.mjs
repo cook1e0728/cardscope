@@ -2,7 +2,7 @@
 // 不碰網路與資料庫；server.mjs 負責查資料後把結果交給這裡。所有輸出字串都已跳脫。
 
 export const SITE_NAME = '好卡在 CardSeek';
-export const DEFAULT_BASE_URL = 'https://cardscope.onrender.com';
+export const DEFAULT_BASE_URL = 'https://cardseektcg.com';
 export const DEFAULT_IMAGE_PATH = '/assets/brand/web/og-default-1200x630.png';
 export const DEFAULT_IMAGE_SIZE = { width: 1200, height: 630 };
 export const SITEMAP_MAX_URLS = 40000;

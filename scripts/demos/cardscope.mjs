@@ -1,6 +1,6 @@
 // CardScope 首頁 → 搜尋建議 → 卡片詳細頁（版本、參考價走勢）→ 遊戲頁系列。正式站、只搜尋不送出任何表單，沒有登入與個資。
 // 節奏：每個畫面停 1～1.6 秒就換下一個動作；放大不到 1.2 倍的鏡頭不放（看不出來，只像畫面晃）。
-const SITE='https://cardscope.onrender.com';
+const SITE='https://cardseektcg.com';
 // 每句：字幕中英文＋煤炭講的旁白（和字幕幾乎同一句，只多語氣詞，看字聽聲才對得上）＋講完後的姿勢
 const L=[
   {zh:'嗨，我是煤炭！帶你逛逛 CardScope',en:"Hi, I'm Coal! Let me show you around CardScope",say:'嗨！我是煤炭，帶你逛逛 CardScope！',talkAs:'wave'},

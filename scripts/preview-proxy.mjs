@@ -7,7 +7,7 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const upstream = process.env.PREVIEW_UPSTREAM || 'https://cardscope.onrender.com';
+const upstream = process.env.PREVIEW_UPSTREAM || 'https://cardseektcg.com';
 const port = Number(process.argv[2] || process.env.PORT || 4300);
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg' };
 

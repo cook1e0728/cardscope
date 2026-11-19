@@ -2,7 +2,7 @@
 
 給繁體中文玩家的跨語言、跨版本 TCG 卡牌查證與比價網站。
 
-**網站：** [cardscope.onrender.com](https://cardscope.onrender.com)
+**網站：** [cardseektcg.com](https://cardseektcg.com)
 
 ![CardScope 首頁](docs/assets/cardscope-home.png)
 

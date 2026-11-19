@@ -18,7 +18,7 @@ jobs:
       - name: Request the home page
         run: |
           for attempt in 1 2 3; do
-            code=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 90 https://cardscope.onrender.com/) || code=000
+            code=$(curl --silent --output /dev/null --write-out '%{http_code}' --max-time 90 https://cardseektcg.com/) || code=000
             echo "attempt $attempt: HTTP $code"
             [ "$code" = 200 ] && exit 0
             sleep 20

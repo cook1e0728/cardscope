@@ -109,7 +109,7 @@ test('C1-C4 pages: sources table lists eBay as planned and SNKRDUNK as link-only
   assert.doesNotMatch(tables[1], /已向|已申請|申請中/, '授權信寄出前，頁面不寫已申請');
   const rights = html.match(/<section class="info-page" id="rights"[\s\S]*?<\/section>/)[0];
   assert.match(rights, /<h2 id="rightsTitle">權利人聯絡與移除流程<\/h2>/);
-  assert.match(rights, /<a href="mailto:cardscopetw@gmail\.com">/);
+  assert.match(rights, /<a href="mailto:contact@cardseektcg.com">/);
   assert.match(rights, /href="\/\.well-known\/security\.txt"/);
   assert.doesNotMatch(rights + sources, /\son\w+=|javascript:|<script|TODO|example\.invalid|〈/i);
   const footer = html.match(/<footer class="brand-footer">[\s\S]*?<\/footer>/)[0];
