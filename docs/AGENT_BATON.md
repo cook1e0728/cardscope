@@ -1,13 +1,14 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-20（台灣）｜更新者：Antigravity
+> 上次更新：2026-11-21（台灣）｜更新者：Antigravity
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-21：**全站截圖回饋 8 項精修與設計一致化已上線**（`npm run check` 過、`npm test` 1022/1022 全過，Playwright 1440px／375px 全站 28 張截圖逐張目視驗收 0 pageerror、0 橫向溢出、0 破圖）。修正項目：(1) 首頁 Hero 副標改自然短句並移除突兀分號／冒號，熱門搜尋改大眾跨三大遊戲範例（皮卡丘、魯夫、青眼白龍、OP-05、噴火龍 SAR）並改為膠囊按鈕；(2) 全站改採單一左緣主軸線（首頁、遊戲卡牆、收藏、行情、關於、隱私、詳細頁所有標題、次分頁、麵包屑、工具列與卡片外框 100% 左齊）；(3) 手機頂欄預設選項改為「全遊戲／全版本」並加寬至 3.2em 不裁切，消除雙「全部」；(4) 全站分段按鈕移除 `✓` 偽元素、文字完全置中並放寬內距（≥64px/44px），補齊 `UNION ARENA 全部卡片` 空白；(5) 詳細頁文字、操作鈕與 `.dpanel` 外框左緣齊平，`.rarity-full` 套用 `palt` 光學補償消除全形括號留白；(6) 雲端同步對話框 Google 按鈕（48px）上下等高 20px 留白；(7) 桌面頁尾採 4 欄 grid 2 排直欄左對齊，「隱私說明」與「行情」齊平、全站一致；(8) 全站統一紙片外框、圓角（14px）、細框線、字重三階與 44px 按鈕規格。
 - 2026-11-20：**全站 UI/UX 與 Antislop 體檢收尾已上線**（`npm run check` 過、`npm test` 1022/1022 全過，Playwright 1440px／375px 全頁面實機截圖驗收 0 pageerror、0 橫向溢出、非行內按鈕全 ≥44px）。修正項目：卡片放大檢視（`#cardZoom`）深底高對比關閉鈕與手機可換行 ≥44px 工具列；「暫停動態」移至頁尾置中不遮擋內容；我的收藏空狀態隱藏多餘工具列與篩選抽屜並補兔子圖圓角陰影；市場時事全數去除 em-dash（`—`→`：`）、首頁空側欄預設隱藏、行情頁補空狀態卡並統一 v2 膠囊與手機卡寬；遊戲頁隱藏重複標題、補 6 碼代碼方塊防切字與 `UNION ARENA` 緊湊 `UA` 徽章（含側欄與手機首頁橫向遊戲列、`side-nav.js` 手機抽屜開關動態歸位）；詳細頁置中「點擊卡圖可放大」、隱藏冗餘遊戲膠囊、版本列不切斷「日版」且不留懸空點、清單缺圖縮圖精簡單行、收藏進度 `owned>0` 顯示 `<1%` 與可見條；關於頁與隱私／資料來源頁消除標題與段落孤字。
 - 2026-11-20：**收藏雲端同步（Google 登入自動同步＋同步碼備案）已合併 main 上線**。使用者看過 1440／375 截圖後同意合併上線並一併套用 180 天清理排程。已完成：伺服器 `GET /api/auth/config`、`POST /api/auth/exchange|refresh|logout`（PKCE 經自家伺服器交換，CSP `connect-src` 維持 `'self'`、不用 cookie）、`/api/sync/pull|push|delete` 支援 `Authorization: Bearer`（`/auth/v1/user` 記憶體快取，鍵 = `sha256('google:' + user.id)` 與同步碼鍵空間隔離）；前端對話框極簡化、Google 圖示主按鈕、完整子句不折行與重點粗體標示、同步碼收進「不想登入？改用同步碼」摺疊、已用同步碼裝置登入 Google 自動把同步碼雲端資料併入並停用同步碼、收藏頁標題列同步狀態；隱私說明與 ADR 0059 更新；`npm test` 1022 全過、`npm run check` 過。**註：`.env.local` 的 `SUPABASE_ACCESS_TOKEN` 已失效（管理 API 回 401），`supabase/ip2/20261119180000_collection_sync_cleanup.sql` 需由使用者在 Supabase 副庫 SQL Editor 貼上執行（或更新 `.env.local` 的 `SUPABASE_ACCESS_TOKEN`）。**
 - 2026-11-19：**網域 S3 上線**（6d0c85b，CI 綠）：使用者在 Cloudflare 買了 **cardseektcg.com**，DNS 兩筆 CNAME（@、www）指 cardscope.onrender.com（灰雲），Render 自訂網域已設、www 轉 apex。程式預設網址改 https://cardseektcg.com（canonical、sitemap、OG、security.txt），聯絡信箱改 contact@cardseektcg.com（Cloudflare Email Routing 轉寄到使用者 Gmail）。Render 已設 `CANONICAL_REDIRECT=true`：舊網址 cardscope.onrender.com 全路徑 301 到新網域（實測首頁與 /api/catalog/health 都 301，新網域 200）。UptimeRobot 兩個監控（804235519、804670677）已改查新網域。L5 第 2–6 輪對齊（外線／內線兩條對齊線、卡牆固定結構、手機頁尾聲明收成一行）也已上線。SNKRDUNK 信網址仍寫 cardscope.onrender.com，未寄（需使用者明確同意）。待辦：首頁依熱度排序（只是提案）、手機首屏高度、系列頁重複標題。

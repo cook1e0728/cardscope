@@ -51,7 +51,7 @@ test('a region-limited search offers the IP\'s other regions and survives a regi
 test('the landing is search first; statistics, health and the purple CTA live on ?view=about',async()=>{
   const theme=await readFile(new URL('../theme-binder.css',import.meta.url),'utf8');
   assert.ok(html.indexOf('id="homeSearch"')<html.indexOf('id="channels"'),'the search box comes before the game tiles');
-  assert.match(html,/data-example="桃歹郎"/);
+  assert.match(html,/data-example="皮卡丘"/);
   assert.doesNotMatch(html,/class="tabs"|最新收錄/,'the dead 最新收錄 tab row is gone');
   assert.match(html,/href="\/\?view=about"/,'the footer links to the data status');
   assert.match(html,/\['about','privacy','collection','market'\]\.includes\(p\.get\('view'\)\)\?p\.get\('view'\):'landing'/,'the view is set before first paint');

@@ -127,7 +127,6 @@ html.look-clean .series-band-head{padding:var(--s2) 0 var(--s3)}
 html.look-clean .series-band-regions{gap:var(--s2)}
 html.look-clean .series-band-regions button{min-height:44px;padding:0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background:#fff;color:var(--lc-ink);font-size:14px;font-weight:500}
 html.look-clean .series-band-regions button.on{background:var(--ip);border-color:var(--ip);color:var(--ip-on);font-weight:700}
-html.look-clean .series-band-regions button.on:before{content:"✓";margin-right:6px;font-weight:700}
 html.look-clean .series-band-tabs{gap:var(--s1);border-bottom:1px solid var(--lc-hair)}
 html.look-clean .series-band-tabs button{min-height:44px;padding:0 var(--s4);border-bottom-width:2px;color:var(--lc-ink-2);font-size:15px;font-weight:500}
 html.look-clean .series-band-tabs button.on{color:var(--lc-ink);font-weight:700;border-bottom-color:var(--ip)}
@@ -167,7 +166,6 @@ html.look-clean .card-tools,html.look-clean body[data-view="game"] .card-tools{p
 html.look-clean .view-switch{border:1px solid var(--lc-line);border-radius:999px;background:#fff;box-shadow:none;overflow:hidden}
 html.look-clean .view-switch button{min-height:44px;padding:0 var(--s4);border:0;border-radius:0;background:transparent;color:var(--lc-ink);font-size:14px;font-weight:500}
 html.look-clean body .view-switch button.on{background:var(--lc-ink)!important;border-color:var(--lc-ink)!important;color:#fff!important;font-weight:700}
-html.look-clean body .view-switch button.on:before{content:"✓";margin-right:6px}
 html.look-clean .filter-field label{margin-bottom:var(--s1);font-size:12px;font-weight:500;color:var(--lc-ink-2)}
 html.look-clean .filter-field select,html.look-clean .card-tools .filter-field select{height:44px!important;padding:0 var(--s6) 0 var(--s4);border:1px solid var(--lc-line);border-radius:999px;background-color:#fff;box-shadow:none;font-size:14px}
 html.look-clean .filter-summary{font-size:13px;color:var(--lc-ink-2)}

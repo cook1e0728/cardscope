@@ -151,7 +151,7 @@ html.look-clean nav.bottom button[aria-current="page"]::after{content:"";positio
 @media (max-width:760px){
   html.look-clean body[data-view="landing"] .hero>.hero-intro{display:block;margin:0 0 12px;padding:16px 16px 8px;border-radius:20px;background-color:var(--cs1-bg);background-image:var(--cs1-stars);color:var(--cs1-ink)}
   html.look-clean body[data-view="landing"] .hero-intro h1{margin:0 0 6px;font:700 26px/1.2 'Chiron Hei HK','Noto Sans TC',sans-serif;letter-spacing:-.01em;color:var(--cs1-ink)}
-  html.look-clean body[data-view="landing"] .hero-intro p{margin:0;font-size:13.5px;line-height:1.55;color:var(--cs1-ink2)}
+  html.look-clean body[data-view="landing"] .hero-intro p{margin:0;font-size:14px;line-height:1.55;color:var(--cs1-ink2)}
   html.look-clean body[data-view="landing"] .cs1-strip{display:flex;justify-content:center;align-items:center;height:156px;margin:12px 0 4px}
   html.look-clean .cs1-strip .cs1-card{position:relative;left:auto;top:auto;width:82px;filter:none}
   html.look-clean .cs1-strip .cs1-card:nth-child(1){rotate:-10deg;translate:14px 10px;z-index:1}
