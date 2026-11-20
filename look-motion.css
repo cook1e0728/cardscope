@@ -58,7 +58,9 @@ html.look-motion .cs-motion-state{
 html.look-motion .cs-motion-state::before{content:"";position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0004}
 html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state{background:#1F1B16;color:#fff;padding:0 32px 0 10px;justify-content:flex-start}
 html.look-motion .cs-motion-toggle[aria-checked="true"] .cs-motion-state::before{left:auto;right:4px}
+html.look-motion .brand-footer .cs-motion-toggle{display:inline-flex;margin:12px 0 0}
 @media (max-width:760px){
-  /* 手機避開底部固定導覽列 */
+  /* 頁尾以外的備援位置避開底部固定導覽列 */
   html.look-motion .cs-motion-toggle{margin:16px auto calc(62px + 16px + env(safe-area-inset-bottom))}
+  html.look-motion .brand-footer .cs-motion-toggle{margin:12px 0 0}
 }

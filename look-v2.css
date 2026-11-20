@@ -75,10 +75,10 @@ html.look-clean body[data-view] :is(.mobile-scope-pill select,.mobile-region-pil
   background:transparent;border:0;box-shadow:none;color:var(--v2-ink);
   transition:transform .14s var(--ease),background-color .14s var(--ease);
 }
-/* 分段按鈕：外層凹陷底，被選中的那顆是白色紙片（內外圓角同心） */
-html.look-clean body[data-view] :is(.view-switch){display:inline-flex;align-items:center;gap:2px;padding:3px;border:1px solid var(--v2-line);border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:visible}
-html.look-clean body[data-view] :is(.view-switch button){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);padding:0 18px;border:0!important;border-radius:var(--btn-r)!important;background:transparent;color:var(--v2-ink-2);font-size:14px;font-weight:500;line-height:1;text-align:center;white-space:nowrap;box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
-html.look-clean body[data-view] :is(.view-switch button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)!important}
+/* 分段按鈕：外層清晰圓角凹槽（與卡片同為 14px 圓角、左緣 0px 垂直齊平），被選中的那顆是白色紙片（內外圓角同心 11px） */
+html.look-clean body[data-view] :is(.view-switch){display:inline-flex;align-items:center;gap:2px;padding:2px;border:1px solid #D5CCB9;border-radius:14px;background:#EAE3D5;box-shadow:var(--v2-shadow-in);overflow:visible}
+html.look-clean body[data-view] :is(.view-switch button){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);padding:0 18px;border:0!important;border-radius:11px!important;background:transparent;color:var(--v2-ink-2);font-size:14px;font-weight:500;line-height:1;text-align:center;white-space:nowrap;box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
+html.look-clean body[data-view] :is(.view-switch button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:0 1px 3px rgba(31,27,22,.14),inset 0 0 0 1.5px var(--v2-ink)!important}
 /* 按下縮到 97%；滑過只給滑鼠 */
 html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel],.load-more,.notice-retry,[data-coll-import-confirm],.view-switch button,.search-clear,.card-zoom-close):active,
 html.look-clean body[data-view] header.top :is(.nav button,#go):active{transform:scale(.97)}
@@ -782,10 +782,10 @@ html.look-clean body[data-view] #detail .ptl-chip{min-height:var(--btn-h);paddin
 html.look-clean body[data-view] #detail .ptl-seg{align-items:center;min-height:var(--btn-h);padding:3px;border-radius:var(--btn-r)}
 html.look-clean body[data-view] #detail .ptl-seg-btn{padding:0 var(--s3);border-radius:var(--btn-r);font-size:14px}
 
-/* ---- 一-5 首頁最新系列卡（L5 第三輪）：一張卡 = 系列圖＋最多 3 張大獎縮圖，下面固定五列（系列圖／類別與代號／標題兩行／原名／小資訊），
-   列高寫死，同一排每張卡的文字列上下對齊；沒有縮圖的系列只放系列圖。卡寬 240px（手機 200px），橫列照舊左右捲、兩端淡出。 ---- */
-html.look-clean body[data-view="landing"] #homeRails .band-card{flex:0 0 240px;width:240px;display:grid;grid-template-rows:152px 18px 42px 18px 20px;row-gap:var(--s1);align-content:start;align-items:start;box-sizing:border-box;padding:var(--card-pad);border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);text-align:left}
-html.look-clean #homeRails .band-card-visual{display:flex;gap:var(--s2);height:152px;min-width:0}
+/* ---- 一-5 首頁最新系列卡（L5 精修）：一張卡 = 系列圖＋最多 3 張大獎縮圖，下方直向彈性排版：
+   類別與代號 → 主標題（最多兩行）→ 原名副標緊跟主標題（空值不佔位）→ 發售日齊平貼底，同排等高不再懸空。 ---- */
+html.look-clean body[data-view="landing"] #homeRails .band-card{flex:0 0 240px;width:240px;min-height:316px;display:flex;flex-direction:column;align-items:stretch;gap:var(--s1);box-sizing:border-box;padding:var(--card-pad);border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);text-align:left}
+html.look-clean #homeRails .band-card-visual{flex:none;display:flex;gap:var(--s2);width:100%;height:152px;min-width:0}
 html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-art{flex:1 1 0;grid-template:minmax(0,1fr)/minmax(0,1fr);width:auto;min-width:0;height:100%}
 html.look-clean #homeRails .band-card-hits{display:flex;flex:none;align-items:center;padding-left:26px}
 html.look-clean #homeRails .band-card-hit{position:relative;flex:none;width:52px;height:73px;margin-left:-26px;overflow:hidden;border-radius:4px;background:var(--v2-well);box-shadow:0 1px 3px rgba(31,27,22,.4)}
@@ -795,11 +795,13 @@ html.look-clean #homeRails .band-card-hit:nth-child(3){z-index:1}
 html.look-clean #homeRails .band-card-hit:empty{display:none}
 html.look-clean #homeRails .band-card-hit img{display:block;width:100%;height:100%;object-fit:cover}
 html.look-clean body[data-view="landing"] #homeRails .band-card :is(.band-tile-code,.band-card-orig,.band-card-facts){display:block;width:100%;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:400 var(--fs-note)/18px var(--lc-num);color:var(--v2-ink-2)}
-html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:0;height:42px;margin:0;font-size:15px;font-weight:700;line-height:21px;color:var(--v2-ink);overflow-wrap:anywhere}
-html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-facts{font-weight:700;line-height:20px;color:var(--v2-ink)}
+html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-code{margin-top:4px}
+html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:0;margin:0;font-size:15px;font-weight:700;line-height:21px;color:var(--v2-ink);overflow-wrap:anywhere}
+html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-orig:empty{display:none}
+html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-facts{margin-top:auto;padding-top:8px;font-weight:700;line-height:20px;color:var(--v2-ink)}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view="landing"] #homeRails .band-card:hover{border-color:var(--v2-ink-2);box-shadow:var(--v2-shadow-up)}}
 @media (max-width:760px){
-  html.look-clean body[data-view="landing"] #homeRails .band-card{flex-basis:200px;width:200px;grid-template-rows:124px 18px 42px 18px 20px}
+  html.look-clean body[data-view="landing"] #homeRails .band-card{flex-basis:200px;width:200px;min-height:264px}
   html.look-clean #homeRails .band-card-visual{height:124px}
   html.look-clean #homeRails .band-card-hits{padding-left:20px}
   html.look-clean #homeRails .band-card-hit{width:40px;height:56px;margin-left:-20px}
@@ -948,8 +950,10 @@ html.look-clean body[data-view="landing"] .home-examples button:active{transform
   }
 }
 
-/* 補齊 ≥44px 點擊目標與靠右 ⓘ 說明框對齊 */
+/* 補齊 ≥44px 點擊目標與靠右 ⓘ 說明框對齊；暫停動態收進頁尾與主軸左緣齊平 */
 html.look-clean .brand-footer .footer-links a{min-width:var(--btn-h)}
+html.look-clean body[data-view] .cs-motion-toggle{display:flex;gap:10px;width:max-content;margin:16px auto 24px;padding:0 6px 0 14px;font-size:13px;font-weight:700}
+html.look-clean body[data-view] .brand-footer .cs-motion-toggle{display:inline-flex;margin:12px 0 0}
 html.look-clean body[data-view] :is(#eventsSection li a,.health-note a){display:inline-flex;align-items:center;min-height:var(--btn-h)}
 .browse-regions .info-tip .info-body,.card-tools .price-info .info-body,.dpanel-versions>.info-tip .info-body,.home-panel .info-tip .info-body{left:auto;right:0}
 
@@ -995,8 +999,8 @@ html.look-clean body[data-view="market"] #trendsSection .trend-empty p{margin:6p
   /* 手機首頁範例膠囊（米白底紙片） */
   html.look-clean body[data-view="landing"] .home-examples>span{color:var(--v2-ink-2)}
   html.look-clean body[data-view="landing"] .home-examples button{border:1px solid var(--v2-line);background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow)}
-  /* 手機首頁顯示橫向滑動遊戲入口，呼應 Hero 文案 */
-  html.look-clean body[data-view="landing"]:not([data-side]) #channels{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;margin:12px 0 4px;padding:4px 2px 8px;border:0;border-left:0;border-radius:0;background:transparent;scroll-snap-type:x proximity}
+  /* 手機首頁顯示橫向滑動遊戲入口，呼應 Hero 文案（左緣 0px 齊平） */
+  html.look-clean body[data-view="landing"]:not([data-side]) #channels{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;margin:12px 0 4px;padding:4px 2px 8px 0;border:0;border-left:0;border-radius:0;background:transparent;scroll-snap-type:x proximity}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]{flex:0 0 auto;min-width:88px;min-height:var(--btn-h);padding:8px 10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip] .channel-art{height:28px;width:auto;padding:0;background:transparent}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip] .channel-art img{max-height:26px;max-width:68px}

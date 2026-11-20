@@ -89,6 +89,6 @@
     sync();
   });
   reduceMQ.addEventListener?.('change', sync);
-  document.body.append(toggle);
+  (document.querySelector('.brand-footer > div') || document.querySelector('.brand-footer') || document.body).append(toggle);
   sync();
 })();
