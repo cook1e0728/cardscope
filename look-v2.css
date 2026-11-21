@@ -128,7 +128,7 @@ html.look-clean body[data-view] :is(
 /* 字放大到 12px 後手機快速入口的標籤放不下一行：改成最多兩行，不再用省略號吃掉字 */
 html.look-clean body[data-view] .mobile-scope-pill:after,html.look-clean body[data-view] .mobile-region-pill:after{font-size:var(--fs-note)}
 /* 麵包屑、單獨成行的連結：高 44px，窄的也撐到 44px 寬 */
-html.look-clean body[data-view] :is(.crumbs a,.about-intro p>a:only-child){display:inline-flex;align-items:center;justify-content:center;min-width:var(--btn-h);min-height:var(--btn-h)}
+html.look-clean body[data-view] :is(.crumbs a,.about-intro p>a:only-child){display:inline-flex;align-items:center;justify-content:flex-start;min-width:var(--btn-h);min-height:var(--btn-h)}
 html.look-clean body[data-view] .home-examples button{min-height:var(--btn-h)}
 /* 卡牆上的價格是 role=button（開詳細資料）：點擊區 44px 高 */
 html.look-clean body[data-view] .card-reference{min-height:var(--btn-h);align-items:center}
@@ -153,10 +153,10 @@ html.look-clean body[data-view] #homeRails .rails-switch button{min-width:88px;p
 html.look-clean body[data-view] #homeRails .home-latest{margin:0;padding:0;border:0;border-radius:0;background:none}
 html.look-clean body[data-view] #homeRails #homeLatestTitle{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .rails-head{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--s3,12px)}
-.rails-sub{margin:12px 4px 0;font-size:15px;line-height:1.4;font-weight:700;color:var(--v2-ink)}
+.rails-sub{margin:12px 0 0;font-size:15px;line-height:1.4;font-weight:700;color:var(--v2-ink)}
 .rails-head h3{margin:0;font-size:20px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
 .rails-head .meta{font-size:var(--fs-sub);color:var(--v2-ink-2)}
-.rails-rail{display:flex;gap:12px;overflow-x:auto;padding:8px 4px 14px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.rails-rail{display:flex;gap:12px;overflow-x:auto;margin-inline:-4px;padding:8px 4px 14px;scroll-padding-inline:4px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
 .rails-note{margin:0;padding:24px 0;color:var(--v2-ink-2);font-size:15px}
 /* 卡片：沿用漲跌榜的 trend-card 結構，統一白底紙片＋細框線 */
 html.look-clean body[data-view] #homeRails .trend-card{display:block;flex:0 0 190px;width:190px;min-width:0;padding:10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font:inherit;text-align:left;cursor:pointer;scroll-snap-align:start;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
@@ -352,7 +352,7 @@ html.look-clean body[data-view] .series-progress-text{flex:none;font-size:var(--
 html.look-clean body[data-view] #seriesProgress .series-progress-bar{flex:1 1 96px;height:4px;border-radius:2px;background:var(--v2-line)}
 html.look-clean body[data-view] #seriesProgress .series-progress-bar i{border-radius:2px;background:var(--v2-ink)}
 html.look-clean body[data-view] #seriesProgress small{flex:1 1 100%;font-size:var(--fs-note);color:var(--v2-ink-2)}
-html.look-clean body[data-view] #cardTools #filterSummary{order:3;flex:0 1 auto;margin:0;font-size:var(--fs-sub);color:var(--v2-ink-2)}
+html.look-clean body[data-view] #cardTools #filterSummary{order:3;flex:0 1 auto;margin:0;padding:9px 0;font-size:var(--fs-sub);color:var(--v2-ink-2)}
 html.look-clean body[data-view] #cardTools .price-info{order:4;flex:none}
 html.look-clean body[data-view] #watchlistSummary{order:5;flex:0 1 auto;min-width:0;margin:0 0 0 auto;padding:0;border:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:0 4px;font-size:var(--fs-sub);color:var(--v2-ink-2)}
 html.look-clean body[data-view] #watchlistSummary .wl-count{font-size:var(--fs-sub);color:var(--v2-ink-2)}
@@ -447,7 +447,7 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
 /* 頂端列：上一張／位置／下一張｜跳到價格｜關閉。釘在 .dialog 的捲動區頂端，手機全螢幕也一樣（取代原本沒生效的分頁列 sticky） */
 html.look-clean #modal .dialog{padding:0}
 html.look-clean #modal #detail{padding:var(--s4) var(--s5) var(--s7)}
-.detail-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:4px;padding:6px 8px;background:var(--v2-surface);box-shadow:0 1px 0 var(--v2-line)}
+.detail-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:4px;padding:6px var(--s5);background:var(--v2-surface);box-shadow:0 1px 0 var(--v2-line)}
 html.look-clean .detail-bar .detail-nav{position:static;flex:none;width:var(--btn-h);height:var(--btn-h);padding:0;border:0;border-radius:var(--btn-r);background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
 .detail-bar .detail-nav:disabled,.detail-bar .detail-jump:disabled{opacity:.4;box-shadow:none;cursor:default}
 .detail-pos{min-width:4.5em;text-align:center;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
@@ -506,7 +506,7 @@ html.look-clean body[data-view] #cards .card:has(.card-open-hit[aria-current="tr
   html.look-clean #modal.open{padding:0;place-items:stretch;overflow:hidden;background:var(--v2-surface)}
   html.look-clean #modal .dialog{width:100%;max-width:none;height:100dvh;max-height:none;overflow:auto;overscroll-behavior:contain;border-radius:0}
 }
-@media (max-width:760px){html.look-clean #modal #detail{padding:var(--s3) var(--s4) var(--s7)}}
+@media (max-width:760px){html.look-clean #modal #detail{padding:var(--s3) var(--s4) var(--s7)}html.look-clean #modal .detail-bar{padding:6px var(--s4)}}
 
 /* ---- ≥1000px：右側側板 ---- */
 @media (min-width:1000px){
@@ -568,7 +568,7 @@ body[data-view="market"] #marketIntro{display:block;padding:22px 0 0}
 .market-intro h2:focus-visible{outline:2px solid var(--v2-ink);outline-offset:4px}
 /* 「看完整行情」「看卡牌行情」：文字連結，高 44px */
 .rails-more{margin:8px 0 0}
-:is(.rails-more a,.coll-market-link){display:inline-flex;align-items:center;min-height:44px;padding:0 4px;color:var(--v2-ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+:is(.rails-more a,.coll-market-link){display:inline-flex;align-items:center;min-height:44px;padding:0;color:var(--v2-ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
 :is(.rails-more a,.coll-market-link):focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:4px}
 
 /* ---- 收藏頁：側欄（有收藏的遊戲／系列）---- */
@@ -818,6 +818,7 @@ html.look-clean{--card-pad:var(--s5);--keyline-off:calc(var(--card-pad) + 1px);-
 html.look-clean body[data-view="landing"] #homeRails .rails-switch{display:inline-flex;width:auto;margin-left:0}
 @media (min-width:761px){html.look-clean body[data-view="landing"] #homeRails .rails-switch button{flex:none;min-width:88px;padding-inline:20px;font-size:15px}}
 html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{padding-left:0}
+html.look-clean body[data-view="landing"] #homeRails .rails-rail{margin-inline:-4px;padding:8px 4px 14px;scroll-padding-inline:4px}
 @media (min-width:761px){
   html.look-clean body[data-view="landing"] .hero{padding-inline:var(--keyline-off)}
   html.look-clean body[data-view="landing"] .hero::before{inset-inline:calc(-1*var(--keyline-off))}
@@ -826,6 +827,7 @@ html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{padding-l
 }
 @media (min-width:1200px){
   html.look-clean body[data-view="landing"]:not([data-side]) .home-panel{padding-left:var(--keyline-off)}
+  html.look-clean body[data-view="landing"]:not([data-side]) #main #homeRails :is(#railsPanel-trending,#railsPanel-hot) .rails-rail{margin-inline:0;padding:8px 0 14px}
 }
 html.look-clean .feature-tour>summary,html.look-clean .feature-tour>.help-grid{padding-left:0}
 html.look-clean .brand-footer{padding-left:0}

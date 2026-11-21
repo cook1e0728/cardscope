@@ -26,3 +26,14 @@ test('all sections and plain rows align cleanly to the single left keyline (padd
   assert.match(css,/body\[data-side\] header\.top \.wrap\{max-width:var\(--shell-max\);padding-inline:var\(--s3\) var\(--s6\)\}/,'header aligns with the side nav and the wall');
   assert.match(css,/#sideNav \.side-h,#sideNav \.series-band-scope\{margin-inline:var\(--keyline-off\)\}/,'side nav headings stay aligned with side items');
 });
+
+test('rails-rail, subheadings, footer/filter links, detail-bar, and crumbs align flush to 0px',()=>{
+  assert.match(css,/body\[data-view="landing"\] #homeRails \.rails-rail\{margin-inline:-4px;padding:8px 4px 14px;scroll-padding-inline:4px\}/,'scrollable rails-rail uses symmetric -4px margin and 4px scroll-padding so first card aligns at 0px without clipping shadows or triggering left fade');
+  assert.match(css,/@media \(min-width:1200px\)\{[^@]*#main #homeRails :is\(#railsPanel-trending,#railsPanel-hot\) \.rails-rail\{margin-inline:0;padding:8px 0 14px\}/,'desktop grid rails-rail resets horizontal padding and margin to 0');
+  assert.match(css,/\.rails-sub\{margin:12px 0 0;/,'rails subheadings have 0 horizontal margin');
+  assert.match(css,/:is\(\.rails-more a,\.coll-market-link\)\{[^}]*padding:0;/,'rails-more and collection market links align text flush to left edge');
+  assert.match(css,/#cardTools #filterSummary\{[^}]*padding:9px 0;/,'filterSummary zeroes horizontal padding');
+  assert.match(css,/\.detail-bar\{[^}]*padding:6px var\(--s5\);/,'desktop detail-bar matches #detail horizontal padding');
+  assert.match(css,/@media \(max-width:760px\)\{html\.look-clean #modal #detail\{[^}]*\}html\.look-clean #modal \.detail-bar\{padding:6px var\(--s4\)\}\}/,'mobile detail-bar matches #detail horizontal padding');
+  assert.match(css,/:is\(\.crumbs a,\.about-intro p>a:only-child\)\{[^}]*justify-content:flex-start;min-width:var\(--btn-h\);min-height:var\(--btn-h\)\}/,'crumb links keep 44x44 target size while aligning text flush left');
+});
