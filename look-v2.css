@@ -932,12 +932,21 @@ html.look-clean #sideNav .channel[data-ip="union-arena"] .ip-wordmark{display:no
 html.look-clean #sideNav .channel[data-ip="union-arena"] .channel-art::before{content:"UA";position:static;inset:auto;transform:none;animation:none;opacity:1;display:grid;place-items:center;width:44px;height:26px;border-radius:6px;background:var(--v2-ink);color:#fff;font:700 12px/1 var(--lc-num);letter-spacing:.06em}
 html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip="union-arena"] .ip-wordmark{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border:1.5px solid var(--v2-ink);border-radius:6px;font:700 13px/1.15 var(--lc-num);letter-spacing:.06em;color:var(--v2-ink)}
 
-/* 全站一致化：首頁範例膠囊、首頁遊戲磚白底細框、桌面版頁尾 2 排直欄左緣對齊 */
-html.look-clean body[data-view="landing"] .home-examples{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-html.look-clean body[data-view="landing"] .home-examples>span{font-size:var(--fs-sub);font-weight:600;margin-right:4px}
-html.look-clean body[data-view="landing"] .home-examples button{display:inline-flex;align-items:center;justify-content:center;min-height:var(--btn-h);padding:0 16px;border-radius:var(--btn-r);font-size:14px;font-weight:600;line-height:1;text-align:center;transition:transform .14s var(--ease),background-color .14s var(--ease),border-color .14s var(--ease),box-shadow .14s var(--ease)}
+/* 全站一致化：Hero 斷句與欄寬、搜尋框與範例膠囊不裁切不跑版、首頁遊戲磚白底細框、桌面版頁尾 2 排直欄左緣對齊 */
+html.look-clean body[data-view="landing"] .hero-intro p{max-width:none;text-wrap:pretty}
+html.look-clean body[data-view="landing"] .hero-intro .hero-line{display:block}
+html.look-clean body[data-view="landing"] .hero-intro .hero-line+.hero-line{margin-top:2px}
+html.look-clean body[data-view] .hero-seg,html.look-clean body[data-view] .copy-seg{display:inline-block}
+html.look-clean body[data-view] :is(.about-intro p,.beta-guidance-copy p,.brand-showcase-copy p,.help-item p){text-wrap:pretty;word-break:auto-phrase}
+html.look-clean body[data-view="landing"] .home-examples{display:grid;grid-template-columns:max-content minmax(0,1fr);align-items:start;column-gap:10px;row-gap:6px}
+html.look-clean body[data-view="landing"] .home-examples>span{display:inline-flex;align-items:center;min-height:var(--btn-h);margin-right:0;font-size:var(--fs-sub);font-weight:600;white-space:nowrap}
+html.look-clean body[data-view="landing"] .home-examples-list{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
+html.look-clean body[data-view="landing"] .home-examples button{display:inline-flex;align-items:center;justify-content:center;min-height:var(--btn-h);padding:0 13px;border-radius:var(--btn-r);font-size:13px;font-weight:600;line-height:1;text-align:center;white-space:nowrap;transition:transform .14s var(--ease),background-color .14s var(--ease),border-color .14s var(--ease),box-shadow .14s var(--ease)}
 html.look-clean body[data-view="landing"] .home-examples button:active{transform:scale(.97)}
 @media (min-width:761px){
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.home-search,html.look-clean body[data-view="landing"]:not([data-side]) .hero>.home-examples{max-width:560px}
+  html.look-clean body[data-view="landing"] .hero>.home-search input{padding:0 18px;font-size:16px}
+  html.look-clean body[data-view="landing"] .hero>.home-search button{min-width:96px}
   html.look-clean body[data-view="landing"] .home-examples>span{color:#C9C1DA}
   html.look-clean body[data-view="landing"] .home-examples button{border:1px solid rgba(246,241,230,.24);background:rgba(255,255,255,.07);color:#F6F1E6}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]{border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);transition:transform .14s var(--ease),box-shadow .14s var(--ease),border-color .14s var(--ease)}
@@ -945,6 +954,46 @@ html.look-clean body[data-view="landing"] .home-examples button:active{transform
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip].on{outline:none;border-color:transparent;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)}
   html.look-clean .brand-footer .footer-links ul{display:grid;grid-template-columns:repeat(4,max-content);column-gap:var(--s5);row-gap:0;margin:var(--s2) 0 0;justify-items:start}
   html.look-clean .brand-footer .footer-links li:nth-child(3){grid-column:1}
+}
+@media (min-width:761px) and (max-width:899px){
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero{grid-template-columns:minmax(0,1fr) 196px;column-gap:20px}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.hero-art{width:196px}
+  html.look-clean body[data-view="landing"] .hero>.home-search input{padding:0 12px;font-size:14px}
+  html.look-clean body[data-view="landing"] .hero>.home-search button{min-width:84px}
+}
+@media (min-width:900px) and (max-width:1023px){
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero{grid-template-columns:minmax(0,1fr) 220px;column-gap:var(--s5)}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.hero-art{width:220px}
+}
+@media (min-width:1024px) and (max-width:1199px){
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero{grid-template-columns:minmax(0,1fr) 248px;column-gap:var(--s6)}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.hero-art{width:248px}
+}
+@media (min-width:1200px) and (max-width:1279px){
+  html.look-clean body[data-view="landing"] .hero>.home-search input{padding:0 14px;font-size:15px}
+}
+@media (min-width:1200px) and (max-width:1599px){
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero{grid-template-columns:minmax(0,1fr) 210px;column-gap:var(--s5)}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.hero-art{width:210px}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.cs1-fan{width:210px;scale:1}
+  html.look-clean body[data-view="landing"]:not([data-side]) .cs1-fan>.hero-art{left:0}
+}
+@media (min-width:761px) and (max-width:859px){
+  html.look-clean body[data-view] header.top .wrap{padding-inline:var(--s3)}
+  html.look-clean body[data-view] header.top .bar{gap:var(--s2)}
+  html.look-clean body[data-view] header.top .side-menu-btn{padding:0 10px}
+  html.look-clean body[data-view] header.top .nav{gap:4px}
+  html.look-clean body[data-view] header.top .nav button{padding:0 10px 0 8px;gap:4px;font-size:13px}
+  html.look-clean body[data-view] header.top .search input{padding:0 10px;font-size:13px}
+}
+@media (min-width:761px) and (max-width:999px){
+  html.look-clean body[data-side] header.top .bar>.brand{min-width:auto}
+}
+@media (min-width:860px) and (max-width:1199px){
+  html.look-clean body[data-view] header.top .bar{gap:var(--s3)}
+  html.look-clean body[data-view] header.top .nav{gap:6px}
+  html.look-clean body[data-view] header.top .nav button{padding:0 12px 0 10px;gap:6px;font-size:14px}
+  html.look-clean body[data-view] header.top .search input{padding:0 12px;font-size:14px}
 }
 @media (hover:hover) and (pointer:fine){
   @media (min-width:761px){
@@ -999,9 +1048,11 @@ html.look-clean body[data-view="market"] #trendsSection .trend-empty p{margin:6p
   html.look-clean body[data-view] .card-zoom-toolbar{flex-wrap:wrap;justify-content:center;gap:6px;max-width:calc(100vw - 16px);overflow-x:visible}
   html.look-clean body[data-view] .card-zoom-divider{display:none}
   html.look-clean body[data-view] .card-zoom-quality{flex-basis:100%;margin-left:0;text-align:center}
-  /* 手機首頁範例膠囊（米白底紙片） */
-  html.look-clean body[data-view="landing"] .home-examples>span{color:var(--v2-ink-2)}
-  html.look-clean body[data-view="landing"] .home-examples button{border:1px solid var(--v2-line);background:var(--v2-surface);color:var(--v2-ink);box-shadow:var(--v2-shadow)}
+  /* 手機首頁範例膠囊（米白底紙片，「熱門搜尋」獨立一行、下方 5 顆對齊左緣 0px） */
+  html.look-clean body[data-view="landing"] .home-examples{grid-template-columns:minmax(0,1fr);margin-top:8px}
+  html.look-clean body[data-view="landing"] .home-examples>span{min-height:auto;color:var(--v2-ink-2);line-height:1.4}
+  html.look-clean body[data-view="landing"] .home-examples-list{gap:8px}
+  html.look-clean body[data-view="landing"] .home-examples button{padding:0 14px;border:1px solid var(--v2-line);background:var(--v2-surface);color:var(--v2-ink);font-size:14px;box-shadow:var(--v2-shadow)}
   /* 手機首頁顯示橫向滑動遊戲入口，呼應 Hero 文案（左緣 0px 齊平） */
   html.look-clean body[data-view="landing"]:not([data-side]) #channels{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;margin:12px 0 4px;padding:4px 2px 8px 0;border:0;border-left:0;border-radius:0;background:transparent;scroll-snap-type:x proximity}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]{flex:0 0 auto;min-width:88px;min-height:var(--btn-h);padding:8px 10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
