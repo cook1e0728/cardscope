@@ -1750,8 +1750,10 @@ if(typeof render==='function'){
       const cards=Array.isArray(body?.data)?body.data:[],meta=body?.meta||{},parsed=meta.parsed||{},total=Number(meta.total)||cards.length;
       items=[];const rows=[];
       const add=(html,run,cls='')=>{const index=items.length;items.push({run});rows.push(`<li role="option" id="${listId}-${index}" class="${cls}" data-index="${index}" aria-selected="false">${html}</li>`)};
-      if(parsed.name&&parsed.rarities?.length)add(`<span>搜尋「<b>${e(parsed.name)}</b>」</span><span>${parsed.rarities.map(code=>`<span class="ss-chip">${e(code)}</span>`).join(' ')}</span>`,()=>runSearch(q),'ss-action');
-      for(const c of cards){const img=image(c),number=c.officialCardNumber||c.printings?.find(p=>p.localCardNumber)?.localCardNumber||'',game=G(c.game)?.nameZh||'',sub=[game,number,c.rarity?rarityText(c.rarity):''].filter(Boolean).join(' · ');
+      const chips=[...(parsed.series?.label?[parsed.series.label]:[]),...(parsed.rarities||[]),...(parsed.region?[rn(parsed.region)]:[])];
+      if(parsed.name&&chips.length)add(`<span>搜尋「<b>${e(parsed.name)}</b>」</span><span>${chips.map(code=>`<span class="ss-chip">${e(code)}</span>`).join(' ')}</span>`,()=>runSearch(q),'ss-action');
+      const setCodeOf=c=>{const p=c.printings?.find(x=>x.localSetCode)||c.printings?.[0];if(p?.localSetCode)return p.localSetCode;const sid=p?.seriesId||c.seriesId;return sid&&(typeof C!=='undefined'?C.series||[]:[]).find(s=>s.id===sid)?.officialCode||''};
+      for(const c of cards){const img=image(c),setCode=setCodeOf(c),number=c.officialCardNumber||c.printings?.find(p=>p.localCardNumber)?.localCardNumber||'',game=G(c.game)?.nameZh||'',sub=[game,setCode,number,c.rarity?rarityText(c.rarity):''].filter(Boolean).join(' · ');
         add(`${img?`<img src="${e(img)}" alt="" loading="lazy" data-img-error="remove">`:'<span class="ss-noimg" aria-hidden="true"></span>'}<span class="ss-text"><span class="ss-name">${e(name(c))}</span><span class="ss-sub">${e(sub)}</span></span>`,()=>{input.value='';openCard(cardOpenId(c))})}
       if(!cards.length&&meta.suggestion?.q)add(`<span>試試「<b>${e(meta.suggestion.q)}</b>」</span><span class="ss-sub">${e(meta.suggestion.reason||'')}</span>`,()=>runSearch(meta.suggestion.q),'ss-action');
       if(cards.length&&total>cards.length)add(`<span>查看全部 <b>${total.toLocaleString('en-US')}</b> 筆結果</span><span aria-hidden="true">›</span>`,()=>runSearch(q),'ss-action');
@@ -1780,7 +1782,7 @@ if(typeof render==='function'){
     input.addEventListener('compositionend',schedule);
     input.addEventListener('keydown',event=>{
       if(event.isComposing)return;
-      if(event.key==='Escape'&&!list.hidden){event.preventDefault();event.stopPropagation();close();return}
+      if(event.key==='Escape'){clearTimeout(timer);controller?.abort();if(!list.hidden){event.preventDefault();event.stopPropagation();close()}return}
       if(list.hidden||!items.length){if(event.key==='Enter'){clearTimeout(timer);controller?.abort();close()}return}
       if(event.key==='ArrowDown'){event.preventDefault();mark((active+1)%items.length)}
       else if(event.key==='ArrowUp'){event.preventDefault();mark(active<=0?items.length-1:active-1)}

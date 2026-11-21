@@ -983,10 +983,10 @@ test('anniversary queries also search the other ways the anniversary is written 
     if(table==='search_cards_ranked'){bodies.push(JSON.parse(requestBody));return respond({matchedBy:null,matchCount:0,groupCount:0,cards:[]})}
     return respond([]);
   },'三十周年');
-  assert.deepEqual(bodies[0].p_patterns,['%三十周年%','%30th%','%30周年%','%30週年%']);
-  assert.deepEqual(body.meta.queryTerms,['三十周年','30th','30周年','30週年']);
+  for(const pattern of ['%三十周年%','%30th%','%30周年%','%30週年%','%三十週年%','%30th celebration%','%me55%'])assert.ok(bodies[0].p_patterns.includes(pattern),`missing pattern ${pattern}`);
+  for(const term of ['三十周年','30th','30周年','30週年','三十週年','30th celebration','me55'])assert.ok(body.meta.queryTerms.includes(term),`missing queryTerm ${term}`);
   const {body:plain}=await searchWithMock((table,params,respond)=>respond(table==='search_cards_ranked'?{matchedBy:null,matchCount:0,groupCount:0,cards:[]}:[]),'30th');
-  assert.deepEqual(plain.meta.queryTerms,['30th','30周年','30週年']);
+  for(const term of ['30th','30周年','30週年','三十周年','三十週年','30th celebration','me55'])assert.ok(plain.meta.queryTerms.includes(term),`missing plain queryTerm ${term}`);
 });
 
 test('html, js and css revalidate with an ETag and answer If-None-Match with 304; images keep their handling',async()=>{

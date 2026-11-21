@@ -51,3 +51,16 @@ test('同版本同一個詞記住結果（最多 60 筆），刪字再打回直�
   const schedule=block.slice(block.indexOf('const schedule='));
   assert.ok(schedule.indexOf('memo.get(memoKey(q))')<schedule.indexOf('setTimeout('),'命中時在排程請求之前就顯示');
 });
+
+test('複合查詢建議列顯示系列／稀有度／版本 chip，卡片副標帶系列代碼',()=>{
+  const render=block.slice(block.indexOf('const render='),block.indexOf('const fetchSuggest='));
+  assert.match(render,/parsed\.series\?\.label/);
+  assert.match(render,/parsed\.rarities\|\|\[\]/);
+  assert.match(render,/parsed\.region\?\[rn\(parsed\.region\)\]:\[\]/);
+  assert.match(render,/setCodeOf=c=>/);
+  assert.match(render,/sub=\[game,setCode,number,/);
+});
+
+test('按 Escape 無論清單是否已開啟都先取消 debounce 與進行中請求，避免 150ms 內競態重開',()=>{
+  assert.match(block,/if\(event\.key==='Escape'\)\{clearTimeout\(timer\);controller\?\.abort\(\);if\(!list\.hidden\)\{event\.preventDefault\(\);event\.stopPropagation\(\);close\(\)\}return\}/);
+});

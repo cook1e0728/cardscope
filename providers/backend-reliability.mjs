@@ -1,5 +1,7 @@
 const DEFAULT_SNAPSHOT_TTL_MS = 5 * 60 * 1000;
 const DEFAULT_SNAPSHOT_MAX_STALE_MS = 30 * 60 * 1000;
+const DEFAULT_RATE_LIMIT_MAX_KEYS = 10000;
+const PUBLIC_SNAPSHOT_ERROR = 'UPSTREAM_UNAVAILABLE';
 
 function duration(value, fallback) {
   const parsed = Number(value);
@@ -52,7 +54,7 @@ export function createBoundedSnapshotCache({
         ageMs: Math.max(0, nowMs - observedAt),
         expiresAt: iso(observedAt + ttl),
         staleUntil: iso(staleUntil),
-        error: error ? errorMessage(error) : null
+        error: error ? PUBLIC_SNAPSHOT_ERROR : null
       }
     };
   };
@@ -72,7 +74,8 @@ export function createBoundedSnapshotCache({
     }).catch(error => {
       const failedAt = timestamp(now());
       if (lastSuccess && failedAt - lastSuccess.observedAt <= ttl + maxStale) {
-        return result(lastSuccess.data, 'stale', lastSuccess.observedAt, error);
+        console.error('snapshot cache refresh failed; serving stale snapshot', errorMessage(error));
+        return result(lastSuccess.data, 'stale', lastSuccess.observedAt, PUBLIC_SNAPSHOT_ERROR);
       }
       throw error;
     }).finally(() => {
@@ -143,17 +146,28 @@ export function summarizeImageHealth({ cards = [], printings = [], images = [], 
   };
 }
 
-// 固定時間窗計數；每個時間窗清空一次，記憶體上限就是一分鐘內出現過的 IP 數。
+// 固定時間窗計數；為防偽造 IP 膨脹記憶體，限制最大鍵數（滿時先清過期鍵，仍滿則驅逐最舊鍵）。
 // shortcut: 計數只在單一程序內，之後開多個執行個體時要改用共用儲存。
-export function createRateLimiter({ limit, windowMs = 60000, now = Date.now }) {
+export function createRateLimiter({ limit, windowMs = 60000, maxKeys = DEFAULT_RATE_LIMIT_MAX_KEYS, now = Date.now }) {
   const hits = new Map();
-  let windowStart = now();
+  const cap = Math.max(1, Math.floor(Number(maxKeys) || DEFAULT_RATE_LIMIT_MAX_KEYS));
   return key => {
-    if (now() - windowStart >= windowMs) { hits.clear(); windowStart = now(); }
-    const count = (hits.get(key) || 0) + 1;
-    hits.set(key, count);
-    return count <= limit;
+    const current = now();
+    const existing = hits.get(key);
+    if (existing && existing.expiresAt > current) {
+      existing.count += 1;
+      return existing.count <= limit;
+    }
+    if (existing) hits.delete(key);
+    if (hits.size >= cap) {
+      for (const [entryKey, entry] of hits) {
+        if (entry.expiresAt <= current) hits.delete(entryKey);
+      }
+      while (hits.size >= cap) hits.delete(hits.keys().next().value);
+    }
+    hits.set(key, { count: 1, expiresAt: current + windowMs });
+    return 1 <= limit;
   };
 }
 
-export { DEFAULT_SNAPSHOT_TTL_MS, DEFAULT_SNAPSHOT_MAX_STALE_MS };
+export { DEFAULT_SNAPSHOT_TTL_MS, DEFAULT_SNAPSHOT_MAX_STALE_MS, DEFAULT_RATE_LIMIT_MAX_KEYS };

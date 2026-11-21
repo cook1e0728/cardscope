@@ -8,6 +8,7 @@
   // so box and series pages are found even when no card name matches.
   let bandSearch=null,searchSummary={here:0,others:[],label:''};
   const fold=value=>String(value||'').toLowerCase().normalize('NFKC').replace(/[\s・·._:：'’"\-<>\[\]「」｜|]/g,'');
+  const filterNeedles=raw=>{const base=fold(raw);if(!base)return[];const m=base.match(/^(\d{1,2})(?:th|周年|週年|周年記念|週年紀念|thanniversary|thcelebration)$/);return m?[...new Set([base,`${m[1]}th`,`${m[1]}周年`,`${m[1]}週年`])]:[base]};
   const bandTab={},recentKey='cardscope-band-recent',regionOrder=['JP','TW','US','ASIA','KR','CN'];
   // 航海王的台灣官方站賣的是日文印刷的卡（亞洲發行），不是繁中版
   const regionLabel={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲英文版'},regionText=(r,g=game)=>r==='TW'&&g==='onepiece'?'亞洲日文版':regionLabel[r];
@@ -235,8 +236,8 @@
     const tools=series.length>8;
     // 篩選字不為空時不管目前分頁，在這個版本的全部系列裡找名稱或代號
     const railMarkup=()=>{
-      const needle=fold(bandFilter[game]||''),grid=Boolean(needle)||Boolean(bandExpanded[game]);
-      const rows=needle?byDate(series.filter(item=>[item.nameZh,item.nameJa,item.nameEn,item.officialCode,...(item.aliases||[])].some(value=>fold(value).includes(needle)))).map(item=>['series',item]):list.map(item=>Array.isArray(item)?item:[kind,item]);
+      const needles=filterNeedles(bandFilter[game]||''),needle=needles[0]||'',grid=Boolean(needle)||Boolean(bandExpanded[game]);
+      const rows=needle?byDate(series.filter(item=>[item.nameZh,item.nameJa,item.nameEn,item.officialCode,...(item.aliases||[])].some(value=>{const f=fold(value);return f&&needles.some(n=>f.includes(n))}))).map(item=>['series',item]):list.map(item=>Array.isArray(item)?item:[kind,item]);
       const shown=grid?rows.slice(0,bandShown[game]||SHOW_STEP):rows;
       const more=rows.length>shown.length?`<button type="button" class="series-band-more" data-band-more>顯示更多（還有 ${rows.length-shown.length} 個）</button>`:'';
       const empty=`<p class="series-band-empty">${needle?`${esc(regionText(region)||'')}沒有名稱或代號含「${esc(bandFilter[game])}」的系列。`:window.catalogPartial?'系列資料載入中…':active==='search'?`${esc(regionText(region)||'')}沒有符合的系列或商品。`:`${esc(regionText(region)||'')}目前沒有收錄這一類。`}</p>`;

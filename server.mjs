@@ -18,7 +18,7 @@ import { REFERENCE_BODY_MAX_BYTES, buildReferencePrices, referenceQueryParams, v
 import { normalizeMarketRecord, withTwd, RARITY_RANKINGS, rarityCanonicalCode as normalizeRarityCanonicalCode, rarityDisplayLabel as normalizeRarityDisplayLabel, rarityRank as normalizeRarityRank, rarityToken as normalizeRarityToken, rarityDefinition as normalizeRarityDefinition } from './providers/normalize.mjs';
 import { auditCatalogLinks, catalogProvidersNeedingSync, closeInterruptedCatalogRuns, localizeProductName, refreshBrowseKeys, syncCatalog } from './providers/catalog-sync.mjs';
 import { cacheYugiohImages, yugiohImageStatus } from './providers/image-cache.mjs';
-import { foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './providers/search-query.mjs';
+import { anniversaryTerms, buildSeriesIndex, foldSearch, foldedSpan, gameHintFor, parseSearchQuery, postgrestLike, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './providers/search-query.mjs';
 import { normalizeProduct } from './providers/products.mjs';
 import { PACK_PRIZE_GAMES, PACK_PRIZE_LIMIT, PACK_PRIZE_WINDOW_DAYS, SERIES_HIT_FETCH, SERIES_HIT_PER_GAME, buildSeriesHits, prizeCards, mergePrizeRows, prizeRow, prizeSeriesCandidates } from './providers/pack-prizes.mjs';
 import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectionAllowed, imageDisplayPolicies, imageRightsAllowDisplay, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './providers/source-policy.mjs';
@@ -91,13 +91,34 @@ const json = (res,status,body,headers={})=>{res.writeHead(status,{'Content-Type'
 const NOT_FOUND_HTML='<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>找不到頁面｜CardSeek</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#efeae0;color:#171717;font:16px/1.6 system-ui,"Noto Sans TC",sans-serif;text-align:center}main{padding:24px}h1{margin:0 0 8px;font-size:24px}a{display:inline-block;margin-top:16px;padding:10px 22px;border-radius:8px;background:#171717;color:#fff;text-decoration:none}</style></head><body><main><h1>找不到這個頁面</h1><p>網址可能打錯了，或這個頁面已經移除。</p><a href="/">回 CardSeek 首頁</a></main></body></html>',notFound=(res,pathname)=>{if(pathname.startsWith('/api/'))return json(res,404,{error:'Not found'});res.writeHead(404,{'Content-Type':types['.html'],'Cache-Control':'no-store'});res.end(NOT_FOUND_HTML)};
 const UPSTREAM_ERROR='UPSTREAM_UNAVAILABLE',failJson=(res,status,label,error,headers)=>{console.error(label,error?.message||error);return json(res,status,{error:'資料暫時無法讀取'},headers)},publicReason=(label,error)=>{console.error(label,error?.message||error);return UPSTREAM_ERROR};
 
+const ONEPIECE_IMAGE_MAX_BYTES=5*1024*1024;
+const ONEPIECE_IMAGE_MIMES=new Set(['image/png','image/jpeg','image/webp','image/avif','image/gif']);
 function onePieceImageTarget(value){
   try{
     const target=new URL(String(value||''));
-    if(target.protocol!=='https:'||!ONEPIECE_IMAGE_HOSTS.has(target.hostname))return null;
+    if(target.protocol!=='https:'||target.port||target.username||target.password||!ONEPIECE_IMAGE_HOSTS.has(target.hostname))return null;
     if(!target.pathname.startsWith('/images/cardlist/card/')||!/\.(?:png|jpe?g|webp)$/i.test(target.pathname))return null;
     return target;
   }catch{return null}
+}
+async function readBoundedResponse(response,maxBytes){
+  if(!response.body||typeof response.body.getReader!=='function'){
+    const body=Buffer.from(await response.arrayBuffer());
+    if(body.length>maxBytes)throw Object.assign(new Error('IMAGE_TOO_LARGE'),{code:'IMAGE_TOO_LARGE'});
+    return body;
+  }
+  const reader=response.body.getReader(),chunks=[];let total=0;
+  try{
+    for(;;){
+      const {done,value}=await reader.read();
+      if(done)break;
+      const chunk=Buffer.from(value);
+      total+=chunk.length;
+      if(total>maxBytes){await reader.cancel().catch(()=>{});throw Object.assign(new Error('IMAGE_TOO_LARGE'),{code:'IMAGE_TOO_LARGE'})}
+      chunks.push(chunk);
+    }
+  }finally{reader.releaseLock()}
+  return Buffer.concat(chunks,total);
 }
 async function proxyOnePieceImage(res,value){
   const target=onePieceImageTarget(value);
@@ -106,9 +127,10 @@ async function proxyOnePieceImage(res,value){
   try{response=await nativeFetch(target,{redirect:'error',headers:{Accept:'image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(20000)})}
   catch{return json(res,502,{error:'航海王官方圖片暫時無法讀取'})}
   const contentType=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase(),length=Number(response.headers.get('content-length')||0);
-  if(!response.ok||!contentType.startsWith('image/')||(length&&length>5*1024*1024))return json(res,502,{error:'航海王官方圖片回應無效'});
-  const body=Buffer.from(await response.arrayBuffer());
-  if(body.length>5*1024*1024)return json(res,502,{error:'航海王官方圖片超過大小限制'});
+  if(!response.ok||!ONEPIECE_IMAGE_MIMES.has(contentType)||(length&&length>ONEPIECE_IMAGE_MAX_BYTES)){response.body?.cancel?.().catch(()=>{});return json(res,502,{error:'航海王官方圖片回應無效'})}
+  let body;
+  try{body=await readBoundedResponse(response,ONEPIECE_IMAGE_MAX_BYTES)}
+  catch(error){return json(res,502,{error:error?.code==='IMAGE_TOO_LARGE'?'航海王官方圖片超過大小限制':'航海王官方圖片暫時無法讀取'})}
   res.writeHead(200,{'Content-Type':contentType,'Content-Length':String(body.length),'Cache-Control':'public, max-age=86400, stale-while-revalidate=604800','X-Content-Type-Options':'nosniff'});
   res.end(body);
 }
@@ -763,26 +785,41 @@ async function loadCatalogHealth(){
       // The v2 snapshot scans every printing, card and image (about 14 s on the current instance), past the default 12 s fetch timeout.
       try{return await supabaseFetch('/rpc/catalog_health_snapshot_v2',{method:'POST',body:JSON.stringify({p_display_policies:policies}),signal:AbortSignal.timeout(60000)})}
       catch(v2Error){
+        console.error('catalog health v2 snapshot failed; falling back to legacy snapshot',v2Error?.message||v2Error);
         const legacy=await supabaseFetch('/rpc/catalog_health_snapshot',{method:'POST',body:'{}'});
-        return {...legacy,metricStatus:{...(legacy.metricStatus||{}),images:'legacy-strict'},healthCompatibilityWarning:`v2 snapshot unavailable: ${v2Error.message}`};
+        return {...legacy,metricStatus:{...(legacy.metricStatus||{}),images:'legacy-strict'},healthCompatibilityWarning:'v2 snapshot unavailable'};
       }
     });
     return {...cached.data,policy:sourcePolicySummary(),cache:cached.cache};
   }catch(error){return {...await loadCatalogCoverage(),policy:sourcePolicySummary(),healthFallbackReason:publicReason('catalog health failed',error)}}
 }
+function safeTokenEqual(actual,expected){
+  if(typeof actual!=='string'||typeof expected!=='string'||!actual||!expected)return false;
+  const digest=value=>createHash('sha256').update(value).digest();
+  return timingSafeEqual(digest(actual),digest(expected));
+}
 function adminAuthorized(req){
   const authorization=String(req.headers.authorization||''),bearer=authorization.startsWith('Bearer ')?authorization.slice(7):null;
   const token=req.headers['x-scrape-token']||bearer;
-  if(!process.env.SCRAPE_SECRET||typeof token!=='string')return false;
-  const digest=value=>createHash('sha256').update(value).digest();
-  return timingSafeEqual(digest(token),digest(process.env.SCRAPE_SECRET));
+  return safeTokenEqual(token,process.env.SCRAPE_SECRET);
 }
-// 公開 API 每個 IP 每分鐘的上限；卡圖一頁就有幾十張，另算一個寬鬆的額度。
-const apiLimiter=createRateLimiter({limit:Number(process.env.API_RATE_LIMIT_PER_MINUTE||240)}),imageLimiter=createRateLimiter({limit:Number(process.env.IMAGE_RATE_LIMIT_PER_MINUTE||1200)});
-// 正式站在 Cloudflare 後面，只有這個標頭無法由訪客偽造（X-Forwarded-For 的第一段可以）。沒有這個標頭時（有人繞過 Cloudflare 直連源站）退回用 TCP 連線對端 IP（socket.remoteAddress，同樣無法偽造，每個直連 client 各自計一組額度）；絕不信 X-Forwarded-For。
-function rateLimited(req,pathname){
-  const ip=req.headers['cf-connecting-ip']||req.socket?.remoteAddress;
-  if(!ip||!pathname.startsWith('/api/')||adminAuthorized(req))return false;
+function trustedCfIp(req){
+  const cf=req.headers['cf-connecting-ip'];
+  if(typeof cf!=='string'||!cf.trim())return null;
+  const secret=process.env.ORIGIN_VERIFY_SECRET;
+  if(secret&&!safeTokenEqual(req.headers['x-origin-verify'],secret))return null;
+  return cf.trim();
+}
+// 公開 API 每個 IP 每分鐘的上限；卡圖一頁就有幾十張，另算一個寬鬆的額度；SEO 動態查庫與低配額外部價格端點各自獨立收緊。
+const apiLimiter=createRateLimiter({limit:Number(process.env.API_RATE_LIMIT_PER_MINUTE||240)}),imageLimiter=createRateLimiter({limit:Number(process.env.IMAGE_RATE_LIMIT_PER_MINUTE||1200)}),seoLimiter=createRateLimiter({limit:Number(process.env.SEO_RATE_LIMIT_PER_MINUTE||60)}),gradedLimiter=createRateLimiter({limit:Number(process.env.GRADED_RATE_LIMIT_PER_MINUTE||15)}),ebayLimiter=createRateLimiter({limit:Number(process.env.EBAY_RATE_LIMIT_PER_MINUTE||15)});
+// 正式站在 Cloudflare 後面，只有這個標頭無法由訪客偽造（X-Forwarded-For 的第一段可以）；若設定 ORIGIN_VERIFY_SECRET 則必須同時通過 x-origin-verify 驗證才採信。沒有這個標頭時（有人繞過 Cloudflare 直連源站）退回用 TCP 連線對端 IP（socket.remoteAddress，同樣無法偽造，每個直連 client 各自計一組額度）；絕不信 X-Forwarded-For。
+function rateLimited(req,url){
+  const ip=trustedCfIp(req)||req.socket?.remoteAddress,pathname=url.pathname;
+  if(!ip||adminAuthorized(req))return false;
+  if(pathname==='/'&&(url.searchParams.has('card')||url.searchParams.has('series')))return !seoLimiter(ip);
+  if(!pathname.startsWith('/api/'))return false;
+  if(pathname==='/api/graded-prices')return !gradedLimiter(ip)||!apiLimiter(ip);
+  if(pathname==='/api/ebay-listings')return !ebayLimiter(ip)||!apiLimiter(ip);
   return !(pathname.startsWith('/api/images/')?imageLimiter:apiLimiter)(ip);
 }
 // ---- 收藏雲端同步（docs/NEXT_PHASE_PLAN.md Y2）----
@@ -791,7 +828,7 @@ function rateLimited(req,pathname){
 const CollectionStore=globalThis.CollectionStore,syncLimiter=createRateLimiter({limit:Number(process.env.SYNC_RATE_LIMIT_PER_MINUTE||6)}),SYNC_REVISION_MAX=2147483646;
 const syncHash=code=>createHash('sha256').update(code).digest('hex');
 const syncError=(res,status,error,extra={})=>json(res,status,{error},extra);
-const clientIp=req=>req.headers['cf-connecting-ip']||req.socket?.remoteAddress||'unknown';
+const clientIp=req=>trustedCfIp(req)||req.socket?.remoteAddress||'unknown';
 // ---- Google 登入（docs/COLLECTION_SYNC_GOOGLE_PLAN.md）----
 // PKCE 交換、換新、登出都由伺服器代打副庫的 Supabase Auth（anon key 只在伺服器），所以 CSP 的 connect-src 維持 'self'，也不用 cookie。
 // 上游的錯誤內容一律不轉給訪客；token 只在 body 或 Authorization 標頭，不進紀錄。同步的鍵 = sha256('google:' + user.id)：
@@ -859,10 +896,25 @@ async function handleCollectionSync(req,res,action){
   // 帶 Authorization 就是 Google 登入：body 不帶 code，鍵由 token 換到的帳號 ID 決定。標頭格式不對直接 401。
   const google=req.headers.authorization!==undefined,token=google?bearerOf(req):'';
   if(google&&!token)return syncError(res,401,'登入已失效，請重新用 Google 登入');
-  let body;try{body=await readJsonBody(req,LIMITS.fileMaxChars)}catch(error){return syncError(res,error.message==='BODY_TOO_LARGE'?413:400,error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤')}
+  const maxBodyBytes=action==='push'?LIMITS.fileMaxChars:1024;
+  const declaredLength=Number(req.headers['content-length']);
+  const smallPushDeclared=action==='push'&&Number.isFinite(declaredLength)&&declaredLength>=0&&declaredLength<=4096;
+  let hash='';
+  // Google 登入的 push 若 body 較大或未知大小（chunked），先驗 token 再讀 2 MB body，避免未授權請求放大 CPU/記憶體負載。
+  if(google&&action==='push'&&!smallPushDeclared){
+    if(!secondDbConfigured()||!authConfigured())return syncError(res,503,'雲端同步尚未開啟');
+    try{hash=await googleSyncKey(token)}catch{return syncError(res,502,'同步服務暫時無法使用')}
+    if(!hash)return syncError(res,401,'登入已失效，請重新用 Google 登入');
+  }
+  let body;try{body=await readJsonBody(req,google&&action==='push'&&smallPushDeclared?4096:maxBodyBytes)}catch(error){return syncError(res,error.message==='BODY_TOO_LARGE'?413:400,error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤')}
   const keys=Object.keys(body&&typeof body==='object'&&!Array.isArray(body)?body:{}).sort().join(),code=google?'':CollectionStore.normalizeSyncCode(body?.code);
   const expected=google?(action==='push'?'items,revision':''):(action==='push'?'code,items,revision':'code');
   if(keys!==expected||(!google&&!code))return syncError(res,400,'同步碼或請求格式不正確'); // 格式不對不查庫
+  if(google&&!hash){
+    if(!secondDbConfigured()||!authConfigured())return syncError(res,503,'雲端同步尚未開啟');
+    try{hash=await googleSyncKey(token)}catch{return syncError(res,502,'同步服務暫時無法使用')}
+    if(!hash)return syncError(res,401,'登入已失效，請重新用 Google 登入');
+  }
   let clean=null,revision=0;
   if(action==='push'){
     ({revision}=body);
@@ -880,9 +932,7 @@ async function handleCollectionSync(req,res,action){
     if(JSON.stringify(clean).length>LIMITS.fileMaxChars)return syncError(res,413,'收藏資料過大');
   }
   if(!secondDbConfigured()||(google&&!authConfigured()))return syncError(res,503,'雲端同步尚未開啟');
-  let hash;
-  if(google){try{hash=await googleSyncKey(token)}catch{return syncError(res,502,'同步服務暫時無法使用')}if(!hash)return syncError(res,401,'登入已失效，請重新用 Google 登入')}
-  else hash=syncHash(code);
+  if(!google)hash=syncHash(code);
   try{
     if(action==='delete'){
       // 刪掉這組碼在雲端的資料；沒有資料也算成功（結果一樣：雲端沒有它）。
@@ -1060,14 +1110,12 @@ async function loadCatalogCoverageLegacy(){
   }catch(error){return {totalCards:fallback.cards.length,games:Object.fromEntries(fallback.games.map(g=>[g.id,{cards:fallback.cards.filter(c=>c.game===g.id).length,displayableImages:fallback.cards.filter(c=>c.game===g.id&&c.imageUrl).length}])),source:'catalog.json',updatedAt:fallback.updatedAt||null,fallbackReason:publicReason('health counts failed; using catalog.json',error)}}
 }
 
-const postgrestLike=s=>String(s||'').replace(/[\\%_*(),.]/g,'').trim();
 // TW source names wrap an owner prefix in angle brackets (<火箭隊的>超夢ex); a query typed as printed (火箭隊的超夢) gets one variant per 的 so ilike can still match.
-// Anniversary names are written several ways (30th CELEBRATION, 30周年デザイン, 三十週年); any one of them also searches the others.
-const chineseNumber=t=>{if(/^\d+$/.test(t))return Number(t);const d={一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9},m=t.match(/^([一二三四五六七八九])?(十)?([一二三四五六七八九])?$/);if(!m||(!m[2]&&(!m[1]||m[3])))return null;return m[2]?(m[1]?d[m[1]]:1)*10+(m[3]?d[m[3]]:0):d[m[1]]};
-const anniversaryTerms=term=>{const m=String(term).normalize('NFKC').replace(/\s+/g,'').match(/^(\d{1,3}|[一二三四五六七八九十]{1,3})(?:th|周年|週年|thanniversary|anniversary)$/i),n=m&&chineseNumber(m[1]);if(!n)return [];const original=String(term).toLowerCase();return [`${n}th`,`${n}周年`,`${n}週年`].filter(v=>v.toLowerCase()!==original)};
-// Every term the database search tries for a query: the query, a mapped alias, markup and anniversary variants.
+// Every term the database search tries for a query: the query, a mapped alias, markup, anniversary and card-number variants (capped for SQL safety).
 // rawQuery may be an array (the database's own spellings of the query, see foldedNameSpans); the alias mapping follows the first one.
-const searchQueryTerms=rawQuery=>{const raws=[].concat(rawQuery),mapped=externalAliasIndex.get(normalizeSearch(raws[0]))?.query;return [...new Set([...raws,mapped].filter(Boolean).map(postgrestLike).filter(Boolean).flatMap(term=>[term,...sourceMarkupTerms(term),...anniversaryTerms(term),...cardNumberTerms(term)]))]};
+const SEARCH_PATTERNS_MAX=12,SEARCH_SERIES_IDS_MAX=50,seriesIndexCache=new WeakMap();
+function getSeriesSearchIndex(catalog){const list=catalog?.series;if(!Array.isArray(list))return buildSeriesIndex([]);let idx=seriesIndexCache.get(list);if(!idx){idx=buildSeriesIndex(list);seriesIndexCache.set(list,idx)}return idx}
+const searchQueryTerms=rawQuery=>{const raws=[].concat(rawQuery),mapped=externalAliasIndex.get(normalizeSearch(raws[0]))?.query;return [...new Set([...raws,mapped].filter(Boolean).map(postgrestLike).filter(Boolean).flatMap(term=>[term,...sourceMarkupTerms(term),...anniversaryTerms(term),...cardNumberTerms(term)]))].slice(0,SEARCH_PATTERNS_MAX)};
 // 「SV6a 090」（系列代碼、空格、卡號）在資料裡寫成「SV6a-090」；「OP-17-118」寫成「OP17-118」、「BETB EN060」寫成「BETB-EN060」。
 // 分隔符號（空白、連字號）一律視為同一種：除了最後一段以外接起來當系列代碼，再以 - 接卡號；卡號是 1–2 位數時另補成三位數。
 const cardNumberTerms=term=>{const text=String(term).trim(),tokens=text.split(/[\s\-‐-―]+/).filter(Boolean),head=tokens.slice(0,-1).join(''),last=tokens.at(-1)||'';if(tokens.length<2||tokens.length>3||!tokens.every(t=>/^[a-z0-9]+$/i.test(t))||!/^[a-z]{1,5}\d{0,3}[a-z]?$/i.test(head)||!/^[a-z]{0,3}\d{1,4}$/i.test(last))return [];const spellings=[`${head}-${last}`];if(/^\d{1,2}$/.test(last))spellings.push(`${head}-${last.padStart(3,'0')}`);return spellings.filter(v=>v.toLowerCase()!==text.toLowerCase())};
@@ -1082,7 +1130,8 @@ function suggestBody(body,region){const pick=c=>{const list=c.printings||[];if(l
 const SEARCH_CANDIDATE_LIMIT=100;
 const SEARCH_RESULT_LIMIT=40,SEARCH_PAGE_MAX=100;
 // search_cards_ranked(..., p_offset, p_rarities) (migration 20261019090000) pages, filters by rarity and returns matchRank; while it is missing the four-argument version answers (first page only) and this is not retried for five minutes.
-let rankedPageMissingUntil=0;
+// search_cards_ranked(..., p_series_ids) (migration 20261121000000) intersects target series with card features in SQL; while missing, falls back to bounded PostgREST intersection.
+let rankedPageMissingUntil=0,rankedSeriesMissingUntil=0;
 // 0 exact, 1 starts with, 2 contains (names and card number only), 3 matched only by alias, text or series. Same scale as the database's matchRank.
 const cardMatchRank=(card,needles)=>{const names=[card.nameZh,card.nameJa,card.nameEn,card.nameKo,card.officialCardNumber].map(normalizeSearch).filter(Boolean);if(names.some(name=>needles.includes(name)))return 0;if(names.some(name=>needles.some(needle=>name.startsWith(needle))))return 1;if(names.some(name=>needles.some(needle=>name.includes(needle))))return 2;return 3};
 // The fallbacks below exist for older databases (function missing, unexpected shape). A timeout means the
@@ -1106,7 +1155,22 @@ async function suggestCardName(name,region){
 // fill, its own results continuing at offset - (main total). Asked only then, so most searches cost nothing more; a failure or timeout there keeps the main answer.
 // shortcut: second-project hits always rank after every main hit (no cross-project relevance merge), and while main pages are full the total counts main only
 // (it grows on the first page that reaches the second project); merge by matchRank and ask both for counts if UA results feel buried.
-async function searchCatalogDatabase(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT,{offset=0,rarities=[]}={}){
+async function searchCatalogDatabase(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT,{offset=0,rarities=[],seriesIds=[]}={}){
+  const scopedSeries=[...new Set((seriesIds||[]).map(id=>String(id||'').trim()).filter(Boolean))].slice(0,SEARCH_SERIES_IDS_MAX);
+  if(scopedSeries.length){
+    const mainSeries=scopedSeries.filter(id=>dbForId(id)==='main'),secondSeries=secondDbConfigured()?scopedSeries.filter(id=>dbForId(id)==='ip2'):[];
+    if(!mainSeries.length&&!secondSeries.length)return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:true,matchedSeries:0,timings:{},total:0,paged:false};
+    if(!mainSeries.length){try{return await withTimeout(withDb('ip2',()=>searchCatalogDatabaseIn(rawQuery,region,limit,{offset,rarities,seriesIds:secondSeries})),SECOND_DB_TIMEOUT_MS)}catch(error){console.error('second database scoped search failed',error.message);return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:true,matchedSeries:0,timings:{},total:0,paged:false}}}
+    const main=await withDb('main',()=>searchCatalogDatabaseIn(rawQuery,region,limit,{offset,rarities,seriesIds:mainSeries}));
+    if(!secondSeries.length||!main.searched||main.cards.length>=limit)return main;
+    const mainTotal=main.cards.length?offset+main.cards.length:Number(main.total)||0,secondOffset=Math.max(offset-mainTotal,0);
+    let second;try{second=await withTimeout(withDb('ip2',()=>searchCatalogDatabaseIn(rawQuery,region,limit-main.cards.length,{offset:secondOffset,rarities,seriesIds:secondSeries})),SECOND_DB_TIMEOUT_MS)}
+    catch(error){console.error('second database search failed; main results only',error.message);return main}
+    if(!second.cards.length&&!second.total)return main;
+    const secondTotal=Number(second.total)||secondOffset+second.cards.length,timings={...main.timings};
+    for(const [name,ms] of Object.entries(second.timings||{}))timings[`second-${name}`]=ms;
+    return {...main,cards:[...main.cards,...second.cards],candidateCount:main.candidateCount+second.candidateCount,mayHaveMore:second.mayHaveMore,matchedSeries:main.matchedSeries||second.matchedSeries,timings,total:mainTotal+secondTotal,paged:Boolean(main.cards.length?main.paged:second.paged)};
+  }
   const main=await withDb('main',()=>searchCatalogDatabaseIn(rawQuery,region,limit,{offset,rarities}));
   if(!secondDbConfigured()||!main.searched||main.cards.length>=limit)return main;
   const mainTotal=main.cards.length?offset+main.cards.length:Number(main.total)||0,secondOffset=Math.max(offset-mainTotal,0);
@@ -1117,10 +1181,11 @@ async function searchCatalogDatabase(rawQuery,region='ALL',limit=SEARCH_RESULT_L
   for(const [name,ms] of Object.entries(second.timings||{}))timings[`second-${name}`]=ms;
   return {...main,cards:[...main.cards,...second.cards],candidateCount:main.candidateCount+second.candidateCount,mayHaveMore:second.mayHaveMore,matchedSeries:main.matchedSeries||second.matchedSeries,timings,total:mainTotal+secondTotal,paged:Boolean(main.cards.length?main.paged:second.paged)};
 }
-async function searchCatalogDatabaseIn(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT,{offset=0,rarities=[]}={}){
-  const rarityValues=rarityMatchValues(rarities),filtered=region!=='ALL'||rarityValues.length>0;
+async function searchCatalogDatabaseIn(rawQuery,region='ALL',limit=SEARCH_RESULT_LIMIT,{offset=0,rarities=[],seriesIds=[]}={}){
+  const scopedSeries=[...new Set((seriesIds||[]).map(id=>String(id||'').trim()).filter(Boolean))].slice(0,SEARCH_SERIES_IDS_MAX),hasSeriesScope=scopedSeries.length>0,seriesIdSet=hasSeriesScope?new Set(scopedSeries):null;
+  const rarityValues=rarityMatchValues(rarities),filtered=region!=='ALL'||rarityValues.length>0||hasSeriesScope;
   if(!supabaseConfigured())return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
-  const terms=searchQueryTerms(rawQuery);if(!terms.length)return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
+  const terms=searchQueryTerms(rawQuery).slice(0,SEARCH_PATTERNS_MAX);if(!terms.length)return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:false};
   // Card queries embed their printings to save a round trip; if the embed is rejected, fall back to the plain select and a separate printing fetch.
   const plainSelect='id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,searchText:search_text';let select=`${plainSelect},printings:tcg_printings!tcg_printings_card_id_fkey(${BROWSE_PRINTING_SELECT})`;
   const cardsFetch=async params=>{try{return await supabaseFetch(`/tcg_cards?${new URLSearchParams({select,...params})}`)}catch(error){if(select===plainSelect||searchTimedOut(error))throw error;console.error('search printing embed failed; retrying without it',error.message);select=plainSelect;return supabaseFetch(`/tcg_cards?${new URLSearchParams({select,...params})}`)}};
@@ -1131,33 +1196,57 @@ async function searchCatalogDatabaseIn(rawQuery,region='ALL',limit=SEARCH_RESULT
   // older databases fall back to search_cards_with_siblings (100 unranked hits + siblings), then to two PostgREST queries.
   const patterns=terms.map(term=>`%${term}%`);
   const rankedCall=body=>timed('rpc',supabaseFetch('/rpc/search_cards_ranked',{method:'POST',body:JSON.stringify(body)})),rankedShape=value=>Boolean(value&&Array.isArray(value.cards)&&Number.isFinite(Number(value.matchCount))),regionArg=region==='ALL'?null:region;
-  // The paging/filtering version first (every parameter named, nulls included, as PostgREST resolves the function by name); missing or malformed -> the four-argument version, which only knows the first 100 groups.
-  let ranked=null,paged=false;
-  if(Date.now()>=rankedPageMissingUntil){try{ranked=await rankedCall({p_patterns:patterns,p_needles:terms,p_limit:limit,p_region:regionArg,p_offset:offset,p_rarities:rarityValues.length?rarityValues:null});paged=rankedShape(ranked)}catch(error){if(searchTimedOut(error))throw error;if(/PGRST202|SUPABASE_404/.test(error.message))rankedPageMissingUntil=Date.now()+300000;console.error('search ranked page rpc failed; trying the four-argument search_cards_ranked',error.message)}}
-  if(!paged){ranked=null;try{ranked=await rankedCall({p_patterns:patterns,p_needles:terms,p_limit:Math.min(offset+limit,SEARCH_PAGE_MAX),p_region:regionArg})}catch(error){if(searchTimedOut(error))throw error;console.error('search ranked rpc failed; trying search_cards_with_siblings',error.message)}}
-  const viaRanked=Boolean(ranked&&Array.isArray(ranked.cards)&&Number.isFinite(Number(ranked.matchCount))),rankedHits=viaRanked&&ranked.cards.length>0;
-  let rpc=null;if(!viaRanked){try{rpc=await timed('rpc',supabaseFetch('/rpc/search_cards_with_siblings',{method:'POST',body:JSON.stringify({p_patterns:patterns,p_limit:SEARCH_CANDIDATE_LIMIT})}))}catch(error){if(searchTimedOut(error))throw error;console.error('search rpc failed; using PostgREST queries',error.message)}}
-  const viaRpc=Boolean(rpc&&Array.isArray(rpc.hits)&&Array.isArray(rpc.siblings));
-  let cards=rankedHits?ranked.cards.map(({hit,...card})=>card):viaRanked?[]:viaRpc&&rpc.hits.length?rpc.hits:viaRpc?[]:await timed('names',query(['name_zh','name_ja','name_en','name_ko','official_card_number'])),matchedSeries=rankedHits&&ranked.matchedBy==='series'?Number(ranked.matchedSeries)||1:0;
-  // search_cards_ranked already tried search_text (when it reports matchedBy) and series names (matchedSeries); cards it matched but the region filter removed end the search.
-  const rankedMatched=viaRanked&&Number(ranked.matchCount)>0;if(!cards?.length&&!(viaRanked&&'matchedBy' in ranked))cards=await timed('text',query(['search_text']));
-  // No card matched by name or text: fall back to series names/codes (e.g. 「ナイトワンダラー」, "SV6a") and list that series' cards in card-number order.
-  if(!cards?.length&&!rankedMatched&&!(viaRanked&&'matchedSeries' in ranked)){const seriesFilters=[];for(const term of terms)for(const column of ['name_zh','name_ja','name_en','name_ko','official_code'])seriesFilters.push(`${column}.ilike.*${term}*`);const series=await supabaseFetch(`/tcg_series?${new URLSearchParams({select:'id',or:`(${seriesFilters.join(',')})`,limit:'5'})}`);if(series?.length){matchedSeries=series.length;const seriesIds=series.map(s=>`"${String(s.id).replaceAll('"','')}"`).join(','),rows=await supabaseFetch(`/tcg_printings?${new URLSearchParams({select:'cardId:card_id',series_id:`in.(${seriesIds})`,order:'series_id.asc,local_card_number.asc,card_id.asc',limit:String(SEARCH_CANDIDATE_LIMIT)})}`),cardIds=[...new Set((rows||[]).map(r=>r.cardId))];if(cardIds.length){const order=new Map(cardIds.map((id,index)=>[id,index]));cards=(await cardsFetch({id:`in.(${cardIds.map(id=>`"${String(id).replaceAll('"','')}"`).join(',')})`,limit:String(SEARCH_CANDIDATE_LIMIT)})||[]).sort((a,b)=>(order.get(a.id)??SEARCH_CANDIDATE_LIMIT)-(order.get(b.id)??SEARCH_CANDIDATE_LIMIT))}}}
+  const needles=terms.map(normalizeSearch);
+  let ranked=null,paged=false,viaRanked=false,rankedHits=false,rpc=null,viaRpc=false,cards=[],matchedSeries=0;
+  if(hasSeriesScope){
+    // 複合系列＋卡片特徵模式：優先呼叫 7 參數 search_cards_ranked；若資料庫尚未套用 migration（PGRST202/404），降級為有限度的 PostgREST 系列×卡名交集。
+    if(Date.now()>=rankedSeriesMissingUntil){try{ranked=await rankedCall({p_patterns:patterns,p_needles:terms,p_limit:limit,p_region:regionArg,p_offset:offset,p_rarities:rarityValues.length?rarityValues:null,p_series_ids:scopedSeries});paged=rankedShape(ranked)}catch(error){if(searchTimedOut(error))throw error;if(/PGRST202|SUPABASE_404/.test(error.message))rankedSeriesMissingUntil=Date.now()+300000;console.error('search ranked series rpc failed; using PostgREST series intersection',error.message)}}
+    viaRanked=paged;rankedHits=viaRanked&&ranked.cards.length>0;
+    if(viaRanked){cards=rankedHits?ranked.cards.map(({hit,...card})=>card):[]}
+    else{
+      const seriesIn=scopedSeries.map(id=>`"${String(id).replace(/["\\]/g,'')}"`).join(','),pParams={select:'cardId:card_id,seriesId:series_id,region,rarity,rarityCode:rarity_code,localCardNumber:local_card_number',series_id:`in.(${seriesIn})`,order:'series_id.asc,local_card_number.asc,card_id.asc',limit:'1000'};
+      if(regionArg)pParams.region=`eq.${regionArg}`;
+      const scopedPrintings=await timed('series-printings',supabaseFetch(`/tcg_printings?${new URLSearchParams(pParams)}`))||[];
+      const matchingCardIds=[...new Set(scopedPrintings.filter(p=>printingMatchesRarity(p,rarityValues)).map(p=>p.cardId))];
+      if(matchingCardIds.length){
+        const fetched=[];
+        for(let i=0;i<matchingCardIds.length&&fetched.length<400;i+=100){
+          const batch=matchingCardIds.slice(i,i+100).map(id=>`"${String(id).replace(/["\\]/g,'')}"`).join(',');
+          const rows=await timed('series-cards',cardsFetch({id:`in.(${batch})`,limit:'100'}))||[];
+          fetched.push(...rows);
+        }
+        const seriesOrder=new Map(scopedSeries.map((id,idx)=>[id,idx]));
+        cards=fetched.filter(c=>{const vals=[c.nameZh,c.nameJa,c.nameEn,c.nameKo,...(c.aliases||[]),c.officialCardNumber,c.searchText,...(c.printings||[]).filter(p=>seriesIdSet.has(p.seriesId)&&(region==='ALL'||p.region===region)).map(p=>p.localCardNumber)];return vals.some(v=>{const nv=normalizeSearch(v);return nv&&needles.some(n=>nv.includes(n))})}).sort((a,b)=>(seriesOrder.get(a.seriesId)??999)-(seriesOrder.get(b.seriesId)??999));
+      }
+    }
+  }else{
+    // The paging/filtering version first (every parameter named, nulls included, as PostgREST resolves the function by name); missing or malformed -> the four-argument version, which only knows the first 100 groups.
+    if(Date.now()>=rankedPageMissingUntil){try{ranked=await rankedCall({p_patterns:patterns,p_needles:terms,p_limit:limit,p_region:regionArg,p_offset:offset,p_rarities:rarityValues.length?rarityValues:null});paged=rankedShape(ranked)}catch(error){if(searchTimedOut(error))throw error;if(/PGRST202|SUPABASE_404/.test(error.message))rankedPageMissingUntil=Date.now()+300000;console.error('search ranked page rpc failed; trying the four-argument search_cards_ranked',error.message)}}
+    if(!paged){ranked=null;try{ranked=await rankedCall({p_patterns:patterns,p_needles:terms,p_limit:Math.min(offset+limit,SEARCH_PAGE_MAX),p_region:regionArg})}catch(error){if(searchTimedOut(error))throw error;console.error('search ranked rpc failed; trying search_cards_with_siblings',error.message)}}
+    viaRanked=Boolean(ranked&&Array.isArray(ranked.cards)&&Number.isFinite(Number(ranked.matchCount)));rankedHits=viaRanked&&ranked.cards.length>0;
+    if(!viaRanked){try{rpc=await timed('rpc',supabaseFetch('/rpc/search_cards_with_siblings',{method:'POST',body:JSON.stringify({p_patterns:patterns,p_limit:SEARCH_CANDIDATE_LIMIT})}))}catch(error){if(searchTimedOut(error))throw error;console.error('search rpc failed; using PostgREST queries',error.message)}}
+    viaRpc=Boolean(rpc&&Array.isArray(rpc.hits)&&Array.isArray(rpc.siblings));
+    cards=rankedHits?ranked.cards.map(({hit,...card})=>card):viaRanked?[]:viaRpc&&rpc.hits.length?rpc.hits:viaRpc?[]:await timed('names',query(['name_zh','name_ja','name_en','name_ko','official_card_number']));matchedSeries=rankedHits&&ranked.matchedBy==='series'?Number(ranked.matchedSeries)||1:0;
+    // search_cards_ranked already tried search_text (when it reports matchedBy) and series names (matchedSeries); cards it matched but the region filter removed end the search.
+    const rankedMatched=viaRanked&&Number(ranked.matchCount)>0;if(!cards?.length&&!(viaRanked&&'matchedBy' in ranked))cards=await timed('text',query(['search_text']));
+    // No card matched by name or text: fall back to series names/codes (e.g. 「ナイトワンダラー」, "SV6a") and list that series' cards in card-number order.
+    if(!cards?.length&&!rankedMatched&&!(viaRanked&&'matchedSeries' in ranked)){const seriesFilters=[];for(const term of terms)for(const column of ['name_zh','name_ja','name_en','name_ko','official_code'])seriesFilters.push(`${column}.ilike.*${term}*`);const series=await supabaseFetch(`/tcg_series?${new URLSearchParams({select:'id',or:`(${seriesFilters.join(',')})`,limit:'5'})}`);if(series?.length){matchedSeries=series.length;const sIds=series.map(s=>`"${String(s.id).replaceAll('"','')}"`).join(','),rows=await supabaseFetch(`/tcg_printings?${new URLSearchParams({select:'cardId:card_id',series_id:`in.(${sIds})`,order:'series_id.asc,local_card_number.asc,card_id.asc',limit:String(SEARCH_CANDIDATE_LIMIT)})}`),cardIds=[...new Set((rows||[]).map(r=>r.cardId))];if(cardIds.length){const order=new Map(cardIds.map((id,index)=>[id,index]));cards=(await cardsFetch({id:`in.(${cardIds.map(id=>`"${String(id).replaceAll('"','')}"`).join(',')})`,limit:String(SEARCH_CANDIDATE_LIMIT)})||[]).sort((a,b)=>(order.get(a.id)??SEARCH_CANDIDATE_LIMIT)-(order.get(b.id)??SEARCH_CANDIDATE_LIMIT))}}}
+  }
   if(!cards?.length)return {cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:true,matchedSeries,timings,...(paged&&offset&&Number(ranked.groupCount)>0?{total:Number(ranked.groupCount),paged}:{})};
-  const needles=terms.map(normalizeSearch),score=card=>{const names=[card.nameZh,card.nameJa,card.nameEn,card.nameKo,...(card.aliases||[]),card.officialCardNumber].map(normalizeSearch).filter(Boolean);if(names.some(name=>needles.some(needle=>name===needle)))return 0;if(names.some(name=>needles.some(needle=>name.startsWith(needle))))return 1;if(names.some(name=>needles.some(needle=>name.includes(needle))))return 2;return 3};if(!matchedSeries&&!rankedHits)cards.sort((a,b)=>score(a)-score(b)||String(a.nameEn||a.nameZh||'').localeCompare(String(b.nameEn||b.nameZh||'')));
+  const score=card=>{const names=[card.nameZh,card.nameJa,card.nameEn,card.nameKo,...(card.aliases||[]),card.officialCardNumber].map(normalizeSearch).filter(Boolean);if(names.some(name=>needles.some(needle=>name===needle)))return 0;if(names.some(name=>needles.some(needle=>name.startsWith(needle))))return 1;if(names.some(name=>needles.some(needle=>name.includes(needle))))return 2;return 3};if(!matchedSeries&&!rankedHits)cards.sort((a,b)=>score(a)-score(b)||String(a.nameEn||a.nameZh||'').localeCompare(String(b.nameEn||b.nameZh||'')));
   // Pull in the other cards of each matched canonical (e.g. the TW twin of a JP card, ADR 0003) so one result lists every printing; a failure here only loses the extra printings.
   const candidateCount=rankedHits?Number(ranked.matchCount):cards.length,knownIds=new Set(cards.map(c=>c.id)),canonicalIds=[...new Set(cards.map(c=>c.canonicalId).filter(Boolean))];
   if(canonicalIds.length&&viaRpc&&!matchedSeries&&rpc.hits.length){for(const sibling of rpc.siblings)if(!knownIds.has(sibling.id)){knownIds.add(sibling.id);cards.push(sibling)}}
   else if(canonicalIds.length&&!rankedHits){try{const siblings=await timed('siblings',cardsFetch({canonical_id:`in.(${canonicalIds.map(id=>`"${String(id).replaceAll('"','')}"`).join(',')})`,limit:String(SEARCH_CANDIDATE_LIMIT*2)}));for(const sibling of siblings||[])if(!knownIds.has(sibling.id)){knownIds.add(sibling.id);cards.push(sibling)}}catch(error){console.error('search sibling cards failed',error.message)}}
   // Card queries embed their printings, saving a round trip; rows that come back without the embed still get a separate printing fetch.
   const unembedded=cards.filter(c=>!Array.isArray(c.printings)),ids=unembedded.map(c=>`"${String(c.id).replaceAll('"','')}"`).join(','),printings=[...cards.flatMap(c=>Array.isArray(c.printings)?c.printings:[]),...(ids?await timed('printings',supabaseFetch(`/tcg_printings?${new URLSearchParams({select:BROWSE_PRINTING_SELECT,card_id:`in.(${ids})`,limit:'1000'})}`))||[]:[])],byCard=new Map();
-  for(const p of printings){if((region!=='ALL'&&p.region!==region)||!printingMatchesRarity(p,rarityValues))continue;const list=byCard.get(p.cardId)||[];list.push(p);byCard.set(p.cardId,list)}
+  for(const p of printings){if((region!=='ALL'&&p.region!==region)||!printingMatchesRarity(p,rarityValues)||(seriesIdSet&&!seriesIdSet.has(p.seriesId)))continue;const list=byCard.get(p.cardId)||[];list.push(p);byCard.set(p.cardId,list)}
   const canonicalCards=canonicalizeCatalog({cards:cards.filter(c=>!filtered||byCard.has(c.id)).map(c=>({...c,printings:byCard.get(c.id)||[],region:byCard.get(c.id)?.[0]?.region||null,language:byCard.get(c.id)?.[0]?.language||null,...cardImageFields(c,byCard.get(c.id))}))}).cards;
   // 版本篩選濾掉的同作品層卡（例如日版 M6a SAR 的台版）：圖留給卡牆在本卡沒圖時改用，與系列瀏覽的 fallbackImageUrls 一致
   const siblingUrls=new Map();if(filtered)for(const c of cards){const url=byCard.has(c.id)?null:cardImageFields(c,c.printings).imageUrl,key=c.canonicalId||c.id;if(url){const list=siblingUrls.get(key)||[];if(!list.includes(url))list.push(url);siblingUrls.set(key,list)}}
   for(const card of canonicalCards){const urls=siblingUrls.get(card.canonicalId||card.id);if(urls?.length)card.fallbackImageUrls=urls.slice(0,3)}
   // Paged answers are already one page in the database's order; older paths slice here. total is the real number of canonical cards (paged), a lower bound otherwise.
-  const page=paged?canonicalCards.slice(0,limit):canonicalCards.slice(offset,offset+limit),total=paged?Math.max(Number(ranked.groupCount)||0,offset+page.length):rankedHits&&!rarityValues.length?Math.max(Number(ranked.groupCount)||0,page.length):canonicalCards.length;
+  const page=paged?canonicalCards.slice(0,limit):canonicalCards.slice(offset,offset+limit),total=paged?Math.max(Number(ranked.groupCount)||0,offset+page.length):rankedHits&&!rarityValues.length&&!hasSeriesScope?Math.max(Number(ranked.groupCount)||0,page.length):canonicalCards.length;
   return {cards:page.map(card=>({...card,matchRank:card.matchRank??cardMatchRank(card,needles)})),candidateCount,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:rankedHits?Number(ranked.groupCount)>limit:candidateCount>=SEARCH_CANDIDATE_LIMIT||canonicalCards.length>limit,searched:true,matchedSeries,timings,total,paged};
 }
 
@@ -1192,12 +1281,12 @@ async function loadCardFromDatabase(cardId){
   return withDb(db,()=>loadCardFromDatabaseIn(cardId));
 }
 async function loadCardFromDatabaseIn(cardId){
-  if(!supabaseConfigured())return null;const viaRpc=await loadCardDetailRpc(cardId);if(viaRpc!==undefined)return viaRpc;const safe=String(cardId).replace(/[(),]/g,''),cardSelect='id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata',params=new URLSearchParams({select:cardSelect,or:`(id.eq.${safe},canonical_id.eq.${safe})`,limit:'100'}),cards=await supabaseFetch(`/tcg_cards?${params}`);if(!cards?.length)return null;
+  if(!supabaseConfigured())return null;const viaRpc=await loadCardDetailRpc(cardId);if(viaRpc!==undefined)return viaRpc;const safe=String(cardId).replace(/[(),"\\]/g,'');if(!safe)return null;const cardSelect='id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata',params=new URLSearchParams({select:cardSelect,or:`(id.eq.${safe},canonical_id.eq.${safe})`,limit:'100'}),cards=await supabaseFetch(`/tcg_cards?${params}`);if(!cards?.length)return null;
   // A card linked into another canonical (e.g. a JP card joining its TW twin, ADR 0003) must bring that canonical's other printings along.
   const knownIds=new Set(cards.map(c=>c.id)),siblingCanonicals=[...new Set(cards.map(c=>c.canonicalId).filter(id=>id&&id!==safe))];
-  if(siblingCanonicals.length){const siblings=await supabaseFetch(`/tcg_cards?${new URLSearchParams({select:cardSelect,canonical_id:`in.(${siblingCanonicals.map(id=>`"${String(id).replaceAll('"','')}"`).join(',')})`,limit:'100'})}`);for(const sibling of siblings||[])if(!knownIds.has(sibling.id)){knownIds.add(sibling.id);cards.push(sibling)}}
-  const ids=cards.map(c=>`"${String(c.id).replaceAll('"','')}"`).join(','),printingParams=new URLSearchParams({select:BROWSE_PRINTING_SELECT,card_id:`in.(${ids})`,limit:'1000'}),printings=await supabaseFetch(`/tcg_printings?${printingParams}`),byCard=new Map();for(const p of printings||[]){const list=byCard.get(p.cardId)||[];list.push(p);byCard.set(p.cardId,list)}
-  const hydrated=cards.map(c=>({...c,printings:byCard.get(c.id)||[],region:byCard.get(c.id)?.[0]?.region||null,language:byCard.get(c.id)?.[0]?.language||null,imageUrl:byCard.get(c.id)?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||null})),canonical=canonicalizeCatalog({cards:hydrated}).cards.find(c=>c.id===cardId)||canonicalizeCatalog({cards:hydrated}).cards[0],seriesIds=[...new Set((canonical?.printings||[]).map(p=>p.seriesId).concat(canonical?.seriesId).filter(Boolean))],series=seriesIds.length?await supabaseFetch(`/tcg_series?select=id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,releaseDate:release_date&${new URLSearchParams({id:`in.(${seriesIds.map(x=>`"${x}"`).join(',')})`})}`):[],games=await supabaseFetch(`/tcg_games?select=id,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko&id=eq.${encodeURIComponent(canonical.game)}`);return {catalog:{source:'supabase-full-catalog',cards:[canonical],series:series||[],games:games||[]},card:canonical};
+  if(siblingCanonicals.length){const siblings=await supabaseFetch(`/tcg_cards?${new URLSearchParams({select:cardSelect,canonical_id:`in.(${siblingCanonicals.map(id=>`"${String(id).replace(/["\\]/g,'')}"`).join(',')})`,limit:'100'})}`);for(const sibling of siblings||[])if(!knownIds.has(sibling.id)){knownIds.add(sibling.id);cards.push(sibling)}}
+  const ids=cards.map(c=>`"${String(c.id).replace(/["\\]/g,'')}"`).join(','),printingParams=new URLSearchParams({select:BROWSE_PRINTING_SELECT,card_id:`in.(${ids})`,limit:'1000'}),printings=await supabaseFetch(`/tcg_printings?${printingParams}`),byCard=new Map();for(const p of printings||[]){const list=byCard.get(p.cardId)||[];list.push(p);byCard.set(p.cardId,list)}
+  const hydrated=cards.map(c=>({...c,printings:byCard.get(c.id)||[],region:byCard.get(c.id)?.[0]?.region||null,language:byCard.get(c.id)?.[0]?.language||null,imageUrl:byCard.get(c.id)?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl||null})),canonical=canonicalizeCatalog({cards:hydrated}).cards.find(c=>c.id===cardId)||canonicalizeCatalog({cards:hydrated}).cards[0],seriesIds=[...new Set((canonical?.printings||[]).map(p=>p.seriesId).concat(canonical?.seriesId).filter(Boolean))],series=seriesIds.length?await supabaseFetch(`/tcg_series?select=id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,releaseDate:release_date&${new URLSearchParams({id:`in.(${seriesIds.map(x=>`"${String(x).replace(/["\\]/g,'')}"`).join(',')})`})}`):[],games=await supabaseFetch(`/tcg_games?select=id,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko&id=eq.${encodeURIComponent(canonical.game)}`);return {catalog:{source:'supabase-full-catalog',cards:[canonical],series:series||[],games:games||[]},card:canonical};
 }
 // The detail page and its market tab ask for the same card at once: share the database load and keep it briefly.
 const CARD_CACHE_TTL_MS=600000,CARD_CACHE_MAX=500,cardCache=new Map();
@@ -1386,7 +1475,8 @@ const SITEMAP_TTL_MS=24*60*60*1000,SITEMAP_PAGE_SIZE=1000,SITEMAP_URLS_PER_FILE=
 const withTimeout=(promise,ms)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('SEO_TIMEOUT')),ms);promise.then(value=>{clearTimeout(timer);resolve(value)},error=>{clearTimeout(timer);reject(error)})});
 function seoCacheGet(key){const hit=seoCache.get(key);if(hit&&hit.expiresAt>Date.now())return hit.value;seoCache.delete(key);return undefined}
 function seoCacheSet(key,value,ttlMs){seoCache.delete(key);seoCache.set(key,{value,expiresAt:Date.now()+ttlMs});while(seoCache.size>SEO_CACHE_MAX)seoCache.delete(seoCache.keys().next().value)}
-function seoRequestTarget(url){const clean=value=>{const text=String(value||'').trim();return text&&text.length<=200&&!/[\u0000-\u001f]/.test(text)?text:null},card=clean(url.searchParams.get('card'));if(card)return {kind:'card',id:card};const series=clean(url.searchParams.get('series'));return series?{kind:'series',id:series}:null}
+const SEO_ID_PATTERN=/^[\w:.\-/]{1,128}$/;
+function seoRequestTarget(url){const clean=value=>{const text=String(value||'').trim();return SEO_ID_PATTERN.test(text)?text:null},card=clean(url.searchParams.get('card'));if(card)return {kind:'card',id:card};const series=clean(url.searchParams.get('series'));return series?{kind:'series',id:series}:null}
 async function loadSeoForCard(cardId){
   const loaded=supabaseConfigured()?await loadCardCached(cardId):await getCard(cardId);if(!loaded?.card)return null;
   const {catalog,card}=loaded,seriesId=card.printings?.[0]?.seriesId||card.seriesId,series=(catalog.series||[]).find(s=>s.id===seriesId)||null,game=(catalog.games||[]).find(g=>g.id===card.game)||null;
@@ -1455,11 +1545,12 @@ async function ebayListings(res,params){
 // 記憶體警戒（2026-10-21 Render 免費方案 512 MB 被 OOM 重啟，免費方案沒有請求紀錄）：RSS 超過門檻時，把當下處理中的請求寫進日誌，下次就知道是哪個請求。
 const MEMORY_WARN_BYTES=(Number(process.env.MEMORY_WARN_MB)||380)*1024*1024,inflightRequests=new Set();let memoryWarnedAt=0;
 setInterval(()=>{const m=process.memoryUsage();if(m.rss<MEMORY_WARN_BYTES||Date.now()-memoryWarnedAt<60000)return;memoryWarnedAt=Date.now();console.warn('memory high',JSON.stringify({rssMb:Math.round(m.rss/1048576),heapMb:Math.round(m.heapUsed/1048576),inflight:[...inflightRequests].slice(0,15)}))},2000).unref();
+function redactInflightSearch(search){return search?String(search).replace(/([?&]code=)[^&#]*/gi,'$1[REDACTED]').slice(0,160):''}
 const handleRequest=async(req,res)=>{
   // 舊網址（Render 預設網域）301 到正式網域同路徑；CANONICAL_REDIRECT=true 時才開，確認新網域可用後再設。
   if(CANONICAL_REDIRECT&&LEGACY_HOSTS.has(String(req.headers.host||'').toLowerCase().split(':')[0])){res.writeHead(301,{Location:PUBLIC_BASE_URL+(req.url||'/'),'Cache-Control':'public, max-age=86400'});return res.end()}
-  const url=new URL(req.url,`http://${req.headers.host}`);const inflightKey=`${req.method} ${url.pathname}${url.search.slice(0,160)} ${String(req.headers['user-agent']||'').slice(0,60)}`;inflightRequests.add(inflightKey);res.once('close',()=>inflightRequests.delete(inflightKey));
-  if(rateLimited(req,url.pathname))return json(res,429,{error:'請求太頻繁，請稍後再試'},{'Retry-After':'60'});
+  const url=new URL(req.url,`http://${req.headers.host}`);const inflightKey=`${req.method} ${url.pathname}${redactInflightSearch(url.search)} ${String(req.headers['user-agent']||'').slice(0,60)}`;inflightRequests.add(inflightKey);res.once('close',()=>inflightRequests.delete(inflightKey));
+  if(rateLimited(req,url))return json(res,429,{error:'請求太頻繁，請稍後再試'},{'Retry-After':'60'});
   if(url.pathname==='/api/images/onepiece'&&req.method==='GET')return proxyOnePieceImage(res,url.searchParams.get('url'));
   if(url.pathname==='/api/graded-prices'&&req.method==='GET')return gradedPrices(res,url.searchParams);
   if(url.pathname==='/api/ebay-listings'&&req.method==='GET')return ebayListings(res,url.searchParams);
@@ -1498,13 +1589,24 @@ const handleRequest=async(req,res)=>{
   if(url.pathname==='/api/hot-cards'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[],meta:{unavailable:'not-configured'}});try{return json(res,200,await loadHotCards(),SHORT_CACHE)}catch(e){console.error('hot cards failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/price-movers'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:{up:[],down:[]},meta:{unavailable:'not-configured'}});try{return json(res,200,await loadPriceMovers(),SHORT_CACHE)}catch(e){console.error('price movers failed',e.message);return json(res,502,{error:'資料暫時無法讀取'})}}
   if(url.pathname==='/api/exchange-rates'&&req.method==='GET')return json(res,200,{data:await getTwdRates()});
-  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort'),requestedGame),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(rarity&&!BROWSE_RARITY_FORMAT.test(rarity))return json(res,400,{error:'稀有度格式不正確'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});if(requestedGame==='pokemon')await attachReferencePrices(page.data);return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors,referencePriced:page.referencePriced??null}},{...SHORT_CACHE,'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){if(e.code==='BROWSE_BUSY')return json(res,503,{error:e.message},{'Retry-After':'5'});if(e.code==='BROWSE_REFUSED')return json(res,502,{error:e.message});return failJson(res,502,'browse failed',e)}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}},catalog.fallbackReason?{}:SHORT_CACHE)}
+  if(url.pathname==='/api/cards'&&req.method==='GET'){const requestedGame=(url.searchParams.get('game')||'').trim();if(requestedGame&&SECOND_DB_GAMES.has(requestedGame)&&!secondDbConfigured())return json(res,503,{error:'此遊戲資料暫時無法連線'});if(requestedGame&&!CATALOG_GAME_IDS.has(requestedGame))return json(res,400,{error:'請選擇單一卡牌遊戲'});const region=normalizeBrowseRegion(url.searchParams.get('region')),rarity=normalizeBrowseRarity(url.searchParams.get('rarity')),sort=normalizeBrowseSort(url.searchParams.get('sort'),requestedGame),seriesId=(url.searchParams.get('series')||'').trim()||null,limit=Math.min(Math.max(Number(url.searchParams.get('limit'))||60,1),BROWSE_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);if(region&&!CATALOG_REGION_IDS.has(region))return json(res,400,{error:'不支援的版本地區'});if(seriesId&&seriesId.length>128)return json(res,400,{error:'系列代碼過長'});if(rarity&&!BROWSE_RARITY_FORMAT.test(rarity))return json(res,400,{error:'稀有度格式不正確'});if(requestedGame&&supabaseConfigured()){try{const started=performance.now(),page=await browseDatabaseCards(requestedGame,{region,rarity,seriesId,sort,limit,offset});if(requestedGame==='pokemon')await attachReferencePrices(page.data);return json(res,200,{data:page.data,meta:{source:'supabase-full-catalog',game:requestedGame,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus,errors:page.errors,referencePriced:page.referencePriced??null}},{...SHORT_CACHE,'Server-Timing':`${Object.entries(page.timings||{}).map(([name,dur])=>`${name};dur=${dur}`).concat(`total;dur=${Math.round(performance.now()-started)}`).join(', ')}`})}catch(e){if(e.code==='BROWSE_BUSY')return json(res,503,{error:e.message},{'Retry-After':'5'});if(e.code==='BROWSE_REFUSED')return json(res,502,{error:e.message});return failJson(res,502,'browse failed',e)}}const catalog=await loadCatalog(),printingByCard=buildPrintingIndex(catalog.cards.flatMap(card=>(card.printings||[]).map(printing=>({...printing,cardId:printing.cardId||card.id})))),page=buildBrowsePage(requestedGame?catalog.cards.filter(card=>card.game===requestedGame):catalog.cards,{region,rarity,seriesId,sort,limit,offset,printingByCard});return json(res,200,{data:page.data,meta:{source:catalog.source,game:requestedGame||null,seriesId,region,rarity,sort,limit,offset,hasMore:page.hasMore,total:page.total,facets:page.facets,facetStatus:page.facetStatus}},catalog.fallbackReason?{}:SHORT_CACHE)}
   if(url.pathname==='/api/search'&&req.method==='GET'){
-    // ADR 0044 Q6/Q7: rarity codes and version words in the query become filters (parsed), the rest is the card name; results are one page (offset/limit) with the real total.
-    const rawQ=(url.searchParams.get('q')||'').trim().slice(0,100),regionParam=(url.searchParams.get('region')||'all').toUpperCase(),parsedQuery=parseSearchQuery(rawQ),region=regionParam!=='ALL'?regionParam:(parsedQuery.region||'ALL'),searchName=parsedQuery.name,rarities=parsedQuery.rarities,rarityValues=rarityMatchValues(rarities);
-    const limit=Math.min(Math.max(Math.floor(Number(url.searchParams.get('limit')))||SEARCH_RESULT_LIMIT,1),SEARCH_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000),parsed={q:rawQ,name:searchName,rarities,region:regionParam!=='ALL'?null:parsedQuery.region,...(parsedQuery.rarityOnly?{rarityOnly:true}:{})};
+    // ADR 0044 Q6/Q7 + 複合特徵搜尋：系列／周年、稀有度代碼與版本詞拆成篩選條件（parsed），其餘為卡名／卡號；結果採真實總數分頁。
+    const rawRegion=(url.searchParams.get('region')||'').trim().toUpperCase(),regionParam=!rawRegion||rawRegion==='ALL'?'ALL':rawRegion;
+    if(regionParam!=='ALL'&&!CATALOG_REGION_IDS.has(regionParam))return json(res,400,{error:'不支援的版本地區'});
+    const searchStarted=performance.now(),rawQ=(url.searchParams.get('q')||'').trim().slice(0,100);
+    const catalog=await loadCatalogShared(),catalogDoneAt=performance.now(),seriesIndex=getSeriesSearchIndex(catalog);
+    const parsedQuery=parseSearchQuery(rawQ,{seriesIndex,region:regionParam}),region=regionParam!=='ALL'?regionParam:(parsedQuery.region||'ALL'),rarities=parsedQuery.rarities,rarityValues=rarityMatchValues(rarities);
+    const rawSeries=parsedQuery.series||null,hasSeriesFeature=Boolean(rawSeries&&Array.isArray(rawSeries.allIds)&&rawSeries.allIds.length>0);
+    const searchName=rawSeries&&!hasSeriesFeature?(rarities.length||parsedQuery.region?`${rawSeries.label} ${parsedQuery.name}`:rawQ):parsedQuery.name;
+    let activeSeries=hasSeriesFeature?{kind:rawSeries.kind,label:rawSeries.label,terms:rawSeries.terms}:null;
+    const seriesIds=hasSeriesFeature?(rawSeries.ids||[]).slice(0,SEARCH_SERIES_IDS_MAX):[],allSeriesIds=hasSeriesFeature?(rawSeries.allIds||[]).slice(0,SEARCH_SERIES_IDS_MAX):[];
+    const limit=Math.min(Math.max(Math.floor(Number(url.searchParams.get('limit')))||SEARCH_RESULT_LIMIT,1),SEARCH_PAGE_MAX),offset=Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset')))||0,0),200000);
+    const buildParsed=(seriesMeta=activeSeries)=>({q:rawQ,name:searchName,rarities,region:regionParam!=='ALL'?null:parsedQuery.region,...(parsedQuery.rarityOnly?{rarityOnly:true}:{}),...(seriesMeta?{series:seriesMeta}:{})});
+    let parsed=buildParsed();
     const suggestOnly=url.searchParams.get('fields')==='suggest',slimBody=body=>suggestOnly?suggestBody(body,region):body;
-    const searchCacheKey=[regionParam,rawQ,searchName,rarities.join(','),parsed.region||'',offset,limit].join('|'),cachedSearch=recallSearch(searchCacheKey);if(cachedSearch)return json(res,200,slimBody(cachedSearch),{...SHORT_CACHE,'Server-Timing':'cache;desc="hit", total;dur=0'});
+    const seriesCacheKey=hasSeriesFeature?`${rawSeries.label}:${seriesIds.join(',')}`:'';
+    const searchCacheKey=[regionParam,rawQ,searchName,rarities.join(','),parsed.region||'',seriesCacheKey,offset,limit].join('|'),cachedSearch=recallSearch(searchCacheKey);if(cachedSearch)return json(res,200,slimBody(cachedSearch),{...SHORT_CACHE,'Server-Timing':'cache;desc="hit", total;dur=0'});
     // A bare rarity code (SAR, UR 日版) names no card: say so instead of matching it against card names, and offer a working example.
     if(parsedQuery.rarityOnly){let example=rarityOnlyExample(rarities);
     // Only offer the example when it really has results (皮卡丘 MUR does not).
@@ -1512,12 +1614,26 @@ const handleRequest=async(req,res)=>{
     const body={data:[],meta:{source:'rarity-only',architecture:'canonical-card-with-printings',match:'rarity-only',resultLimit:limit,mayHaveMore:false,queryTerms:[],total:0,offset,limit,hasMore:false,parsed,suggestion:example?{q:example,reason:'稀有度請搭配卡名一起搜'}:null,hint:{kind:'rarity-only',message:'只輸入稀有度無法判斷是哪一張卡，請加上卡名'+(example?`，例如「${example}」`:'')+'。'}}};rememberSearch(searchCacheKey,body);return json(res,200,body,SHORT_CACHE)}
     // 只有符號（. _ % 之類）或空查詢無從比對卡名：回空結果與提示，不拿備援樣本卡充數。
     if(!/[\p{L}\p{N}]/u.test(normalizeSearch(searchName)))return json(res,200,{data:[],meta:{source:'symbols-only',architecture:'canonical-card-with-printings',match:'symbols-only',resultLimit:limit,mayHaveMore:false,queryTerms:[],total:0,offset,limit,hasMore:false,parsed,suggestion:null,hint:{kind:'symbols-only',message:'請輸入卡名、卡號或系列名稱。'}}},SHORT_CACHE);
-    const q=normalizeSearch(searchName),searchStarted=performance.now(),databasePending=supabaseConfigured()?searchCatalogDatabase(searchName,region,limit,{offset,rarities}).then(value=>({value,doneAt:performance.now()}),error=>({error})):null,catalog=await loadCatalog(),catalogDoneAt=performance.now(),seriesById=new Map(catalog.series.map(s=>[s.id,s])),nameValues=c=>[c.nameZh,c.nameJa,c.nameEn,c.nameKo,...(c.aliases||[]),...(c.printings||[]).flatMap(p=>[p.nameZh,p.nameJa,p.nameEn,p.nameKo])];
-    const found=catalog.cards.filter(c=>{if(region!=='ALL'&&c.region!==region&&!c.printings?.some(p=>p.region===region))return false;const series=[seriesById.get(c.seriesId)||{},...(c.printings||[]).map(p=>seriesById.get(p.seriesId)||{})],values=[...nameValues(c),c.officialCardNumber,...(c.printings||[]).flatMap(p=>[p.localSetCode,p.localCardNumber]),...series.flatMap(s=>[s.officialCode,s.nameZh,s.nameJa,s.nameEn,s.nameKo,...(s.aliases||[])])];return !q||values.some(v=>normalizeSearch(v).includes(q))}),exact=q?found.filter(c=>nameValues(c).some(v=>normalizeSearch(v)===q)):[];
+    const q=normalizeSearch(searchName),emptyScopedDb={cards:[],candidateCount:0,candidateLimit:SEARCH_CANDIDATE_LIMIT,resultLimit:limit,mayHaveMore:false,searched:true,matchedSeries:0,timings:{},total:0,paged:true};
+    const databasePending=supabaseConfigured()?(hasSeriesFeature&&!seriesIds.length?Promise.resolve({value:emptyScopedDb,doneAt:performance.now()}):searchCatalogDatabase(searchName,region,limit,{offset,rarities,seriesIds}).then(value=>({value,doneAt:performance.now()}),error=>({error}))):null;
+    const seriesById=new Map(catalog.series.map(s=>[s.id,s])),nameValues=c=>[c.nameZh,c.nameJa,c.nameEn,c.nameKo,...(c.aliases||[]),...(c.printings||[]).flatMap(p=>[p.nameZh,p.nameJa,p.nameEn,p.nameKo])];
+    const localNeedles=searchQueryTerms(searchName).map(normalizeSearch),localSeriesSet=hasSeriesFeature?new Set(seriesIds):null;
+    const found=catalog.cards.filter(c=>{
+      if(region!=='ALL'&&c.region!==region&&!c.printings?.some(p=>p.region===region))return false;
+      const series=[seriesById.get(c.seriesId)||{},...(c.printings||[]).map(p=>seriesById.get(p.seriesId)||{})];
+      if(localSeriesSet){
+        const inSeries=localSeriesSet.has(c.seriesId)||Boolean(c.printings?.some(p=>localSeriesSet.has(p.seriesId)&&(region==='ALL'||p.region===region)));
+        if(!inSeries)return false;
+        const cardVals=[...nameValues(c),c.officialCardNumber,...(c.printings||[]).filter(p=>localSeriesSet.has(p.seriesId)&&(region==='ALL'||p.region===region)).map(p=>p.localCardNumber)];
+        return !localNeedles.length||cardVals.some(v=>{const nv=normalizeSearch(v);return nv&&localNeedles.some(n=>nv.includes(n))});
+      }
+      const values=[...nameValues(c),c.officialCardNumber,...(c.printings||[]).flatMap(p=>[p.localSetCode,p.localCardNumber]),...series.flatMap(s=>[s.officialCode,s.nameZh,s.nameJa,s.nameEn,s.nameKo,...(s.aliases||[])])];
+      return !q||values.some(v=>normalizeSearch(v).includes(q));
+    }),exact=q?found.filter(c=>nameValues(c).some(v=>{const nv=normalizeSearch(v);return nv===q||(localSeriesSet&&localNeedles.includes(nv))})):[];
     // Local-catalog answers (no database, or the database has nothing) apply the parsed filters to printings too, then page and rank like the database ones.
-    const localNeedles=searchQueryTerms(searchName).map(normalizeSearch),narrowing=rarityValues.length>0||(regionParam==='ALL'&&Boolean(parsedQuery.region)),narrowLocal=list=>narrowing?list.map(c=>({...c,printings:(c.printings||[]).filter(p=>(region==='ALL'||p.region===region)&&printingMatchesRarity(p,rarityValues))})).filter(c=>c.printings.length):list,withRank=list=>list.map(c=>c.matchRank===undefined?{...c,matchRank:cardMatchRank(c,localNeedles)}:c);
+    const narrowing=rarityValues.length>0||(regionParam==='ALL'&&Boolean(parsedQuery.region))||Boolean(localSeriesSet),narrowLocal=list=>narrowing?list.map(c=>({...c,printings:(c.printings||[]).filter(p=>(region==='ALL'||p.region===region)&&printingMatchesRarity(p,rarityValues)&&(!localSeriesSet||localSeriesSet.has(p.seriesId)))})).filter(c=>c.printings.length):list,withRank=list=>list.map(c=>c.matchRank===undefined?{...c,matchRank:cardMatchRank(c,localNeedles)}:c);
     const pageLocal=list=>{const items=narrowLocal(list);return {data:withRank(items.slice(offset,offset+limit)),total:items.length}};
-    const gameHint=gameHintFor(searchName),withPaging=(meta,data,total,suggestion=null)=>{const hasMore=offset+data.length<total;return {data,meta:{...meta,resultLimit:limit,mayHaveMore:hasMore,queryTerms:searchQueryTerms(searchName),total,offset,limit,hasMore,parsed,suggestion,...(gameHint?{gameHint:gameHint.gameId,franchiseHint:gameHint.franchiseId}:{})}}};
+    const gameHint=gameHintFor(searchName),withPaging=(meta,data,total,suggestion=null)=>{const hasMore=offset+data.length<total,seriesTerms=activeSeries?.terms?.length?activeSeries.terms:null;return {data,meta:{...meta,resultLimit:limit,mayHaveMore:hasMore,queryTerms:searchQueryTerms(searchName),total,offset,limit,hasMore,parsed,suggestion,...(seriesTerms?{seriesTerms}:{}),...(gameHint?{gameHint:gameHint.gameId,franchiseHint:gameHint.franchiseId}:{})}}};
     // The database's answer as one page: its own page when it paged, otherwise merged with the exact local matches; no database hits -> the loaded catalog.
     const settle=db=>{if(db.cards.length>0&&db.paged)return {data:db.cards,total:db.total};/* offset 超過結果數：資料庫的頁是空的，但總數仍是真的 */if(db.paged&&db.total>0)return {data:[],total:db.total};if(db.cards.length>0){const merged=offset?db.cards:narrowLocal(canonicalizeCatalog({...catalog,cards:[...exact,...db.cards]}).cards);return {data:withRank(merged.slice(0,limit)),total:Math.max(db.total||0,offset+merged.length)}}const page=pageLocal(exact.length?exact:found);return {data:page.data,total:page.total}};
     if(!supabaseConfigured()){
@@ -1526,34 +1642,34 @@ const handleRequest=async(req,res)=>{
     }
     try{
       const settled=await databasePending;if(settled.error)throw settled.error;let database=settled.value,hasDatabaseMatches=database.cards.length>0,{data,total}=settle(database),matchedAs=null,retryMs=0;
-      // Nothing found: retry once with the database's own spelling (spaces, middle dots, hyphens ignored); the paging, ranking and rarity filters are the normal path again.
-      if(total===0){const retryStarted=performance.now(),spans=await foldedNameSpans(searchName);if(spans.length){try{const again=await searchCatalogDatabase(spans,region,limit,{offset,rarities});if(again.cards.length){database=again;hasDatabaseMatches=true;({data,total}=settle(again));matchedAs=spans}}catch(error){console.error('search fold retry failed',error.message)}}retryMs=performance.now()-retryStarted}
+      // 零結果第一層：資料庫字面折疊重試（保留系列／版本／稀有度條件）。
+      if(total===0&&(!hasSeriesFeature||seriesIds.length>0)){const retryStarted=performance.now(),spans=await foldedNameSpans(searchName);if(spans.length){try{const again=await searchCatalogDatabase(spans,region,limit,{offset,rarities,seriesIds});if(again.cards.length){database=again;hasDatabaseMatches=true;({data,total}=settle(again));matchedAs=spans}}catch(error){console.error('search fold retry failed',error.message)}}retryMs=performance.now()-retryStarted}
+      // 零結果第二層（防誤拆安全網）：若複合系列交集為 0，再以未拆系列的完整字串查一次，確保卡名本身含系列字詞時仍可命中。
+      if(total===0&&hasSeriesFeature&&rawQ&&rawQ!==searchName){const retryStarted=performance.now();try{const rawAgain=await searchCatalogDatabase(rawQ,region,limit,{offset,rarities});if(rawAgain.cards.length){database=rawAgain;hasDatabaseMatches=true;activeSeries=null;parsed=buildParsed(null);({data,total}=settle(rawAgain))}}catch(error){console.error('search raw fallback failed',error.message)}retryMs+=performance.now()-retryStarted}
       const timing=Object.entries({catalog:catalogDoneAt-searchStarted,db:settled.doneAt-searchStarted,...database.timings,...(retryMs?{retry:retryMs}:{}),total:performance.now()-searchStarted}).map(([name,ms])=>`${name};dur=${Math.round(ms)}`).join(', ');
-      // Nothing found with the parsed filters: say whether the name alone would have results.
-      let suggestion=null;
-      if(total===0&&(rarities.length||parsed.region)){try{const nameOnly=await searchCatalogDatabase(searchName,regionParam,1);if(nameOnly.cards.length)suggestion={q:searchName,reason:'name-only'}}catch(error){console.error('search suggestion failed',error.message)}}
+      // 零結果第三層：跨區提示（保留系列條件）與「改只搜卡名」建議。
+      let suggestion=null,otherRegion=null;
+      if(total===0&&regionParam!=='ALL'){try{const all=await searchCatalogDatabase(searchName,'ALL',1,{rarities,seriesIds:hasSeriesFeature?allSeriesIds:[]}),hit=all.cards[0],other=hit&&(hit.region!==region?hit.region:hit.printings?.find(p=>p.region&&p.region!==region)?.region);if(other)otherRegion={region:other}}catch(error){console.error('search region hint failed',error.message)}}
+      if(total===0&&(hasSeriesFeature||rarities.length||parsed.region)){try{const nameOnly=await searchCatalogDatabase(searchName,regionParam,1);if(nameOnly.cards.length)suggestion={q:searchName,reason:hasSeriesFeature?'name-only-series':'name-only'}}catch(error){console.error('search suggestion failed',error.message)}}
       // 卡號後面多一個單字母（OP05-001 R：單字母不是稀有度代碼，只會被當成卡名的一部分）：去掉它若有結果就當建議。
       else if(total===0){const trimmed=searchName.replace(/\s+[A-Za-z]$/,'');if(trimmed&&trimmed!==searchName)try{const base=await searchCatalogDatabase(trimmed,regionParam,1);if(base.cards.length)suggestion={q:trimmed,reason:'去掉結尾的單一字母'}}catch(error){console.error('search suggestion failed',error.message)}}
       // Still nothing (typo?): offer the closest card name; an IP name that has no cards of its own (排球少年) is not a typo.
-      // 選了版本卻搜不到：看其他版本有沒有（日版搜「名偵探皮卡丘」，這張卡只有台版），有就告訴使用者切到哪個版本，不再猜錯字。
-      let otherRegion=null;
-      if(total===0&&regionParam!=='ALL'){try{const all=await searchCatalogDatabase(searchName,'ALL',1,{rarities}),hit=all.cards[0],other=hit&&(hit.region!==region?hit.region:hit.printings?.find(p=>p.region&&p.region!==region)?.region);if(other)otherRegion={region:other}}catch(error){console.error('search region hint failed',error.message)}}
       if(total===0&&!suggestion&&!gameHint&&!otherRegion)suggestion=await suggestCardName(searchName,region);
-      const searchBody=withPaging({...(matchedAs?{matchedAs}:{}),...(otherRegion?{otherRegion}:{}),source:hasDatabaseMatches?'supabase-search':catalog.source,architecture:'canonical-card-with-printings',match:hasDatabaseMatches?(database.matchedSeries?'database-series':exact.length?'exact-name+database-substring':'database-substring'):(exact.length?'exact-name':'substring'),databaseSearch:database.searched?'available':'skipped',searchScope:hasDatabaseMatches?'bounded-database-query':'loaded-catalog-only',candidateCount:database.candidateCount,candidateLimit:database.candidateLimit},data,total,suggestion);rememberSearch(searchCacheKey,searchBody);return json(res,200,slimBody(searchBody),{...SHORT_CACHE,'Server-Timing':timing})
+      const searchBody=withPaging({...(matchedAs?{matchedAs}:{}),...(otherRegion?{otherRegion}:{}),source:hasDatabaseMatches?'supabase-search':catalog.source,architecture:'canonical-card-with-printings',match:hasDatabaseMatches?(database.matchedSeries?'database-series':activeSeries?'database-series+name':exact.length?'exact-name+database-substring':'database-substring'):(exact.length?'exact-name':'substring'),databaseSearch:database.searched?'available':'skipped',searchScope:hasDatabaseMatches?'bounded-database-query':'loaded-catalog-only',candidateCount:database.candidateCount,candidateLimit:database.candidateLimit},data,total,suggestion);rememberSearch(searchCacheKey,searchBody);return json(res,200,slimBody(searchBody),{...SHORT_CACHE,'Server-Timing':timing})
     }catch(error){
       console.error('catalog search failed',error.message);
       const page=pageLocal(exact.length?exact:found);
       return json(res,200,slimBody(withPaging({source:catalog.source,architecture:'canonical-card-with-printings',match:exact.length?'exact-name':'substring',databaseSearch:'unavailable',searchScope:'loaded-catalog-only'},page.data,page.total)))
     }
   }
-  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11));if(tail.endsWith('/price-history')){const result=await priceHistoryResponse(tail.slice(0,-14));return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7),{card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarketCached(card)})}const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});if(url.searchParams.get('open')==='1'&&!isBot(req.headers['user-agent']))cardHot.record(card.id);const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null,data={...card,series,game};const priced=card.game==='pokemon'?await attachReferencePrices([data]):null;if(priced?.referenceFailed)data.referencePriceFailed=true;return json(res,200,{data,meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason||priced?.referenceFailed?{}:SHORT_CACHE)}
+  if(url.pathname.startsWith('/api/cards/')&&req.method==='GET'){const tail=decodeURIComponent(url.pathname.slice(11)),validCardId=id=>Boolean(id)&&id.length<=128&&!/[\u0000-\u001f\u007f]/.test(id);if(tail.endsWith('/price-history')){const id=tail.slice(0,-14);if(!validCardId(id))return json(res,400,{error:'卡片 ID 格式不正確'});const result=await priceHistoryResponse(id);return json(res,result.status,result.body)}if(tail.endsWith('/market')){const id=tail.slice(0,-7);if(!validCardId(id))return json(res,400,{error:'卡片 ID 格式不正確'});const {card}=await getCard(id);if(!card)return json(res,404,{error:'找不到這張卡'});return json(res,200,{data:await unifiedMarketCached(card)})}if(!validCardId(tail))return json(res,400,{error:'卡片 ID 格式不正確'});const {catalog,card}=await getCard(tail);if(!card)return json(res,404,{error:'找不到這張卡'});if(url.searchParams.get('open')==='1'&&!isBot(req.headers['user-agent']))cardHot.record(card.id);const series=catalog.series.find(s=>s.id===card.seriesId)||null,game=catalog.games.find(g=>g.id===card.game)||null,data={...card,series,game};const priced=card.game==='pokemon'?await attachReferencePrices([data]):null;if(priced?.referenceFailed)data.referencePriceFailed=true;return json(res,200,{data,meta:{source:catalog.source,imagePolicy:'優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。'}},catalog.fallbackReason||priced?.referenceFailed?{}:SHORT_CACHE)}
   if(url.pathname==='/api/reports/meta')return json(res,200,{data:{platforms:ALLOWED_PLATFORMS,currencies:ALLOWED_CURRENCIES,maxPrice:MAX_PRICE}});
   // ADR 0045：免登入收藏的參考總值。最多 100 張卡、一次查詢 price_snapshots、不打外部來源。
   if(url.pathname==='/api/prices/reference'&&req.method==='POST'){let body;try{body=await readJsonBody(req,REFERENCE_BODY_MAX_BYTES)}catch(error){return json(res,error.message==='BODY_TOO_LARGE'?413:400,{error:error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤'})}const v=validateReferenceRequest(body);if(v.error)return json(res,400,{error:v.error});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});try{const [rows,fx]=await Promise.all([supabaseFetch(`/price_snapshots?${new URLSearchParams(referenceQueryParams(v.ids))}`),getTwdRates()]);return json(res,200,{data:buildReferencePrices(rows,v.ids,{fx,amountToTwd})})}catch{return json(res,502,{error:'參考價查詢失敗'})}}
   if(url.pathname==='/api/auth/config'&&req.method==='GET')return json(res,200,{data:{url:authPublicUrl()}});
   if(['/api/auth/exchange','/api/auth/refresh','/api/auth/logout'].includes(url.pathname)&&req.method==='POST')return handleAuth(req,res,url.pathname.slice(10));
   if(['/api/sync/pull','/api/sync/push','/api/sync/delete'].includes(url.pathname)&&req.method==='POST')return handleCollectionSync(req,res,url.pathname.slice(10));
-  if(url.pathname==='/api/reports'&&req.method==='GET'){const cardId=url.searchParams.get('cardId'),cardName=url.searchParams.get('cardName'),game=url.searchParams.get('game'),limit=Math.min(Number(url.searchParams.get('limit'))||20,100);if(!cardId&&!cardName)return json(res,400,{error:'請提供 cardId 或 cardName'});if(!supabaseConfigured())return json(res,200,{data:{reports:[],stats:[],total:0},meta:{status:'unavailable',reason:'尚未設定使用者回報資料庫'}});const base=new URLSearchParams();if(cardId)base.set('card_id',`eq.${cardId}`);else base.set('card_name',`ilike.*${cardName.replace(/[\\%_]/g,'\\$&').replace(/\*/g,'_')}*`);/* ilike wildcards in user input are escaped; PostgREST has no escape for *, so a literal * matches any one character */if(game)base.set('game',`eq.${game}`);try{const statsParams=new URLSearchParams(base);statsParams.set('select','currency,price');const recentParams=new URLSearchParams(base);recentParams.set('select',PUBLIC_SELECT);recentParams.set('order','traded_at.desc');recentParams.set('limit',String(limit));const [all,recent]=await Promise.all([supabaseFetch(`/reports?${statsParams}`),supabaseFetch(`/reports?${recentParams}`)]);return json(res,200,{data:{reports:recent,stats:buildStats(all),total:all.length}})}catch{return json(res,502,{error:'資料庫查詢失敗'})}}
+  if(url.pathname==='/api/reports'&&req.method==='GET'){const cardId=(url.searchParams.get('cardId')||'').trim(),cardName=(url.searchParams.get('cardName')||'').trim(),game=(url.searchParams.get('game')||'').trim(),limit=Math.min(100,Math.max(1,Math.floor(Number(url.searchParams.get('limit')))||20));if(!cardId&&!cardName)return json(res,400,{error:'請提供 cardId 或 cardName'});if(cardId&&(cardId.length>128||/[\u0000-\u001f\u007f]/.test(cardId)))return json(res,400,{error:'cardId 格式不正確'});if(cardName&&(cardName.length>100||/[\u0000-\u001f\u007f]/.test(cardName)))return json(res,400,{error:'cardName 長度或格式不正確'});if(game&&!CATALOG_GAME_IDS.has(game))return json(res,400,{error:'不支援的卡牌遊戲'});if(!supabaseConfigured())return json(res,200,{data:{reports:[],stats:[],total:0},meta:{status:'unavailable',reason:'尚未設定使用者回報資料庫'}});const base=new URLSearchParams();if(cardId)base.set('card_id',`eq.${cardId}`);else base.set('card_name',`ilike.*${cardName.replace(/[\\%_]/g,'\\$&').replace(/\*/g,'_')}*`);/* ilike wildcards in user input are escaped; PostgREST has no escape for *, so a literal * matches any one character */if(game)base.set('game',`eq.${game}`);try{const statsParams=new URLSearchParams(base);statsParams.set('select','currency,price');statsParams.set('limit','1000');const recentParams=new URLSearchParams(base);recentParams.set('select',PUBLIC_SELECT);recentParams.set('order','traded_at.desc');recentParams.set('limit',String(limit));const [all,recent]=await Promise.all([supabaseFetch(`/reports?${statsParams}`),supabaseFetch(`/reports?${recentParams}`)]);return json(res,200,{data:{reports:recent,stats:buildStats(all),total:all.length}})}catch{return json(res,502,{error:'資料庫查詢失敗'})}}
   if(url.pathname==='/api/admin/scrape/yuyutei'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!catalogCollectionAllowed('yuyutei'))return json(res,409,{error:'來源權利尚未確認，已由來源政策暫停自動抓取'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});let targetUrl=url.searchParams.get('url');if(req.method==='POST'){try{targetUrl=(await readJsonBody(req)).url||targetUrl}catch{return json(res,400,{error:'JSON 格式錯誤'})}}if(!targetUrl?.startsWith('https://yuyu-tei.jp/buy/'))return json(res,400,{error:'請提供合法的遊々亭買取頁'});try{const {game,setTitle,cards:found}=await scrapeYuyutei(targetUrl),rows=found.map(c=>({source:'yuyutei',game,set_code:c.setCode,set_name:setTitle,card_code:c.cardCode,card_number:c.number,rarity:c.rarity,card_name:c.name,price:c.price,currency:'JPY',card_url:c.cardUrl,image_url:null,scraped_at:new Date().toISOString()}));for(let i=0;i<rows.length;i+=200)await supabaseFetch('/jp_buyback_prices?on_conflict=source,game,set_code,card_code',{method:'POST',headers:{Prefer:'resolution=merge-duplicates'},body:JSON.stringify(rows.slice(i,i+200))});return json(res,200,{data:{message:'抓取並存檔成功',game,setTitle,count:rows.length}})}catch(e){return json(res,502,{error:`抓取失敗：${e.message}`})}}
   if(url.pathname==='/api/catalog/sync-status'&&req.method==='GET'){if(!supabaseConfigured())return json(res,200,{data:[]});try{const data=await supabaseFetch('/catalog_sync_runs?select=provider,scope,status,rowsSeen:rows_seen,rowsWritten:rows_written,startedAt:started_at,finishedAt:finished_at&provider=not.in.(price-snapshot,price-archive)&order=started_at.desc&limit=12');return json(res,200,{data})}catch(e){return failJson(res,502,'sync status failed',e)}}
   // ADR 0042：每日參考價快照的狀態、手動觸發與停止。
@@ -1618,6 +1734,6 @@ server.listen(port,()=>{
 
 // Keep the pure browse helpers available to contract tests and maintenance
 // tooling without changing the public HTTP surface.
-export { referenceChange, fxJump, buildPriceMovers, buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, server };
+export { referenceChange, fxJump, buildPriceMovers, buildVersionPrices, referencePriceFromRow, normalizeBrowseSort, buildPriceHistory, accumulateCoverage, adjustCoverageGame, buildBrowseFacets, buildBrowsePage, buildPrintingIndex, buildCoverageGame, browseCache, cachedBrowseRows, createCoverageAccumulator, finishCoverage, browseValues, coverageMetric, rarityCanonicalCode, rarityDisplayLabel, onePieceImageTarget, seoRequestTarget, redactInflightSearch, server };
 
 

@@ -58,7 +58,10 @@ const detail=cards=>body=>({cards:cards.filter(c=>c.id===body.p_id),series:[],ga
 test('without SUPABASE2_* nothing changes: UA is not a game, UA ids are not found, nothing is asked of a second project',async()=>{
   const main=mockProject({search_cards_ranked:ranked([MAIN_CARD]),get_card_detail:detail([MAIN_CARD])});
   await withApp('off',{main},async get=>{
-    assert.equal((await get('/api/cards?game=union-arena')).status,400,'union-arena stays an unknown game');
+    const uaOff=await get('/api/cards?game=union-arena');
+    assert.equal(uaOff.status,503,'union-arena reports 503 unavailable when the second project is not configured');
+    assert.equal(uaOff.body.error,'此遊戲資料暫時無法連線');
+    assert.equal((await get('/api/cards?game=no-such-game')).status,400,'unknown games still return 400');
     const search=await get('/api/search?q=テスト獣');
     assert.deepEqual(search.body.data.map(c=>c.id),[MAIN_CARD.id]);
     assert.equal((await get('/api/cards/'+UA_CARD.id)).status,404);

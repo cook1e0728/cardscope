@@ -44,6 +44,7 @@ export function summarizeGrades(card, usdToTwd) {
 
 export function createGradedPrices({ apiKey, fetchFn, now = () => Date.now(), dailyLimit = GRADED_DAILY_LOOKUPS, maxEntries = 500 }) {
   const cache = new Map();
+  const pending = new Map();
   let day = '', used = 0;
   return async function lookup(input, usdToTwd) {
     const query = gradedQuery(input);
@@ -51,16 +52,23 @@ export function createGradedPrices({ apiKey, fetchFn, now = () => Date.now(), da
     if (!apiKey) return { status: 'not-configured' };
     const hit = cache.get(query.key);
     if (hit && hit.expiresAt > now()) return hit.value;
+    if (pending.has(query.key)) return pending.get(query.key);
     const today = new Date(now()).toISOString().slice(0, 10);
     if (today !== day) { day = today; used = 0; }
     if (used >= dailyLimit) return { status: 'daily-limit' };
     used++;
-    const response = await fetchFn(`${GRADED_ENDPOINT}?${new URLSearchParams({ ...query.params, includeEbay: 'true', limit: '1' })}`, { headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' } });
-    if (!response.ok) throw new Error(`GRADED_${response.status}`);
-    const card = pickGradedCard(await response.json(), query), grades = card ? summarizeGrades(card, usdToTwd) : [];
-    const value = card ? { status: grades.length ? 'ok' : 'no-sales', name: card.name || null, setName: card.setName || null, updatedAt: card.ebay?.updatedAt || null, grades } : { status: 'no-match' };
-    if (cache.size >= maxEntries) cache.delete(cache.keys().next().value);
-    cache.set(query.key, { value, expiresAt: now() + GRADED_TTL_MS });
-    return value;
+    const task = (async () => {
+      const response = await fetchFn(`${GRADED_ENDPOINT}?${new URLSearchParams({ ...query.params, includeEbay: 'true', limit: '1' })}`, { headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`GRADED_${response.status}`);
+      const card = pickGradedCard(await response.json(), query), grades = card ? summarizeGrades(card, usdToTwd) : [];
+      const value = card ? { status: grades.length ? 'ok' : 'no-sales', name: card.name || null, setName: card.setName || null, updatedAt: card.ebay?.updatedAt || null, grades } : { status: 'no-match' };
+      if (cache.size >= maxEntries) cache.delete(cache.keys().next().value);
+      cache.set(query.key, { value, expiresAt: now() + GRADED_TTL_MS });
+      return value;
+    })().finally(() => {
+      pending.delete(query.key);
+    });
+    pending.set(query.key, task);
+    return task;
   };
 }

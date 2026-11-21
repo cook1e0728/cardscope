@@ -200,10 +200,10 @@ async function openProduct(id){let p=P.find(x=>x.id===id);if(!p)return;if(game!=
   // Search (ADR 0044 Q7). /api/search answers {data, meta:{total, offset, limit, hasMore, parsed:{q,name,rarities,region}, suggestion:{q,reason}|null}}; older answers
   // lack those fields, so the title falls back to the row count and nothing extra is drawn.
   let activeSearch=null;const SEARCH_PAGE_SIZE=48,REGION_WORD={JP:'日版',TW:'台版',US:'美版',KR:'韓版'};
-  // "已套用：SAR、日版" chips from meta.parsed. A chip's × searches again without that one condition: the name stays, the other conditions are written back as words the server parses again.
+  // "已套用：30th、SAR、日版" chips from meta.parsed. A chip's × searches again without that one condition: the name stays, the other conditions are written back as words the server parses again.
   function showApplied(state){
     const host=$('appliedFilters');if(!host)return;
-    const parsed=state?.parsed,chips=[...(parsed?.rarities||[]).map(code=>({kind:'rarity',value:code,label:code})),...(parsed?.region?[{kind:'region',value:parsed.region,label:rn(parsed.region)}]:[])];
+    const parsed=state?.parsed,seriesLabel=parsed?.series?.label||'',chips=[...(seriesLabel?[{kind:'series',value:seriesLabel,label:seriesLabel}]:[]),...(parsed?.rarities||[]).map(code=>({kind:'rarity',value:code,label:code})),...(parsed?.region?[{kind:'region',value:parsed.region,label:rn(parsed.region)}]:[])];
     if(!chips.length){host.hidden=true;host.innerHTML='';return}
     const removable=Boolean(parsed.name)||chips.length>1;
     host.hidden=false;
@@ -211,15 +211,15 @@ async function openProduct(id){let p=P.find(x=>x.id===id);if(!p)return;if(game!=
   }
   function cancelAppliedFilter(kind,value){
     const parsed=activeSearch?.parsed;if(!parsed)return;
-    const rarities=kind==='rarity'?(parsed.rarities||[]).filter(code=>code!==value):parsed.rarities||[],region=kind==='region'?'':parsed.region;
-    const q=[parsed.name,...rarities,region?REGION_WORD[region]||region:''].filter(Boolean).join(' ');if(q)searchFor(q);
+    const series=kind==='series'?'':(parsed.series?.label||''),rarities=kind==='rarity'?(parsed.rarities||[]).filter(code=>code!==value):parsed.rarities||[],region=kind==='region'?'':parsed.region;
+    const q=[series,parsed.name,...rarities,region?REGION_WORD[region]||region:''].filter(Boolean).join(' ');if(q)searchFor(q);
   }
   function announceSearch(q){if(typeof CustomEvent==='function')document.dispatchEvent?.(new CustomEvent('cardscope:search',{detail:{q}}))}
   // A search started by the page itself (example chip, suggestion, cancelled condition): fill both boxes, record the URL, then run it.
   function searchFor(q){q=String(q||'').trim();if(!q)return;$('q').value=q;const hero=$('heroQ');if(hero)hero.value=q;announceSearch(q);return search(q)}
   window.searchFor=searchFor;
   // 伺服器的 suggestion.reason 可能是英文代碼：已知的轉中文，未知的純英文代碼不顯示；中文說明照原樣。
-  const SUGGEST_REASONS={'name-only':'只搜卡名，不加稀有度或版本'},suggestReason=value=>{const text=String(value||'').trim();return SUGGEST_REASONS[text]||(/^[ -~]*$/.test(text)?'':text)};
+  const SUGGEST_REASONS={'name-only':'只搜卡名，不加稀有度或版本','name-only-series':'只搜卡名，不加系列、稀有度或版本'},suggestReason=value=>{const text=String(value||'').trim();return SUGGEST_REASONS[text]||(/^[ -~]*$/.test(text)?'':text)};
   function emptySearchMarkup(q,meta){
     const suggestion=meta?.suggestion&&meta.suggestion.q?meta.suggestion:null,hintGame=meta?.gameHint&&G(meta.gameHint).id?G(meta.gameHint):null;
     // 搜的是 IP 名稱（例：排球少年）：直接帶去該遊戲圖鑑
@@ -247,7 +247,7 @@ async function openProduct(id){let p=P.find(x=>x.id===id);if(!p)return;if(game!=
       button.disabled=false;button.textContent='載入更多結果';button.style.display=hasMore?'block':'none';
       if(more)return;
       showApplied(activeSearch);
-      const near=window.setBandSearch?.(q,meta.queryTerms)||{here:0,others:[]},related=near.here,empty=!rows.length;
+      const near=window.setBandSearch?.(q,meta.seriesTerms?.length?meta.seriesTerms:meta.queryTerms)||{here:0,others:[]},related=near.here,empty=!rows.length;
       if(empty)$('cards').innerHTML=emptySearchMarkup(q,meta);
       const hint=empty?(near.others.length?`${near.label||'目前版本'}沒有符合的卡；${near.others.map(([id,count])=>`${rn(id)} ${count} 項`).join('、')}列在上方「搜尋」分頁。`:related?`卡片沒有符合的結果；相關系列與商品 ${related} 項列在上方「搜尋」分頁。`:''):related?`相關系列與商品 ${related} 項列在上方「搜尋」分頁。`:'';
       if(hint)setNoticeState('info',hint);

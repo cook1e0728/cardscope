@@ -268,3 +268,188 @@ test('legacy onrender host 301s to the canonical domain only when CANONICAL_REDI
     assert.equal((await get(base,'cardscope.onrender.com','/robots.txt')).status,200);
   });
 });
+
+test('ORIGIN_VERIFY_SECRET guards cf-connecting-ip against spoofing',async()=>{
+  await withServer('origin-verify',{env:{API_RATE_LIMIT_PER_MINUTE:'2',ORIGIN_VERIFY_SECRET:'edge-shared-secret'}},async base=>{
+    const hit=(headers={})=>fetch(base+'/api/catalog/sources',{headers}).then(res=>res.status);
+    // Without x-origin-verify (or with wrong value), rotating cf-connecting-ip falls back to socket remoteAddress and still hits 429.
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.1'}),200);
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.2','x-origin-verify':'wrong-secret'}),200);
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.3'}),429);
+    // With matching x-origin-verify, cf-connecting-ip is trusted per client IP.
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.10','x-origin-verify':'edge-shared-secret'}),200);
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.10','x-origin-verify':'edge-shared-secret'}),200);
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.10','x-origin-verify':'edge-shared-secret'}),429);
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.11','x-origin-verify':'edge-shared-secret'}),200);
+  });
+});
+
+test('/api/catalog/health hides v2 RPC error text and stale snapshot errors behind safe fixed strings',async()=>{
+  let failBoth=false;
+  const database=(req,res)=>{
+    const url=new URL(req.url,'http://'+req.headers.host);
+    res.setHeader('Content-Type','application/json');
+    if(url.pathname==='/rest/v1/rpc/catalog_health_snapshot_v2'){
+      res.writeHead(500);
+      return res.end('{"message":"SUPABASE_SECRET_TABLE_LEAK"}');
+    }
+    if(url.pathname==='/rest/v1/rpc/catalog_health_snapshot'){
+      if(failBoth){res.writeHead(500);return res.end('{"message":"LEGACY_SECRET_LEAK"}')}
+      res.writeHead(200);
+      return res.end(JSON.stringify({totals:{cards:1},metricStatus:{}}));
+    }
+    res.writeHead(200);res.end('[]');
+  };
+  await withServer('health-sanitize',{database,env:{CATALOG_SNAPSHOT_CACHE_MS:'1000'}},async base=>{
+    const first=await (await fetch(base+'/api/catalog/health')).json();
+    assert.equal(first.data.healthCompatibilityWarning,'v2 snapshot unavailable');
+    assert.equal(/SUPABASE_SECRET_TABLE_LEAK/i.test(JSON.stringify(first)),false);
+    await sleep(1100);
+    failBoth=true;
+    const stale=await (await fetch(base+'/api/catalog/health')).json();
+    assert.equal(stale.data.cache.stale,true);
+    assert.equal(/SECRET_LEAK/i.test(JSON.stringify(stale)),false);
+    // Let the stale-while-revalidate background refresh finish before closing the mock DB.
+    await sleep(200);
+  });
+});
+
+test('SEO card/series routes validate IDs against whitelist and enforce per-IP rate limiting while / stays unlimited',async()=>{
+  const seen=[];
+  const database=(req,res)=>{
+    const url=new URL(req.url,'http://'+req.headers.host);
+    seen.push(url.pathname+url.search);
+    res.writeHead(200,{'Content-Type':'application/json'});
+    res.end(url.pathname.endsWith('get_card_detail')?JSON.stringify({cards:[],series:[],games:[]}):'[]');
+  };
+  await withServer('seo-guard',{database,env:{SEO_RATE_LIMIT_PER_MINUTE:'2'}},async base=>{
+    const mod=await import('../server.mjs?hardening-seo-guard');
+    assert.deepEqual(mod.seoRequestTarget(new URL('https://x/?card=weiss-sfn/s108-001:sp.1_a')),{kind:'card',id:'weiss-sfn/s108-001:sp.1_a'});
+    for(const bad of ['bad id','a"b','a<script>','a;drop','x'.repeat(129)])assert.equal(mod.seoRequestTarget(new URL('https://x/?card='+encodeURIComponent(bad))),null,bad);
+    // Invalid SEO ID never queries Supabase.
+    const invalidRes=await fetch(base+'/?card='+encodeURIComponent('bad id;drop'),{headers:{'cf-connecting-ip':'198.51.100.20'}});
+    assert.equal(invalidRes.status,200);
+    assert.equal(seen.length,0,'invalid SEO ID must not trigger database lookup');
+    // Valid SEO requests are rate limited at SEO_RATE_LIMIT_PER_MINUTE (2/min); plain / is not limited.
+    assert.equal((await fetch(base+'/?card=pokemon-a',{headers:{'cf-connecting-ip':'198.51.100.21'}})).status,404);
+    assert.equal((await fetch(base+'/?series=pokemon-s1',{headers:{'cf-connecting-ip':'198.51.100.21'}})).status,404);
+    assert.equal((await fetch(base+'/?card=pokemon-b',{headers:{'cf-connecting-ip':'198.51.100.21'}})).status,429);
+    assert.equal((await fetch(base+'/',{headers:{'cf-connecting-ip':'198.51.100.21'}})).status,200,'plain home page stays unlimited');
+  });
+});
+
+test('/api/graded-prices and /api/ebay-listings enforce dedicated per-IP rate limits',async()=>{
+  await withServer('price-limits',{env:{API_RATE_LIMIT_PER_MINUTE:'20',GRADED_RATE_LIMIT_PER_MINUTE:'2',EBAY_RATE_LIMIT_PER_MINUTE:'2'}},async base=>{
+    const ip={'cf-connecting-ip':'198.51.100.30'};
+    assert.equal((await fetch(base+'/api/graded-prices?set=SV2a&number=1',{headers:ip})).status,200);
+    assert.equal((await fetch(base+'/api/graded-prices?set=SV2a&number=2',{headers:ip})).status,200);
+    assert.equal((await fetch(base+'/api/graded-prices?set=SV2a&number=3',{headers:ip})).status,429);
+    assert.equal((await fetch(base+'/api/ebay-listings?name=Pikachu&number=1',{headers:ip})).status,200);
+    assert.equal((await fetch(base+'/api/ebay-listings?name=Pikachu&number=2',{headers:ip})).status,200);
+    assert.equal((await fetch(base+'/api/ebay-listings?name=Pikachu&number=3',{headers:ip})).status,429);
+    assert.equal((await fetch(base+'/api/providers',{headers:ip})).status,200,'other API routes still have their own quota');
+  });
+});
+
+test('/api/sync pull/delete cap body at 1024 B and Google push verifies token before reading large bodies',async()=>{
+  let authCalls=0,dbCalls=0;
+  const mockIp2=createServer((req,res)=>{
+    const url=new URL(req.url,'http://mock');
+    if(url.pathname==='/auth/v1/user'){authCalls++;res.writeHead(401,{'Content-Type':'application/json'});return res.end('{"msg":"invalid"}')}
+    dbCalls++;res.writeHead(200,{'Content-Type':'application/json'});res.end('[]');
+  });
+  await new Promise(resolve=>mockIp2.listen(0,'127.0.0.1',resolve));
+  const ip2Url='http://127.0.0.1:'+mockIp2.address().port;
+  try{
+    await withServer('sync-hardening',{env:{SUPABASE2_URL:ip2Url,SUPABASE2_SERVICE_KEY:'svc',SUPABASE2_ANON_KEY:'anon',SYNC_RATE_LIMIT_PER_MINUTE:'50'}},async base=>{
+      const over1k=JSON.stringify({code:'K3M9T7Q2XB4V8ZD6N1HW5RPJ0C',pad:'x'.repeat(1100)});
+      for(const action of ['pull','delete']){
+        const r=await fetch(base+'/api/sync/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:over1k}).catch(()=>({status:413}));
+        assert.equal(r.status,413,action+' rejects >1024 B body');
+      }
+      // Large Google push with invalid Bearer rejects with 401 via auth pre-check without parsing huge invalid JSON body.
+      const badBig='{'+' '.repeat(8192)+'not-json';
+      const preAuth=await fetch(base+'/api/sync/push',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer invalid.jwt.token'},body:badBig});
+      assert.equal(preAuth.status,401,'Google push rejects invalid token before parsing >4 KB body');
+      assert.equal(authCalls,1);
+      assert.equal(dbCalls,0);
+    });
+  }finally{await new Promise(resolve=>mockIp2.close(resolve))}
+});
+
+test('query parameter boundaries: /api/search region, /api/reports limits, /api/cards/:id length and PostgREST escaping',async()=>{
+  const seen={reports:[],cards:[]};
+  const database=(req,res)=>{
+    const url=new URL(req.url,'http://'+req.headers.host);
+    if(url.pathname==='/rest/v1/reports')seen.reports.push(url.searchParams.toString());
+    if(url.pathname==='/rest/v1/rpc/get_card_detail'){res.writeHead(404,{'Content-Type':'application/json'});return res.end('{"code":"PGRST202"}')}
+    if(url.pathname==='/rest/v1/tcg_cards'&&url.searchParams.has('or'))seen.cards.push(url.searchParams.get('or'));
+    res.writeHead(200,{'Content-Type':'application/json'});res.end('[]');
+  };
+  await withServer('query-bounds',{database},async base=>{
+    assert.equal((await fetch(base+'/api/search?q=pikachu&region=INVALID')).status,400);
+    assert.equal((await fetch(base+'/api/search?q=pikachu&region=jp')).status,200);
+    assert.equal((await fetch(base+'/api/cards?game=pokemon&series='+'s'.repeat(129))).status,400);
+    assert.equal((await fetch(base+'/api/cards/'+'a'.repeat(129))).status,400);
+    assert.equal((await fetch(base+'/api/cards/'+'a'.repeat(129)+'/market')).status,400);
+    assert.equal((await fetch(base+'/api/cards/'+'a'.repeat(129)+'/price-history')).status,400);
+    assert.equal((await fetch(base+'/api/reports?cardId='+'c'.repeat(129))).status,400);
+    assert.equal((await fetch(base+'/api/reports?cardName='+'n'.repeat(101))).status,400);
+    assert.equal((await fetch(base+'/api/reports?cardName=pikachu&game=bogus')).status,400);
+    assert.equal((await fetch(base+'/api/reports?cardName=pikachu&limit=-5')).status,200);
+    assert.ok(seen.reports.some(q=>q.includes('limit=1')&&q.includes('order=traded_at.desc')),'negative limit clamps to 1');
+    assert.ok(seen.reports.some(q=>q.includes('select=currency%2Cprice')&&q.includes('limit=1000')),'stats query is bounded');
+    // Fallback PostgREST or=(...) strips ", \, (, ), and ,
+    assert.equal((await fetch(base+'/api/cards/'+encodeURIComponent('abc"def\\ghi(j),k'))).status,404);
+    assert.equal(seen.cards.at(-1),'(id.eq.abcdefghijk,canonical_id.eq.abcdefghijk)');
+  });
+});
+
+test('One Piece image proxy rejects port/credentials, blocks SVG MIME, and aborts streams exceeding 5 MB',async()=>{
+  const realFetch=globalThis.fetch;
+  let mode='svg',chunksRead=0;
+  globalThis.fetch=(input,init)=>{
+    const target=String(input?.url||input);
+    if(target.startsWith('https://asia-tc.onepiece-cardgame.com/')){
+      if(mode==='svg')return Promise.resolve(new Response('<svg xmlns="http://www.w3.org/2000/svg"/>',{status:200,headers:{'content-type':'image/svg+xml'}}));
+      if(mode==='png')return Promise.resolve(new Response(Buffer.from([0x89,0x50,0x4e,0x47]),{status:200,headers:{'content-type':'image/png'}}));
+      if(mode==='huge'){
+        const stream=new ReadableStream({pull(controller){chunksRead++;controller.enqueue(new Uint8Array(1024*1024))}});
+        return Promise.resolve(new Response(stream,{status:200,headers:{'content-type':'image/png'}}));
+      }
+    }
+    return realFetch(input,init);
+  };
+  try{
+    await withServer('op-image',{},async base=>{
+      const mod=await import('../server.mjs?hardening-op-image');
+      assert.equal(mod.onePieceImageTarget('https://asia-tc.onepiece-cardgame.com:8443/images/cardlist/card/OP01-001.png'),null);
+      assert.equal(mod.onePieceImageTarget('https://user@asia-tc.onepiece-cardgame.com/images/cardlist/card/OP01-001.png'),null);
+      assert.equal(mod.onePieceImageTarget('https://user:pass@asia-tc.onepiece-cardgame.com/images/cardlist/card/OP01-001.png'),null);
+      assert.ok(mod.onePieceImageTarget('https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP01-001.png'));
+      const validUrl='https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP01-001.png';
+      assert.equal((await fetch(base+'/api/images/onepiece?url='+encodeURIComponent('https://asia-tc.onepiece-cardgame.com:8443/images/cardlist/card/OP01-001.png'))).status,400);
+      mode='svg';
+      assert.equal((await fetch(base+'/api/images/onepiece?url='+encodeURIComponent(validUrl))).status,502,'SVG MIME is rejected');
+      mode='png';
+      const ok=await fetch(base+'/api/images/onepiece?url='+encodeURIComponent(validUrl));
+      assert.equal(ok.status,200);
+      assert.equal(ok.headers.get('content-type'),'image/png');
+      mode='huge';chunksRead=0;
+      const huge=await fetch(base+'/api/images/onepiece?url='+encodeURIComponent(validUrl));
+      assert.equal(huge.status,502,'stream exceeding 5 MB is aborted');
+      assert.ok(chunksRead<=7,'aborted immediately after passing 5 MB');
+    });
+  }finally{globalThis.fetch=realFetch}
+});
+
+test('redactInflightSearch masks OAuth code parameters without mangling other query params',async()=>{
+  await withServer('redact',{},async()=>{
+    const mod=await import('../server.mjs?hardening-redact');
+    assert.equal(mod.redactInflightSearch('?view=collection&code=secret-oauth-123&state=ok'),'?view=collection&code=[REDACTED]&state=ok');
+    assert.equal(mod.redactInflightSearch('?CODE=topsecret'),'?CODE=[REDACTED]');
+    assert.equal(mod.redactInflightSearch('?view=collection&decode=keepme'),'?view=collection&decode=keepme');
+    assert.equal(mod.redactInflightSearch('?code=a&code=b'),'?code=[REDACTED]&code=[REDACTED]');
+    assert.equal(mod.redactInflightSearch(''),'');
+  });
+});
