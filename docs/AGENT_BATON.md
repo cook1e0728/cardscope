@@ -152,3 +152,10 @@
 - `git pull` 後 `git log -1` 應為本檔提交或更新；`npm test` 基準 650。
 - 10-30 接手核對：排球少年 HV-P04（148）／HV-D04（15）版本全有官方卡圖且網址回 200，此項結案。皇巢／晴れる屋2 至 10-30 仍未回覆（晴れる屋2 只有自動受理信），使用者 10-30 決定放棄：航海王、排球少年、芙莉蓮、遊戲王日版維持無價格，不再追這兩家。
 - 之後要等的事：約 11-14 第一次刪除封存快照（ADR 0046）。使用者決定目前不花額外金錢。
+
+## 2026-11-23 流量與 Workers 搬遷（Claude）
+- Render 免費 5 GB 流量用完被停權（suspend-by-user）。使用者暫不 Resume，等月初重置或自行綁卡。
+- 已上 main：br/gzip 壓縮＋Logo WebP（04d04b5）、keep-warm 改連 robots.txt（56bae80）。UptimeRobot 首頁監控改 HEAD。
+- Cloudflare：DNS 兩筆改 Proxied；SSL Full；快取規則「Static files edge cache」（js/css/圖片，非 /api/，邊緣 10 分鐘）。
+- 長期方案：搬 Cloudflare Workers。分支 `claude/workers-step1`（722d6aa＋07fce0c）：計畫書 `docs/WORKERS_MIGRATION_PLAN.md`＋第 1 步程式（靜態上 Workers、/api 代理 Render），1079 測試全過，未部署。
+- 上線前使用者要做：wrangler login、Render 與 Worker 設同一個 ORIGIN_VERIFY_SECRET、Render 的 CANONICAL_REDIRECT 改 false、先部署 workers.dev 驗證再綁網域。
