@@ -95,10 +95,10 @@ test('coverage: after a good report, a failing refresh keeps serving the last go
     assert.equal(good.games.yugioh.cards,1);
     await sleep(1100);
     state.failYugioh=true;
+    const before=state.cardRequests;
     const stale=(await (await fetch(base+'/api/catalog/coverage')).json()).data;
     assert.equal(stale.games.yugioh.cards,1);
     assert.equal(stale.cache.stale,true);
-    const before=state.cardRequests;
     await sleep(400);
     assert.ok(state.cardRequests>before,'the background refresh ran (and failed)');
     const after=(await (await fetch(base+'/api/catalog/coverage')).json()).data;

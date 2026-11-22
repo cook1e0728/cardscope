@@ -995,7 +995,7 @@ test('html, js and css revalidate with an ETag and answer If-None-Match with 304
     assert.equal(first.status,200,path);
     assert.equal(first.headers.get('cache-control'),'no-cache',path);
     const etag=first.headers.get('etag');
-    assert.match(etag,/^"[0-9a-f]{40}"$/,path);
+    assert.match(etag,/^"[0-9a-f]{40}(?:-(?:br|gz))?"$/,path);
     await first.arrayBuffer();
     const again=await fetch(`http://127.0.0.1:${port}${path}`,{headers:{'If-None-Match':etag}});
     assert.equal(again.status,304,path);

@@ -5,11 +5,11 @@
    colours are sampled from those logos. --ip: buttons and selected states; --ip-ink: small text on paper.
    Every text pair here measures at or above 4.5:1 (band titles are large text, at or above 3:1). */
 body[data-game="pokemon"],[data-ip="pokemon"]{--ip:#C4000F;--ip-ink:#B5000E;--tint:#E50012;--band:linear-gradient(135deg,#9E000B 0%,#C4000F 55%,#E50012 100%);--band-on:#fff;--logo:url(/assets/ip-logos/pokemon.svg)}
-body[data-game="onepiece"],[data-ip="onepiece"]{--ip:#1A1A1A;--ip-ink:#1A1A1A;--tint:#1A1A1A;--band:linear-gradient(135deg,#0E0E0E 0%,#1A1A1A 55%,#333 100%);--band-on:#fff;--logo:url(/assets/ip-logos/onepiece.png)}
-body[data-game="yugioh"],[data-ip="yugioh"]{--ip:#A3121F;--ip-ink:#A3121F;--tint:#C8102E;--band:linear-gradient(135deg,#7A0A15 0%,#A3121F 55%,#C8102E 100%);--band-on:#fff;--logo:url(/assets/ip-logos/yugioh.png)}
-body[data-game="frieren"],body[data-game="weiss-schwarz"],[data-ip="frieren"],[data-ip="weiss-schwarz"]{--ip:#2E4170;--ip-ink:#2E4170;--tint:#2E4170;--band:linear-gradient(135deg,#16233F 0%,#22335A 55%,#2E4170 100%);--band-on:#fff;--logo:url(/assets/ip-logos/weiss-schwarz.png)}
+body[data-game="onepiece"],[data-ip="onepiece"]{--ip:#1A1A1A;--ip-ink:#1A1A1A;--tint:#1A1A1A;--band:linear-gradient(135deg,#0E0E0E 0%,#1A1A1A 55%,#333 100%);--band-on:#fff;--logo:url(/assets/ip-logos/onepiece.webp)}
+body[data-game="yugioh"],[data-ip="yugioh"]{--ip:#A3121F;--ip-ink:#A3121F;--tint:#C8102E;--band:linear-gradient(135deg,#7A0A15 0%,#A3121F 55%,#C8102E 100%);--band-on:#fff;--logo:url(/assets/ip-logos/yugioh.webp)}
+body[data-game="frieren"],body[data-game="weiss-schwarz"],[data-ip="frieren"],[data-ip="weiss-schwarz"]{--ip:#2E4170;--ip-ink:#2E4170;--tint:#2E4170;--band:linear-gradient(135deg,#16233F 0%,#22335A 55%,#2E4170 100%);--band-on:#fff;--logo:url(/assets/ip-logos/weiss-schwarz.webp)}
 body[data-game="haikyuu"],[data-ip="haikyuu"]{--ip:#A63F07;--ip-ink:#A63F07;--tint:#DF600E;--band:linear-gradient(135deg,#8F3606 0%,#B8480A 55%,#DF600E 100%);--band-on:#fff;--logo:url(/assets/ip-logos/haikyuu.svg)}
-body[data-game="dragonball-fw"],[data-ip="dragonball-fw"]{--ip:#0A6670;--ip-ink:#0A6670;--tint:#1596A3;--band:linear-gradient(135deg,#063F47 0%,#0A6670 55%,#1596A3 100%);--band-on:#fff;--logo:url(/assets/ip-logos/dragonball-fw.png)}
+body[data-game="dragonball-fw"],[data-ip="dragonball-fw"]{--ip:#0A6670;--ip-ink:#0A6670;--tint:#1596A3;--band:linear-gradient(135deg,#063F47 0%,#0A6670 55%,#1596A3 100%);--band-on:#fff;--logo:url(/assets/ip-logos/dragonball-fw.webp)}
 
 body{background:var(--paper);color:var(--ink);font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif}
 .top{background:var(--paper-2);border-bottom:1px solid var(--rule)}

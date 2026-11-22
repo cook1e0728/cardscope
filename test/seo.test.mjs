@@ -287,7 +287,7 @@ test('HTTP: card and series pages revalidate (no-cache + ETag, 304 on a matching
     const first = await get(path), etag = first.headers.get('etag');
     assert.equal(first.status, 200, path);
     assert.equal(first.headers.get('cache-control'), 'no-cache', path);
-    assert.match(etag, /^"[0-9a-f]{40}"$/, path);
+    assert.match(etag, /^"[0-9a-f]{40}(?:-(?:br|gz))?"$/, path);
     for (const header of [etag, `W/${etag}`, `"other", ${etag}`]) {
       const again = await fetch(`http://127.0.0.1:${appPort}${path}`, { headers: { 'if-none-match': header } });
       assert.equal(again.status, 304, `${path} with If-None-Match ${header}`);

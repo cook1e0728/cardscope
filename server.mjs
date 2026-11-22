@@ -6,6 +6,7 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { brotliCompressSync, constants as zlibConstants, gzipSync } from 'node:zlib';
 import { crossVersionLowestPrices, matchYgoprodeckSet, searchYgoProDeck } from './providers/ygoprodeck.mjs';
 import { fetchTcgdexPricing, fetchTcgdexPricingEn, tcgdexLookupForPrinting } from './providers/tcgdex-pricing.mjs';
 import { createGradedPrices } from './providers/graded-prices.mjs';
@@ -71,11 +72,81 @@ const catalogCoverageCache = createBoundedSnapshotCache({ttlMs:COVERAGE_TTL_MS,m
 const TREND_CACHE_MS = 5 * 60 * 1000;
 const trendCache = {data:null,expiresAt:0,promise:null};
 
-const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.webmanifest':'application/manifest+json'};
+const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.xml':'application/xml; charset=utf-8','.txt':'text/plain; charset=utf-8','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.webmanifest':'application/manifest+json'};
 // 只公開前端需要的檔案：根目錄的 .js／.css／index.html、assets/、前端讀的兩個 data 檔；server.mjs、providers、docs 等一律 404。
 const PUBLIC_STATIC=/^\/(?:[a-z0-9-]+\.(?:js|css)|manifest\.webmanifest|index\.html|googlefb9a9f93e94c056f\.html|assets\/(?:[\w.-]+\/)*[\w.-]+\.(?:png|jpe?g|webp|svg|ico|woff2?)|data\/(?:rarity-rankings|game-taxonomy)\.json)$/;
 // 內容雜湊 ETag：靜態頁與 SEO 頁共用，If-None-Match 對得上就回 304。
-const etagOf=content=>`"${createHash('sha1').update(content).digest('hex')}"`,etagMatches=(req,etag)=>String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag);
+const etagHash=content=>createHash('sha1').update(content).digest('hex');
+const etagOf=content=>`"${etagHash(content)}"`,etagMatches=(req,etag)=>String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag);
+// 回應壓縮：只壓縮 >= 1 KB 的文字類回應，br（品質 5）優先於 gzip；靜態檔壓縮結果快取在記憶體（上限 20 MB，依內容雜湊為鍵）。
+const COMPRESS_MIN_BYTES=1024,STATIC_COMPRESS_CACHE_MAX_BYTES=20*1024*1024;
+const BROTLI_OPTIONS={params:{[zlibConstants.BROTLI_PARAM_QUALITY]:5}};
+const COMPRESSIBLE_TYPES=new Set(['text/html','text/css','text/javascript','application/javascript','application/json','application/manifest+json','image/svg+xml','application/xml','text/xml','text/plain']);
+const isCompressibleType=contentType=>COMPRESSIBLE_TYPES.has(String(contentType||'').split(';')[0].trim().toLowerCase());
+function chooseEncoding(req){
+  const header=String(req?.headers?.['accept-encoding']||'').toLowerCase();
+  if(!header)return null;
+  const accepted=new Map();
+  for(const part of header.split(',')){
+    const [rawCoding,...params]=part.trim().split(';'),coding=rawCoding.trim();
+    if(!coding)continue;
+    let q=1;
+    for(const param of params){const [k,v]=param.trim().split('=');if(k==='q'){const parsed=Number(v);q=Number.isFinite(parsed)?parsed:0}}
+    if(!accepted.has(coding)||q>accepted.get(coding))accepted.set(coding,q);
+  }
+  if(accepted.get('br')>0)return 'br';
+  if(accepted.get('gzip')>0)return 'gzip';
+  return null;
+}
+const staticCompressCache=new Map();let staticCompressCacheBytes=0;
+function getCachedCompressed(key){const hit=staticCompressCache.get(key);if(!hit)return null;staticCompressCache.delete(key);staticCompressCache.set(key,hit);return hit}
+function setCachedCompressed(key,buf){
+  if(!Buffer.isBuffer(buf)||buf.length>STATIC_COMPRESS_CACHE_MAX_BYTES)return;
+  const prev=staticCompressCache.get(key);
+  if(prev){staticCompressCache.delete(key);staticCompressCacheBytes-=prev.length}
+  while(staticCompressCacheBytes+buf.length>STATIC_COMPRESS_CACHE_MAX_BYTES&&staticCompressCache.size){const oldestKey=staticCompressCache.keys().next().value,oldest=staticCompressCache.get(oldestKey);staticCompressCache.delete(oldestKey);staticCompressCacheBytes-=oldest.length}
+  staticCompressCache.set(key,buf);staticCompressCacheBytes+=buf.length;
+}
+const compressBuffer=(buf,encoding)=>encoding==='br'?brotliCompressSync(buf,BROTLI_OPTIONS):gzipSync(buf);
+const requestOfResponse=new WeakMap();
+function mergeVaryHeader(existing,token='Accept-Encoding'){
+  const list=String(existing||'').split(',').map(v=>v.trim()).filter(Boolean);
+  if(!list.some(v=>v.toLowerCase()===token.toLowerCase()))list.push(token);
+  return list.join(', ');
+}
+function sendResponse(res,status,body,headers={},{etag=false,cacheCompressed=false}={}){
+  const req=requestOfResponse.get(res),buf=Buffer.isBuffer(body)?body:Buffer.from(body??'','utf8'),outHeaders={};
+  let contentType='',hasContentEncoding=false,varyKey=null;
+  for(const [name,value] of Object.entries(headers)){
+    const lower=name.toLowerCase();
+    if(lower==='content-length')continue;
+    if(lower==='content-type')contentType=value;
+    if(lower==='content-encoding')hasContentEncoding=true;
+    if(lower==='vary')varyKey=name;
+    outHeaders[name]=value;
+  }
+  outHeaders[varyKey||'Vary']=mergeVaryHeader(varyKey?outHeaders[varyKey]:'');
+  const encoding=!hasContentEncoding&&isCompressibleType(contentType)&&buf.length>=COMPRESS_MIN_BYTES?chooseEncoding(req):null;
+  let baseHash=null;
+  if(etag){
+    baseHash=etagHash(buf);
+    const tag=encoding?`"${baseHash}-${encoding==='br'?'br':'gz'}"`:`"${baseHash}"`;
+    outHeaders.ETag=tag;
+    if(req&&etagMatches(req,tag)){res.writeHead(304,{'Cache-Control':outHeaders['Cache-Control']||'no-cache',ETag:tag,Vary:outHeaders[varyKey||'Vary']});return res.end()}
+  }
+  let outBuf=buf;
+  if(encoding){
+    if(cacheCompressed){
+      const key=`${baseHash||etagHash(buf)}:${encoding}`,cached=getCachedCompressed(key);
+      if(cached)outBuf=cached;
+      else{outBuf=compressBuffer(buf,encoding);setCachedCompressed(key,outBuf)}
+    }else outBuf=compressBuffer(buf,encoding);
+    outHeaders['Content-Encoding']=encoding;
+  }
+  outHeaders['Content-Length']=String(outBuf.length);
+  res.writeHead(status,outHeaders);
+  res.end(req?.method==='HEAD'?undefined:outBuf);
+}
 const SECURITY_HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'SAMEORIGIN','Strict-Transport-Security':'max-age=15552000','Permissions-Policy':'camera=(), microphone=(), geolocation=(), gyroscope=(self), accelerometer=(self)','Cross-Origin-Opener-Policy':'same-origin'};
 // 感測器留給自己：look-effects.js 的手機傾斜卡片要讀 device orientation／motion。
 // 強制：script-src 只允許同源 .js 與 index.html 內 inline <script> 的 SHA-256（啟動時由檔案算出，不用 nonce：nonce 會與 ETag 304、service worker 快取的舊頁對不上）；沒有 unsafe-inline、也沒有 inline 事件屬性（script-src-attr 'none'，改用 ui-actions.js 的事件委派）。擋的是外部腳本、未列出的圖片主機、被嵌入框架。新增卡圖來源時要把主機加進 img-src，否則圖片會被擋；改 index.html 的 inline script 不必動這裡，重啟即重算。
@@ -85,10 +156,10 @@ const CSP=`default-src 'self'; script-src 'self' ${INLINE_SCRIPT_SOURCES.join(' 
 const API_CSP="default-src 'none'";
 // 目錄類回應每份 1–3 MB：讓瀏覽器 1 分鐘內重用、5 分鐘內先用舊的再背景更新，免得每次換頁重抓。
 const SHORT_CACHE={'Cache-Control':'public, max-age=60, stale-while-revalidate=300'};
-const json = (res,status,body,headers={})=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});res.end(JSON.stringify(body));};
+const json = (res,status,body,headers={})=>sendResponse(res,status,JSON.stringify(body),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});
 // 公開回應不帶底層錯誤原文（supabaseFetch 的訊息含 PostgREST 回應，會露出表／欄位／函式名）：原文只進日誌，回應給固定訊息或代碼。
 // 瀏覽器導覽到不存在的路徑給簡單的繁中 404 頁（可回首頁）；/api/ 仍回 JSON，程式端才解析得了。
-const NOT_FOUND_HTML='<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>找不到頁面｜CardSeek</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#efeae0;color:#171717;font:16px/1.6 system-ui,"Noto Sans TC",sans-serif;text-align:center}main{padding:24px}h1{margin:0 0 8px;font-size:24px}a{display:inline-block;margin-top:16px;padding:10px 22px;border-radius:8px;background:#171717;color:#fff;text-decoration:none}</style></head><body><main><h1>找不到這個頁面</h1><p>網址可能打錯了，或這個頁面已經移除。</p><a href="/">回 CardSeek 首頁</a></main></body></html>',notFound=(res,pathname)=>{if(pathname.startsWith('/api/'))return json(res,404,{error:'Not found'});res.writeHead(404,{'Content-Type':types['.html'],'Cache-Control':'no-store'});res.end(NOT_FOUND_HTML)};
+const NOT_FOUND_HTML='<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>找不到頁面｜CardSeek</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#efeae0;color:#171717;font:16px/1.6 system-ui,"Noto Sans TC",sans-serif;text-align:center}main{padding:24px}h1{margin:0 0 8px;font-size:24px}a{display:inline-block;margin-top:16px;padding:10px 22px;border-radius:8px;background:#171717;color:#fff;text-decoration:none}</style></head><body><main><h1>找不到這個頁面</h1><p>網址可能打錯了，或這個頁面已經移除。</p><a href="/">回 CardSeek 首頁</a></main></body></html>',notFound=(res,pathname)=>{if(pathname.startsWith('/api/'))return json(res,404,{error:'Not found'});return sendResponse(res,404,NOT_FOUND_HTML,{'Content-Type':types['.html'],'Cache-Control':'no-store'})};
 const UPSTREAM_ERROR='UPSTREAM_UNAVAILABLE',failJson=(res,status,label,error,headers)=>{console.error(label,error?.message||error);return json(res,status,{error:'資料暫時無法讀取'},headers)},publicReason=(label,error)=>{console.error(label,error?.message||error);return UPSTREAM_ERROR};
 
 const ONEPIECE_IMAGE_MAX_BYTES=5*1024*1024;
@@ -1496,7 +1567,7 @@ async function loadSeoForSeries(seriesId){
 async function serveSeoIndex(req,res,target){
   let html;try{html=await readFile(join(root,'index.html'),'utf8')}catch{return json(res,404,{error:'Not found'})}
   // 和首頁靜態檔一致：no-cache＋內容 ETag，換版或卡片資料變了立刻生效，沒變就 304。404 頁不帶 ETag。
-  const send=(status,body)=>{const headers={'Content-Type':types['.html'],'Cache-Control':'no-cache'};if(status===200){const etag=etagOf(body);headers.ETag=etag;if(etagMatches(req,etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}res.writeHead(status,headers);res.end(body)},key=`${target.kind}:${target.id}`;let entry=seoCacheGet(key);
+  const send=(status,body)=>sendResponse(res,status,body,{'Content-Type':types['.html'],'Cache-Control':'no-cache'},{etag:status===200}),key=`${target.kind}:${target.id}`;let entry=seoCacheGet(key);
   if(entry===undefined){try{const seo=await withTimeout(target.kind==='card'?loadSeoForCard(target.id):loadSeoForSeries(target.id),SEO_LOAD_TIMEOUT_MS);entry=seo?{seo}:{missing:true};seoCacheSet(key,entry,seo?SEO_CACHE_TTL_MS:SEO_NEGATIVE_TTL_MS)}catch(error){console.error('seo lookup failed',error.message);return send(200,html)}}
   return entry.missing?send(404,applyNoindexToHtml(html)):send(200,applySeoToHtml(html,entry.seo));
 }
@@ -1520,7 +1591,7 @@ async function buildSitemaps(){
 // Built at most once at a time and kept 24 hours; a failed build is never cached.
 function loadSitemaps(){if(sitemapCache.value&&sitemapCache.expiresAt>Date.now())return Promise.resolve(sitemapCache.value);if(!sitemapCache.promise)sitemapCache.promise=buildSitemaps().then(value=>{sitemapCache.value=value;sitemapCache.expiresAt=Date.now()+SITEMAP_TTL_MS;return value}).finally(()=>{sitemapCache.promise=null});return sitemapCache.promise}
 async function serveSitemap(res,pathname){
-  const xml=body=>{res.writeHead(200,{'Content-Type':'application/xml; charset=utf-8','Cache-Control':'public, max-age=3600'});res.end(body)},cardFile=pathname.match(/^\/sitemaps\/cards-(\d+)\.xml$/);
+  const xml=body=>sendResponse(res,200,body,{'Content-Type':'application/xml; charset=utf-8','Cache-Control':'public, max-age=3600'}),cardFile=pathname.match(/^\/sitemaps\/cards-(\d+)\.xml$/);
   if(pathname==='/sitemaps/pages.xml')return xml(renderUrlSet(pageSitemapEntries(PUBLIC_BASE_URL,[...CATALOG_GAME_IDS])));
   if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});
   let built;try{built=await loadSitemaps()}catch(error){console.error('sitemap build failed',error.message);return json(res,503,{error:'Sitemap 暫時無法產生'})}
@@ -1680,8 +1751,8 @@ const handleRequest=async(req,res)=>{
   if(url.pathname==='/api/admin/price-snapshot/stop'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});return json(res,200,{data:priceSnapshot.stop()})}
   if(url.pathname==='/api/admin/catalog/sync'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const requested=(url.searchParams.get('provider')||'all').toLowerCase(),aliases={pokemontw:'pokemonZhTw',pokemonzh:'pokemonZhTw',weissfrieren:'weissFrieren',frieren:'weissFrieren',dragonball:'dragonballFw',dbs:'dragonballFw',yugiohjp:'yugiohJp',neuron:'yugiohJp'},selected=aliases[requested]||requested,tcgdexTw=process.env.TCGDEX_TW_SYNC==='true',candidates=requested==='all'?['pokemon',...(tcgdexTw?['pokemonZhTw']:[]),'onepiece','yugioh','haikyuu','weissFrieren','dragonballFw','yugiohJp']:[selected];if(candidates.some(p=>!['pokemon','pokemonZhTw','onepiece','yugioh','haikyuu','weissFrieren','dragonballFw','yugiohJp'].includes(p)))return json(res,400,{error:'不支援的 provider'});if(candidates.includes('pokemonZhTw')&&!tcgdexTw)return json(res,409,{error:'TCGdex 台版同步會覆寫台灣官方補正的資料，需設定 TCGDEX_TW_SYNC=true 才能執行'});const providers=filterAllowedCatalogProviders(candidates),blocked=candidates.filter(provider=>!providers.includes(provider));if(!providers.length)return json(res,409,{error:'所選來源尚未通過來源政策',blocked});syncCatalog(supabaseFetch,{providers}).then(result=>console.log('catalog sync complete',JSON.stringify(result))).catch(error=>console.error('catalog sync failed',error));return json(res,202,{data:{message:'Catalog 同步已在背景開始',providers,blocked}})}
   // 聯絡信箱：SITE_IMPROVEMENT_PLAN 決定 5（2026-11-12 使用者開設）。
-  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/.well-known/security.txt'){res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});return res.end(`Contact: mailto:contact@cardseektcg.com\nExpires: ${new Date(Date.now()+365*86400000).toISOString()}\nPreferred-Languages: zh-TW, en\nCanonical: ${PUBLIC_BASE_URL}/.well-known/security.txt\n`)}
-  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/robots.txt'){res.writeHead(200,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});return res.end(renderRobotsTxt(PUBLIC_BASE_URL))}
+  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/.well-known/security.txt')return sendResponse(res,200,`Contact: mailto:contact@cardseektcg.com\nExpires: ${new Date(Date.now()+365*86400000).toISOString()}\nPreferred-Languages: zh-TW, en\nCanonical: ${PUBLIC_BASE_URL}/.well-known/security.txt\n`,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});
+  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/robots.txt')return sendResponse(res,200,renderRobotsTxt(PUBLIC_BASE_URL),{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});
   if((req.method==='GET'||req.method==='HEAD')&&(url.pathname==='/sitemap.xml'||/^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname)))return serveSitemap(res,url.pathname);
   if(req.method==='GET'&&url.pathname==='/')pageStats.record(url.searchParams,req.headers['user-agent'],req.headers['sec-fetch-dest']);
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/'){const seoTarget=seoRequestTarget(url);if(seoTarget)return serveSeoIndex(req,res,seoTarget)}
@@ -1690,13 +1761,16 @@ const handleRequest=async(req,res)=>{
     // ?view=about／privacy 有自己的標題與 canonical；其他 view 值維持原樣。
     seo=url.pathname!=='/'?null:url.searchParams.has('view')?viewSeo({view:url.searchParams.get('view'),baseUrl:PUBLIC_BASE_URL}):homeSeo({gameId:CATALOG_GAME_IDS.has(game)?game:'',baseUrl:PUBLIC_BASE_URL}),content=seo?applySeoToHtml(raw.toString('utf8'),seo):raw,headers={'Content-Type':types[ext]||'application/octet-stream'};
     // html/js/css: always revalidate (no-cache) with a content ETag, so a deploy reaches browsers at once and an unchanged file is a 304. Images keep their existing handling.
-    if(['.html','.js','.css','.webmanifest'].includes(ext)){const etag=etagOf(content);headers['Cache-Control']='no-cache';headers.ETag=etag;if(etagMatches(req,etag)){res.writeHead(304,{'Cache-Control':'no-cache',ETag:etag});return res.end()}}
-    res.writeHead(200,headers);res.end(content)}catch{notFound(res,url.pathname)}
+    const revalidate=['.html','.js','.css','.webmanifest'].includes(ext);
+    if(revalidate)headers['Cache-Control']='no-cache';
+    return sendResponse(res,200,content,headers,{etag:revalidate,cacheCompressed:true})}catch{notFound(res,url.pathname)}
 };
 // 任何未預期的例外只讓這一個請求失敗，不讓整個服務崩潰（2026-10-23 審查：壞掉的 % 編碼曾讓程序結束）。
 const server=createServer((req,res)=>{
+  requestOfResponse.set(res,req);
   // 先設在 res 上，每一種回應（SEO 頁、sitemap、robots、圖片代理、404、錯誤）寫標頭時都會帶上，不必各處手寫。
   for(const [name,value] of Object.entries(SECURITY_HEADERS))res.setHeader(name,value);
+  res.setHeader('Vary','Accept-Encoding');
   // API 與圖片代理的回應不會被當頁面執行：default-src 'none'（圖片本身不受影響，頁面 <img> 看的是頁面自己的 CSP）。
   res.setHeader('Content-Security-Policy',String(req.url).startsWith('/api/')?API_CSP:CSP);
   handleRequest(req,res).catch(error=>{
