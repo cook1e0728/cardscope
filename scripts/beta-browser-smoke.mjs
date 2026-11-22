@@ -653,7 +653,7 @@ async function runCollectionChecks(browser,viewport){
     await page.locator('#collManageBtn').click();
     await waitForVisible(page.locator('#collMenu'),`${label}: the 管理 menu did not open`);
     assert.equal(await page.locator('#collManageBtn').getAttribute('aria-expanded'),'true');
-    assert.deepEqual((await page.locator('#collMenu [role^="menuitem"]').allInnerTexts()).map(text=>text.trim()),['匯出備份','匯入備份','下載 CSV','各系列進度']);
+    assert.deepEqual((await page.locator('#collMenu [role^="menuitem"]').allInnerTexts()).map(text=>text.trim()),['匯出備份','匯入備份','下載 CSV','雲端同步','各系列進度']);
     assert.deepEqual(await page.locator('#collMenu [role^="menuitem"]').evaluateAll(items=>items.filter(item=>item.getBoundingClientRect().height<44).map(item=>item.textContent)),[],`${label}: menu items are 44px targets`);
     await page.keyboard.press('Escape');
     await page.locator('#collMenu').waitFor({state:'hidden',timeout:3000});
