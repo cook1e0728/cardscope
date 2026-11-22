@@ -247,7 +247,7 @@ const searchOmittedTitle='日本官方商品頁證實這張卡存在，但官方
 function listingBadge(card){return notOfficiallyListed(card)?`<span class="badge listing-badge" title="日本官方卡片搜尋目前沒有列出這張卡；資料來自 TCGdex 或台灣官方">待日本官方確認</span>`:officialPageConfirmed(card)?`<span class="badge listing-badge listing-badge-confirmed" title="${searchOmittedTitle}">官方商品頁已證實</span>`:''}
 function listingNote(card){return notOfficiallyListed(card)?` <small class="meta listing-note" title="日本官方卡片搜尋目前沒有列出這張卡；資料來自 TCGdex 或台灣官方">待日本官方確認</small>`:officialPageConfirmed(card)?` <small class="meta listing-note listing-note-confirmed" title="${searchOmittedTitle}">官方商品頁已證實</small>`:''}
 // Search merges a canonical group into one row whose id is the canonical card while its label follows referencePrintingId; open the labelled version.
-const cardOpenId=card=>{const ref=card?.referencePrintingId!=null&&(card.printings||[]).find(p=>String(p.id)===String(card.referencePrintingId));return ref?.cardId||card?.id};
+const cardOpenId=card=>{const ref=card?.referencePrintingId!=null&&(card.printings||[]).find(p=>String(p.id??p.cardId)===String(card.referencePrintingId));return ref?.cardId||card?.id};
 // Same region and number: list 版本 1, 2, 3… in order (an original card can be 版本 2 when its TCGdex image is that version, ADR 0043).
 const versionNumber=p=>Number(String(p?.metadata?.variantName||'').match(/\d+/)?.[0]||0);
 function versionOrder(ps){const first=new Map();ps.forEach((p,i)=>{const key=`${p.region}|${p.localSetCode}|${p.localCardNumber}`;if(!first.has(key))first.set(key,i)});return ps.map((p,i)=>({p,i,g:first.get(`${p.region}|${p.localSetCode}|${p.localCardNumber}`)})).sort((a,b)=>a.g-b.g||versionNumber(a.p)-versionNumber(b.p)||a.i-b.i).map(x=>x.p)}
@@ -809,7 +809,7 @@ openCard=async function(id,options={}){
     if(stale())return;
     if(!cr.ok)throw Error(cb.error);
     const c=cb.data;
-    const ps=c.printings||[],ref=ps.find(p=>p.region==='JP')||ps.find(p=>p.region==='TW')||ps.find(p=>p.region==='US')||ps.find(p=>p.region==='KR')||ps[0],selectedPrinting=ps.find(p=>p.cardId&&String(p.cardId)===String(id))||ps.find(p=>c.referencePrintingId&&String(p.id??p.cardId)===String(c.referencePrintingId))||ps.find(p=>p.region===c.region&&p.language===c.language)||ref,versions=versionOrder(ps).map(p=>{const diff=[];if(ref&&p!==ref&&p.localCardNumber&&p.localCardNumber!==ref.localCardNumber)diff.push('卡號不同');if(ref&&p!==ref&&p.rarity&&ref.rarity&&p.rarity!==ref.rarity)diff.push('稀有度不同');const switchable=p!==selectedPrinting&&p.cardId&&String(p.cardId)!==String(selectedPrinting?.cardId),body=`<b>${e(rn(p.region,c.game))}</b>${p===selectedPrinting?'<span class="ver-seg"> · <span class="badge">目前顯示</span></span>':''}<span class="ver-seg"> · ${e(printingLanguage(p,cardGameId(c)))}</span><span class="ver-seg"> · ${e(setCodeText(p.localSetCode)||'系列未標示')}</span><span class="ver-seg"> · ${e(p.localCardNumber)}</span><span class="ver-seg">${parallelLabel(p,cardGameId(c))?` · <span class="badge">${e(parallelLabel(p,cardGameId(c)))}</span>`:''}</span><span class="ver-seg">${p.rarity?` · ${rarityMarkup(p.rarity,cardGameId(c))}`:''}</span>${p.metadata?.variantName?`<span class="ver-seg"> · ${e(p.metadata.variantName)}</span>`:''}${diff.length?`<br><span class="meta">版本差異：${e(diff.join('、'))}</span>`:''}${switchable?'<br><span class="meta">點擊查看此版本的卡圖</span>':''}`;return switchable?`<button type="button" class="state version-switch" data-version-card="${e(p.cardId)}">${body}</button>`:`<div class="state${p===selectedPrinting?' is-current':''}"${p===selectedPrinting?' aria-current="true"':''}>${body}</div>`}).join('');
+    const ps=c.printings||[],ref=ps.find(p=>p.region==='JP')||ps.find(p=>p.region==='TW')||ps.find(p=>p.region==='US')||ps.find(p=>p.region==='KR')||ps[0],selectedPrinting=ps.find(p=>p.cardId&&String(p.cardId)===String(id))||ps.find(p=>c.referencePrintingId&&String(p.id??p.cardId)===String(c.referencePrintingId))||ps.find(p=>p.region===c.region&&p.language===c.language)||ref,versions=versionOrder(ps).map(p=>{const diff=[];if(ref&&p!==ref&&p.localCardNumber&&p.localCardNumber!==ref.localCardNumber)diff.push('卡號不同');if(ref&&p!==ref&&p.rarity&&ref.rarity&&p.rarity!==ref.rarity)diff.push('稀有度不同');const switchable=p!==selectedPrinting&&p.cardId&&String(p.cardId)!==String(selectedPrinting?.cardId),body=`<b>${e(rn(p.region,c.game))}</b>${p===selectedPrinting?'<span class="ver-seg"> · <span class="badge">目前顯示</span></span>':''}<span class="ver-seg"> · ${e(printingLanguage(p,cardGameId(c)))}</span><span class="ver-seg"> · ${e(setCodeText(p.localSetCode)||'系列未標示')}</span>${p.localCardNumber?`<span class="ver-seg"> · ${e(p.localCardNumber)}</span>`:''}<span class="ver-seg">${parallelLabel(p,cardGameId(c))?` · <span class="badge">${e(parallelLabel(p,cardGameId(c)))}</span>`:''}</span><span class="ver-seg">${p.rarity?` · ${rarityMarkup(p.rarity,cardGameId(c))}`:''}</span>${p.metadata?.variantName?`<span class="ver-seg"> · ${e(p.metadata.variantName)}</span>`:''}${diff.length?`<br><span class="meta">版本差異：${e(diff.join('、'))}</span>`:''}${switchable?'<br><span class="meta">點擊查看此版本的卡圖</span>':''}`;return switchable?`<button type="button" class="state version-switch" data-version-card="${e(p.cardId)}">${body}</button>`:`<div class="state${p===selectedPrinting?' is-current':''}"${p===selectedPrinting?' aria-current="true"':''}>${body}</div>`}).join('');
     const detailImageSources=cardImageSourceCandidates(c,selectedPrinting),detailImageUrl=detailImageSources[0]||image(c),zhPart=zhParts(c.nameZh),zhName=zhPart.name||'中文名稱待補',gid=cardGameId(c),rarities=[...new Set([c.rarity,...ps.map(p=>p.rarity)].filter(Boolean).map(rarityText).map(value=>rarityMarkup(value,gid,true)))].join('、')||'稀有度待補';
     const collectKey=[selectedPrinting?.cardId,id,c.id].filter(Boolean).map(String).find(key=>watchQuantity(key)>0)||String(selectedPrinting?.cardId||id),watermarkOptions=cardWatermarkOptions(c,detailImageUrl),zoomSourceAttribute=detailImageSources.length?`data-card-zoom-src="${e(detailImageSources[0])}" data-card-zoom-sources="${e(JSON.stringify(detailImageSources))}" data-card-zoom-alt="${e(name(c))}" data-card-embedded-sample="${watermarkOptions.embeddedSample?'1':'0'}" data-card-suppress-sample="${watermarkOptions.suppressOverlay?'1':'0'}"`:'';
     detailTitleInfo=cardTitleParts(c,selectedPrinting);syncPageTitle();const crumbSeries=printingSeries(c,selectedPrinting),detailCrumbs=crumbsMarkup([...crumbTrail(gid,crumbSeries?.region||selectedPrinting?.region,crumbSeries),{label:name(c)}]);
@@ -1125,7 +1125,7 @@ function refreshGrid(){if(inCollectionView()){renderCollectionPage();renderDetai
 // 把 items 寫回三個既有 localStorage 鍵；畫面快照（名稱、圖、地區）依 id 沿用。
 function applyItems(items){
   const old={...watchlistMeta};Object.keys(watchlist).forEach(key=>delete watchlist[key]);Object.keys(watchlistMeta).forEach(key=>delete watchlistMeta[key]);
-  items.forEach(item=>{const quantity=CS.collectedQuantity(item);if(quantity>0)watchlist[item.id]=quantity;watchlistMeta[item.id]={...old[item.id],id:item.id,canonicalId:item.canonicalId||old[item.id]?.canonicalId||'',condition:item.condition,finish:item.finish,note:item.note,...Object.fromEntries(['seriesId','game','region'].filter(key=>item[key]).map(key=>[key,item[key]]))}});
+  items.forEach(item=>{if(!item?.id||['__proto__','constructor','prototype'].includes(item.id))return;const quantity=CS.collectedQuantity(item);if(quantity>0)watchlist[item.id]=quantity;watchlistMeta[item.id]={...old[item.id],id:item.id,canonicalId:item.canonicalId||old[item.id]?.canonicalId||'',condition:item.condition,finish:item.finish,note:item.note,...Object.fromEntries(['seriesId','game','region'].filter(key=>item[key]).map(key=>[key,item[key]]))}});
   const saved=persistCollection();
   if(!saved)collectionStatus('無法寫入瀏覽器儲存空間（可能是無痕模式或空間已滿），這次的變更關掉頁面後會消失；請先匯出備份。');
   return saved;
@@ -1293,19 +1293,21 @@ syncState=readSyncState();
 const saveSync=()=>syncState?uiLocal.set(SYNC_KEY,JSON.stringify(syncState)):false;
 // Google 登入的 access token：離過期不到 60 秒或強制換新時，打 /api/auth/refresh 換新；換不過就清掉登入（回 ''）。
 async function authToken(force=false){
-  if(!authState)return'';
+  authToken.lastStatus=0;
+  if(!authState){authToken.lastStatus=401;return''}
   if(!force&&authState.expiresAt*1000>Date.now()+60000)return authState.accessToken;
   if(authPending)return authPending;
   const current=authState;
   authPending=(async()=>{
     try{
       const response=await fetch('/api/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refreshToken:current.refreshToken}),cache:'no-store'});
+      authToken.lastStatus=response.status;
       if(response.status===401||response.status===400){if(authState===current)clearAuth();return''}
       const data=(await response.json().catch(()=>null))?.data;
       if(!response.ok||!data?.accessToken||!data?.refreshToken||!Number.isFinite(data?.expiresAt))return force?'':current.accessToken;
       authState={accessToken:data.accessToken,refreshToken:data.refreshToken,expiresAt:Number(data.expiresAt),email:typeof data.email==='string'&&data.email?data.email:current.email};
       saveAuth();return authState.accessToken;
-    }catch{return force?'':current.accessToken}
+    }catch{authToken.lastStatus=0;return force?'':current.accessToken}
     finally{authPending=null}
   })();
   return authPending;
@@ -1349,37 +1351,60 @@ async function startGoogleLogin(){
 // 登入完成：若這台原本在用同步碼，先把同步碼雲端那份拉下來和本機合併，再切換成 Google 同步（同步碼停用，之後只跟 Google 帳號同步）。
 async function enableGoogleSync(session){
   const hadCode=syncState&&!syncState.google?syncState.code:'';
-  const prevRecords=syncState?.records||Object.create(null),now=Date.now();
-  let remoteItems=[];
+  const prevRecords=syncState?.records||Object.create(null),oldAuth=authState,oldSync=syncState,now=Date.now();
+  let remoteItems=[],googleRemote=[];
   if(hadCode){
-    try{const pulled=await syncPost('pull',{code:hadCode},false);if(pulled.status===200&&Array.isArray(pulled.data?.items))remoteItems=pulled.data.items}catch{}
+    try{
+      const pulled=await syncPost('pull',{code:hadCode},false);
+      if(pulled.status!==200){setSyncNotice(`${syncFailText(pulled)}，尚未切換為 Google 登入，同步碼與本機收藏都還在。`);return false}
+      if(Array.isArray(pulled.data?.items))remoteItems=pulled.data.items;
+    }catch{setSyncNotice('連不上同步服務，尚未切換為 Google 登入，同步碼與本機收藏都還在。');return false}
   }
   authState={accessToken:session.accessToken,refreshToken:session.refreshToken,expiresAt:Number(session.expiresAt),email:String(session.email||'')};
-  if(!saveAuth()){clearAuth();return setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。')}
+  const googleKnown=new Set();
+  try{
+    const gPulled=await syncPost('pull',{},true);
+    if(gPulled.status!==200){authState=oldAuth;setSyncNotice(`${syncFailText(gPulled)}，沒有切換為 Google 同步，本機收藏不受影響。`);return false}
+    if(Array.isArray(gPulled.data?.items)){googleRemote=gPulled.data.items;for(const entry of googleRemote)if(entry?.id)googleKnown.add(entry.id)}
+  }catch{authState=oldAuth;setSyncNotice('連不上同步服務，沒有切換為 Google 同步，本機收藏不受影響。');return false}
+  if(!saveAuth()){authState=oldAuth;if(!oldAuth)clearAuth();setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。');return false}
   const liveIds=new Set(collectionItems().map(item=>item.id)),records=Object.create(null);
-  for(const item of collectionItems()){const prev=prevRecords[item.id];records[item.id]=[syncSig(item),prev&&!prev[2]?prev[1]:now,0]}
+  for(const item of collectionItems()){const prev=prevRecords[item.id];records[item.id]=[syncSig(item),prev&&!prev[2]?prev[1]:googleKnown.has(item.id)?0:now,0]}
   for(const [id,rec] of Object.entries(prevRecords))if(rec[2]&&!liveIds.has(id))records[id]=rec;
   const state={google:true,revision:0,dirty:true,records};
-  if(remoteItems.length){
+  const mergedRemote=CS.mergeSync(remoteItems,googleRemote);
+  if(mergedRemote.length){
     const local=[];
-    for(const item of collectionItems()){const rec=records[item.id];local.push({...item,updatedAt:syncIso(rec&&!rec[2]?rec[1]:now)})}
+    for(const item of collectionItems()){const rec=records[item.id];local.push({...item,updatedAt:syncIso(rec&&!rec[2]?rec[1]:0)})}
     for(const [id,rec] of Object.entries(records))if(rec[2])local.push({id,deleted:true,updatedAt:syncIso(rec[1])});
-    const merged=CS.mergeSync(local.map(CS.normalizeSyncEntry).filter(Boolean),remoteItems);
-    applyMerged(state,merged,local);
+    const merged=CS.mergeSync(local.map(CS.normalizeSyncEntry).filter(Boolean),mergedRemote);
+    try{applyMerged(state,merged,local)}catch(err){
+      authState=oldAuth;syncState=oldSync;
+      if(oldAuth)saveAuth();else clearAuth();
+      if(oldSync)saveSync();else try{localStorage.removeItem(SYNC_KEY)}catch{}
+      setSyncNotice(`${syncFailText(err)}，沒有切換為 Google 同步，本機收藏不受影響。`);
+      return false;
+    }
   }
   syncState=state;
-  if(!saveSync()){syncState=null;clearAuth();return setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。')}
+  if(!saveSync()){syncState=oldSync;authState=oldAuth;if(oldAuth)saveAuth();else clearAuth();if(oldSync)saveSync();else try{localStorage.removeItem(SYNC_KEY)}catch{};setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。');return false}
   Object.assign(syncUi,{status:'idle',text:'',notice:'',confirm:''});
   refreshSyncTitleMeta();renderSyncDialog();await syncNow();
+  return true;
 }
-// 從 Google 導回 ?view=collection&code=...：立刻把網址上的 code 清掉，拿 sessionStorage 的 verifier 向自家伺服器換 token（verifier 用過即刪）。
+// 從 Google 導回 ?view=collection&code=...（或 error=...）：立刻把網址上的參數清掉，拿 sessionStorage 的 verifier 向自家伺服器換 token（verifier 用過即刪）。
 async function completeGoogleRedirect(){
   if(typeof location==='undefined'||!location.search)return false;
-  const params=new URLSearchParams(location.search),code=params.get('code');
-  if(!code)return false;
+  const params=new URLSearchParams(location.search),code=params.get('code'),oauthError=params.get('error'),oauthDesc=params.get('error_description');
+  if(!code&&!oauthError)return false;
   params.delete('code');params.delete('error');params.delete('error_description');
   const qs=params.toString(),cleanUrl=`${location.pathname}${qs?`?${qs}`:''}${location.hash||''}`;
   try{history.replaceState(history.state,'',cleanUrl)}catch{}
+  if(!code){
+    try{sessionStorage.removeItem(PKCE_KEY)}catch{}
+    setSyncNotice(oauthError==='access_denied'?'已取消 Google 登入，本機收藏不受影響。':`${oauthDesc||oauthError||'Google 登入失敗'}，本機收藏不受影響。`);
+    return false;
+  }
   let verifier='';
   try{verifier=sessionStorage.getItem(PKCE_KEY)||'';sessionStorage.removeItem(PKCE_KEY)}catch{}
   if(!verifier){setSyncNotice('登入驗證已過期，請再按一次「用 Google 登入」。');return false}
@@ -1388,8 +1413,7 @@ async function completeGoogleRedirect(){
     const response=await fetch('/api/auth/exchange',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,verifier}),cache:'no-store'});
     const payload=await response.json().catch(()=>null);
     if(!response.ok||!payload?.data?.accessToken){setSyncNotice((payload?.error||'Google 登入失敗')+'，本機收藏不受影響。');return false}
-    await enableGoogleSync(payload.data);
-    return true;
+    return await enableGoogleSync(payload.data);
   }catch{setSyncNotice('連不上登入服務，請確認網路後再試。');return false}
   finally{syncUi.authBusy=false}
 }
@@ -1438,7 +1462,7 @@ function syncEntries(){
 async function syncPost(action,body,google=Boolean(syncState?.google)){
   for(let attempt=0;;attempt++){
     const headers={'Content-Type':'application/json'};
-    if(google){const token=await authToken(attempt>0);if(!token)return{status:401,data:null,error:''};headers.Authorization=`Bearer ${token}`}
+    if(google){const token=await authToken(attempt>0);if(!token)return{status:authToken.lastStatus>=500?authToken.lastStatus:authToken.lastStatus===0?502:401,data:null,error:''};headers.Authorization=`Bearer ${token}`}
     const control=new AbortController(),timer=setTimeout(()=>control.abort(),15000),{code,...rest}=body||{};
     try{
       const response=await fetch(`/api/sync/${action}`,{method:'POST',headers,body:JSON.stringify(google?rest:body),signal:control.signal,cache:'no-store'});
@@ -1543,12 +1567,25 @@ async function startSync(codeText){
       for(const entry of pulled.data.items||[])known.add(entry?.id);
     }catch{return setSyncNotice('連不上同步服務，請確認網路後再試。')}
     finally{syncUi.joining=false}
+    const records=Object.create(null);
+    for(const item of collectionItems())records[item.id]=[syncSig(item),known.has(item.id)?0:now,0];
+    syncState={code,revision:0,dirty:true,records};
+    if(!saveSync()){syncState=null;return setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。')}
+    Object.assign(syncUi,{status:'idle',text:'',notice:'',confirm:''});refreshSyncTitleMeta();renderSyncDialog('#syncCode');syncNow();
+    return;
   }
-  const records=Object.create(null);
-  for(const item of collectionItems())records[item.id]=[syncSig(item),known.has(item.id)?0:now,0];
-  syncState={code,revision:0,dirty:true,records};
-  if(!saveSync()){syncState=null;return setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。')}
-  Object.assign(syncUi,{status:'idle',text:'',notice:'',confirm:''});refreshSyncTitleMeta();renderSyncDialog('#syncCode');syncNow();
+  syncUi.joining=true;setSyncNotice('正在建立雲端同步空間…');
+  try{
+    const records=Object.create(null),entries=[];
+    for(const item of collectionItems()){records[item.id]=[syncSig(item),now,0];entries.push({...item,updatedAt:syncIso(now)})}
+    const mark=syncUi.stamp,pushed=await syncPost('push',{code,items:entries.map(CS.normalizeSyncEntry).filter(Boolean),revision:0},false);
+    if(pushed.status!==200)return setSyncNotice(`${syncFailText(pushed)}，沒有開啟同步。`);
+    syncState={code,revision:pushed.data.revision,dirty:syncUi.stamp!==mark,records};
+    if(!saveSync()){syncState=null;return setSyncNotice('無法寫入瀏覽器儲存空間，沒有開啟同步。')}
+    syncUi.at=Date.now();Object.assign(syncUi,{status:'ok',text:'',notice:'',confirm:''});refreshSyncTitleMeta();renderSyncDialog('#syncCode');
+    if(syncState.dirty)syncSoon();
+  }catch{setSyncNotice('連不上同步服務，請確認網路後再試。')}
+  finally{syncUi.joining=false}
 }
 // 只清掉這台裝置上的同步碼與紀錄；雲端資料不動，收藏不動。
 function stopSync(notice){
@@ -1563,10 +1600,11 @@ function stopSync(notice){
 async function deleteCloud(){
   if(!syncState)return;
   if(syncUi.busy){syncUi.confirm='';renderSyncDialog('[data-sync-delete]');return setSyncNotice('正在同步中，請等它完成再刪除。')}
-  syncUi.busy=true;const {code,google}=syncState,token=google?authState?.accessToken||'':'';
+  syncUi.busy=true;const {code,google}=syncState;
   try{
     const done=await syncPost('delete',{code});
     if(done.status!==200)throw done;
+    const token=google?authState?.accessToken||'':'';
     stopSync('已刪除雲端資料，這台裝置也已停止同步；這台的收藏都還在。其他裝置下次同步時會發現雲端資料不見而停止同步。');
     if(token)try{await fetch('/api/auth/logout',{method:'POST',headers:{Authorization:`Bearer ${token}`},cache:'no-store'})}catch{}
   }catch(error){syncUi.confirm='';renderSyncDialog('[data-sync-delete]');setSyncNotice(`${syncFailText(error)}，雲端資料沒有刪除。`)}
@@ -1577,7 +1615,7 @@ const GOOGLE_G_ICON='<svg class="sync-google-icon" viewBox="0 0 24 24" width="20
 const SYNC_CHEVRON='<svg class="sync-chevron" viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 7.5 10 12.5 15 7.5"/></svg>';
 function syncDialogHtml(){
   const top='<div class="sync-top"><h2 id="syncTitle" tabindex="-1">雲端同步</h2><button type="button" class="sync-close" data-sync-close aria-label="關閉">×</button></div>';
-  if(!syncState)return `<div class="sync-box">${top}<div class="sync-hero"><p class="sync-lead"><span class="sync-line">登入後，手機與電腦<b>自動共用同一份收藏</b>，</span><span class="sync-line">現有收藏會<b>自動合併、不覆蓋</b>。</span></p><button type="button" class="sync-btn sync-google-btn" data-sync-google>${GOOGLE_G_ICON}<span>用 Google 登入，自動同步</span></button><ul class="sync-facts"><li><b>不寄信、不公開</b>，隨時可登出或刪除雲端資料</li><li><b>超過 180 天</b>未更新，雲端資料會自動清除</li></ul></div><details class="sync-alt"><summary><span>不想登入？改用同步碼</span>${SYNC_CHEVRON}</summary><div class="sync-alt-body"><p class="meta">免登入，<b>同步碼就是密碼</b>，請自行妥善記下。</p><button type="button" class="sync-btn" data-sync-start>開啟雲端同步（產生同步碼）</button><form class="sync-join" data-sync-join novalidate><label for="syncJoinCode">已有同步碼？輸入後加入</label><div class="sync-row"><input id="syncJoinCode" class="sync-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="80" placeholder="貼上 28 碼同步碼" aria-describedby="syncNotice"><button type="submit" class="sync-btn">加入</button></div></form></div></details><p class="sync-notice" id="syncNotice" role="status" aria-live="polite">${e(syncUi.notice)}</p></div>`;
+  if(!syncState)return `<div class="sync-box">${top}<div class="sync-hero"><p class="sync-lead"><span class="sync-line">登入後，手機與電腦<b>自動共用同一份收藏</b>，</span><span class="sync-line">現有收藏會<b>自動合併、不覆蓋</b>。</span></p><button type="button" class="sync-btn sync-google-btn" data-sync-google>${GOOGLE_G_ICON}<span>用 Google 登入，自動同步</span></button><ul class="sync-facts"><li><b>不寄信、不公開</b>，隨時可登出或刪除雲端資料</li><li><b>超過 180 天</b>未同步或更新，雲端資料會自動清除</li></ul></div><details class="sync-alt"><summary><span>不想登入？改用同步碼</span>${SYNC_CHEVRON}</summary><div class="sync-alt-body"><p class="meta">免登入，<b>同步碼就是密碼</b>，遺失無法重設或找回，請自行妥善記下。</p><button type="button" class="sync-btn" data-sync-start>開啟雲端同步（產生同步碼）</button><form class="sync-join" data-sync-join novalidate><label for="syncJoinCode">已有同步碼？輸入後加入</label><div class="sync-row"><input id="syncJoinCode" class="sync-input" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="80" placeholder="貼上 28 碼同步碼" aria-describedby="syncNotice"><button type="submit" class="sync-btn">加入</button></div></form></div></details><p class="sync-notice" id="syncNotice" role="status" aria-live="polite">${e(syncUi.notice)}</p></div>`;
   const isGoogle=Boolean(syncState.google),stop=syncUi.confirm==='stop';
   const confirm=syncUi.confirm?`<section class="sync-confirm" aria-labelledby="syncConfirmTitle"><h3 id="syncConfirmTitle" tabindex="-1">${stop?(isGoogle?'登出 Google 帳號？':'停止同步？'):'刪除雲端資料？'}</h3><p>${stop?(isGoogle?'這台裝置會停止同步，本機收藏不會刪；下次用同帳號登入即可接回。':'只會清掉這台裝置上的同步碼，雲端資料不會刪。重新加入需使用同一組同步碼。'):'會永久刪除雲端上的收藏，這台裝置也會停止同步（本機收藏不受影響）。'}</p><div class="sync-actions"><button type="button" class="sync-btn sync-danger" data-sync-confirm="${stop?'stop':'delete'}">${stop?(isGoogle?'登出':'停止同步'):'刪除雲端資料'}</button><button type="button" class="sync-btn" data-sync-cancel>取消</button></div></section>`:'';
   if(isGoogle){
@@ -1594,15 +1632,15 @@ function openSyncDialog(){
   let dialog=$('syncDialog');
   if(!dialog){
     dialog=document.createElement('dialog');dialog.id='syncDialog';dialog.className='sync-dialog';dialog.setAttribute('aria-labelledby','syncTitle');document.body.append(dialog);
-    dialog.addEventListener('close',()=>{syncUi.confirm='';$('collManageBtn')?.focus()});
+    dialog.addEventListener('close',()=>{syncUi.confirm='';syncUi.notice='';$('collManageBtn')?.focus()});
     dialog.addEventListener('keydown',event=>{if(event.key==='Escape')event.stopPropagation()}); // 只關這個對話框，不讓頁面上其他 Esc 處理（側板）一起動
   }
-  syncUi.confirm='';syncUi.notice='';renderSyncDialog();
+  syncUi.confirm='';renderSyncDialog();
   if(!dialog.open){if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','')}
   $('syncTitle')?.focus();
   syncIfStale();
 }
-function closeSyncDialog(){const dialog=$('syncDialog');if(!dialog?.open)return;if(typeof dialog.close==='function')dialog.close();else{dialog.removeAttribute('open');$('collManageBtn')?.focus()}}
+function closeSyncDialog(){const dialog=$('syncDialog');if(!dialog?.open)return;if(typeof dialog.close==='function')dialog.close();else{dialog.removeAttribute('open');syncUi.confirm='';syncUi.notice='';$('collManageBtn')?.focus()}}
 async function copySyncCode(){
   const code=CS.formatSyncCode(syncState?.code||'');if(!code)return;
   try{await navigator.clipboard.writeText(code);setSyncNotice('已複製同步碼。')}
@@ -1634,7 +1672,7 @@ document.addEventListener?.('click',onSyncClick);
 document.addEventListener?.('submit',onSyncSubmit);
 document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='visible')syncIfStale()});
 window.addEventListener?.('online',()=>syncIfStale(true));
-if(typeof location!=='undefined'&&/\bcode=/.test(location.search||''))completeGoogleRedirect();
+if(typeof location!=='undefined'&&/[?&](?:code|error)=/.test(location.search||''))completeGoogleRedirect();
 else if(syncState?.dirty)syncSoon();
 // ── 雲端同步結束 ──
 

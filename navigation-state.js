@@ -6,11 +6,25 @@
   const allowedSorts=new Set(['number-asc','number-desc','rarity-desc','rarity-asc','price-asc','price-desc','release-desc']);
   const allowedPrices=new Set(['all','priced','unpriced']);
   const SITE_VIEWS=['about','privacy','collection','market'];
-  let restoring=false;
+  let restoring=false,pendingSpaUrl=null;
 
   const node=id=>document.getElementById(id);
   const clean=value=>String(value||'').trim();
   const number=(value,fallback=0)=>{const parsed=Number(value);return Number.isFinite(parsed)&&parsed>=0?parsed:fallback};
+  function findHashTarget(hash=location.hash){
+    if(!hash||hash.length<2)return null;
+    try{return node(decodeURIComponent(hash.slice(1)))}catch{return null}
+  }
+  function scrollToTarget(target){
+    if(!target)return;
+    if(window.scrollBelowHeader)window.scrollBelowHeader(target);
+    else target.scrollIntoView?.();
+  }
+  function focusTarget(el){
+    if(!el?.focus)return;
+    if(el.getAttribute?.('tabindex')==null)el.tabIndex=-1;
+    el.focus({preventScroll:true});
+  }
   const activeCardId=()=>{
     try{return typeof activeDetailCardId!=='undefined'?activeDetailCardId:window.activeDetailCardId}
     catch{return window.activeDetailCardId}
@@ -160,10 +174,16 @@
       if(state.query&&typeof window.search==='function')await window.search();
       if(state.card&&typeof originalOpenCard==='function'){if(earlyCard)await earlyCard;else{await originalOpenCard(state.card);installDetailShare()}}
       else closeDetail();
-      if(landOnSeries)requestAnimationFrame(()=>window.scrollBelowHeader?.(node('cardsTitle')));
-      else if(!landOnResults)requestAnimationFrame(()=>window.scrollTo({top:state.scrollY,behavior:'auto'}));
+      const hashEl=!state.scrollY&&history.state?.scrollY==null&&!landOnSeries&&!landOnResults&&location.hash?findHashTarget(location.hash):null;
+      if(!pendingSpaUrl){
+        if(landOnSeries)requestAnimationFrame(()=>window.scrollBelowHeader?.(node('cardsTitle')));
+        else if(hashEl)requestAnimationFrame(()=>{scrollToTarget(hashEl);if(!state.card)focusTarget(hashEl)});
+        else if(!landOnResults)requestAnimationFrame(()=>window.scrollTo({top:state.scrollY,behavior:'auto'}));
+      }
     }finally{
       window.cardscopeKeepScroll=false;restoring=false;writeUrl('replace',{card:state.card||''});
+      const nextSpa=pendingSpaUrl;
+      if(nextSpa){pendingSpaUrl=null;await navigateSpa(nextSpa)}
     }
   }
 
@@ -183,16 +203,20 @@
   // index.html announces a browse view the page picked (newest series) or the user chose (series tile, 全部卡片), and searches it started itself (example chips, cancelled conditions).
   document.addEventListener('cardscope:browse',event=>{if(!restoring)writeUrl(event.detail?.push?'push':'replace',{pages:1,query:''})});
   document.addEventListener('cardscope:search',event=>{if(!restoring)writeUrl('push',{query:event.detail?.q||'',pages:1})});
+  function navigateSpa(url){
+    saveScroll();if(node('modal')?.classList.contains('open'))closeDetail();
+    history.pushState({},'',url.pathname+url.search+url.hash);
+    // restore() 結束前排了一個 rAF 把捲動拉回 scrollY；錨點的捲動排在它後面
+    return restore(readLocation()).then(()=>requestAnimationFrame(()=>{const target=findHashTarget(url.hash);if(target)scrollToTarget(target);/* 焦點跟著移到新內容（錨點目標或主內容），不留在已關掉的詳細頁或被重畫掉的節點上 */focusTarget(target||node('main'))}));
+  }
   // 站內連結（頁尾、麵包屑；標記 data-spa）：不整頁重載，存下捲動位置後 pushState 再依新網址還原。詳細頁開著時先關掉（不用 history.back，新網址是新的一步）。帶修飾鍵、非左鍵、別的網域照瀏覽器預設。
   document.addEventListener('click',event=>{
     const link=event.target.closest?.('a[data-spa]');
     if(!link||event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     const url=new URL(link.getAttribute('href'),location.href);if(url.origin!==location.origin)return;
-    event.preventDefault();if(restoring)return;
-    saveScroll();if(node('modal')?.classList.contains('open'))closeDetail();
-    history.pushState({},'',url.pathname+url.search+url.hash);
-    // restore() 結束前排了一個 rAF 把捲動拉回 scrollY；錨點的捲動排在它後面
-    restore(readLocation()).then(()=>requestAnimationFrame(()=>{const target=url.hash&&document.getElementById(decodeURIComponent(url.hash.slice(1)));if(target)window.scrollBelowHeader?window.scrollBelowHeader(target):target.scrollIntoView();/* 焦點跟著移到新內容（錨點目標或主內容），不留在已關掉的詳細頁或被重畫掉的節點上 */const focusTo=target||node('main');if(focusTo?.focus){if(focusTo.getAttribute?.('tabindex')==null)focusTo.tabIndex=-1;focusTo.focus({preventScroll:true})}}));
+    event.preventDefault();
+    if(restoring){pendingSpaUrl=url;return}
+    navigateSpa(url);
   });
   // 頂欄、底部導覽的「我的收藏」：不整頁重載，pushState 後依新網址還原（上一頁回到原本那頁）。已經在該頁就只回到頁首。
   window.openView=view=>{

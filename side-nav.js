@@ -118,6 +118,12 @@
   function refreshContext(){
     const label=$('sideSheetCtx');if(!label)return;
     if(body.dataset.view==='collection'){label.textContent=scope.collectionFilterLabel?.()||'全部收藏';const head=doc.querySelector('.side-sheet-label');if(head)head.textContent='篩選收藏';return}
+    if(body.dataset.side==='results'){
+      const head=doc.querySelector('.side-sheet-label');if(head)head.textContent='篩選結果';
+      const q=$('q')?.value?.trim(),select=$('browseRegion'),region=select&&select.value!=='all'?select.selectedOptions?.[0]?.textContent:'',game=(scope.CARD_GAMES||[]).find(item=>item.id===body.dataset.game);
+      label.textContent=[q?`「${q}」`:'',game?.name,region].filter(Boolean).join('・')||'搜尋結果';
+      return;
+    }
     const head=doc.querySelector('.side-sheet-label');if(head)head.textContent='選系列';
     const game=(scope.CARD_GAMES||[]).find(item=>item.id===body.dataset.game),select=$('browseRegion'),region=select&&select.value!=='all'?select.selectedOptions?.[0]?.textContent:'',title=$('selectedProduct')?.querySelector('h2')?.textContent;
     label.textContent=[game?.name,region,title].filter(Boolean).join('・');

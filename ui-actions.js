@@ -13,8 +13,11 @@
   window.infoTip=(label,body,cls='')=>`<details class="info-tip${cls?' '+cls:''}"><summary aria-label="說明：${String(label).replace(/[&<>"']/g,ch=>'&#'+ch.charCodeAt(0)+';')}"><span aria-hidden="true">ⓘ</span></summary><div class="info-body">${body}</div></details>`;
   document.addEventListener('toggle',event=>{
     const tip=event.target;if(!tip.matches?.('details.info-tip')||!tip.open)return;
-    const body=tip.querySelector('.info-body');body.style.left='';const box=body.getBoundingClientRect();
-    body.style.left=Math.max(8-box.left,Math.min(0,innerWidth-8-box.right))+'px';
+    const body=tip.querySelector('.info-body');if(!body)return;
+    body.style.left='';body.style.right='';
+    const box=body.getBoundingClientRect();
+    const delta=Math.max(8-box.left,Math.min(0,innerWidth-8-box.right));
+    if(delta!==0){body.style.left=((body.offsetLeft||0)+delta)+'px';body.style.right='auto'}
   },true);
   document.addEventListener('click',event=>{for(const tip of document.querySelectorAll('details.info-tip[open]'))if(!tip.contains(event.target))tip.open=false});
   // 捕獲階段先處理：開著說明時第一次 Esc 只關說明（不連帶關掉後面的詳細視窗），焦點回到 ⓘ。
@@ -28,10 +31,11 @@
     'swap-hidden':img=>{img.hidden=true;img.nextElementSibling.hidden=false},
     // 官方站偶爾單次載入失敗：先隔 1.5 秒重試一次，仍失敗才改成代碼磚。
     'retry-type':img=>{
-      if(!img.dataset.retried){img.dataset.retried='1';const src=img.src;setTimeout(()=>{img.src=src+(src.includes('?')?'&':'?')+'retry=1'},1500);return}
+      if(!img.dataset.retried){img.dataset.retried='1';if(img.style)img.style.visibility='hidden';const src=img.src;setTimeout(()=>{img.src=src+(src.includes('?')?'&':'?')+'retry=1'},1500);return}
       img.parentElement.classList.add('is-type');img.remove();
     }
   };
-  // error does not bubble, but a capture listener on document still sees it.
+  // error and load do not bubble, but capture listeners on document still see them.
   document.addEventListener('error',event=>{const kind=event.target?.dataset?.imgError;if(Object.hasOwn(FAILED,kind??''))FAILED[kind](event.target)},true);
+  document.addEventListener('load',event=>{if(event.target?.dataset?.imgError==='retry-type'&&event.target.style)event.target.style.visibility=''},true);
 })();

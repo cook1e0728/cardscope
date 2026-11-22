@@ -51,3 +51,30 @@ test('the rules that moved into ⓘ are still reachable: movers source/time/scop
   assert.match(html,/function setFilterSummary\(text\)\{[^}]*priceScopeNote\(\)/,'the price-scope text (and referenceSortHint side effects) still runs on every render');
   assert.doesNotMatch(html,/<span>一次搜全部遊戲；可先選日版／台版縮小範圍<\/span>/);
 });
+
+test('toggle leaves CSS right alignment intact when delta===0 and shifts left/right on viewport overflow', () => {
+  const { listeners, fire } = setup();
+  assert.ok(listeners.filter(l => l.type === 'toggle').every(l => l.capture), 'toggle does not bubble: needs capture');
+  const makeTip = (rect, offsetLeft = 0) => {
+    const body = { style: { left: '12px', right: '12px' }, offsetLeft, getBoundingClientRect: () => rect };
+    return { body, tip: { open: true, matches: sel => sel === 'details.info-tip', querySelector: () => body } };
+  };
+
+  // delta === 0 (right-aligned inside innerWidth=375): must clear left/right and not write left='0px'
+  const rightAligned = makeTip({ left: 20, right: 360 }, -316);
+  fire('toggle', { target: rightAligned.tip });
+  assert.equal(rightAligned.body.style.left, '');
+  assert.equal(rightAligned.body.style.right, '');
+
+  // overflows right edge: box.right 400 > 375 - 8 (367) => delta = -33
+  const overflowRight = makeTip({ left: 100, right: 400 }, 0);
+  fire('toggle', { target: overflowRight.tip });
+  assert.equal(overflowRight.body.style.left, '-33px');
+  assert.equal(overflowRight.body.style.right, 'auto');
+
+  // overflows left edge: box.left -20 < 8 => delta = +28 from offsetLeft=-316 => -288px
+  const overflowLeft = makeTip({ left: -20, right: 340 }, -316);
+  fire('toggle', { target: overflowLeft.tip });
+  assert.equal(overflowLeft.body.style.left, '-288px');
+  assert.equal(overflowLeft.body.style.right, 'auto');
+});
