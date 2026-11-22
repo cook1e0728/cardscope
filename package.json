@@ -8,7 +8,11 @@
     "plan:pokemon-enrichment": "node scripts/plan-pokemon-enrichment.mjs",
     "catalog:gaps": "node scripts/build-series-gap-manifest.mjs",
     "catalog:enrich:pokemon": "node scripts/run-pokemon-enrichment.mjs",
+    "worker:prepare": "node scripts/prepare-worker-assets.mjs",
     "check": "node -e \"const{execFileSync:x}=require('child_process');for(const p of x('git',['ls-files','*.js','*.mjs'],{encoding:'utf8'}).split(/\\r?\\n/))if(p&&!p.startsWith('docs/'))x('node',['--check',p],{stdio:'inherit'})\"",
     "test": "node --test"
+  },
+  "devDependencies": {
+    "wrangler": "^4.166.0"
   }
 }

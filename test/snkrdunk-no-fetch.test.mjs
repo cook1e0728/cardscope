@@ -5,12 +5,15 @@ import vm from 'node:vm';
 
 // SNKRDUNK 的規約禁止擷取、我們也還沒拿到書面授權：站上只能有一個瀏覽器端組出來的外連網址，任何程式都不可以對它發請求。
 const root = new URL('../', import.meta.url);
-const SKIP_DIRS = new Set(['node_modules', 'docs', 'test', '.git', '.claude']);
+const SKIP_DIRS = new Set(['node_modules', 'docs', 'test', '.git', '.claude', '.wrangler']);
 const ONLY_URL_BUILDER = 'price-timeline.js';
 
 async function* sourceFiles(dir = root, prefix = '') {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
-    if (entry.isDirectory()) { if (!SKIP_DIRS.has(entry.name)) yield* sourceFiles(new URL(`${entry.name}/`, dir), `${prefix}${entry.name}/`); }
+    if (entry.isDirectory()) {
+      const nextPrefix = `${prefix}${entry.name}/`;
+      if (!SKIP_DIRS.has(entry.name) && nextPrefix !== 'worker/public/') yield* sourceFiles(new URL(`${entry.name}/`, dir), nextPrefix);
+    }
     else if (/\.(m?js)$/.test(entry.name)) yield { path: `${prefix}${entry.name}`, text: await readFile(new URL(entry.name, dir), 'utf8') };
   }
 }

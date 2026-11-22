@@ -96,9 +96,12 @@ test('P3: the graded block is titled as eBay graded sales (never just sales), an
   assert.match(down.innerHTML, /暫時讀不到/);
 });
 
+import { buildPageCsp } from '../providers/http-security.mjs';
+
 test('the CSP lets the listing thumbnails load from eBay and nothing else new', async () => {
   const server = await readFile(new URL('../server.mjs', import.meta.url), 'utf8');
-  const img = server.match(/img-src ([^;]*);/)[1];
+  assert.ok(server.includes("from './providers/http-security.mjs'") && server.includes('buildPageCsp'));
+  const img = buildPageCsp([]).match(/img-src ([^;]*);/)[1];
   assert.match(img, /https:\/\/i\.ebayimg\.com(\s|$)/);
   assert.doesNotMatch(img, /\*\.ebayimg|\*\.ebay\.com|ebaystatic/);
 });

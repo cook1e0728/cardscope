@@ -1,0 +1,31 @@
+name = "cardseek"
+main = "worker/index.mjs"
+compatibility_date = "2026-11-01"
+
+[build]
+command = "node scripts/prepare-worker-assets.mjs"
+
+[assets]
+directory = "./worker/public"
+binding = "ASSETS"
+html_handling = "none"
+not_found_handling = "none"
+run_worker_first = [
+  "/",
+  "/index.html",
+  "/api/*",
+  "/sitemap.xml",
+  "/sitemaps/*",
+  "/robots.txt",
+  "/.well-known/*"
+]
+
+[vars]
+ORIGIN_URL = "https://cardscope.onrender.com"
+PUBLIC_BASE_URL = "https://cardseektcg.com"
+
+# 正式網域路由綁定（請由使用者確認 *.workers.dev 預覽與 Render CANONICAL_REDIRECT=false 後再啟用）：
+# routes = [
+#   { pattern = "cardseektcg.com/*", zone_name = "cardseektcg.com" },
+#   { pattern = "www.cardseektcg.com/*", zone_name = "cardseektcg.com" }
+# ]

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFile, access } from 'node:fs/promises';
 import vm from 'node:vm';
 
+import { PUBLIC_STATIC } from '../providers/http-security.mjs';
+
 // PWA: installable manifest + network-first shell service worker that never touches /api or third-party images.
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const [manifestText, sw, server] = await Promise.all(['manifest.webmanifest', 'sw.js', 'server.mjs'].map(read));
@@ -22,8 +24,8 @@ test('manifest has the install fields and real icon files', async () => {
 });
 
 test('server serves the manifest with its own content type', () => {
-  const pattern = new RegExp(/const PUBLIC_STATIC=\/(.*)\/;/.exec(server)[1]);
-  assert.ok(pattern.test('/manifest.webmanifest') && pattern.test('/sw.js') && pattern.test('/assets/brand/web/pwa-icon-192.png'));
+  assert.ok(server.includes("from './providers/http-security.mjs'") && server.includes('PUBLIC_STATIC'));
+  assert.ok(PUBLIC_STATIC.test('/manifest.webmanifest') && PUBLIC_STATIC.test('/sw.js') && PUBLIC_STATIC.test('/assets/brand/web/pwa-icon-192.png'));
   assert.match(server, /'\.webmanifest':'application\/manifest\+json'/);
 });
 

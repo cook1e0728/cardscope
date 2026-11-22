@@ -27,6 +27,7 @@ import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
 import './collection-store.js'; // 瀏覽器與伺服器共用的收藏驗證與合併規則（掛在 globalThis.CollectionStore）
 import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo } from './providers/seo.mjs';
+import { API_CSP, NOT_FOUND_HTML, PUBLIC_STATIC, REVALIDATE_EXTENSIONS, SECURITY_HEADERS, buildPageCsp, inlineScripts, mergeVaryHeader, renderSecurityTxt, seoRequestTarget } from './providers/http-security.mjs';
 
 const nativeFetch = globalThis.fetch;
 const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
@@ -73,8 +74,7 @@ const TREND_CACHE_MS = 5 * 60 * 1000;
 const trendCache = {data:null,expiresAt:0,promise:null};
 
 const types = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.xml':'application/xml; charset=utf-8','.txt':'text/plain; charset=utf-8','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp','.webmanifest':'application/manifest+json'};
-// 只公開前端需要的檔案：根目錄的 .js／.css／index.html、assets/、前端讀的兩個 data 檔；server.mjs、providers、docs 等一律 404。
-const PUBLIC_STATIC=/^\/(?:[a-z0-9-]+\.(?:js|css)|manifest\.webmanifest|index\.html|googlefb9a9f93e94c056f\.html|assets\/(?:[\w.-]+\/)*[\w.-]+\.(?:png|jpe?g|webp|svg|ico|woff2?)|data\/(?:rarity-rankings|game-taxonomy)\.json)$/;
+// 公開白名單與安全標頭、CSP、404 頁面改由 providers/http-security.mjs 統一產生（Node 與 Worker 共用）。
 // 內容雜湊 ETag：靜態頁與 SEO 頁共用，If-None-Match 對得上就回 304。
 const etagHash=content=>createHash('sha1').update(content).digest('hex');
 const etagOf=content=>`"${etagHash(content)}"`,etagMatches=(req,etag)=>String(req.headers['if-none-match']||'').split(',').some(value=>value.trim().replace(/^W\//,'')===etag);
@@ -109,11 +109,6 @@ function setCachedCompressed(key,buf){
 }
 const compressBuffer=(buf,encoding)=>encoding==='br'?brotliCompressSync(buf,BROTLI_OPTIONS):gzipSync(buf);
 const requestOfResponse=new WeakMap();
-function mergeVaryHeader(existing,token='Accept-Encoding'){
-  const list=String(existing||'').split(',').map(v=>v.trim()).filter(Boolean);
-  if(!list.some(v=>v.toLowerCase()===token.toLowerCase()))list.push(token);
-  return list.join(', ');
-}
 function sendResponse(res,status,body,headers={},{etag=false,cacheCompressed=false}={}){
   const req=requestOfResponse.get(res),buf=Buffer.isBuffer(body)?body:Buffer.from(body??'','utf8'),outHeaders={};
   let contentType='',hasContentEncoding=false,varyKey=null;
@@ -147,19 +142,16 @@ function sendResponse(res,status,body,headers={},{etag=false,cacheCompressed=fal
   res.writeHead(status,outHeaders);
   res.end(req?.method==='HEAD'?undefined:outBuf);
 }
-const SECURITY_HEADERS={'X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin','X-Frame-Options':'SAMEORIGIN','Strict-Transport-Security':'max-age=15552000','Permissions-Policy':'camera=(), microphone=(), geolocation=(), gyroscope=(self), accelerometer=(self)','Cross-Origin-Opener-Policy':'same-origin'};
 // 感測器留給自己：look-effects.js 的手機傾斜卡片要讀 device orientation／motion。
 // 強制：script-src 只允許同源 .js 與 index.html 內 inline <script> 的 SHA-256（啟動時由檔案算出，不用 nonce：nonce 會與 ETag 304、service worker 快取的舊頁對不上）；沒有 unsafe-inline、也沒有 inline 事件屬性（script-src-attr 'none'，改用 ui-actions.js 的事件委派）。擋的是外部腳本、未列出的圖片主機、被嵌入框架。新增卡圖來源時要把主機加進 img-src，否則圖片會被擋；改 index.html 的 inline script 不必動這裡，重啟即重算。
-const inlineScripts=html=>[...html.matchAll(/<script(?![^>]*\s(?:src|type)=)[^>]*>([\s\S]*?)<\/script>/g)].map(match=>match[1]);
 const INLINE_SCRIPT_SOURCES=(()=>{try{return inlineScripts(readFileSync(join(root,'index.html'),'utf8')).map(code=>`'sha256-${createHash('sha256').update(code).digest('base64')}'`)}catch{return[]}})();
-const CSP=`default-src 'self'; script-src 'self' ${INLINE_SCRIPT_SOURCES.join(' ')}; script-src-attr 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://www.pokemon-card.com https://asia.pokemon-card.com https://images.pokemontcg.io https://*.supabase.co https://*.onepiece-cardgame.com https://assets.tcgdex.net https://images.ygoprodeck.com https://images.scrydex.com https://ws-tcg.com https://en.ws-tcg.com https://www.takaratomy.co.jp https://www.dbs-cardgame.com https://www.unionarena-tcg.com https://www.db.yugioh-card.com https://product-images.tcgplayer.com https://i.ebayimg.com; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; form-action 'self'`;
-const API_CSP="default-src 'none'";
+const CSP=buildPageCsp(INLINE_SCRIPT_SOURCES);
 // 目錄類回應每份 1–3 MB：讓瀏覽器 1 分鐘內重用、5 分鐘內先用舊的再背景更新，免得每次換頁重抓。
 const SHORT_CACHE={'Cache-Control':'public, max-age=60, stale-while-revalidate=300'};
 const json = (res,status,body,headers={})=>sendResponse(res,status,JSON.stringify(body),{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers});
 // 公開回應不帶底層錯誤原文（supabaseFetch 的訊息含 PostgREST 回應，會露出表／欄位／函式名）：原文只進日誌，回應給固定訊息或代碼。
 // 瀏覽器導覽到不存在的路徑給簡單的繁中 404 頁（可回首頁）；/api/ 仍回 JSON，程式端才解析得了。
-const NOT_FOUND_HTML='<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>找不到頁面｜CardSeek</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#efeae0;color:#171717;font:16px/1.6 system-ui,"Noto Sans TC",sans-serif;text-align:center}main{padding:24px}h1{margin:0 0 8px;font-size:24px}a{display:inline-block;margin-top:16px;padding:10px 22px;border-radius:8px;background:#171717;color:#fff;text-decoration:none}</style></head><body><main><h1>找不到這個頁面</h1><p>網址可能打錯了，或這個頁面已經移除。</p><a href="/">回 CardSeek 首頁</a></main></body></html>',notFound=(res,pathname)=>{if(pathname.startsWith('/api/'))return json(res,404,{error:'Not found'});return sendResponse(res,404,NOT_FOUND_HTML,{'Content-Type':types['.html'],'Cache-Control':'no-store'})};
+const notFound=(res,pathname)=>{if(pathname.startsWith('/api/'))return json(res,404,{error:'Not found'});return sendResponse(res,404,NOT_FOUND_HTML,{'Content-Type':types['.html'],'Cache-Control':'no-store'})};
 const UPSTREAM_ERROR='UPSTREAM_UNAVAILABLE',failJson=(res,status,label,error,headers)=>{console.error(label,error?.message||error);return json(res,status,{error:'資料暫時無法讀取'},headers)},publicReason=(label,error)=>{console.error(label,error?.message||error);return UPSTREAM_ERROR};
 
 const ONEPIECE_IMAGE_MAX_BYTES=5*1024*1024;
@@ -1546,8 +1538,7 @@ const SITEMAP_TTL_MS=24*60*60*1000,SITEMAP_PAGE_SIZE=1000,SITEMAP_URLS_PER_FILE=
 const withTimeout=(promise,ms)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('SEO_TIMEOUT')),ms);promise.then(value=>{clearTimeout(timer);resolve(value)},error=>{clearTimeout(timer);reject(error)})});
 function seoCacheGet(key){const hit=seoCache.get(key);if(hit&&hit.expiresAt>Date.now())return hit.value;seoCache.delete(key);return undefined}
 function seoCacheSet(key,value,ttlMs){seoCache.delete(key);seoCache.set(key,{value,expiresAt:Date.now()+ttlMs});while(seoCache.size>SEO_CACHE_MAX)seoCache.delete(seoCache.keys().next().value)}
-const SEO_ID_PATTERN=/^[\w:.\-/]{1,128}$/;
-function seoRequestTarget(url){const clean=value=>{const text=String(value||'').trim();return SEO_ID_PATTERN.test(text)?text:null},card=clean(url.searchParams.get('card'));if(card)return {kind:'card',id:card};const series=clean(url.searchParams.get('series'));return series?{kind:'series',id:series}:null}
+// SEO_ID_PATTERN 與 seoRequestTarget 由 providers/http-security.mjs 匯入。
 async function loadSeoForCard(cardId){
   const loaded=supabaseConfigured()?await loadCardCached(cardId):await getCard(cardId);if(!loaded?.card)return null;
   const {catalog,card}=loaded,seriesId=card.printings?.[0]?.seriesId||card.seriesId,series=(catalog.series||[]).find(s=>s.id===seriesId)||null,game=(catalog.games||[]).find(g=>g.id===card.game)||null;
@@ -1751,7 +1742,7 @@ const handleRequest=async(req,res)=>{
   if(url.pathname==='/api/admin/price-snapshot/stop'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});return json(res,200,{data:priceSnapshot.stop()})}
   if(url.pathname==='/api/admin/catalog/sync'&&req.method==='POST'){if(!adminAuthorized(req))return json(res,401,{error:'未授權；管理密鑰不可放在網址'});if(!supabaseConfigured())return json(res,503,{error:'尚未設定資料庫'});const requested=(url.searchParams.get('provider')||'all').toLowerCase(),aliases={pokemontw:'pokemonZhTw',pokemonzh:'pokemonZhTw',weissfrieren:'weissFrieren',frieren:'weissFrieren',dragonball:'dragonballFw',dbs:'dragonballFw',yugiohjp:'yugiohJp',neuron:'yugiohJp'},selected=aliases[requested]||requested,tcgdexTw=process.env.TCGDEX_TW_SYNC==='true',candidates=requested==='all'?['pokemon',...(tcgdexTw?['pokemonZhTw']:[]),'onepiece','yugioh','haikyuu','weissFrieren','dragonballFw','yugiohJp']:[selected];if(candidates.some(p=>!['pokemon','pokemonZhTw','onepiece','yugioh','haikyuu','weissFrieren','dragonballFw','yugiohJp'].includes(p)))return json(res,400,{error:'不支援的 provider'});if(candidates.includes('pokemonZhTw')&&!tcgdexTw)return json(res,409,{error:'TCGdex 台版同步會覆寫台灣官方補正的資料，需設定 TCGDEX_TW_SYNC=true 才能執行'});const providers=filterAllowedCatalogProviders(candidates),blocked=candidates.filter(provider=>!providers.includes(provider));if(!providers.length)return json(res,409,{error:'所選來源尚未通過來源政策',blocked});syncCatalog(supabaseFetch,{providers}).then(result=>console.log('catalog sync complete',JSON.stringify(result))).catch(error=>console.error('catalog sync failed',error));return json(res,202,{data:{message:'Catalog 同步已在背景開始',providers,blocked}})}
   // 聯絡信箱：SITE_IMPROVEMENT_PLAN 決定 5（2026-11-12 使用者開設）。
-  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/.well-known/security.txt')return sendResponse(res,200,`Contact: mailto:contact@cardseektcg.com\nExpires: ${new Date(Date.now()+365*86400000).toISOString()}\nPreferred-Languages: zh-TW, en\nCanonical: ${PUBLIC_BASE_URL}/.well-known/security.txt\n`,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});
+  if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/.well-known/security.txt')return sendResponse(res,200,renderSecurityTxt(PUBLIC_BASE_URL),{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});
   if((req.method==='GET'||req.method==='HEAD')&&url.pathname==='/robots.txt')return sendResponse(res,200,renderRobotsTxt(PUBLIC_BASE_URL),{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600'});
   if((req.method==='GET'||req.method==='HEAD')&&(url.pathname==='/sitemap.xml'||/^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname)))return serveSitemap(res,url.pathname);
   if(req.method==='GET'&&url.pathname==='/')pageStats.record(url.searchParams,req.headers['user-agent'],req.headers['sec-fetch-dest']);
@@ -1761,7 +1752,7 @@ const handleRequest=async(req,res)=>{
     // ?view=about／privacy 有自己的標題與 canonical；其他 view 值維持原樣。
     seo=url.pathname!=='/'?null:url.searchParams.has('view')?viewSeo({view:url.searchParams.get('view'),baseUrl:PUBLIC_BASE_URL}):homeSeo({gameId:CATALOG_GAME_IDS.has(game)?game:'',baseUrl:PUBLIC_BASE_URL}),content=seo?applySeoToHtml(raw.toString('utf8'),seo):raw,headers={'Content-Type':types[ext]||'application/octet-stream'};
     // html/js/css: always revalidate (no-cache) with a content ETag, so a deploy reaches browsers at once and an unchanged file is a 304. Images keep their existing handling.
-    const revalidate=['.html','.js','.css','.webmanifest'].includes(ext);
+    const revalidate=REVALIDATE_EXTENSIONS.has(ext);
     if(revalidate)headers['Cache-Control']='no-cache';
     return sendResponse(res,200,content,headers,{etag:revalidate,cacheCompressed:true})}catch{notFound(res,url.pathname)}
 };
