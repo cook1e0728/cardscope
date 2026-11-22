@@ -867,10 +867,13 @@ function adminAuthorized(req){
   return safeTokenEqual(token,process.env.SCRAPE_SECRET);
 }
 function trustedCfIp(req){
+  const secret=process.env.ORIGIN_VERIFY_SECRET,verified=Boolean(secret)&&safeTokenEqual(req.headers['x-origin-verify'],secret);
+  // 經 Worker 代理時 cf-connecting-ip 是 Worker 出口 IP；帶對密鑰的 x-client-ip 才是真實訪客。
+  const forwarded=req.headers['x-client-ip'];
+  if(verified&&typeof forwarded==='string'&&forwarded.trim())return forwarded.trim();
   const cf=req.headers['cf-connecting-ip'];
   if(typeof cf!=='string'||!cf.trim())return null;
-  const secret=process.env.ORIGIN_VERIFY_SECRET;
-  if(secret&&!safeTokenEqual(req.headers['x-origin-verify'],secret))return null;
+  if(secret&&!verified)return null;
   return cf.trim();
 }
 // 公開 API 每個 IP 每分鐘的上限；卡圖一頁就有幾十張，另算一個寬鬆的額度；SEO 動態查庫與低配額外部價格端點各自獨立收緊。

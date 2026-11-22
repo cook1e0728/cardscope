@@ -281,6 +281,10 @@ test('ORIGIN_VERIFY_SECRET guards cf-connecting-ip against spoofing',async()=>{
     assert.equal(await hit({'cf-connecting-ip':'198.51.100.10','x-origin-verify':'edge-shared-secret'}),200);
     assert.equal(await hit({'cf-connecting-ip':'198.51.100.10','x-origin-verify':'edge-shared-secret'}),429);
     assert.equal(await hit({'cf-connecting-ip':'198.51.100.11','x-origin-verify':'edge-shared-secret'}),200);
+    // Via the Worker: cf-connecting-ip is the Worker egress; verified x-client-ip is the visitor. Unverified x-client-ip is ignored.
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.11','x-client-ip':'203.0.113.20','x-origin-verify':'edge-shared-secret'}),200);
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.11','x-client-ip':'203.0.113.21','x-origin-verify':'edge-shared-secret'}),200);
+    assert.equal(await hit({'cf-connecting-ip':'198.51.100.12','x-client-ip':'203.0.113.22'}),429);
   });
 });
 

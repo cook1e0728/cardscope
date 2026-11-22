@@ -365,7 +365,7 @@ test('worker serves static SEO pages, ETag 304, HEAD, robots.txt, security.txt a
   }
 });
 
-test('worker proxies /api/*, /sitemap*, and DB-backed SEO pages to origin with cf-connecting-ip and ORIGIN_VERIFY_SECRET', async () => {
+test('worker proxies /api/*, /sitemap*, and DB-backed SEO pages to origin with x-client-ip and ORIGIN_VERIFY_SECRET', async () => {
   assert.equal(resolveOriginUrl(undefined), DEFAULT_ORIGIN_URL);
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'https://origin.example.test/ignored/path' }), 'https://origin.example.test');
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'javascript:alert(1)' }), DEFAULT_ORIGIN_URL);
@@ -374,6 +374,7 @@ test('worker proxies /api/*, /sitemap*, and DB-backed SEO pages to origin with c
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST'), 'api');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemap.xml'), 'GET'), 'sitemap');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/cards-1.xml'), 'HEAD'), 'sitemap');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/../server.mjs'), 'GET'), null);
   assert.equal(shouldProxyToOrigin(new URL('https://x/?card=pokemon-a'), 'GET'), 'seo-db');
   assert.equal(shouldProxyToOrigin(new URL('https://x/?series=pokemon-s1'), 'HEAD'), 'seo-db');
   assert.equal(shouldProxyToOrigin(new URL('https://x/?game=pokemon'), 'GET'), null);
@@ -424,7 +425,8 @@ test('worker proxies /api/*, /sitemap*, and DB-backed SEO pages to origin with c
   assert.equal(seen[0].target, 'https://render-origin.example.test/api/sync/push?v=1');
   assert.equal(seen[0].method, 'POST');
   assert.equal(seen[0].redirect, 'manual');
-  assert.equal(seen[0].headers.get('cf-connecting-ip'), '203.0.113.5');
+  assert.equal(seen[0].headers.get('x-client-ip'), '203.0.113.5');
+  assert.equal(seen[0].headers.get('cf-connecting-ip'), null, 'Render 前的 Cloudflare 會覆寫 cf-connecting-ip，不轉送');
   assert.equal(seen[0].headers.get('x-origin-verify'), 'shared-edge-secret');
   assert.equal(seen[0].headers.get('cf-ray'), null);
   assert.equal(seen[0].headers.get('authorization'), 'Bearer test-jwt');

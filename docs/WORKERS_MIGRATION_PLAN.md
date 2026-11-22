@@ -198,3 +198,11 @@
   - 於 GitHub Repository Settings → Secrets 設定背景同步與快照工作流所需金鑰。
 - **第 3 步（停用 Render）**：
   - 確認 UptimeRobot 與監控穩定、Render 零真實流量後，手動於 Render Dashboard Suspend / Delete 服務，並批准更新隱私說明頁文案。
+
+## 第二意見審核修正（2026-11-23，gemini-4-neon-medium 審、Claude 核對）
+- **已修（高）訪客 IP**：Render 也在 Cloudflare 後面，Worker 轉送的 `cf-connecting-ip` 會被改成 Worker 出口 IP，限流會變全站共用。改為 Worker 只在設了 `ORIGIN_VERIFY_SECRET` 時送 `x-client-ip`，`server.mjs` 驗過密鑰才採信。**上線第 1 步前 Render 與 Worker 都必須設同一個 `ORIGIN_VERIFY_SECRET`**，否則所有經 Worker 的訪客共用一組限流額度。
+- **已修（中）代理逾時**：SEO 查庫 1.5 秒、其餘 30 秒，逾時降級為靜態首頁或 502。
+- **已修（低）**`/sitemaps/*` 只代理 `pages|series|cards-N.xml`。
+- **第 2 步前要處理（中）**：Worker 打包上限（免費 3 MiB 壓縮後）與啟動時間；大型 `data/*.json` 不要 import 進 bundle，改放 Static Assets 或 KV。
+- **第 2 步前要處理（中）**：Cache API 在 `*.workers.dev` 預覽網域不生效，快取命中只能在正式網域驗證。
+- **第 2D 步前要處理（中）**：pageStats／cardHot 若每次瀏覽都打 Durable Object，會吃每日請求額度；要先在 Worker 端批次合併或抽樣，並設超額降級。

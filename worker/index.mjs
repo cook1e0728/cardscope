@@ -50,7 +50,7 @@ export function resolveOriginUrl(env) {
 
 export function shouldProxyToOrigin(url, method) {
   if (url.pathname.startsWith('/api/')) return 'api';
-  if ((method === 'GET' || method === 'HEAD') && (url.pathname === '/sitemap.xml' || url.pathname.startsWith('/sitemaps/'))) {
+  if ((method === 'GET' || method === 'HEAD') && (url.pathname === '/sitemap.xml' || /^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname))) {
     return 'sitemap';
   }
   if ((method === 'GET' || method === 'HEAD') && url.pathname === '/' && Boolean(seoRequestTarget(url))) {
@@ -140,12 +140,15 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
     for (const [name, value] of request.headers.entries()) {
       const lower = name.toLowerCase();
       if (HOP_BY_HOP_HEADERS.has(lower)) continue;
-      if (lower === 'x-origin-verify') continue;
-      if (lower.startsWith('cf-') && lower !== 'cf-connecting-ip') continue;
+      if (lower === 'x-origin-verify' || lower === 'x-client-ip') continue;
+      if (lower.startsWith('cf-')) continue;
       outReqHeaders.set(name, value);
     }
     if (env?.ORIGIN_VERIFY_SECRET) {
       outReqHeaders.set('x-origin-verify', String(env.ORIGIN_VERIFY_SECRET));
+      // Render 也在 Cloudflare 後面，cf-connecting-ip 會被改成 Worker 出口 IP；真實訪客 IP 改用 x-client-ip 傳，只在帶密鑰時送。
+      const clientIp = request.headers.get('cf-connecting-ip');
+      if (clientIp) outReqHeaders.set('x-client-ip', clientIp);
     }
 
     let upstream;
@@ -153,7 +156,8 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
       const init = {
         method: request.method,
         headers: outReqHeaders,
-        redirect: 'manual'
+        redirect: 'manual',
+        signal: AbortSignal.timeout(proxyKind === 'seo-db' ? 1500 : 30000)
       };
       if (request.method !== 'GET' && request.method !== 'HEAD' && request.body) {
         init.body = request.body;
