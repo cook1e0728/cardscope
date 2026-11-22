@@ -47,7 +47,8 @@ html.look-clean body[data-view] header.top .nav button:focus-visible{outline:2px
    共同：高 44px、同一個圓角、按下縮到 97%、只轉場要變的屬性、滑過效果只給滑鼠。
    選中狀態＝粗體＋1.5px 墨色細框（與頂欄目前頁同一套語言），遊戲色只留在字與細線上。 */
 /* 4a 次要 */
-html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.detail-collect button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]),
+html.look-clean body[data-view] :is(.cards-mode,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.detail-collect button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]),
+html.look-clean body[data-view] :is(#downloadWatchlist,#copyReportTemplate),
 html.look-clean body[data-view] header.top .nav button{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);border:1px solid var(--v2-line);border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:14px;font-weight:600;line-height:1;text-align:center;box-shadow:var(--v2-shadow);
   transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease);
@@ -80,10 +81,12 @@ html.look-clean body[data-view] :is(.view-switch){display:inline-flex;align-item
 html.look-clean body[data-view] :is(.view-switch button){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);padding:0 18px;border:0!important;border-radius:11px!important;background:transparent;color:var(--v2-ink-2);font-size:14px;font-weight:500;line-height:1;text-align:center;white-space:nowrap;box-shadow:none;transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease)}
 html.look-clean body[data-view] :is(.view-switch button.on){background:var(--v2-surface)!important;color:var(--v2-ink)!important;font-weight:700;box-shadow:0 1px 3px rgba(31,27,22,.14),inset 0 0 0 1.5px var(--v2-ink)!important}
 /* 按下縮到 97%；滑過只給滑鼠 */
-html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel],.load-more,.notice-retry,[data-coll-import-confirm],.view-switch button,.search-clear,.card-zoom-close):active,
+html.look-clean body[data-view] :is(.cards-mode,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel],.load-more,.notice-retry,[data-coll-import-confirm],.view-switch button,.search-clear,.card-zoom-close):active,
+html.look-clean body[data-view] :is(#downloadWatchlist,#copyReportTemplate):active,
 html.look-clean body[data-view] header.top :is(.nav button,#go):active{transform:scale(.97)}
 @media (hover:hover) and (pointer:fine){
-  html.look-clean body[data-view] :is(.cards-mode,#downloadWatchlist,#copyReportTemplate,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]):hover,
+  html.look-clean body[data-view] :is(.cards-mode,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.series-sort button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]):hover,
+  html.look-clean body[data-view] :is(#downloadWatchlist,#copyReportTemplate):hover,
   html.look-clean body[data-view] header.top :is(.nav button,#go):hover{background:var(--v2-surface);box-shadow:var(--v2-shadow-up)}
   html.look-clean body[data-view] :is(.load-more,.notice-retry,[data-coll-import-confirm]):hover{box-shadow:0 3px 8px rgba(60,45,20,.28)}
   html.look-clean body[data-view] :is(.search-clear):hover{background:rgba(60,45,20,.08)}
@@ -135,10 +138,10 @@ html.look-clean body[data-view] .card-reference{min-height:var(--btn-h);align-it
 
 /* ===== 7. 暫停動態、減少動態：沒有新動畫，按下不縮放 ===== */
 @media (prefers-reduced-motion:reduce){
-  html.look-clean body[data-view] *{transition-duration:.01ms!important}
+  html.look-clean body[data-view] *{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
   html.look-clean body[data-view] :is(button,summary,#go):active{transform:none!important}
 }
-html[data-cs-paused] body[data-view] *{transition-duration:.01ms!important}
+html[data-cs-paused] body[data-view] *{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 html[data-cs-paused] body[data-view] :is(button,summary,#go):active{transform:none!important}
 
 /* ===== 8. 首頁「最新｜最夯｜最熱」（home-rails.js；分段按鈕沿用第 4 節的 .view-switch）與手機頂欄比例 ===== */
@@ -247,6 +250,7 @@ body[data-side="results"] #sideNav .side-sec-region{display:block}
 #sideNav .series-band-tools{display:block;flex:none;margin:0;padding:0 8px}
 #sideNav .series-band-expand{display:none}
 #sideNav .series-band-filter{width:100%;height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-well);color:var(--v2-ink);font-size:14px;box-shadow:var(--v2-shadow-in)}
+#sideNav .series-band-filter::placeholder{color:var(--v2-ink-2);opacity:1}
 #sideNav .series-band-filter:focus{box-shadow:var(--v2-shadow-in)}
 #sideNav .series-band-scope{margin:6px 8px 0;font-size:var(--fs-note)}
 #sideNav .series-band-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;padding:0 8px;border:0;overflow:visible}
@@ -290,7 +294,7 @@ html.look-clean :is(body[data-view="game"],body[data-side="results"]) :is(#hero,
   #sideNav .side-head{position:relative;padding-top:12px}
   #sideNav .side-head:before{content:"";position:absolute;top:8px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--v2-line)}
   #sideNav #channels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
-  body[data-view="game"] .side-sheet-btn{display:flex}
+  body[data-side="results"] .side-sheet-btn,body[data-view="game"] .side-sheet-btn{display:flex}
   body:not([data-side]) #channels{display:none}
   /* 階段 1 把頂欄兩個選單縮到 2.5em／3em，窄於 44px 的觸控目標：補上最小寬度 */
   html.look-clean body[data-view] #mobileHeaderScope select{min-width:44px}
@@ -332,7 +336,8 @@ header.top .side-menu-btn:focus-visible{outline:2px solid var(--v2-ink);outline-
 html[data-cs-paused] #sideNav,html[data-cs-paused] #sideScrim{transition:none!important}
 
 /* 首頁頂欄是深色底（look-clean.css），階段 1 的深色焦點框在上面只有約 1.06:1：改成淺色（smoke 的焦點框對比檢查） */
-html.look-clean body[data-view="landing"] header.top .nav button:focus-visible{outline-color:#F6F1E6}
+html.look-clean body[data-view="landing"] header.top :is(.nav button,a.brand):focus-visible{outline-color:#F6F1E6}
+html.look-clean body[data-view="landing"] header.top a.brand:focus-visible{outline-style:solid;outline-width:2px;outline-offset:2px}
 
 /* ===== 10. 卡牆與工具列（階段 3，ui-enhancements.js；docs/REDESIGN_PLAN.md 第 4 節、決定 3c／6／10／11） =====
    工具列一排：顯示方式｜分組｜稀有度｜排序｜收藏狀態（#cardControls）；下面一行是集卡進度、篩選結果數、ⓘ、收藏摘要。
@@ -472,7 +477,7 @@ html.look-clean .detail .detail-section-title{scroll-margin-top:calc(var(--btn-h
 .ebay-item:not(:has(.ebay-img)){grid-template-columns:minmax(0,1fr)}
 .ebay-img{width:64px;height:64px;object-fit:contain;border-radius:4px;background:var(--v2-page)}
 .ebay-body{display:grid;gap:4px;min-width:0}
-.ebay-title{display:block;padding:2px 0;color:var(--v2-ink);font-size:14px;font-weight:600;line-height:1.35;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
+.ebay-title{display:flex;align-items:center;min-height:var(--btn-h);padding:2px 0;color:var(--v2-ink);font-size:14px;font-weight:600;line-height:1.35;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
 .ebay-money{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}
 .ebay-price{font-size:16px;font-variant-numeric:tabular-nums}
 .ebay-ship,.ebay-meta{font-size:var(--fs-sub);color:var(--v2-ink-2)}
@@ -487,13 +492,13 @@ html.look-clean .detail .detail-section-title{scroll-margin-top:calc(var(--btn-h
 .pov h5{margin:14px 0 6px}
 .pov .meta{margin:0 0 8px;font-size:var(--fs-sub);font-weight:400;color:var(--v2-ink-2)}
 .pov .ptl-table table{min-width:0}
-.pov .ptl-table td:first-child{overflow-wrap:anywhere}
+.pov .ptl-table td:first-child{word-break:keep-all;overflow-wrap:break-word}
 .pov-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
 .pov-row{display:flex;flex-wrap:wrap;align-items:center;gap:0 10px;min-height:44px;padding:0 10px;border-radius:8px;background:#fff}
 .pov-name{font-size:14px;font-weight:600}
 .pov-state{font-size:var(--fs-sub);color:var(--v2-ink)}
 :is(.pov-no,.pov-wait){font-weight:400;color:var(--v2-ink-2)}
-.pov-jump{display:inline-flex;align-items:center;min-height:44px;margin-left:auto;color:var(--v2-ink);font-size:14px;text-decoration:underline;text-underline-offset:3px}
+.pov-jump{display:inline-flex;align-items:center;justify-content:flex-end;min-width:var(--btn-h);min-height:44px;margin-left:auto;color:var(--v2-ink);font-size:14px;text-decoration:underline;text-underline-offset:3px}
 .pov-jump:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:4px}
 /* 先畫的卡牆資料還在等 API：下面一欄的灰色骨架 */
 html.look-clean .dsk.dsk-flow{grid-template-columns:minmax(0,1fr)}
@@ -658,8 +663,8 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-join{display:grid;gap:8px;width:100%;padding-top:12px;border-top:1px solid var(--v2-line)}
 .sync-join label{font-size:13px;font-weight:700;color:var(--v2-ink)}
 .sync-row{display:flex;align-items:center;gap:8px}
-.sync-input{flex:1 1 0;min-width:0;min-height:var(--btn-h);padding:0 12px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-size:14px;text-transform:uppercase}
-.sync-input::placeholder{text-transform:none;font-size:13px;color:var(--v2-ink-2)}
+.sync-input{flex:1 1 0;min-width:0;min-height:var(--btn-h);padding:0 12px;border:1.5px solid #857D6E;border-radius:10px;background:var(--v2-page);color:var(--v2-ink);font:inherit;font-size:14px;text-transform:uppercase}
+.sync-input::placeholder{text-transform:none;font-size:13px;color:var(--v2-ink-2);opacity:1}
 .sync-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding-top:14px;border-top:1px solid var(--v2-line)}
 .sync-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .sync-more{padding-top:12px;border-top:1px solid var(--v2-line)}
@@ -758,7 +763,7 @@ html.look-clean .band-tile-code{white-space:normal;overflow:visible;text-overflo
 }
 
 /* ---- 二-5 收錄版本：和台版那列同一個圓角矩形與內距（原本吃到按鈕的全圓角） ---- */
-html.look-clean body[data-view] #detail .dpanel-versions .version-switch{padding:var(--s3) var(--s7) var(--s3) var(--s4);border:1px solid var(--dframe);border-radius:var(--lc-r-sm);box-shadow:none;font-size:15px;line-height:1.5;text-align:left}
+html.look-clean body[data-view] #detail .dpanel-versions .version-switch{display:block;width:100%;padding:var(--s3) var(--s7) var(--s3) var(--s4);border:1px solid var(--dframe);border-radius:var(--lc-r-sm);box-shadow:none;font-size:15px;line-height:1.5;text-align:left}
 html.look-clean .detail .dpanel-versions .version-switch .meta{display:inline-block;margin-top:2px}
 
 /* ---- 二-7 價格走勢數字格：窄欄改兩欄、可折行，不再被 … 截掉 ---- */
@@ -782,7 +787,7 @@ html.look-clean body[data-view] #detail .ptl-top{justify-content:flex-start;gap:
 html.look-clean body[data-view] #detail .ptl-lines{margin-right:0}
 html.look-clean body[data-view] #detail .ptl-chip{min-height:var(--btn-h);padding:0 var(--s4);font-size:14px;font-weight:700}
 html.look-clean body[data-view] #detail .ptl-seg{align-items:center;min-height:var(--btn-h);padding:3px;border-radius:var(--btn-r)}
-html.look-clean body[data-view] #detail .ptl-seg-btn{padding:0 var(--s3);border-radius:var(--btn-r);font-size:14px}
+html.look-clean body[data-view] #detail .ptl-seg-btn{min-height:var(--btn-h);padding:0 var(--s3);border-radius:var(--btn-r);font-size:14px}
 
 /* ---- 一-5 首頁最新系列卡（L5 精修＋方案 C）：一張卡 = 系列圖＋最多 3 張大獎縮圖，16px 內距與 #D5CCB9 框線對齊上方次分頁膠囊；下方直向彈性排版：
    類別與代號 → 主標題（最多兩行）→ 原名副標緊跟主標題（空值不佔位）→ 發售日齊平貼底，同排等高不再懸空。 ---- */
@@ -903,7 +908,7 @@ html.look-clean #detail .ptl-details{padding-inline:var(--card-pad)}
   html.look-clean .brand-footer>div{min-width:0;flex:1}
   html.look-clean .brand-footer .foot-legal-full{display:none}
   html.look-clean .brand-footer .foot-legal{display:block}
-  html.look-clean .brand-footer .foot-legal summary{justify-content:space-between;gap:var(--s2);font-size:13px;font-weight:500;line-height:1.4;color:var(--lc-ink-2)}
+  html.look-clean .brand-footer .foot-legal summary{justify-content:space-between;gap:var(--s2);font-size:13px;font-weight:500;line-height:1.4;color:var(--v2-ink-2)}
   html.look-clean .brand-footer .foot-legal summary b{flex:none;font-size:13px;color:var(--lc-ink)}
   html.look-clean .brand-footer .foot-legal summary b:after{content:" ⌄"}
   html.look-clean .brand-footer .foot-legal[open] summary b:after{content:" ⌃"}
@@ -995,6 +1000,9 @@ html.look-clean body[data-view="landing"] .home-examples button:active{transform
   html.look-clean body[data-view] header.top .nav button{padding:0 12px 0 10px;gap:6px;font-size:14px}
   html.look-clean body[data-view] header.top .search input{padding:0 12px;font-size:14px}
 }
+@media (min-width:1000px) and (max-width:1199px){
+  html.look-clean body[data-side] header.top .bar>.brand{min-width:calc(var(--side-w) + var(--s6) - var(--s3) - var(--s3))}
+}
 @media (hover:hover) and (pointer:fine){
   @media (min-width:761px){
     html.look-clean body[data-view="landing"] .home-examples button:hover{background:rgba(255,255,255,.16);border-color:rgba(246,241,230,.48)}
@@ -1034,7 +1042,21 @@ html.look-clean #detail .dpanel-versions :is(.state,.version-switch){text-wrap:p
 html.look-clean #detail .dpanel-versions :is(.state,.version-switch) b{white-space:nowrap}
 html.look-clean #detail .dpanel-versions .ver-seg{display:inline-block;white-space:nowrap}
 html.look-clean #detail .pov .ptl-table th{text-wrap:balance}
-html.look-clean #detail .pov .pov-th-sub{display:inline-block;white-space:nowrap}
+html.look-clean #detail .pov .pov-th-sub{display:block;white-space:nowrap}
+
+/* 頁尾與快速說明次要文字對比 ≥4.5:1；開啟詳細側板時將收藏提示移至右上角；明細折疊補上 44px 高與展開收合指標 */
+html.look-clean .brand-footer,html.look-clean .brand-footer summary,html.look-clean .brand-footer .foot-legal summary,html.look-clean .mascot-gallery figcaption,html.look-clean .feature-tour .help-summary-copy small{color:var(--v2-ink-2)}
+@media (min-width:1000px){
+  html.look-clean body:has(#modal.open) .brand-collection-toast{top:calc(var(--side-top,66px) + 12px);bottom:auto;right:22px}
+}
+@media (max-width:999px){
+  html.look-clean body:has(#modal.open) .brand-collection-toast{top:60px;bottom:auto;right:12px}
+}
+html.look-clean .ptl-details>summary,html.look-clean .coll-import details>summary{min-height:var(--btn-h);display:flex;align-items:center;justify-content:space-between;gap:var(--s2);list-style:none;cursor:pointer}
+html.look-clean .ptl-details>summary::-webkit-details-marker,html.look-clean .coll-import details>summary::-webkit-details-marker{display:none}
+html.look-clean .ptl-details>summary:focus-visible,html.look-clean .coll-import details>summary:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px;border-radius:8px}
+html.look-clean .ptl-details>summary::after,html.look-clean .coll-import details>summary::after{content:"展開 ▾";flex:none;font-size:var(--fs-sub);font-weight:600;color:var(--v2-ink-2);white-space:nowrap}
+html.look-clean .ptl-details[open]>summary::after,html.look-clean .coll-import details[open]>summary::after{content:"收合 ▴"}
 
 /* 行情頁與 v2 紙感樣式統一（移除舊式裝飾紅箭頭與斜切漲跌膠囊） */
 html.look-clean body[data-view="market"] #trendsSection .title h2::before{display:none}
@@ -1044,6 +1066,12 @@ html.look-clean body[data-view="market"] #trendsSection .trend-empty{padding:20p
 html.look-clean body[data-view="market"] #trendsSection .trend-empty p{margin:6px 0 0;text-wrap:balance}
 
 @media (max-width:760px){
+  /* 手機首頁底色改用 --v2-page，確保頁尾與吉祥物圖庫對比 ≥4.5:1 */
+  html.look-clean body[data-view="landing"]{background:var(--v2-page)}
+  /* 收藏頁手機工具列：「管理」獨立排在上方靠右，不與橫向捲動的控制列擠壓；空收藏狀態仍維持靠右 */
+  html.look-clean body[data-view="collection"] #cardTools{flex-direction:column;align-items:stretch}
+  html.look-clean body[data-view="collection"] .coll-manage{order:0;align-self:flex-end}
+  html.look-clean body[data-view="collection"] #cardControls{flex:0 0 auto;width:100%}
   /* 放大檢視工具列換行置中，不裁切且每顆 ≥44px */
   html.look-clean body[data-view] .card-zoom-toolbar{flex-wrap:wrap;justify-content:center;gap:6px;max-width:calc(100vw - 16px);overflow-x:visible}
   html.look-clean body[data-view] .card-zoom-divider{display:none}
