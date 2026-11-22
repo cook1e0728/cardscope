@@ -216,6 +216,18 @@ test('normalizeSyncEntry: live items pass the import check, tombstones carry onl
   assert.equal(dirty.note, 'a b', 'text is cleaned like an import'); assert.equal('extra' in dirty, false, 'unknown fields are dropped');
 });
 
+test('normalizeSyncEntry: legacy {favorite:true, quantity:0} normalizes to {quantity:1, favorite:false}; {favorite:false, quantity:0} is strictly null; unsafe canonicalId is rejected', () => {
+  const legacyStar = CS.normalizeSyncEntry({ ...item({ id: 'legacy-star', favorite: true, quantity: 0 }), updatedAt: T(1) });
+  assert.ok(legacyStar);
+  assert.equal(legacyStar.quantity, 1);
+  assert.equal(legacyStar.favorite, false);
+  assert.equal(legacyStar.updatedAt, T(1));
+  assert.strictEqual(CS.normalizeSyncEntry({ ...item({ id: 'zero', favorite: false, quantity: 0 }), updatedAt: T(1) }), null);
+  for (const unsafe of ['__proto__', 'constructor', 'prototype']) {
+    assert.strictEqual(CS.normalizeSyncEntry({ ...item({ id: 'ok', canonicalId: unsafe }), updatedAt: T(1) }), null);
+  }
+});
+
 test('normalizeSyncCode: 26+ characters of 0-9 A-Z, grouping and case ignored, nothing shorter', () => {
   const code = 'K3M9T7Q2XB4V8ZD6N1HW5RPJ0C';
   assert.equal(code.length, 26); assert.equal(CS.normalizeSyncCode(code), code);

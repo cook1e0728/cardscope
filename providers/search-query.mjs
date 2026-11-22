@@ -280,12 +280,13 @@ export function matchSeriesIndex(feature, seriesIndex, { region = 'ALL' } = {}) 
     if (seen.has(entry.id)) continue;
     seen.add(entry.id);
     unique.push(entry);
-    if (unique.length >= MAX_SERIES_IDS) break;
   }
-  const allIds = unique.map(e => e.id);
+  const allIds = unique.slice(0, MAX_SERIES_IDS).map(e => e.id);
   const reg = String(region || 'ALL').toUpperCase();
-  const ids = reg !== 'ALL' ? unique.filter(e => !e.region || e.region === reg).map(e => e.id) : allIds;
-  return { ids, allIds, matched: unique };
+  const scoped = reg !== 'ALL' ? unique.filter(e => !e.region || e.region === reg) : unique;
+  const matched = scoped.slice(0, MAX_SERIES_IDS);
+  const ids = matched.map(e => e.id);
+  return { ids, allIds, matched };
 }
 
 // 針對已去稀有度與版本詞的剩餘字串，嘗試對照 catalog.series 拆出系列代碼／3位數系列號／核心系列名。

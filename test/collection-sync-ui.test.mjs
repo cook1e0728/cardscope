@@ -324,3 +324,164 @@ test('wiring: the 管理 menu item opens the dialog, persistCollection stamps, t
   for (const selector of ['.sync-dialog', '.sync-dialog::backdrop', '.sync-code', '.sync-btn', '.sync-confirm', '.sync-alt']) assert.ok(css.includes(selector), selector);
   assert.match(css, /\.sync-btn\{[^}]*min-height:var\(--btn-h\)/); assert.match(css, /\.sync-dialog\{width:min\(480px,calc\(100vw - 32px\)\)/);
 });
+
+test('legacy cloud {favorite:true, quantity:0} merges and pushes back with HTTP 200 (no 400)', async () => {
+  const { cloud, clock } = world(), b = device(cloud, clock);
+  const joinCode = 'K3M9T7Q2XB4V8ZD6N1HW5RPJ0C';
+  cloud.row = {
+    code: joinCode,
+    revision: 1,
+    items: [{ id: 'c-old', canonicalId: '', favorite: true, quantity: 0, condition: '', finish: '', note: '', updatedAt: new Date(clock.t - 5000).toISOString() }]
+  };
+  b.qty('c2', 3);
+  await b.run(`startSync(${JSON.stringify(joinCode)})`);
+  await b.idle();
+  assert.deepEqual(b.counts(), { 'c-old': 1, c2: 3 });
+  assert.equal(cloud.row.revision, 2);
+  assert.equal(cloud.row.items.find(row => row.id === 'c-old').quantity, 1);
+  assert.equal(cloud.row.items.find(row => row.id === 'c-old').favorite, false);
+  assert.equal(b.ui().status, 'ok');
+});
+
+test('auth refresh 502 or network disconnect does not log the user out (preserves authState and syncState)', async () => {
+  const { cloud, clock } = world(), b = device(cloud, clock);
+  b.qty('c1', 2);
+  await b.run('enableGoogleSync({ accessToken: "access-tok-1", refreshToken: "refresh-tok-1", expiresAt: Math.floor(Date.now() / 1000) + 3600, email: "trainer@gmail.com" })');
+  await b.idle();
+  assert.equal(b.state().google, true);
+
+  const origFetch = cloud.fetch;
+  let refreshMode = '502';
+  cloud.fetch = async (url, opts) => {
+    if (String(url) === '/api/auth/refresh') {
+      if (refreshMode === 'down') throw new TypeError('fetch failed');
+      return { status: 502, ok: false, json: async () => ({ error: 'bad gateway' }) };
+    }
+    return origFetch(url, opts);
+  };
+  cloud.token = 'server-rotated'; // triggers 401 -> refresh
+  b.qty('c1', 5);
+  b.fire();
+  await b.idle();
+  assert.ok(b.auth(), '502 refresh preserves authState');
+  assert.equal(b.auth().accessToken, 'access-tok-1');
+  assert.ok(b.state()?.google, '502 refresh preserves syncState');
+  assert.equal(b.ui().status, 'error');
+
+  refreshMode = 'down';
+  await b.run('syncNow()');
+  await b.idle();
+  assert.ok(b.auth(), 'network disconnect on refresh preserves authState');
+  assert.ok(b.state()?.google, 'network disconnect on refresh preserves syncState');
+  assert.equal(b.ui().status, 'error');
+
+  cloud.fetch = origFetch;
+  await b.run('syncNow()');
+  await b.idle();
+  assert.equal(b.auth().accessToken, 'access-tok-refreshed');
+  assert.equal(cloud.googleRow.items.find(row => row.id === 'c1').quantity, 5);
+});
+
+test('enableGoogleSync without sync-code stamps known Google cloud entries at 0; hadCode pull failure aborts switch', async () => {
+  const { cloud, clock } = world();
+  const cloudAt = new Date(clock.t - 5000).toISOString();
+  cloud.googleRow = {
+    code: 'GOOGLE',
+    revision: 3,
+    items: [
+      { id: 'c1', canonicalId: '', favorite: false, quantity: 9, condition: '', finish: '', note: '', updatedAt: cloudAt },
+      { id: 'c-del', deleted: true, updatedAt: cloudAt }
+    ]
+  };
+  const b = device(cloud, clock);
+  b.qty('c1', 2);
+  b.qty('c-del', 1);
+  b.qty('c-local', 4);
+  clock.t += 10000;
+  const switched = await b.run('enableGoogleSync({ accessToken: "access-tok-1", refreshToken: "refresh-tok-1", expiresAt: Math.floor(Date.now() / 1000) + 3600, email: "trainer@gmail.com" })');
+  await b.idle();
+  assert.equal(switched, true);
+  assert.equal(b.counts().c1, 9, 'known Google cloud item wins over local copy via timestamp 0');
+  assert.equal('c-del' in b.counts(), false, 'known Google cloud tombstone is not resurrected');
+  assert.equal(b.counts()['c-local'], 4, 'local-only card survives');
+
+  const a = device(cloud, clock);
+  a.qty('x1', 1);
+  await a.run('startSync("")');
+  await a.idle();
+  const oldCode = code(a);
+  cloud.force = 503;
+  const aborted = await a.run('enableGoogleSync({ accessToken: "access-tok-1", refreshToken: "refresh-tok-1", expiresAt: Math.floor(Date.now() / 1000) + 3600, email: "trainer@gmail.com" })');
+  assert.equal(aborted, false);
+  assert.equal(a.state().code, oldCode, 'sync-code state stays intact when hadCode pull fails');
+  assert.equal(a.auth(), null);
+  assert.equal(a.storage.has('cardscope-auth'), false);
+  assert.match(a.ui().notice, /尚未切換為 Google 登入/);
+});
+
+test('startSync("") does not persist sync code when server returns 503', async () => {
+  const { cloud, clock } = world(), a = device(cloud, clock);
+  a.qty('c1', 2);
+  cloud.force = 503;
+  await a.run('startSync("")');
+  assert.equal(a.state(), null);
+  assert.equal(a.storage.has('cardscope-sync'), false);
+  assert.deepEqual(a.counts(), { c1: 2 });
+  assert.match(a.ui().notice, /沒有開放.*沒有開啟同步/);
+});
+
+test('OAuth ?error=access_denied strips URL params, clears PKCE verifier, and keeps syncUi.notice until openSyncDialog()', () => {
+  const { cloud, clock } = world();
+  const nodes = new Map();
+  const storage = new Map(), sessionStore = new Map([['cardscope-pkce', 'pkce-verifier-123']]), watchlist = {}, watchlistMeta = {};
+  const loc = { origin: 'https://cardseektcg.com', pathname: '/', search: '?view=collection&error=access_denied&error_description=User+denied', hash: '', href: 'https://cardseektcg.com/?view=collection&error=access_denied&error_description=User+denied', assign(u) { this.href = u; } };
+  const hist = { state: null, replaceState(s, _t, u) { this.state = s; const parsed = new URL(u, loc.origin); loc.pathname = parsed.pathname; loc.search = parsed.search; loc.hash = parsed.hash; loc.href = parsed.href; } };
+  const makeDialog = tag => {
+    const listeners = new Map();
+    return {
+      tagName: tag.toUpperCase(), id: '', className: '', open: false, innerHTML: '',
+      setAttribute() {}, removeAttribute() {},
+      addEventListener(type, fn) { listeners.set(type, fn); },
+      showModal() { this.open = true; },
+      close() { this.open = false; listeners.get('close')?.(); },
+      querySelector() { return null; }
+    };
+  };
+  const sandbox = {
+    CS, watchlist, watchlistMeta, e: esc, $: id => nodes.get(id) || null, window: { crypto: globalThis.crypto }, crypto: globalThis.crypto, TextEncoder, Uint8Array, btoa: globalThis.btoa, URLSearchParams,
+    location: loc, history: hist, navigator: { onLine: true }, AbortController,
+    localStorage: { removeItem: key => storage.delete(key) },
+    sessionStorage: { getItem: key => sessionStore.get(key) || null, setItem: (key, val) => sessionStore.set(key, String(val)), removeItem: key => sessionStore.delete(key) },
+    document: { addEventListener() {}, visibilityState: 'visible', body: { append(el) { if (el.id) nodes.set(el.id, el); } }, createElement: makeDialog },
+    uiLocal: { get: (key, fallback) => storage.get(key) || fallback, set: (key, value) => { storage.set(key, value); return true; } },
+    setTimeout, clearTimeout, Date: class extends Date { static now() { return clock.t; } },
+    fetch: (...args) => cloud.fetch(...args),
+    refreshGrid() {}, inCollectionView: () => false, collectionStatus() {}, collectionUi: { pricesState: 'ready', filter: { game: '', series: '' } }, resolveCollection: async () => false, loadCollectionPrices: async () => {}, rerenderCollection() {},
+    collectionItems: () => []
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(`let syncState=null;\n${ENGINE}`, sandbox);
+  assert.equal(loc.search, '?view=collection');
+  assert.equal(sessionStore.has('cardscope-pkce'), false);
+  assert.equal(vm.runInContext('syncUi.notice', sandbox), '已取消 Google 登入，本機收藏不受影響。');
+  vm.runInContext('openSyncDialog()', sandbox);
+  assert.equal(vm.runInContext('syncUi.notice', sandbox), '已取消 Google 登入，本機收藏不受影響。', 'openSyncDialog keeps notice visible');
+  assert.match(nodes.get('syncDialog').innerHTML, /已取消 Google 登入，本機收藏不受影響。/);
+  vm.runInContext('closeSyncDialog()', sandbox);
+  assert.equal(vm.runInContext('syncUi.notice', sandbox), '');
+});
+
+test('deleteCloud revokes the refreshed token after a 401 retry', async () => {
+  const { cloud, clock } = world(), a = device(cloud, clock);
+  a.qty('c1', 2);
+  await a.run('enableGoogleSync({ accessToken: "access-tok-1", refreshToken: "refresh-tok-1", expiresAt: Math.floor(Date.now() / 1000) + 3600, email: "trainer@gmail.com" })');
+  await a.idle();
+  cloud.token = 'different-server-token';
+  await a.run('deleteCloud()');
+  assert.equal(cloud.googleRow, null);
+  assert.equal(a.state(), null);
+  assert.equal(a.auth(), null);
+  const logoutCall = cloud.calls.findLast(call => call.url === '/api/auth/logout');
+  assert.ok(logoutCall);
+  assert.equal(logoutCall.headers.Authorization, 'Bearer access-tok-refreshed');
+});

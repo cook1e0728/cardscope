@@ -57,7 +57,7 @@
   function collect(rows,{strict=false}={}){
     const seen=new Map(),problems=[];
     rows.forEach((raw,index)=>{
-      let reason=problem(raw);if(!reason&&strict&&UNSAFE_ID.has(raw.id))reason='卡 id 不安全';
+      let reason=problem(raw);if(!reason&&strict&&(UNSAFE_ID.has(raw.id)||(raw.canonicalId!=null&&UNSAFE_ID.has(raw.canonicalId))))reason='卡 id 不安全';
       if(reason){problems.push({index:index+1,reason});return}
       // Import: owning means quantity >= 1; a star-only item from an old v1 backup counts as 1 (same rule as the app).
       let item=normalizeItem(raw);if(strict)item={...item,favorite:false,quantity:collectedQuantity(item)};
@@ -124,7 +124,7 @@
   // Owning a card is quantity > 0. The old star list moves into quantities once: an existing count stays, a star without a valid count becomes 1.
   function migrateFavorites(favoriteIds,watchlist){
     const next={...watchlist};let added=0;
-    for(const id of favoriteIds){const count=Number(next[id]);if(idOf(id)&&!(Number.isInteger(count)&&count>0)){next[id]=1;added++}}
+    for(const id of favoriteIds){const count=Number(next[id]);if(idOf(id)&&!UNSAFE_ID.has(id)&&!(Number.isInteger(count)&&count>0)){next[id]=1;added++}}
     return{watchlist:next,added};
   }
   // A starred item from an old backup (quantity 0) counts as 1.
@@ -225,12 +225,14 @@
   // Untrusted sync entry (the server runs every pushed row through this): a live item passes the same check as an import and gains a valid updatedAt;
   // a tombstone may carry only id, deleted and updatedAt. Returns a clean entry or null; never throws.
   function normalizeSyncEntry(raw){
-    if(!plain(raw)||UNSAFE_ID.has(raw.id)||typeof raw.updatedAt!=='string'||!ISO_TIME.test(raw.updatedAt)||!Number.isFinite(Date.parse(raw.updatedAt)))return null;
+    if(!plain(raw)||UNSAFE_ID.has(raw.id)||(raw.canonicalId!=null&&UNSAFE_ID.has(raw.canonicalId))||typeof raw.updatedAt!=='string'||!ISO_TIME.test(raw.updatedAt)||!Number.isFinite(Date.parse(raw.updatedAt)))return null;
     if(raw.deleted!==undefined){
       return raw.deleted===true&&idOf(raw.id)&&Object.keys(raw).sort().join()==='deleted,id,updatedAt'?{id:raw.id,deleted:true,updatedAt:raw.updatedAt}:null;
     }
     const {updatedAt,...rest}=raw,item=normalizeItem(rest);
-    return item&&{...item,updatedAt};
+    if(!item)return null;
+    const quantity=collectedQuantity(item);
+    return quantity>=1?{...item,quantity,...(item.quantity===0?{favorite:false}:{}),updatedAt}:null;
   }
   // The sync code is a password: at least 26 characters of 0-9 A-Z (130 bits when random). Spaces and hyphens (grouped display) and case are ignored. '' when unusable.
   const SYNC_CODE=/^[0-9A-Z]{26,64}$/,SYNC_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';

@@ -567,3 +567,37 @@ test('HTTP 整合：無資料庫時本地 catalog.json 備援支援跨欄位系�
     assert.equal(miss.body.meta.total, 0, '不同系列交集應為 0 筆');
   });
 });
+
+test('matchSeriesIndex 命中超過 50 筆系列時，先依 region 篩選再截斷 MAX_SERIES_IDS', () => {
+  const many = [];
+  for (let i = 0; i < 55; i++) {
+    many.push({
+      id: `jp-30th-${String(i).padStart(2, '0')}`,
+      game: 'pokemon',
+      officialCode: `J${i}`,
+      region: 'JP',
+      releaseDate: `2026-10-${String(30 - (i % 28)).padStart(2, '0')}`,
+      nameJa: `30th Anniversary JP ${i}`,
+      aliases: []
+    });
+  }
+  for (let i = 0; i < 60; i++) {
+    many.push({
+      id: `tw-30th-${String(i).padStart(2, '0')}`,
+      game: 'pokemon',
+      officialCode: `T${i}`,
+      region: 'TW',
+      releaseDate: `2020-01-${String(28 - (i % 28)).padStart(2, '0')}`,
+      nameZh: `30th Anniversary TW ${i}`,
+      aliases: []
+    });
+  }
+  const idx = buildSeriesIndex(many);
+  const res = matchSeriesIndex(parseAnniversaryToken('30th'), idx, { region: 'TW' });
+  assert.equal(res.allIds.length, 50);
+  assert.ok(res.allIds.every(id => id.startsWith('jp-30th-')), 'allIds 前 50 筆全是較新的 JP 系列');
+  assert.equal(res.ids.length, 50);
+  assert.ok(res.ids.every(id => id.startsWith('tw-30th-')), '依 region=TW 篩選後才截斷 MAX_SERIES_IDS，不漏掉 TW 系列');
+  assert.equal(res.matched.length, 50);
+  assert.ok(res.matched.every(entry => entry.region === 'TW'));
+});
