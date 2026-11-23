@@ -165,3 +165,9 @@
 - 仍代理 Render（目前 503）：pack-prizes、series-hits、catalog/coverage、price-history、graded-prices、ebay-listings、image-status，以及所有寫入（auth、sync、admin、reports POST）與 sitemap、查庫 SEO 頁。下一批：2C 用 KV 預產快照、寫入類搬遷。
 - Worker secrets 已設：ORIGIN_VERIFY_SECRET、SUPABASE_URL、SUPABASE_SERVICE_KEY、SUPABASE2_URL、SUPABASE2_SERVICE_KEY。部署用 `npx.cmd wrangler deploy`（PowerShell 擋 npx.ps1）。
 - 風險：/api/catalog/health 冷查約 26 秒；/api/catalog、/api/search 冷啟動可能逼近免費 10 ms CPU，可用 `MIGRATED_API` 單支切回代理。swarm 最後用盡 Gemini 5h 額度，未產最終報告，結論記在計畫書。
+
+## 2026-11-24 Workers 第 2 步第二批上線（Claude）
+- Argon High 實作：auth（config/exchange/refresh/logout）與 sync（pull/push/delete）搬進 Worker（`providers/auth-sync.mjs`），pack-prizes／series-hits／catalog/coverage 改讀 KV `SNAPSHOT_KV`（id 56b61bcf…），commits ef3d25b、de5895f；Claude 修 KV 測試並啟用綁定。已部署，auth/config 與 sync 驗證回應正常。
+- KV 快照由 `.github/workflows/kv-snapshots.yml` 每小時產生。GitHub secrets 已設 SUPABASE_URL、SUPABASE2_URL、SUPABASE2_SERVICE_KEY、CF_ACCOUNT_ID、CF_KV_NAMESPACE_ID；**待使用者設 SUPABASE_SERVICE_KEY 與 CF_API_TOKEN（KV Edit 權限）**，之前首頁統計區塊為空。
+- 仍代理 Render：price-history、graded-prices、ebay-listings、image-status、admin、reports POST、sitemap、查庫 SEO 頁。
+- 未做：本批無非同家族第二意見（Gemini、Claude/GPT 週額度用盡），11/26 後補 GPT 審核；Google 登入未以真帳號實測。
