@@ -378,17 +378,32 @@ test('worker proxies remaining /api/*, /sitemap*, and DB-backed SEO pages to ori
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'https://origin.example.test/ignored/path' }), 'https://origin.example.test');
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'javascript:alert(1)' }), DEFAULT_ORIGIN_URL);
 
-  assert.equal(DEFAULT_MIGRATED_APIS.length, 20);
+  assert.equal(DEFAULT_MIGRATED_APIS.length, 30);
   assert.equal(matchMigratedApi(new URL('https://x/api/search?q=a'), 'GET'), 'search');
   assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1/price-history'), 'GET'), null, 'price-history 留代理 Render');
   assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1/market'), 'GET'), 'card-market');
   assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1'), 'GET'), 'card-detail');
+  assert.equal(matchMigratedApi(new URL('https://x/api/auth/config'), 'GET'), 'auth-config');
+  assert.equal(matchMigratedApi(new URL('https://x/api/auth/exchange'), 'POST'), 'auth-exchange');
+  assert.equal(matchMigratedApi(new URL('https://x/api/auth/refresh'), 'POST'), 'auth-refresh');
+  assert.equal(matchMigratedApi(new URL('https://x/api/auth/logout'), 'POST'), 'auth-logout');
+  assert.equal(matchMigratedApi(new URL('https://x/api/sync/pull'), 'POST'), 'sync-pull');
+  assert.equal(matchMigratedApi(new URL('https://x/api/sync/push'), 'POST'), 'sync-push');
+  assert.equal(matchMigratedApi(new URL('https://x/api/sync/delete'), 'POST'), 'sync-delete');
+  assert.equal(matchMigratedApi(new URL('https://x/api/pack-prizes'), 'GET'), 'pack-prizes');
+  assert.equal(matchMigratedApi(new URL('https://x/api/series-hits'), 'GET'), 'series-hits');
+  assert.equal(matchMigratedApi(new URL('https://x/api/catalog/coverage'), 'GET'), 'catalog-coverage');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET'), null, '第 2 步預設由 Worker 直接處理');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET', { MIGRATED_API: '-search' }), 'api', '單支切回代理');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET', { MIGRATED_API: 'none' }), 'api');
   assert.equal(resolveMigratedApis({ MIGRATED_API: '-cards,-/api/search' }).has('cards'), false);
-  assert.equal(shouldProxyToOrigin(new URL('https://x/api/pack-prizes'), 'GET'), 'api');
-  assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST'), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/pack-prizes'), 'GET'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/pack-prizes'), 'GET', { MIGRATED_API: '-pack-prizes' }), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST', { MIGRATED_API: '-sync-push' }), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST', { MIGRATED_API: '-sync' }), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/auth/exchange'), 'POST', { MIGRATED_API: '-auth' }), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/graded-prices'), 'GET'), 'api');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemap.xml'), 'GET'), 'sitemap');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/cards-1.xml'), 'HEAD'), 'sitemap');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/../server.mjs'), 'GET'), null);
@@ -434,7 +449,7 @@ test('worker proxies remaining /api/*, /sitemap*, and DB-backed SEO pages to ori
       },
       body: JSON.stringify({ items: [], revision: 0 })
     }),
-    env
+    { ...env, MIGRATED_API: '-sync-push' }
   );
   assert.equal(apiPost.status, 201);
   assert.equal(apiPost.headers.get('content-security-policy'), API_CSP);
@@ -487,7 +502,7 @@ test('worker degrades gracefully when origin is unreachable (502 API, 503 sitema
     }
   };
 
-  const apiFail = await handler.fetch(new Request('https://cardseektcg.com/api/pack-prizes'), env);
+  const apiFail = await handler.fetch(new Request('https://cardseektcg.com/api/graded-prices'), env);
   assert.equal(apiFail.status, 502);
   assert.equal(apiFail.headers.get('cache-control'), 'no-store');
   assert.equal(apiFail.headers.get('content-security-policy'), API_CSP);
@@ -524,10 +539,13 @@ test('wrangler.toml targets worker/index.mjs, worker/public, default origin, and
   assert.match(toml, /^ORIGIN_URL\s*=\s*"https:\/\/cardscope\.onrender\.com"/m);
   assert.match(toml, /^PUBLIC_BASE_URL\s*=\s*"https:\/\/cardseektcg\.com"/m);
   const nonCommentLines = toml.replace(/#.*$/gm, '');
-  assert.doesNotMatch(nonCommentLines, /SERVICE_KEY|SCRAPE_SECRET|EBAY_CLIENT_SECRET|POKEMONPRICETRACKER|ORIGIN_VERIFY_SECRET/i);
-  for (const secretName of ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'SUPABASE2_URL', 'SUPABASE2_SERVICE_KEY']) {
+  assert.doesNotMatch(nonCommentLines, /SERVICE_KEY|ANON_KEY|SCRAPE_SECRET|EBAY_CLIENT_SECRET|POKEMONPRICETRACKER|ORIGIN_VERIFY_SECRET/i);
+  for (const secretName of ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'SUPABASE2_URL', 'SUPABASE2_SERVICE_KEY', 'SUPABASE2_ANON_KEY']) {
     assert.match(toml, new RegExp(`^#.*\\b${secretName}\\b`, 'm'), `應在註解列出 ${secretName} 名稱`);
   }
+  assert.match(toml, /^#\s*\[\[kv_namespaces\]\]/m, '應在註解列出 [[kv_namespaces]] 綁定');
+  assert.match(toml, /^#\s*binding\s*=\s*"SNAPSHOT_KV"/m, '應在註解列出 SNAPSHOT_KV binding');
+  assert.match(toml, /^#\s*id\s*=\s*""/m, 'namespace id 應留空待使用者建立');
 });
 
 test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async () => {
@@ -565,9 +583,9 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
   }
   assert.equal(originCalls.length, 0);
 
-  // 2. 環境變數 MIGRATED_API="all,-cards,-search" 僅切回 cards 與 search，其餘 18 支仍由 Worker 處理
+  // 2. 環境變數 MIGRATED_API="all,-cards,-search" 僅切回 cards 與 search，其餘 28 支仍由 Worker 處理
   const mixedSet = resolveMigratedApis({ MIGRATED_API: 'all,-cards,-search' });
-  assert.equal(mixedSet.size, 18);
+  assert.equal(mixedSet.size, 28);
   assert.equal(mixedSet.has('cards'), false);
   assert.equal(mixedSet.has('search'), false);
   for (const api of DEFAULT_MIGRATED_APIS) {
@@ -599,9 +617,19 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
     ['/api/price-movers', 'GET'],
     ['/api/prices/reference', 'POST'],
     ['/api/reports/meta', 'GET'],
-    ['/api/reports?cardId=c1', 'GET']
+    ['/api/reports?cardId=c1', 'GET'],
+    ['/api/auth/config', 'GET'],
+    ['/api/auth/exchange', 'POST'],
+    ['/api/auth/refresh', 'POST'],
+    ['/api/auth/logout', 'POST'],
+    ['/api/sync/pull', 'POST'],
+    ['/api/sync/push', 'POST'],
+    ['/api/sync/delete', 'POST'],
+    ['/api/pack-prizes', 'GET'],
+    ['/api/series-hits', 'GET'],
+    ['/api/catalog/coverage', 'GET']
   ];
-  assert.equal(nonProxiedApis.length, 18);
+  assert.equal(nonProxiedApis.length, 28);
   for (const [path, method] of nonProxiedApis) {
     const res = await handler.fetch(
       new Request(`https://cardseektcg.com${path}`, {
@@ -610,10 +638,14 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
       }),
       mixedEnv
     );
-    const body = await res.json();
-    assert.notEqual(body.proxiedByOrigin, true, `${method} ${path} 應仍由 Worker 直接處理`);
+    if (res.status === 204) {
+      assert.equal(await res.text(), '');
+    } else {
+      const body = await res.json();
+      assert.notEqual(body.proxiedByOrigin, true, `${method} ${path} 應仍由 Worker 直接處理`);
+    }
   }
-  assert.equal(originCalls.length, 2, '其餘 18 支端點不應觸發原點代理');
+  assert.equal(originCalls.length, 2, '其餘 28 支端點不應觸發原點代理');
 });
 
 test('Worker 端限流：依 cf-connecting-ip 計數、忽略 X-Forwarded-For、圖片獨立配額與 SCRAPE_SECRET 豁免', async () => {

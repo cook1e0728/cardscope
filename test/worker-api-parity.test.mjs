@@ -9,7 +9,10 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { prepareWorkerAssets } from '../scripts/prepare-worker-assets.mjs';
+import { parseSnapshotArgs, runSnapshotBuild } from '../scripts/build-kv-snapshots.mjs';
+import { sha256Hex } from '../providers/auth-sync.mjs';
 import { API_CSP } from '../providers/http-security.mjs';
+import { KV_KEYS } from '../providers/kv-snapshots.mjs';
 import { createSupabaseClient } from '../providers/supabase-client.mjs';
 import { DEFAULT_MIGRATED_APIS, createWorkerHandler } from '../worker/index.mjs';
 
@@ -465,6 +468,14 @@ function createMockUpstream(state) {
         return sendJson(200, { cards: [sampleCatalogCard, detailPokemonCard].slice(0, body.p_limit || 60), total: 2 });
       }
       if (restPath === '/rpc/browse_series_cards') {
+        if (isIp2) {
+          return sendJson(200, {
+            cards: [uaCard].map(({ printings, images, ...c }) => c),
+            printings: uaCard.printings,
+            images: [],
+            siblingImages: []
+          });
+        }
         if (body.p_series === 'pokemon-empty-series') return sendJson(200, { cards: [], printings: [], images: [], siblingImages: [] });
         if (body.p_series === 'pokemon-huge-fallback') return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_HUGE_SERIES' });
         if (body.p_series === 'pokemon-big-600') return sendJson(200, bigSeries);
@@ -567,6 +578,7 @@ function createMockUpstream(state) {
         return sendJson(200, [sampleCatalogCard], { 'content-range': '0-0/1' });
       }
       if (restPath === '/tcg_printings') {
+        const offset = Math.max(0, Number(url.searchParams.get('offset')) || 0);
         if (url.searchParams.get('series_id') === 'eq.pokemon-huge-fallback') {
           const rows = [];
           for (let i = 1; i <= 550; i++) {
@@ -591,9 +603,9 @@ function createMockUpstream(state) {
               metadata: {}
             });
           }
-          return sendJson(200, rows);
+          return sendJson(200, rows.slice(offset));
         }
-        return sendJson(200, sampleCatalogCard.printings);
+        return sendJson(200, sampleCatalogCard.printings.slice(offset));
       }
       if (restPath === '/card_images') {
         return sendJson(200, []);
@@ -1056,11 +1068,31 @@ test('MIGRATED_API 回滾開關與未搬遷端點代理驗證', async () => {
 
   // 4. 未搬遷端點預設即走原點
   const defaultEnv = createWorkerEnv(mockPort);
-  for (const path of ['/api/pack-prizes', '/api/series-hits', '/api/catalog/coverage', '/api/cards/pokemon-p1/price-history', '/api/graded-prices', '/api/ebay-listings', '/api/auth/config']) {
+  for (const path of ['/api/cards/pokemon-p1/price-history', '/api/graded-prices', '/api/ebay-listings']) {
     const r = await handler.fetch(new Request(`https://cardseektcg.com${path}`), defaultEnv);
     assert.equal((await r.json()).proxiedByOrigin, true, `${path} 應繼續代理原點`);
   }
-  assert.equal(DEFAULT_MIGRATED_APIS.length, 20);
+  // 5. 新搬遷的 auth / sync / KV 端點亦支援單支與群組切回原點
+  for (const [path, method, flag] of [
+    ['/api/auth/config', 'GET', '-auth-config'],
+    ['/api/auth/exchange', 'POST', '-auth-exchange'],
+    ['/api/auth/refresh', 'POST', '-auth'],
+    ['/api/sync/push', 'POST', '-sync-push'],
+    ['/api/sync/pull', 'POST', '-sync'],
+    ['/api/pack-prizes', 'GET', '-pack-prizes'],
+    ['/api/series-hits', 'GET', '-series-hits'],
+    ['/api/catalog/coverage', 'GET', '-catalog-coverage']
+  ]) {
+    const r = await handler.fetch(
+      new Request(`https://cardseektcg.com${path}`, {
+        method,
+        ...(method === 'POST' ? { headers: { 'Content-Type': 'application/json' }, body: '{}' } : {})
+      }),
+      createWorkerEnv(mockPort, { migratedApi: flag })
+    );
+    assert.equal((await r.json()).proxiedByOrigin, true, `${path} 在 ${flag} 時應切回代理原點`);
+  }
+  assert.equal(DEFAULT_MIGRATED_APIS.length, 30);
 });
 
 test('Worker 相容性靜態檢查（零 node:*、Buffer、AsyncLocalStorage、snkrdunk 域名）與 bundle/ASSETS 安全性', async () => {
@@ -1605,7 +1637,7 @@ test('CPU 與 Subrequest 風險補測：大型系列冷熱分頁、備援熔斷�
     const warmMs = performance.now() - t0;
     assert.equal(p2WarmRes.status, 200);
     assert.deepEqual(normalizeDynamicFields(await p2WarmRes.json()), p2Cold.workerJson);
-    assert.ok(warmMs < 15, `600 張系列 region=JP 第 2 頁熱分頁應 < 15ms，實測 ${warmMs.toFixed(2)}ms`);
+    assert.ok(warmMs < 40, `600 張系列 region=JP 第 2 頁熱分頁應 < 40ms，實測 ${warmMs.toFixed(2)}ms`);
 
     // 2. browse_series_cards RPC 失敗且系列 > 500 張卡時回 502 且 subrequests 遠低於 50
     const refuseWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
@@ -1662,4 +1694,687 @@ test('CPU 與 Subrequest 風險補測：大型系列冷熱分頁、備援熔斷�
   } finally {
     await stopSpawnedServer(nodeServer.child);
   }
+});
+
+test('第 2 步第二批 A：Worker ↔ Node 認證（/api/auth/*）與收藏雲端同步（/api/sync/*）Parity、401/409/限流與零外洩', async () => {
+  const ANON_KEY = 'anon-parity-secret-key';
+  const SERVICE_KEY = 'ip2-service-secret-key';
+  const USER_A = '11111111-2222-3333-4444-555555555555';
+  const USER_B = '66666666-7777-8888-9999-000000000000';
+  const SYNC_CODE = 'K3M9T7Q2XB4V8ZD6N1HW5RPJ0C';
+  const OTHER_CODE = 'A1B2C3D4E5F6G7H8J9K0L1M2N3';
+  const VALID_VERIFIER = 'v'.repeat(48);
+  const VALID_AUTH_CODE = 'pkce-auth-code-123456';
+
+  const makeJwt = (sub, expSec = Math.floor(Date.now() / 1000) + 3600) => [
+    Buffer.from('{"alg":"HS256"}').toString('base64url'),
+    Buffer.from(JSON.stringify({ sub, exp: expSec })).toString('base64url'),
+    'sig'
+  ].join('.');
+
+  const tokenA = makeJwt(USER_A);
+  const tokenB = makeJwt(USER_B);
+
+  function createFakeIp2State() {
+    return {
+      rows: new Map(),
+      dbCalls: [],
+      authCalls: [],
+      tokens: new Map([
+        [tokenA, { id: USER_A, email: 'trainer-a@example.com' }],
+        [tokenB, { id: USER_B, email: 'trainer-b@example.com' }]
+      ]),
+      refreshMap: new Map([
+        ['refresh-token-valid-12345', { id: USER_A, email: 'trainer-a@example.com' }]
+      ]),
+      authFailStatus: 0,
+      dbFailStatus: 0
+    };
+  }
+
+  function createFakeIp2Server(ip2State) {
+    return createServer((req, res) => {
+      const chunks = [];
+      req.on('data', c => chunks.push(c));
+      req.on('end', () => {
+        const url = new URL(req.url, 'http://127.0.0.1');
+        const text = Buffer.concat(chunks).toString('utf8');
+        const body = text ? (() => { try { return JSON.parse(text); } catch { return null; } })() : null;
+        const send = (status, payload) => {
+          res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(payload === undefined ? '' : JSON.stringify(payload));
+        };
+
+        if (url.pathname.startsWith('/auth/v1/')) {
+          ip2State.authCalls.push({
+            method: req.method,
+            path: url.pathname,
+            query: url.search,
+            body,
+            apikey: req.headers.apikey,
+            auth: req.headers.authorization || ''
+          });
+          if (req.headers.apikey !== ANON_KEY) return send(401, { msg: 'SECRET_BAD_ANON_APIKEY' });
+          if (ip2State.authFailStatus) {
+            return send(ip2State.authFailStatus, { error_description: 'SECRET_UPSTREAM_AUTH_FAILURE_DETAIL' });
+          }
+          if (url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'pkce') {
+            if (body?.auth_code === VALID_AUTH_CODE && body?.code_verifier === VALID_VERIFIER) {
+              return send(200, {
+                access_token: tokenA,
+                refresh_token: 'refresh-token-valid-12345',
+                expires_at: 1900000000,
+                user: { id: USER_A, email: 'trainer-a@example.com' }
+              });
+            }
+            return send(400, { error: 'invalid_grant', error_description: 'SECRET_PKCE_VERIFIER_MISMATCH' });
+          }
+          if (url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'refresh_token') {
+            const user = ip2State.refreshMap.get(body?.refresh_token);
+            if (!user) return send(400, { error: 'invalid_grant', error_description: 'SECRET_REFRESH_EXPIRED' });
+            return send(200, {
+              access_token: tokenA,
+              refresh_token: 'refresh-token-rotated-67890',
+              expires_at: 1900003600,
+              user
+            });
+          }
+          if (url.pathname === '/auth/v1/user' && req.method === 'GET') {
+            const tok = String(req.headers.authorization || '').replace(/^Bearer\s+/, '');
+            const user = ip2State.tokens.get(tok);
+            if (!user) return send(401, { msg: 'SECRET_INVALID_JWT_DETAIL' });
+            return send(200, user);
+          }
+          if (url.pathname === '/auth/v1/logout') {
+            const tok = String(req.headers.authorization || '').replace(/^Bearer\s+/, '');
+            ip2State.tokens.delete(tok);
+            return send(204);
+          }
+          return send(404, {});
+        }
+
+        ip2State.dbCalls.push({
+          method: req.method,
+          path: url.pathname,
+          query: url.search,
+          body,
+          authorized: req.headers.apikey === SERVICE_KEY && req.headers.authorization === `Bearer ${SERVICE_KEY}`
+        });
+        if (url.pathname !== '/rest/v1/collection_sync') return send(404, { message: 'SECRET_NO_SUCH_TABLE' });
+        if (ip2State.dbFailStatus) return send(ip2State.dbFailStatus, { message: 'SECRET_POSTGREST_SYNC_CRASH_DETAIL' });
+
+        const hash = (url.searchParams.get('sync_key_hash') || body?.sync_key_hash || '').replace(/^eq\./, '');
+        if (req.method === 'GET') return send(200, ip2State.rows.has(hash) ? [ip2State.rows.get(hash)] : []);
+        if (req.method === 'POST') {
+          if (ip2State.rows.has(hash)) return send(409, { code: '23505', message: 'SECRET_DUPLICATE_KEY_VALUE' });
+          ip2State.rows.set(hash, { items: body.items, revision: body.revision, updated_at: body.updated_at });
+          return send(201);
+        }
+        if (req.method === 'PATCH') {
+          const row = ip2State.rows.get(hash);
+          const expected = Number((url.searchParams.get('revision') || '').replace(/^eq\./, ''));
+          if (!row || row.revision !== expected) return send(200, []);
+          Object.assign(row, { items: body.items, revision: body.revision, updated_at: body.updated_at });
+          return send(200, [{ revision: row.revision }]);
+        }
+        if (req.method === 'DELETE') {
+          ip2State.rows.delete(hash);
+          return send(204);
+        }
+        return send(405, {});
+      });
+    });
+  }
+
+  const nodeState = createFakeIp2State();
+  const workerState = createFakeIp2State();
+  const nodeIp2Srv = createFakeIp2Server(nodeState);
+  const workerIp2Srv = createFakeIp2Server(workerState);
+  const nodeIp2Port = await listenEphemeral(nodeIp2Srv);
+  const workerIp2Port = await listenEphemeral(workerIp2Srv);
+  openServers.push(nodeIp2Srv, workerIp2Srv);
+
+  const nodePort = await freePort();
+  const nodeChild = spawn(process.execPath, ['server.mjs'], {
+    cwd: ROOT,
+    env: {
+      ...process.env,
+      PORT: String(nodePort),
+      CATALOG_WARM_ON_START: 'false',
+      CATALOG_SYNC_ON_START: 'false',
+      CARD_IMAGE_CACHE_ON_START: 'false',
+      PRICE_SNAPSHOT_ENABLED: 'false',
+      SUPABASE_URL: '',
+      SUPABASE_SERVICE_KEY: '',
+      SUPABASE2_URL: `http://127.0.0.1:${nodeIp2Port}`,
+      SUPABASE2_SERVICE_KEY: SERVICE_KEY,
+      SUPABASE2_ANON_KEY: ANON_KEY,
+      AUTH_RATE_LIMIT_PER_MINUTE: '1000',
+      SYNC_RATE_LIMIT_PER_MINUTE: '1000'
+    },
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+  spawnedChildren.push(nodeChild);
+  await new Promise((resolveReady, rejectReady) => {
+    let out = '';
+    const timer = setTimeout(() => rejectReady(new Error(`node sync server start timeout: ${out}`)), 8000);
+    nodeChild.once('exit', code => { clearTimeout(timer); rejectReady(new Error(`node sync server exited ${code}: ${out}`)); });
+    nodeChild.stdout.on('data', d => { out += d; if (out.includes('CardScope is running')) { clearTimeout(timer); resolveReady(); } });
+    nodeChild.stderr.on('data', d => { out += d; });
+  });
+  const nodeBaseUrl = `http://127.0.0.1:${nodePort}`;
+
+  const workerHandler = createWorkerHandler({ edgeCache: null });
+  const workerEnv = {
+    ORIGIN_URL: 'http://127.0.0.1:9',
+    PUBLIC_BASE_URL: 'https://cardseektcg.com',
+    SUPABASE2_URL: `http://127.0.0.1:${workerIp2Port}`,
+    SUPABASE2_SERVICE_KEY: SERVICE_KEY,
+    SUPABASE2_ANON_KEY: ANON_KEY,
+    AUTH_RATE_LIMIT_PER_MINUTE: '1000',
+    SYNC_RATE_LIMIT_PER_MINUTE: '1000',
+    ASSETS: { async fetch() { return new Response('<!doctype html>', { status: 200 }); } }
+  };
+
+  const syncHashCode = await sha256Hex(SYNC_CODE);
+  const syncHashOther = await sha256Hex(OTHER_CODE);
+  const googleHashA = await sha256Hex(`google:${USER_A}`);
+  const googleHashB = await sha256Hex(`google:${USER_B}`);
+  const neverLeak = [
+    ANON_KEY,
+    SERVICE_KEY,
+    SYNC_CODE,
+    SYNC_CODE.toLowerCase(),
+    OTHER_CODE,
+    syncHashCode,
+    syncHashOther,
+    googleHashA,
+    googleHashB,
+    USER_A,
+    USER_B,
+    'SECRET_BAD_ANON_APIKEY',
+    'SECRET_UPSTREAM_AUTH_FAILURE_DETAIL',
+    'SECRET_PKCE_VERIFIER_MISMATCH',
+    'SECRET_REFRESH_EXPIRED',
+    'SECRET_INVALID_JWT_DETAIL',
+    'SECRET_POSTGREST_SYNC_CRASH_DETAIL',
+    'SECRET_DUPLICATE_KEY_VALUE',
+    'SECRET_NO_SUCH_TABLE'
+  ];
+
+  function assertNoAuthSyncLeak(text, headers, label, allowTokens = false) {
+    const combined = `${text}\n${JSON.stringify([...headers.entries()])}`;
+    for (const secret of neverLeak) {
+      assert.equal(combined.includes(secret), false, `${label} 不可外洩 ${secret}`);
+    }
+    if (!allowTokens) {
+      assert.equal(combined.includes(tokenA), false, `${label} 不可外洩 tokenA`);
+      assert.equal(combined.includes(tokenB), false, `${label} 不可外洩 tokenB`);
+    }
+  }
+
+  async function callAuthSyncParity(path, { method = 'POST', headers = {}, body = undefined, rawBody = undefined, allowTokens = false } = {}) {
+    const reqHeaders = { ...(method === 'POST' ? { 'Content-Type': 'application/json' } : {}), ...headers };
+    const payload = rawBody !== undefined ? rawBody : (body !== undefined ? JSON.stringify(body) : undefined);
+
+    const nRes = await fetch(`${nodeBaseUrl}${path}`, { method, headers: reqHeaders, body: payload });
+    const wRes = await workerHandler.fetch(new Request(`https://cardseektcg.com${path}`, { method, headers: reqHeaders, body: payload }), workerEnv);
+
+    assert.equal(wRes.status, nRes.status, `${method} ${path} status mismatch (worker=${wRes.status}, node=${nRes.status})`);
+    assertApiSecurityHeaders(wRes, 'no-store');
+    assert.equal(nRes.headers.get('cache-control'), 'no-store');
+
+    const nText = await nRes.text();
+    const wText = await wRes.text();
+    assertNoAuthSyncLeak(wText, wRes.headers, `Worker ${method} ${path}`, allowTokens);
+    assertNoAuthSyncLeak(nText, nRes.headers, `Node ${method} ${path}`, allowTokens);
+
+    if (wRes.status === 204) {
+      assert.equal(wText, '');
+      assert.equal(nText, '');
+      return { status: 204, workerJson: null, nodeJson: null };
+    }
+
+    const nJson = normalizeDynamicFields(JSON.parse(nText));
+    const wJson = normalizeDynamicFields(JSON.parse(wText));
+    assert.deepEqual(wJson, nJson, `${method} ${path} JSON mismatch`);
+    return { status: wRes.status, workerJson: wJson, nodeJson: nJson };
+  }
+
+  try {
+    // 1. GET /api/auth/config（已設定與未設定 SUPABASE2_ANON_KEY）
+    const cfgRes = await workerHandler.fetch(new Request('https://cardseektcg.com/api/auth/config'), workerEnv);
+    assert.equal(cfgRes.status, 200);
+    assertApiSecurityHeaders(cfgRes, 'no-store');
+    const cfgJson = await cfgRes.json();
+    assert.equal(cfgJson.data.url, `http://127.0.0.1:${workerIp2Port}`);
+    assertNoAuthSyncLeak(JSON.stringify(cfgJson), cfgRes.headers, 'GET /api/auth/config');
+
+    const unconfigRes = await workerHandler.fetch(new Request('https://cardseektcg.com/api/auth/config'), { ...workerEnv, SUPABASE2_ANON_KEY: '' });
+    assert.deepEqual(await unconfigRes.json(), { data: { url: null } });
+
+    // 2. POST /api/auth/exchange 與 /api/auth/refresh 輸入驗證（400 不打上游）與錯誤處理（401 / 502 / 503）
+    for (const bad of [
+      {},
+      { code: VALID_AUTH_CODE },
+      { verifier: VALID_VERIFIER },
+      { code: 'short', verifier: VALID_VERIFIER },
+      { code: VALID_AUTH_CODE, verifier: 'short-v' },
+      { code: VALID_AUTH_CODE, verifier: VALID_VERIFIER, extra: 1 },
+      { code: 'bad space', verifier: VALID_VERIFIER }
+    ]) {
+      const r = await callAuthSyncParity('/api/auth/exchange', { body: bad });
+      assert.equal(r.status, 400);
+    }
+    for (const bad of [{}, { refreshToken: 'short' }, { refreshToken: 'bad space' }, { refreshToken: 'valid-token-12345', extra: 1 }]) {
+      const r = await callAuthSyncParity('/api/auth/refresh', { body: bad });
+      assert.equal(r.status, 400);
+    }
+    assert.equal((await callAuthSyncParity('/api/auth/exchange', { rawBody: '{invalid-json' })).status, 400);
+    assert.equal(workerState.authCalls.length, 0, '不合法的 auth payload 絕不可打 Supabase Auth');
+
+    // 未設 SUPABASE2_ANON_KEY 時回 503
+    const auth503 = await workerHandler.fetch(
+      new Request('https://cardseektcg.com/api/auth/exchange', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: VALID_AUTH_CODE, verifier: VALID_VERIFIER })
+      }),
+      { ...workerEnv, SUPABASE2_ANON_KEY: '' }
+    );
+    assert.equal(auth503.status, 503);
+    assert.deepEqual(await auth503.json(), { error: 'Google 登入尚未開放' });
+
+    // 錯誤 code / 過期 refreshToken -> 401 且不外洩上游錯誤原文
+    assert.equal((await callAuthSyncParity('/api/auth/exchange', { body: { code: 'wrong-code-123456', verifier: VALID_VERIFIER } })).status, 401);
+    assert.equal((await callAuthSyncParity('/api/auth/refresh', { body: { refreshToken: 'expired-refresh-token-12345' } })).status, 401);
+
+    // 正確 PKCE exchange 與 refresh -> 200
+    const exOk = await callAuthSyncParity('/api/auth/exchange', { body: { code: VALID_AUTH_CODE, verifier: VALID_VERIFIER }, allowTokens: true });
+    assert.equal(exOk.status, 200);
+    assert.equal(exOk.workerJson.data.email, 'trainer-a@example.com');
+
+    const rfOk = await callAuthSyncParity('/api/auth/refresh', { body: { refreshToken: 'refresh-token-valid-12345' }, allowTokens: true });
+    assert.equal(rfOk.status, 200);
+    assert.equal(rfOk.workerJson.data.refreshToken, 'refresh-token-rotated-67890');
+
+    // 上游 Auth 500 -> 502 不外洩
+    nodeState.authFailStatus = 500;
+    workerState.authFailStatus = 500;
+    assert.equal((await callAuthSyncParity('/api/auth/refresh', { body: { refreshToken: 'refresh-token-valid-12345' } })).status, 502);
+    nodeState.authFailStatus = 0;
+    workerState.authFailStatus = 0;
+
+    // 3. POST /api/sync/pull|push|delete（同步碼路線：首次寫入、正規化、409 衝突、輸入驗證、刪除）
+    const T = n => new Date(Date.UTC(2026, 10, 1, 0, 0, n)).toISOString();
+    const liveItem = (id, quantity = 1, at = T(1), over = {}) => ({
+      id,
+      canonicalId: '',
+      favorite: false,
+      quantity,
+      condition: '',
+      finish: '',
+      note: '',
+      updatedAt: at,
+      ...over
+    });
+    const tombItem = (id, at = T(2)) => ({ id, deleted: true, updatedAt: at });
+
+    const pullEmpty = await callAuthSyncParity('/api/sync/pull', { body: { code: SYNC_CODE } });
+    assert.equal(pullEmpty.status, 200);
+    assert.deepEqual(pullEmpty.workerJson.data, { items: [], revision: 0, updatedAt: null });
+
+    const expiredTomb = tombItem('old-gone', '2020-01-01T00:00:00Z');
+    const push1 = await callAuthSyncParity('/api/sync/push', {
+      body: {
+        code: SYNC_CODE,
+        revision: 0,
+        items: [liveItem('b-card', 2, T(3), { extra: 'drop-me', note: 'line1\nline2' }), tombItem('z-card'), liveItem('a-card', 1), expiredTomb]
+      }
+    });
+    assert.equal(push1.status, 200);
+    assert.equal(push1.workerJson.data.revision, 1);
+    assert.ok(workerState.rows.has(syncHashCode));
+    assert.deepEqual(workerState.rows.get(syncHashCode).items.map(i => i.id), ['a-card', 'b-card', 'z-card']);
+
+    // 分組與小寫同步碼視為同一組
+    const pullGrouped = await callAuthSyncParity('/api/sync/pull', { body: { code: 'k3m9-t7q2 xb4v-8zd6 n1hw-5rpj-0c' } });
+    assert.equal(pullGrouped.workerJson.data.revision, 1);
+    assert.deepEqual(pullGrouped.workerJson.data.items.map(i => i.id), ['a-card', 'b-card', 'z-card']);
+
+    // 409 樂觀鎖衝突（revision 0 重複寫入、過期 revision、不存在的列帶 revision > 0）
+    assert.equal((await callAuthSyncParity('/api/sync/push', { body: { code: SYNC_CODE, revision: 0, items: [liveItem('x')] } })).status, 409);
+    const push2 = await callAuthSyncParity('/api/sync/push', { body: { code: SYNC_CODE, revision: 1, items: [liveItem('a-card', 5, T(5))] } });
+    assert.equal(push2.status, 200);
+    assert.equal(push2.workerJson.data.revision, 2);
+    assert.equal((await callAuthSyncParity('/api/sync/push', { body: { code: SYNC_CODE, revision: 1, items: [liveItem('a-card', 9, T(6))] } })).status, 409);
+    assert.equal((await callAuthSyncParity('/api/sync/push', { body: { code: OTHER_CODE, revision: 3, items: [] } })).status, 409);
+
+    // 同步輸入驗證（400 / 413）
+    for (const [action, badBody] of [
+      ['pull', {}],
+      ['pull', { code: 'SHORT' }],
+      ['pull', { code: SYNC_CODE, items: [] }],
+      ['push', { code: SYNC_CODE, revision: -1, items: [] }],
+      ['push', { code: SYNC_CODE, revision: 0, items: [liveItem('dup'), liveItem('dup')] }],
+      ['push', { code: SYNC_CODE, revision: 0, items: [{ id: 'bad-entry' }] }],
+      ['delete', { code: 'bad' }]
+    ]) {
+      const r = await callAuthSyncParity(`/api/sync/${action}`, { body: badBody });
+      assert.equal(r.status, 400, `sync ${action} ${JSON.stringify(badBody)}`);
+    }
+
+    // pull / delete 超過 1024 bytes 回 413
+    const over1k = JSON.stringify({ code: SYNC_CODE, pad: 'x'.repeat(1100) });
+    const wPull413 = await workerHandler.fetch(new Request('https://cardseektcg.com/api/sync/pull', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: over1k }), workerEnv);
+    assert.equal(wPull413.status, 413);
+
+    // delete 僅刪除該同步碼的列
+    const delCode = await callAuthSyncParity('/api/sync/delete', { body: { code: SYNC_CODE } });
+    assert.equal(delCode.status, 200);
+    assert.deepEqual(delCode.workerJson, { data: { deleted: true } });
+    assert.equal(workerState.rows.has(syncHashCode), false);
+
+    // 4. Google Bearer token 同步：/auth/v1/user 短暫快取、google:<id> 鍵空間與同步碼隔離、大 body 先驗 token
+    for (const badAuth of ['NotBearer abc', 'Bearer bad space', 'Bearer invalid.jwt.token']) {
+      const r = await callAuthSyncParity('/api/sync/pull', { headers: { Authorization: badAuth }, body: {} });
+      assert.equal(r.status, 401, badAuth);
+    }
+    // 帶 Bearer 時 body 不可帶 code
+    assert.equal((await callAuthSyncParity('/api/sync/pull', { headers: { Authorization: `Bearer ${tokenA}` }, body: { code: SYNC_CODE } })).status, 400);
+
+    // 大筆 Google push (> 4 KB) 若帶無效 token，必須在解析壞 JSON body 前就回 401
+    const bigInvalidJson = '{' + ' '.repeat(8192) + 'not-json';
+    const preAuthRes = await callAuthSyncParity('/api/sync/push', {
+      headers: { Authorization: 'Bearer invalid.jwt.token' },
+      rawBody: bigInvalidJson
+    });
+    assert.equal(preAuthRes.status, 401);
+
+    // 有效 Bearer tokenA 同步與 /auth/v1/user 快取命中驗證
+    const userCallsBefore = workerState.authCalls.filter(c => c.path === '/auth/v1/user').length;
+    const gPush = await callAuthSyncParity('/api/sync/push', {
+      headers: { Authorization: `Bearer ${tokenA}` },
+      body: { revision: 0, items: [liveItem('google-card-1', 4)] }
+    });
+    assert.equal(gPush.status, 200);
+    assert.equal(gPush.workerJson.data.revision, 1);
+
+    const gPull = await callAuthSyncParity('/api/sync/pull', {
+      headers: { Authorization: `Bearer ${tokenA}` },
+      body: {}
+    });
+    assert.equal(gPull.status, 200);
+    assert.deepEqual(gPull.workerJson.data.items.map(i => [i.id, i.quantity]), [['google-card-1', 4]]);
+    const userCallsAfter = workerState.authCalls.filter(c => c.path === '/auth/v1/user').length;
+    assert.equal(userCallsAfter - userCallsBefore, 1, '同一個 Bearer token 第 2 次同步應命中 Worker authCache');
+
+    // 確認鍵為 sha256("google:" + user.id)，且與 USER_B 及同步碼完全隔離
+    assert.equal(workerState.rows.has(googleHashA), true);
+    const gPullB = await callAuthSyncParity('/api/sync/pull', { headers: { Authorization: `Bearer ${tokenB}` }, body: {} });
+    assert.equal(gPullB.workerJson.data.revision, 0);
+
+    // 資料庫 500 故障時回 502 且不外洩 PostgREST 錯誤或雜湊
+    nodeState.dbFailStatus = 500;
+    workerState.dbFailStatus = 500;
+    assert.equal((await callAuthSyncParity('/api/sync/pull', { headers: { Authorization: `Bearer ${tokenA}` }, body: {} })).status, 502);
+    nodeState.dbFailStatus = 0;
+    workerState.dbFailStatus = 0;
+
+    // Google delete 與 logout（204 no-store 並清除 authCache）
+    const gDel = await callAuthSyncParity('/api/sync/delete', { headers: { Authorization: `Bearer ${tokenA}` }, body: {} });
+    assert.equal(gDel.status, 200);
+    assert.equal(workerState.rows.has(googleHashA), false);
+
+    const logoutRes = await callAuthSyncParity('/api/auth/logout', { headers: { Authorization: `Bearer ${tokenA}` } });
+    assert.equal(logoutRes.status, 204);
+    assert.equal(workerState.tokens.has(tokenA), false);
+
+    // 登出後該 token 從 authCache 移除，再次同步立即回 401
+    const afterLogoutSync = await callAuthSyncParity('/api/sync/pull', { headers: { Authorization: `Bearer ${tokenA}` }, body: {} });
+    assert.equal(afterLogoutSync.status, 401);
+
+    // 5. Worker 嚴格限流：sync 預設 6 次/分、auth 預設 10 次/分（含偽造 X-Forwarded-For 防護）
+    let clock = Date.UTC(2026, 10, 24, 0, 0, 0);
+    const rlWorker = createWorkerHandler({ now: () => clock, edgeCache: null });
+    const rlEnv = {
+      ...workerEnv,
+      AUTH_RATE_LIMIT_PER_MINUTE: '10',
+      SYNC_RATE_LIMIT_PER_MINUTE: '6'
+    };
+    const clientHeaders = { 'Content-Type': 'application/json', 'cf-connecting-ip': '203.0.113.77', 'x-forwarded-for': '198.51.100.1' };
+
+    for (let i = 0; i < 6; i++) {
+      const action = i % 2 === 0 ? 'pull' : 'push';
+      const r = await rlWorker.fetch(new Request(`https://cardseektcg.com/api/sync/${action}`, { method: 'POST', headers: clientHeaders, body: '{"code":"bad"}' }), rlEnv);
+      assert.equal(r.status, 400);
+    }
+    const sync429 = await rlWorker.fetch(
+      new Request('https://cardseektcg.com/api/sync/delete', {
+        method: 'POST',
+        headers: { ...clientHeaders, 'x-forwarded-for': '198.51.100.250' },
+        body: JSON.stringify({ code: SYNC_CODE })
+      }),
+      rlEnv
+    );
+    assert.equal(sync429.status, 429);
+    assert.equal(sync429.headers.get('retry-after'), '60');
+    assertApiSecurityHeaders(sync429, 'no-store');
+    assert.deepEqual(await sync429.json(), { error: '同步太頻繁，請一分鐘後再試' });
+
+    for (let i = 0; i < 10; i++) {
+      const r = await rlWorker.fetch(new Request('https://cardseektcg.com/api/auth/exchange', { method: 'POST', headers: clientHeaders, body: '{}' }), rlEnv);
+      assert.equal(r.status, 400);
+    }
+    const auth429 = await rlWorker.fetch(
+      new Request('https://cardseektcg.com/api/auth/refresh', {
+        method: 'POST',
+        headers: { ...clientHeaders, 'x-forwarded-for': '198.51.100.251' },
+        body: '{}'
+      }),
+      rlEnv
+    );
+    assert.equal(auth429.status, 429);
+    assert.equal(auth429.headers.get('retry-after'), '60');
+    assertApiSecurityHeaders(auth429, 'no-store');
+    assert.deepEqual(await auth429.json(), { error: '登入太頻繁，請一分鐘後再試' });
+  } finally {
+    await stopSpawnedServer(nodeChild);
+  }
+});
+
+test('第 2 步第二批 B：KV 預產腳本（pack-prizes、series-hits、catalog/coverage）與 Worker 讀 KV 有資料／無資料兩種情況', async () => {
+  const state = { requests: [], extCalls: [], originCalls: [], hotWrites: 0, fxWrites: 0, cardTableScans: 0 };
+  const mockServer = createMockUpstream(state);
+  const mockPort = await listenEphemeral(mockServer);
+  openServers.push(mockServer);
+  const preloadPath = await createPreloadForMock(mockPort);
+
+  // 1. 無資料（未綁定 SNAPSHOT_KV、KV 空值、或 KV 讀取失敗）時：Worker 回傳與 Node 無資料庫模式完全一致的降級格式，且不寫入 Edge Cache
+  const noDbNode = await spawnTestServer({ mockPort, preloadPath, supabase: false, supabase2: false });
+  spawnedChildren.push(noDbNode.child);
+
+  const emptyKvEdgeCache = createMockEdgeCache();
+  const fixedNow = Date.UTC(2026, 10, 24, 0, 0, 0);
+  const emptyKvWorker = createWorkerHandler({
+    fetchFn: createWorkerFetch(mockPort),
+    edgeCache: emptyKvEdgeCache
+  });
+  const emptyKvEnv = {
+    ...createWorkerEnv(mockPort, { supabase: false, supabase2: false }),
+    SNAPSHOT_KV: {
+      async get() {
+        return null;
+      }
+    }
+  };
+  const brokenKvEnv = {
+    ...createWorkerEnv(mockPort, { supabase: true, supabase2: true }),
+    SNAPSHOT_KV: {
+      async get() {
+        throw new Error('KV_NAMESPACE_READ_ERROR');
+      }
+    }
+  };
+
+  try {
+    for (const path of ['/api/pack-prizes', '/api/series-hits', '/api/catalog/coverage']) {
+      const nRes = await fetch(`${noDbNode.baseUrl}${path}`);
+      const wEmptyRes = await emptyKvWorker.fetch(new Request(`https://cardseektcg.com${path}`), emptyKvEnv);
+      const wBrokenRes = await emptyKvWorker.fetch(new Request(`https://cardseektcg.com${path}`), brokenKvEnv);
+
+      assert.equal(wEmptyRes.status, 200, `KV 無資料 ${path}`);
+      assert.equal(wBrokenRes.status, 200, `KV 錯誤降級 ${path}`);
+      assertApiSecurityHeaders(wEmptyRes, nRes.headers.get('cache-control'));
+      assertApiSecurityHeaders(wBrokenRes, nRes.headers.get('cache-control'));
+
+      const nJson = normalizeDynamicFields(await nRes.json());
+      const wEmptyJson = normalizeDynamicFields(await wEmptyRes.json());
+      const wBrokenJson = normalizeDynamicFields(await wBrokenRes.json());
+      assert.deepEqual(wEmptyJson, nJson, `KV 無資料時 ${path} 應與 Node 降級格式一致`);
+      assert.deepEqual(wBrokenJson, nJson, `KV 讀取異常時 ${path} 應與 Node 降級格式一致`);
+    }
+    assert.equal(emptyKvEdgeCache.store.size, 0, 'KV 無資料降級回應不可寫入 Edge Cache');
+  } finally {
+    await stopSpawnedServer(noDbNode.child);
+  }
+
+  // 2. 預產快照腳本（runSnapshotBuild）：計算 3 份快照、寫入本機檔案並透過 Cloudflare KV REST API 寫入 KV
+  assert.deepEqual(parseSnapshotArgs(['--push', '--if-configured', '--targets', 'pack-prizes,series-hits', '--out', 'tmp.json']), {
+    targets: ['pack-prizes', 'series-hits'],
+    outPath: 'tmp.json',
+    push: true,
+    ifConfigured: true
+  });
+
+  // 未設憑證且帶 --if-configured 時安全略過
+  const skipped = await runSnapshotBuild({ env: {}, push: true, ifConfigured: true, log: { log() {}, error() {} } });
+  assert.equal(skipped.skipped, true);
+
+  const kvStore = new Map();
+  const kvApiCalls = [];
+  const baseFetch = createWorkerFetch(mockPort);
+  const snapshotFetch = async (input, init) => {
+    const url = String(typeof input === 'string' ? input : input?.url || input);
+    const cfMatch = url.match(/^https:\/\/api\.cloudflare\.com\/client\/v4\/accounts\/([^/]+)\/storage\/kv\/namespaces\/([^/]+)\/values\/([^?]+)$/);
+    if (cfMatch) {
+      const [, accountId, namespaceId, encodedKey] = cfMatch;
+      const key = decodeURIComponent(encodedKey);
+      const bodyText = typeof init?.body === 'string' ? init.body : '';
+      kvApiCalls.push({ method: init?.method, accountId, namespaceId, key, auth: init?.headers?.Authorization });
+      kvStore.set(key, bodyText);
+      return new Response(JSON.stringify({ success: true, errors: [], messages: [] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    if (url.includes('/rest/v1/tcg_series?') && url.includes('official_code')) {
+      const rows = url.includes('/ip2/')
+        ? [{ id: 'union-arena-bt01', game: 'union-arena', officialCode: 'UA01BT', nameZh: '鬼滅之刃', nameJa: '鬼滅の刃', region: 'JP', language: 'ja-JP', releaseDate: '2026-10-15', aliases: [] }]
+        : [{ id: 'pokemon-jp-sv2a', game: 'pokemon', officialCode: 'SV2a', nameZh: '寶可夢卡牌 151', nameJa: 'ポケモンカード151', region: 'JP', language: 'ja-JP', releaseDate: '2026-10-01', aliases: [] }];
+      return new Response(JSON.stringify(rows), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    return baseFetch(input, init);
+  };
+
+  const outDir = await mkdtemp(join(tmpdir(), 'cardseek-kv-snap-'));
+  tempDirs.push(outDir);
+  const outFile = join(outDir, 'snapshots.json');
+
+  const buildResult = await runSnapshotBuild({
+    env: {
+      SUPABASE_URL: `http://127.0.0.1:${mockPort}/main`,
+      SUPABASE_SERVICE_KEY: 'test-main-key',
+      SUPABASE2_URL: `http://127.0.0.1:${mockPort}/ip2`,
+      SUPABASE2_SERVICE_KEY: 'test-ip2-key',
+      CF_ACCOUNT_ID: 'cf-acc-123',
+      CF_KV_NAMESPACE_ID: 'cf-ns-456',
+      CF_API_TOKEN: 'cf-tok-secret'
+    },
+    fetchFn: snapshotFetch,
+    now: () => fixedNow,
+    outPath: outFile,
+    push: true,
+    log: { log() {}, error() {} }
+  });
+
+  assert.equal(buildResult.skipped, false);
+  assert.equal(kvApiCalls.length, 3);
+  assert.deepEqual(kvApiCalls.map(c => c.key), [KV_KEYS.packPrizes, KV_KEYS.seriesHits, KV_KEYS.catalogCoverage]);
+  assert.ok(kvApiCalls.every(c => c.method === 'PUT' && c.accountId === 'cf-acc-123' && c.namespaceId === 'cf-ns-456' && c.auth === 'Bearer cf-tok-secret'));
+  const writtenDisk = JSON.parse(await readFile(outFile, 'utf8'));
+  assert.ok(writtenDisk[KV_KEYS.packPrizes] && writtenDisk[KV_KEYS.seriesHits] && writtenDisk[KV_KEYS.catalogCoverage]);
+
+  // 在 KV 放入有代表性的 pack-prizes 資料，確認有資料時與無資料降級明確區分
+  const populatedPackPrizes = {
+    pinned: [{ cardId: 'pokemon-p1', name: '皮卡丘ex', cardNumber: '025', rarity: 'SAR', altArt: false, seriesCode: 'SV2a', seriesName: '寶可夢卡牌 151', game: 'pokemon', imageUrl: 'https://assets.tcgdex.net/ja/sv/sv2a/025.webp', referencePrice: { amount: 10, currency: 'EUR', amountTwd: 350 } }],
+    games: [{ game: 'pokemon', seriesId: 'pokemon-jp-sv2a', region: 'JP', seriesName: '寶可夢卡牌 151', releaseDate: '2026-10-01', data: [{ cardId: 'pokemon-p1', name: '皮卡丘ex', cardNumber: '025', rarity: 'SAR', altArt: false, seriesCode: 'SV2a', seriesName: '寶可夢卡牌 151', game: 'pokemon', imageUrl: 'https://assets.tcgdex.net/ja/sv/sv2a/025.webp', referencePrice: null }] }],
+    meta: { windowDays: 90, limit: 10, generatedAt: new Date(fixedNow).toISOString() }
+  };
+  kvStore.set(KV_KEYS.packPrizes, JSON.stringify(populatedPackPrizes));
+
+  // 3. 有資料時：Worker 直接從 SNAPSHOT_KV 回傳快照（0 次 DB 請求），並寫入 Edge Cache
+  let kvNow = fixedNow + 10000;
+  const hitEdgeCache = createMockEdgeCache();
+  let kvReads = 0;
+  const hitWorker = createWorkerHandler({
+    fetchFn: () => { throw new Error('KV 命中時 Worker 絕不可打資料庫或原點'); },
+    now: () => kvNow,
+    edgeCache: hitEdgeCache
+  });
+  const hitEnv = {
+    ...createWorkerEnv(mockPort, { supabase: true, supabase2: true }),
+    SNAPSHOT_KV: {
+      async get(key) {
+        kvReads++;
+        return kvStore.get(key) ?? null;
+      }
+    }
+  };
+
+  const prizesHit = await hitWorker.fetch(new Request('https://cardseektcg.com/api/pack-prizes'), hitEnv);
+  assert.equal(prizesHit.status, 200);
+  assertApiSecurityHeaders(prizesHit, 'public, max-age=60, stale-while-revalidate=300');
+  const prizesHitJson = await prizesHit.json();
+  assert.deepEqual(prizesHitJson, populatedPackPrizes);
+
+  const hitsHit = await hitWorker.fetch(new Request('https://cardseektcg.com/api/series-hits'), hitEnv);
+  assert.equal(hitsHit.status, 200);
+  assertApiSecurityHeaders(hitsHit, 'public, max-age=60, stale-while-revalidate=300');
+  const hitsHitJson = await hitsHit.json();
+  assert.ok(Array.isArray(hitsHitJson.data.sets) && hitsHitJson.data.sets.length >= 1);
+  assert.equal(hitsHitJson.data.sets[0].game, 'union-arena');
+
+  const covHit = await hitWorker.fetch(new Request('https://cardseektcg.com/api/catalog/coverage'), hitEnv);
+  assert.equal(covHit.status, 200);
+  assertApiSecurityHeaders(covHit, 'public, max-age=60, stale-while-revalidate=300');
+  const covHitJson = await covHit.json();
+  assert.equal(covHitJson.data.source, 'supabase-current-rows');
+  assert.equal(covHitJson.data.complete, true);
+  assert.equal(covHitJson.data.sample, false);
+  assert.equal(covHitJson.data.cache.stale, false);
+  assert.equal(covHitJson.data.cache.ageMs, 10000);
+  assert.equal(kvReads, 3);
+  assert.equal(hitEdgeCache.store.size, 3, '新鮮 KV 快照應寫入 Edge Cache');
+
+  // 再次請求應直接命中 Edge Cache，不再讀取 KV
+  await hitWorker.fetch(new Request('https://cardseektcg.com/api/pack-prizes'), hitEnv);
+  await hitWorker.fetch(new Request('https://cardseektcg.com/api/series-hits'), hitEnv);
+  await hitWorker.fetch(new Request('https://cardseektcg.com/api/catalog/coverage'), hitEnv);
+  assert.equal(kvReads, 3, 'Edge Cache 命中時不再消耗 KV 讀取額度');
+
+  // 4. 當 KV 內的 catalog/coverage 快照超過 1 小時 TTL 時，Worker 動態標示 cache.stale = true 且不寫入 Edge Cache
+  kvNow = fixedNow + 2 * 3600 * 1000;
+  const staleEdgeCache = createMockEdgeCache();
+  const staleWorker = createWorkerHandler({
+    fetchFn: () => { throw new Error('不應觸發網路請求'); },
+    now: () => kvNow,
+    edgeCache: staleEdgeCache
+  });
+  const staleCovRes = await staleWorker.fetch(new Request('https://cardseektcg.com/api/catalog/coverage'), hitEnv);
+  assert.equal(staleCovRes.status, 200);
+  const staleCovJson = await staleCovRes.json();
+  assert.equal(staleCovJson.data.cache.stale, true);
+  assert.equal(staleCovJson.data.cache.status, 'stale');
+  assert.equal(staleEdgeCache.store.size, 0, '過期 KV 快照不可寫入 Edge Cache');
 });

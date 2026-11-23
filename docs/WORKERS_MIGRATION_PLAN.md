@@ -240,3 +240,73 @@
 | `/api/catalog`、`/api/products` | 暖實例 `WeakMap` 預序列化 JSON、背景更新改接 `ctx.waitUntil` | 冷啟動須組裝 1,200+ 系列與 250 張卡，並執行 `canonicalizeCatalog` 與 ~1.5 MB JSON 序列化，逼近或超過 10 ms CPU | **第 2C 批 KV 預產快照到位前，預設留代理** |
 
 - **部署設定建議**：第 2C 批 KV 預產快照到位前，建議於 `wrangler.toml`（或 Cloudflare Dashboard）設定 `MIGRATED_API = "all,-catalog,-products,-search"`（或 `"-catalog,-products,-search"`）；待第 2C 批 KV 快照完成後再切回全開。
+
+---
+
+## 第 2 步第二批（雲端同步、Google 登入與首頁統計 KV 預產）實作紀錄（2026-11-24）
+
+### 1. A 批：認證與收藏雲端同步寫入端點搬遷（7 支）
+- **已搬遷端點**（納入 `DEFAULT_MIGRATED_APIS` 共 30 支，支援單支如 `-sync-push`、`-auth-exchange` 或群組 `-auth`、` -sync` 切回代理）：
+  - `GET /api/auth/config`（`auth-config`）
+  - `POST /api/auth/exchange`（`auth-exchange`）
+  - `POST /api/auth/refresh`（`auth-refresh`）
+  - `POST /api/auth/logout`（`auth-logout`）
+  - `POST /api/sync/pull`（`sync-pull`）
+  - `POST /api/sync/push`（`sync-push`）
+  - `POST /api/sync/delete`（`sync-delete`）
+- **Node 與 Worker 共用核心**：
+  - 抽離純 Web 標準的 `providers/auth-sync.mjs`（零 `node:*`、零 `Buffer`、零 `AsyncLocalStorage`），以 Web Crypto `crypto.subtle.digest('SHA-256', ...)` 與純 JS Base64URL 解碼取代 `node:crypto` 與 `Buffer.from(..., 'base64url')`，由 `server.mjs` 與 `providers/read-api.mjs` 共用同一份 `createAuthSyncController`。
+  - 完整保留既有契約：PKCE 交換（`/auth/v1/token?grant_type=pkce`）、Refresh（`/auth/v1/token?grant_type=refresh_token`）、Logout（`204` + `Cache-Control: no-store` 並清除快取）、Bearer 驗證（`/auth/v1/user` 記憶體快取 `AUTH_CACHE_MS=120000`、不超過 JWT `exp`）、Google 鍵 `sha256('google:' + user.id)` 與同步碼鍵空間隔離、大筆 Google `push`（> 4 KB）先驗 token 再讀 body、`revision` 樂觀鎖與 `409` 衝突、全部回應 `Cache-Control: no-store`、絕不外洩同步碼／Token／雜湊／`user.id`／PostgREST 與 GoTrue 錯誤原文。
+- **嚴格限流防護**：
+  - `worker/index.mjs` 新增專屬 `syncLimiter`（預設 `SYNC_RATE_LIMIT_PER_MINUTE=6`，`pull`/`push`/`delete` 共用，超額回 `429 同步太頻繁，請一分鐘後再試`）與 `authLimiter`（預設 `AUTH_RATE_LIMIT_PER_MINUTE=10`，`exchange`/`refresh`/`logout` 共用，超額回 `429 登入太頻繁，請一分鐘後再試`），嚴格依 `cf-connecting-ip` 計數並忽略 `X-Forwarded-For`。
+
+### 2. B 批：首頁統計與收錄覆蓋率（`pack-prizes`、`series-hits`、`catalog/coverage`）預產與 Workers KV 方案
+
+#### 2.1 方案比較：GitHub Actions（Node 預產 ＋ Cloudflare API 寫 KV）vs. Worker Cron Trigger
+
+| 評估維度 | 方案一：GitHub Actions 排程（Node 跑現有計算 ＋ Cloudflare REST API 寫 KV）【選定方案】 | 方案二：Worker Cron Trigger（於 Worker `scheduled()` 內計算並寫入 KV） |
+| --- | --- | --- |
+| **CPU 時間限制** | **可行**：GitHub Actions Ubuntu runner 無 10 ms CPU 限制。`catalog/coverage` 掃描 ~7.5 萬張卡與 10.5 萬筆 printing 加上 `pack-prizes`、`series-hits` 系列排序需數秒 CPU，在 Node 環境可穩定完成。 | **不可行（致命限制）**：Workers 免費方案的 Cron Trigger **同樣受限於單次觸發 10 ms CPU**，在 Worker 內跑任一項重算皆會觸發 `Error 1102: Worker exceeded CPU time limit`。 |
+| **Subrequest（對外 `fetch`）上限** | **可行**：Node 無 50 次 subrequest 限制（`catalog/coverage` 整庫 keyset 分頁需 150–250+ 次查詢；`series-hits` 跨 7 遊戲 × 6 系列 + `loadCatalog` 亦超過 50 次查詢）。 | **不可行（致命限制）**：Workers 免費方案每次 Cron 觸發最多 **50 次 subrequest**，`coverage` 與 `series-hits` 皆會直接撞破上限而中斷。 |
+| **Workers KV 免費額度消耗** | KV 免費方案每日限制：**讀取 100,000 次、寫入 1,000 次、刪除 1,000 次、清單 1,000 次、總容量 1 GB**。GitHub Actions 每小時執行 1 次（每日 24 次）、每次寫入 3 個鍵（`snapshot:pack-prizes:v1`、`snapshot:series-hits:v1`、`snapshot:catalog-coverage:v1`），**每日僅消耗 `24 × 3 = 72` 次寫入（占免費寫入額度 7.2%）**，額度極為充裕。 | 若為繞過 50 subrequest 而拆成數十次分段 Cron 寫中間狀態至 KV，不僅受限於免費帳號最多 5 條 Cron Triggers，更會成倍消耗每日 1,000 次 KV 寫入配額。 |
+| **Worker 請求端表現** | Worker 收到 `GET /api/pack-prizes`、`GET /api/series-hits`、`GET /api/catalog/coverage` 時，先查 Edge Cache（60s），未命中時僅讀 1 次 `env.SNAPSHOT_KV.get(key)`（CPU **< 0.3 ms**、資料庫 subrequest **0 次**）；KV 無資料或尚未綁定時自動退回與 Node 無資料庫模式完全一致的降級格式（且降級回應不寫入 Edge Cache）。 | 無法在免費配額內完成預產。 |
+
+#### 2.2 已實作項目
+1. **共用快照與降級模組 `providers/kv-snapshots.mjs`**：
+   - 定義固定 KV 鍵名：`KV_KEYS.packPrizes = 'snapshot:pack-prizes:v1'`、`KV_KEYS.seriesHits = 'snapshot:series-hits:v1'`、`KV_KEYS.catalogCoverage = 'snapshot:catalog-coverage:v1'`。
+   - 實作 KV 讀取正規化（含 `catalog/coverage` 依目前時間動態計算 `cache.ageMs` 與超時標示 `cache.stale = true`）以及 KV 無資料時的降級建構器（`buildFallbackPackPrizes`、`buildFallbackSeriesHits`、`buildFallbackCatalogCoverage`）。
+   - 實作 `createSnapshotGenerator` 與 `putCloudflareKvValue`（呼叫 Cloudflare KV REST API `PUT /client/v4/accounts/:accountId/storage/kv/namespaces/:namespaceId/values/:key`）。
+2. **CLI 預產腳本 `scripts/build-kv-snapshots.mjs`**：
+   - 支援 `--targets pack-prizes,series-hits,catalog-coverage`、`--out <file.json>`、`--push`、`--if-configured`。
+   - 當資料庫覆蓋率掃描未完整（`complete === false`）或目錄退回 `catalog.json` fallback 時主動拒絕覆寫 KV，保護線上最後一份完整快照。
+3. **Worker 端點整合（`providers/read-api.mjs` + `worker/index.mjs`）**：
+   - 新增 `pack-prizes`（`GET /api/pack-prizes`）、`series-hits`（`GET /api/series-hits`）、`catalog-coverage`（`GET /api/catalog/coverage`），均支援 `MIGRATED_API` 單支切回代理（`-pack-prizes`、`-series-hits`、`-catalog-coverage`）。
+4. **GitHub Actions 排程 `.github/workflows/kv-snapshots.yml`**：
+   - 每小時（`15 * * * *`）與手動 `workflow_dispatch` 執行 `node scripts/build-kv-snapshots.mjs --push`（排程模式下帶 `--if-configured`，在 Secrets 尚未填妥前安全略過不報錯）。
+
+#### 2.3 `/api/cards/:id/price-history` 搬遷可行性與 `DecompressionStream` 規劃（本批僅規劃）
+- **現行資料結構**：最近 30 天讀主庫 `public.price_snapshots`；30 天前至 180 天讀私有 Supabase Storage bucket `price-archive`（`v1/manifest.json` 與 `v1/<YYYY-MM>/<shard>.json.gz`，`shard = sha1(card_id).readUInt32BE(0) % 32`）。
+- **Web 標準替代方案**：
+  - `node:zlib` (`gunzip`) → Web `DecompressionStream('gzip')` 串流解壓，並透過 reader 累計 byte 數限制最大解壓輸出 `ARCHIVE_DECODED_MAX_BYTES = 64 MB`。
+  - `node:crypto` → `crypto.subtle.digest('SHA-1', ...)`（取前 4 bytes Big-Endian `DataView.getUint32(0, false) % 32` 算 shard）與 `crypto.subtle.digest('SHA-256', ...)`（驗 manifest 12 碼 `shortDigest`）。
+- **CPU（10 ms）與 Subrequest（50 次）風險評估**：
+  - 單張作品卡（通常 1–2 個 physical shard）跨 6 個月約需抓取 `1 (manifest) + 6~12 (shards)` 個 `.json.gz` 分片（約 15 次 subrequests，低於 50 次上限）。
+  - **主要瓶頸在於 `JSON.parse` CPU**：目前 32 分片下單一 `<YYYY-MM>/<shard>.json.gz` 壓縮後約 60 KB、解壓後 JSON 約 300–500 KB。雖然 `DecompressionStream` 由底層 C++ 解壓極快，但在 Worker 單次請求內對 6–12 個 400 KB JSON 執行 `JSON.parse` 與數萬筆 tuple 走訪，冷啟動 CPU 將達 **6–18 ms**，在多版本卡上極易超過免費 10 ms CPU 上限。
+- **建議實施路徑（下一批落地）**：
+  1. **短期安全搬遷**：Worker 端以 `DecompressionStream('gzip')` 解壓並設定**單次請求分片讀取預算（例如最多讀 4–6 個分片檔）**＋ Edge Cache 1 小時快取；若該卡跨越分片數超過預算或封存讀取逾時，自動降級為「僅回傳資料庫最近 30 天快照並標示 `meta.archiveUnavailable = true`」（完全符合 `server.mjs:1164` 既有降級規格）。
+  2. **中期根治方案**：在 GitHub Actions 跑 `priceArchive` 時將分片數提升至 128（單檔縮小至 ~15 KB 壓縮／~90 KB 解壓）或預先產出近 180 天熱門卡走勢索引。
+
+#### 2.4 需要使用者親自執行的設定事項（Secrets 與 KV Namespace）
+1. **Cloudflare Workers Secrets（以 `npx wrangler secret put <NAME>` 設定）**：
+   - `SUPABASE2_ANON_KEY`：第二庫（`cardscope-ip2`）的 anon / publishable key（供 `/api/auth/*` PKCE 交換與 `/api/sync/*` Bearer 驗證呼叫 `/auth/v1/*` 使用）。
+2. **建立並綁定 Cloudflare Workers KV Namespace**：
+   - 執行 `npx wrangler kv namespace create SNAPSHOT_KV`，取得產生的 Namespace ID。
+   - 在 `wrangler.toml` 取消註解 `[[kv_namespaces]]` 區塊，將 `binding = "SNAPSHOT_KV"` 下方的 `id = ""` 填入該 Namespace ID。
+3. **GitHub Repository Secrets（Settings → Secrets and variables → Actions）**：
+   - `SUPABASE_URL`：主庫網址
+   - `SUPABASE_SERVICE_KEY`：主庫 service_role 金鑰
+   - `SUPABASE2_URL`：第二庫（`cardscope-ip2`）網址
+   - `SUPABASE2_SERVICE_KEY`：第二庫 service_role 金鑰
+   - `CF_ACCOUNT_ID`：Cloudflare Account ID
+   - `CF_KV_NAMESPACE_ID`：上方建立的 `SNAPSHOT_KV` Namespace ID
+   - `CF_API_TOKEN`：具備 `Workers KV Storage: Edit` 權限的 Cloudflare API Token
