@@ -543,10 +543,7 @@ test('wrangler.toml targets worker/index.mjs, worker/public, default origin, and
   for (const secretName of ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'SUPABASE2_URL', 'SUPABASE2_SERVICE_KEY', 'SUPABASE2_ANON_KEY']) {
     assert.match(toml, new RegExp(`^#.*\\b${secretName}\\b`, 'm'), `應在註解列出 ${secretName} 名稱`);
   }
-  assert.match(toml, /^#\s*\[\[kv_namespaces\]\]/m, '應在註解列出 [[kv_namespaces]] 綁定');
-  assert.match(toml, /^#\s*binding\s*=\s*"SNAPSHOT_KV"/m, '應在註解列出 SNAPSHOT_KV binding');
-  assert.match(toml, /^#\s*id\s*=\s*""/m, 'namespace id 應留空待使用者建立');
-});
+  assert.match(toml, /^\[\[kv_namespaces\]\]\nbinding = "SNAPSHOT_KV"\nid = "[0-9a-f]{32}"/m, 'SNAPSHOT_KV 綁定已啟用');});
 
 test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async () => {
   const originCalls = [];

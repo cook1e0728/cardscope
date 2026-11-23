@@ -39,11 +39,11 @@ PUBLIC_BASE_URL = "https://cardseektcg.com"
 # JPY_TO_TWD = "0.22"
 # USD_TO_TWD = "32"
 
-# 首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）Workers KV 綁定（由使用者建立 namespace 後填入 id 並取消註解）：
+# 首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）Workers KV 綁定（2026-11-24 已建立並啟用）：
 # 建立指令：npx wrangler kv namespace create SNAPSHOT_KV
-# [[kv_namespaces]]
-# binding = "SNAPSHOT_KV"
-# id = ""
+[[kv_namespaces]]
+binding = "SNAPSHOT_KV"
+id = "56b61bcf705c4090a8a006146cc0a1e6"
 
 # 部署前需以 `wrangler secret put <NAME>` 設定的機密環境變數名稱（嚴禁寫入設定值）：
 # - SUPABASE_URL
