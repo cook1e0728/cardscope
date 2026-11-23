@@ -76,7 +76,7 @@ export function createEbayListings({ clientId, clientSecret, fetchFn, now = () =
     tokenPending ??= (async () => {
       const response = await fetchFn(EBAY_TOKEN_URL, {
         method: 'POST', signal: AbortSignal.timeout(10000),
-        headers: { Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: { Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope'
       });
       if (!response.ok) throw new Error(`EBAY_TOKEN_${response.status}`);

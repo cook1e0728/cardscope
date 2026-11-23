@@ -71,6 +71,7 @@ test('ebayState and gradedState fold each section outcome into presence', () => 
   assert.equal(T.ebayState({ status: 'ok', items: [{ title: 'x', itemWebUrl: 'https://www.ebay.com/itm/1', price: { value: '1', currency: 'USD' } }] }), 'yes');
   assert.equal(T.ebayState({ status: 'ok', items: [] }), 'no');
   assert.equal(T.ebayState({ status: 'no-match' }), 'no');
+  assert.equal(T.ebayState({ status: 'not-configured' }), 'no');
   assert.equal(T.ebayState({ status: 'limited' }), 'error');
   assert.equal(T.gradedState({ status: 'ok' }), 'yes');
   assert.equal(T.gradedState({ status: 'no-sales' }), 'no');

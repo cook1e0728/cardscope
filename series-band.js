@@ -70,7 +70,7 @@
   let hitSets=[],hitsAsked=false;
   function loadHits(){
     if(hitsAsked||typeof fetch!=='function')return;hitsAsked=true;
-    fetch('/api/series-hits').then(response=>response.ok?response.json():null).then(body=>{if(Array.isArray(body?.sets)&&body.sets.length){hitSets=body.sets;renderHome()}}).catch(()=>{});
+    fetch('/api/series-hits').then(response=>response.ok?response.json():null).then(body=>{const sets=body?.data?.sets||body?.sets;if(Array.isArray(sets)&&sets.length){hitSets=sets;renderHome()}}).catch(()=>{});
   }
   function homeCard(item,extra){
     const SC=window.homeSeriesCard,{title,original}=SC.names(item),code=item.officialCode||'',hits=SC.hitsOf(SC.setFor(item,hitSets)),imageUrl=cover(item),

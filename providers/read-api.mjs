@@ -4,13 +4,41 @@ import { normalizeMarketRecord, withTwd } from './normalize.mjs';
 import { REFERENCE_BODY_MAX_BYTES, buildReferencePrices, referenceQueryParams, validateReferenceRequest } from './collection-valuation.mjs';
 import { createAuthSyncController } from './auth-sync.mjs';
 import {
+  EBAY_DAILY_LOOKUPS,
+  EBAY_SEARCH_URL,
+  EBAY_TOKEN_URL,
+  EBAY_TTL_MS,
+  ebayQuery,
+  pickListings
+} from './ebay-listings.mjs';
+import {
+  GRADED_DAILY_LOOKUPS,
+  GRADED_ENDPOINT,
+  GRADED_TTL_MS,
+  gradedQuery,
+  pickGradedCard,
+  summarizeGrades
+} from './graded-prices.mjs';
+import {
   KV_KEYS,
   buildFallbackPackPrizes,
   buildFallbackSeriesHits,
   normalizeKvCatalogCoverage,
   normalizeKvPackPrizes,
-  normalizeKvSeriesHits
+  normalizeKvSeriesHits,
+  normalizeKvSitemapIndex,
+  normalizeKvSitemapXml,
+  sitemapCardsKvKey
 } from './kv-snapshots.mjs';
+import {
+  applyNoindexToHtml,
+  applySeoToHtml,
+  cardSeo,
+  normalizeBaseUrl,
+  pageSitemapEntries,
+  renderUrlSet,
+  seriesSeo
+} from './seo.mjs';
 import { buildSeriesIndex, foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './search-query.mjs';
 import { catalogCollectionAllowed, imageDisplayPolicies, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './source-policy.mjs';
 import { createTcgdexPricing } from './tcgdex-pricing.mjs';
@@ -110,6 +138,391 @@ const RELATION_QUERY_MAX_BYTES = 8 * 1024;
 const RELATION_QUERY_CONCURRENCY = 4;
 const SEARCH_SUBREQUEST_BUDGET = 30;
 const BUYBACK_PROVIDER_GAMES = new Map([['pokemon', 'poc']]);
+const YUGIOH_CACHE_SOURCE = 'cardscope-yugioh-cache';
+
+const ARCHIVE_BUCKET = 'price-archive';
+const ARCHIVE_PREFIX = 'v1';
+const ARCHIVE_SHARDS = 32;
+const ARCHIVE_FORMAT_VERSION = 1;
+const ARCHIVE_DECODED_MAX_BYTES = 64 * 1024 * 1024;
+const ARCHIVE_CACHE_MAX_ENTRIES = 16;
+const ARCHIVE_CACHE_MAX_ROWS = 120000;
+const ARCHIVE_CACHE_TTL_MS = 60 * 60 * 1000;
+const ARCHIVE_MANIFEST_TTL_MS = 5 * 60 * 1000;
+const ARCHIVE_STORAGE_TIMEOUT_MS = 20000;
+const ARCHIVE_READ_DEADLINE_MS = 8000;
+const DEFAULT_ARCHIVE_SHARD_BUDGET = 6;
+const ARCHIVE_DIGEST_LENGTH = 12;
+const ARCHIVE_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const ARCHIVE_PROVIDERS = new Set(['cardmarket', 'tcgplayer']);
+const ARCHIVE_CURRENCIES = new Set(['EUR', 'USD']);
+const PRICE_HISTORY_TTL_MS = 3600000;
+const PRICE_HISTORY_CACHE_MAX = 150;
+const PRICE_SOURCE_LABELS = { cardmarket: 'Cardmarket', tcgplayer: 'TCGplayer' };
+const SEO_LOAD_TIMEOUT_MS = 1500;
+const SEO_CACHE_TTL_MS = 600000;
+const SEO_NEGATIVE_TTL_MS = 60000;
+const SEO_CACHE_MAX = 500;
+
+export function priceHistoryNote(series) {
+  const names = [...new Set((series || []).map(x => PRICE_SOURCE_LABELS[x.provider]).filter(Boolean))];
+  return `參考價為${names.length ? ` ${names.join('／')} 的` : ''}平台參考價（經 TCGdex 轉供），不是成交價或台灣行情；新台幣以今日匯率換算，歷史點位不代表當時匯率。`;
+}
+
+export function buildPriceHistory(rows, { card, requestedId, fx, now = Date.now() }) {
+  const groups = new Map();
+  const regionOf = cardId => (card?.printings || []).find(p => p.cardId === cardId)?.region || (card?.id === cardId ? card.region : null) || null;
+  for (const row of rows || []) {
+    const amount = Number(row.amount);
+    if (!row?.card_id || !row.snapshot_date || !Number.isFinite(amount)) continue;
+    const variant = row.provider === 'tcgplayer' ? String(row.variant || '').replace(/^tcgapi-/, '') : (row.variant || '');
+    const key = JSON.stringify([row.card_id, row.provider, variant, row.currency]);
+    let group = groups.get(key);
+    if (!group) {
+      group = {
+        cardId: row.card_id,
+        region: regionOf(row.card_id),
+        provider: row.provider,
+        variant,
+        currency: row.currency,
+        points: []
+      };
+      groups.set(key, group);
+    }
+    group.points.push({
+      date: String(row.snapshot_date).slice(0, 10),
+      amount,
+      amountTwd: amountToTwd(amount, row.currency, fx),
+      observedAt: row.observed_at || null
+    });
+  }
+  const series = [...groups.values()].map(g => ({
+    ...g,
+    points: g.points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+  }));
+  const cmp = (x, y) => (x < y ? -1 : x > y ? 1 : 0);
+  series.sort((a, b) =>
+    (b.cardId === requestedId) - (a.cardId === requestedId) ||
+    b.points.length - a.points.length ||
+    cmp(b.points.at(-1).date, a.points.at(-1).date) ||
+    cmp(a.cardId + a.provider + a.variant, b.cardId + b.provider + b.variant)
+  );
+  const from = new Date(now - PRICE_HISTORY_DAYS * 86400000).toISOString().slice(0, 10);
+  return {
+    series,
+    meta: {
+      exchangeRates: fx,
+      note: priceHistoryNote(series),
+      windowDays: PRICE_HISTORY_DAYS,
+      from,
+      events: marketEventsFor(card?.game, from, now),
+      generatedAt: new Date(now).toISOString()
+    }
+  };
+}
+
+const archivePad = shard => String(shard).padStart(2, '0');
+const archiveMonthOf = date => String(date).slice(0, 7);
+const archiveRowKey = row => `${row.card_id}\u0000${row.provider}\u0000${row.variant ?? ''}\u0000${String(row.snapshot_date).slice(0, 10)}`;
+const archiveCmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const compareArchiveRows = (a, b) =>
+  archiveCmp(a.card_id, b.card_id) ||
+  archiveCmp(a.provider, b.provider) ||
+  archiveCmp(a.variant, b.variant) ||
+  archiveCmp(a.snapshot_date, b.snapshot_date);
+const archiveShortDigest = digest => String(digest).slice(0, ARCHIVE_DIGEST_LENGTH);
+
+function normalizeArchiveRowWeb(row) {
+  const amount = Number(row?.amount);
+  const date = String(row?.snapshot_date ?? '').slice(0, 10);
+  if (
+    !row ||
+    typeof row.card_id !== 'string' ||
+    !row.card_id ||
+    row.card_id.length > 200 ||
+    !ARCHIVE_PROVIDERS.has(row.provider) ||
+    typeof (row.variant ?? '') !== 'string' ||
+    !ARCHIVE_CURRENCIES.has(row.currency) ||
+    !ARCHIVE_DATE_RE.test(date) ||
+    !Number.isFinite(amount) ||
+    !(amount > 0)
+  ) {
+    throw new Error(`ARCHIVE_ROW_INVALID: ${JSON.stringify(row)?.slice(0, 120)}`);
+  }
+  return {
+    card_id: row.card_id,
+    provider: row.provider,
+    variant: row.variant ?? '',
+    currency: row.currency,
+    snapshot_date: date,
+    amount: Math.round(amount * 100) / 100
+  };
+}
+
+function mergeSnapshotRowsWeb(dbRows, archiveRows) {
+  const map = new Map();
+  for (const row of archiveRows || []) map.set(archiveRowKey(row), row);
+  for (const row of dbRows || []) map.set(archiveRowKey(row), row);
+  return [...map.values()].sort(compareArchiveRows);
+}
+
+const shardMemo = new Map();
+async function shardOfWeb(cardId, shards = ARCHIVE_SHARDS) {
+  const key = `${shards}:${cardId}`;
+  const cached = shardMemo.get(key);
+  if (cached !== undefined) return cached;
+  const digest = await globalThis.crypto.subtle.digest('SHA-1', new TextEncoder().encode(String(cardId)));
+  const shard = new DataView(digest).getUint32(0, false) % shards;
+  shardMemo.set(key, shard);
+  while (shardMemo.size > 5000) shardMemo.delete(shardMemo.keys().next().value);
+  return shard;
+}
+
+async function sha256HexBytes(bytes) {
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function gunzipWebBounded(gzBytes, maxBytes = ARCHIVE_DECODED_MAX_BYTES) {
+  if (typeof globalThis.DecompressionStream !== 'function') {
+    throw new Error('ARCHIVE_CORRUPT: DecompressionStream unavailable');
+  }
+  const ds = new globalThis.DecompressionStream('gzip');
+  const stream = new Blob([gzBytes]).stream().pipeThrough(ds);
+  const reader = stream.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value instanceof Uint8Array ? value : new Uint8Array(value);
+      total += chunk.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        throw new Error('maxOutputLength exceeded');
+      }
+      chunks.push(chunk);
+    }
+  } catch (error) {
+    throw new Error(`ARCHIVE_CORRUPT: gunzip ${error?.message || error}`);
+  } finally {
+    reader.releaseLock();
+  }
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return merged;
+}
+
+async function decodeShardWeb(gzBytes, { month, shard } = {}) {
+  const bytes = await gunzipWebBounded(gzBytes, ARCHIVE_DECODED_MAX_BYTES);
+  let doc;
+  try {
+    doc = JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw new Error('ARCHIVE_CORRUPT: json');
+  }
+  if (doc?.v !== ARCHIVE_FORMAT_VERSION || !Array.isArray(doc.rows) || doc.shards !== ARCHIVE_SHARDS) {
+    throw new Error('ARCHIVE_CORRUPT: header');
+  }
+  if ((month != null && doc.month !== month) || (shard != null && doc.shard !== shard)) {
+    throw new Error(`ARCHIVE_CORRUPT: expected ${month}/${shard}, got ${doc.month}/${doc.shard}`);
+  }
+  const rows = doc.rows.map(tuple =>
+    normalizeArchiveRowWeb({
+      card_id: tuple?.[0],
+      provider: tuple?.[1],
+      variant: tuple?.[2],
+      currency: tuple?.[3],
+      snapshot_date: tuple?.[4],
+      amount: tuple?.[5]
+    })
+  );
+  for (const row of rows) {
+    if (archiveMonthOf(row.snapshot_date) !== doc.month || (await shardOfWeb(row.card_id)) !== doc.shard) {
+      throw new Error(`ARCHIVE_CORRUPT: row outside ${doc.month}/${doc.shard}`);
+    }
+  }
+  const digest = await sha256HexBytes(bytes);
+  return { rows, digest, month: doc.month, shard: doc.shard };
+}
+
+function createWebArchiveReader({ getEnv, fetchFn, now }) {
+  const cache = new Map();
+  const pending = new Map();
+  let manifestEntry = null;
+  let manifestPending = null;
+  let cachedRows = 0;
+
+  const evict = () => {
+    while (cache.size > ARCHIVE_CACHE_MAX_ENTRIES || (cachedRows > ARCHIVE_CACHE_MAX_ROWS && cache.size)) {
+      const [key, value] = cache.entries().next().value;
+      cache.delete(key);
+      cachedRows -= value.rowCount;
+    }
+  };
+  const drop = key => {
+    const hit = cache.get(key);
+    if (hit) {
+      cache.delete(key);
+      cachedRows -= hit.rowCount;
+    }
+  };
+
+  function getStorageConfig() {
+    const activeEnv = getEnv() || {};
+    const baseUrl = String(activeEnv.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+    const key = String(activeEnv.SUPABASE_SERVICE_KEY || '').trim();
+    if (!baseUrl || !key) return null;
+    const rawBudget = Number(activeEnv.PRICE_ARCHIVE_SHARD_BUDGET);
+    const shardBudget = Number.isFinite(rawBudget) && rawBudget > 0
+      ? Math.max(1, Math.floor(rawBudget))
+      : DEFAULT_ARCHIVE_SHARD_BUDGET;
+    return { baseUrl, key, shardBudget };
+  }
+
+  async function storageGetBytes(cfg, path, { version } = {}) {
+    const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    const bust = version
+      ? `?v=${encodeURIComponent(version)}`
+      : `?n=${now().toString(36)}${Math.random().toString(36).slice(2)}`;
+    const url = `${cfg.baseUrl}/storage/v1/object/authenticated/${ARCHIVE_BUCKET}/${encodedPath}${bust}`;
+    const response = await fetchFn(url, {
+      headers: {
+        apikey: cfg.key,
+        Authorization: `Bearer ${cfg.key}`,
+        'Cache-Control': 'no-cache'
+      },
+      signal: AbortSignal.timeout(ARCHIVE_STORAGE_TIMEOUT_MS)
+    });
+    if (response.status === 404) return null;
+    if (response.status === 400) {
+      const text = await response.clone().text().catch(() => '');
+      if (/"statusCode"\s*:\s*"?404/.test(text) || /not[_ ]found/i.test(text)) return null;
+    }
+    if (!response.ok) {
+      const text = (await response.text().catch(() => '')).slice(0, 160);
+      throw new Error(`ARCHIVE_STORAGE_GET_${response.status}: ${text}`);
+    }
+    return new Uint8Array(await response.arrayBuffer());
+  }
+
+  function parseManifestBytes(bytes) {
+    if (!bytes) return { v: ARCHIVE_FORMAT_VERSION, months: {} };
+    let doc;
+    try {
+      doc = JSON.parse(new TextDecoder().decode(bytes));
+    } catch {
+      throw new Error('ARCHIVE_MANIFEST_CORRUPT: json');
+    }
+    if (doc?.v !== ARCHIVE_FORMAT_VERSION || !doc.months || typeof doc.months !== 'object') {
+      throw new Error('ARCHIVE_MANIFEST_CORRUPT: header');
+    }
+    return doc;
+  }
+
+  async function loadManifest(cfg) {
+    if (manifestEntry && now() - manifestEntry.at < ARCHIVE_MANIFEST_TTL_MS) return manifestEntry.value;
+    if (manifestPending) return manifestPending;
+    manifestPending = storageGetBytes(cfg, `${ARCHIVE_PREFIX}/manifest.json`)
+      .then(bytes => {
+        const value = parseManifestBytes(bytes);
+        manifestEntry = { at: now(), value };
+        return value;
+      })
+      .finally(() => {
+        manifestPending = null;
+      });
+    return manifestPending;
+  }
+
+  async function loadShardRows(cfg, month, shard, expected) {
+    const key = `${month}|${shard}|${expected}`;
+    const hit = cache.get(key);
+    if (hit && now() - hit.at < ARCHIVE_CACHE_TTL_MS) {
+      cache.delete(key);
+      cache.set(key, hit);
+      return hit.byCard;
+    }
+    if (hit) drop(key);
+    if (pending.has(key)) return pending.get(key);
+    const task = (async () => {
+      const path = `${ARCHIVE_PREFIX}/${month}/${archivePad(shard)}.json.gz`;
+      let bytes = await storageGetBytes(cfg, path, { version: expected });
+      if (!bytes) throw new Error(`ARCHIVE_FILE_MISSING: ${month}/${archivePad(shard)} is in the manifest but not in the bucket`);
+      let decoded = await decodeShardWeb(bytes, { month, shard });
+      if (archiveShortDigest(decoded.digest) !== expected) {
+        bytes = await storageGetBytes(cfg, path);
+        decoded = bytes ? await decodeShardWeb(bytes, { month, shard }) : decoded;
+        if (archiveShortDigest(decoded.digest) !== expected) {
+          throw new Error(`ARCHIVE_STALE: ${month}/${archivePad(shard)} expected ${expected}, got ${archiveShortDigest(decoded.digest)}`);
+        }
+      }
+      const byCard = new Map();
+      for (const row of decoded.rows) {
+        const list = byCard.get(row.card_id);
+        if (list) list.push(row);
+        else byCard.set(row.card_id, [row]);
+      }
+      if (decoded.rows.length <= ARCHIVE_CACHE_MAX_ROWS) {
+        cache.set(key, { at: now(), rowCount: decoded.rows.length, byCard });
+        cachedRows += decoded.rows.length;
+        evict();
+      }
+      return byCard;
+    })().finally(() => {
+      pending.delete(key);
+    });
+    pending.set(key, task);
+    return task;
+  }
+
+  return {
+    async rowsFor(cardIds, { from } = {}) {
+      const cfg = getStorageConfig();
+      if (!cfg || !cardIds?.length) return [];
+      const ids = [...new Set(cardIds)];
+      const wanted = new Set(ids);
+      const fromMonth = from ? archiveMonthOf(from) : '0000-00';
+      const doc = await loadManifest(cfg);
+      const shards = [...new Set(await Promise.all(ids.map(id => shardOfWeb(id))))];
+      const plan = [];
+      for (const month of Object.keys(doc.months).sort()) {
+        if (month < fromMonth) continue;
+        for (const shard of shards) {
+          const entry = doc.months[month]?.[archivePad(shard)];
+          if (entry) plan.push([month, shard, entry.d]);
+        }
+      }
+      if (plan.length > cfg.shardBudget) {
+        throw new Error(`ARCHIVE_SHARD_BUDGET_EXCEEDED: ${plan.length} shards needed, budget is ${cfg.shardBudget}`);
+      }
+      const out = [];
+      const started = now();
+      const concurrency = 4;
+      for (let i = 0; i < plan.length; i += concurrency) {
+        if (now() - started > ARCHIVE_READ_DEADLINE_MS) {
+          throw new Error(`ARCHIVE_READ_TIMEOUT: ${i} of ${plan.length} files read`);
+        }
+        const loaded = await Promise.all(
+          plan.slice(i, i + concurrency).map(([month, shard, digest]) => loadShardRows(cfg, month, shard, digest))
+        );
+        for (const byCard of loaded) {
+          for (const id of wanted) {
+            for (const row of byCard.get(id) || []) {
+              if (!from || row.snapshot_date >= from) out.push(row);
+            }
+          }
+        }
+      }
+      return out.sort(compareArchiveRows);
+    }
+  };
+}
 
 function createSearchBudget(limit = SEARCH_SUBREQUEST_BUDGET) {
   let used = 0;
@@ -261,6 +674,17 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   const hotCardsCache = createBoundedSnapshotCache({ ttlMs: 3600000, maxStaleMs: 24 * 60 * 60 * 1000, now, serveStaleWhileRevalidate: true });
   const browseFacetFailures = new Map();
   const seriesBundleCache = new WeakMap();
+  const priceHistoryCache = new Map();
+  const archiveReader = createWebArchiveReader({ getEnv: () => currentEnv, fetchFn, now });
+  const seoCache = new Map();
+  const gradedCache = new Map();
+  const gradedPending = new Map();
+  let gradedQuota = { day: '', used: 0, syncedFromKv: false };
+  const ebayCache = new Map();
+  const ebayPending = new Map();
+  let ebayToken = null;
+  let ebayTokenPending = null;
+  let ebayQuota = { day: '', used: 0, syncedFromKv: false };
 
   function publicReason(label, error) {
     console.error(label, error?.message || error);
@@ -1915,6 +2339,444 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     }
   }
 
+  async function writeKvRaw(activeEnv, key, value, expirationTtl = null) {
+    const kv = activeEnv?.SNAPSHOT_KV || activeEnv?.CARDSCOPE_KV || null;
+    if (!kv || typeof kv.put !== 'function') return false;
+    try {
+      const payload = typeof value === 'string' ? value : JSON.stringify(value);
+      const opts = Number.isFinite(expirationTtl) && expirationTtl > 0 ? { expirationTtl: Math.floor(expirationTtl) } : undefined;
+      await kv.put(key, payload, opts);
+      return true;
+    } catch (error) {
+      console.error('kv snapshot write failed', key, error?.message || error);
+      return false;
+    }
+  }
+
+  function parseKvJson(raw) {
+    if (!raw) return null;
+    if (typeof raw === 'object') return raw;
+    if (typeof raw !== 'string') return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  // ---- Price History (/api/cards/:id/price-history) ----
+  async function loadPriceHistory(card, requestedId) {
+    const current = now();
+    const ids = priceHistoryCardIds(card, requestedId);
+    const from = new Date(current - PRICE_HISTORY_DAYS * 86400000).toISOString().slice(0, 10);
+    const [rows, fxResult] = await Promise.all([
+      db.fetchAll(
+        `/price_snapshots?${new URLSearchParams({
+          select: 'card_id,provider,variant,currency,snapshot_date,amount,observed_at',
+          card_id: `in.(${ids.map(id => `"${id.replaceAll('"', '')}"`).join(',')})`,
+          snapshot_date: `gte.${from}`,
+          order: 'card_id.asc,provider.asc,variant.asc,snapshot_date.asc'
+        })}`,
+        1000,
+        { db: 'main', maxPages: 25 }
+      ),
+      getTwdRates()
+    ]);
+    let archived = [];
+    let archiveUnavailable = false;
+    try {
+      archived = await archiveReader.rowsFor(ids, { from });
+    } catch (error) {
+      archiveUnavailable = true;
+      console.error('price archive unavailable', error?.message || error);
+    }
+    const body = buildPriceHistory(mergeSnapshotRowsWeb(rows, archived), {
+      card,
+      requestedId,
+      fx: fxResult.data,
+      now: current
+    });
+    const catalogEvents = await loadCatalogEvents(current).catch(() => []);
+    body.meta.events = mergeMarketEvents(
+      body.meta.events,
+      catalogEvents.filter(event => event.game === card?.game && event.date >= from)
+    );
+    if (archiveUnavailable) body.meta.archiveUnavailable = true;
+    return body;
+  }
+
+  function priceHistoryCached(card, requestedId) {
+    const current = now();
+    const hit = priceHistoryCache.get(requestedId);
+    if (hit && (hit.pending || current - hit.at < PRICE_HISTORY_TTL_MS)) return hit.promise;
+    const entry = { pending: true, at: 0, promise: null };
+    entry.promise = loadPriceHistory(card, requestedId).then(
+      value => {
+        entry.pending = false;
+        entry.at = now() - (value.meta?.archiveUnavailable ? PRICE_HISTORY_TTL_MS - 60000 : 0);
+        return value;
+      },
+      error => {
+        priceHistoryCache.delete(requestedId);
+        throw error;
+      }
+    );
+    priceHistoryCache.set(requestedId, entry);
+    while (priceHistoryCache.size > PRICE_HISTORY_CACHE_MAX) {
+      priceHistoryCache.delete(priceHistoryCache.keys().next().value);
+    }
+    return entry.promise;
+  }
+
+  async function priceHistoryResponse(requestedId) {
+    let loaded = null;
+    try {
+      loaded = await getCard(requestedId);
+    } catch {
+      return {
+        status: 200,
+        body: {
+          series: [],
+          meta: {
+            unavailable: 'price-history-unavailable',
+            note: priceHistoryNote([]),
+            generatedAt: new Date(now()).toISOString()
+          }
+        }
+      };
+    }
+    if (!loaded?.card) return { status: 404, body: { error: '找不到這張卡' } };
+    if (!db.supabaseConfigured()) {
+      return {
+        status: 200,
+        body: {
+          series: [],
+          meta: {
+            note: priceHistoryNote([]),
+            windowDays: PRICE_HISTORY_DAYS,
+            generatedAt: new Date(now()).toISOString()
+          }
+        }
+      };
+    }
+    try {
+      return { status: 200, body: await priceHistoryCached(loaded.card, requestedId) };
+    } catch {
+      return {
+        status: 200,
+        body: {
+          series: [],
+          meta: {
+            unavailable: 'price-history-unavailable',
+            note: priceHistoryNote([]),
+            windowDays: PRICE_HISTORY_DAYS,
+            generatedAt: new Date(now()).toISOString()
+          }
+        }
+      };
+    }
+  }
+
+  // ---- Graded Prices (/api/graded-prices) & eBay Listings (/api/ebay-listings) ----
+  async function lookupGradedPrices(input, ctx) {
+    const query = gradedQuery(input);
+    if (!query) return { status: 'unsupported' };
+    const apiKey = String(currentEnv?.POKEMONPRICETRACKER_API_KEY || '').trim();
+    if (!apiKey) return { status: 'not-configured' };
+
+    const current = now();
+    const memHit = gradedCache.get(query.key);
+    if (memHit && memHit.expiresAt > current) return memHit.value;
+    if (gradedPending.has(query.key)) return gradedPending.get(query.key);
+
+    const kvCacheKey = `${KV_KEYS.gradedCachePrefix}${query.key}`;
+    const kvCached = parseKvJson(await readKvRaw(currentEnv, kvCacheKey));
+    if (kvCached && kvCached.value && Number(kvCached.expiresAt) > current) {
+      if (gradedCache.size >= 500) gradedCache.delete(gradedCache.keys().next().value);
+      gradedCache.set(query.key, { value: kvCached.value, expiresAt: Number(kvCached.expiresAt) });
+      return kvCached.value;
+    }
+
+    const today = new Date(current).toISOString().slice(0, 10);
+    const rawLimit = Number(currentEnv?.GRADED_DAILY_LOOKUPS);
+    const dailyLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : GRADED_DAILY_LOOKUPS;
+    if (gradedQuota.day !== today) {
+      gradedQuota = { day: today, used: 0, syncedFromKv: false };
+    }
+    if (!gradedQuota.syncedFromKv) {
+      const kvQuota = parseKvJson(await readKvRaw(currentEnv, KV_KEYS.gradedQuota));
+      if (kvQuota && kvQuota.day === today && Number.isFinite(Number(kvQuota.used))) {
+        gradedQuota.used = Math.max(gradedQuota.used, Number(kvQuota.used));
+      }
+      gradedQuota.syncedFromKv = true;
+    }
+    if (gradedQuota.used >= dailyLimit) return { status: 'daily-limit' };
+    gradedQuota.used++;
+    const quotaWrite = writeKvRaw(currentEnv, KV_KEYS.gradedQuota, { day: today, used: gradedQuota.used }, 172800);
+    if (ctx?.waitUntil) ctx.waitUntil(quotaWrite);
+
+    const task = (async () => {
+      const [fxResult, response] = await Promise.all([
+        getTwdRates(),
+        fetchFn(`${GRADED_ENDPOINT}?${new URLSearchParams({ ...query.params, includeEbay: 'true', limit: '1' })}`, {
+          headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+          signal: AbortSignal.timeout(15000)
+        })
+      ]);
+      if (!response.ok) throw new Error(`GRADED_${response.status}`);
+      const usdToTwd = fxResult.data?.rates?.USD;
+      const card = pickGradedCard(await response.json(), query);
+      const grades = card ? summarizeGrades(card, usdToTwd) : [];
+      const value = card
+        ? {
+            status: grades.length ? 'ok' : 'no-sales',
+            name: card.name || null,
+            setName: card.setName || null,
+            updatedAt: card.ebay?.updatedAt || null,
+            grades
+          }
+        : { status: 'no-match' };
+      const expiresAt = now() + GRADED_TTL_MS;
+      if (gradedCache.size >= 500) gradedCache.delete(gradedCache.keys().next().value);
+      gradedCache.set(query.key, { value, expiresAt });
+      const cacheWrite = writeKvRaw(currentEnv, kvCacheKey, { value, expiresAt }, Math.floor(GRADED_TTL_MS / 1000));
+      if (ctx?.waitUntil) ctx.waitUntil(cacheWrite);
+      return value;
+    })().finally(() => {
+      gradedPending.delete(query.key);
+    });
+    gradedPending.set(query.key, task);
+    return task;
+  }
+
+  async function getEbayAccessToken(clientId, clientSecret, ctx) {
+    const current = now();
+    if (ebayToken && ebayToken.expiresAt - 60000 > current) return ebayToken.value;
+    if (ebayTokenPending) return ebayTokenPending;
+    ebayTokenPending = (async () => {
+      const kvToken = parseKvJson(await readKvRaw(currentEnv, KV_KEYS.ebayToken));
+      if (kvToken && typeof kvToken.value === 'string' && Number(kvToken.expiresAt) - 60000 > now()) {
+        ebayToken = { value: kvToken.value, expiresAt: Number(kvToken.expiresAt) };
+        return ebayToken.value;
+      }
+      const response = await fetchFn(EBAY_TOKEN_URL, {
+        method: 'POST',
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials&scope=https%3A%2F%2Fapi.ebay.com%2Foauth%2Fapi_scope'
+      });
+      if (!response.ok) throw new Error(`EBAY_TOKEN_${response.status}`);
+      const body = await response.json();
+      if (typeof body?.access_token !== 'string' || !(Number(body.expires_in) > 0)) {
+        throw new Error('EBAY_TOKEN_INVALID');
+      }
+      const expiresInSec = Number(body.expires_in);
+      ebayToken = { value: body.access_token, expiresAt: now() + expiresInSec * 1000 };
+      const tokenWrite = writeKvRaw(currentEnv, KV_KEYS.ebayToken, ebayToken, Math.max(60, expiresInSec - 60));
+      if (ctx?.waitUntil) ctx.waitUntil(tokenWrite);
+      return ebayToken.value;
+    })().finally(() => {
+      ebayTokenPending = null;
+    });
+    return ebayTokenPending;
+  }
+
+  async function lookupEbayListings(input, ctx) {
+    const clientId = String(currentEnv?.EBAY_CLIENT_ID || '').trim();
+    const clientSecret = String(currentEnv?.EBAY_CLIENT_SECRET || '').trim();
+    const enabled = Boolean(clientId && clientSecret);
+    const query = ebayQuery(input);
+    if (!query) return { status: 'unsupported', enabled, limited: false, items: [] };
+    if (!enabled) return { status: 'not-configured', enabled: false, limited: false, items: [] };
+
+    const current = now();
+    const memHit = ebayCache.get(query.key);
+    if (memHit && memHit.expiresAt > current) {
+      return { status: memHit.items.length ? 'ok' : 'no-match', enabled: true, limited: false, items: memHit.items };
+    }
+    if (ebayPending.has(query.key)) return ebayPending.get(query.key);
+
+    const today = new Date(current + 8 * 3600e3).toISOString().slice(0, 10);
+    const rawLimit = Number(currentEnv?.EBAY_DAILY_LOOKUPS);
+    const dailyLimit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.floor(rawLimit) : EBAY_DAILY_LOOKUPS;
+    if (ebayQuota.day !== today) {
+      ebayQuota = { day: today, used: 0, syncedFromKv: false };
+    }
+    if (!ebayQuota.syncedFromKv) {
+      const kvQuota = parseKvJson(await readKvRaw(currentEnv, KV_KEYS.ebayQuota));
+      if (kvQuota && kvQuota.day === today && Number.isFinite(Number(kvQuota.used))) {
+        ebayQuota.used = Math.max(ebayQuota.used, Number(kvQuota.used));
+      }
+      ebayQuota.syncedFromKv = true;
+    }
+    if (ebayQuota.used >= dailyLimit) {
+      return { status: 'limited', enabled: true, limited: true, items: [] };
+    }
+    ebayQuota.used++;
+    // 控制 KV 寫入頻率（每日上限 1,000 次）：首筆、每 10 筆或達上限時同步至 KV。
+    if (dailyLimit <= 50 || ebayQuota.used === 1 || ebayQuota.used >= dailyLimit || ebayQuota.used % 10 === 0) {
+      const quotaWrite = writeKvRaw(currentEnv, KV_KEYS.ebayQuota, { day: today, used: ebayQuota.used }, 172800);
+      if (ctx?.waitUntil) ctx.waitUntil(quotaWrite);
+    }
+
+    const task = (async () => {
+      const auth = await getEbayAccessToken(clientId, clientSecret, ctx);
+      const response = await fetchFn(`${EBAY_SEARCH_URL}?${new URLSearchParams(query.params)}`, {
+        signal: AbortSignal.timeout(10000),
+        headers: {
+          Authorization: `Bearer ${auth}`,
+          'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
+          Accept: 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error(`EBAY_SEARCH_${response.status}`);
+      const items = pickListings(await response.json(), query.number);
+      if (ebayCache.size >= 500) ebayCache.delete(ebayCache.keys().next().value);
+      ebayCache.set(query.key, { items, expiresAt: now() + EBAY_TTL_MS });
+      return { status: items.length ? 'ok' : 'no-match', enabled: true, limited: false, items };
+    })().finally(() => {
+      ebayPending.delete(query.key);
+    });
+    ebayPending.set(query.key, task);
+    return task;
+  }
+
+  // ---- SEO (/?card=<id>, /?series=<id>) & Sitemaps (/sitemap.xml, /sitemaps/*.xml) ----
+  function seoCacheGet(key) {
+    const hit = seoCache.get(key);
+    if (hit && hit.expiresAt > now()) return hit.value;
+    seoCache.delete(key);
+    return undefined;
+  }
+
+  function seoCacheSet(key, value, ttlMs) {
+    seoCache.delete(key);
+    seoCache.set(key, { value, expiresAt: now() + ttlMs });
+    while (seoCache.size > SEO_CACHE_MAX) seoCache.delete(seoCache.keys().next().value);
+  }
+
+  async function loadSeoForCard(cardId, publicBaseUrl) {
+    const loaded = db.supabaseConfigured() ? await loadCardCached(cardId) : await getCard(cardId);
+    if (!loaded?.card) return null;
+    const { catalog, card } = loaded;
+    const seriesId = card.printings?.[0]?.seriesId || card.seriesId;
+    const series = (catalog.series || []).find(s => s.id === seriesId) || null;
+    const game = (catalog.games || []).find(g => g.id === card.game) || null;
+    return cardSeo({ card, series, game, baseUrl: publicBaseUrl, rarityLabel: rarityDisplayLabel });
+  }
+
+  async function loadSeoForSeries(seriesId, publicBaseUrl, ctx) {
+    let series = null;
+    let printingCount = null;
+    const targetDb = dbForId(seriesId);
+    if (targetDb === 'ip2' && !db.secondDbConfigured()) return null;
+    if (db.supabaseConfigured()) {
+      const rows = await db.fetchJson(
+        `/tcg_series?${new URLSearchParams({
+          select: 'id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,releaseDate:release_date',
+          id: `eq.${seriesId}`,
+          limit: '1'
+        })}`,
+        { db: targetDb }
+      );
+      series = rows?.[0] || null;
+      if (series) {
+        printingCount = await withTimeout(
+          db.fetchPage(`/tcg_printings?${new URLSearchParams({ select: 'id', series_id: `eq.${seriesId}`, limit: '1' })}`, { db: targetDb }).then(page => page.total),
+          800,
+          'SEO_TIMEOUT'
+        ).catch(() => null);
+      }
+    } else {
+      const catalog = await loadCatalogShared(ctx);
+      series = (catalog.series || []).find(s => s.id === seriesId) || null;
+    }
+    return series ? seriesSeo({ series, baseUrl: publicBaseUrl, printingCount }) : null;
+  }
+
+  async function loadSeo(target, publicBaseUrl, ctx = null, runtimeEnv = env) {
+    currentEnv = runtimeEnv || env;
+    const baseUrl = normalizeBaseUrl(publicBaseUrl || currentEnv?.PUBLIC_BASE_URL);
+    const key = `${target.kind}:${target.id}:${baseUrl}`;
+    let entry = seoCacheGet(key);
+    if (entry === undefined) {
+      try {
+        const seo = await withTimeout(
+          target.kind === 'card'
+            ? loadSeoForCard(target.id, baseUrl)
+            : loadSeoForSeries(target.id, baseUrl, ctx),
+          SEO_LOAD_TIMEOUT_MS,
+          'SEO_TIMEOUT'
+        );
+        entry = seo ? { seo } : { missing: true };
+        seoCacheSet(key, entry, seo ? SEO_CACHE_TTL_MS : SEO_NEGATIVE_TTL_MS);
+      } catch (error) {
+        console.error('seo lookup failed', error?.message || error);
+        return { fallback: true };
+      }
+    }
+    return entry;
+  }
+
+  function xmlRes(body) {
+    return new Response(body, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600'
+      }
+    });
+  }
+
+  async function handleSitemap(request, url, ctx, runtimeEnv = env) {
+    currentEnv = runtimeEnv || env;
+    const pathname = url.pathname;
+    const publicBaseUrl = normalizeBaseUrl(currentEnv?.PUBLIC_BASE_URL);
+    if (pathname === '/sitemaps/pages.xml') {
+      return xmlRes(renderUrlSet(pageSitemapEntries(publicBaseUrl, [...db.catalogGameIds()])));
+    }
+
+    const cacheReq = canonicalEdgeKeyRequest('sitemap', pathname);
+    const cached = await matchEdgeCache(cacheReq);
+    if (cached) return cached;
+
+    const indexDoc = normalizeKvSitemapIndex(await readKvRaw(currentEnv, KV_KEYS.sitemapIndex));
+    if (!indexDoc) {
+      if (!db.supabaseConfigured()) return jsonRes(503, { error: '尚未設定資料庫' });
+      return jsonRes(503, { error: 'Sitemap 暫時無法產生' });
+    }
+
+    if (pathname === '/sitemap.xml') {
+      const res = xmlRes(indexDoc.xml);
+      writeEdgeCache(ctx, cacheReq, res);
+      return res;
+    }
+
+    if (pathname === '/sitemaps/series.xml') {
+      const seriesXml = normalizeKvSitemapXml(await readKvRaw(currentEnv, KV_KEYS.sitemapSeries));
+      if (!seriesXml) {
+        return jsonRes(503, { error: db.supabaseConfigured() ? 'Sitemap 暫時無法產生' : '尚未設定資料庫' });
+      }
+      const res = xmlRes(seriesXml);
+      writeEdgeCache(ctx, cacheReq, res);
+      return res;
+    }
+
+    const cardFile = pathname.match(/^\/sitemaps\/cards-(\d+)\.xml$/);
+    const fileIndex = cardFile ? Number(cardFile[1]) : 0;
+    if (!fileIndex || fileIndex < 1 || fileIndex > indexDoc.cardFileCount) {
+      return jsonRes(404, { error: 'Not found' });
+    }
+    const cardXml = normalizeKvSitemapXml(await readKvRaw(currentEnv, sitemapCardsKvKey(fileIndex)));
+    if (!cardXml) return jsonRes(404, { error: 'Not found' });
+    const res = xmlRes(cardXml);
+    writeEdgeCache(ctx, cacheReq, res);
+    return res;
+  }
+
   // ---- Endpoint Dispatch ----
   async function handle(apiKey, request, url, ctx, runtimeEnv = env) {
     currentEnv = runtimeEnv || env;
@@ -2504,6 +3366,105 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           }
         }
 
+        case 'card-price-history': {
+          let tail;
+          try {
+            tail = decodeURIComponent(url.pathname.slice(11));
+          } catch {
+            return jsonRes(400, { error: '網址格式錯誤' });
+          }
+          const id = tail.slice(0, -14);
+          if (!validCardId(id)) return jsonRes(400, { error: '卡片 ID 格式不正確' });
+          const cacheReq = canonicalEdgeKeyRequest('price-history', `/api/cards/${encodeURIComponent(id)}/price-history`);
+          const cached = await matchEdgeCache(cacheReq, 'no-store');
+          if (cached) return cached;
+          const result = await priceHistoryResponse(id);
+          const res = jsonRes(result.status, result.body);
+          if (
+            result.status === 200 &&
+            db.supabaseConfigured() &&
+            !result.body?.meta?.archiveUnavailable &&
+            !result.body?.meta?.unavailable
+          ) {
+            writeEdgeCache(ctx, cacheReq, res, 'public, max-age=3600');
+          }
+          return res;
+        }
+
+        case 'graded-prices': {
+          try {
+            const data = await lookupGradedPrices(
+              {
+                tcgPlayerId: url.searchParams.get('tcgPlayerId'),
+                set: url.searchParams.get('set'),
+                number: url.searchParams.get('number')
+              },
+              ctx
+            );
+            return jsonRes(200, { data });
+          } catch (error) {
+            console.error('graded prices failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
+        case 'ebay-listings': {
+          const input = {
+            name: url.searchParams.get('name') || '',
+            set: url.searchParams.get('set') || '',
+            number: url.searchParams.get('number') || ''
+          };
+          const query = ebayQuery(input);
+          if (!query) return jsonRes(400, { error: '參數無效' });
+          const clientId = String(currentEnv?.EBAY_CLIENT_ID || '').trim();
+          const clientSecret = String(currentEnv?.EBAY_CLIENT_SECRET || '').trim();
+          if (!clientId || !clientSecret) {
+            return jsonRes(200, { data: { status: 'not-configured', enabled: false, limited: false, items: [] } });
+          }
+          const cacheReq = canonicalEdgeKeyRequest('ebay-listings', '/api/ebay-listings', { q: query.key });
+          const cached = await matchEdgeCache(cacheReq, 'no-store');
+          if (cached) return cached;
+          try {
+            const data = await lookupEbayListings(input, ctx);
+            const res = jsonRes(200, { data });
+            if (data.status === 'ok' || data.status === 'no-match') {
+              writeEdgeCache(ctx, cacheReq, res, 'public, max-age=3600');
+            }
+            return res;
+          } catch (error) {
+            console.error('ebay listings failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
+        case 'catalog-image-status': {
+          if (!db.supabaseConfigured()) return jsonRes(502, { error: '資料暫時無法讀取' });
+          const cacheReq = canonicalEdgeKeyRequest('image-status', '/api/catalog/image-status');
+          const cached = await matchEdgeCache(cacheReq, 'no-store');
+          if (cached) return cached;
+          try {
+            const data = await cachedBrowseRows(
+              'catalog-image-status',
+              async () => {
+                const [cards, cachedRows] = await Promise.all([
+                  db.fetchAll('/tcg_cards?select=id&source=eq.ygoprodeck', 1000, { db: 'main', maxPages: 20 }),
+                  db.fetchAll(`/card_images?select=card_id&source=eq.${YUGIOH_CACHE_SOURCE}`, 1000, { db: 'main', maxPages: 20 })
+                ]);
+                const total = (cards || []).length;
+                const cachedCount = (cachedRows || []).length;
+                return { total, cached: cachedCount, missing: Math.max(0, total - cachedCount) };
+              },
+              10 * 60 * 1000
+            );
+            const res = jsonRes(200, { data });
+            writeEdgeCache(ctx, cacheReq, res, 'public, max-age=600');
+            return res;
+          } catch (error) {
+            console.error('image status failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
         case 'card-market': {
           let tail;
           try {
@@ -2760,5 +3721,5 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     }
   }
 
-  return { handle };
+  return { handle, handleSitemap, loadSeo };
 }

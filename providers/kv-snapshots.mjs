@@ -1,4 +1,4 @@
-// 首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）的 Workers KV 快照鍵名、無資料降級格式、預產運算與 Cloudflare KV API 寫入器。
+// 首頁統計、收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）與 Sitemap 的 Workers KV 快照鍵名、無資料降級格式、預產運算與 Cloudflare KV API 讀寫器。
 // 零 node:*、零 Buffer、零 AsyncLocalStorage，可同時由 Worker（唯讀 KV + 降級）與 Node CLI 預產腳本匯入。
 import packPrizesConfig from '../data/pack-prizes.json' with { type: 'json' };
 import {
@@ -7,12 +7,25 @@ import {
   PACK_PRIZE_WINDOW_DAYS,
   SERIES_HIT_FETCH,
   SERIES_HIT_PER_GAME,
+  bandSeries,
   buildSeriesHits,
   mergePrizeRows,
+  pickSeriesHits,
   prizeCards,
   prizeRow,
   prizeSeriesCandidates
 } from './pack-prizes.mjs';
+import {
+  SITEMAP_MAX_URLS,
+  cardSitemapEntries,
+  chunkEntries,
+  mergeCardSitemapRows,
+  normalizeBaseUrl,
+  pageSitemapEntries,
+  renderSitemapIndex,
+  renderUrlSet,
+  seriesSitemapEntries
+} from './seo.mjs';
 import { createSupabaseClient, dbForGame, dbForId } from './supabase-client.mjs';
 import {
   BROWSE_CARD_SELECT,
@@ -47,15 +60,27 @@ import {
 export const KV_KEYS = Object.freeze({
   packPrizes: 'snapshot:pack-prizes:v1',
   seriesHits: 'snapshot:series-hits:v1',
-  catalogCoverage: 'snapshot:catalog-coverage:v1'
+  catalogCoverage: 'snapshot:catalog-coverage:v1',
+  sitemapIndex: 'snapshot:sitemap-index:v1',
+  sitemapSeries: 'snapshot:sitemap-series:v1',
+  sitemapCardsPrefix: 'snapshot:sitemap-cards:v1:',
+  gradedCachePrefix: 'graded:cache:v1:',
+  gradedQuota: 'graded:quota:v1',
+  ebayToken: 'ebay:token:v1',
+  ebayQuota: 'ebay:quota:v1'
 });
+
+export function sitemapCardsKvKey(index) {
+  return `${KV_KEYS.sitemapCardsPrefix}${index}`;
+}
 
 export const PACK_PRIZE_PINNED = Object.freeze(
   Array.isArray(packPrizesConfig?.pinned) ? packPrizesConfig.pinned.filter(id => typeof id === 'string' && id) : []
 );
 
-const COVERAGE_CARD_CHUNK = 1000;
-const RELATION_SCAN_PAGE_SIZE = 1000;
+const DEFAULT_COVERAGE_CARD_CHUNK = 400;
+const DEFAULT_RELATION_SCAN_PAGE_SIZE = 500;
+const DEFAULT_SITEMAP_PAGE_SIZE = 1000;
 const DEFAULT_COVERAGE_TTL_MS = 60 * 60 * 1000;
 const DEFAULT_COVERAGE_MAX_STALE_MS = 24 * 60 * 60 * 1000;
 
@@ -170,14 +195,18 @@ export function normalizeKvPackPrizes(raw) {
   if (!parsed || typeof parsed !== 'object') return null;
   const candidate = parsed.data && typeof parsed.data === 'object' && Array.isArray(parsed.data.games) ? parsed.data : parsed;
   if (!Array.isArray(candidate.pinned) || !Array.isArray(candidate.games)) return null;
+  const meta = {
+    windowDays: Number(candidate.meta?.windowDays) || PACK_PRIZE_WINDOW_DAYS,
+    limit: Number(candidate.meta?.limit) || PACK_PRIZE_LIMIT,
+    generatedAt: typeof candidate.meta?.generatedAt === 'string' ? candidate.meta.generatedAt : new Date().toISOString()
+  };
+  if (candidate.meta?.partial) meta.partial = true;
+  if (Array.isArray(candidate.meta?.missingGames) && candidate.meta.missingGames.length) meta.missingGames = candidate.meta.missingGames;
+  if (Array.isArray(candidate.meta?.staleGames) && candidate.meta.staleGames.length) meta.staleGames = candidate.meta.staleGames;
   return {
     pinned: candidate.pinned,
     games: candidate.games,
-    meta: {
-      windowDays: Number(candidate.meta?.windowDays) || PACK_PRIZE_WINDOW_DAYS,
-      limit: Number(candidate.meta?.limit) || PACK_PRIZE_LIMIT,
-      generatedAt: typeof candidate.meta?.generatedAt === 'string' ? candidate.meta.generatedAt : new Date().toISOString()
-    }
+    meta
   };
 }
 
@@ -195,13 +224,17 @@ export function normalizeKvSeriesHits(raw) {
     ? parsed.data
     : (Array.isArray(parsed.sets) ? parsed : null);
   if (!inner) return null;
+  const meta = {
+    perGame: Number(inner.meta?.perGame) || SERIES_HIT_PER_GAME,
+    generatedAt: typeof inner.meta?.generatedAt === 'string' ? inner.meta.generatedAt : new Date().toISOString()
+  };
+  if (inner.meta?.partial) meta.partial = true;
+  if (Array.isArray(inner.meta?.missingGames) && inner.meta.missingGames.length) meta.missingGames = inner.meta.missingGames;
+  if (Array.isArray(inner.meta?.staleGames) && inner.meta.staleGames.length) meta.staleGames = inner.meta.staleGames;
   return {
     data: {
       sets: inner.sets,
-      meta: {
-        perGame: Number(inner.meta?.perGame) || SERIES_HIT_PER_GAME,
-        generatedAt: typeof inner.meta?.generatedAt === 'string' ? inner.meta.generatedAt : new Date().toISOString()
-      }
+      meta
     }
   };
 }
@@ -225,7 +258,7 @@ export function normalizeKvCatalogCoverage(raw, { nowMs = Date.now(), ttlMs = DE
   const baseMs = baseIso ? Date.parse(baseIso) : NaN;
   const effectiveBaseMs = Number.isFinite(baseMs) ? baseMs : nowMs;
   const ageMs = Math.max(0, nowMs - effectiveBaseMs);
-  const stale = ageMs >= ttlMs;
+  const stale = ageMs >= ttlMs || Boolean(report.cache?.stale);
   const cache = {
     status: stale ? 'stale' : (report.cache?.status || 'hit'),
     stale,
@@ -248,6 +281,56 @@ export function normalizeKvCatalogCoverage(raw, { nowMs = Date.now(), ttlMs = DE
   };
 }
 
+/**
+ * 正規化從 KV 讀出的 sitemap index（支援純 XML 字串或 { index, cardFileCount, generatedAt } JSON）。
+ */
+export function normalizeKvSitemapIndex(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('<?xml') || trimmed.startsWith('<sitemapindex')) {
+      const cardMatches = [...trimmed.matchAll(/\/sitemaps\/cards-(\d+)\.xml/g)].map(m => Number(m[1])).filter(Number.isFinite);
+      const cardFileCount = cardMatches.length ? Math.max(...cardMatches) : 0;
+      return { xml: raw, cardFileCount };
+    }
+    try {
+      raw = JSON.parse(trimmed);
+    } catch {
+      return null;
+    }
+  }
+  if (!raw || typeof raw !== 'object') return null;
+  const xml = typeof raw.index === 'string' ? raw.index : (typeof raw.xml === 'string' ? raw.xml : null);
+  if (!xml || (!xml.includes('<sitemapindex') && !xml.includes('<urlset'))) return null;
+  const cardMatches = [...xml.matchAll(/\/sitemaps\/cards-(\d+)\.xml/g)].map(m => Number(m[1])).filter(Number.isFinite);
+  const inferredCount = cardMatches.length ? Math.max(...cardMatches) : 0;
+  const cardFileCount = Number.isInteger(raw.cardFileCount) && raw.cardFileCount >= 0 ? raw.cardFileCount : inferredCount;
+  return { xml, cardFileCount };
+}
+
+/**
+ * 正規化從 KV 讀出的單一 sitemap XML（series.xml 或 cards-N.xml，支援純 XML 字串或 { xml } JSON）。
+ */
+export function normalizeKvSitemapXml(raw) {
+  if (!raw) return null;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith('<?xml') || trimmed.startsWith('<urlset') || trimmed.startsWith('<sitemapindex')) {
+      return raw;
+    }
+    try {
+      raw = JSON.parse(trimmed);
+    } catch {
+      return null;
+    }
+  }
+  if (!raw || typeof raw !== 'object') return null;
+  const xml = typeof raw.xml === 'string' ? raw.xml : (typeof raw.series === 'string' ? raw.series : null);
+  return xml && (xml.includes('<urlset') || xml.includes('<sitemapindex')) ? xml : null;
+}
+
 export function slimCoverageGame(entry) {
   const keys = entry.linkAudit?.duplicateProviderKeys || [];
   return {
@@ -268,20 +351,48 @@ function relationPaginationError(reason) {
   return error;
 }
 
+const sleep = ms => (ms > 0 ? new Promise(resolve => setTimeout(resolve, ms)) : Promise.resolve());
+
 /**
  * 供 GitHub Actions / CLI 預產腳本使用的完整快照產生器（在 Node 執行，無 10 ms CPU 與 50 subrequest 限制）。
  */
-export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, now = Date.now } = {}) {
+export function createSnapshotGenerator({
+  env = {},
+  fetchFn = globalThis.fetch,
+  now = Date.now,
+  maxRetries = Number(env?.SNAPSHOT_QUERY_RETRIES ?? 3),
+  retryDelayMs = Number(env?.SNAPSHOT_RETRY_DELAY_MS ?? 300),
+  cardChunkSize = Number(env?.COVERAGE_CARD_CHUNK) || DEFAULT_COVERAGE_CARD_CHUNK,
+  relationPageSize = Number(env?.COVERAGE_RELATION_PAGE_SIZE) || DEFAULT_RELATION_SCAN_PAGE_SIZE
+} = {}) {
   const db = createSupabaseClient({ env, fetchFn, defaultTimeoutMs: 25000 });
   const jpyToTwdFallback = Number(env?.JPY_TO_TWD || 0.22);
   const usdToTwdFallback = Number(env?.USD_TO_TWD || 32);
+  const retries = Math.max(1, Math.floor(Number(maxRetries) || 3));
+  const baseDelay = Math.max(0, Number(retryDelayMs) || 0);
+
+  async function withRetry(fn, { attempts = retries, onRetry = null } = {}) {
+    let lastError;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        return await fn(attempt);
+      } catch (error) {
+        lastError = error;
+        if (error?.code === 'RELATION_PAGINATION_INVALID' || attempt >= attempts) break;
+        const delay = baseDelay * (2 ** (attempt - 1));
+        onRetry?.(attempt, error, delay);
+        await sleep(delay);
+      }
+    }
+    throw lastError;
+  }
 
   async function loadRates() {
     if (!db.supabaseConfigured()) {
       return { TWD: 1, JPY: jpyToTwdFallback, USD: usdToTwdFallback, EUR: 35 };
     }
     try {
-      const rows = await db.fetchJson('/exchange_rates?select=currency,rate_to_twd,fetched_at&order=fetched_at.desc&limit=30', { db: 'main' });
+      const rows = await withRetry(() => db.fetchJson('/exchange_rates?select=currency,rate_to_twd,fetched_at&order=fetched_at.desc&limit=30', { db: 'main' }));
       const rates = { TWD: 1, JPY: jpyToTwdFallback, USD: usdToTwdFallback, EUR: 35 };
       const seen = new Set();
       for (const row of rows || []) {
@@ -302,8 +413,8 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     if (!unique.length || !db.supabaseConfigured()) return cards;
     try {
       const [rows, priorRows, rates] = await Promise.all([
-        db.fetchJson('/rpc/price_reference_best', { db: 'main', method: 'POST', body: JSON.stringify({ p_ids: unique }) }),
-        db.fetchJson('/rpc/price_reference_prior', { db: 'main', method: 'POST', body: JSON.stringify({ p_ids: unique, p_days: 7 }) }).catch(() => []),
+        withRetry(() => db.fetchJson('/rpc/price_reference_best', { db: 'main', method: 'POST', body: JSON.stringify({ p_ids: unique }) })),
+        withRetry(() => db.fetchJson('/rpc/price_reference_prior', { db: 'main', method: 'POST', body: JSON.stringify({ p_ids: unique, p_days: 7 }) })).catch(() => []),
         loadRates()
       ]);
       const priorByKey = new Map((Array.isArray(priorRows) ? priorRows : []).map(row => [`${row.card_id}|${row.provider}|${row.variant || ''}`, row]));
@@ -331,17 +442,17 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     const secondPromise = db.secondDbConfigured()
       ? withTimeout((async () => {
           const [g, s] = await Promise.all([
-            db.fetchJson(CATALOG_GAMES_PATH, { db: 'ip2', timeoutMs: db.secondDbTimeoutMs }),
-            db.fetchAll(CATALOG_SERIES_PATH, 1000, { db: 'ip2', timeoutMs: db.secondDbTimeoutMs })
+            withRetry(() => db.fetchJson(CATALOG_GAMES_PATH, { db: 'ip2', timeoutMs: db.secondDbTimeoutMs }), { attempts: 2 }),
+            withRetry(() => db.fetchAll(CATALOG_SERIES_PATH, 1000, { db: 'ip2', timeoutMs: db.secondDbTimeoutMs }), { attempts: 2 })
           ]);
           return { games: g || [], series: s || [] };
-        })(), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT').catch(() => ({ games: [], series: [] }))
+        })(), db.secondDbTimeoutMs * 2, 'SECOND_DB_TIMEOUT').catch(() => ({ games: [], series: [] }))
       : Promise.resolve({ games: [], series: [] });
 
     const [games, series, cards, second] = await Promise.all([
-      db.fetchJson(CATALOG_GAMES_PATH, { db: 'main' }),
-      db.fetchAll(CATALOG_SERIES_PATH, 1000, { db: 'main' }),
-      db.fetchJson('/tcg_cards?select=id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases&order=created_at.asc&limit=250', { db: 'main' }),
+      withRetry(() => db.fetchJson(CATALOG_GAMES_PATH, { db: 'main' })),
+      withRetry(() => db.fetchAll(CATALOG_SERIES_PATH, 1000, { db: 'main' })),
+      withRetry(() => db.fetchJson('/tcg_cards?select=id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases&order=created_at.asc&limit=250', { db: 'main' })),
       secondPromise
     ]);
     return canonicalizeCatalog({
@@ -359,16 +470,13 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     const safeSeries = String(seriesId || '').replace(/[^a-z0-9:_-]/gi, '');
     const targetDb = dbForGame(safeGame);
     if (targetDb === 'ip2' && !db.secondDbConfigured()) return [];
-    let rpc = null;
-    try {
-      rpc = await db.fetchJson('/rpc/browse_series_cards', {
+    const rpc = await withRetry(() =>
+      db.fetchJson('/rpc/browse_series_cards', {
         db: targetDb,
         method: 'POST',
         body: JSON.stringify({ p_game: safeGame, p_series: safeSeries })
-      });
-    } catch (error) {
-      console.error('snapshot browse_series_cards rpc failed; falling back to PostgREST', error?.message || error);
-    }
+      })
+    );
     if (rpc && Array.isArray(rpc.printings) && Array.isArray(rpc.cards) && Array.isArray(rpc.images)) {
       if (!rpc.cards.length) return [];
       const printingByCard = buildPrintingIndex(rpc.printings);
@@ -407,11 +515,13 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     const targetDb = dbForId(cardId);
     if (targetDb === 'ip2' && !db.secondDbConfigured()) return null;
     try {
-      const detail = await db.fetchJson('/rpc/get_card_detail', {
-        db: targetDb,
-        method: 'POST',
-        body: JSON.stringify({ p_id: String(cardId) })
-      });
+      const detail = await withRetry(() =>
+        db.fetchJson('/rpc/get_card_detail', {
+          db: targetDb,
+          method: 'POST',
+          body: JSON.stringify({ p_id: String(cardId) })
+        })
+      );
       if (!detail || !Array.isArray(detail.cards) || !detail.cards.length) return null;
       const hydrated = detail.cards.map(c => ({
         ...c,
@@ -427,42 +537,85 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     }
   }
 
-  async function computePackPrizesSnapshot( existingCatalog = null ) {
+  async function computePackPrizesSnapshot(existingCatalog = null, { previousSnapshot = null, loadPrevious = null } = {}) {
     const catalog = existingCatalog || await loadCatalogForSnapshot();
     const today = new Date(now()).toISOString().slice(0, 10);
     const seriesById = new Map((catalog.series || []).map(s => [s.id, s]));
     const games = [];
+    const missingGames = [];
+    const staleGames = [];
+    let resolvedPrevious = previousSnapshot;
+    let previousLoaded = previousSnapshot !== null;
+    const getPrevious = async () => {
+      if (!previousLoaded && typeof loadPrevious === 'function') {
+        previousLoaded = true;
+        resolvedPrevious = normalizeKvPackPrizes(await loadPrevious().catch(() => null));
+      } else if (resolvedPrevious) {
+        resolvedPrevious = normalizeKvPackPrizes(resolvedPrevious);
+      }
+      return resolvedPrevious;
+    };
+
+    let attemptedGames = 0;
+    let failedGames = 0;
+
     for (const rule of PACK_PRIZE_GAMES) {
-      for (const release of prizeSeriesCandidates(catalog.series, rule, today).slice(0, 3)) {
-        const versions = [];
-        for (const series of release) {
-          const cards = await browseSeriesCards(rule.game, {
-            region: series.region,
+      const candidates = prizeSeriesCandidates(catalog.series, rule, today).slice(0, 3);
+      if (!candidates.length) continue;
+      attemptedGames++;
+      let gameFailed = false;
+      let gameAdded = false;
+      for (const release of candidates) {
+        try {
+          const versions = [];
+          for (const series of release) {
+            const cards = await browseSeriesCards(rule.game, {
+              region: series.region,
+              seriesId: series.id,
+              sort: 'rarity-desc',
+              limit: BROWSE_PAGE_MAX,
+              offset: 0
+            });
+            if (rule.game === 'pokemon') await attachReferencePrices(cards);
+            versions.push({
+              region: series.region,
+              rows: prizeCards(rule.game, rule.top, cards, { seriesId: series.id, limit: BROWSE_PAGE_MAX }).map(card => prizeRow(card, series))
+            });
+          }
+          const data = mergePrizeRows(rule.game, versions);
+          if (data.length < 3) continue;
+          const [series] = release;
+          games.push({
+            game: rule.game,
             seriesId: series.id,
-            sort: 'rarity-desc',
-            limit: BROWSE_PAGE_MAX,
-            offset: 0
-          });
-          if (rule.game === 'pokemon') await attachReferencePrices(cards);
-          versions.push({
             region: series.region,
-            rows: prizeCards(rule.game, rule.top, cards, { seriesId: series.id, limit: BROWSE_PAGE_MAX }).map(card => prizeRow(card, series))
+            seriesName: series.nameZh || series.nameJa || series.nameEn || series.officialCode,
+            releaseDate: series.releaseDate,
+            data
           });
+          gameAdded = true;
+          break;
+        } catch (error) {
+          gameFailed = true;
+          console.error('pack-prizes game release failed', rule.game, error?.message || error);
         }
-        const data = mergePrizeRows(rule.game, versions);
-        if (data.length < 3) continue;
-        const [series] = release;
-        games.push({
-          game: rule.game,
-          seriesId: series.id,
-          region: series.region,
-          seriesName: series.nameZh || series.nameJa || series.nameEn || series.officialCode,
-          releaseDate: series.releaseDate,
-          data
-        });
-        break;
+      }
+      if (!gameAdded && gameFailed) {
+        failedGames++;
+        missingGames.push(rule.game);
+        const prev = await getPrevious();
+        const prevGame = prev?.games?.find(g => g?.game === rule.game);
+        if (prevGame) {
+          games.push({ ...prevGame, stale: true });
+          staleGames.push(rule.game);
+        }
       }
     }
+
+    if (attemptedGames > 0 && failedGames === attemptedGames) {
+      throw new Error('PACK_PRIZES_ALL_GAMES_FAILED');
+    }
+
     const pinnedCards = [];
     for (const id of PACK_PRIZE_PINNED) {
       const card = await loadPinnedCard(id);
@@ -480,31 +633,94 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
       meta: {
         windowDays: PACK_PRIZE_WINDOW_DAYS,
         limit: PACK_PRIZE_LIMIT,
-        generatedAt: new Date(now()).toISOString()
+        generatedAt: new Date(now()).toISOString(),
+        ...(missingGames.length ? { partial: true, missingGames } : {}),
+        ...(staleGames.length ? { staleGames } : {})
       }
     };
   }
 
-  async function computeSeriesHitsSnapshot(existingCatalog = null) {
+  async function computeSeriesHitsSnapshot(existingCatalog = null, { previousSnapshot = null, loadPrevious = null } = {}) {
     const catalog = existingCatalog || await loadCatalogForSnapshot();
     const today = new Date(now()).toISOString().slice(0, 10);
-    const sets = await buildSeriesHits({
-      series: catalog.series,
-      today,
-      fetchCards: series => browseSeriesCards(series.game, {
-        region: series.region,
-        seriesId: series.id,
-        sort: 'rarity-desc',
-        limit: SERIES_HIT_FETCH,
-        offset: 0
-      })
-    });
+    const list = bandSeries(catalog.series, today, SERIES_HIT_PER_GAME);
+    const byGame = new Map();
+    for (const s of list) {
+      if (!byGame.has(s.game)) byGame.set(s.game, []);
+      byGame.get(s.game).push(s);
+    }
+
+    let resolvedPrevious = previousSnapshot;
+    let previousLoaded = previousSnapshot !== null;
+    const getPrevious = async () => {
+      if (!previousLoaded && typeof loadPrevious === 'function') {
+        previousLoaded = true;
+        resolvedPrevious = normalizeKvSeriesHits(await loadPrevious().catch(() => null));
+      } else if (resolvedPrevious) {
+        resolvedPrevious = normalizeKvSeriesHits(resolvedPrevious);
+      }
+      return resolvedPrevious;
+    };
+
+    const sets = [];
+    const missingGames = [];
+    const staleGames = [];
+    let failedGames = 0;
+
+    for (const [gameId, gameSeriesList] of byGame.entries()) {
+      let gameFailedCount = 0;
+      const gameSets = [];
+      for (const item of gameSeriesList) {
+        try {
+          const cards = await browseSeriesCards(item.game, {
+            region: item.region,
+            seriesId: item.id,
+            sort: 'rarity-desc',
+            limit: SERIES_HIT_FETCH,
+            offset: 0
+          });
+          const hits = pickSeriesHits(item, cards);
+          if (hits.length) {
+            gameSets.push({
+              game: item.game,
+              region: item.region || null,
+              seriesIds: [item.id],
+              code: item.officialCode || null,
+              hits
+            });
+          }
+        } catch (error) {
+          gameFailedCount++;
+          console.error('series-hits series failed', gameId, item.id, error?.message || error);
+        }
+      }
+      if (gameFailedCount > 0 && gameSets.length === 0) {
+        failedGames++;
+        missingGames.push(gameId);
+        const prev = await getPrevious();
+        const prevSets = (prev?.data?.sets || []).filter(s => s?.game === gameId).map(s => ({ ...s, stale: true }));
+        if (prevSets.length) {
+          sets.push(...prevSets);
+          staleGames.push(gameId);
+        }
+      } else {
+        sets.push(...gameSets);
+        if (gameFailedCount > 0) missingGames.push(gameId);
+      }
+    }
+
+    if (byGame.size > 0 && failedGames === byGame.size) {
+      throw new Error('SERIES_HITS_ALL_GAMES_FAILED');
+    }
+
     return {
       data: {
         sets,
         meta: {
           perGame: SERIES_HIT_PER_GAME,
-          generatedAt: new Date(now()).toISOString()
+          generatedAt: new Date(now()).toISOString(),
+          ...(missingGames.length ? { partial: true, missingGames } : {}),
+          ...(staleGames.length ? { staleGames } : {})
         }
       }
     };
@@ -513,18 +729,30 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
   async function loadCoverageRelationRange(table, select, firstId, lastId, targetDb) {
     const rows = [];
     const seenIds = new Set();
+    let currentLimit = Math.max(50, Math.min(1000, relationPageSize));
     for (let offset = 0, pages = 0; ; pages++) {
       if (pages >= 1000) throw relationPaginationError('too-many-pages');
-      const query = new URLSearchParams({
-        select,
-        order: 'id.asc',
-        limit: String(RELATION_SCAN_PAGE_SIZE),
-        offset: String(offset)
-      });
-      query.append('card_id', `gte.${firstId}`);
-      query.append('card_id', `lte.${lastId}`);
-      const page = await db.fetchJson(`/${table}?${query}`, { db: targetDb });
-      if (!Array.isArray(page) || page.length > RELATION_SCAN_PAGE_SIZE) {
+      const page = await withRetry(
+        attempt => {
+          const effectiveLimit = attempt === 1 ? currentLimit : Math.max(100, Math.floor(currentLimit / (2 ** (attempt - 1))));
+          const query = new URLSearchParams({
+            select,
+            order: 'card_id.asc,id.asc',
+            limit: String(effectiveLimit),
+            offset: String(offset)
+          });
+          query.append('card_id', `gte.${firstId}`);
+          query.append('card_id', `lte.${lastId}`);
+          return db.fetchJson(`/${table}?${query}`, { db: targetDb });
+        },
+        {
+          onRetry: (attempt, err) => {
+            currentLimit = Math.max(100, Math.floor(currentLimit / 2));
+            console.warn(`coverage relation ${table} retry #${attempt} (limit=${currentLimit})`, err?.message || err);
+          }
+        }
+      );
+      if (!Array.isArray(page) || page.length > relationPageSize) {
         throw relationPaginationError('invalid-page');
       }
       if (!page.length) return rows;
@@ -559,7 +787,7 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
           const rows = await loadCoverageRelationRange(table, legacySelect, firstId, lastId, targetDb);
           return table === 'card_images' ? rows.map(row => ({ ...row, imageRightsStatus: 'not-provided' })) : rows;
         } catch (error) {
-          console.error('coverage relation failed', error?.message || error);
+          console.error('coverage relation failed', table, error?.message || error);
           state.status = 'unknown';
           state.error = UPSTREAM_ERROR;
           return [];
@@ -573,16 +801,29 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     const safeGame = String(gameId).replace(/[^a-z0-9-]/gi, '');
     const acc = createCoverageAccumulator();
     let last = null;
+    let currentChunk = Math.max(50, Math.min(1000, cardChunkSize));
     try {
       for (;;) {
-        const params = new URLSearchParams({
-          select: BROWSE_CARD_SELECT,
-          game_id: `eq.${safeGame}`,
-          order: 'id.asc',
-          limit: String(COVERAGE_CARD_CHUNK)
-        });
-        if (last !== null) params.set('id', `gt.${last}`);
-        const cards = await db.fetchJson(`/tcg_cards?${params}`, { db: targetDb });
+        let usedLimit = currentChunk;
+        const cards = await withRetry(
+          attempt => {
+            usedLimit = attempt === 1 ? currentChunk : Math.max(100, Math.floor(currentChunk / (2 ** (attempt - 1))));
+            const params = new URLSearchParams({
+              select: BROWSE_CARD_SELECT,
+              game_id: `eq.${safeGame}`,
+              order: 'id.asc',
+              limit: String(usedLimit)
+            });
+            if (last !== null) params.set('id', `gt.${last}`);
+            return db.fetchJson(`/tcg_cards?${params}`, { db: targetDb });
+          },
+          {
+            onRetry: (attempt, err) => {
+              currentChunk = Math.max(100, Math.floor(currentChunk / 2));
+              console.warn(`coverage game ${gameId} card page retry #${attempt} (chunk=${currentChunk})`, err?.message || err);
+            }
+          }
+        );
         if (!Array.isArray(cards)) throw new Error('COVERAGE_BAD_CARD_PAGE');
         if (cards.length) {
           const [printings, images] = await Promise.all([
@@ -591,7 +832,7 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
           ]);
           accumulateCoverage(acc, cards, printings, images);
         }
-        if (cards.length < COVERAGE_CARD_CHUNK) return { gameId, acc, status: 'complete' };
+        if (cards.length < usedLimit) return { gameId, acc, status: 'complete' };
         const next = cards.at(-1)?.id;
         if (!next || next === last) throw new Error('COVERAGE_CARD_PAGING_STALLED');
         last = next;
@@ -602,52 +843,94 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     }
   }
 
-  async function computeCatalogCoverageSnapshot() {
+  async function computeCatalogCoverageSnapshot({ previousSnapshot = null, loadPrevious = null } = {}) {
     if (!db.supabaseConfigured()) {
       throw new Error('SUPABASE_NOT_CONFIGURED');
     }
     const legacyPrintingSelect = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,source,providerId:provider_id,releaseDate:release_date,imageRehostRequired:image_rehost_required';
     const legacyImageSelect = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
-    const printingRelation = createCoverageRelation('tcg_printings', BROWSE_PRINTING_SELECT, legacyPrintingSelect, 'main');
-    const imageRelation = createCoverageRelation('card_images', BROWSE_IMAGE_SELECT, legacyImageSelect, 'main');
-    const secondRelations = {
-      printing: createCoverageRelation('tcg_printings', BROWSE_PRINTING_SELECT, legacyPrintingSelect, 'ip2'),
-      image: createCoverageRelation('card_images', BROWSE_IMAGE_SELECT, legacyImageSelect, 'ip2')
-    };
+
+    const seriesResult = await withRetry(() =>
+      db.fetchAll('/tcg_series?select=id,gameId:game_id,region,language,providerId:provider_id,sourceUrl:source_url,updatedAt:updated_at,metadata&order=game_id,region,id', 1000, { db: 'main' })
+    ).then(rows => ({ rows, status: 'complete' }))
+      .catch(() => ({ rows: [], status: 'unknown', error: UPSTREAM_ERROR }));
 
     const gameIds = [...db.catalogGameIds()];
-    const results = await Promise.all([
-      db.fetchAll('/tcg_series?select=id,gameId:game_id,region,language,providerId:provider_id,sourceUrl:source_url,updatedAt:updated_at,metadata&order=game_id,region,id', 1000, { db: 'main' })
-        .then(rows => ({ rows, status: 'complete' }))
-        .catch(() => ({ rows: [], status: 'unknown', error: UPSTREAM_ERROR })),
-      ...gameIds.map(gameId =>
-        dbForGame(gameId) === 'ip2'
-          ? loadCoverageGame(gameId, secondRelations.printing, secondRelations.image, 'ip2')
-          : loadCoverageGame(gameId, printingRelation, imageRelation, 'main')
-      )
-    ]);
+    const cardGroups = [];
 
-    const seriesResult = results[0];
-    const cardGroups = results.slice(1);
-    const printingResult = { status: printingRelation.status, error: printingRelation.error };
-    const imageResult = { status: imageRelation.status, error: imageRelation.error };
+    // 逐遊戲拆查詢（依序執行、各自獨立的關聯狀態），避免 6 個遊戲同時在主庫掃表引發 57014 statement timeout。
+    for (const gameId of gameIds) {
+      const targetDb = dbForGame(gameId);
+      const printingRel = createCoverageRelation('tcg_printings', BROWSE_PRINTING_SELECT, legacyPrintingSelect, targetDb);
+      const imageRel = createCoverageRelation('card_images', BROWSE_IMAGE_SELECT, legacyImageSelect, targetDb);
+      const group = await loadCoverageGame(gameId, printingRel, imageRel, targetDb);
+      cardGroups.push({
+        ...group,
+        printingStatus: printingRel.status,
+        printingError: printingRel.error,
+        imageStatus: imageRel.status,
+        imageError: imageRel.error
+      });
+    }
+
+    let resolvedPrevious = previousSnapshot;
+    let previousLoaded = previousSnapshot !== null;
+    const getPrevious = async () => {
+      if (!previousLoaded && typeof loadPrevious === 'function') {
+        previousLoaded = true;
+        resolvedPrevious = normalizeKvCatalogCoverage(await loadPrevious().catch(() => null));
+      } else if (resolvedPrevious) {
+        resolvedPrevious = normalizeKvCatalogCoverage(resolvedPrevious);
+      }
+      return resolvedPrevious;
+    };
+
     const games = {};
     const allTimestamps = [];
     const baseline = catalogBaselineReport(seriesResult.rows);
     const currentNow = now();
+    const missingGames = [];
+    const staleGames = [];
+    let succeededGames = 0;
 
     for (const group of cardGroups) {
-      const relations = dbForGame(group.gameId) === 'ip2' ? secondRelations : { printing: printingRelation, image: imageRelation };
+      const gameComplete = group.status === 'complete' && group.printingStatus === 'complete' && group.imageStatus === 'complete';
+      if (gameComplete) {
+        succeededGames++;
+      } else {
+        missingGames.push(group.gameId);
+      }
+
       const options = {
         cardStatus: group.status,
-        printingStatus: relations.printing.status,
-        imageStatus: relations.image.status,
+        printingStatus: group.printingStatus,
+        imageStatus: group.imageStatus,
         now: currentNow
       };
-      const entry = slimCoverageGame(adjustCoverageGame(finishCoverage(group.acc, group.gameId, options), options));
-      if (group.status !== 'complete') entry.cards = null;
+      let entry = slimCoverageGame(adjustCoverageGame(finishCoverage(group.acc, group.gameId, options), options));
+      if (!gameComplete) {
+        if (group.status !== 'complete') entry.cards = null;
+        const prev = await getPrevious();
+        const prevGame = prev?.data?.games?.[group.gameId];
+        if (prevGame && typeof prevGame.cards === 'number') {
+          entry = {
+            ...prevGame,
+            stale: true,
+            status: 'stale',
+            error: UPSTREAM_ERROR
+          };
+          staleGames.push(group.gameId);
+        } else {
+          entry.stale = true;
+        }
+      }
       games[group.gameId] = entry;
-      allTimestamps.push(entry.sourceTimestamp);
+      if (entry.sourceTimestamp) allTimestamps.push(entry.sourceTimestamp);
+    }
+
+    if (cardGroups.length > 0 && succeededGames === 0) {
+      const err = new Error('COVERAGE_ALL_GAMES_FAILED');
+      throw err;
     }
 
     attachCatalogBaselines(games, baseline.report);
@@ -657,9 +940,17 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
     const coveredSets = uniqueValues(Object.values(games).flatMap(game => game.coveredSets || []));
     const freshness = coverageFreshness(knownTimestamps.at(-1), currentNow);
     const cardErrors = Object.fromEntries(cardGroups.filter(group => group.error).map(group => [group.gameId, group.error]));
-    const complete = cardGroups.every(group => group.status === 'complete')
-      && printingResult.status === 'complete'
-      && imageResult.status === 'complete';
+    const firstPrintingError = cardGroups.find(group => group.printingError)?.printingError || null;
+    const firstImageError = cardGroups.find(group => group.imageError)?.imageError || null;
+    const allCardsComplete = cardGroups.every(group => group.status === 'complete');
+    const allPrintingsComplete = cardGroups.every(group => group.printingStatus === 'complete');
+    const allImagesComplete = cardGroups.every(group => group.imageStatus === 'complete');
+    const complete = allCardsComplete && allPrintingsComplete && allImagesComplete;
+    const printingMetricStatus = allPrintingsComplete ? 'complete' : (cardGroups.some(g => g.printingStatus === 'complete') ? 'partial' : 'unknown');
+    const imageMetricStatus = (allPrintingsComplete && allImagesComplete)
+      ? 'complete'
+      : (cardGroups.some(g => g.printingStatus === 'complete' && g.imageStatus === 'complete') ? 'partial' : 'unknown');
+
     const expectedTotals = {
       value: null,
       status: 'unknown',
@@ -687,6 +978,8 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
       freshness,
       sample: false,
       complete,
+      ...(missingGames.length ? { missingGames } : {}),
+      ...(staleGames.length ? { staleGames } : {}),
       scope: {
         sample: false,
         complete,
@@ -705,46 +998,153 @@ export function createSnapshotGenerator({ env = {}, fetchFn = globalThis.fetch, 
         ]
       },
       metricStatus: {
-        cards: cardGroups.every(group => group.status === 'complete') ? 'complete' : 'partial',
-        printings: printingResult.status,
-        images: printingResult.status === 'unknown' || imageResult.status === 'unknown' ? 'unknown' : imageResult.status,
-        chineseNames: cardGroups.every(group => group.status === 'complete') ? 'complete' : 'unknown',
-        rarities: printingResult.status === 'unknown' ? 'unknown' : cardGroups.every(group => group.status === 'complete') ? 'complete' : 'unknown',
-        versions: printingResult.status,
+        cards: allCardsComplete ? 'complete' : 'partial',
+        printings: printingMetricStatus,
+        images: imageMetricStatus,
+        chineseNames: allCardsComplete ? 'complete' : 'unknown',
+        rarities: !allPrintingsComplete ? 'unknown' : (allCardsComplete ? 'complete' : 'unknown'),
+        versions: printingMetricStatus,
         sourceTimestamp: knownTimestamps.length ? 'observed' : 'unknown',
         expectedTotals: 'unknown'
       },
       errors: {
         cards: cardErrors,
-        printings: printingResult.error || null,
-        images: imageResult.error || null,
+        printings: firstPrintingError,
+        images: firstImageError,
         baselines: baseline.error || seriesResult.error || null
       },
       cache: {
-        status: 'fresh',
-        stale: false,
+        status: complete ? 'fresh' : 'partial',
+        stale: !complete && staleGames.length > 0,
         ageMs: 0,
         lastSuccessAt: nowIso,
         expiresAt: new Date(currentNow + DEFAULT_COVERAGE_TTL_MS).toISOString(),
         staleUntil: new Date(currentNow + DEFAULT_COVERAGE_MAX_STALE_MS).toISOString(),
         refreshing: false,
-        error: null
+        error: complete ? null : UPSTREAM_ERROR
       }
     };
-    if (!complete) {
-      const err = new Error('COVERAGE_INCOMPLETE');
-      err.report = report;
-      throw err;
-    }
     return { data: report };
+  }
+
+  async function forEachKeysetPage(table, select, onRows, targetDb = 'main') {
+    let last = null;
+    for (let pages = 0; pages < 1000; pages++) {
+      const params = new URLSearchParams({
+        select,
+        order: 'id.asc',
+        limit: String(DEFAULT_SITEMAP_PAGE_SIZE)
+      });
+      if (last !== null) params.set('id', `gt.${last}`);
+      const rows = await withRetry(() => db.fetchJson(`/${table}?${params}`, { db: targetDb }));
+      if (!Array.isArray(rows)) throw new Error('SITEMAP_BAD_RESPONSE');
+      onRows(rows);
+      if (rows.length < DEFAULT_SITEMAP_PAGE_SIZE) return;
+      const next = rows.at(-1)?.id;
+      if (!next || next === last) throw new Error('SITEMAP_PAGING_STALLED');
+      last = next;
+    }
+    throw new Error('SITEMAP_TOO_MANY_PAGES');
+  }
+
+  async function collectSitemapRows(groups, seriesRows, targetDb = 'main') {
+    let grouped = null;
+    try {
+      const rows = await withRetry(
+        () => db.fetchJson('/rpc/sitemap_card_groups', { db: targetDb, method: 'POST', body: '{}', timeoutMs: 45000 }),
+        { attempts: 2 }
+      );
+      if (Array.isArray(rows) && rows.length && rows.every(r => Array.isArray(r) && typeof r[0] === 'string')) {
+        grouped = rows;
+      }
+    } catch (error) {
+      console.error('sitemap rpc failed', targetDb, error?.message || error);
+    }
+    if (grouped) {
+      for (const [id, game, lastmod] of grouped) {
+        groups.set(id, { id, game: game || null, lastmod: lastmod || null });
+      }
+    } else {
+      await forEachKeysetPage('tcg_cards', 'id,canonical_id,game_id,updated_at,name_zh,name_ja,name_en,name_ko', rows => mergeCardSitemapRows(rows, groups), targetDb);
+    }
+    await forEachKeysetPage('tcg_series', 'id,game_id,region,official_code,name_zh,name_ja,name_en,name_ko,updated_at', rows => seriesRows.push(...rows), targetDb);
+  }
+
+  async function computeSitemapsSnapshot() {
+    if (!db.supabaseConfigured()) {
+      throw new Error('SUPABASE_NOT_CONFIGURED');
+    }
+    const publicBaseUrl = normalizeBaseUrl(env?.PUBLIC_BASE_URL);
+    const urlsPerFile = Math.min(SITEMAP_MAX_URLS, Math.max(1, Number(env?.SITEMAP_URLS_PER_FILE) || SITEMAP_MAX_URLS));
+    const groups = new Map();
+    const seriesRows = [];
+    await collectSitemapRows(groups, seriesRows, 'main');
+    if (db.secondDbConfigured()) {
+      const secondGroups = new Map();
+      const secondSeries = [];
+      try {
+        await collectSitemapRows(secondGroups, secondSeries, 'ip2');
+        for (const [id, entry] of secondGroups) groups.set(id, entry);
+        seriesRows.push(...secondSeries);
+      } catch (error) {
+        console.error('second database sitemap failed; main rows only', error?.message || error);
+      }
+    }
+    const currentNow = now();
+    const generated = new Date(currentNow).toISOString().slice(0, 10);
+    const cardFiles = chunkEntries(cardSitemapEntries(publicBaseUrl, groups), urlsPerFile).map(renderUrlSet);
+    const indexEntries = [
+      { loc: `${publicBaseUrl}/sitemaps/pages.xml`, lastmod: generated },
+      { loc: `${publicBaseUrl}/sitemaps/series.xml`, lastmod: generated },
+      ...cardFiles.map((_, i) => ({ loc: `${publicBaseUrl}/sitemaps/cards-${i + 1}.xml`, lastmod: generated }))
+    ];
+    return {
+      index: renderSitemapIndex(indexEntries),
+      pages: renderUrlSet(pageSitemapEntries(publicBaseUrl, [...db.catalogGameIds()])),
+      series: renderUrlSet(seriesSitemapEntries(publicBaseUrl, seriesRows)),
+      cards: cardFiles,
+      cardCount: groups.size,
+      cardFileCount: cardFiles.length,
+      generatedAt: new Date(currentNow).toISOString()
+    };
   }
 
   return {
     loadCatalogForSnapshot,
     computePackPrizesSnapshot,
     computeSeriesHitsSnapshot,
-    computeCatalogCoverageSnapshot
+    computeCatalogCoverageSnapshot,
+    computeSitemapsSnapshot
   };
+}
+
+/**
+ * 透過 Cloudflare Workers KV REST API 讀取單一鍵值（失敗或 404 時回傳 null，不拋錯）。
+ */
+export async function getCloudflareKvValue({
+  accountId,
+  namespaceId,
+  apiToken,
+  key,
+  apiBaseUrl = 'https://api.cloudflare.com/client/v4',
+  fetchFn = globalThis.fetch
+}) {
+  if (!accountId || !namespaceId || !apiToken) return null;
+  const base = String(apiBaseUrl).replace(/\/+$/, '');
+  const url = `${base}/accounts/${encodeURIComponent(accountId)}/storage/kv/namespaces/${encodeURIComponent(namespaceId)}/values/${encodeURIComponent(key)}`;
+  try {
+    const res = await fetchFn(url, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${apiToken}` },
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!res.ok) return null;
+    const text = await res.text();
+    if (!text) return null;
+    try { return JSON.parse(text); } catch { return text; }
+  } catch {
+    return null;
+  }
 }
 
 /**

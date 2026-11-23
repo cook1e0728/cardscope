@@ -338,7 +338,7 @@
 
   // P5：「各平台價格」總覽。上半是 Cardmarket／TCGplayer 的參考價表；下半只標每個來源「有／沒有／查不到」並跳到該區或外連，不把 eBay 數字抄進來。
   // ebayState／gradedState 把兩個區塊的載入結果收成同一組狀態（yes／no／error／na），由 loadEbay／loadGraded 的 onState 回報。
-  const ebayState=data=>data?.status==='ok'?ebayItems(data.items).length?'yes':'no':data?.status==='no-match'?'no':'error';
+  const ebayState=data=>data?.status==='ok'?ebayItems(data.items).length?'yes':'no':data?.status==='no-match'||data?.status==='not-configured'?'no':'error';
   const gradedState=data=>data?.status==='ok'?'yes':data?.status==='daily-limit'?'error':'no';
   const OV_NATURE={cardmarket:'參考價',tcgplayer:'市價'},OV_STATE={loading:['讀取中…','wait'],yes:['有','yes'],no:['沒有','no'],error:['查不到','no'],na:['不查詢','no']};
   const OV_EBAY_ID='ebay-listings',OV_GRADED_ID='graded-prices';

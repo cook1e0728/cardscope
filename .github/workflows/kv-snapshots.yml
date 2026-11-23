@@ -1,7 +1,7 @@
 name: Build Workers KV snapshots
 
-# 每小時預先計算首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）並透過 Cloudflare API 寫入 Workers KV（SNAPSHOT_KV）。
-# 每日 24 次 × 3 個鍵 = 72 次 KV 寫入（僅占 Cloudflare Workers KV 免費方案每日 1,000 次寫入額度的 7.2%）。
+# 每小時預先計算首頁統計、收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）與 Sitemaps（sitemap.xml、series.xml、cards-N.xml）並透過 Cloudflare API 寫入 Workers KV（SNAPSHOT_KV）。
+# 每日 24 次 × 約 7 個鍵 ≈ 168 次 KV 寫入（僅占 Cloudflare Workers KV 免費方案每日 1,000 次寫入額度的 16.8%）。
 # 需於 GitHub Repository Settings → Secrets and variables → Actions 設定以下 Secrets（僅列名稱，嚴禁將值寫入此檔案）：
 # - SUPABASE_URL
 # - SUPABASE_SERVICE_KEY
@@ -16,9 +16,9 @@ on:
   workflow_dispatch:
     inputs:
       targets:
-        description: '要產生的快照目標（逗號分隔：pack-prizes,series-hits,catalog-coverage）'
+        description: '要產生的快照目標（逗號分隔：pack-prizes,series-hits,catalog-coverage,sitemaps）'
         required: false
-        default: 'pack-prizes,series-hits,catalog-coverage'
+        default: 'pack-prizes,series-hits,catalog-coverage,sitemaps'
 
 permissions:
   contents: read
@@ -41,7 +41,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          SNAPSHOT_TARGETS: ${{ github.event.inputs.targets || 'pack-prizes,series-hits,catalog-coverage' }}
+          SNAPSHOT_TARGETS: ${{ github.event.inputs.targets || 'pack-prizes,series-hits,catalog-coverage,sitemaps' }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ "$EVENT_NAME" = "schedule" ]; then

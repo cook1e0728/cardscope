@@ -12,7 +12,12 @@ import { prepareWorkerAssets } from '../scripts/prepare-worker-assets.mjs';
 import { parseSnapshotArgs, runSnapshotBuild } from '../scripts/build-kv-snapshots.mjs';
 import { sha256Hex } from '../providers/auth-sync.mjs';
 import { API_CSP } from '../providers/http-security.mjs';
-import { KV_KEYS } from '../providers/kv-snapshots.mjs';
+import {
+  KV_KEYS,
+  createSnapshotGenerator,
+  sitemapCardsKvKey
+} from '../providers/kv-snapshots.mjs';
+import { encodeShard, shardOf, shortDigest } from '../providers/price-archive.mjs';
 import { createSupabaseClient } from '../providers/supabase-client.mjs';
 import { DEFAULT_MIGRATED_APIS, createWorkerHandler } from '../worker/index.mjs';
 
@@ -495,6 +500,14 @@ function createMockUpstream(state) {
       if (restPath === '/rpc/browse_cards_facets') {
         return sendJson(200, { rarity: { SAR: 1 }, region: { JP: 1 }, language: { 'ja-JP': 1 }, unmapped: false });
       }
+      if (restPath === '/rpc/sitemap_card_groups') {
+        return sendJson(
+          200,
+          isIp2
+            ? [['union-arena-bt01-001', 'union-arena', '2026-10-15T00:00:00Z']]
+            : [['pokemon-p1', 'pokemon', '2026-10-01T00:00:00Z']]
+        );
+      }
       if (restPath === '/rpc/get_card_detail') {
         const id = body?.p_id;
         if (isIp2 && id === uaCard.id) return sendJson(200, { cards: [uaCard], series: seriesIp2, games: [{ id: 'union-arena', nameZh: 'UNION ARENA' }] });
@@ -568,7 +581,28 @@ function createMockUpstream(state) {
         if (url.searchParams.has('or') && /zzzznotfound/.test(url.searchParams.get('or') || '')) {
           return sendJson(200, []);
         }
-        return sendJson(200, isIp2 ? seriesIp2 : seriesMain);
+        let rows = isIp2 ? seriesIp2 : seriesMain;
+        const idParam = url.searchParams.get('id') || '';
+        if (idParam.startsWith('eq.')) {
+          const wantedId = idParam.slice(3);
+          rows = rows.filter(s => s.id === wantedId);
+        } else if (idParam.startsWith('gt.')) {
+          const afterId = idParam.slice(3);
+          rows = rows.filter(s => s.id > afterId);
+        }
+        if (select.includes('game_id') && !select.includes('game:game_id') && !select.includes('gameId:game_id')) {
+          rows = rows.map(s => ({
+            ...s,
+            game_id: s.game,
+            official_code: s.officialCode,
+            name_zh: s.nameZh,
+            name_ja: s.nameJa,
+            name_en: s.nameEn,
+            name_ko: s.nameKo,
+            updated_at: '2026-10-01T00:00:00Z'
+          }));
+        }
+        return sendJson(200, rows);
       }
       if (restPath === '/tcg_cards') {
         state.cardTableScans++;
@@ -1066,13 +1100,13 @@ test('MIGRATED_API 回滾開關與未搬遷端點代理驗證', async () => {
     assert.equal((await r.json()).proxiedByOrigin, true, `${method} ${path} 在 none 時應走原點`);
   }
 
-  // 4. 未搬遷端點預設即走原點
+  // 4. 未搬遷管理端點（/api/admin/*）預設即走原點
   const defaultEnv = createWorkerEnv(mockPort);
-  for (const path of ['/api/cards/pokemon-p1/price-history', '/api/graded-prices', '/api/ebay-listings']) {
+  for (const path of ['/api/admin/catalog/health', '/api/admin/page-stats', '/api/admin/price-snapshot']) {
     const r = await handler.fetch(new Request(`https://cardseektcg.com${path}`), defaultEnv);
     assert.equal((await r.json()).proxiedByOrigin, true, `${path} 應繼續代理原點`);
   }
-  // 5. 新搬遷的 auth / sync / KV 端點亦支援單支與群組切回原點
+  // 5. 新搬遷的 auth / sync / KV / price-history / graded / ebay / image-status / sitemaps / seo-db 亦支援單支與群組切回原點
   for (const [path, method, flag] of [
     ['/api/auth/config', 'GET', '-auth-config'],
     ['/api/auth/exchange', 'POST', '-auth-exchange'],
@@ -1081,7 +1115,13 @@ test('MIGRATED_API 回滾開關與未搬遷端點代理驗證', async () => {
     ['/api/sync/pull', 'POST', '-sync'],
     ['/api/pack-prizes', 'GET', '-pack-prizes'],
     ['/api/series-hits', 'GET', '-series-hits'],
-    ['/api/catalog/coverage', 'GET', '-catalog-coverage']
+    ['/api/catalog/coverage', 'GET', '-catalog-coverage'],
+    ['/api/catalog/image-status', 'GET', '-catalog-image-status'],
+    ['/api/cards/pokemon-p1/price-history', 'GET', '-card-price-history'],
+    ['/api/graded-prices', 'GET', '-graded-prices'],
+    ['/api/ebay-listings', 'GET', '-ebay-listings'],
+    ['/sitemap.xml', 'GET', '-sitemaps'],
+    ['/?card=pokemon-p1', 'GET', '-seo-db']
   ]) {
     const r = await handler.fetch(
       new Request(`https://cardseektcg.com${path}`, {
@@ -1092,7 +1132,7 @@ test('MIGRATED_API 回滾開關與未搬遷端點代理驗證', async () => {
     );
     assert.equal((await r.json()).proxiedByOrigin, true, `${path} 在 ${flag} 時應切回代理原點`);
   }
-  assert.equal(DEFAULT_MIGRATED_APIS.length, 30);
+  assert.equal(DEFAULT_MIGRATED_APIS.length, 36);
 });
 
 test('Worker 相容性靜態檢查（零 node:*、Buffer、AsyncLocalStorage、snkrdunk 域名）與 bundle/ASSETS 安全性', async () => {
@@ -2377,4 +2417,497 @@ test('第 2 步第二批 B：KV 預產腳本（pack-prizes、series-hits、catal
   assert.equal(staleCovJson.data.cache.stale, true);
   assert.equal(staleCovJson.data.cache.status, 'stale');
   assert.equal(staleEdgeCache.store.size, 0, '過期 KV 快照不可寫入 Edge Cache');
+});
+
+test('KV 快照容錯與逾時修復：catalog-coverage 縮小分頁重試、單一遊戲失敗隔離、KV 舊值 stale 備援與全部失敗才 exit 1', async () => {
+  const fixedNow = Date.UTC(2026, 10, 24, 2, 0, 0);
+  const snapEnv = {
+    SUPABASE_URL: 'https://main-snap.example.test',
+    SUPABASE_SERVICE_KEY: 'main-snap-key',
+    SECOND_DB_ENABLED: 'false'
+  };
+
+  // 1. 模擬 yugioh 在大頁面時發生 57014 statement timeout，縮小分頁重試後成功，且查詢使用 card_id.asc,id.asc 索引順序
+  let yugiohPrintingCalls = 0;
+  const relationOrders = [];
+  const makeRetryFetch = (failGames = new Set()) => async input => {
+    const raw = typeof input === 'string' ? input : input?.url || String(input);
+    const u = new URL(raw);
+    const path = u.pathname.replace(/^\/rest\/v1/, '') + u.search;
+    const json = body => new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+    for (const fg of failGames) {
+      if (path.includes(fg)) {
+        return new Response('{"code":"57014","message":"canceling statement due to statement timeout"}', { status: 500 });
+      }
+    }
+
+    if (path.startsWith('/tcg_cards?')) {
+      const gameMatch = u.searchParams.get('game_id')?.replace(/^eq\./, '') || 'pokemon';
+      if (gameMatch !== 'pokemon' && gameMatch !== 'yugioh') return json([]);
+      const id = `${gameMatch}-c1`;
+      return json([
+        {
+          id,
+          canonicalId: id,
+          game: gameMatch,
+          seriesId: `${gameMatch}-s1`,
+          officialCardNumber: '001',
+          rarity: 'SR',
+          nameZh: '測試卡',
+          nameJa: 'テスト',
+          nameEn: 'Test',
+          nameKo: null,
+          source: gameMatch === 'yugioh' ? 'ygoprodeck' : 'pokemontcg',
+          updatedAt: '2026-11-20T00:00:00Z'
+        }
+      ]);
+    }
+    if (path.startsWith('/tcg_printings?')) {
+      const offset = Math.max(0, Number(u.searchParams.get('offset')) || 0);
+      relationOrders.push(u.searchParams.get('order'));
+      if (path.includes('yugioh-c1')) {
+        yugiohPrintingCalls++;
+        if (yugiohPrintingCalls === 1) {
+          return new Response('{"code":"57014","message":"canceling statement due to statement timeout"}', { status: 500 });
+        }
+      }
+      const cardId = path.includes('yugioh-c1') ? 'yugioh-c1' : 'pokemon-c1';
+      const rows = [
+        {
+          id: `pr-${cardId}`,
+          cardId,
+          seriesId: cardId === 'yugioh-c1' ? 'yugioh-s1' : 'pokemon-s1',
+          region: 'JP',
+          language: 'ja-JP',
+          localSetCode: 'S1',
+          localCardNumber: '001',
+          rarity: 'SR',
+          imageUrl: 'https://assets.tcgdex.net/ja/sv/sv2a/001.webp',
+          source: 'tcgdex-ja',
+          sourceUrl: null,
+          updatedAt: '2026-11-20T00:00:00Z',
+          imageRehostRequired: false,
+          imageRightsStatus: 'licensed',
+          imageLicenseExpiresAt: null
+        }
+      ];
+      return json(rows.slice(offset));
+    }
+    return json([]);
+  };
+
+  const retryGen = createSnapshotGenerator({
+    env: snapEnv,
+    fetchFn: makeRetryFetch(),
+    now: () => fixedNow,
+    retryDelayMs: 1
+  });
+  const retryCoverage = await retryGen.computeCatalogCoverageSnapshot();
+  assert.ok(yugiohPrintingCalls >= 2, 'yugioh printing 57014 應自動重試並成功');
+  assert.ok(relationOrders.every(order => order === 'card_id.asc,id.asc'), '關聯查詢必須以 card_id.asc,id.asc 排序以走 card_id 索引');
+  assert.equal(retryCoverage.data.games.pokemon.cards, 1);
+  assert.equal(retryCoverage.data.games.yugioh.cards, 1);
+  assert.equal(retryCoverage.data.complete, true);
+
+  // 2. 單一遊戲（dragonball-fw）持續逾時失敗時：不拖垮其他遊戲，優先採用前次 KV 值並標示 stale: true
+  const previousSnapshot = {
+    data: {
+      games: {
+        'dragonball-fw': {
+          ...retryCoverage.data.games.pokemon,
+          cards: 42,
+          totalPrintings: 50
+        }
+      }
+    }
+  };
+
+  const partialGen = createSnapshotGenerator({
+    env: snapEnv,
+    fetchFn: makeRetryFetch(new Set(['dragonball-fw'])),
+    now: () => fixedNow,
+    retryDelayMs: 1
+  });
+
+  let previousLoadedCount = 0;
+  const partialCoverage = await partialGen.computeCatalogCoverageSnapshot({
+    loadPrevious: async () => {
+      previousLoadedCount++;
+      return previousSnapshot;
+    }
+  });
+  assert.equal(previousLoadedCount, 1, '有遊戲失敗時才惰性讀取前次 KV 快照');
+  assert.equal(partialCoverage.data.games.pokemon.cards, 1);
+  assert.equal(partialCoverage.data.games['dragonball-fw'].cards, 42, '失敗遊戲應沿用前次 KV 數據');
+  assert.equal(partialCoverage.data.games['dragonball-fw'].stale, true, '沿用前次 KV 的遊戲應標示 stale: true');
+  assert.deepEqual(partialCoverage.data.staleGames, ['dragonball-fw']);
+
+  // 3. 若無前次 KV 可退，失敗遊戲標示 missingGames 且其他遊戲照常寫出；只有全部遊戲都失敗才 throw
+  const noPrevCoverage = await partialGen.computeCatalogCoverageSnapshot({
+    loadPrevious: async () => null
+  });
+  assert.equal(noPrevCoverage.data.games.pokemon.cards, 1);
+  assert.equal(noPrevCoverage.data.games['dragonball-fw'].stale, true);
+  assert.deepEqual(noPrevCoverage.data.missingGames, ['dragonball-fw']);
+
+  const allFailGen = createSnapshotGenerator({
+    env: snapEnv,
+    fetchFn: async () => new Response('{"code":"57014","message":"statement timeout"}', { status: 500 }),
+    now: () => fixedNow,
+    retryDelayMs: 1
+  });
+  await assert.rejects(
+    () => allFailGen.computeCatalogCoverageSnapshot(),
+    /COVERAGE_ALL_GAMES_FAILED/,
+    '全部遊戲皆失敗時才拋錯（讓 job exit 1）'
+  );
+});
+
+test('Workers 搬遷收尾：price-history（DecompressionStream 與分片預算降級）、sitemaps、DB SEO 頁、graded-prices、ebay-listings、image-status Parity', async () => {
+  const state = { requests: [], extCalls: [], originCalls: [], hotWrites: 0, fxWrites: 0, cardTableScans: 0 };
+  const mockServer = createMockUpstream(state);
+  const mockPort = await listenEphemeral(mockServer);
+  openServers.push(mockServer);
+  const preloadPath = await createPreloadForMock(mockPort);
+
+  // 準備 price-archive 分片（2026-08 與 2026-09 兩個月份的 gzip 分片）
+  const p1Shard = shardOf('pokemon-p1');
+  const p1ShardPad = String(p1Shard).padStart(2, '0');
+  const shardAug = await encodeShard('2026-08', p1Shard, [
+    { card_id: 'pokemon-p1', provider: 'cardmarket', variant: 'holo', currency: 'EUR', snapshot_date: '2026-08-15', amount: 10.5 }
+  ]);
+  const shardSep = await encodeShard('2026-09', p1Shard, [
+    { card_id: 'pokemon-p1', provider: 'cardmarket', variant: 'holo', currency: 'EUR', snapshot_date: '2026-09-15', amount: 11.2 }
+  ]);
+  const archiveFiles = new Map([
+    [
+      'v1/manifest.json',
+      Buffer.from(
+        JSON.stringify({
+          v: 1,
+          months: {
+            '2026-08': { [p1ShardPad]: { n: 1, d: shortDigest(shardAug.digest) } },
+            '2026-09': { [p1ShardPad]: { n: 1, d: shortDigest(shardSep.digest) } }
+          }
+        })
+      )
+    ],
+    [`v1/2026-08/${p1ShardPad}.json.gz`, shardAug.gz],
+    [`v1/2026-09/${p1ShardPad}.json.gz`, shardSep.gz]
+  ]);
+
+  const baseWorkerFetch = createWorkerFetch(mockPort);
+  const archiveAwareFetch = async (input, init) => {
+    const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const u = new URL(raw);
+    const storagePrefix = '/main/storage/v1/object/authenticated/price-archive/';
+    if (u.pathname.startsWith(storagePrefix)) {
+      const key = u.pathname.slice(storagePrefix.length).split('/').map(decodeURIComponent).join('/');
+      if (state.corruptArchive && key.endsWith('.json.gz')) {
+        return new Response(new Uint8Array([1, 2, 3, 4, 5]), { status: 200, headers: { 'Content-Type': 'application/gzip' } });
+      }
+      const buf = archiveFiles.get(key);
+      if (!buf) return new Response(JSON.stringify({ statusCode: '404', error: 'not_found' }), { status: 404 });
+      return new Response(buf, { status: 200, headers: { 'Content-Type': key.endsWith('.gz') ? 'application/gzip' : 'application/json' } });
+    }
+    return baseWorkerFetch(input, init);
+  };
+
+  const outDir = await mkdtemp(join(tmpdir(), 'cardseek-final-parity-'));
+  tempDirs.push(outDir);
+  await prepareWorkerAssets({ rootDir: ROOT, outDir });
+
+  const nodeServer = await spawnTestServer({ mockPort, preloadPath, supabase: true, supabase2: true });
+  spawnedChildren.push(nodeServer.child);
+
+  const kvStore = new Map();
+  const baseEnv = {
+    ...createWorkerEnv(mockPort, { supabase: true, supabase2: true }),
+    ASSETS: {
+      async fetch(req) {
+        const u = new URL(req.url);
+        const rel = u.pathname.replace(/^\/+/, '');
+        const fullPath = join(outDir, rel);
+        if (!existsSync(fullPath)) return new Response('Not found', { status: 404 });
+        return new Response(await readFile(fullPath), { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+      }
+    },
+    SNAPSHOT_KV: {
+      async get(key) {
+        return kvStore.get(key) ?? null;
+      },
+      async put(key, value) {
+        kvStore.set(key, String(value));
+      }
+    }
+  };
+
+  try {
+    // 1. GET /api/cards/:id/price-history（含 DecompressionStream 解壓封存分片、分片預算超限降級、壞分片降級、404、400）
+    const phWorker = createWorkerHandler({ fetchFn: archiveAwareFetch, edgeCache: null });
+    const phRes = await phWorker.fetch(new Request('https://cardseektcg.com/api/cards/pokemon-p1/price-history'), baseEnv);
+    assert.equal(phRes.status, 200);
+    assertApiSecurityHeaders(phRes, 'no-store');
+    const phJson = await phRes.json();
+    assert.equal(phJson.meta.archiveUnavailable, undefined);
+    const cmHolo = phJson.series.find(s => s.cardId === 'pokemon-p1' && s.provider === 'cardmarket' && s.variant === 'holo');
+    assert.ok(cmHolo, '應合併封存與資料庫的 cardmarket holo 價格線');
+    assert.equal(cmHolo.points.length, 3, '2 筆封存月份 + 1 筆資料庫近期快照 = 3 點');
+    assert.deepEqual(cmHolo.points.map(p => p.amount), [10.5, 11.2, 12.5]);
+
+    // 分片預算超限（PRICE_ARCHIVE_SHARD_BUDGET=1 < 需要 2 個分片）-> 自動降級只回 DB 最近 30 天並標示 archiveUnavailable: true
+    const budgetEdgeCache = createMockEdgeCache();
+    const budgetPhWorker = createWorkerHandler({ fetchFn: archiveAwareFetch, edgeCache: budgetEdgeCache });
+    const budgetPhRes = await budgetPhWorker.fetch(
+      new Request('https://cardseektcg.com/api/cards/pokemon-p1/price-history'),
+      { ...baseEnv, PRICE_ARCHIVE_SHARD_BUDGET: '1' }
+    );
+    assert.equal(budgetPhRes.status, 200);
+    const budgetPhJson = await budgetPhRes.json();
+    assert.equal(budgetPhJson.meta.archiveUnavailable, true, '超過分片讀取預算時應降級並標示 archiveUnavailable');
+    assert.equal(
+      budgetPhJson.series.find(s => s.cardId === 'pokemon-p1')?.points.length,
+      1,
+      '降級時仍應保留資料庫內最近 30 天點位'
+    );
+    assert.equal(budgetEdgeCache.store.size, 0, 'archiveUnavailable 降級回應不可寫入 1 小時 Edge Cache');
+
+    // 封存分片損毀時亦優雅降級回傳 DB 點位與 archiveUnavailable: true
+    state.corruptArchive = true;
+    const corruptPhWorker = createWorkerHandler({ fetchFn: archiveAwareFetch, edgeCache: null });
+    const corruptPhRes = await corruptPhWorker.fetch(new Request('https://cardseektcg.com/api/cards/pokemon-p1/price-history'), baseEnv);
+    assert.equal(corruptPhRes.status, 200);
+    const corruptPhJson = await corruptPhRes.json();
+    assert.equal(corruptPhJson.meta.archiveUnavailable, true);
+    state.corruptArchive = false;
+
+    // 404 與 400 與 Node 完全一致
+    await assertNodeWorkerParity(nodeServer.baseUrl, phWorker, baseEnv, '/api/cards/nonexistent-card-999/price-history');
+    await assertNodeWorkerParity(nodeServer.baseUrl, phWorker, baseEnv, '/api/cards/bad%00id/price-history');
+
+    // 2. GET /api/catalog/image-status 與 Node Parity
+    await assertNodeWorkerParity(nodeServer.baseUrl, phWorker, baseEnv, '/api/catalog/image-status');
+
+    // 3. GET /api/graded-prices 與 GET /api/ebay-listings：未設金鑰降級 Parity + 已設金鑰 KV 快取／配額／OAuth Token
+    await assertNodeWorkerParity(nodeServer.baseUrl, phWorker, baseEnv, '/api/graded-prices?tcgPlayerId=123456');
+    await assertNodeWorkerParity(nodeServer.baseUrl, phWorker, baseEnv, '/api/graded-prices?bad=1');
+    await assertNodeWorkerParity(nodeServer.baseUrl, phWorker, baseEnv, '/api/ebay-listings?name=Pikachu&number=25');
+    await assertNodeWorkerParity(nodeServer.baseUrl, phWorker, baseEnv, '/api/ebay-listings?name=bad<script>');
+
+    // 已設金鑰時：測試 graded-prices 與 ebay-listings 正常運作並寫入 KV 快取與計數
+    let gradedUpstreamCalls = 0;
+    let ebayTokenCalls = 0;
+    let ebaySearchCalls = 0;
+    const extMarketFetch = async (input, init) => {
+      const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (raw.startsWith('https://www.pokemonpricetracker.com/api/v2/cards')) {
+        gradedUpstreamCalls++;
+        if (state.failGradedUpstream) return new Response('SECRET_PPT_ERROR', { status: 500 });
+        return new Response(
+          JSON.stringify({
+            data: {
+              tcgPlayerId: '123456',
+              name: 'Pikachu ex',
+              setName: 'SV2a: Pokemon 151',
+              ebay: {
+                updatedAt: '2026-11-20',
+                salesByGrade: {
+                  psa10: { count: 5, medianPrice: 120, minPrice: 100, maxPrice: 150, lastSaleDate: '2026-11-19' }
+                }
+              }
+            }
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (raw === 'https://api.ebay.com/identity/v1/oauth2/token') {
+        ebayTokenCalls++;
+        return new Response(JSON.stringify({ access_token: 'ebay-oauth-tok-1', expires_in: 7200 }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      if (raw.startsWith('https://api.ebay.com/buy/browse/v1/item_summary/search')) {
+        ebaySearchCalls++;
+        if (state.failEbayUpstream) return new Response('SECRET_EBAY_CRASH', { status: 503 });
+        return new Response(
+          JSON.stringify({
+            itemSummaries: [
+              {
+                itemId: 'v1|111|0',
+                title: 'Pokemon Pikachu 025/165 SV2a Near Mint',
+                price: { value: '15.00', currency: 'USD' },
+                itemWebUrl: 'https://www.ebay.com/itm/111',
+                image: { imageUrl: 'https://i.ebayimg.com/images/g/111/s-l500.jpg' },
+                condition: 'Near mint or better',
+                seller: { username: 'card-seller' }
+              }
+            ]
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return archiveAwareFetch(input, init);
+    };
+
+    const configuredEnv = {
+      ...baseEnv,
+      POKEMONPRICETRACKER_API_KEY: 'ppt-test-key',
+      EBAY_CLIENT_ID: 'ebay-id-test',
+      EBAY_CLIENT_SECRET: 'ebay-secret-test'
+    };
+    const marketWorker1 = createWorkerHandler({ fetchFn: extMarketFetch, edgeCache: null });
+    const gRes1 = await marketWorker1.fetch(new Request('https://cardseektcg.com/api/graded-prices?tcgPlayerId=123456'), configuredEnv);
+    assert.equal(gRes1.status, 200);
+    const gJson1 = await gRes1.json();
+    assert.equal(gJson1.data.status, 'ok');
+    assert.equal(gJson1.data.grades[0].grade, 'PSA 10');
+    assert.equal(gradedUpstreamCalls, 1);
+    assert.ok(kvStore.has(`${KV_KEYS.gradedCachePrefix}en:123456`), '鑑定卡結果應寫入 KV 24h 快取');
+    assert.ok(kvStore.has(KV_KEYS.gradedQuota), '鑑定卡每日配額應同步寫入 KV');
+
+    // 新 Isolate 冷啟動時應直接命中 KV 快取，不再打 PokemonPriceTracker API
+    const marketWorker2 = createWorkerHandler({ fetchFn: extMarketFetch, edgeCache: null });
+    const gRes2 = await marketWorker2.fetch(new Request('https://cardseektcg.com/api/graded-prices?tcgPlayerId=123456'), configuredEnv);
+    assert.equal(gRes2.status, 200);
+    assert.deepEqual(await gRes2.json(), gJson1);
+    assert.equal(gradedUpstreamCalls, 1, '新 Isolate 應命中 KV 快取而不重複扣點');
+
+    // eBay 查詢與跨 Isolate OAuth Token KV 共享
+    const eRes1 = await marketWorker1.fetch(new Request('https://cardseektcg.com/api/ebay-listings?name=Pikachu&number=025/165'), configuredEnv);
+    assert.equal(eRes1.status, 200);
+    const eJson1 = await eRes1.json();
+    assert.equal(eJson1.data.status, 'ok');
+    assert.equal(eJson1.data.items.length, 1);
+    assert.equal(ebayTokenCalls, 1);
+    assert.equal(ebaySearchCalls, 1);
+    assert.ok(kvStore.has(KV_KEYS.ebayToken), 'eBay OAuth token 應寫入 KV');
+
+    const eRes2 = await marketWorker2.fetch(new Request('https://cardseektcg.com/api/ebay-listings?name=Charizard&number=006/165'), configuredEnv);
+    assert.equal(eRes2.status, 200);
+    assert.equal(ebayTokenCalls, 1, '新 Isolate 應從 KV 復用 eBay OAuth token');
+
+    // 上游失敗時回 502 通用訊息且絕不外洩秘密
+    state.failGradedUpstream = true;
+    state.failEbayUpstream = true;
+    const gErrRes = await marketWorker1.fetch(new Request('https://cardseektcg.com/api/graded-prices?tcgPlayerId=999999'), configuredEnv);
+    assert.equal(gErrRes.status, 502);
+    const gErrText = await gErrRes.text();
+    assert.equal(gErrText.includes('SECRET_PPT_ERROR'), false);
+    const eErrRes = await marketWorker1.fetch(new Request('https://cardseektcg.com/api/ebay-listings?name=Mew&number=151/165'), configuredEnv);
+    assert.equal(eErrRes.status, 502);
+    const eErrText = await eErrRes.text();
+    assert.equal(eErrText.includes('SECRET_EBAY_CRASH'), false);
+    state.failGradedUpstream = false;
+    state.failEbayUpstream = false;
+
+    // 4. Sitemaps（/sitemaps/pages.xml 直接產；/sitemap.xml、/sitemaps/series.xml、/sitemaps/cards-1.xml 由 KV 預產供應）
+    const nPagesRes = await fetch(`${nodeServer.baseUrl}/sitemaps/pages.xml`);
+    const wPagesRes = await phWorker.fetch(new Request('https://cardseektcg.com/sitemaps/pages.xml'), baseEnv);
+    assert.equal(wPagesRes.status, 200);
+    assert.equal(wPagesRes.headers.get('content-type'), nPagesRes.headers.get('content-type'));
+    assert.equal(wPagesRes.headers.get('cache-control'), nPagesRes.headers.get('cache-control'));
+    assert.equal(wPagesRes.headers.get('content-security-policy'), nPagesRes.headers.get('content-security-policy'));
+    assert.equal(await wPagesRes.text(), await nPagesRes.text());
+
+    // KV 尚未寫入 sitemap 時，已設定 DB 回 503 { error: 'Sitemap 暫時無法產生' }，未設定 DB 回 503 { error: '尚未設定資料庫' }
+    const smBeforeKv = await phWorker.fetch(new Request('https://cardseektcg.com/sitemap.xml'), baseEnv);
+    assert.equal(smBeforeKv.status, 503);
+    assert.deepEqual(await smBeforeKv.json(), { error: 'Sitemap 暫時無法產生' });
+
+    const noDbSm = await phWorker.fetch(
+      new Request('https://cardseektcg.com/sitemap.xml'),
+      { ...baseEnv, SUPABASE_URL: '', SUPABASE_SERVICE_KEY: '' }
+    );
+    assert.equal(noDbSm.status, 503);
+    assert.deepEqual(await noDbSm.json(), { error: '尚未設定資料庫' });
+
+    // 執行 runSnapshotBuild 預產 sitemaps 進 KV，驗證與 Node 100% 一致
+    await runSnapshotBuild({
+      env: {
+        SUPABASE_URL: `http://127.0.0.1:${mockPort}/main`,
+        SUPABASE_SERVICE_KEY: 'test-main-key',
+        SUPABASE2_URL: `http://127.0.0.1:${mockPort}/ip2`,
+        SUPABASE2_SERVICE_KEY: 'test-ip2-key',
+        PUBLIC_BASE_URL: 'https://cardseektcg.com',
+        CF_ACCOUNT_ID: 'cf-acc',
+        CF_KV_NAMESPACE_ID: 'cf-ns',
+        CF_API_TOKEN: 'cf-tok'
+      },
+      targets: ['sitemaps'],
+      push: true,
+      fetchFn: async (input, init) => {
+        const url = String(typeof input === 'string' ? input : input?.url || input);
+        const cfMatch = url.match(/\/values\/([^?]+)$/);
+        if (cfMatch) {
+          kvStore.set(decodeURIComponent(cfMatch[1]), String(init?.body || ''));
+          return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+        return archiveAwareFetch(input, init);
+      },
+      log: { log() {}, error() {} }
+    });
+
+    assert.ok(kvStore.has(KV_KEYS.sitemapIndex));
+    assert.ok(kvStore.has(KV_KEYS.sitemapSeries));
+    assert.ok(kvStore.has(sitemapCardsKvKey(1)));
+
+    for (const smPath of ['/sitemap.xml', '/sitemaps/series.xml', '/sitemaps/cards-1.xml']) {
+      const nSm = await fetch(`${nodeServer.baseUrl}${smPath}`);
+      const wSm = await phWorker.fetch(new Request(`https://cardseektcg.com${smPath}`), baseEnv);
+      assert.equal(wSm.status, 200, smPath);
+      assert.equal(wSm.headers.get('content-type'), 'application/xml; charset=utf-8');
+      assert.equal(wSm.headers.get('cache-control'), 'public, max-age=3600');
+      assert.equal(await wSm.text(), await nSm.text(), `${smPath} XML 應與 Node 完全一致`);
+    }
+
+    for (const missingCardSm of ['/sitemaps/cards-0.xml', '/sitemaps/cards-99.xml']) {
+      const n404 = await fetch(`${nodeServer.baseUrl}${missingCardSm}`);
+      const w404 = await phWorker.fetch(new Request(`https://cardseektcg.com${missingCardSm}`), baseEnv);
+      assert.equal(w404.status, 404);
+      assert.deepEqual(await w404.json(), await n404.json());
+    }
+
+    // 5. 需 DB 的 SEO 頁（/?card=<id>、/?series=<id>）：200 + ETag/304、404 noindex 無 ETag、DB 故障降級 200 index.html
+    for (const seoPath of ['/?card=pokemon-p1', '/?series=pokemon-jp-sv2a', '/?series=union-arena-bt01']) {
+      const nSeo = await fetch(`${nodeServer.baseUrl}${seoPath}`);
+      const wSeo = await phWorker.fetch(new Request(`https://cardseektcg.com${seoPath}`), baseEnv);
+      assert.equal(wSeo.status, 200, seoPath);
+      assert.equal(wSeo.headers.get('cache-control'), 'no-cache');
+      const etag = wSeo.headers.get('etag');
+      assert.match(etag, /^"[0-9a-f]{40}"$/);
+      assert.equal(await wSeo.text(), await nSeo.text(), `${seoPath} HTML 應與 Node 完全一致`);
+
+      const w304 = await phWorker.fetch(
+        new Request(`https://cardseektcg.com${seoPath}`, { headers: { 'If-None-Match': etag } }),
+        baseEnv
+      );
+      assert.equal(w304.status, 304);
+    }
+
+    for (const missingSeo of ['/?card=nonexistent-card-999', '/?series=nonexistent-series-999']) {
+      const n404 = await fetch(`${nodeServer.baseUrl}${missingSeo}`);
+      const w404 = await phWorker.fetch(new Request(`https://cardseektcg.com${missingSeo}`), baseEnv);
+      assert.equal(w404.status, 404, missingSeo);
+      assert.equal(w404.headers.get('etag'), null, '404 SEO 頁不帶 ETag');
+      const wHtml = await w404.text();
+      assert.match(wHtml, /<meta name="robots" content="noindex">/);
+      assert.equal(wHtml, await n404.text());
+    }
+
+    // 當 DB 查詢失敗或逾時時，SEO 頁優雅降級回 200 靜態 index.html
+    const failSeoWorker = createWorkerHandler({
+      fetchFn: async () => {
+        throw new Error('DB_TIMEOUT');
+      },
+      edgeCache: null
+    });
+    const fallbackSeoRes = await failSeoWorker.fetch(new Request('https://cardseektcg.com/?card=pokemon-p1'), baseEnv);
+    assert.equal(fallbackSeoRes.status, 200);
+    assert.match(fallbackSeoRes.headers.get('etag') || '', /^"[0-9a-f]{40}"$/);
+    assert.equal(await fallbackSeoRes.text(), await readFile(join(outDir, 'index.html'), 'utf8'));
+  } finally {
+    await stopSpawnedServer(nodeServer.child);
+  }
 });

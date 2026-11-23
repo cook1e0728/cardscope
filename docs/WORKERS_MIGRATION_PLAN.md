@@ -1,6 +1,6 @@
 # Cloudflare Workers 搬遷計畫書（好卡在 CardSeek）
 
-> 文件建立日期：2026-11-23｜狀態：計畫定案（第 1 步程式已實作，尚未部署）
+> 文件建立日期：2026-11-23｜狀態：第 2 步全數公開端點、Sitemap 與需 DB SEO 頁已完成搬遷（網站公開功能 100% 不依賴 Render）
 > 依據：`docs/PRODUCT_PLAN.md`、`AGENTS.md` 與 `server.mjs` / `providers/*.mjs` 原始碼實況盤點。
 
 ## 1. 背景、目標與平台限制
@@ -310,3 +310,37 @@
    - `CF_ACCOUNT_ID`：Cloudflare Account ID
    - `CF_KV_NAMESPACE_ID`：上方建立的 `SNAPSHOT_KV` Namespace ID
    - `CF_API_TOKEN`：具備 `Workers KV Storage: Edit` 權限的 Cloudflare API Token
+
+---
+
+## 第 2 步收尾（網站公開功能完全脫離 Render）實作紀錄（2026-11-24）
+
+### 1. KV 快照 `catalog-coverage` statement timeout 修復與單遊戲容錯隔離
+- **問題根因**：
+  - GitHub Actions run `45241321966` 在 `catalog-coverage` 掃描 `yugioh` 與 `dragonball-fw` 時發生 `SUPABASE_500 57014 canceling statement due to statement timeout`，且因 `Promise.all` 7 遊戲併發加上單一錯誤即整批 abort，導致 `coverage` 完全沒寫入 KV。
+  - 查驗資料庫索引：`tcg_printings` 與 `card_images` 的 B-tree 索引皆以 `card_id` 為前導欄位（如 `tcg_printings_card_id_region_language...`、`card_images_card_id_source_image_url_key`），並無 `(card_id, id)` 複合索引；原 `loadCoverageRelationRange` 使用 `order=id.asc`，使 PostgreSQL 退回掃描 106 MB 的 `tcg_printings_pkey (id)` 並過濾 `card_id in (...)` 而觸發 statement timeout。
+- **無須修改 DB Schema / RPC / Index 的根治措施（`providers/kv-snapshots.mjs` + `scripts/build-kv-snapshots.mjs`）**：
+  1. **改走 `card_id` 前導索引順序**：`loadCoverageRelationRange` 的排序改為 `order=card_id.asc,id.asc`，直接命中既有 `card_id` B-tree 索引。
+  2. **逐遊戲循序執行與狀態隔離**：將原本 7 遊戲 `Promise.all` 改為 `for (const gameId of gameIds)` 逐遊戲序列查詢，每遊戲各自建立獨立的 `printingRelation` 與 `imageRelation` 狀態（避免單一遊戲關聯逾時污染其他遊戲），並將預設 `cardChunkSize` 降至 `400`、`relationPageSize` 降至 `500`。
+  3. **指數退避與自動縮小分頁重試**：遇到 `57014`／逾時或 `5xx` 時，透過 `withRetry` 指數退避重試，且關聯分頁自動逐次減半（`500 -> 200 -> 100`）。
+  4. **單一遊戲失敗隔離與前次 KV `stale` 備援**：在 `catalog-coverage`、`pack-prizes`、`series-hits` 中，若單一遊戲重試後仍失敗，惰性讀取（`getCloudflareKvValue`）該遊戲在 KV 中的上一版結果並標示 `stale: true`（寫入 `data.staleGames`）；若 KV 尚無舊值則僅將該遊戲標入 `data.missingGames`，其餘成功遊戲照常寫入 KV。**只有當所有遊戲／所有 target 全部失敗時，腳本才 exit 1**。
+
+### 2. 剩餘公開端點、Sitemap 與需 DB SEO 頁全數搬上 Workers（共 36 項）
+- **`GET /api/cards/:id/price-history`（`card-price-history`）**：
+  - 於 `providers/read-api.mjs` 實作純 Web 標準 `createWebArchiveReader`：以 `DecompressionStream('gzip')` 串流解壓 Supabase Storage `price-archive` 分片（嚴格限制單檔解壓上限 `64 MB`）、`crypto.subtle.digest('SHA-1')` Big-Endian `DataView.getUint32(0, false) % 32` 計算分片編號、`crypto.subtle.digest('SHA-256')` 驗證 manifest 12 碼 digest。
+  - 實作**單次請求分片讀取預算**（預設 `DEFAULT_ARCHIVE_SHARD_BUDGET = 6`，可由 `PRICE_ARCHIVE_SHARD_BUDGET` 調整）：當跨越分片數超過預算、Storage 逾時或分片損毀時，自動降級為回傳資料庫最近 30 天點位並標示 `meta.archiveUnavailable = true`（且降級回應不寫入 1 小時 Edge Cache）。
+- **`/sitemap.xml`、`/sitemaps/*.xml`（`sitemaps`）**：
+  - `/sitemaps/pages.xml` 由 Worker 直接以 `WORKER_GAME_IDS` 與 `pageSitemapEntries` 產生，零 DB／KV 讀取。
+  - `/sitemap.xml`、`/sitemaps/series.xml`、`/sitemaps/cards-<n>.xml` 併入 `scripts/build-kv-snapshots.mjs` 與 `.github/workflows/kv-snapshots.yml`（預設 targets：`pack-prizes,series-hits,catalog-coverage,sitemaps`），預產寫入 `SNAPSHOT_KV`（`snapshot:sitemap-index:v1`、`snapshot:sitemap-series:v1`、`snapshot:sitemap-cards:v1:<n>`）。
+  - Worker 直接讀 KV 並搭配 Edge Cache（1 小時）；當 `cards-<n>.xml` 超出範圍時回 `404 { error: 'Not found' }`，當 KV 尚無資料時與 Node 對齊回 `503 { error: '尚未設定資料庫' }`（未設 DB）或 `503 { error: 'Sitemap 暫時無法產生' }`（已設 DB）。
+- **需 DB 的 SEO 頁 `/?card=<id>`、`/?series=<id>`（`seo-db`）**：
+  - Worker 直接重用已搬遷的 `loadCardCached` / `getCard` 與 `tcg_series`（含 800ms 限時 `tcg_printings` 計數），套用 `cardSeo` / `seriesSeo` 與 `applySeoToHtml`。
+  - 查有資料時回 `200` + `Cache-Control: no-cache` + 內容 `ETag`（支援 `If-None-Match` -> `304`）；查無卡片或系列時回 `404` + `applyNoindexToHtml`（不帶 `ETag`）；超過 `1.5 秒` 逾時或資料庫錯誤時優雅降級回 `200` 靜態 `index.html`（含 `ETag`），與 `server.mjs:serveSeoIndex` 100% 一致。
+- **`GET /api/graded-prices`（`graded-prices`）與 `GET /api/ebay-listings`（`ebay-listings`）**：
+  - Worker 未設定 `POKEMONPRICETRACKER_API_KEY`、`EBAY_CLIENT_ID`、`EBAY_CLIENT_SECRET` 時，直接於 Worker 回傳與 Node 相同的 `200` 降級 JSON（`{ data: { status: 'not-configured' } }` 與 `{ data: { status: 'not-configured', enabled: false, limited: false, items: [] } }`），**絕不打向已停權的 Render**；同時更新 `price-timeline.js` 的 `ebayState`，使 `status: 'not-configured'` 與 `gradedState` 一致顯示「沒有」而非「查不到」。
+  - 當之後補齊上述 Secrets 時，Worker 自動啟用完整查詢：鑑定卡 24h 單卡快取與每日 40 次配額（`graded:quota:v1`）存於 Isolate + `SNAPSHOT_KV`；eBay OAuth Token（`ebay:token:v1`）與每日 1,000 次配額（`ebay:quota:v1`，每 10 次同步一次 KV 以嚴格控制在 KV 每日 1,000 次寫入額度內）存於 Isolate + `SNAPSHOT_KV`，搜尋結果存於 Isolate + Edge Cache（1 小時）。
+- **`GET /api/catalog/image-status`（`catalog-image-status`）與 `POST /api/reports` 評估**：
+  - `GET /api/catalog/image-status` 已搬上 Worker（查詢主庫 `ygoprodeck` 卡數與 `cardscope-yugioh-cache` 已快取圖數，搭配 10 分鐘快取）。
+  - `POST /api/reports` 已於 W2b 階段自 `server.mjs` 與前端移除（使用者勘誤改走 Google 表單），公開讀取端點 `GET /api/reports` 與 `GET /api/reports/meta` 皆已於 Worker 直接處理。
+- **`/api/admin/*` 與 Render 502/503/504 HTML 錯誤頁攔截保護**：
+  - `/api/admin/*` 管理與手動同步觸發端點保留代理，但 `worker/index.mjs` 的 `proxyRequest` 已強化攔截：當原點（Render）連線失敗或回傳 `502` / `503` / `504` 非 JSON（如 Render 停權 HTML 錯誤頁）時，Worker 一律攔截並回傳標準 JSON 降級回應（`502 { error: '資料暫時無法讀取' }` 或各端點對應的 `unavailable` / `not-configured` 結構），絕不把 HTML 503 暴露給前端。

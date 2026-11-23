@@ -29,17 +29,21 @@ run_worker_first = [
 [vars]
 ORIGIN_URL = "https://cardscope.onrender.com"
 PUBLIC_BASE_URL = "https://cardseektcg.com"
-# 端點開關（預設全部搬遷）：可用 "none" 全數退回 Render，或 "-cards,-search,-sync-push,-auth-exchange,-pack-prizes" 單支切回代理。
+# 端點開關（預設全部 36 項公開 API、Sitemap 與需 DB SEO 頁皆由 Worker 處理）：可用 "none" 全數退回 Render，或 "-cards,-search,-card-price-history,-sitemaps,-seo-db" 單支切回代理。
 # MIGRATED_API = "all"
 # 可選非機密調整：
 # SUPABASE2_TIMEOUT_MS = "4000"
 # AUTH_RATE_LIMIT_PER_MINUTE = "10"
 # SYNC_RATE_LIMIT_PER_MINUTE = "6"
+# GRADED_RATE_LIMIT_PER_MINUTE = "15"
+# EBAY_RATE_LIMIT_PER_MINUTE = "15"
+# SEO_RATE_LIMIT_PER_MINUTE = "60"
+# PRICE_ARCHIVE_SHARD_BUDGET = "6"
 # AUTH_CACHE_MS = "120000"
 # JPY_TO_TWD = "0.22"
 # USD_TO_TWD = "32"
 
-# 首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）Workers KV 綁定（2026-11-24 已建立並啟用）：
+# 首頁統計、收錄覆蓋率、Sitemap 與外部價格快取（pack-prizes、series-hits、catalog/coverage、sitemaps、graded/ebay）Workers KV 綁定（2026-11-24 已建立並啟用）：
 # 建立指令：npx wrangler kv namespace create SNAPSHOT_KV
 [[kv_namespaces]]
 binding = "SNAPSHOT_KV"
@@ -53,3 +57,6 @@ id = "56b61bcf705c4090a8a006146cc0a1e6"
 # - SUPABASE2_ANON_KEY（Google 登入 PKCE 交換與 /auth/v1/user Bearer 驗證用）
 # - ORIGIN_VERIFY_SECRET
 # - SCRAPE_SECRET（選用：用於 /api/providers 顯示 yuyutei.enabled 旗標與管理端點限流豁免）
+# - POKEMONPRICETRACKER_API_KEY（選用：設定後啟用 /api/graded-prices；未設定時直接回傳 status: 'not-configured'，不打 Render）
+# - EBAY_CLIENT_ID（選用：設定後啟用 /api/ebay-listings；未設定時直接回傳 status: 'not-configured'，不打 Render）
+# - EBAY_CLIENT_SECRET（選用：同上，與 EBAY_CLIENT_ID 搭配使用）

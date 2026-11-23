@@ -1,12 +1,19 @@
-// 產生首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）預產快照，並選用寫入本機 JSON 或推送至 Cloudflare Workers KV。
+// 產生首頁統計、收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）與 Sitemap 預產快照，並選用寫入本機 JSON 或推送至 Cloudflare Workers KV。
 // 用法：
-//   node scripts/build-kv-snapshots.mjs [--targets pack-prizes,series-hits,catalog-coverage] [--out <file.json>] [--push] [--if-configured]
+//   node scripts/build-kv-snapshots.mjs [--targets pack-prizes,series-hits,catalog-coverage,sitemaps] [--out <file.json>] [--push] [--if-configured]
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { KV_KEYS, createSnapshotGenerator, putCloudflareKvValue } from '../providers/kv-snapshots.mjs';
+import {
+  KV_KEYS,
+  createSnapshotGenerator,
+  getCloudflareKvValue,
+  putCloudflareKvValue,
+  sitemapCardsKvKey
+} from '../providers/kv-snapshots.mjs';
 
-export const SNAPSHOT_TARGETS = Object.freeze(['pack-prizes', 'series-hits', 'catalog-coverage']);
+export const DEFAULT_SNAPSHOT_TARGETS = Object.freeze(['pack-prizes', 'series-hits', 'catalog-coverage']);
+export const SNAPSHOT_TARGETS = Object.freeze(['pack-prizes', 'series-hits', 'catalog-coverage', 'sitemaps']);
 
 export function parseSnapshotArgs(argv = []) {
   const opts = {
@@ -40,7 +47,7 @@ export async function runSnapshotBuild({
   env = process.env,
   fetchFn = globalThis.fetch,
   now = Date.now,
-  targets = SNAPSHOT_TARGETS,
+  targets = DEFAULT_SNAPSHOT_TARGETS,
   outPath = '',
   push = false,
   ifConfigured = false,
@@ -63,17 +70,72 @@ export async function runSnapshotBuild({
   const needCatalog = targets.includes('pack-prizes') || targets.includes('series-hits');
   let sharedCatalog = null;
   if (needCatalog) {
-    sharedCatalog = await generator.loadCatalogForSnapshot();
+    try {
+      sharedCatalog = await generator.loadCatalogForSnapshot();
+    } catch (error) {
+      log.error?.('kv-snapshots: 目錄預載失敗，各目標將個別處理錯誤', error?.message || error);
+    }
   }
+
+  const loadPreviousFromKv = key => () =>
+    hasKv
+      ? getCloudflareKvValue({
+          accountId: env.CF_ACCOUNT_ID,
+          namespaceId: env.CF_KV_NAMESPACE_ID,
+          apiToken: env.CF_API_TOKEN,
+          key,
+          apiBaseUrl,
+          fetchFn
+        })
+      : Promise.resolve(null);
+
+  const pushKv = async (key, value) => {
+    const result = await putCloudflareKvValue({
+      accountId: env.CF_ACCOUNT_ID,
+      namespaceId: env.CF_KV_NAMESPACE_ID,
+      apiToken: env.CF_API_TOKEN,
+      key,
+      value,
+      apiBaseUrl,
+      fetchFn
+    });
+    pushed.push(result);
+    log.log?.(`kv-snapshots: 已寫入 ${result.key} (${result.bytes} bytes)`);
+  };
 
   const snapshots = {};
   const pushed = [];
   const errors = {};
 
   const runners = new Map([
-    ['pack-prizes', { key: KV_KEYS.packPrizes, run: () => generator.computePackPrizesSnapshot(sharedCatalog) }],
-    ['series-hits', { key: KV_KEYS.seriesHits, run: () => generator.computeSeriesHitsSnapshot(sharedCatalog) }],
-    ['catalog-coverage', { key: KV_KEYS.catalogCoverage, run: () => generator.computeCatalogCoverageSnapshot() }]
+    [
+      'pack-prizes',
+      {
+        key: KV_KEYS.packPrizes,
+        run: () => generator.computePackPrizesSnapshot(sharedCatalog, { loadPrevious: loadPreviousFromKv(KV_KEYS.packPrizes) })
+      }
+    ],
+    [
+      'series-hits',
+      {
+        key: KV_KEYS.seriesHits,
+        run: () => generator.computeSeriesHitsSnapshot(sharedCatalog, { loadPrevious: loadPreviousFromKv(KV_KEYS.seriesHits) })
+      }
+    ],
+    [
+      'catalog-coverage',
+      {
+        key: KV_KEYS.catalogCoverage,
+        run: () => generator.computeCatalogCoverageSnapshot({ loadPrevious: loadPreviousFromKv(KV_KEYS.catalogCoverage) })
+      }
+    ],
+    [
+      'sitemaps',
+      {
+        key: KV_KEYS.sitemapIndex,
+        run: () => generator.computeSitemapsSnapshot()
+      }
+    ]
   ]);
 
   for (const target of targets) {
@@ -81,19 +143,30 @@ export async function runSnapshotBuild({
     if (!entry) continue;
     try {
       const payload = await entry.run();
-      snapshots[entry.key] = payload;
-      if (push) {
-        const result = await putCloudflareKvValue({
-          accountId: env.CF_ACCOUNT_ID,
-          namespaceId: env.CF_KV_NAMESPACE_ID,
-          apiToken: env.CF_API_TOKEN,
-          key: entry.key,
-          value: payload,
-          apiBaseUrl,
-          fetchFn
-        });
-        pushed.push(result);
-        log.log?.(`kv-snapshots: 已寫入 ${result.key} (${result.bytes} bytes)`);
+      if (target === 'sitemaps') {
+        const indexDoc = {
+          index: payload.index,
+          cardFileCount: payload.cardFileCount,
+          cardCount: payload.cardCount,
+          generatedAt: payload.generatedAt
+        };
+        snapshots[KV_KEYS.sitemapIndex] = indexDoc;
+        snapshots[KV_KEYS.sitemapSeries] = payload.series;
+        for (let i = 0; i < payload.cards.length; i++) {
+          snapshots[sitemapCardsKvKey(i + 1)] = payload.cards[i];
+        }
+        if (push) {
+          await pushKv(KV_KEYS.sitemapIndex, indexDoc);
+          await pushKv(KV_KEYS.sitemapSeries, payload.series);
+          for (let i = 0; i < payload.cards.length; i++) {
+            await pushKv(sitemapCardsKvKey(i + 1), payload.cards[i]);
+          }
+        }
+      } else {
+        snapshots[entry.key] = payload;
+        if (push) {
+          await pushKv(entry.key, payload);
+        }
       }
     } catch (error) {
       errors[target] = String(error?.message || error);
@@ -107,7 +180,8 @@ export async function runSnapshotBuild({
     await writeFile(fullPath, `${JSON.stringify(snapshots, null, 2)}\n`, 'utf8');
   }
 
-  if (Object.keys(errors).length > 0) {
+  // 只有全部目標都失敗（沒有任何快照產出）才拋錯 exit 1；部分目標成功則保留已寫入的快照並記錄錯誤。
+  if (Object.keys(errors).length > 0 && Object.keys(snapshots).length === 0) {
     const err = new Error(`SNAPSHOT_BUILD_FAILED:${Object.keys(errors).join(',')}`);
     err.snapshots = snapshots;
     err.pushed = pushed;
@@ -115,7 +189,13 @@ export async function runSnapshotBuild({
     throw err;
   }
 
-  return { skipped: false, snapshots, pushed, errors };
+  return {
+    skipped: false,
+    partial: Object.keys(errors).length > 0,
+    snapshots,
+    pushed,
+    errors
+  };
 }
 
 const isMain = process.argv[1] && resolve(fileURLToPath(import.meta.url)) === resolve(process.argv[1]);

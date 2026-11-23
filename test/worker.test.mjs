@@ -373,14 +373,14 @@ test('worker serves static SEO pages, ETag 304, HEAD, robots.txt, security.txt a
   }
 });
 
-test('worker proxies remaining /api/*, /sitemap*, and DB-backed SEO pages to origin with x-client-ip and ORIGIN_VERIFY_SECRET', async () => {
+test('worker proxies remaining /api/admin/* and rolled-back routes to origin with x-client-ip and ORIGIN_VERIFY_SECRET', async () => {
   assert.equal(resolveOriginUrl(undefined), DEFAULT_ORIGIN_URL);
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'https://origin.example.test/ignored/path' }), 'https://origin.example.test');
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'javascript:alert(1)' }), DEFAULT_ORIGIN_URL);
 
-  assert.equal(DEFAULT_MIGRATED_APIS.length, 30);
+  assert.equal(DEFAULT_MIGRATED_APIS.length, 36);
   assert.equal(matchMigratedApi(new URL('https://x/api/search?q=a'), 'GET'), 'search');
-  assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1/price-history'), 'GET'), null, 'price-history 留代理 Render');
+  assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1/price-history'), 'GET'), 'card-price-history');
   assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1/market'), 'GET'), 'card-market');
   assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1'), 'GET'), 'card-detail');
   assert.equal(matchMigratedApi(new URL('https://x/api/auth/config'), 'GET'), 'auth-config');
@@ -393,6 +393,10 @@ test('worker proxies remaining /api/*, /sitemap*, and DB-backed SEO pages to ori
   assert.equal(matchMigratedApi(new URL('https://x/api/pack-prizes'), 'GET'), 'pack-prizes');
   assert.equal(matchMigratedApi(new URL('https://x/api/series-hits'), 'GET'), 'series-hits');
   assert.equal(matchMigratedApi(new URL('https://x/api/catalog/coverage'), 'GET'), 'catalog-coverage');
+  assert.equal(matchMigratedApi(new URL('https://x/api/catalog/image-status'), 'GET'), 'catalog-image-status');
+  assert.equal(matchMigratedApi(new URL('https://x/api/graded-prices'), 'GET'), 'graded-prices');
+  assert.equal(matchMigratedApi(new URL('https://x/api/ebay-listings'), 'GET'), 'ebay-listings');
+  assert.equal(matchMigratedApi(new URL('https://x/api/admin/catalog/health'), 'GET'), null, '/api/admin/* 保留代理');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET'), null, '第 2 步預設由 Worker 直接處理');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET', { MIGRATED_API: '-search' }), 'api', '單支切回代理');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET', { MIGRATED_API: 'none' }), 'api');
@@ -403,12 +407,22 @@ test('worker proxies remaining /api/*, /sitemap*, and DB-backed SEO pages to ori
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST', { MIGRATED_API: '-sync-push' }), 'api');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST', { MIGRATED_API: '-sync' }), 'api');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/auth/exchange'), 'POST', { MIGRATED_API: '-auth' }), 'api');
-  assert.equal(shouldProxyToOrigin(new URL('https://x/api/graded-prices'), 'GET'), 'api');
-  assert.equal(shouldProxyToOrigin(new URL('https://x/sitemap.xml'), 'GET'), 'sitemap');
-  assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/cards-1.xml'), 'HEAD'), 'sitemap');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/graded-prices'), 'GET'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/graded-prices'), 'GET', { MIGRATED_API: '-graded-prices' }), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/ebay-listings'), 'GET'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/ebay-listings'), 'GET', { MIGRATED_API: '-ebay-listings' }), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/cards/c1/price-history'), 'GET'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/cards/c1/price-history'), 'GET', { MIGRATED_API: '-card-price-history' }), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/admin/catalog/health'), 'GET'), 'api');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/sitemap.xml'), 'GET'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/sitemap.xml'), 'GET', { MIGRATED_API: '-sitemaps' }), 'sitemap');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/cards-1.xml'), 'HEAD'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/cards-1.xml'), 'HEAD', { MIGRATED_API: '-sitemap' }), 'sitemap');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/../server.mjs'), 'GET'), null);
-  assert.equal(shouldProxyToOrigin(new URL('https://x/?card=pokemon-a'), 'GET'), 'seo-db');
-  assert.equal(shouldProxyToOrigin(new URL('https://x/?series=pokemon-s1'), 'HEAD'), 'seo-db');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/?card=pokemon-a'), 'GET'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/?card=pokemon-a'), 'GET', { MIGRATED_API: '-seo-db' }), 'seo-db');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/?series=pokemon-s1'), 'HEAD'), null);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/?series=pokemon-s1'), 'HEAD', { MIGRATED_API: '-seo' }), 'seo-db');
   assert.equal(shouldProxyToOrigin(new URL('https://x/?game=pokemon'), 'GET'), null);
   assert.equal(seoRequestTarget(new URL('https://x/?card=pokemon-a'))?.kind, 'card');
 
@@ -479,14 +493,14 @@ test('worker proxies remaining /api/*, /sitemap*, and DB-backed SEO pages to ori
   assert.equal(await rollbackHead.text(), '');
   assert.equal(seen[1].target, 'https://render-origin.example.test/api/catalog/health');
 
-  await handler.fetch(new Request('https://cardseektcg.com/sitemaps/pages.xml'), env);
+  await handler.fetch(new Request('https://cardseektcg.com/sitemaps/pages.xml'), { ...env, MIGRATED_API: '-sitemaps' });
   assert.equal(seen[2].target, 'https://render-origin.example.test/sitemaps/pages.xml');
 
-  await handler.fetch(new Request('https://cardseektcg.com/?card=pokemon-sv2a-025&region=JP'), env);
+  await handler.fetch(new Request('https://cardseektcg.com/?card=pokemon-sv2a-025&region=JP'), { ...env, MIGRATED_API: '-seo-db' });
   assert.equal(seen[3].target, 'https://render-origin.example.test/?card=pokemon-sv2a-025&region=JP');
 });
 
-test('worker degrades gracefully when origin is unreachable (502 API, 503 sitemap, 200 static fallback for SEO)', async () => {
+test('worker degrades gracefully when origin is unreachable or returns Render 503 HTML (502 API, 503 sitemap, 200 static fallback for SEO)', async () => {
   const indexHtml = '<!doctype html><title>好卡在 CardSeek</title><script>console.log(1)</script>';
   const handler = createWorkerHandler({
     fetchFn: async () => {
@@ -502,11 +516,11 @@ test('worker degrades gracefully when origin is unreachable (502 API, 503 sitema
     }
   };
 
-  const apiFail = await handler.fetch(new Request('https://cardseektcg.com/api/graded-prices'), env);
-  assert.equal(apiFail.status, 502);
-  assert.equal(apiFail.headers.get('cache-control'), 'no-store');
-  assert.equal(apiFail.headers.get('content-security-policy'), API_CSP);
-  const apiText = await apiFail.text();
+  const adminFail = await handler.fetch(new Request('https://cardseektcg.com/api/admin/catalog/health'), env);
+  assert.equal(adminFail.status, 502);
+  assert.equal(adminFail.headers.get('cache-control'), 'no-store');
+  assert.equal(adminFail.headers.get('content-security-policy'), API_CSP);
+  const apiText = await adminFail.text();
   assert.deepEqual(JSON.parse(apiText), { error: '資料暫時無法讀取' });
   assert.equal(apiText.includes('SECRET_INTERNAL'), false);
 
@@ -514,14 +528,39 @@ test('worker degrades gracefully when origin is unreachable (502 API, 503 sitema
   assert.equal(rolledBackFail.status, 502);
   assert.deepEqual(await rolledBackFail.json(), { error: '資料暫時無法讀取' });
 
-  const sitemapFail = await handler.fetch(new Request('https://cardseektcg.com/sitemap.xml'), env);
+  const sitemapFail = await handler.fetch(new Request('https://cardseektcg.com/sitemap.xml'), { ...env, MIGRATED_API: '-sitemaps' });
   assert.equal(sitemapFail.status, 503);
   assert.deepEqual(await sitemapFail.json(), { error: 'Sitemap 暫時無法產生' });
 
-  const seoFallback = await handler.fetch(new Request('https://cardseektcg.com/?card=pokemon-a'), env);
+  const seoFallback = await handler.fetch(new Request('https://cardseektcg.com/?card=pokemon-a'), { ...env, MIGRATED_API: '-seo-db' });
   assert.equal(seoFallback.status, 200);
   assert.equal(seoFallback.headers.get('cache-control'), 'no-cache');
   assert.equal(await seoFallback.text(), indexHtml);
+
+  // 當 Render 回傳 503 HTML 停權頁時，Worker 亦必須攔截並回傳標準 JSON 降級，絕不把 HTML 503 傳給前端
+  const html503Handler = createWorkerHandler({
+    fetchFn: async () => new Response('<!doctype html><html><body>503 Service Unavailable - Render</body></html>', {
+      status: 503,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    })
+  });
+  const html503Api = await html503Handler.fetch(new Request('https://cardseektcg.com/api/admin/page-stats'), env);
+  assert.equal(html503Api.status, 502);
+  assert.deepEqual(await html503Api.json(), { error: '資料暫時無法讀取' });
+
+  const html503Graded = await html503Handler.fetch(new Request('https://cardseektcg.com/api/graded-prices'), { ...env, MIGRATED_API: '-graded-prices' });
+  assert.equal(html503Graded.status, 200);
+  assert.deepEqual(await html503Graded.json(), { data: { status: 'not-configured' } });
+
+  const html503Ebay = await html503Handler.fetch(new Request('https://cardseektcg.com/api/ebay-listings'), { ...env, MIGRATED_API: '-ebay-listings' });
+  assert.equal(html503Ebay.status, 200);
+  assert.deepEqual(await html503Ebay.json(), { data: { status: 'not-configured', enabled: false, limited: false, items: [] } });
+
+  const html503PriceHistory = await html503Handler.fetch(new Request('https://cardseektcg.com/api/cards/pokemon-p1/price-history'), { ...env, MIGRATED_API: '-card-price-history' });
+  assert.equal(html503PriceHistory.status, 200);
+  const phFallback = await html503PriceHistory.json();
+  assert.deepEqual(phFallback.series, []);
+  assert.equal(phFallback.meta.unavailable, 'price-history-unavailable');
 
   // 檢驗 NOT_FOUND_HTML 與 PUBLIC_STATIC / REVALIDATE_EXTENSIONS 常數仍被正確維持
   assert.ok(NOT_FOUND_HTML.includes('找不到這個頁面'));
@@ -580,9 +619,9 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
   }
   assert.equal(originCalls.length, 0);
 
-  // 2. 環境變數 MIGRATED_API="all,-cards,-search" 僅切回 cards 與 search，其餘 28 支仍由 Worker 處理
+  // 2. 環境變數 MIGRATED_API="all,-cards,-search" 僅切回 cards 與 search，其餘 34 支仍由 Worker 處理
   const mixedSet = resolveMigratedApis({ MIGRATED_API: 'all,-cards,-search' });
-  assert.equal(mixedSet.size, 28);
+  assert.equal(mixedSet.size, 34);
   assert.equal(mixedSet.has('cards'), false);
   assert.equal(mixedSet.has('search'), false);
   for (const api of DEFAULT_MIGRATED_APIS) {
@@ -601,6 +640,7 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
     ['/api/providers', 'GET'],
     ['/api/catalog/sources', 'GET'],
     ['/api/catalog/sync-status', 'GET'],
+    ['/api/catalog/image-status', 'GET'],
     ['/api/trends', 'GET'],
     ['/api/buyback-prices?game=pokemon', 'GET'],
     ['/api/images/onepiece?url=bad', 'GET'],
@@ -608,6 +648,7 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
     ['/api/products', 'GET'],
     ['/api/cards/c1', 'GET'],
     ['/api/cards/c1/market', 'GET'],
+    ['/api/cards/c1/price-history', 'GET'],
     ['/api/exchange-rates', 'GET'],
     ['/api/hot-cards', 'GET'],
     ['/api/market-events', 'GET'],
@@ -624,9 +665,11 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
     ['/api/sync/delete', 'POST'],
     ['/api/pack-prizes', 'GET'],
     ['/api/series-hits', 'GET'],
-    ['/api/catalog/coverage', 'GET']
+    ['/api/catalog/coverage', 'GET'],
+    ['/api/graded-prices?tcgPlayerId=123', 'GET'],
+    ['/api/ebay-listings?name=Pikachu&number=25', 'GET']
   ];
-  assert.equal(nonProxiedApis.length, 28);
+  assert.equal(nonProxiedApis.length, 32);
   for (const [path, method] of nonProxiedApis) {
     const res = await handler.fetch(
       new Request(`https://cardseektcg.com${path}`, {
@@ -642,7 +685,11 @@ test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async (
       assert.notEqual(body.proxiedByOrigin, true, `${method} ${path} 應仍由 Worker 直接處理`);
     }
   }
-  assert.equal(originCalls.length, 2, '其餘 28 支端點不應觸發原點代理');
+  const smRes = await handler.fetch(new Request('https://cardseektcg.com/sitemaps/pages.xml'), mixedEnv);
+  assert.equal(smRes.status, 200);
+  const seoRes = await handler.fetch(new Request('https://cardseektcg.com/?card=pokemon-a'), mixedEnv);
+  assert.equal(seoRes.status, 404);
+  assert.equal(originCalls.length, 2, '其餘 34 項端點不應觸發原點代理');
 });
 
 test('Worker 端限流：依 cf-connecting-ip 計數、忽略 X-Forwarded-For、圖片獨立配額與 SCRAPE_SECRET 豁免', async () => {

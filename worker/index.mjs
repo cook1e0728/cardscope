@@ -1,4 +1,4 @@
-// 第 2 步第二批 Cloudflare Worker：送出靜態檔、無資料庫 SEO 頁、20 支讀取 API、7 支認證／收藏雲端同步寫入 API，以及 3 支讀 Workers KV 的首頁統計與覆蓋率端點。
+// 第 2 步收尾 Cloudflare Worker：全數公開讀取 API、認證／收藏雲端同步寫入 API、KV 預產快照／Sitemap 與需 DB 的 SEO 頁皆由 Worker 直接處理，僅 /api/admin/* 保留代理（且攔截 Render 502/503/504 HTML 錯誤頁）。
 import { createRateLimiter } from '../providers/backend-reliability.mjs';
 import {
   API_CSP,
@@ -13,8 +13,8 @@ import {
   seoRequestTarget
 } from '../providers/http-security.mjs';
 import { KV_KEYS } from '../providers/kv-snapshots.mjs';
-import { createReadApi } from '../providers/read-api.mjs';
-import { applySeoToHtml, homeSeo, normalizeBaseUrl, renderRobotsTxt, viewSeo } from '../providers/seo.mjs';
+import { createReadApi, priceHistoryNote } from '../providers/read-api.mjs';
+import { applyNoindexToHtml, applySeoToHtml, homeSeo, normalizeBaseUrl, renderRobotsTxt, viewSeo } from '../providers/seo.mjs';
 
 export { KV_KEYS };
 
@@ -34,6 +34,7 @@ export const DEFAULT_MIGRATED_APIS = Object.freeze([
   'providers',
   'catalog-sources',
   'catalog-sync-status',
+  'catalog-image-status',
   'trends',
   'buyback-prices',
   'images-onepiece',
@@ -43,6 +44,7 @@ export const DEFAULT_MIGRATED_APIS = Object.freeze([
   'search',
   'card-detail',
   'card-market',
+  'card-price-history',
   'exchange-rates',
   'hot-cards',
   'market-events',
@@ -59,7 +61,11 @@ export const DEFAULT_MIGRATED_APIS = Object.freeze([
   'sync-delete',
   'pack-prizes',
   'series-hits',
-  'catalog-coverage'
+  'catalog-coverage',
+  'graded-prices',
+  'ebay-listings',
+  'sitemaps',
+  'seo-db'
 ]);
 
 const DEFAULT_MIGRATED_SET = new Set(DEFAULT_MIGRATED_APIS);
@@ -69,6 +75,8 @@ const MIGRATED_API_ALIASES = new Map([
   ['/api/providers', 'providers'],
   ['/api/catalog/sources', 'catalog-sources'],
   ['/api/catalog/sync-status', 'catalog-sync-status'],
+  ['/api/catalog/image-status', 'catalog-image-status'],
+  ['image-status', 'catalog-image-status'],
   ['/api/trends', 'trends'],
   ['/api/buyback-prices', 'buyback-prices'],
   ['/api/images/onepiece', 'images-onepiece'],
@@ -78,6 +86,8 @@ const MIGRATED_API_ALIASES = new Map([
   ['/api/search', 'search'],
   ['/api/cards/:id', 'card-detail'],
   ['/api/cards/:id/market', 'card-market'],
+  ['/api/cards/:id/price-history', 'card-price-history'],
+  ['price-history', 'card-price-history'],
   ['/api/exchange-rates', 'exchange-rates'],
   ['/api/hot-cards', 'hot-cards'],
   ['/api/market-events', 'market-events'],
@@ -95,7 +105,15 @@ const MIGRATED_API_ALIASES = new Map([
   ['/api/pack-prizes', 'pack-prizes'],
   ['/api/series-hits', 'series-hits'],
   ['/api/catalog/coverage', 'catalog-coverage'],
-  ['coverage', 'catalog-coverage']
+  ['coverage', 'catalog-coverage'],
+  ['/api/graded-prices', 'graded-prices'],
+  ['/api/ebay-listings', 'ebay-listings'],
+  ['/sitemap.xml', 'sitemaps'],
+  ['/sitemaps/*', 'sitemaps'],
+  ['sitemap', 'sitemaps'],
+  ['/?card', 'seo-db'],
+  ['/?series', 'seo-db'],
+  ['seo', 'seo-db']
 ]);
 
 const MIGRATED_API_GROUPS = new Map([
@@ -169,6 +187,7 @@ const EXACT_GET_API_MAP = new Map([
   ['/api/providers', 'providers'],
   ['/api/catalog/sources', 'catalog-sources'],
   ['/api/catalog/sync-status', 'catalog-sync-status'],
+  ['/api/catalog/image-status', 'catalog-image-status'],
   ['/api/trends', 'trends'],
   ['/api/buyback-prices', 'buyback-prices'],
   ['/api/images/onepiece', 'images-onepiece'],
@@ -185,7 +204,9 @@ const EXACT_GET_API_MAP = new Map([
   ['/api/auth/config', 'auth-config'],
   ['/api/pack-prizes', 'pack-prizes'],
   ['/api/series-hits', 'series-hits'],
-  ['/api/catalog/coverage', 'catalog-coverage']
+  ['/api/catalog/coverage', 'catalog-coverage'],
+  ['/api/graded-prices', 'graded-prices'],
+  ['/api/ebay-listings', 'ebay-listings']
 ]);
 
 const EXACT_POST_API_MAP = new Map([
@@ -198,7 +219,7 @@ const EXACT_POST_API_MAP = new Map([
   ['/api/sync/delete', 'sync-delete']
 ]);
 
-/** 判斷請求是否對應已搬遷的端點 key；未搬遷（price-history、graded/ebay、admin 等）回 null。 */
+/** 判斷請求是否對應已搬遷的端點 key；未搬遷（如 /api/admin/*）回 null。 */
 export function matchMigratedApi(url, method = 'GET') {
   const pathname = url.pathname;
   if (!pathname.startsWith('/api/')) return null;
@@ -216,7 +237,7 @@ export function matchMigratedApi(url, method = 'GET') {
     } catch {
       return 'card-detail';
     }
-    if (tail.endsWith('/price-history')) return null;
+    if (tail.endsWith('/price-history')) return 'card-price-history';
     if (tail.endsWith('/market')) return 'card-market';
     return 'card-detail';
   }
@@ -247,17 +268,22 @@ export function resolveOriginUrl(env) {
   return DEFAULT_ORIGIN_URL;
 }
 
+export function isSitemapPath(pathname) {
+  return pathname === '/sitemap.xml' || /^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(pathname);
+}
+
 export function shouldProxyToOrigin(url, method, env) {
+  const migrated = resolveMigratedApis(env);
   if (url.pathname.startsWith('/api/')) {
     const apiKey = matchMigratedApi(url, method);
-    if (apiKey && resolveMigratedApis(env).has(apiKey)) return null;
+    if (apiKey && migrated.has(apiKey)) return null;
     return 'api';
   }
-  if ((method === 'GET' || method === 'HEAD') && (url.pathname === '/sitemap.xml' || /^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname))) {
-    return 'sitemap';
+  if ((method === 'GET' || method === 'HEAD') && isSitemapPath(url.pathname)) {
+    return migrated.has('sitemaps') ? null : 'sitemap';
   }
   if ((method === 'GET' || method === 'HEAD') && url.pathname === '/' && Boolean(seoRequestTarget(url))) {
-    return 'seo-db';
+    return migrated.has('seo-db') ? null : 'seo-db';
   }
   return null;
 }
@@ -329,7 +355,12 @@ function readApiSignature(env) {
     env?.CATALOG_CACHE_TTL_MS || '',
     env?.PRODUCT_CACHE_TTL_MS || '',
     env?.CATALOG_SNAPSHOT_CACHE_MS || '',
-    env?.CATALOG_SNAPSHOT_MAX_STALE_MS || ''
+    env?.CATALOG_SNAPSHOT_MAX_STALE_MS || '',
+    env?.POKEMONPRICETRACKER_API_KEY || '',
+    env?.EBAY_CLIENT_ID || '',
+    env?.EBAY_CLIENT_SECRET || '',
+    env?.PRICE_ARCHIVE_SHARD_BUDGET || '',
+    env?.PUBLIC_BASE_URL || ''
   ].join('\u001f');
 }
 
@@ -343,14 +374,20 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
     const imageLimit = Math.max(1, Math.floor(Number(env?.IMAGE_RATE_LIMIT_PER_MINUTE) || 1200));
     const authLimit = Math.max(1, Math.floor(Number(env?.AUTH_RATE_LIMIT_PER_MINUTE) || 10));
     const syncLimit = Math.max(1, Math.floor(Number(env?.SYNC_RATE_LIMIT_PER_MINUTE) || 6));
-    const key = `${apiLimit}|${imageLimit}|${authLimit}|${syncLimit}`;
+    const gradedLimit = Math.max(1, Math.floor(Number(env?.GRADED_RATE_LIMIT_PER_MINUTE) || 15));
+    const ebayLimit = Math.max(1, Math.floor(Number(env?.EBAY_RATE_LIMIT_PER_MINUTE) || 15));
+    const seoLimit = Math.max(1, Math.floor(Number(env?.SEO_RATE_LIMIT_PER_MINUTE) || 60));
+    const key = `${apiLimit}|${imageLimit}|${authLimit}|${syncLimit}|${gradedLimit}|${ebayLimit}|${seoLimit}`;
     let group = rateLimiters.get(key);
     if (!group) {
       group = {
         apiLimiter: createRateLimiter({ limit: apiLimit, windowMs: 60000, maxKeys: 2000, now }),
         imageLimiter: createRateLimiter({ limit: imageLimit, windowMs: 60000, maxKeys: 2000, now }),
         authLimiter: createRateLimiter({ limit: authLimit, windowMs: 60000, maxKeys: 2000, now }),
-        syncLimiter: createRateLimiter({ limit: syncLimit, windowMs: 60000, maxKeys: 2000, now })
+        syncLimiter: createRateLimiter({ limit: syncLimit, windowMs: 60000, maxKeys: 2000, now }),
+        gradedLimiter: createRateLimiter({ limit: gradedLimit, windowMs: 60000, maxKeys: 2000, now }),
+        ebayLimiter: createRateLimiter({ limit: ebayLimit, windowMs: 60000, maxKeys: 2000, now }),
+        seoLimiter: createRateLimiter({ limit: seoLimit, windowMs: 60000, maxKeys: 2000, now })
       };
       rateLimiters.set(key, group);
       while (rateLimiters.size > 4) rateLimiters.delete(rateLimiters.keys().next().value);
@@ -416,6 +453,38 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
     return respondText(pathname, 404, NOT_FOUND_HTML, 'text/html; charset=utf-8', 'no-store', pageCsp, method);
   }
 
+  function fallbackForUnavailableOrigin(request, url, proxyKind, indexHtml, pageCsp) {
+    if (proxyKind === 'seo-db' && indexHtml !== null) {
+      return respondText(url.pathname, 200, indexHtml, 'text/html; charset=utf-8', 'no-cache', pageCsp, request.method);
+    }
+    if (proxyKind === 'sitemap') {
+      return respondJson(url.pathname, 503, { error: 'Sitemap 暫時無法產生' }, pageCsp);
+    }
+    if (url.pathname === '/api/graded-prices') {
+      return respondJson(url.pathname, 200, { data: { status: 'not-configured' } }, API_CSP);
+    }
+    if (url.pathname === '/api/ebay-listings') {
+      return respondJson(url.pathname, 200, { data: { status: 'not-configured', enabled: false, limited: false, items: [] } }, API_CSP);
+    }
+    if (url.pathname.startsWith('/api/cards/') && url.pathname.endsWith('/price-history')) {
+      return respondJson(
+        url.pathname,
+        200,
+        {
+          series: [],
+          meta: {
+            unavailable: 'price-history-unavailable',
+            note: priceHistoryNote([]),
+            windowDays: 180,
+            generatedAt: new Date(now()).toISOString()
+          }
+        },
+        API_CSP
+      );
+    }
+    return respondJson(url.pathname, 502, { error: '資料暫時無法讀取' }, API_CSP);
+  }
+
   async function proxyRequest(request, url, env, proxyKind, indexHtml, pageCsp) {
     const originUrl = resolveOriginUrl(env);
     const targetUrl = new URL(`${url.pathname}${url.search}`, originUrl);
@@ -448,13 +517,45 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
       }
       upstream = await fetchFn(targetUrl.href, init);
     } catch {
+      return fallbackForUnavailableOrigin(request, url, proxyKind, indexHtml, pageCsp);
+    }
+
+    // 攔截 Render 停權或休眠失敗的 502/503/504 非 JSON（例如 HTML 503 錯誤頁），避免直接轉發給前端。
+    if (upstream.status === 502 || upstream.status === 503 || upstream.status === 504) {
       if (proxyKind === 'seo-db' && indexHtml !== null) {
-        return respondText(url.pathname, 200, indexHtml, 'text/html; charset=utf-8', 'no-cache', pageCsp, request.method);
+        upstream.body?.cancel?.().catch(() => {});
+        return fallbackForUnavailableOrigin(request, url, proxyKind, indexHtml, pageCsp);
       }
-      if (proxyKind === 'sitemap') {
-        return respondJson(url.pathname, 503, { error: 'Sitemap 暫時無法產生' }, pageCsp);
+      const contentType = String(upstream.headers.get('content-type') || '').toLowerCase();
+      if (!contentType.includes('application/json')) {
+        upstream.body?.cancel?.().catch(() => {});
+        return fallbackForUnavailableOrigin(request, url, proxyKind, indexHtml, pageCsp);
       }
-      return respondJson(url.pathname, 502, { error: '資料暫時無法讀取' }, pageCsp);
+      const rawText = await upstream.text().catch(() => '');
+      let validNodeJson = false;
+      try {
+        const parsed = JSON.parse(rawText);
+        validNodeJson = Boolean(parsed && typeof parsed === 'object' && typeof parsed.error === 'string');
+      } catch {
+        validNodeJson = false;
+      }
+      if (!validNodeJson) {
+        return fallbackForUnavailableOrigin(request, url, proxyKind, indexHtml, pageCsp);
+      }
+      const resHeaders = new Headers();
+      for (const [name, value] of upstream.headers.entries()) {
+        if (HOP_BY_HOP_HEADERS.has(name.toLowerCase())) continue;
+        resHeaders.append(name, value);
+      }
+      resHeaders.delete('content-encoding');
+      resHeaders.delete('content-length');
+      applyHeaders(resHeaders, url.pathname, pageCsp);
+      if (proxyKind === 'api') resHeaders.set('Content-Security-Policy', API_CSP);
+      return new Response(request.method === 'HEAD' ? null : rawText, {
+        status: upstream.status,
+        statusText: upstream.statusText,
+        headers: resHeaders
+      });
     }
 
     const resHeaders = new Headers();
@@ -502,13 +603,21 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
         return new Response(null, { status: 301, headers });
       }
 
+      const migrated = resolveMigratedApis(env);
       const apiKey = matchMigratedApi(url, request.method);
-      if (apiKey && resolveMigratedApis(env).has(apiKey)) {
+      if (apiKey && migrated.has(apiKey)) {
         const cfIp = String(request.headers.get('cf-connecting-ip') || '').trim();
-        const { apiLimiter, imageLimiter, authLimiter, syncLimiter } = getRateLimiters(env);
-        if (cfIp && !(await adminAuthorized(request, env))) {
+        const { apiLimiter, imageLimiter, authLimiter, syncLimiter, gradedLimiter, ebayLimiter } = getRateLimiters(env);
+        const isAdmin = cfIp ? await adminAuthorized(request, env) : false;
+        if (cfIp && !isAdmin) {
           const limiter = apiKey === 'images-onepiece' ? imageLimiter : apiLimiter;
           if (!limiter(cfIp)) {
+            return respondJson(url.pathname, 429, { error: '請求太頻繁，請稍後再試' }, API_CSP, { 'Retry-After': '60' });
+          }
+          if (apiKey === 'graded-prices' && !gradedLimiter(cfIp)) {
+            return respondJson(url.pathname, 429, { error: '請求太頻繁，請稍後再試' }, API_CSP, { 'Retry-After': '60' });
+          }
+          if (apiKey === 'ebay-listings' && !ebayLimiter(cfIp)) {
             return respondJson(url.pathname, 429, { error: '請求太頻繁，請稍後再試' }, API_CSP, { 'Retry-After': '60' });
           }
         }
@@ -541,6 +650,17 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
         return proxyRequest(request, url, env, proxyKind, indexHtml, pageCsp);
       }
 
+      if ((request.method === 'GET' || request.method === 'HEAD') && isSitemapPath(url.pathname)) {
+        const sitemapResponse = await getReadApi(env).handleSitemap(request, url, ctx, env);
+        const headers = new Headers(sitemapResponse.headers);
+        applyHeaders(headers, url.pathname, pageCsp);
+        return new Response(request.method === 'HEAD' ? null : sitemapResponse.body, {
+          status: sitemapResponse.status,
+          statusText: sitemapResponse.statusText,
+          headers
+        });
+      }
+
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/.well-known/security.txt') {
         return respondText(
           url.pathname,
@@ -566,6 +686,44 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
       }
 
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/') {
+        const seoTarget = seoRequestTarget(url);
+        if (seoTarget) {
+          const cfIp = String(request.headers.get('cf-connecting-ip') || '').trim();
+          if (cfIp && !(await adminAuthorized(request, env))) {
+            const { seoLimiter } = getRateLimiters(env);
+            if (!seoLimiter(cfIp)) {
+              return respondJson(url.pathname, 429, { error: '請求太頻繁，請稍後再試' }, pageCsp, { 'Retry-After': '60' });
+            }
+          }
+          if (indexHtml === null) return respondJson(url.pathname, 404, { error: 'Not found' }, pageCsp);
+          const entry = await getReadApi(env).loadSeo(seoTarget, publicBaseUrl, ctx, env);
+          if (entry?.missing) {
+            return respondText(
+              url.pathname,
+              404,
+              applyNoindexToHtml(indexHtml),
+              'text/html; charset=utf-8',
+              'no-cache',
+              pageCsp,
+              request.method
+            );
+          }
+          const body = entry?.seo ? applySeoToHtml(indexHtml, entry.seo) : indexHtml;
+          const etag = `"${await sha1Hex(body)}"`;
+          if (etagMatches(request, etag)) {
+            const headers = new Headers({ 'Cache-Control': 'no-cache', ETag: etag });
+            applyHeaders(headers, url.pathname, pageCsp);
+            return new Response(null, { status: 304, headers });
+          }
+          const headers = new Headers({
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-cache',
+            ETag: etag
+          });
+          applyHeaders(headers, url.pathname, pageCsp);
+          return new Response(request.method === 'HEAD' ? null : body, { status: 200, headers });
+        }
+
         if (indexHtml === null) return respondNotFound(url.pathname, pageCsp, request.method);
         const game = url.searchParams.get('game');
         const gameSet = gameIdsForEnv(env);
