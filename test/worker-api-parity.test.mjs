@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { prepareWorkerAssets } from '../scripts/prepare-worker-assets.mjs';
 import { API_CSP } from '../providers/http-security.mjs';
+import { createSupabaseClient } from '../providers/supabase-client.mjs';
 import { DEFAULT_MIGRATED_APIS, createWorkerHandler } from '../worker/index.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -350,6 +351,19 @@ function createMockUpstream(state) {
       if (url.pathname.startsWith('/ext/onepiece/')) {
         state.extCalls.push('onepiece');
         if (url.searchParams.get('fail') === '1') return sendJson(500, { error: 'SECRET_OP_ERR' });
+        if (url.searchParams.get('redirect') === '1') {
+          res.writeHead(302, { Location: 'https://evil.example/redirect.png' });
+          return res.end();
+        }
+        if (url.searchParams.get('svg') === '1') {
+          res.writeHead(200, { 'Content-Type': 'image/svg+xml' });
+          return res.end('<svg xmlns="http://www.w3.org/2000/svg"/>');
+        }
+        if (url.searchParams.get('streamHuge') === '1') {
+          res.writeHead(200, { 'Content-Type': 'image/png' });
+          res.write(Buffer.alloc(6 * 1024 * 1024));
+          return res.end();
+        }
         if (url.searchParams.get('huge') === '1') {
           res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': String(6 * 1024 * 1024) });
           return res.end(Buffer.alloc(16));
@@ -369,6 +383,8 @@ function createMockUpstream(state) {
 
       // RPCs
       if (restPath === '/rpc/db_size_report') {
+        if (!isIp2 && state.failMainStorage) return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_MAIN_STORAGE' });
+        if (isIp2 && state.failIp2Storage) return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_IP2_STORAGE' });
         return sendJson(200, { databaseBytes: isIp2 ? 50 * 1024 * 1024 : 120 * 1024 * 1024 });
       }
       if (restPath === '/rpc/catalog_health_snapshot_v2') {
@@ -449,6 +465,8 @@ function createMockUpstream(state) {
         return sendJson(200, { cards: [sampleCatalogCard, detailPokemonCard].slice(0, body.p_limit || 60), total: 2 });
       }
       if (restPath === '/rpc/browse_series_cards') {
+        if (body.p_series === 'pokemon-empty-series') return sendJson(200, { cards: [], printings: [], images: [], siblingImages: [] });
+        if (body.p_series === 'pokemon-huge-fallback') return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_HUGE_SERIES' });
         if (body.p_series === 'pokemon-big-600') return sendJson(200, bigSeries);
         return sendJson(200, {
           cards: [detailPokemonCard].map(({ printings, images, ...c }) => c),
@@ -469,12 +487,13 @@ function createMockUpstream(state) {
       if (restPath === '/rpc/get_card_detail') {
         const id = body?.p_id;
         if (isIp2 && id === uaCard.id) return sendJson(200, { cards: [uaCard], series: seriesIp2, games: [{ id: 'union-arena', nameZh: 'UNION ARENA' }] });
+        if (!isIp2 && id === sampleCatalogCard.id) return sendJson(200, { cards: [sampleCatalogCard], series: seriesMain, games: [{ id: 'pokemon', nameZh: '寶可夢' }] });
         if (!isIp2 && id === detailPokemonCard.id) return sendJson(200, { cards: [detailPokemonCard], series: seriesMain, games: [{ id: 'pokemon', nameZh: '寶可夢' }] });
         if (!isIp2 && id === yugiohCard.id) return sendJson(200, { cards: [yugiohCard], series: [], games: [{ id: 'yugioh', nameZh: '遊戲王' }] });
         return sendJson(200, { cards: [], series: [], games: [] });
       }
       if (restPath === '/rpc/search_cards_ranked') {
-        if (state.failSearch) return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_SEARCH' });
+        if (state.failSearch || state.failSearchRpc) return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_SEARCH' });
         const joined = (body?.p_needles || []).join(' ');
         if (/不存在的怪獸|typopikachu/.test(joined)) {
           return sendJson(200, { cards: [], matchCount: 0, groupCount: 0, matchedBy: 'none' });
@@ -491,10 +510,15 @@ function createMockUpstream(state) {
         }
         return sendJson(200, { cards: [{ ...detailPokemonCard, hit: 0 }], matchCount: 1, groupCount: 1, matchedBy: 'name' });
       }
+      if (restPath === '/rpc/search_cards_with_siblings' && state.failSearchRpc) {
+        return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_SEARCH_SIBLINGS' });
+      }
       if (restPath === '/rpc/search_fold_names') {
+        if (state.failSearchRpc) return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_SEARCH_FOLD' });
         return sendJson(200, [{ name: '日向 翔陽' }]);
       }
       if (restPath === '/rpc/search_name_suggestion') {
+        if (state.failSearchRpc) return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_SEARCH_SUGGEST' });
         if (!isIp2 && /typopikachu/i.test(body?.p_q || '')) return sendJson(200, 'Pikachu');
         return sendJson(200, null);
       }
@@ -524,18 +548,51 @@ function createMockUpstream(state) {
       if (restPath === '/tcg_series') {
         const select = url.searchParams.get('select') || '';
         if (select.includes('release_date') && select.includes('source_url') && select.includes('game_id')) {
+          if (!isIp2 && state.failSeriesEvents) return sendJson(500, { message: 'SECRET_INTERNAL_PG_TABLE_99_SERIES_EVENTS' });
           const eventDate = new Date(Date.now() - 5 * 86400000).toISOString().slice(0, 10);
           return sendJson(200, isIp2
             ? [{ game_id: 'union-arena', region: 'JP', release_date: eventDate, name_zh: 'UA測試彈', name_ja: null, name_en: null, source_url: 'https://www.unionarena-tcg.com/jp/' }]
             : [{ game_id: 'pokemon', region: 'JP', release_date: eventDate, name_zh: '151測試', name_ja: null, name_en: null, source_url: 'https://www.pokemon-card.com/ex/sv2a/' }]);
         }
+        if (url.searchParams.has('or') && /zzzznotfound/.test(url.searchParams.get('or') || '')) {
+          return sendJson(200, []);
+        }
         return sendJson(200, isIp2 ? seriesIp2 : seriesMain);
       }
       if (restPath === '/tcg_cards') {
         state.cardTableScans++;
+        if (url.searchParams.has('or') && /zzzznotfound/.test(url.searchParams.get('or') || '')) {
+          return sendJson(200, []);
+        }
         return sendJson(200, [sampleCatalogCard], { 'content-range': '0-0/1' });
       }
       if (restPath === '/tcg_printings') {
+        if (url.searchParams.get('series_id') === 'eq.pokemon-huge-fallback') {
+          const rows = [];
+          for (let i = 1; i <= 550; i++) {
+            const num = String(i).padStart(3, '0');
+            rows.push({
+              id: `pr-hf-${num}`,
+              cardId: `pokemon-hf-${num}`,
+              seriesId: 'pokemon-huge-fallback',
+              region: 'JP',
+              language: 'ja-JP',
+              localSetCode: 'HF550',
+              localCardNumber: num,
+              rarity: 'C',
+              rarityCode: 'C',
+              rarityLabel: 'C',
+              imageUrl: null,
+              source: 'pokemontcg',
+              providerId: `hf-${num}`,
+              releaseDate: '2026-10-01',
+              imageRehostRequired: false,
+              imageRightsStatus: 'not-provided',
+              metadata: {}
+            });
+          }
+          return sendJson(200, rows);
+        }
         return sendJson(200, sampleCatalogCard.printings);
       }
       if (restPath === '/card_images') {
@@ -593,7 +650,7 @@ function createMockUpstream(state) {
   });
 }
 
-async function spawnTestServer({ mockPort, preloadPath, supabase = true, supabase2 = true, scrapeSecret = '' }) {
+async function spawnTestServer({ mockPort, preloadPath, supabase = true, supabase2 = true, scrapeSecret = '', supabaseKey = 'test-main-key', supabase2Key = 'test-ip2-key' }) {
   const port = await freePort();
   const env = {
     ...process.env,
@@ -602,9 +659,9 @@ async function spawnTestServer({ mockPort, preloadPath, supabase = true, supabas
     CATALOG_SYNC_ON_START: 'false',
     CARD_IMAGE_CACHE_ON_START: 'false',
     SUPABASE_URL: supabase ? `http://127.0.0.1:${mockPort}/main` : '',
-    SUPABASE_SERVICE_KEY: supabase ? 'test-main-key' : '',
+    SUPABASE_SERVICE_KEY: supabase ? supabaseKey : '',
     SUPABASE2_URL: supabase2 ? `http://127.0.0.1:${mockPort}/ip2` : '',
-    SUPABASE2_SERVICE_KEY: supabase2 ? 'test-ip2-key' : '',
+    SUPABASE2_SERVICE_KEY: supabase2 ? supabase2Key : '',
     SCRAPE_SECRET: scrapeSecret
   };
   const args = preloadPath ? ['--import', new URL(`file:///${preloadPath.replace(/\\/g, '/')}`).href, 'server.mjs'] : ['server.mjs'];
@@ -619,14 +676,14 @@ async function spawnTestServer({ mockPort, preloadPath, supabase = true, supabas
   return { baseUrl: `http://127.0.0.1:${port}`, child };
 }
 
-function createWorkerEnv(mockPort, { supabase = true, supabase2 = true, scrapeSecret = '', migratedApi } = {}) {
+function createWorkerEnv(mockPort, { supabase = true, supabase2 = true, scrapeSecret = '', migratedApi, supabaseKey = 'test-main-key', supabase2Key = 'test-ip2-key' } = {}) {
   const env = {
     ORIGIN_URL: `http://127.0.0.1:${mockPort}`,
     PUBLIC_BASE_URL: 'https://cardseektcg.com',
     SUPABASE_URL: supabase ? `http://127.0.0.1:${mockPort}/main` : '',
-    SUPABASE_SERVICE_KEY: supabase ? 'test-main-key' : '',
+    SUPABASE_SERVICE_KEY: supabase ? supabaseKey : '',
     SUPABASE2_URL: supabase2 ? `http://127.0.0.1:${mockPort}/ip2` : '',
-    SUPABASE2_SERVICE_KEY: supabase2 ? 'test-ip2-key' : '',
+    SUPABASE2_SERVICE_KEY: supabase2 ? supabase2Key : '',
     SCRAPE_SECRET: scrapeSecret,
     ASSETS: {
       async fetch() {
@@ -1044,5 +1101,565 @@ test('Worker 相容性靜態檢查（零 node:*、Buffer、AsyncLocalStorage、s
   await prepareWorkerAssets({ rootDir: ROOT, outDir: assetTmp });
   for (const sensitiveData of ['catalog.json', 'source-registry.json', 'tcgdex-en-set-map.json', 'series-zh.json', 'catalog-baselines.json', 'pack-prizes.json']) {
     assert.equal(existsSync(join(assetTmp, 'data', sensitiveData)), false, `worker/public 不得公開 data/${sensitiveData}`);
+  }
+});
+
+async function createPreloadForMock(mockPort) {
+  const tmpDir = await mkdtemp(join(tmpdir(), 'cardseek-parity-'));
+  tempDirs.push(tmpDir);
+  const preloadPath = join(tmpDir, 'fetch-preload.mjs');
+  await writeFile(
+    preloadPath,
+    `const origFetch = globalThis.fetch;
+const map = new Map([
+  ['open.er-api.com', '/ext/fx'],
+  ['db.ygoprodeck.com', '/ext/ygo'],
+  ['api.tcgdex.net', '/ext/tcgdex'],
+  ['asia-tc.onepiece-cardgame.com', '/ext/onepiece']
+]);
+globalThis.fetch = async (input, init) => {
+  const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  const u = new URL(raw);
+  const p = map.get(u.hostname);
+  if (p) return origFetch('http://127.0.0.1:${mockPort}' + p + u.pathname + u.search, init);
+  return origFetch(input, init);
+};
+`,
+    'utf8'
+  );
+  return preloadPath;
+}
+
+async function stopSpawnedServer(child) {
+  if (!child || child.exitCode !== null || child.killed) return;
+  await new Promise(resolveExit => {
+    const timer = setTimeout(resolveExit, 2000);
+    child.once('exit', () => { clearTimeout(timer); resolveExit(); });
+    try { child.kill(); } catch { clearTimeout(timer); resolveExit(); }
+  });
+}
+
+async function assertNodeWorkerParity(nodeBaseUrl, workerHandler, env, path, { method = 'GET', headers = {}, body, compareJson = true } = {}) {
+  const nodeRes = await fetch(`${nodeBaseUrl}${path}`, { method, headers, body });
+  const workerRes = await workerHandler.fetch(new Request(`https://cardseektcg.com${path}`, { method, headers, body }), env);
+  assert.equal(workerRes.status, nodeRes.status, `${method} ${path} status mismatch`);
+  assertApiSecurityHeaders(workerRes, nodeRes.headers.get('cache-control'));
+  if (!compareJson) return { nodeRes, workerRes };
+  const nodeJson = normalizeDynamicFields(await nodeRes.json());
+  const workerJson = normalizeDynamicFields(await workerRes.json());
+  assert.deepEqual(workerJson, nodeJson, `${method} ${path} JSON mismatch`);
+  return { nodeRes, workerRes, nodeJson, workerJson };
+}
+
+test('一致性補測：空結果、參數邊界、第二庫完整 Parity 與 getCard 冷熱 Isolate 一致性', async () => {
+  const state = { requests: [], extCalls: [], originCalls: [], hotWrites: 0, fxWrites: 0, cardTableScans: 0 };
+  const mockServer = createMockUpstream(state);
+  const mockPort = await listenEphemeral(mockServer);
+  openServers.push(mockServer);
+  const preloadPath = await createPreloadForMock(mockPort);
+
+  const nodeServer = await spawnTestServer({ mockPort, preloadPath, supabase: true, supabase2: true });
+  spawnedChildren.push(nodeServer.child);
+  const workerHandler = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: createMockEdgeCache() });
+  const env = createWorkerEnv(mockPort, { supabase: true, supabase2: true });
+
+  try {
+    // 1. 空系列、offset 夾緊 200000、整數 limit 與非法字元 series 空 facets
+    const emptySeries = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards?game=pokemon&series=pokemon-empty-series');
+    assert.equal(emptySeries.workerRes.status, 200);
+    assert.deepEqual(emptySeries.workerJson.data, []);
+    assert.equal(emptySeries.workerJson.meta.total, 0);
+    assert.deepEqual(emptySeries.workerJson.meta.facets, { rarity: {}, region: {}, language: {}, rarityLabels: {} });
+
+    const clampedCards = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards?game=pokemon&offset=999999');
+    assert.equal(clampedCards.workerJson.meta.offset, 200000);
+    const clampedSearch = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/search?q=Pikachu&offset=999999');
+    assert.equal(clampedSearch.workerJson.meta.offset, 200000);
+
+    const floatLimit = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards?game=pokemon&limit=1.5');
+    assert.equal(floatLimit.workerJson.meta.limit, 1);
+    assert.equal(floatLimit.workerJson.data.length, 1);
+    const negLimit = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards?game=pokemon&limit=-5');
+    assert.equal(negLimit.workerJson.meta.limit, 1);
+    await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/trends?limit=3.8');
+    const searchFloatLimit = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/search?q=Pikachu&limit=3.8');
+    assert.equal(searchFloatLimit.workerJson.meta.limit, 3);
+
+    // 暖起 pokemon-jp-sv2a 快取後，再測帶非法字元的 series=pokemon-jp-sv2a! 仍必須回空 facets
+    await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards?game=pokemon&series=pokemon-jp-sv2a');
+    const badSeriesRes = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards?game=pokemon&series=pokemon-jp-sv2a!');
+    assert.deepEqual(badSeriesRes.workerJson.data, []);
+    assert.equal(badSeriesRes.workerJson.meta.total, 0);
+    assert.deepEqual(badSeriesRes.workerJson.meta.facets, { rarity: {}, region: {}, language: {}, rarityLabels: {} });
+
+    // 2. 第二庫（union-arena）正常路徑與已設 ip2 的 reports / market / market-events
+    const uaCards = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards?game=union-arena');
+    assert.equal(uaCards.workerJson.data[0]?.id, 'union-arena-bt01-001');
+    await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/cards/union-arena-bt01-001/market');
+    const uaEvents = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/market-events?game=union-arena');
+    assert.ok(uaEvents.workerJson.data.some(ev => ev.game === 'union-arena'));
+    const uaReports200 = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/reports?cardName=%E7%9A%AE%E5%8D%A1%E4%B8%98&game=union-arena');
+    assert.equal(uaReports200.workerRes.status, 200);
+  } finally {
+    await stopSpawnedServer(nodeServer.child);
+  }
+
+  // 未設 ip2 時 union-arena Parity：cards 503、reports 400
+  const noIp2Node = await spawnTestServer({ mockPort, preloadPath, supabase: true, supabase2: false });
+  spawnedChildren.push(noIp2Node.child);
+  const noIp2Worker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
+  const noIp2Env = createWorkerEnv(mockPort, { supabase: true, supabase2: false });
+  try {
+    const cards503 = await assertNodeWorkerParity(noIp2Node.baseUrl, noIp2Worker, noIp2Env, '/api/cards?game=union-arena');
+    assert.equal(cards503.workerRes.status, 503);
+    const reports400 = await assertNodeWorkerParity(noIp2Node.baseUrl, noIp2Worker, noIp2Env, '/api/reports?cardName=%E7%9A%AE%E5%8D%A1%E4%B8%98&game=union-arena');
+    assert.equal(reports400.workerRes.status, 400);
+  } finally {
+    await stopSpawnedServer(noIp2Node.child);
+  }
+
+  // ip2 500 故障時：union-arena cards 回 502、market-events 保留主庫事件、catalog/health secondStorage=unknown 且不進 Edge Cache
+  state.failIp2 = true;
+  const failIp2Node = await spawnTestServer({ mockPort, preloadPath, supabase: true, supabase2: true });
+  spawnedChildren.push(failIp2Node.child);
+  const failIp2Cache = createMockEdgeCache();
+  const failIp2Worker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: failIp2Cache });
+  try {
+    const cards502 = await assertNodeWorkerParity(failIp2Node.baseUrl, failIp2Worker, env, '/api/cards?game=union-arena');
+    assert.equal(cards502.workerRes.status, 502);
+    const evFallback = await assertNodeWorkerParity(failIp2Node.baseUrl, failIp2Worker, env, '/api/market-events');
+    assert.equal(evFallback.workerRes.status, 200);
+    assert.ok(evFallback.workerJson.data.some(ev => ev.game === 'pokemon'), 'ip2 故障時仍應保留主庫事件');
+    assert.equal(evFallback.workerJson.data.some(ev => ev.title === 'UA測試彈'), false);
+
+    state.failIp2 = false;
+    state.failIp2Storage = true;
+    const healthEdgeCache = createMockEdgeCache();
+    const healthIp2FailWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: healthEdgeCache });
+    const healthIp2FailNode = await spawnTestServer({ mockPort, preloadPath, supabase: true, supabase2: true });
+    spawnedChildren.push(healthIp2FailNode.child);
+    try {
+      const healthPair = await assertNodeWorkerParity(healthIp2FailNode.baseUrl, healthIp2FailWorker, env, '/api/catalog/health');
+      assert.equal(healthPair.workerJson.data.secondStorage.status, 'unknown');
+      assert.equal(healthEdgeCache.store.size, 0, 'ip2 db_size_report 失敗時不可寫入 Edge Cache');
+    } finally {
+      await stopSpawnedServer(healthIp2FailNode.child);
+      state.failIp2Storage = false;
+    }
+  } finally {
+    await stopSpawnedServer(failIp2Node.child);
+    state.failIp2 = false;
+  }
+
+  // 4. getCard 冷熱 Isolate 一致性（pokemon-cat-sample）
+  const coldWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
+  const warmWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
+  const coldCardRes = await coldWorker.fetch(new Request('https://cardseektcg.com/api/cards/pokemon-cat-sample'), env);
+  assert.equal(coldCardRes.status, 200);
+  const coldCardJson = normalizeDynamicFields(await coldCardRes.json());
+
+  const warmCatRes = await warmWorker.fetch(new Request('https://cardseektcg.com/api/catalog'), env);
+  assert.equal(warmCatRes.status, 200);
+  const warmCardRes = await warmWorker.fetch(new Request('https://cardseektcg.com/api/cards/pokemon-cat-sample'), env);
+  assert.equal(warmCardRes.status, 200);
+  const warmCardJson = normalizeDynamicFields(await warmCardRes.json());
+
+  assert.equal(warmCardJson.meta.source, 'supabase-full-catalog');
+  assert.deepEqual(warmCardJson, coldCardJson, '暖 catalog 快取後 getCard 應與冷啟動完全一致');
+});
+
+test('MAIN_ONLY_PATH 強制主庫保護、降級不寫 Edge Cache 與 ctx.waitUntil 背景刷新', async () => {
+  // 1. 直接測 createSupabaseClient：傳入 { db: 'ip2' } 仍強制走主庫
+  const clientTargets = [];
+  const client = createSupabaseClient({
+    env: {
+      SUPABASE_URL: 'https://main-db.example.test',
+      SUPABASE_SERVICE_KEY: 'main-secret',
+      SUPABASE2_URL: 'https://ip2-db.example.test',
+      SUPABASE2_SERVICE_KEY: 'ip2-secret'
+    },
+    fetchFn: async input => {
+      clientTargets.push(String(input));
+      return new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  });
+  for (const path of ['/rpc/price_reference_best', '/reports?card_id=eq.union-arena-bt01-001', '/exchange_rates?select=currency', '/jp_buyback_prices?select=price']) {
+    await client.fetchJson(path, { db: 'ip2' });
+  }
+  assert.equal(clientTargets.length, 4);
+  for (const url of clientTargets) {
+    assert.ok(url.startsWith('https://main-db.example.test/rest/v1/'), `MAIN_ONLY_PATH 必須打主庫，實際 ${url}`);
+  }
+  await client.fetchJson('/tcg_cards?select=id&limit=1', { db: 'ip2' });
+  assert.ok(clientTargets[4].startsWith('https://ip2-db.example.test/rest/v1/'), '非 MAIN_ONLY_PATH 帶 db=ip2 應打第二庫');
+
+  // 2. 降級或未知參數不寫 Edge Cache
+  const state = { requests: [], extCalls: [], originCalls: [], hotWrites: 0, fxWrites: 0, cardTableScans: 0 };
+  const mockServer = createMockUpstream(state);
+  const mockPort = await listenEphemeral(mockServer);
+  openServers.push(mockServer);
+  const env = createWorkerEnv(mockPort, { supabase: true, supabase2: true });
+
+  // /api/market-events 主庫 tcg_series 失敗 (degraded) & 未知 game
+  state.failSeriesEvents = true;
+  const evDegradedCache = createMockEdgeCache();
+  const evDegradedWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: evDegradedCache });
+  const evDegradedRes = await evDegradedWorker.fetch(new Request('https://cardseektcg.com/api/market-events'), env);
+  assert.equal(evDegradedRes.status, 200);
+  assert.equal(evDegradedCache.store.size, 0, 'market-events 降級時不可寫入 Edge Cache');
+
+  state.failSeriesEvents = false;
+  const evUnknownCache = createMockEdgeCache();
+  const evUnknownWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: evUnknownCache });
+  const evUnknownRes = await evUnknownWorker.fetch(new Request('https://cardseektcg.com/api/market-events?game=unknown-game-xyz'), env);
+  assert.equal(evUnknownRes.status, 200);
+  assert.equal(evUnknownCache.store.size, 0, 'market-events 未知 game 參數不可寫入 Edge Cache');
+
+  // /api/cards/:id/market 遇 fxMode: 'jump' 降級匯率時不寫 Edge Cache
+  state.staleFx = true;
+  state.fxMode = 'jump';
+  const fxJumpMarketCache = createMockEdgeCache();
+  const fxJumpMarketWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: fxJumpMarketCache });
+  const fxJumpMarketRes = await fxJumpMarketWorker.fetch(new Request('https://cardseektcg.com/api/cards/pokemon-p1/market'), env);
+  assert.equal(fxJumpMarketRes.status, 200);
+  assert.equal(fxJumpMarketCache.store.size, 0, 'market 遇降級匯率 (cacheable=false) 不可寫入 Edge Cache');
+  state.staleFx = false;
+  state.fxMode = null;
+
+  // /api/catalog/health 遇主庫 db_size_report 失敗時不寫 Edge Cache
+  state.failMainStorage = true;
+  const mainStorageCache = createMockEdgeCache();
+  const mainStorageWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: mainStorageCache });
+  const mainStorageRes = await mainStorageWorker.fetch(new Request('https://cardseektcg.com/api/catalog/health'), env);
+  assert.equal(mainStorageRes.status, 200);
+  assert.equal((await mainStorageRes.json()).data.storage.status, 'unknown');
+  assert.equal(mainStorageCache.store.size, 0, 'health 主庫 db_size_report 失敗時不可寫入 Edge Cache');
+  state.failMainStorage = false;
+
+  // 3. ctx.waitUntil 背景刷新測試（/api/catalog、/api/price-movers、/api/hot-cards）
+  let currentNow = Date.UTC(2026, 10, 23, 0, 0, 0);
+  const bgTasks = [];
+  const ctx = { waitUntil(p) { bgTasks.push(p); } };
+  const swrEdgeCache = createMockEdgeCache();
+  const swrWorker = createWorkerHandler({
+    fetchFn: createWorkerFetch(mockPort),
+    now: () => currentNow,
+    edgeCache: null
+  });
+
+  // 暖起 catalog、price-movers、hot-cards
+  assert.equal((await swrWorker.fetch(new Request('https://cardseektcg.com/api/catalog'), env, ctx)).status, 200);
+  assert.equal((await swrWorker.fetch(new Request('https://cardseektcg.com/api/price-movers'), env, ctx)).status, 200);
+  assert.equal((await swrWorker.fetch(new Request('https://cardseektcg.com/api/hot-cards'), env, ctx)).status, 200);
+  assert.equal(bgTasks.length, 0);
+
+  // 推進超過 CATALOG_CACHE_TTL_MS (600_000 ms) 觸發 /api/catalog 背景刷新
+  currentNow += 650000;
+  const reqBeforeCatalogBg = state.requests.length;
+  const catSwrRes = await swrWorker.fetch(new Request('https://cardseektcg.com/api/catalog'), env, ctx);
+  assert.equal(catSwrRes.status, 200);
+  assert.equal(bgTasks.length, 1, '/api/catalog 過期應將背景刷新 Promise 交給 ctx.waitUntil');
+  await Promise.all(bgTasks.splice(0));
+  assert.ok(state.requests.slice(reqBeforeCatalogBg).some(r => r.path.includes('/tcg_cards')), '等待 ctx.waitUntil 後應完成目錄背景重載');
+
+  // 再推進超過 price-movers / hot-cards TTL (3_600_000 ms) 仍在 maxStale 內
+  currentNow += 3100000;
+  const reqBeforeMoversBg = state.requests.length;
+  const moversRes = await swrWorker.fetch(new Request('https://cardseektcg.com/api/price-movers'), env, ctx);
+  const hotRes = await swrWorker.fetch(new Request('https://cardseektcg.com/api/hot-cards'), env, ctx);
+  assert.equal(moversRes.status, 200);
+  assert.equal(hotRes.status, 200);
+  assert.equal(bgTasks.length, 2, 'price-movers 與 hot-cards 過期 SWR 應將背景刷新 Promise 交給 ctx.waitUntil');
+  await Promise.all(bgTasks.splice(0));
+  const bgPaths = state.requests.slice(reqBeforeMoversBg).map(r => r.path);
+  assert.ok(bgPaths.some(p => p.includes('/rpc/price_movers')));
+  assert.ok(bgPaths.some(p => p.includes('/rpc/card_hot_top')));
+  assert.equal(swrEdgeCache.store.size, 0);
+});
+
+test('安全審核補測：金鑰／內部錯誤絕不外洩、One Piece SSRF 完整防護與輸入驗證邊界', async () => {
+  const state = { requests: [], extCalls: [], originCalls: [], hotWrites: 0, fxWrites: 0, cardTableScans: 0 };
+  const mockServer = createMockUpstream(state);
+  const mockPort = await listenEphemeral(mockServer);
+  openServers.push(mockServer);
+  const preloadPath = await createPreloadForMock(mockPort);
+
+  const secrets = {
+    supabaseKey: 'super-secret-main-jwt',
+    supabase2Key: 'super-secret-ip2-jwt',
+    scrapeSecret: 'super-secret-admin'
+  };
+  const nodeServer = await spawnTestServer({ mockPort, preloadPath, supabase: true, supabase2: true, ...secrets });
+  spawnedChildren.push(nodeServer.child);
+  const edgeCache = createMockEdgeCache();
+  const seenFetchInits = [];
+  const spyWorkerFetch = createWorkerFetch(mockPort);
+  const workerHandler = createWorkerHandler({
+    fetchFn: async (input, init) => {
+      seenFetchInits.push({ url: String(typeof input === 'string' ? input : input?.url || input), redirect: init?.redirect });
+      return spyWorkerFetch(input, init);
+    },
+    edgeCache
+  });
+  const env = createWorkerEnv(mockPort, { supabase: true, supabase2: true, ...secrets });
+
+  const forbiddenTokens = [
+    'super-secret-main-jwt',
+    'super-secret-ip2-jwt',
+    'super-secret-admin',
+    'SECRET_INTERNAL_PG_TABLE_99',
+    'SECRET_OP_ERR',
+    'SECRET_YGO',
+    'PostgREST',
+    'price_snapshots',
+    'jp_buyback_prices',
+    'catalog_sync_runs',
+    'db_size_report'
+  ];
+  const assertNoLeak = (text, label, path) => {
+    for (const token of forbiddenTokens) {
+      assert.equal(text.includes(token), false, `${label} 絕不可外洩 ${token}`);
+    }
+    if (!path.startsWith('/api/catalog/health')) {
+      assert.equal(text.includes('tcg_cards'), false, `${label} 絕不可外洩 tcg_cards`);
+      assert.equal(text.includes('tcg_printings'), false, `${label} 絕不可外洩 tcg_printings`);
+    }
+  };
+
+  try {
+    // 1. 金鑰與內部錯誤絕不外洩（正常 200 與 500 故障路徑）
+    const pathsToScan = [
+      ['/api/providers', {}],
+      ['/api/catalog/health', {}],
+      ['/api/catalog', {}],
+      ['/api/products', {}],
+      ['/api/cards?game=pokemon', {}],
+      ['/api/cards?game=union-arena', {}],
+      ['/api/search?q=Pikachu', {}],
+      ['/api/cards/pokemon-p1', {}],
+      ['/api/cards/pokemon-p1/market', {}],
+      ['/api/hot-cards', {}],
+      ['/api/price-movers', {}],
+      ['/api/market-events', {}],
+      ['/api/trends', {}],
+      ['/api/buyback-prices?game=pokemon', {}],
+      ['/api/reports?cardId=pokemon-p1', {}],
+      ['/api/catalog/sync-status', {}],
+      ['/api/prices/reference', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardIds: ['pokemon-p1'] }) }]
+    ];
+    for (const [p, init] of pathsToScan) {
+      const r = await workerHandler.fetch(new Request(`https://cardseektcg.com${p}`, init), env);
+      assertNoLeak(await r.text(), `正常路徑 ${p}`, p);
+    }
+
+    state.failAllDb = true;
+    state.failExternalMarket = true;
+    state.failHot = true;
+    state.failMovers = true;
+    state.failRefPrice = true;
+    state.healthMode = 'fail-both';
+    const failWorker = createWorkerHandler({ fetchFn: spyWorkerFetch, edgeCache: null });
+    for (const [p, init] of pathsToScan) {
+      const r = await failWorker.fetch(new Request(`https://cardseektcg.com${p}`, init), env);
+      const txt = await r.text();
+      assertNoLeak(txt, `500 故障路徑 ${p}`, p);
+      if (p === '/api/catalog/health') {
+        assert.equal(JSON.parse(txt).data.healthFallbackReason, 'UPSTREAM_UNAVAILABLE');
+      }
+    }
+    state.failAllDb = false;
+    state.failExternalMarket = false;
+    state.failHot = false;
+    state.failMovers = false;
+    state.failRefPrice = false;
+    state.healthMode = null;
+
+    // 2. /api/images/onepiece 完整 SSRF 防護
+    const badImageUrls = [
+      'http://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png',
+      'https://127.0.0.1/images/cardlist/card/OP05-001.png',
+      'https://169.254.169.254/latest/meta-data/OP05-001.png',
+      'https://[::1]/images/cardlist/card/OP05-001.png',
+      'https://user:pass@asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png',
+      'https://asia-tc.onepiece-cardgame.com:8443/images/cardlist/card/OP05-001.png',
+      'https://asia-tc.onepiece-cardgame.com.evil.com/images/cardlist/card/OP05-001.png',
+      'https://asia-tc.onepiece-cardgame.com/images/cardlist/card/../secret.png',
+      'https://asia-tc.onepiece-cardgame.com/images/cardlist/card/%2e%2e/secret.png',
+      'https://asia-tc.onepiece-cardgame.com/images/cardlist/card/%2fsecret.png',
+      'https://asia-tc.onepiece-cardgame.com/images/cardlist/card/%5csecret.png',
+      'https://asia-tc.onepiece-cardgame.com/images/cardlist/card/a%00.png',
+      `https://asia-tc.onepiece-cardgame.com/images/cardlist/card/${'a'.repeat(500)}.png`
+    ];
+    const extCountBeforeSsrf = state.extCalls.length;
+    for (const badUrl of badImageUrls) {
+      const pair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, `/api/images/onepiece?url=${encodeURIComponent(badUrl)}`);
+      assert.equal(pair.workerRes.status, 400, `應拒絕 ${badUrl}`);
+    }
+    assert.equal(state.extCalls.length, extCountBeforeSsrf, 'SSRF 攔截不可發起任何上游請求');
+
+    // redirect: 'error'、302 轉址失敗 502、SVG MIME 拒絕 502、>5MB 串流中止 502
+    const redirectUrl = encodeURIComponent('https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png?redirect=1');
+    const redirectPair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, `/api/images/onepiece?url=${redirectUrl}`);
+    assert.equal(redirectPair.workerRes.status, 502);
+    assert.ok(seenFetchInits.some(call => call.url.includes('redirect=1') && call.redirect === 'error'), 'fetchFn 必須收到 redirect: error');
+
+    const svgPair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, `/api/images/onepiece?url=${encodeURIComponent('https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png?svg=1')}`);
+    assert.equal(svgPair.workerRes.status, 502);
+
+    const streamHugePair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, `/api/images/onepiece?url=${encodeURIComponent('https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png?streamHuge=1')}`);
+    assert.equal(streamHugePair.workerRes.status, 502);
+
+    // #frag 與多餘 query 參數命中同一筆 Edge Cache
+    const imgCache = createMockEdgeCache();
+    const imgCacheWorker = createWorkerHandler({ fetchFn: spyWorkerFetch, edgeCache: imgCache });
+    const extBeforeImgCache = state.extCalls.filter(x => x === 'onepiece').length;
+    const opTarget = 'https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png';
+    const rImg1 = await imgCacheWorker.fetch(new Request(`https://cardseektcg.com/api/images/onepiece?url=${encodeURIComponent(opTarget)}&rand=1`), env);
+    assert.equal(rImg1.status, 200);
+    const rImg2 = await imgCacheWorker.fetch(new Request(`https://cardseektcg.com/api/images/onepiece?url=${encodeURIComponent(`${opTarget}#frag`)}&extra=2`), env);
+    assert.equal(rImg2.status, 200);
+    assert.equal(state.extCalls.filter(x => x === 'onepiece').length, extBeforeImgCache + 1, '含 #frag 與多餘 query 參數應命中同一筆 Edge Cache');
+
+    // 3. 輸入驗證邊界
+    const reqBeforeProto = state.requests.length;
+    for (const protoGame of ['constructor', '__proto__']) {
+      const pair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, `/api/buyback-prices?game=${protoGame}`);
+      assert.equal(pair.workerRes.status, 200);
+      assert.deepEqual(pair.workerJson.data, []);
+    }
+    assert.equal(state.requests.slice(reqBeforeProto).some(r => r.path.includes('jp_buyback_prices')), false, '原型鍵不可打 DB');
+
+    for (const badReportPath of [
+      `/api/reports?cardId=${'a'.repeat(129)}`,
+      `/api/reports?cardName=${encodeURIComponent('皮'.repeat(101))}`,
+      '/api/reports?cardId=bad%00id',
+      '/api/reports?cardName=bad%07name'
+    ]) {
+      const pair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, badReportPath);
+      assert.equal(pair.workerRes.status, 400, badReportPath);
+    }
+
+    // POST /api/prices/reference：Content-Length 25000 立即 413、>100 筆 ID 400、含引號／反斜線／控制字元 400
+    let streamPulled = 0;
+    const hugeStream = new ReadableStream({
+      pull(controller) {
+        streamPulled++;
+        controller.enqueue(new TextEncoder().encode('{"cardIds":["a"]}'));
+        controller.close();
+      }
+    });
+    const clRes = await workerHandler.fetch(
+      new Request('https://cardseektcg.com/api/prices/reference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': '25000' },
+        body: hugeStream,
+        duplex: 'half'
+      }),
+      env
+    );
+    assert.equal(clRes.status, 413);
+    assert.equal(streamPulled, 0, 'Content-Length > 20000 應在讀取串流前立即回 413');
+
+    for (const badIds of [
+      Array.from({ length: 101 }, (_, i) => `card-${i}`),
+      ['bad"quote'],
+      ['bad\\slash'],
+      ['bad\u0001ctrl']
+    ]) {
+      const pair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, '/api/prices/reference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardIds: badIds })
+      });
+      assert.equal(pair.workerRes.status, 400);
+    }
+  } finally {
+    await stopSpawnedServer(nodeServer.child);
+  }
+});
+
+test('CPU 與 Subrequest 風險補測：大型系列冷熱分頁、備援熔斷、純符號早退、搜尋預算上限與 Canonical Cache Key', async () => {
+  const state = { requests: [], extCalls: [], originCalls: [], hotWrites: 0, fxWrites: 0, cardTableScans: 0 };
+  const mockServer = createMockUpstream(state);
+  const mockPort = await listenEphemeral(mockServer);
+  openServers.push(mockServer);
+  const preloadPath = await createPreloadForMock(mockPort);
+
+  const nodeServer = await spawnTestServer({ mockPort, preloadPath, supabase: true, supabase2: true });
+  spawnedChildren.push(nodeServer.child);
+  const env = createWorkerEnv(mockPort, { supabase: true, supabase2: true });
+
+  try {
+    // 1. 600 張卡大型系列帶 region=JP 冷／熱分頁與 Node 100% 一致，且第二頁 (offset=48) 熱分頁 < 15 ms
+    const bigPage1 = '/api/cards?game=pokemon&series=pokemon-big-600&region=JP&sort=rarity-desc&limit=48&offset=0';
+    const bigPage2 = '/api/cards?game=pokemon&series=pokemon-big-600&region=JP&sort=rarity-desc&limit=48&offset=48';
+    const bigWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
+    const p1 = await assertNodeWorkerParity(nodeServer.baseUrl, bigWorker, env, bigPage1);
+    assert.equal(p1.workerJson.meta.total, 600);
+    assert.equal(p1.workerJson.data.length, 48);
+    const p2Cold = await assertNodeWorkerParity(nodeServer.baseUrl, bigWorker, env, bigPage2);
+    assert.equal(p2Cold.workerJson.data.length, 48);
+
+    const t0 = performance.now();
+    const p2WarmRes = await bigWorker.fetch(new Request(`https://cardseektcg.com${bigPage2}`), env);
+    const warmMs = performance.now() - t0;
+    assert.equal(p2WarmRes.status, 200);
+    assert.deepEqual(normalizeDynamicFields(await p2WarmRes.json()), p2Cold.workerJson);
+    assert.ok(warmMs < 15, `600 張系列 region=JP 第 2 頁熱分頁應 < 15ms，實測 ${warmMs.toFixed(2)}ms`);
+
+    // 2. browse_series_cards RPC 失敗且系列 > 500 張卡時回 502 且 subrequests 遠低於 50
+    const refuseWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
+    const reqBeforeRefuse = state.requests.length;
+    const refuseRes = await refuseWorker.fetch(new Request('https://cardseektcg.com/api/cards?game=pokemon&series=pokemon-huge-fallback'), env);
+    const refuseSubrequests = state.requests.slice(reqBeforeRefuse).length;
+    assert.equal(refuseRes.status, 502);
+    assert.deepEqual(await refuseRes.json(), { error: '這個系列太大，無法在備援模式下載入' });
+    assert.ok(refuseSubrequests <= 5 && refuseSubrequests < 50, `備援熔斷 subrequests 應遠低於 50（實測 ${refuseSubrequests}）`);
+
+    // 3. /api/search?q=._%25 純符號查詢早退，0 次資料庫請求
+    const symWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
+    const reqBeforeSym = state.requests.length;
+    const symRes = await symWorker.fetch(new Request('https://cardseektcg.com/api/search?q=._%25'), env);
+    assert.equal(symRes.status, 200);
+    assert.equal((await symRes.json()).meta.source, 'symbols-only');
+    assert.equal(state.requests.length - reqBeforeSym, 0, '純符號查詢應 0 次資料庫請求');
+
+    // 4. /api/search 零結果且所有 RPC 失敗走備援時，單次請求對資料庫 subrequests 嚴格 < 50（受預算上限 30 保護）
+    state.failSearchRpc = true;
+    const budgetWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: null });
+    // 先測完全冷啟動（含 loadCatalogShared），再測暖目錄後的單次搜尋請求
+    const reqBeforeColdZero = state.requests.length;
+    const coldZeroRes = await budgetWorker.fetch(new Request('https://cardseektcg.com/api/search?q=zzzznotfound%20x&region=JP'), env);
+    const coldZeroSubrequests = state.requests.slice(reqBeforeColdZero).length;
+    assert.equal(coldZeroRes.status, 200);
+    assert.equal((await coldZeroRes.json()).data.length, 0);
+    assert.ok(coldZeroSubrequests < 50, `冷啟動零結果降級總 subrequests 應 < 50（實測 ${coldZeroSubrequests}）`);
+
+    const reqBeforeWarmZero = state.requests.length;
+    const warmZeroRes = await budgetWorker.fetch(new Request('https://cardseektcg.com/api/search?q=zzzznotfound%20y&region=JP'), env);
+    const warmZeroSubrequests = state.requests.slice(reqBeforeWarmZero).length;
+    assert.equal(warmZeroRes.status, 200);
+    assert.ok(warmZeroSubrequests <= 30 && warmZeroSubrequests < 50, `暖目錄零結果降級搜尋 subrequests 應受預算 30 保護（實測 ${warmZeroSubrequests}）`);
+    state.failSearchRpc = false;
+
+    // 5. Edge Cache canonical key 測試：無關 query 參數與鍵順序命中同一筆快取
+    const canonEdgeCache = createMockEdgeCache();
+    const canonWorker = createWorkerHandler({ fetchFn: createWorkerFetch(mockPort), edgeCache: canonEdgeCache });
+
+    const reqBeforeCat1 = state.requests.length;
+    assert.equal((await canonWorker.fetch(new Request('https://cardseektcg.com/api/catalog?rand=1'), env)).status, 200);
+    const reqAfterCat1 = state.requests.length;
+    assert.ok(reqAfterCat1 > reqBeforeCat1);
+    assert.equal((await canonWorker.fetch(new Request('https://cardseektcg.com/api/catalog?rand=2'), env)).status, 200);
+    assert.equal(state.requests.length, reqAfterCat1, '/api/catalog?rand=2 應命中同一筆 Edge Cache，不重複打 DB');
+
+    const reqBeforeCards1 = state.requests.length;
+    assert.equal((await canonWorker.fetch(new Request('https://cardseektcg.com/api/cards?game=pokemon&limit=2&foo=1'), env)).status, 200);
+    const reqAfterCards1 = state.requests.length;
+    assert.ok(reqAfterCards1 > reqBeforeCards1);
+    assert.equal((await canonWorker.fetch(new Request('https://cardseektcg.com/api/cards?limit=2&game=pokemon&bar=2'), env)).status, 200);
+    assert.equal(state.requests.length, reqAfterCards1, '/api/cards 應依正規化 canonical key 命中同一筆 Edge Cache');
+  } finally {
+    await stopSpawnedServer(nodeServer.child);
   }
 });

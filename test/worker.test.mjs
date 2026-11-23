@@ -529,3 +529,187 @@ test('wrangler.toml targets worker/index.mjs, worker/public, default origin, and
     assert.match(toml, new RegExp(`^#.*\\b${secretName}\\b`, 'm'), `應在註解列出 ${secretName} 名稱`);
   }
 });
+
+test('MIGRATED_API 防訪客竄改與混合語法 (all,-cards,-search)', async () => {
+  const originCalls = [];
+  const handler = createWorkerHandler({
+    fetchFn: async target => {
+      const url = new URL(String(target));
+      if (url.origin === 'https://origin.example.test') {
+        originCalls.push(url.pathname + url.search);
+        return new Response(JSON.stringify({ proxiedByOrigin: true, path: url.pathname + url.search }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json; charset=utf-8' }
+        });
+      }
+      return new Response(JSON.stringify({ error: 'offline-stub' }), { status: 500 });
+    }
+  });
+  const baseEnv = {
+    ORIGIN_URL: 'https://origin.example.test',
+    PUBLIC_BASE_URL: 'https://cardseektcg.com',
+    ASSETS: { async fetch() { return new Response('<!doctype html><title>CardSeek</title>', { status: 200 }); } }
+  };
+
+  // 1. 訪客帶 ?MIGRATED_API=none 或請求標頭 X-Migrated-Api / MIGRATED_API 皆無法竄改路由
+  for (const path of ['/api/providers?MIGRATED_API=none', '/api/reports/meta?MIGRATED_API=none', '/api/cards?game=pokemon&MIGRATED_API=none', '/api/search?q=Pikachu&MIGRATED_API=none']) {
+    const res = await handler.fetch(
+      new Request(`https://cardseektcg.com${path}`, {
+        headers: { 'X-Migrated-Api': 'none', MIGRATED_API: 'none' }
+      }),
+      baseEnv
+    );
+    assert.equal(res.status, 200, path);
+    const body = await res.json();
+    assert.notEqual(body.proxiedByOrigin, true, `${path} 不可因訪客參數/標頭切回原點`);
+  }
+  assert.equal(originCalls.length, 0);
+
+  // 2. 環境變數 MIGRATED_API="all,-cards,-search" 僅切回 cards 與 search，其餘 18 支仍由 Worker 處理
+  const mixedSet = resolveMigratedApis({ MIGRATED_API: 'all,-cards,-search' });
+  assert.equal(mixedSet.size, 18);
+  assert.equal(mixedSet.has('cards'), false);
+  assert.equal(mixedSet.has('search'), false);
+  for (const api of DEFAULT_MIGRATED_APIS) {
+    if (api !== 'cards' && api !== 'search') assert.equal(mixedSet.has(api), true, `應保留 ${api}`);
+  }
+
+  const mixedEnv = { ...baseEnv, MIGRATED_API: 'all,-cards,-search' };
+  const cardsOriginRes = await handler.fetch(new Request('https://cardseektcg.com/api/cards?game=pokemon'), mixedEnv);
+  assert.equal((await cardsOriginRes.json()).proxiedByOrigin, true);
+  const searchOriginRes = await handler.fetch(new Request('https://cardseektcg.com/api/search?q=Pikachu'), mixedEnv);
+  assert.equal((await searchOriginRes.json()).proxiedByOrigin, true);
+  assert.equal(originCalls.length, 2);
+
+  const nonProxiedApis = [
+    ['/api/catalog/health', 'GET'],
+    ['/api/providers', 'GET'],
+    ['/api/catalog/sources', 'GET'],
+    ['/api/catalog/sync-status', 'GET'],
+    ['/api/trends', 'GET'],
+    ['/api/buyback-prices?game=pokemon', 'GET'],
+    ['/api/images/onepiece?url=bad', 'GET'],
+    ['/api/catalog', 'GET'],
+    ['/api/products', 'GET'],
+    ['/api/cards/c1', 'GET'],
+    ['/api/cards/c1/market', 'GET'],
+    ['/api/exchange-rates', 'GET'],
+    ['/api/hot-cards', 'GET'],
+    ['/api/market-events', 'GET'],
+    ['/api/price-movers', 'GET'],
+    ['/api/prices/reference', 'POST'],
+    ['/api/reports/meta', 'GET'],
+    ['/api/reports?cardId=c1', 'GET']
+  ];
+  assert.equal(nonProxiedApis.length, 18);
+  for (const [path, method] of nonProxiedApis) {
+    const res = await handler.fetch(
+      new Request(`https://cardseektcg.com${path}`, {
+        method,
+        ...(method === 'POST' ? { headers: { 'Content-Type': 'application/json' }, body: '{}' } : {})
+      }),
+      mixedEnv
+    );
+    const body = await res.json();
+    assert.notEqual(body.proxiedByOrigin, true, `${method} ${path} 應仍由 Worker 直接處理`);
+  }
+  assert.equal(originCalls.length, 2, '其餘 18 支端點不應觸發原點代理');
+});
+
+test('Worker 端限流：依 cf-connecting-ip 計數、忽略 X-Forwarded-For、圖片獨立配額與 SCRAPE_SECRET 豁免', async () => {
+  let currentNow = Date.UTC(2026, 10, 23, 1, 0, 0);
+  const pngBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  const handler = createWorkerHandler({
+    now: () => currentNow,
+    fetchFn: async target => {
+      if (String(target).startsWith('https://asia-tc.onepiece-cardgame.com/')) {
+        return new Response(pngBytes, { status: 200, headers: { 'Content-Type': 'image/png', 'Content-Length': String(pngBytes.byteLength) } });
+      }
+      throw new Error('unexpected origin fetch');
+    }
+  });
+  const env = {
+    API_RATE_LIMIT_PER_MINUTE: '3',
+    IMAGE_RATE_LIMIT_PER_MINUTE: '2',
+    SCRAPE_SECRET: 'worker-admin-secret',
+    ASSETS: { async fetch() { return new Response('<!doctype html>', { status: 200 }); } }
+  };
+
+  const ip1 = '198.51.100.10';
+  const ip2 = '198.51.100.11';
+  for (let i = 0; i < 3; i++) {
+    const okRes = await handler.fetch(new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip1 } }), env);
+    assert.equal(okRes.status, 200);
+  }
+
+  // 第 4 次超過 API_RATE_LIMIT_PER_MINUTE -> 429 JSON 與必要安全/限流標頭
+  const limitedRes = await handler.fetch(new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip1 } }), env);
+  assert.equal(limitedRes.status, 429);
+  assert.equal(limitedRes.headers.get('retry-after'), '60');
+  assert.equal(limitedRes.headers.get('cache-control'), 'no-store');
+  assert.equal(limitedRes.headers.get('content-security-policy'), "default-src 'none'");
+  assert.deepEqual(await limitedRes.json(), { error: '請求太頻繁，請稍後再試' });
+
+  // 偽造 X-Forwarded-For 無法繞過限流
+  const spoofXffRes = await handler.fetch(
+    new Request('https://cardseektcg.com/api/providers', {
+      headers: { 'cf-connecting-ip': ip1, 'x-forwarded-for': '203.0.113.99' }
+    }),
+    env
+  );
+  assert.equal(spoofXffRes.status, 429);
+
+  // 不同 cf-connecting-ip 獨立計數
+  const otherIpRes = await handler.fetch(new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip2 } }), env);
+  assert.equal(otherIpRes.status, 200);
+
+  // /api/images/onepiece 使用獨立 IMAGE_RATE_LIMIT_PER_MINUTE 配額，不與一般 API 共用
+  const validOpUrl = encodeURIComponent('https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png');
+  for (let i = 0; i < 2; i++) {
+    const imgRes = await handler.fetch(
+      new Request(`https://cardseektcg.com/api/images/onepiece?url=${validOpUrl}`, { headers: { 'cf-connecting-ip': ip1 } }),
+      env
+    );
+    assert.equal(imgRes.status, 200, '一般 API 滿額不應影響圖片獨立配額');
+  }
+  const imgLimitedRes = await handler.fetch(
+    new Request(`https://cardseektcg.com/api/images/onepiece?url=${validOpUrl}`, { headers: { 'cf-connecting-ip': ip1 } }),
+    env
+  );
+  assert.equal(imgLimitedRes.status, 429);
+
+  // 正確 SCRAPE_SECRET（x-scrape-token 與 Authorization: Bearer）可豁免限流；錯誤密鑰仍回 429
+  const xTokenOk = await handler.fetch(
+    new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip1, 'x-scrape-token': 'worker-admin-secret' } }),
+    env
+  );
+  assert.equal(xTokenOk.status, 200);
+  const bearerOk = await handler.fetch(
+    new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip1, authorization: 'Bearer worker-admin-secret' } }),
+    env
+  );
+  assert.equal(bearerOk.status, 200);
+  const imgBypassOk = await handler.fetch(
+    new Request(`https://cardseektcg.com/api/images/onepiece?url=${validOpUrl}`, {
+      headers: { 'cf-connecting-ip': ip1, authorization: 'Bearer worker-admin-secret' }
+    }),
+    env
+  );
+  assert.equal(imgBypassOk.status, 200);
+
+  const wrongXToken = await handler.fetch(
+    new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip1, 'x-scrape-token': 'wrong-secret' } }),
+    env
+  );
+  assert.equal(wrongXToken.status, 429);
+  const wrongBearer = await handler.fetch(
+    new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip1, authorization: 'Bearer wrong-secret' } }),
+    env
+  );
+  assert.equal(wrongBearer.status, 429);
+
+  // 推進時間窗超過 60 秒後恢復 200
+  currentNow += 60001;
+  const recoveredRes = await handler.fetch(new Request('https://cardseektcg.com/api/providers', { headers: { 'cf-connecting-ip': ip1 } }), env);
+  assert.equal(recoveredRes.status, 200);
+});
