@@ -159,3 +159,9 @@
 - Cloudflare：DNS 兩筆改 Proxied；SSL Full；快取規則「Static files edge cache」（js/css/圖片，非 /api/，邊緣 10 分鐘）。
 - 長期方案：搬 Cloudflare Workers。分支 `claude/workers-step1`（722d6aa＋07fce0c）：計畫書 `docs/WORKERS_MIGRATION_PLAN.md`＋第 1 步程式（靜態上 Workers、/api 代理 Render），1079 測試全過，未部署。
 - 上線前使用者要做：wrangler login、Render 與 Worker 設同一個 ORIGIN_VERIFY_SECRET、Render 的 CANONICAL_REDIRECT 改 false、先部署 workers.dev 驗證再綁網域。
+
+## 2026-11-24 Workers 第 2 步第一批上線（Claude）
+- Render 仍停權，網站已改由 Cloudflare Worker `cardseek` 直連 Supabase 恢復：首頁、卡表、單卡、搜尋等 20 支讀取 API 在 Worker（`providers/read-api.mjs`），commit 4f867db＋swarm 審核修補 898b8bf／ffaafb7／aab193c，1089 測試全過。
+- 仍代理 Render（目前 503）：pack-prizes、series-hits、catalog/coverage、price-history、graded-prices、ebay-listings、image-status，以及所有寫入（auth、sync、admin、reports POST）與 sitemap、查庫 SEO 頁。下一批：2C 用 KV 預產快照、寫入類搬遷。
+- Worker secrets 已設：ORIGIN_VERIFY_SECRET、SUPABASE_URL、SUPABASE_SERVICE_KEY、SUPABASE2_URL、SUPABASE2_SERVICE_KEY。部署用 `npx.cmd wrangler deploy`（PowerShell 擋 npx.ps1）。
+- 風險：/api/catalog/health 冷查約 26 秒；/api/catalog、/api/search 冷啟動可能逼近免費 10 ms CPU，可用 `MIGRATED_API` 單支切回代理。swarm 最後用盡 Gemini 5h 額度，未產最終報告，結論記在計畫書。
