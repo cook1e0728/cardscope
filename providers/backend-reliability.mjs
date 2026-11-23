@@ -170,4 +170,70 @@ export function createRateLimiter({ limit, windowMs = 60000, maxKeys = DEFAULT_R
   };
 }
 
+const auditClean = value => String(value || '').trim();
+const auditRowId = row => auditClean(row?.id);
+const auditRowCardId = row => auditClean(row?.cardId ?? row?.card_id);
+const auditRowGameId = row => auditClean(row?.gameId ?? row?.game_id ?? row?.game);
+const auditRowProviderId = row => auditClean(row?.providerId ?? row?.provider_id);
+const auditRowCardNumber = row => auditClean(row?.officialCardNumber ?? row?.official_card_number ?? row?.localCardNumber ?? row?.local_card_number);
+const auditRowImageUrl = row => auditClean(row?.imageUrl ?? row?.image_url);
+const auditRowChineseName = row => auditClean(row?.nameZh ?? row?.name_zh);
+
+/**
+ * Audit catalog relationships without guessing identity from names. The
+ * returned shape is intentionally JSON-safe so it can be attached to public
+ * coverage responses or written to a sync-run metadata object.
+ */
+export function auditCatalogLinks({ cards = [], printings = [], images = [], providerKeys = new Map() } = {}) {
+  const cardRows = (cards || []).filter(row => row && typeof row === 'object');
+  const cardIds = new Set(cardRows.map(auditRowId).filter(Boolean));
+  const cardById = new Map(cardRows.map(row => [auditRowId(row), row]));
+  const printingRows = (printings || []).filter(row => row && typeof row === 'object');
+  const imageRows = (images || []).filter(row => row && typeof row === 'object');
+  const printingsWithKnownCard = printingRows.filter(row => cardIds.has(auditRowCardId(row)));
+  const imagesWithKnownCard = imageRows.filter(row => cardIds.has(auditRowCardId(row)));
+  const cardsWithPrintings = new Set(printingsWithKnownCard.map(auditRowCardId));
+  const cardsWithImages = new Set([...imagesWithKnownCard, ...printingsWithKnownCard.filter(auditRowImageUrl)].map(auditRowCardId));
+  const stableIdentityRows = cardRows.filter(row => auditRowId(row) && auditRowGameId(row) && (auditRowProviderId(row) || auditRowCardNumber(row)));
+  const missingImages = cardRows.filter(row => !cardsWithImages.has(auditRowId(row)) && !auditRowImageUrl(row));
+  const missingChineseNames = cardRows.filter(row => !auditRowChineseName(row));
+  const orphanPrintings = printingRows.filter(row => !cardIds.has(auditRowCardId(row)));
+  const orphanImages = imageRows.filter(row => !cardIds.has(auditRowCardId(row)));
+  const crossGameReferences = printingRows.filter(row => {
+    const card = cardById.get(auditRowCardId(row));
+    const printingGame = auditRowGameId(row);
+    return Boolean(card && printingGame && auditRowGameId(card) && printingGame !== auditRowGameId(card));
+  });
+  for (const row of cardRows) {
+    const provider = auditRowProviderId(row);
+    const game = auditRowGameId(row);
+    if (!provider || !game) continue;
+    const key = `${game}\u001f${provider}`;
+    const list = providerKeys.get(key) || [];
+    list.push(auditRowId(row));
+    providerKeys.set(key, list);
+  }
+  const duplicateProviderKeys = [...providerKeys.entries()].filter(([, ids]) => ids.length > 1).map(([key, ids]) => ({ key: key.replace('\u001f', ':'), cardIds: ids }));
+  const sample = rows => rows.map(row => auditRowId(row) || auditRowCardId(row)).filter(Boolean).slice(0, 50);
+  return {
+    status: 'observed',
+    cards: cardRows.length,
+    stableIdentityCards: stableIdentityRows.length,
+    unkeyedCards: cardRows.length - stableIdentityRows.length,
+    cardsWithPrintings: cardsWithPrintings.size,
+    cardsWithImages: cardsWithImages.size,
+    printingReferences: printingRows.length,
+    linkedPrintingReferences: printingsWithKnownCard.length,
+    imageReferences: imageRows.length,
+    linkedImageReferences: imagesWithKnownCard.length,
+    orphanPrintings: orphanPrintings.length,
+    orphanImages: orphanImages.length,
+    crossGameReferences: crossGameReferences.length,
+    duplicateProviderKeys,
+    missingImages: { count: missingImages.length, sampleIds: sample(missingImages) },
+    missingChineseNames: { count: missingChineseNames.length, sampleIds: sample(missingChineseNames) },
+    complete: cardRows.length > 0 && stableIdentityRows.length === cardRows.length && orphanPrintings.length === 0 && orphanImages.length === 0 && crossGameReferences.length === 0
+  };
+}
+
 export { DEFAULT_SNAPSHOT_TTL_MS, DEFAULT_SNAPSHOT_MAX_STALE_MS, DEFAULT_RATE_LIMIT_MAX_KEYS };

@@ -1,6 +1,5 @@
-import { readFile } from 'node:fs/promises';
+import registry from '../data/source-registry.json' with { type: 'json' };
 
-const registry=JSON.parse(await readFile(new URL('../data/source-registry.json',import.meta.url),'utf8'));
 const byRuntimeProvider=new Map(registry.sources.filter(source=>source.runtimeProvider).map(source=>[source.runtimeProvider,source]));
 const DISPLAYABLE_IMAGE_RIGHTS=new Set(['licensed','partner-provided','user-provided']);
 

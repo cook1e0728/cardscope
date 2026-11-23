@@ -1,4 +1,4 @@
-// 第 1 步 Cloudflare Worker：提供前端靜態檔與無資料庫 SEO 頁；/api/*、/sitemap* 與需查庫的 ?card=/?series= 先代理回 Render 原點。
+// 第 2 步第一批 Cloudflare Worker：送出靜態檔、無資料庫 SEO 頁與 20 支讀取類 /api/*；寫入／重算類端點與查庫 SEO／sitemap 續代理 Render 原點。
 import {
   API_CSP,
   NOT_FOUND_HTML,
@@ -11,6 +11,7 @@ import {
   securityHeadersForPath,
   seoRequestTarget
 } from '../providers/http-security.mjs';
+import { createReadApi } from '../providers/read-api.mjs';
 import { applySeoToHtml, homeSeo, normalizeBaseUrl, renderRobotsTxt, viewSeo } from '../providers/seo.mjs';
 
 export const DEFAULT_ORIGIN_URL = 'https://cardscope.onrender.com';
@@ -23,6 +24,137 @@ export const WORKER_GAME_IDS = Object.freeze([
   'dragonball-fw',
   'union-arena'
 ]);
+
+export const DEFAULT_MIGRATED_APIS = Object.freeze([
+  'catalog-health',
+  'providers',
+  'catalog-sources',
+  'catalog-sync-status',
+  'trends',
+  'buyback-prices',
+  'images-onepiece',
+  'catalog',
+  'products',
+  'cards',
+  'search',
+  'card-detail',
+  'card-market',
+  'exchange-rates',
+  'hot-cards',
+  'market-events',
+  'price-movers',
+  'prices-reference',
+  'reports-meta',
+  'reports'
+]);
+
+const DEFAULT_MIGRATED_SET = new Set(DEFAULT_MIGRATED_APIS);
+
+const MIGRATED_API_ALIASES = new Map([
+  ['/api/catalog/health', 'catalog-health'],
+  ['/api/providers', 'providers'],
+  ['/api/catalog/sources', 'catalog-sources'],
+  ['/api/catalog/sync-status', 'catalog-sync-status'],
+  ['/api/trends', 'trends'],
+  ['/api/buyback-prices', 'buyback-prices'],
+  ['/api/images/onepiece', 'images-onepiece'],
+  ['/api/catalog', 'catalog'],
+  ['/api/products', 'products'],
+  ['/api/cards', 'cards'],
+  ['/api/search', 'search'],
+  ['/api/cards/:id', 'card-detail'],
+  ['/api/cards/:id/market', 'card-market'],
+  ['/api/exchange-rates', 'exchange-rates'],
+  ['/api/hot-cards', 'hot-cards'],
+  ['/api/market-events', 'market-events'],
+  ['/api/price-movers', 'price-movers'],
+  ['/api/prices/reference', 'prices-reference'],
+  ['/api/reports/meta', 'reports-meta'],
+  ['/api/reports', 'reports']
+]);
+
+function normalizeApiToken(token) {
+  const key = String(token || '').trim().toLowerCase();
+  if (!key) return '';
+  if (DEFAULT_MIGRATED_SET.has(key)) return key;
+  return MIGRATED_API_ALIASES.get(key) || key;
+}
+
+/**
+ * 解析 MIGRATED_API 環境變數：
+ * - 未設定／all：啟用全部 DEFAULT_MIGRATED_APIS
+ * - none / off / false / 0：全部切回代理 Render
+ * - "-cards,-search"：在預設清單中關閉指定端點以便單支回滾
+ * - "cards,search"：僅開啟指定清單
+ */
+export function resolveMigratedApis(env) {
+  const raw = env?.MIGRATED_API;
+  if (raw === undefined || raw === null) return new Set(DEFAULT_MIGRATED_APIS);
+  const text = String(raw).trim();
+  if (!text || text.toLowerCase() === 'all' || text.toLowerCase() === 'default') return new Set(DEFAULT_MIGRATED_APIS);
+  if (['none', 'off', 'false', '0'].includes(text.toLowerCase())) return new Set();
+
+  const tokens = text.split(',').map(part => part.trim()).filter(Boolean);
+  if (!tokens.length) return new Set(DEFAULT_MIGRATED_APIS);
+  const negatives = tokens.every(token => token.startsWith('-'));
+  if (negatives) {
+    const enabled = new Set(DEFAULT_MIGRATED_APIS);
+    for (const token of tokens) enabled.delete(normalizeApiToken(token.slice(1)));
+    return enabled;
+  }
+
+  const enabled = new Set();
+  for (const token of tokens) {
+    if (token.startsWith('-')) continue;
+    const key = normalizeApiToken(token);
+    if (DEFAULT_MIGRATED_SET.has(key)) enabled.add(key);
+  }
+  return enabled;
+}
+
+const EXACT_GET_API_MAP = new Map([
+  ['/api/providers', 'providers'],
+  ['/api/catalog/sources', 'catalog-sources'],
+  ['/api/catalog/sync-status', 'catalog-sync-status'],
+  ['/api/trends', 'trends'],
+  ['/api/buyback-prices', 'buyback-prices'],
+  ['/api/images/onepiece', 'images-onepiece'],
+  ['/api/catalog', 'catalog'],
+  ['/api/products', 'products'],
+  ['/api/cards', 'cards'],
+  ['/api/search', 'search'],
+  ['/api/exchange-rates', 'exchange-rates'],
+  ['/api/hot-cards', 'hot-cards'],
+  ['/api/market-events', 'market-events'],
+  ['/api/price-movers', 'price-movers'],
+  ['/api/reports/meta', 'reports-meta'],
+  ['/api/reports', 'reports']
+]);
+
+/** 判斷請求是否對應已搬遷的端點 key；未搬遷（寫入、認證、price-history、graded/ebay、pack-prizes 等）回 null。 */
+export function matchMigratedApi(url, method = 'GET') {
+  const pathname = url.pathname;
+  if (!pathname.startsWith('/api/')) return null;
+  if (pathname === '/api/catalog/health' && (method === 'GET' || method === 'HEAD')) return 'catalog-health';
+  if (pathname === '/api/prices/reference' && method === 'POST') return 'prices-reference';
+  if (method !== 'GET') return null;
+
+  const exact = EXACT_GET_API_MAP.get(pathname);
+  if (exact) return exact;
+
+  if (pathname.startsWith('/api/cards/')) {
+    let tail = '';
+    try {
+      tail = decodeURIComponent(pathname.slice(11));
+    } catch {
+      return 'card-detail';
+    }
+    if (tail.endsWith('/price-history')) return null;
+    if (tail.endsWith('/market')) return 'card-market';
+    return 'card-detail';
+  }
+  return null;
+}
 
 const HOP_BY_HOP_HEADERS = new Set([
   'connection',
@@ -48,8 +180,12 @@ export function resolveOriginUrl(env) {
   return DEFAULT_ORIGIN_URL;
 }
 
-export function shouldProxyToOrigin(url, method) {
-  if (url.pathname.startsWith('/api/')) return 'api';
+export function shouldProxyToOrigin(url, method, env) {
+  if (url.pathname.startsWith('/api/')) {
+    const apiKey = matchMigratedApi(url, method);
+    if (apiKey && resolveMigratedApis(env).has(apiKey)) return null;
+    return 'api';
+  }
   if ((method === 'GET' || method === 'HEAD') && (url.pathname === '/sitemap.xml' || /^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(url.pathname))) {
     return 'sitemap';
   }
@@ -83,8 +219,37 @@ function gameIdsForEnv(env) {
   return new Set(list);
 }
 
-export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now } = {}) {
+function readApiSignature(env) {
+  return [
+    env?.SUPABASE_URL || '',
+    env?.SUPABASE_SERVICE_KEY || '',
+    env?.SUPABASE2_URL || '',
+    env?.SUPABASE2_SERVICE_KEY || '',
+    env?.SUPABASE2_TIMEOUT_MS || '',
+    env?.SCRAPE_SECRET || '',
+    env?.JPY_TO_TWD || '',
+    env?.USD_TO_TWD || '',
+    env?.CATALOG_CACHE_TTL_MS || '',
+    env?.PRODUCT_CACHE_TTL_MS || '',
+    env?.CATALOG_SNAPSHOT_CACHE_MS || '',
+    env?.CATALOG_SNAPSHOT_MAX_STALE_MS || ''
+  ].join('\u001f');
+}
+
+export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now, edgeCache = undefined } = {}) {
   let cachedIndex = null;
+  const readApiInstances = new Map();
+
+  function getReadApi(env) {
+    const key = readApiSignature(env);
+    let instance = readApiInstances.get(key);
+    if (!instance) {
+      instance = createReadApi({ env, fetchFn, now, edgeCache });
+      readApiInstances.set(key, instance);
+      while (readApiInstances.size > 8) readApiInstances.delete(readApiInstances.keys().next().value);
+    }
+    return instance;
+  }
 
   async function loadIndexAndCsp(env, origin) {
     if (cachedIndex) return cachedIndex;
@@ -196,7 +361,7 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
   }
 
   return {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
       let url;
       try {
         url = new URL(request.url);
@@ -206,11 +371,11 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
         return respondJson('/api/bad-url', 400, { error: '網址格式錯誤' }, pageCsp);
       }
 
-      const { indexHtml, pageCsp } = await loadIndexAndCsp(env, url.origin);
       const publicBaseUrl = normalizeBaseUrl(env?.PUBLIC_BASE_URL);
       const canonicalHost = new URL(publicBaseUrl).hostname.toLowerCase();
 
       if (url.hostname.toLowerCase() === `www.${canonicalHost}`) {
+        const pageCsp = cachedIndex?.pageCsp || buildPageCsp([]);
         const headers = new Headers({
           Location: `${publicBaseUrl}${url.pathname}${url.search}`,
           'Cache-Control': 'public, max-age=86400'
@@ -219,7 +384,23 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
         return new Response(null, { status: 301, headers });
       }
 
-      const proxyKind = shouldProxyToOrigin(url, request.method);
+      const apiKey = matchMigratedApi(url, request.method);
+      if (apiKey && resolveMigratedApis(env).has(apiKey)) {
+        const apiResponse = await getReadApi(env).handle(apiKey, request, url, ctx);
+        const headers = new Headers(apiResponse.headers);
+        applyHeaders(headers, url.pathname, API_CSP);
+        headers.set('Content-Security-Policy', API_CSP);
+        return new Response(request.method === 'HEAD' ? null : apiResponse.body, {
+          status: apiResponse.status,
+          statusText: apiResponse.statusText,
+          headers
+        });
+      }
+
+      const proxyKind = shouldProxyToOrigin(url, request.method, env);
+      const needsPageAsset = !proxyKind || proxyKind === 'seo-db';
+      const { indexHtml, pageCsp } = needsPageAsset ? await loadIndexAndCsp(env, url.origin) : { indexHtml: null, pageCsp: API_CSP };
+
       if (proxyKind) {
         return proxyRequest(request, url, env, proxyKind, indexHtml, pageCsp);
       }

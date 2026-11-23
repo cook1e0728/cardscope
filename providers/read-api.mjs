@@ -1,0 +1,2334 @@
+// Worker 與共用讀取端點引擎（零 node:*、零 Buffer、零 AsyncLocalStorage）。
+import { marketEventsFor, catalogEventsFrom, mergeMarketEvents } from './market-events.mjs';
+import { normalizeMarketRecord, withTwd } from './normalize.mjs';
+import { REFERENCE_BODY_MAX_BYTES, buildReferencePrices, referenceQueryParams, validateReferenceRequest } from './collection-valuation.mjs';
+import { buildSeriesIndex, foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './search-query.mjs';
+import { catalogCollectionAllowed, imageDisplayPolicies, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './source-policy.mjs';
+import { createTcgdexPricing } from './tcgdex-pricing.mjs';
+import { createYgoProDeckClient, crossVersionLowestPrices, matchYgoprodeckSet } from './ygoprodeck.mjs';
+import { chunkCardIds, createBoundedSnapshotCache } from './backend-reliability.mjs';
+import { CATALOG_REGION_IDS, createSupabaseClient, dbForGame, dbForId } from './supabase-client.mjs';
+import {
+  ALLOWED_CURRENCIES,
+  ALLOWED_PLATFORMS,
+  BROWSE_CACHE_MS,
+  BROWSE_CARD_SELECT,
+  BROWSE_IMAGE_SELECT,
+  BROWSE_PAGE_MAX,
+  BROWSE_PRICE_SORTS,
+  BROWSE_PRINTING_SELECT,
+  BROWSE_RARITY_FORMAT,
+  CATALOG_GAMES_PATH,
+  CATALOG_SERIES_PATH,
+  FX_CACHE_MS,
+  FX_JUMP_WINDOW_MS,
+  HOME_EVENTS_PAST_DAYS,
+  HOT_CARDS_DAYS,
+  HOT_CARDS_LIMIT,
+  HOT_CARDS_MIN_OPENS,
+  MARKET_CACHE_MS,
+  MAX_PRICE,
+  ONEPIECE_IMAGE_MAX_BYTES,
+  ONEPIECE_IMAGE_MIMES,
+  PRICE_HISTORY_DAYS,
+  PRICE_MOVERS_DAYS,
+  PRICE_MOVERS_MIN_EUR,
+  PUBLIC_REPORT_SELECT,
+  SEARCH_CANDIDATE_LIMIT,
+  SEARCH_PAGE_MAX,
+  SEARCH_PATTERNS_MAX,
+  SEARCH_RESULT_LIMIT,
+  SEARCH_SERIES_IDS_MAX,
+  SERIES_ZH_ENTRIES,
+  SHORT_CACHE,
+  UPSTREAM_ERROR,
+  amountToTwd,
+  browseHasUsableImage,
+  buildBrowseFacets,
+  buildBrowsePage,
+  buildCuratedProducts,
+  buildFallbackCatalogCoverage,
+  buildHotCardsPayload,
+  buildPriceMovers,
+  buildPrintingIndex,
+  buildProductSetsFromSources,
+  buildStats,
+  buildVersionPrices,
+  canonicalizeCatalog,
+  cardImageFields,
+  cardMatchRank,
+  chunkDatabaseRelationCardIds,
+  databaseRelationQuery,
+  fxJump,
+  getFallbackCatalogCopy,
+  hydrateBrowseCard,
+  mergeCatalogRows,
+  normalizeBrowseRarity,
+  normalizeBrowseRegion,
+  normalizeBrowseSort,
+  normalizeSearch,
+  onePieceImageTarget,
+  priceHistoryCardIds,
+  productFeedMeta,
+  providerStatusFromEnv,
+  rarityCanonicalCode,
+  rarityCanonicalToken,
+  rarityDisplayLabel,
+  browseRarityRank,
+  readBoundedBytes,
+  referenceChange,
+  referencePriceFromRow,
+  regionLabel,
+  searchQueryTerms,
+  searchTimedOut,
+  storageStatus,
+  suggestBody,
+  tcgdexLookups,
+  trendMeta,
+  trendObservationWindow,
+  trendRecordKey,
+  uniqueValues,
+  validCardId,
+  withTimeout
+} from './catalog-core.mjs';
+
+const WORKER_SERIES_FALLBACK_MAX = 1200;
+const BROWSE_HEAVY_TIMEOUT_MS = 25000;
+const RELATION_BATCH_SIZE = 100;
+const RELATION_QUERY_MAX_BYTES = 8 * 1024;
+const RELATION_QUERY_CONCURRENCY = 4;
+
+function shortHash(text) {
+  let h = 2166136261;
+  const s = String(text || '');
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(16);
+}
+
+async function sha1Hex(text) {
+  const digest = await globalThis.crypto.subtle.digest('SHA-1', new TextEncoder().encode(String(text || '')));
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function readJsonBodyBounded(request, maxBytes) {
+  if (!request.body || typeof request.body.getReader !== 'function') {
+    const raw = new Uint8Array(await request.arrayBuffer());
+    if (raw.byteLength > maxBytes) throw new Error('BODY_TOO_LARGE');
+    if (!raw.byteLength) return {};
+    try {
+      return JSON.parse(new TextDecoder().decode(raw));
+    } catch {
+      throw new Error('INVALID_JSON');
+    }
+  }
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = value instanceof Uint8Array ? value : new Uint8Array(value);
+      total += chunk.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel().catch(() => {});
+        throw new Error('BODY_TOO_LARGE');
+      }
+      chunks.push(chunk);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  if (!total) return {};
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return JSON.parse(new TextDecoder().decode(merged));
+  } catch {
+    throw new Error('INVALID_JSON');
+  }
+}
+
+/**
+ * 建立 Worker 讀取 API 引擎，綁定 env、fetchFn、now 與選用的 Edge Cache，完全不使用 Node 專屬 API。
+ */
+export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date.now, edgeCache = undefined } = {}) {
+  const db = createSupabaseClient({ env, fetchFn });
+  const jpyToTwdFallback = Number(env?.JPY_TO_TWD || 0.22);
+  const usdToTwdFallback = Number(env?.USD_TO_TWD || 32);
+  const resolvedEdgeCache = edgeCache === undefined ? (globalThis.caches?.default || null) : edgeCache;
+  const cacheNamespace = shortHash(`${env?.SUPABASE_URL || ''}|${env?.SUPABASE2_URL || ''}|${env?.SCRAPE_SECRET ? '1' : '0'}`);
+
+  const searchYgo = createYgoProDeckClient({ fetchFn, now });
+  const fetchTcgdexJa = createTcgdexPricing({ language: 'ja', fetch: fetchFn, now });
+  const fetchTcgdexEn = createTcgdexPricing({ language: 'en', fetch: fetchFn, now });
+
+  // Isolate 記憶體快取（遵守 Workers 單實例上限，避免膨脹）
+  const browseCache = new Map();
+  const BROWSE_CACHE_ROWS_MAX = 5000;
+  const BROWSE_CACHE_BYTES_MAX = 12 * 1024 * 1024;
+  const BROWSE_CACHE_KEYS_MAX = 200;
+  const SNAPSHOT_TTL_MS = Math.max(1000, Number(env?.CATALOG_SNAPSHOT_CACHE_MS) || BROWSE_CACHE_MS);
+  const SNAPSHOT_MAX_STALE_MS = Math.max(1000, Number(env?.CATALOG_SNAPSHOT_MAX_STALE_MS) || 24 * 60 * 60 * 1000);
+  const CATALOG_CACHE_TTL_MS = Number(env?.CATALOG_CACHE_TTL_MS ?? 600000);
+  const PRODUCT_CACHE_TTL_MS = Number(env?.PRODUCT_CACHE_TTL_MS ?? 600000);
+
+  const fxCache = { data: null, expiresAt: 0 };
+  const catalogHealthCache = createBoundedSnapshotCache({ ttlMs: SNAPSHOT_TTL_MS, maxStaleMs: SNAPSHOT_MAX_STALE_MS, now, serveStaleWhileRevalidate: true });
+  const trendCache = { data: null, expiresAt: 0, promise: null };
+  const TREND_CACHE_MS = 5 * 60 * 1000;
+  const storageCaches = {
+    main: { data: null, expiresAt: 0, promise: null, retryAt: 0 },
+    ip2: { data: null, expiresAt: 0, promise: null, retryAt: 0 }
+  };
+  let productCache = { value: null, at: 0, pending: null };
+  let catalogCache = { value: null, at: 0, pending: null };
+  const seriesIndexCache = new WeakMap();
+  const SEARCH_CACHE_TTL_MS = 600000;
+  const SEARCH_CACHE_MAX = 150;
+  const searchCache = new Map();
+  let rankedPageMissingUntil = 0;
+  let rankedSeriesMissingUntil = 0;
+  const CARD_CACHE_TTL_MS = 600000;
+  const CARD_CACHE_MAX = 200;
+  const cardCache = new Map();
+  const MARKET_CACHE_MAX = 150;
+  const marketCache = new Map();
+  let catalogEventsCache = null;
+  const priceMoversCache = createBoundedSnapshotCache({ ttlMs: 3600000, maxStaleMs: 24 * 60 * 60 * 1000, now, serveStaleWhileRevalidate: true });
+  const hotCardsCache = createBoundedSnapshotCache({ ttlMs: 3600000, maxStaleMs: 24 * 60 * 60 * 1000, now, serveStaleWhileRevalidate: true });
+  const browseFacetFailures = new Map();
+  const seriesBundleCache = new WeakMap();
+
+  function publicReason(label, error) {
+    console.error(label, error?.message || error);
+    return UPSTREAM_ERROR;
+  }
+
+  function jsonRes(status, body, extraHeaders = {}) {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        ...extraHeaders
+      }
+    });
+  }
+
+  function edgeKeyRequest(url, scope = 'api') {
+    return new Request(`https://cardseek-cache.invalid/${cacheNamespace}/${scope}${url.pathname}${url.search}`, { method: 'GET' });
+  }
+
+  function writeEdgeCache(ctx, cacheReq, response, cacheControlForEdge = null) {
+    if (!resolvedEdgeCache || typeof resolvedEdgeCache.put !== 'function') return;
+    let toStore = response.clone();
+    if (cacheControlForEdge) {
+      const headers = new Headers(toStore.headers);
+      headers.set('Cache-Control', cacheControlForEdge);
+      toStore = new Response(toStore.body, { status: toStore.status, statusText: toStore.statusText, headers });
+    }
+    const task = resolvedEdgeCache.put(cacheReq, toStore).catch(() => {});
+    if (ctx && typeof ctx.waitUntil === 'function') ctx.waitUntil(task);
+  }
+
+  async function matchEdgeCache(cacheReq, clientCacheControl = null) {
+    if (!resolvedEdgeCache || typeof resolvedEdgeCache.match !== 'function') return null;
+    try {
+      const hit = await resolvedEdgeCache.match(cacheReq);
+      if (!hit) return null;
+      if (!clientCacheControl) return hit;
+      const headers = new Headers(hit.headers);
+      headers.set('Cache-Control', clientCacheControl);
+      return new Response(hit.body, { status: hit.status, statusText: hit.statusText, headers });
+    } catch {
+      return null;
+    }
+  }
+
+  function browseCacheBytes(data) {
+    try {
+      return JSON.stringify(data)?.length || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function trimBrowseCacheBytes() {
+    let total = 0;
+    for (const entry of browseCache.values()) total += entry.bytes || 0;
+    for (const [entryKey, entry] of browseCache) {
+      if (total <= BROWSE_CACHE_BYTES_MAX) break;
+      if (entry.bytes) {
+        browseCache.delete(entryKey);
+        total -= entry.bytes;
+      }
+    }
+  }
+
+  async function cachedBrowseRows(key, loader, ttlMs = BROWSE_CACHE_MS) {
+    const current = now();
+    const cached = browseCache.get(key);
+    if (cached?.data && cached.expiresAt > current) return cached.data;
+    if (cached?.promise) return cached.promise;
+    const promise = Promise.resolve().then(loader).then(data => {
+      if (Array.isArray(data) && data.length > BROWSE_CACHE_ROWS_MAX) {
+        browseCache.delete(key);
+      } else {
+        const bytes = browseCacheBytes(data);
+        if (bytes > BROWSE_CACHE_BYTES_MAX / 2) browseCache.delete(key);
+        else {
+          browseCache.set(key, { data, expiresAt: now() + ttlMs, bytes });
+          trimBrowseCacheBytes();
+        }
+      }
+      return data;
+    }).catch(error => {
+      browseCache.delete(key);
+      throw error;
+    });
+    browseCache.set(key, { promise, expiresAt: current + ttlMs });
+    for (const [entryKey, entry] of browseCache) {
+      if (entry.data && entry.expiresAt <= current) browseCache.delete(entryKey);
+    }
+    while (browseCache.size > BROWSE_CACHE_KEYS_MAX) browseCache.delete(browseCache.keys().next().value);
+    return promise;
+  }
+
+  // ---- 匯率（純讀取，絕不在 Worker 寫入資料庫）----
+  async function loadStoredTwdRates() {
+    try {
+      const rows = await db.fetchJson('/exchange_rates?select=currency,rate_to_twd,rate_date,source,fetched_at&order=fetched_at.desc&limit=30', { db: 'main' });
+      if (!Array.isArray(rows) || !rows.length) return null;
+      const latest = new Map();
+      for (const row of rows) if (!latest.has(row.currency)) latest.set(row.currency, row);
+      if (!['JPY', 'USD', 'EUR'].every(c => latest.has(c))) return null;
+      const times = [...latest.values()].map(r => new Date(r.fetched_at).getTime()).filter(Number.isFinite).sort((a, b) => b - a);
+      if (!times[0]) return null;
+      const rates = { TWD: 1 };
+      for (const [currency, row] of latest) {
+        const rate = Number(row.rate_to_twd);
+        if (Number.isFinite(rate) && rate > 0) rates[currency] = rate;
+      }
+      return {
+        rates,
+        updatedAt: latest.get('JPY')?.rate_date || null,
+        fetchedAt: new Date(times[0]).toISOString(),
+        source: `Supabase cache (${latest.get('JPY')?.source || 'unknown'})`
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  async function getTwdRates() {
+    const current = now();
+    if (fxCache.data && fxCache.expiresAt > current) return { data: fxCache.data, cacheable: true };
+    const stored = db.supabaseConfigured() ? await loadStoredTwdRates() : null;
+    const storedAge = stored ? current - new Date(stored.fetchedAt).getTime() : Infinity;
+    if (storedAge < FX_CACHE_MS) {
+      fxCache.data = stored;
+      fxCache.expiresAt = current + Math.max(60000, FX_CACHE_MS - storedAge);
+      return { data: stored, cacheable: true };
+    }
+    const fallback = stored || {
+      rates: { TWD: 1, JPY: jpyToTwdFallback, USD: usdToTwdFallback, EUR: 35 },
+      updatedAt: null,
+      fetchedAt: new Date(current).toISOString(),
+      source: 'fallback'
+    };
+    try {
+      const response = await fetchFn('https://open.er-api.com/v6/latest/TWD', { signal: AbortSignal.timeout(12000) });
+      if (!response.ok) throw new Error(`FX_${response.status}`);
+      const body = await response.json();
+      const rates = { TWD: 1 };
+      if (body.result !== 'success') throw new Error('FX_RESULT');
+      for (const currency of ['JPY', 'USD', 'EUR', 'KRW', 'HKD']) {
+        const value = Number(body.rates?.[currency]);
+        if (Number.isFinite(value) && value > 0) rates[currency] = 1 / value;
+      }
+      if (!['JPY', 'USD', 'EUR'].every(c => rates[c])) throw new Error('FX_INCOMPLETE');
+      const jump = storedAge < FX_JUMP_WINDOW_MS && fxJump(stored.rates, rates);
+      if (jump) throw new Error(`FX_JUMP_${jump}`);
+      const data = {
+        rates,
+        updatedAt: body.time_last_update_utc ? new Date(body.time_last_update_utc).toISOString().slice(0, 10) : null,
+        fetchedAt: new Date(now()).toISOString(),
+        source: 'ExchangeRate-API'
+      };
+      fxCache.data = data;
+      fxCache.expiresAt = now() + FX_CACHE_MS;
+      return { data, cacheable: true };
+    } catch (error) {
+      console.error('fx fetch failed', error?.message || error);
+      fxCache.data = fallback;
+      fxCache.expiresAt = now() + 60 * 60 * 1000;
+      return { data: fallback, cacheable: false };
+    }
+  }
+
+  // ---- Storage / Health ----
+  function loadStorageReport(targetDb = 'main') {
+    if (!(targetDb === 'ip2' ? db.secondDbConfigured() : db.supabaseConfigured())) return Promise.resolve(null);
+    const cache = storageCaches[targetDb];
+    const current = now();
+    if (cache.data && cache.expiresAt > current) return Promise.resolve(cache.data);
+    if (cache.promise) return cache.promise;
+    if (current < cache.retryAt) return Promise.resolve(cache.data);
+    return cache.promise = db.fetchJson('/rpc/db_size_report', {
+      db: targetDb,
+      method: 'POST',
+      body: '{}',
+      timeoutMs: 15000
+    }).then(report => {
+      if (!Number.isFinite(Number(report?.databaseBytes))) throw new Error('bad db_size_report');
+      cache.data = report;
+      cache.expiresAt = now() + 60 * 60 * 1000;
+      return report;
+    }).catch(error => {
+      console.warn('db size report failed', targetDb, error?.message);
+      cache.retryAt = now() + 60 * 1000;
+      return cache.data;
+    }).finally(() => {
+      cache.promise = null;
+    });
+  }
+
+  async function loadCatalogHealth() {
+    if (!db.supabaseConfigured()) {
+      const snapshot = await catalogHealthCache.get(async () => buildFallbackCatalogCoverage(getFallbackCatalogCopy(), {}, now()));
+      return { ...snapshot.data, cache: snapshot.cache, policy: sourcePolicySummary(), _fallback: false };
+    }
+    try {
+      const cached = await catalogHealthCache.get(async () => {
+        const policies = imageDisplayPolicies();
+        try {
+          return await db.fetchJson('/rpc/catalog_health_snapshot_v2', {
+            db: 'main',
+            method: 'POST',
+            body: JSON.stringify({ p_display_policies: policies }),
+            timeoutMs: 60000
+          });
+        } catch (v2Error) {
+          console.error('catalog health v2 snapshot failed; falling back to legacy snapshot', v2Error?.message || v2Error);
+          const legacy = await db.fetchJson('/rpc/catalog_health_snapshot', { db: 'main', method: 'POST', body: '{}' });
+          return { ...legacy, metricStatus: { ...(legacy.metricStatus || {}), images: 'legacy-strict' }, healthCompatibilityWarning: 'v2 snapshot unavailable' };
+        }
+      });
+      return { ...cached.data, policy: sourcePolicySummary(), cache: cached.cache, _fallback: false };
+    } catch (error) {
+      // Worker 不得在 RPC 雙雙失敗時退回全庫掃描（會超過 CPU／subrequest 上限），直接退回靜態備援摘要。
+      const reason = publicReason('catalog health failed', error);
+      const fallback = buildFallbackCatalogCoverage(getFallbackCatalogCopy(), {}, now());
+      return { ...fallback, policy: sourcePolicySummary(), healthFallbackReason: reason, _fallback: true };
+    }
+  }
+
+  // ---- Catalog & Products ----
+  async function loadSecondDbCatalogRows() {
+    if (!db.secondDbConfigured()) return { games: [], series: [] };
+    try {
+      return await withTimeout((async () => {
+        const [games, series] = await Promise.all([
+          db.fetchJson(CATALOG_GAMES_PATH, { db: 'ip2' }),
+          db.fetchAll(CATALOG_SERIES_PATH, 1000, { db: 'ip2', maxPages: 15 })
+        ]);
+        return { games: games || [], series: series || [] };
+      })(), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT');
+    } catch (error) {
+      console.error('second database catalog failed; main catalog only', error?.message || error);
+      return { games: [], series: [] };
+    }
+  }
+
+  async function loadCatalogUncached() {
+    const fallback = getFallbackCatalogCopy();
+    if (!db.supabaseConfigured()) return canonicalizeCatalog({ ...fallback, source: 'catalog.json' });
+    try {
+      const [games, series, cards, second] = await Promise.all([
+        db.fetchJson(CATALOG_GAMES_PATH, { db: 'main' }),
+        db.fetchAll(CATALOG_SERIES_PATH, 1000, { db: 'main', maxPages: 15 }),
+        db.fetchJson('/tcg_cards?select=id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases&order=created_at.asc&limit=250', { db: 'main' }),
+        loadSecondDbCatalogRows()
+      ]);
+      const cardIds = (cards || []).map(c => `"${String(c.id).replaceAll('"', '')}"`).join(',');
+      const [printings, images] = cardIds
+        ? await Promise.all([
+            db.fetchAll(`/tcg_printings?${new URLSearchParams({ select: BROWSE_PRINTING_SELECT, card_id: `in.(${cardIds})` })}`, 1000, { db: 'main', maxPages: 10 }),
+            db.fetchJson(`/card_images?${new URLSearchParams({ select: BROWSE_IMAGE_SELECT, card_id: `in.(${cardIds})`, order: 'is_primary.desc,fetched_at.desc', limit: '1000' })}`, { db: 'main' }).catch(() => [])
+          ])
+        : [[], []];
+      const printingByCard = new Map();
+      const imageByCard = new Map();
+      for (const p of printings || []) {
+        const list = printingByCard.get(p.cardId) || [];
+        list.push(p);
+        printingByCard.set(p.cardId, list);
+      }
+      for (const i of images || []) {
+        const list = imageByCard.get(i.cardId) || [];
+        list.push(i);
+        imageByCard.set(i.cardId, list);
+      }
+      const databaseCards = (cards || []).map(c => {
+        const ps = printingByCard.get(c.id) || [];
+        const imgs = imageByCard.get(c.id) || [];
+        const primary = imgs.find(browseHasUsableImage) || ps.find(browseHasUsableImage);
+        return {
+          ...c,
+          region: ps[0]?.region || null,
+          language: ps[0]?.language || null,
+          imageUrl: primary?.imageUrl || null,
+          imageSource: primary?.source || null,
+          imageRightsStatus: primary?.imageRightsStatus || null,
+          printings: ps,
+          images: imgs
+        };
+      });
+      const merged = {
+        version: 3,
+        updatedAt: new Date(now()).toISOString(),
+        source: 'supabase+catalog.json',
+        games: mergeCatalogRows(fallback.games, [...(games || []), ...second.games]),
+        series: mergeCatalogRows(fallback.series, [...(series || []), ...second.series], { keepFallbackOnly: false }),
+        cards: mergeCatalogRows(fallback.cards, databaseCards, { keepFallbackOnly: false })
+      };
+      return canonicalizeCatalog(merged);
+    } catch (error) {
+      return canonicalizeCatalog({ ...fallback, source: 'catalog.json', fallbackReason: publicReason('catalog load failed; using catalog.json', error) });
+    }
+  }
+
+  function loadCatalogShared() {
+    const refresh = () => {
+      if (!catalogCache.pending) {
+        catalogCache.pending = loadCatalogUncached().then(value => {
+          if (!value.fallbackReason) catalogCache = { value, at: now(), pending: null };
+          else catalogCache.pending = null;
+          return value;
+        }, error => {
+          catalogCache.pending = null;
+          throw error;
+        });
+      }
+      return catalogCache.pending;
+    };
+    if (catalogCache.value) {
+      if (now() - catalogCache.at >= CATALOG_CACHE_TTL_MS) refresh().catch(() => {});
+      return Promise.resolve(catalogCache.value);
+    }
+    return refresh();
+  }
+
+  async function loadStoredProducts() {
+    if (!db.supabaseConfigured()) return [];
+    const rows = await db.fetchAll(
+      '/tcg_products?select=id,game:game_id,seriesId:series_id,officialCode:official_code,productType:product_type,nameZh:name_zh,nameJa:name_ja,name:name_en,nameKo:name_ko,region,language,releaseDate:release_date,imageUrl:image_url,imageKind:image_kind,source,sourceUrl:source_url,metadata&order=release_date.desc.nullslast',
+      1000,
+      { db: 'main', maxPages: 20 }
+    );
+    return rows.map(row => ({
+      ...row,
+      versionLabel: regionLabel(row.region, row.language, row.game),
+      cardsCount: row.metadata?.cardsCount ?? row.metadata?.total ?? null
+    }));
+  }
+
+  async function loadProductSetsUncached() {
+    let storedFailed = false;
+    const stored = await loadStoredProducts().catch(() => { storedFailed = true; return []; });
+    const curated = buildCuratedProducts(getFallbackCatalogCopy());
+    const twSeriesNames = new Map();
+    if (db.supabaseConfigured()) {
+      try {
+        const rows = await db.fetchAll('/tcg_series?select=game:game_id,code:official_code,nameZh:name_zh,source&region=eq.TW&name_zh=not.is.null', 1000, { db: 'main', maxPages: 20 });
+        for (const row of rows) {
+          const key = `${row.game}:${String(row.code || '').toUpperCase()}`;
+          if (!twSeriesNames.has(key) || row.source === 'asia-pokemon-card-official-tw') twSeriesNames.set(key, row.nameZh);
+        }
+      } catch (error) {
+        console.error('tw series names for products failed', error?.message || error);
+      }
+    }
+    const { products, series } = buildProductSetsFromSources({ stored, curated, twSeriesNames, seriesTranslations: SERIES_ZH_ENTRIES });
+    return storedFailed ? { products, series, partial: true } : { products, series };
+  }
+
+  async function loadProductSets() {
+    const refresh = () => {
+      if (!productCache.pending) {
+        productCache.pending = loadProductSetsUncached().then(value => {
+          if (!value.partial) productCache = { value, at: now(), pending: null };
+          else productCache.pending = null;
+          return value;
+        }, error => {
+          productCache.pending = null;
+          throw error;
+        });
+      }
+      return productCache.pending;
+    };
+    if (productCache.value) {
+      if (now() - productCache.at >= PRODUCT_CACHE_TTL_MS) refresh().catch(() => {});
+      return productCache.value;
+    }
+    return refresh();
+  }
+
+  // ---- Reference Prices ----
+  async function referenceRpc(key, name, args) {
+    let timer;
+    return Promise.race([
+      cachedBrowseRows(key, () => db.fetchJson(`/rpc/${name}`, { db: 'main', method: 'POST', body: JSON.stringify(args) }), 10 * 60 * 1000),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('REFERENCE_PRICE_TIMEOUT')), 1500); })
+    ]).finally(() => clearTimeout(timer));
+  }
+
+  async function loadReferencePrices(ids, { prior = false } = {}) {
+    const unique = [...new Set((ids || []).filter(id => typeof id === 'string' && id))].sort();
+    const prices = new Map();
+    if (!unique.length || !db.supabaseConfigured()) return prices;
+    const hash = await sha1Hex(unique.join('|'));
+    try {
+      const [rows, priorRows] = await Promise.all([
+        referenceRpc(`refprice:${hash}`, 'price_reference_best', { p_ids: unique }),
+        prior
+          ? referenceRpc(`refprior:${hash}`, 'price_reference_prior', { p_ids: unique, p_days: 7 }).catch(error => {
+              console.error('reference prior lookup failed; no change shown', error?.message || error);
+              return [];
+            })
+          : []
+      ]);
+      const priorByKey = new Map((Array.isArray(priorRows) ? priorRows : []).map(row => [`${row.card_id}|${row.provider}|${row.variant || ''}`, row]));
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const price = referencePriceFromRow(row);
+        if (price) prices.set(row.card_id, { ...price, ...referenceChange(price, priorByKey.get(`${row.card_id}|${price.source}|${price.variant || ''}`)) });
+      }
+    } catch (error) {
+      prices.failed = true;
+      console.error('reference price lookup failed; cards go out without it', error?.message || error);
+    }
+    return prices;
+  }
+
+  async function attachReferencePrices(cards) {
+    const prices = await loadReferencePrices((cards || []).map(card => card.id), { prior: true });
+    let rates = {};
+    if (prices.size) {
+      try {
+        rates = (await getTwdRates()).data.rates || {};
+      } catch (error) {
+        console.error('reference price fx failed', error?.message || error);
+      }
+    }
+    for (const card of cards || []) {
+      const price = prices.get(card.id);
+      const rate = Number(rates[price?.currency]);
+      if (price) card.referencePrice = rate > 0 ? { ...price, amountTwd: Math.round(price.amount * rate) } : price;
+    }
+    return Object.assign(cards, { referenceFailed: !!prices.failed });
+  }
+
+  async function seriesPriceMap(cards, sort) {
+    if (!BROWSE_PRICE_SORTS.has(sort)) return null;
+    const prices = await loadReferencePrices(cards.map(card => card.id));
+    let usdToEur = null;
+    if ([...prices.values()].some(price => price.currency === 'USD')) {
+      try {
+        const r = (await getTwdRates()).data.rates || {};
+        usdToEur = Number(r.USD) / Number(r.EUR) || null;
+      } catch (error) {
+        console.error('series price fx failed', error?.message || error);
+      }
+    }
+    return new Map([...prices].flatMap(([id, price]) => price.currency === 'EUR' ? [[id, price.amount]] : usdToEur ? [[id, Math.round(price.amount * usdToEur * 100) / 100]] : []));
+  }
+
+  async function seriesReferencePricedCount(game, cards) {
+    if (game !== 'pokemon' || !cards?.length) return null;
+    const prices = await loadReferencePrices(cards.map(card => card.id));
+    return prices.failed ? null : prices.size;
+  }
+
+  // ---- Browse (/api/cards) ----
+  async function loadDatabasePageRelations(table, select, cardIds, targetDb, { legacySelect = null } = {}) {
+    if (!cardIds.length) return [];
+    try {
+      return await db.fetchAll(databaseRelationQuery(table, select, cardIds), 1000, { db: targetDb, maxPages: 10 });
+    } catch (error) {
+      if (!legacySelect) throw error;
+      const rows = await db.fetchAll(databaseRelationQuery(table, legacySelect, cardIds), 1000, { db: targetDb, maxPages: 10 });
+      return table === 'card_images' ? rows.map(row => ({ ...row, imageRightsStatus: 'not-provided' })) : rows;
+    }
+  }
+
+  async function loadDatabaseRelationsForCards(table, select, cardIds, targetDb, { legacySelect = null } = {}) {
+    const supabaseUrl = targetDb === 'ip2' ? (env?.SUPABASE2_URL || '') : (env?.SUPABASE_URL || '');
+    const batches = chunkDatabaseRelationCardIds(table, select, cardIds, legacySelect, {
+      batchSize: RELATION_BATCH_SIZE,
+      supabaseUrl,
+      maxBytes: RELATION_QUERY_MAX_BYTES
+    });
+    if (!batches.length) return [];
+    const rows = [];
+    for (let index = 0; index < batches.length; index += RELATION_QUERY_CONCURRENCY) {
+      const pageRows = await Promise.all(batches.slice(index, index + RELATION_QUERY_CONCURRENCY).map(batch => loadDatabasePageRelations(table, select, batch, targetDb, { legacySelect })));
+      rows.push(...pageRows.flat());
+    }
+    return rows;
+  }
+
+  async function loadDatabaseImages(cardIds = [], targetDb = 'main') {
+    if (!Array.isArray(cardIds) || !cardIds.length) return [];
+    const hash = await sha1Hex(cardIds.join('|'));
+    const key = `images:${targetDb}:${hash}`;
+    return cachedBrowseRows(key, async () => {
+      const legacy = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
+      return loadDatabaseRelationsForCards('card_images', BROWSE_IMAGE_SELECT, cardIds, targetDb, { legacySelect: legacy });
+    });
+  }
+
+  function databaseFastBrowseEligible({ rarity = null, seriesId = null, sort = 'number-asc' } = {}) {
+    return !rarity && !seriesId && (sort === 'number-asc' || sort === 'number-desc');
+  }
+
+  async function loadBrowseRarityMap(game, targetDb, { refresh = false } = {}) {
+    const key = `rarity-values:${targetDb}:${game}`;
+    if (refresh) browseCache.delete(key);
+    const values = await cachedBrowseRows(
+      key,
+      () => db.fetchJson('/rpc/browse_rarity_values', { db: targetDb, method: 'POST', body: JSON.stringify({ p_game: game }), timeoutMs: BROWSE_HEAVY_TIMEOUT_MS }),
+      60 * 60 * 1000
+    );
+    return (Array.isArray(values) ? values : []).map(raw => {
+      const code = rarityCanonicalCode(game, raw);
+      const rank = code ? browseRarityRank(game, code) : Number.MAX_SAFE_INTEGER;
+      return { raw, code, token: code ? rarityCanonicalToken(game, code) : null, rank: rank === Number.MAX_SAFE_INTEGER ? null : rank };
+    });
+  }
+
+  async function browseDatabaseCardsFiltered(game, options = {}, targetDb = 'main') {
+    const safeGame = String(game).replace(/[^a-z0-9-]/gi, '');
+    const take = Math.min(Math.max(Number(options.limit) || 60, 1), BROWSE_PAGE_MAX);
+    const skip = Math.max(Number(options.offset) || 0, 0);
+    const sort = normalizeBrowseSort(options.sort, safeGame);
+    const region = normalizeBrowseRegion(options.region);
+    const priceSort = BROWSE_PRICE_SORTS.has(sort);
+    const token = options.rarity ? rarityCanonicalToken(safeGame, options.rarity) : '';
+    const rpcCall = (name, body) => db.fetchJson(`/rpc/${name}`, { db: targetDb, method: 'POST', body: JSON.stringify(body), timeoutMs: BROWSE_HEAVY_TIMEOUT_MS });
+
+    for (let attempt = 0; ; attempt++) {
+      const rmap = await loadBrowseRarityMap(safeGame, targetDb, { refresh: attempt > 0 });
+      const pageKey = `rpc:browse_cards_filtered:${targetDb}:${safeGame}|${region || ''}|${token}|${sort}|${take}|${skip}`;
+      const facetKey = `rpc:browse_cards_facets:${targetDb}:${safeGame}|${region || ''}`;
+      let page;
+      try {
+        page = await cachedBrowseRows(pageKey, () =>
+          priceSort
+            ? rpcCall('browse_cards_priced', { p_game: safeGame, p_region: region || null, p_token: token || null, p_desc: sort === 'price-desc', p_limit: take, p_offset: skip, p_rmap: rmap })
+            : rpcCall('browse_cards_filtered', { p_game: safeGame, p_region: region || null, p_token: token || null, p_sort: sort, p_limit: take, p_offset: skip, p_rmap: rmap })
+        );
+      } catch (error) {
+        if (!priceSort) throw error;
+        console.error('price-sorted browse failed; using number order', error?.message || error);
+        return browseDatabaseCardsFiltered(game, { ...options, sort: 'number-asc' }, targetDb);
+      }
+      let facets = null;
+      if (now() - (browseFacetFailures.get(facetKey) || 0) >= 60000) {
+        try {
+          facets = await cachedBrowseRows(
+            facetKey,
+            () => rpcCall('browse_cards_facets', { p_game: safeGame, p_region: region || null, p_rmap: rmap }),
+            30 * 60 * 1000
+          );
+          if (!facets || typeof facets.rarity !== 'object') facets = null;
+        } catch (error) {
+          browseFacetFailures.set(facetKey, now());
+          console.error('browse facets failed; page sent without them', error?.message || error);
+        }
+      }
+      if (!page || !Array.isArray(page.cards) || !Number.isFinite(Number(page.total))) throw new Error('BROWSE_FILTERED_BAD_RESPONSE');
+      if ((page.unmapped || facets?.unmapped) && attempt === 0) {
+        browseCache.delete(pageKey);
+        browseCache.delete(facetKey);
+        continue;
+      }
+      const cards = page.cards.slice(0, take);
+      const printingByCard = buildPrintingIndex(cards.flatMap(card => card.printings || []));
+      const imageByCard = new Map(cards.map(card => [card.id, card.images || []]));
+      const data = cards.map(({ printings, images, ...card }) => hydrateBrowseCard(card, printingByCard, imageByCard));
+      const total = Number(page.total);
+      const rarityLabels = {};
+      if (facets) for (const value of Object.keys(facets.rarity)) if (value !== 'unknown') rarityLabels[value] = rarityDisplayLabel(safeGame, value);
+      return {
+        data,
+        total,
+        hasMore: skip + data.length < total,
+        facets: facets ? { rarity: { ...facets.rarity }, region: { ...facets.region }, language: { ...facets.language }, rarityLabels } : null,
+        facetStatus: facets ? 'complete' : 'deferred',
+        limit: take,
+        offset: skip,
+        errors: { printings: null, images: null }
+      };
+    }
+  }
+
+  async function browseDatabasePageFast(game, options = {}, targetDb = 'main') {
+    const safeGame = String(game).replace(/[^a-z0-9-]/gi, '');
+    const take = Math.min(Math.max(Number(options.limit) || 60, 1), BROWSE_PAGE_MAX);
+    const skip = Math.max(Number(options.offset) || 0, 0);
+    const direction = options.sort === 'number-desc' ? 'desc' : 'asc';
+    const region = normalizeBrowseRegion(options.region);
+    let rpc = null;
+    try {
+      rpc = await cachedBrowseRows(`rpc:browse_cards_page:${targetDb}:${safeGame}|${take}|${skip}|${direction}|${region || ''}`, () =>
+        db.fetchJson('/rpc/browse_cards_page', {
+          db: targetDb,
+          method: 'POST',
+          body: JSON.stringify({ p_game: safeGame, p_limit: take, p_offset: skip, p_desc: direction === 'desc', ...(region ? { p_region: region } : {}) })
+        })
+      );
+    } catch (error) {
+      console.error('browse rpc failed; using PostgREST queries', error?.message || error);
+    }
+    if (rpc && Array.isArray(rpc.cards) && Number.isFinite(Number(rpc.total))) {
+      const cards = rpc.cards.slice(0, take);
+      const printingByCard = buildPrintingIndex(cards.flatMap(card => card.printings || []));
+      const imageByCard = new Map(cards.map(card => [card.id, card.images || []]));
+      const data = cards.map(({ printings, images, ...card }) => hydrateBrowseCard(card, printingByCard, imageByCard));
+      const total = Number(rpc.total);
+      return { data, total, hasMore: skip + data.length < total, facets: null, facetStatus: 'deferred', limit: take, offset: skip, errors: { printings: null, images: null } };
+    }
+    if (region) return browseDatabaseCardsFiltered(game, { ...options, rarity: null }, targetDb);
+    const params = new URLSearchParams({ select: BROWSE_CARD_SELECT, game_id: `eq.${safeGame}`, order: `official_card_number.${direction},id.${direction}`, limit: String(take + 1), offset: String(skip) });
+    const page = await db.fetchPage(`/tcg_cards?${params}`, { db: targetDb });
+    const cards = (page.data || []).slice(0, take);
+    const cardIds = cards.map(card => card.id);
+    const fallbackPrintingSelect = 'id,cardId:card_id,seriesId:series_id,region,language,localSetCode:local_set_code,localCardNumber:local_card_number,rarity,imageUrl:image_url,sourceUrl:source_url,releaseDate:release_date,imageRehostRequired:image_rehost_required';
+    const legacyImageSelect = 'id,cardId:card_id,language,source,imageUrl:image_url,sourceUrl:source_url,isPrimary:is_primary,fetchedAt:fetched_at';
+    const [printingResult, imageResult] = await Promise.all([
+      loadDatabasePageRelations('tcg_printings', BROWSE_PRINTING_SELECT, cardIds, targetDb, { legacySelect: fallbackPrintingSelect }).then(rows => ({ rows, status: 'complete' })).catch(error => ({ rows: [], status: 'partial', error })),
+      loadDatabasePageRelations('card_images', BROWSE_IMAGE_SELECT, cardIds, targetDb, { legacySelect: legacyImageSelect }).then(rows => ({ rows, status: 'complete' })).catch(error => ({ rows: [], status: 'unknown', error }))
+    ]);
+    const printingByCard = buildPrintingIndex(printingResult.rows);
+    const imageByCard = new Map();
+    for (const image of imageResult.rows) {
+      const list = imageByCard.get(image.cardId) || [];
+      list.push(image);
+      imageByCard.set(image.cardId, list);
+    }
+    const data = cards.map(card => hydrateBrowseCard(card, printingByCard, imageByCard));
+    const total = page.total ?? skip + data.length + (page.data?.length > take ? 1 : 0);
+    return {
+      data,
+      total,
+      hasMore: skip + data.length < total,
+      facets: null,
+      facetStatus: 'deferred',
+      limit: take,
+      offset: skip,
+      errors: { printings: printingResult.error ? publicReason('browse printings failed', printingResult.error) : null, images: imageResult.status === 'complete' ? null : '圖片資料暫時無法讀取' }
+    };
+  }
+
+  function prepareSeriesBundle(rawRpc) {
+    const printingByCard = buildPrintingIndex(rawRpc.printings);
+    const imageByCard = new Map();
+    for (const image of rawRpc.images) {
+      const list = imageByCard.get(image.cardId) || [];
+      list.push(image);
+      imageByCard.set(image.cardId, list);
+    }
+    const siblingUrls = new Map();
+    for (const image of Array.isArray(rawRpc.siblingImages) ? rawRpc.siblingImages : []) {
+      if (!browseHasUsableImage(image)) continue;
+      const list = siblingUrls.get(image.groupId) || [];
+      if (!list.includes(image.imageUrl)) list.push(image.imageUrl);
+      siblingUrls.set(image.groupId, list);
+    }
+    const defaultFacets = buildBrowseFacets(rawRpc.cards, printingByCard);
+    return { cards: rawRpc.cards, printingByCard, imageByCard, siblingUrls, defaultFacets };
+  }
+
+  async function browseDatabaseSeriesCards(game, options = {}, targetDb = 'main') {
+    const safeGame = String(game).replace(/[^a-z0-9-]/gi, '');
+    const safeSeries = String(options.seriesId || '').replace(/[^a-z0-9:_-]/gi, '');
+    if (!safeSeries) return browseDatabasePageFast(game, options, targetDb);
+    const timings = {};
+    const mark = (name, started) => { timings[name] = Math.round(performance.now() - started); };
+    let bundle = null;
+    let started = performance.now();
+    try {
+      const cached = await cachedBrowseRows(`rpc:browse_series_cards:${targetDb}:${safeGame}|${safeSeries}`, () =>
+        db.fetchJson('/rpc/browse_series_cards', { db: targetDb, method: 'POST', body: JSON.stringify({ p_game: safeGame, p_series: safeSeries }) })
+      );
+      mark('rpc', started);
+      if (cached && Array.isArray(cached.printings) && Array.isArray(cached.cards) && Array.isArray(cached.images)) {
+        if (!cached.cards.length) {
+          return { data: [], total: 0, hasMore: false, facets: { rarity: {}, region: {}, language: {}, rarityLabels: {} }, facetStatus: 'complete', limit: options.limit, offset: options.offset, errors: { printings: null, images: null }, timings };
+        }
+        started = performance.now();
+        bundle = seriesBundleCache.get(cached);
+        if (!bundle) {
+          bundle = prepareSeriesBundle(cached);
+          seriesBundleCache.set(cached, bundle);
+        }
+        mark('prep', started);
+      }
+    } catch (error) {
+      console.error('series browse rpc failed; using PostgREST queries', error?.message || error);
+    }
+    if (bundle) {
+      const [priceByCard, referencePriced] = await Promise.all([
+        seriesPriceMap(bundle.cards, options.sort),
+        seriesReferencePricedCount(safeGame, bundle.cards)
+      ]);
+      started = performance.now();
+      const page = buildBrowsePage(bundle.cards, {
+        ...options,
+        printingByCard: bundle.printingByCard,
+        imageByCard: bundle.imageByCard,
+        facetStatus: 'complete',
+        priceByCard,
+        precomputedFacets: !options.region ? bundle.defaultFacets : null,
+        siblingUrls: bundle.siblingUrls
+      });
+      mark('page', started);
+      return { ...page, referencePriced, errors: { printings: null, images: null }, timings };
+    }
+
+    const printingParams = new URLSearchParams({ select: BROWSE_PRINTING_SELECT, series_id: `eq.${safeSeries}`, order: 'local_card_number.asc,id.asc' });
+    const printings = await db.fetchAll(`/tcg_printings?${printingParams}`, 1000, { db: targetDb, maxPages: 6 });
+    const cardIds = [...new Set((printings || []).map(printing => printing.cardId).filter(Boolean))];
+    if (!cardIds.length) return { data: [], total: 0, hasMore: false, facets: { rarity: {}, region: {}, language: {}, rarityLabels: {} }, facetStatus: 'complete', limit: options.limit, offset: options.offset, errors: { printings: null, images: null } };
+    if (cardIds.length > WORKER_SERIES_FALLBACK_MAX) throw Object.assign(new Error('這個系列太大，無法在備援模式下載入'), { code: 'BROWSE_REFUSED' });
+    const cardBatches = chunkCardIds(cardIds, RELATION_BATCH_SIZE);
+    const cards = [];
+    for (let index = 0; index < cardBatches.length; index += RELATION_QUERY_CONCURRENCY) {
+      const chunkResults = await Promise.all(cardBatches.slice(index, index + RELATION_QUERY_CONCURRENCY).map(batch => {
+        const ids = batch.map(id => `"${String(id).replaceAll('"', '')}"`).join(',');
+        const params = new URLSearchParams({ select: BROWSE_CARD_SELECT, game_id: `eq.${safeGame}`, id: `in.(${ids})`, order: 'official_card_number.asc,id.asc' });
+        return db.fetchAll(`/tcg_cards?${params}`, 1000, { db: targetDb, maxPages: 4 });
+      }));
+      cards.push(...chunkResults.flat());
+    }
+    const imageResult = await loadDatabaseImages(cardIds, targetDb).then(rows => ({ rows, status: 'complete' })).catch(error => ({ rows: [], status: 'unknown', error }));
+    const printingByCard = buildPrintingIndex(printings);
+    const imageByCard = new Map();
+    for (const image of imageResult.rows) {
+      const list = imageByCard.get(image.cardId) || [];
+      list.push(image);
+      imageByCard.set(image.cardId, list);
+    }
+    const result = buildBrowsePage(cards, { ...options, printingByCard, imageByCard, facetStatus: 'complete', priceByCard: await seriesPriceMap(cards, options.sort) });
+    return { ...result, errors: { printings: null, images: imageResult.status === 'complete' ? null : '圖片資料暫時無法讀取' } };
+  }
+
+  async function browseDatabaseCards(game, options) {
+    const targetDb = dbForGame(game);
+    if (options.seriesId) return browseDatabaseSeriesCards(game, options, targetDb);
+    if (databaseFastBrowseEligible(options)) return browseDatabasePageFast(game, options, targetDb);
+    return browseDatabaseCardsFiltered(game, options, targetDb);
+  }
+
+  // ---- Search (/api/search) ----
+  function getSeriesSearchIndex(catalog) {
+    const list = catalog?.series;
+    if (!Array.isArray(list)) return buildSeriesIndex([]);
+    let idx = seriesIndexCache.get(list);
+    if (!idx) {
+      idx = buildSeriesIndex(list);
+      seriesIndexCache.set(list, idx);
+    }
+    return idx;
+  }
+
+  function recallSearch(key) {
+    const hit = searchCache.get(key);
+    if (!hit) return null;
+    searchCache.delete(key);
+    if (now() - hit.at >= SEARCH_CACHE_TTL_MS) return null;
+    searchCache.set(key, hit);
+    return hit.body;
+  }
+
+  function rememberSearch(key, body) {
+    searchCache.delete(key);
+    searchCache.set(key, { at: now(), body });
+    while (searchCache.size > SEARCH_CACHE_MAX) searchCache.delete(searchCache.keys().next().value);
+  }
+
+  async function foldedNameSpans(name) {
+    const folded = foldSearch(name);
+    if (folded.length < 3) return [];
+    try {
+      const ask = targetDb => db.fetchJson('/rpc/search_fold_names', { db: targetDb, method: 'POST', body: JSON.stringify({ p_fold: folded, p_limit: 5 }) });
+      const [rows, secondRows] = await Promise.all([
+        ask('main'),
+        db.secondDbConfigured() ? withTimeout(ask('ip2'), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT').catch(() => []) : []
+      ]);
+      return [...new Set([...(Array.isArray(rows) ? rows : []), ...(Array.isArray(secondRows) ? secondRows : [])]
+        .map(row => foldedSpan(row?.name, folded))
+        .filter(span => span && span.toLowerCase() !== String(name).trim().toLowerCase()))].slice(0, 3);
+    } catch (error) {
+      console.error('search fold retry failed', error?.message || error);
+      return [];
+    }
+  }
+
+  async function suggestCardName(name, region) {
+    const query = String(name || '').trim();
+    if (query.length < 3) return null;
+    try {
+      const ask = targetDb => db.fetchJson('/rpc/search_name_suggestion', { db: targetDb, method: 'POST', body: JSON.stringify({ p_q: query, p_region: region === 'ALL' ? null : region }) });
+      let value = await ask('main');
+      if (typeof value !== 'string' && db.secondDbConfigured()) value = await withTimeout(ask('ip2'), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT').catch(() => null);
+      const text = typeof value === 'string' ? value.trim() : '';
+      return text && text.toLowerCase() !== query.toLowerCase() ? { q: text, reason: '相近的卡名' } : null;
+    } catch (error) {
+      console.error('search name suggestion failed', error?.message || error);
+      return null;
+    }
+  }
+
+  async function searchCatalogDatabaseIn(rawQuery, region = 'ALL', limit = SEARCH_RESULT_LIMIT, { offset = 0, rarities = [], seriesIds = [] } = {}, targetDb = 'main') {
+    const scopedSeries = [...new Set((seriesIds || []).map(id => String(id || '').trim()).filter(Boolean))].slice(0, SEARCH_SERIES_IDS_MAX);
+    const hasSeriesScope = scopedSeries.length > 0;
+    const seriesIdSet = hasSeriesScope ? new Set(scopedSeries) : null;
+    const rarityValues = rarityMatchValues(rarities);
+    const filtered = region !== 'ALL' || rarityValues.length > 0 || hasSeriesScope;
+    if (!db.supabaseConfigured()) return { cards: [], candidateCount: 0, candidateLimit: SEARCH_CANDIDATE_LIMIT, resultLimit: limit, mayHaveMore: false, searched: false };
+    const terms = searchQueryTerms(rawQuery).slice(0, SEARCH_PATTERNS_MAX);
+    if (!terms.length) return { cards: [], candidateCount: 0, candidateLimit: SEARCH_CANDIDATE_LIMIT, resultLimit: limit, mayHaveMore: false, searched: false };
+
+    const plainSelect = 'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata,searchText:search_text';
+    let select = `${plainSelect},printings:tcg_printings!tcg_printings_card_id_fkey(${BROWSE_PRINTING_SELECT})`;
+    const cardsFetch = async params => {
+      try {
+        return await db.fetchJson(`/tcg_cards?${new URLSearchParams({ select, ...params })}`, { db: targetDb });
+      } catch (error) {
+        if (select === plainSelect || searchTimedOut(error)) throw error;
+        console.error('search printing embed failed; retrying without it', error?.message || error);
+        select = plainSelect;
+        return db.fetchJson(`/tcg_cards?${new URLSearchParams({ select, ...params })}`, { db: targetDb });
+      }
+    };
+    const timings = {};
+    const timed = async (name, work) => {
+      const started = performance.now();
+      try { return await work; } finally { timings[name] = Math.round((timings[name] || 0) + performance.now() - started); }
+    };
+    const query = columns => {
+      const filters = [];
+      for (const term of terms) for (const column of columns) filters.push(`${column}.ilike.*${term}*`);
+      return cardsFetch({ or: `(${filters.join(',')})`, limit: String(SEARCH_CANDIDATE_LIMIT) });
+    };
+    const patterns = terms.map(term => `%${term}%`);
+    const rankedCall = body => timed('rpc', db.fetchJson('/rpc/search_cards_ranked', { db: targetDb, method: 'POST', body: JSON.stringify(body) }));
+    const rankedShape = value => Boolean(value && Array.isArray(value.cards) && Number.isFinite(Number(value.matchCount)));
+    const regionArg = region === 'ALL' ? null : region;
+    const needles = terms.map(normalizeSearch);
+    let ranked = null;
+    let paged = false;
+    let viaRanked = false;
+    let rankedHits = false;
+    let rpc = null;
+    let viaRpc = false;
+    let cards = [];
+    let matchedSeries = 0;
+
+    if (hasSeriesScope) {
+      if (now() >= rankedSeriesMissingUntil) {
+        try {
+          ranked = await rankedCall({ p_patterns: patterns, p_needles: terms, p_limit: limit, p_region: regionArg, p_offset: offset, p_rarities: rarityValues.length ? rarityValues : null, p_series_ids: scopedSeries });
+          paged = rankedShape(ranked);
+        } catch (error) {
+          if (searchTimedOut(error)) throw error;
+          if (/PGRST202|SUPABASE_404/.test(error?.message || '')) rankedSeriesMissingUntil = now() + 300000;
+          console.error('search ranked series rpc failed; using PostgREST series intersection', error?.message || error);
+        }
+      }
+      viaRanked = paged;
+      rankedHits = viaRanked && ranked.cards.length > 0;
+      if (viaRanked) {
+        cards = rankedHits ? ranked.cards.map(({ hit, ...card }) => card) : [];
+      } else {
+        const seriesIn = scopedSeries.map(id => `"${String(id).replace(/["\\]/g, '')}"`).join(',');
+        const pParams = { select: 'cardId:card_id,seriesId:series_id,region,rarity,rarityCode:rarity_code,localCardNumber:local_card_number', series_id: `in.(${seriesIn})`, order: 'series_id.asc,local_card_number.asc,card_id.asc', limit: '1000' };
+        if (regionArg) pParams.region = `eq.${regionArg}`;
+        const scopedPrintings = await timed('series-printings', db.fetchJson(`/tcg_printings?${new URLSearchParams(pParams)}`, { db: targetDb })) || [];
+        const matchingCardIds = [...new Set(scopedPrintings.filter(p => printingMatchesRarity(p, rarityValues)).map(p => p.cardId))];
+        if (matchingCardIds.length) {
+          const fetched = [];
+          for (let i = 0; i < matchingCardIds.length && fetched.length < 400; i += 100) {
+            const batch = matchingCardIds.slice(i, i + 100).map(id => `"${String(id).replace(/["\\]/g, '')}"`).join(',');
+            const rows = await timed('series-cards', cardsFetch({ id: `in.(${batch})`, limit: '100' })) || [];
+            fetched.push(...rows);
+          }
+          const seriesOrder = new Map(scopedSeries.map((id, idx) => [id, idx]));
+          cards = fetched.filter(c => {
+            const vals = [c.nameZh, c.nameJa, c.nameEn, c.nameKo, ...(c.aliases || []), c.officialCardNumber, c.searchText, ...(c.printings || []).filter(p => seriesIdSet.has(p.seriesId) && (region === 'ALL' || p.region === region)).map(p => p.localCardNumber)];
+            return vals.some(v => { const nv = normalizeSearch(v); return nv && needles.some(n => nv.includes(n)); });
+          }).sort((a, b) => (seriesOrder.get(a.seriesId) ?? 999) - (seriesOrder.get(b.seriesId) ?? 999));
+        }
+      }
+    } else {
+      if (now() >= rankedPageMissingUntil) {
+        try {
+          ranked = await rankedCall({ p_patterns: patterns, p_needles: terms, p_limit: limit, p_region: regionArg, p_offset: offset, p_rarities: rarityValues.length ? rarityValues : null });
+          paged = rankedShape(ranked);
+        } catch (error) {
+          if (searchTimedOut(error)) throw error;
+          if (/PGRST202|SUPABASE_404/.test(error?.message || '')) rankedPageMissingUntil = now() + 300000;
+          console.error('search ranked page rpc failed; trying the four-argument search_cards_ranked', error?.message || error);
+        }
+      }
+      if (!paged) {
+        ranked = null;
+        try {
+          ranked = await rankedCall({ p_patterns: patterns, p_needles: terms, p_limit: Math.min(offset + limit, SEARCH_PAGE_MAX), p_region: regionArg });
+        } catch (error) {
+          if (searchTimedOut(error)) throw error;
+          console.error('search ranked rpc failed; trying search_cards_with_siblings', error?.message || error);
+        }
+      }
+      viaRanked = Boolean(ranked && Array.isArray(ranked.cards) && Number.isFinite(Number(ranked.matchCount)));
+      rankedHits = viaRanked && ranked.cards.length > 0;
+      if (!viaRanked) {
+        try {
+          rpc = await timed('rpc', db.fetchJson('/rpc/search_cards_with_siblings', { db: targetDb, method: 'POST', body: JSON.stringify({ p_patterns: patterns, p_limit: SEARCH_CANDIDATE_LIMIT }) }));
+        } catch (error) {
+          if (searchTimedOut(error)) throw error;
+          console.error('search rpc failed; using PostgREST queries', error?.message || error);
+        }
+      }
+      viaRpc = Boolean(rpc && Array.isArray(rpc.hits) && Array.isArray(rpc.siblings));
+      cards = rankedHits ? ranked.cards.map(({ hit, ...card }) => card) : viaRanked ? [] : viaRpc && rpc.hits.length ? rpc.hits : viaRpc ? [] : await timed('names', query(['name_zh', 'name_ja', 'name_en', 'name_ko', 'official_card_number']));
+      matchedSeries = rankedHits && ranked.matchedBy === 'series' ? Number(ranked.matchedSeries) || 1 : 0;
+      const rankedMatched = viaRanked && Number(ranked.matchCount) > 0;
+      if (!cards?.length && !(viaRanked && 'matchedBy' in ranked)) cards = await timed('text', query(['search_text']));
+      if (!cards?.length && !rankedMatched && !(viaRanked && 'matchedSeries' in ranked)) {
+        const seriesFilters = [];
+        for (const term of terms) for (const column of ['name_zh', 'name_ja', 'name_en', 'name_ko', 'official_code']) seriesFilters.push(`${column}.ilike.*${term}*`);
+        const series = await db.fetchJson(`/tcg_series?${new URLSearchParams({ select: 'id', or: `(${seriesFilters.join(',')})`, limit: '5' })}`, { db: targetDb });
+        if (series?.length) {
+          matchedSeries = series.length;
+          const sIds = series.map(s => `"${String(s.id).replaceAll('"', '')}"`).join(',');
+          const rows = await db.fetchJson(`/tcg_printings?${new URLSearchParams({ select: 'cardId:card_id', series_id: `in.(${sIds})`, order: 'series_id.asc,local_card_number.asc,card_id.asc', limit: String(SEARCH_CANDIDATE_LIMIT) })}`, { db: targetDb });
+          const cardIds = [...new Set((rows || []).map(r => r.cardId))];
+          if (cardIds.length) {
+            const order = new Map(cardIds.map((id, index) => [id, index]));
+            cards = (await cardsFetch({ id: `in.(${cardIds.map(id => `"${String(id).replaceAll('"', '')}"`).join(',')})`, limit: String(SEARCH_CANDIDATE_LIMIT) }) || [])
+              .sort((a, b) => (order.get(a.id) ?? SEARCH_CANDIDATE_LIMIT) - (order.get(b.id) ?? SEARCH_CANDIDATE_LIMIT));
+          }
+        }
+      }
+    }
+    if (!cards?.length) {
+      return {
+        cards: [],
+        candidateCount: 0,
+        candidateLimit: SEARCH_CANDIDATE_LIMIT,
+        resultLimit: limit,
+        mayHaveMore: false,
+        searched: true,
+        matchedSeries,
+        timings,
+        ...(paged && offset && Number(ranked.groupCount) > 0 ? { total: Number(ranked.groupCount), paged } : {})
+      };
+    }
+    const score = card => {
+      const names = [card.nameZh, card.nameJa, card.nameEn, card.nameKo, ...(card.aliases || []), card.officialCardNumber].map(normalizeSearch).filter(Boolean);
+      if (names.some(name => needles.some(needle => name === needle))) return 0;
+      if (names.some(name => needles.some(needle => name.startsWith(needle)))) return 1;
+      if (names.some(name => needles.some(needle => name.includes(needle)))) return 2;
+      return 3;
+    };
+    if (!matchedSeries && !rankedHits) cards.sort((a, b) => score(a) - score(b) || String(a.nameEn || a.nameZh || '').localeCompare(String(b.nameEn || b.nameZh || '')));
+
+    const candidateCount = rankedHits ? Number(ranked.matchCount) : cards.length;
+    const knownIds = new Set(cards.map(c => c.id));
+    const canonicalIds = [...new Set(cards.map(c => c.canonicalId).filter(Boolean))];
+    if (canonicalIds.length && viaRpc && !matchedSeries && rpc.hits.length) {
+      for (const sibling of rpc.siblings) if (!knownIds.has(sibling.id)) { knownIds.add(sibling.id); cards.push(sibling); }
+    } else if (canonicalIds.length && !rankedHits) {
+      try {
+        const siblings = await timed('siblings', cardsFetch({ canonical_id: `in.(${canonicalIds.map(id => `"${String(id).replaceAll('"', '')}"`).join(',')})`, limit: String(SEARCH_CANDIDATE_LIMIT * 2) }));
+        for (const sibling of siblings || []) if (!knownIds.has(sibling.id)) { knownIds.add(sibling.id); cards.push(sibling); }
+      } catch (error) {
+        console.error('search sibling cards failed', error?.message || error);
+      }
+    }
+    const unembedded = cards.filter(c => !Array.isArray(c.printings));
+    const ids = unembedded.map(c => `"${String(c.id).replaceAll('"', '')}"`).join(',');
+    const printings = [
+      ...cards.flatMap(c => (Array.isArray(c.printings) ? c.printings : [])),
+      ...(ids ? await timed('printings', db.fetchJson(`/tcg_printings?${new URLSearchParams({ select: BROWSE_PRINTING_SELECT, card_id: `in.(${ids})`, limit: '1000' })}`, { db: targetDb })) || [] : [])
+    ];
+    const byCard = new Map();
+    for (const p of printings) {
+      if ((region !== 'ALL' && p.region !== region) || !printingMatchesRarity(p, rarityValues) || (seriesIdSet && !seriesIdSet.has(p.seriesId))) continue;
+      const list = byCard.get(p.cardId) || [];
+      list.push(p);
+      byCard.set(p.cardId, list);
+    }
+    const canonicalCards = canonicalizeCatalog({
+      cards: cards.filter(c => !filtered || byCard.has(c.id)).map(c => ({
+        ...c,
+        printings: byCard.get(c.id) || [],
+        region: byCard.get(c.id)?.[0]?.region || null,
+        language: byCard.get(c.id)?.[0]?.language || null,
+        ...cardImageFields(c, byCard.get(c.id))
+      }))
+    }).cards;
+
+    const siblingUrls = new Map();
+    if (filtered) {
+      for (const c of cards) {
+        const url = byCard.has(c.id) ? null : cardImageFields(c, c.printings).imageUrl;
+        const key = c.canonicalId || c.id;
+        if (url) {
+          const list = siblingUrls.get(key) || [];
+          if (!list.includes(url)) list.push(url);
+          siblingUrls.set(key, list);
+        }
+      }
+    }
+    for (const card of canonicalCards) {
+      const urls = siblingUrls.get(card.canonicalId || card.id);
+      if (urls?.length) card.fallbackImageUrls = urls.slice(0, 3);
+    }
+
+    const page = paged ? canonicalCards.slice(0, limit) : canonicalCards.slice(offset, offset + limit);
+    const total = paged
+      ? Math.max(Number(ranked.groupCount) || 0, offset + page.length)
+      : rankedHits && !rarityValues.length && !hasSeriesScope
+        ? Math.max(Number(ranked.groupCount) || 0, page.length)
+        : canonicalCards.length;
+    return {
+      cards: page.map(card => ({ ...card, matchRank: card.matchRank ?? cardMatchRank(card, needles) })),
+      candidateCount,
+      candidateLimit: SEARCH_CANDIDATE_LIMIT,
+      resultLimit: limit,
+      mayHaveMore: rankedHits ? Number(ranked.groupCount) > limit : candidateCount >= SEARCH_CANDIDATE_LIMIT || canonicalCards.length > limit,
+      searched: true,
+      matchedSeries,
+      timings,
+      total,
+      paged
+    };
+  }
+
+  async function searchCatalogDatabase(rawQuery, region = 'ALL', limit = SEARCH_RESULT_LIMIT, { offset = 0, rarities = [], seriesIds = [] } = {}) {
+    const scopedSeries = [...new Set((seriesIds || []).map(id => String(id || '').trim()).filter(Boolean))].slice(0, SEARCH_SERIES_IDS_MAX);
+    const mergeSecond = (main, second, mainTotal, secondOffset) => {
+      if (!second.cards.length && !second.total) return main;
+      const secondTotal = Number(second.total) || secondOffset + second.cards.length;
+      const timings = { ...main.timings };
+      for (const [name, ms] of Object.entries(second.timings || {})) timings[`second-${name}`] = ms;
+      return {
+        ...main,
+        cards: [...main.cards, ...second.cards],
+        candidateCount: main.candidateCount + second.candidateCount,
+        mayHaveMore: second.mayHaveMore,
+        matchedSeries: main.matchedSeries || second.matchedSeries,
+        timings,
+        total: mainTotal + secondTotal,
+        paged: Boolean(main.cards.length ? main.paged : second.paged)
+      };
+    };
+
+    if (scopedSeries.length) {
+      const mainSeries = scopedSeries.filter(id => dbForId(id) === 'main');
+      const secondSeries = db.secondDbConfigured() ? scopedSeries.filter(id => dbForId(id) === 'ip2') : [];
+      if (!mainSeries.length && !secondSeries.length) {
+        return { cards: [], candidateCount: 0, candidateLimit: SEARCH_CANDIDATE_LIMIT, resultLimit: limit, mayHaveMore: false, searched: true, matchedSeries: 0, timings: {}, total: 0, paged: false };
+      }
+      if (!mainSeries.length) {
+        try {
+          return await withTimeout(searchCatalogDatabaseIn(rawQuery, region, limit, { offset, rarities, seriesIds: secondSeries }, 'ip2'), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT');
+        } catch (error) {
+          console.error('second database scoped search failed', error?.message || error);
+          return { cards: [], candidateCount: 0, candidateLimit: SEARCH_CANDIDATE_LIMIT, resultLimit: limit, mayHaveMore: false, searched: true, matchedSeries: 0, timings: {}, total: 0, paged: false };
+        }
+      }
+      const main = await searchCatalogDatabaseIn(rawQuery, region, limit, { offset, rarities, seriesIds: mainSeries }, 'main');
+      if (!secondSeries.length || !main.searched || main.cards.length >= limit) return main;
+      const mainTotal = main.cards.length ? offset + main.cards.length : Number(main.total) || 0;
+      const secondOffset = Math.max(offset - mainTotal, 0);
+      let second;
+      try {
+        second = await withTimeout(searchCatalogDatabaseIn(rawQuery, region, limit - main.cards.length, { offset: secondOffset, rarities, seriesIds: secondSeries }, 'ip2'), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT');
+      } catch (error) {
+        console.error('second database search failed; main results only', error?.message || error);
+        return main;
+      }
+      return mergeSecond(main, second, mainTotal, secondOffset);
+    }
+
+    const main = await searchCatalogDatabaseIn(rawQuery, region, limit, { offset, rarities }, 'main');
+    if (!db.secondDbConfigured() || !main.searched || main.cards.length >= limit) return main;
+    const mainTotal = main.cards.length ? offset + main.cards.length : Number(main.total) || 0;
+    const secondOffset = Math.max(offset - mainTotal, 0);
+    let second;
+    try {
+      second = await withTimeout(searchCatalogDatabaseIn(rawQuery, region, limit - main.cards.length, { offset: secondOffset, rarities }, 'ip2'), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT');
+    } catch (error) {
+      console.error('second database search failed; main results only', error?.message || error);
+      return main;
+    }
+    return mergeSecond(main, second, mainTotal, secondOffset);
+  }
+
+  // ---- Card Detail & Market ----
+  async function loadCardDetailRpc(cardId, targetDb) {
+    let detail = null;
+    try {
+      detail = await db.fetchJson('/rpc/get_card_detail', { db: targetDb, method: 'POST', body: JSON.stringify({ p_id: String(cardId) }) });
+    } catch (error) {
+      console.error('card detail rpc failed; using PostgREST queries', error?.message || error);
+      return undefined;
+    }
+    if (!detail || !Array.isArray(detail.cards) || !Array.isArray(detail.series) || !Array.isArray(detail.games)) return undefined;
+    if (!detail.cards.length) return null;
+    const hydrated = detail.cards.map(c => ({ ...c, printings: c.printings || [], region: c.printings?.[0]?.region || null, language: c.printings?.[0]?.language || null, ...cardImageFields(c, c.printings) }));
+    const cards = canonicalizeCatalog({ cards: hydrated }).cards;
+    const canonical = cards.find(c => c.id === cardId) || cards[0];
+    return { catalog: { source: 'supabase-full-catalog', cards: [canonical], series: detail.series, games: detail.games.filter(g => g.id === canonical.game) }, card: canonical };
+  }
+
+  async function loadCardFromDatabaseIn(cardId, targetDb) {
+    if (!db.supabaseConfigured()) return null;
+    const viaRpc = await loadCardDetailRpc(cardId, targetDb);
+    if (viaRpc !== undefined) return viaRpc;
+    const safe = String(cardId).replace(/[(),"\\]/g, '');
+    if (!safe) return null;
+    const cardSelect = 'id,canonicalId:canonical_id,game:game_id,seriesId:series_id,officialCardNumber:official_card_number,rarity,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,aliases,metadata';
+    const cards = await db.fetchJson(`/tcg_cards?${new URLSearchParams({ select: cardSelect, or: `(id.eq.${safe},canonical_id.eq.${safe})`, limit: '100' })}`, { db: targetDb });
+    if (!cards?.length) return null;
+    const knownIds = new Set(cards.map(c => c.id));
+    const siblingCanonicals = [...new Set(cards.map(c => c.canonicalId).filter(id => id && id !== safe))];
+    if (siblingCanonicals.length) {
+      const siblings = await db.fetchJson(`/tcg_cards?${new URLSearchParams({ select: cardSelect, canonical_id: `in.(${siblingCanonicals.map(id => `"${String(id).replace(/["\\]/g, '')}"`).join(',')})`, limit: '100' })}`, { db: targetDb });
+      for (const sibling of siblings || []) if (!knownIds.has(sibling.id)) { knownIds.add(sibling.id); cards.push(sibling); }
+    }
+    const ids = cards.map(c => `"${String(c.id).replace(/["\\]/g, '')}"`).join(',');
+    const printings = await db.fetchJson(`/tcg_printings?${new URLSearchParams({ select: BROWSE_PRINTING_SELECT, card_id: `in.(${ids})`, limit: '1000' })}`, { db: targetDb });
+    const byCard = new Map();
+    for (const p of printings || []) {
+      const list = byCard.get(p.cardId) || [];
+      list.push(p);
+      byCard.set(p.cardId, list);
+    }
+    const hydrated = cards.map(c => ({
+      ...c,
+      printings: byCard.get(c.id) || [],
+      region: byCard.get(c.id)?.[0]?.region || null,
+      language: byCard.get(c.id)?.[0]?.language || null,
+      imageUrl: byCard.get(c.id)?.find(p => p.imageUrl && !p.imageRehostRequired)?.imageUrl || null
+    }));
+    const canonicalList = canonicalizeCatalog({ cards: hydrated }).cards;
+    const canonical = canonicalList.find(c => c.id === cardId) || canonicalList[0];
+    const seriesIds = [...new Set((canonical?.printings || []).map(p => p.seriesId).concat(canonical?.seriesId).filter(Boolean))];
+    const series = seriesIds.length
+      ? await db.fetchJson(`/tcg_series?select=id,game:game_id,officialCode:official_code,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko,region,releaseDate:release_date&${new URLSearchParams({ id: `in.(${seriesIds.map(x => `"${String(x).replace(/["\\]/g, '')}"`).join(',')})` })}`, { db: targetDb })
+      : [];
+    const games = await db.fetchJson(`/tcg_games?select=id,nameZh:name_zh,nameJa:name_ja,nameEn:name_en,nameKo:name_ko&id=eq.${encodeURIComponent(canonical.game)}`, { db: targetDb });
+    return { catalog: { source: 'supabase-full-catalog', cards: [canonical], series: series || [], games: games || [] }, card: canonical };
+  }
+
+  async function loadCardFromDatabase(cardId) {
+    const targetDb = dbForId(cardId);
+    if (targetDb === 'ip2' && !db.secondDbConfigured()) return null;
+    return loadCardFromDatabaseIn(cardId, targetDb);
+  }
+
+  function loadCardCached(cardId) {
+    const hit = cardCache.get(cardId);
+    if (hit && (hit.pending || now() - hit.at < CARD_CACHE_TTL_MS)) return hit.promise;
+    const entry = { pending: true, at: 0, promise: null };
+    entry.promise = loadCardFromDatabase(cardId).then(value => {
+      entry.pending = false;
+      entry.at = now();
+      if (!value) cardCache.delete(cardId);
+      return value;
+    }, error => {
+      cardCache.delete(cardId);
+      throw error;
+    });
+    cardCache.set(cardId, entry);
+    while (cardCache.size > CARD_CACHE_MAX) cardCache.delete(cardCache.keys().next().value);
+    return entry.promise;
+  }
+
+  async function getCard(cardId) {
+    if (!db.supabaseConfigured()) {
+      const localCatalog = canonicalizeCatalog({ ...getFallbackCatalogCopy(), source: 'catalog.json' });
+      const match = localCatalog.cards.find(c => c.id === cardId)
+        || localCatalog.cards.find(c => c.physicalCardIds?.includes(cardId) || c.printings?.some(p => p.cardId === cardId || p.id === cardId));
+      return { catalog: localCatalog, card: match || null };
+    }
+    if (catalogCache.value) {
+      const shared = catalogCache.value;
+      const match = shared.cards.find(c => c.id === cardId)
+        || shared.cards.find(c => c.physicalCardIds?.includes(cardId) || c.printings?.some(p => p.cardId === cardId || p.id === cardId));
+      if (match) return { catalog: shared, card: match };
+    }
+    const found = await loadCardCached(cardId).catch(() => null);
+    return found || { catalog: { source: 'supabase-full-catalog', series: [], games: [] }, card: null };
+  }
+
+  async function yuyuteiMarket(card, fx) {
+    if (!db.supabaseConfigured() || !card.officialCardNumber) return [];
+    const params = new URLSearchParams({
+      select: 'cardName:card_name,cardNumber:card_number,rarity,price,currency,cardUrl:card_url,imageUrl:image_url,setCode:set_code,setName:set_name,scrapedAt:scraped_at',
+      card_number: `eq.${card.officialCardNumber}`,
+      order: 'scraped_at.desc',
+      limit: '10'
+    });
+    const rows = await db.fetchJson(`/jp_buyback_prices?${params}`, { db: 'main' });
+    return (rows || []).map(r => ({
+      ...withTwd(normalizeMarketRecord({
+        provider: 'yuyutei',
+        market: 'JP',
+        cardId: card.id,
+        cardName: r.cardName,
+        cardNumber: r.cardNumber,
+        setCode: r.setCode,
+        rarity: r.rarity,
+        language: 'ja-JP',
+        priceType: 'buyback',
+        amount: r.price,
+        currency: r.currency,
+        imageUrl: r.imageUrl,
+        sourceUrl: r.cardUrl,
+        observedAt: r.scrapedAt
+      }), fx),
+      region: 'JP'
+    }));
+  }
+
+  async function loadVersionSnapshots(card, fx) {
+    const ids = priceHistoryCardIds(card, card?.id);
+    if (card?.game !== 'pokemon' || ids.length < 2 || !db.supabaseConfigured()) return [];
+    try {
+      const rows = await db.fetchJson(`/price_snapshots?${new URLSearchParams(referenceQueryParams(ids))}`, { db: 'main' });
+      return buildReferencePrices(rows, ids, { fx, amountToTwd, now: now() }).cards;
+    } catch (error) {
+      console.error('version price snapshots failed', error?.message || error);
+      return [];
+    }
+  }
+
+  async function unifiedMarket(card) {
+    const { data: fx } = await getTwdRates();
+    const snapshotsPending = loadVersionSnapshots(card, fx);
+    const tasks = sourceDisplayDenied('yuyutei') ? [] : [['yuyutei', () => yuyuteiMarket(card, fx)]];
+    if (card.game === 'yugioh') {
+      tasks.push(['ygoprodeck', async () => {
+        const wanted = String(card.nameEn || '').trim().toLowerCase();
+        if (!wanted) return [];
+        const found = await searchYgo(card.nameEn, { limit: 20 });
+        const match = found.find(x => String(x.name).trim().toLowerCase() === wanted);
+        if (!match) return [];
+        const printings = card.printings?.length
+          ? card.printings.map(p => ({ number: p.localCardNumber, rarity: p.rarity, region: p.region }))
+          : [{ number: card.officialCardNumber, rarity: card.rarity, region: card.region }];
+        const seen = new Set();
+        const rows = [];
+        for (const p of printings) {
+          if (p.region === 'JP') continue;
+          const set = matchYgoprodeckSet(match.sets, p);
+          const key = set && `${set.setCode}|${set.rarity}`;
+          if (!set || seen.has(key)) continue;
+          seen.add(key);
+          rows.push({
+            ...withTwd(normalizeMarketRecord({
+              provider: 'ygoprodeck',
+              market: 'YGOPRODeck',
+              cardId: card.id,
+              providerCardId: match.providerCardId,
+              cardName: match.name,
+              cardNumber: set.setCode,
+              setCode: set.setCode,
+              rarity: set.rarity,
+              priceType: 'market',
+              amount: set.setPriceUsd,
+              currency: 'USD',
+              observedAt: match.observedAt
+            }), fx),
+            region: p.region || null,
+            scope: 'printing-set-price'
+          });
+        }
+        if (!rows.length) {
+          rows.notice = '沒有這個版本的 YGOPRODeck set price；改顯示跨版本最低參考價。';
+          if (printings.some(p => p.region !== 'JP')) {
+            for (const price of crossVersionLowestPrices(match)) {
+              rows.push({
+                ...withTwd(normalizeMarketRecord({
+                  provider: 'ygoprodeck',
+                  market: price.market,
+                  cardId: card.id,
+                  providerCardId: match.providerCardId,
+                  cardName: match.name,
+                  priceType: 'market',
+                  amount: price.amount,
+                  currency: price.currency,
+                  observedAt: match.observedAt
+                }), fx),
+                scope: 'cross-version-lowest'
+              });
+            }
+          }
+        }
+        return rows;
+      }]);
+    }
+    if (card.game === 'pokemon' && catalogCollectionAllowed('tcgdexPricing')) {
+      const lookups = tcgdexLookups(card);
+      if (lookups.length) {
+        tasks.push(['tcgdex', async () => (
+          await Promise.all(lookups.map(x => (x.language === 'en' ? fetchTcgdexEn : fetchTcgdexJa)(x.id, { expectedName: x.expectedName }).then(rows => rows.map(r => ({ ...r, en: x.language === 'en' })))))
+        ).flat().map(r => ({
+          ...withTwd(normalizeMarketRecord({
+            provider: r.provider,
+            market: r.market,
+            cardId: card.id,
+            providerCardId: r.providerCardId,
+            cardName: r.en ? (card.nameEn || card.nameZh) : (card.nameJa || card.nameZh),
+            cardNumber: card.officialCardNumber,
+            language: r.en ? 'en-US' : 'ja-JP',
+            priceType: r.priceType,
+            amount: r.amount,
+            currency: r.currency,
+            sourceUrl: r.sourceUrl,
+            observedAt: r.observedAt
+          }), fx),
+          variant: r.variant,
+          idProduct: r.idProduct,
+          avg7: r.avg7,
+          avg30: r.avg30,
+          region: r.en ? 'US' : 'JP'
+        }))]);
+      }
+    }
+    const settled = await Promise.all(tasks.map(async ([source, run]) => {
+      try {
+        return { source, status: 'ok', data: await run() };
+      } catch (error) {
+        return { source, status: 'unavailable', error: publicReason(`market source ${source} failed`, error) };
+      }
+    }));
+    const records = settled.flatMap(x => (Array.isArray(x.data) ? x.data : []));
+    let sharedPriceCardIds = [];
+    if (card.game === 'pokemon' && db.supabaseConfigured() && records.some(r => r.market === 'Cardmarket')) {
+      try {
+        sharedPriceCardIds = await db.fetchJson('/rpc/price_products_shared', { db: 'main', method: 'POST', body: JSON.stringify({ p_ids: priceHistoryCardIds(card, card.id) }) }) || [];
+      } catch (error) {
+        console.error('price shared lookup failed', error?.message || error);
+      }
+    }
+    return {
+      records,
+      versions: buildVersionPrices(card, records, await snapshotsPending, { fx }),
+      sources: settled.map(x => ({ source: x.source, status: x.status, error: x.error || null, notice: x.data?.notice || null })),
+      meta: {
+        sharedPriceCardIds,
+        exchangeRates: fx,
+        priceTypes: { listing: '最低掛牌價', buyback: '店家買取／回收', market: '平台參考價', sale: '可驗證成交', user_report: '使用者回報（未驗證）' },
+        warning: '不同價格性質不混算中位價；目前沒有可靠成交來源時，不顯示成交價或交易量。'
+      }
+    };
+  }
+
+  function unifiedMarketCached(card) {
+    const hit = marketCache.get(card.id);
+    if (hit && (hit.pending || now() - hit.at < MARKET_CACHE_MS)) return hit.promise;
+    const entry = { pending: true, at: 0, promise: null };
+    entry.promise = unifiedMarket(card).then(value => {
+      entry.pending = false;
+      entry.at = now();
+      if (value.sources.some(source => source.status !== 'ok')) marketCache.delete(card.id);
+      return value;
+    }, error => {
+      marketCache.delete(card.id);
+      throw error;
+    });
+    marketCache.set(card.id, entry);
+    while (marketCache.size > MARKET_CACHE_MAX) marketCache.delete(marketCache.keys().next().value);
+    return entry.promise;
+  }
+
+  // ---- Events / Movers / Hot Cards / Trends ----
+  function loadCatalogEvents(current = now()) {
+    if (catalogEventsCache && current - catalogEventsCache.at < 3600000) return catalogEventsCache.promise;
+    const day = offset => new Date(current + offset * 86400000).toISOString().slice(0, 10);
+    const entry = { at: current, promise: null };
+    const path = `/tcg_series?select=game_id,region,release_date,name_zh,name_ja,name_en,source_url&release_date=gte.${day(-PRICE_HISTORY_DAYS)}&release_date=lte.${day(60)}&order=release_date.asc&limit=500`;
+    const second = db.secondDbConfigured()
+      ? withTimeout(db.fetchJson(path, { db: 'ip2' }), db.secondDbTimeoutMs, 'SECOND_DB_TIMEOUT').catch(error => { console.error('second database events failed', error?.message || error); return []; })
+      : Promise.resolve([]);
+    entry.promise = Promise.all([db.fetchJson(path, { db: 'main' }), second])
+      .then(([main, extra]) => catalogEventsFrom([...(main || []), ...(extra || [])]))
+      .catch(error => { catalogEventsCache = null; throw error; });
+    catalogEventsCache = entry;
+    return entry.promise;
+  }
+
+  async function marketEventsResponse(game, current = now()) {
+    const from = new Date(current - HOME_EVENTS_PAST_DAYS * 86400000).toISOString().slice(0, 10);
+    const catalog = await loadCatalogEvents(current).catch(error => { console.error('catalog events unavailable', error?.message || error); return []; });
+    const events = mergeMarketEvents(marketEventsFor(null, from, current), catalog.filter(event => event.date >= from)).filter(event => !game || event.game === game);
+    return { data: events, meta: { note: '發售日與官方消息，不代表會影響價格。', generatedAt: new Date(current).toISOString() } };
+  }
+
+  async function loadPriceMovers() {
+    const snapshot = await priceMoversCache.get(async () => {
+      const [rows, fxResult] = await Promise.all([
+        db.fetchJson('/rpc/price_movers', { db: 'main', method: 'POST', body: JSON.stringify({ p_days: PRICE_MOVERS_DAYS, p_min: PRICE_MOVERS_MIN_EUR, p_limit: 20 }), timeoutMs: BROWSE_HEAVY_TIMEOUT_MS }),
+        getTwdRates()
+      ]);
+      return buildPriceMovers(rows, fxResult.data, now());
+    });
+    return snapshot.data;
+  }
+
+  async function loadHotCards() {
+    const snapshot = await hotCardsCache.get(async () =>
+      buildHotCardsPayload(
+        await db.fetchJson('/rpc/card_hot_top', { db: 'main', method: 'POST', body: JSON.stringify({ p_days: HOT_CARDS_DAYS, p_limit: HOT_CARDS_LIMIT, p_min: HOT_CARDS_MIN_OPENS }) }),
+        now()
+      )
+    );
+    return snapshot.data;
+  }
+
+  async function loadTrendSnapshot() {
+    if (trendCache.data && trendCache.expiresAt > now()) return trendCache.data;
+    if (trendCache.promise) return trendCache.promise;
+    const promise = Promise.resolve().then(async () => {
+      const params = new URLSearchParams({
+        select: 'game,setCode:set_code,setName:set_name,cardCode:card_code,cardNumber:card_number,rarity,cardName:card_name,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,updatedAt:scraped_at,source',
+        source: 'eq.yuyutei',
+        previous_price: 'not.is.null',
+        order: 'scraped_at.desc'
+      });
+      const rows = await db.fetchAll(`/jp_buyback_prices?${params}`, 1000, { db: 'main', maxPages: 20 });
+      const valid = (rows || []).filter(row => Number(row.previousPrice) > 0 && Number.isFinite(Number(row.price)) && Number(row.price) > Number(row.previousPrice));
+      const byCard = new Map();
+      for (const row of valid) {
+        const key = trendRecordKey(row);
+        if (!key) continue;
+        const existing = byCard.get(key);
+        const rowTime = Date.parse(String(row.updatedAt || ''));
+        const existingTime = Date.parse(String(existing?.updatedAt || ''));
+        if (!existing || (!Number.isFinite(existingTime) && Number.isFinite(rowTime)) || rowTime > existingTime) byCard.set(key, row);
+      }
+      const data = [...byCard.values()].map(row => ({
+        ...row,
+        price: Number(row.price),
+        previousPrice: Number(row.previousPrice),
+        changePercent: Math.round((Number(row.price) - Number(row.previousPrice)) / Number(row.previousPrice) * 10000) / 100,
+        priceType: 'buyback'
+      })).sort((a, b) => b.changePercent - a.changePercent || String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+      return {
+        status: 'complete',
+        data,
+        rowsScanned: (rows || []).length,
+        validRows: valid.length,
+        uniqueCards: data.length,
+        coveredGames: uniqueValues((rows || []).map(row => row.game)),
+        coveredSets: uniqueValues((rows || []).map(row => row.setCode || row.setName)),
+        observationWindow: trendObservationWindow(rows || [])
+      };
+    }).then(data => {
+      trendCache.data = data;
+      trendCache.expiresAt = now() + TREND_CACHE_MS;
+      return data;
+    }).finally(() => {
+      trendCache.promise = null;
+    });
+    trendCache.promise = promise;
+    return promise;
+  }
+
+  // ---- Endpoint Dispatch ----
+  async function handle(apiKey, request, url, ctx) {
+    try {
+      switch (apiKey) {
+        case 'catalog-health': {
+          if (request.method === 'HEAD') {
+            return new Response(null, { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
+          }
+          const cacheReq = edgeKeyRequest(url, 'health');
+          const cached = await matchEdgeCache(cacheReq, 'no-store');
+          if (cached) return cached;
+          const [healthRaw, storage, secondStorage] = await Promise.all([loadCatalogHealth(), loadStorageReport('main'), loadStorageReport('ip2')]);
+          const { _fallback, ...health } = healthRaw;
+          const res = jsonRes(200, {
+            data: {
+              ...health,
+              storage: { status: storageStatus(storage) },
+              ...(db.secondDbConfigured() ? { secondStorage: { status: storageStatus(secondStorage) } } : {})
+            }
+          });
+          if (!_fallback && db.supabaseConfigured()) writeEdgeCache(ctx, cacheReq, res, 'public, max-age=300');
+          return res;
+        }
+
+        case 'providers':
+          return jsonRes(200, { data: providerStatusFromEnv(env) });
+
+        case 'catalog-sources':
+          return jsonRes(200, { data: publicSourcePolicies(), meta: sourcePolicySummary() });
+
+        case 'catalog-sync-status': {
+          if (!db.supabaseConfigured()) return jsonRes(200, { data: [] });
+          try {
+            const data = await db.fetchJson('/catalog_sync_runs?select=provider,scope,status,rowsSeen:rows_seen,rowsWritten:rows_written,startedAt:started_at,finishedAt:finished_at&provider=not.in.(price-snapshot,price-archive)&order=started_at.desc&limit=12', { db: 'main' });
+            return jsonRes(200, { data });
+          } catch (error) {
+            console.error('sync status failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
+        case 'trends': {
+          const requestedLimit = Number(url.searchParams.get('limit'));
+          const limit = Math.min(Math.max(Number.isFinite(requestedLimit) && requestedLimit > 0 ? requestedLimit : 12, 1), 50);
+          if (sourceDisplayDenied('yuyutei')) {
+            return jsonRes(200, {
+              data: [],
+              meta: { ...trendMeta({ status: 'unavailable', rowsScanned: 0, validRows: 0, uniqueCards: 0, observationWindow: trendObservationWindow([]) }, now()), disabled: true, disabledReason: 'source-denied' }
+            });
+          }
+          if (!db.supabaseConfigured()) {
+            return jsonRes(200, { data: [], meta: trendMeta({ status: 'unavailable', rowsScanned: 0, validRows: 0, uniqueCards: 0, observationWindow: trendObservationWindow([]) }, now()) });
+          }
+          try {
+            const snapshot = await loadTrendSnapshot();
+            return jsonRes(200, { data: snapshot.data.slice(0, limit), meta: trendMeta(snapshot, now()) });
+          } catch (error) {
+            console.error('trend snapshot failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取', meta: trendMeta({ status: 'unavailable', rowsScanned: 0, validRows: 0, uniqueCards: 0, observationWindow: trendObservationWindow([]) }, now()) });
+          }
+        }
+
+        case 'buyback-prices': {
+          if (!db.supabaseConfigured()) return jsonRes(200, { data: [], meta: { source: 'yuyutei-buyback', warning: '沒有資料庫時不建立示範價格' } });
+          const requestedGame = (url.searchParams.get('game') || '').trim().toLowerCase();
+          const providerGame = sourceDisplayDenied('yuyutei') ? null : { pokemon: 'poc' }[requestedGame];
+          if (!providerGame) return jsonRes(200, { data: [], meta: { source: 'yuyutei-buyback', warning: '此 IP 目前沒有可驗證的買取價格來源，因此不顯示價格。' } });
+          try {
+            const rows = await cachedBrowseRows(
+              `buyback:${providerGame}`,
+              () => db.fetchJson(`/jp_buyback_prices?select=game,cardNumber:card_number,rarity,cardName:card_name,price,currency,cardUrl:card_url,updatedAt:scraped_at&source=eq.yuyutei&game=eq.${providerGame}&order=scraped_at.desc&limit=500`, { db: 'main' })
+            );
+            const seen = new Set();
+            const data = [];
+            for (const row of rows || []) {
+              const key = String(row.cardNumber || '').trim().toUpperCase();
+              if (!key || seen.has(key) || !Number.isFinite(Number(row.price))) continue;
+              seen.add(key);
+              data.push({ ...row, price: Number(row.price), priceType: 'buyback' });
+            }
+            return jsonRes(200, { data, meta: { source: 'yuyutei-buyback', label: '遊々亭日版買取價', warning: '只用於篩選與排序有可靠對應的卡片；不是成交價、掛牌價或市場均價。' } });
+          } catch (error) {
+            console.error('buyback prices failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
+        case 'images-onepiece': {
+          const target = onePieceImageTarget(url.searchParams.get('url'));
+          if (!target) return jsonRes(400, { error: '不支援的圖片來源' });
+          const cacheReq = edgeKeyRequest(url, 'onepiece-img');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          let response;
+          try {
+            response = await fetchFn(target.href, {
+              redirect: 'error',
+              headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8', 'User-Agent': 'CardScope/1.0' },
+              signal: AbortSignal.timeout(20000)
+            });
+          } catch {
+            return jsonRes(502, { error: '航海王官方圖片暫時無法讀取' });
+          }
+          const contentType = String(response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+          const length = Number(response.headers.get('content-length') || 0);
+          if (!response.ok || !ONEPIECE_IMAGE_MIMES.has(contentType) || (length && length > ONEPIECE_IMAGE_MAX_BYTES)) {
+            response.body?.cancel?.().catch(() => {});
+            return jsonRes(502, { error: '航海王官方圖片回應無效' });
+          }
+          let body;
+          try {
+            body = await readBoundedBytes(response, ONEPIECE_IMAGE_MAX_BYTES);
+          } catch (error) {
+            return jsonRes(502, { error: error?.code === 'IMAGE_TOO_LARGE' ? '航海王官方圖片超過大小限制' : '航海王官方圖片暫時無法讀取' });
+          }
+          const res = new Response(body, {
+            status: 200,
+            headers: {
+              'Content-Type': contentType,
+              'Content-Length': String(body.byteLength),
+              'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+              'X-Content-Type-Options': 'nosniff'
+            }
+          });
+          writeEdgeCache(ctx, cacheReq, res);
+          return res;
+        }
+
+        case 'catalog': {
+          const cacheReq = edgeKeyRequest(url, 'catalog');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          const data = await loadCatalogShared();
+          const res = jsonRes(200, { data, meta: { source: data.source, fallbackReason: data.fallbackReason || null } }, data.fallbackReason ? {} : SHORT_CACHE);
+          if (!data.fallbackReason) writeEdgeCache(ctx, cacheReq, res);
+          return res;
+        }
+
+        case 'products': {
+          const cacheReq = edgeKeyRequest(url, 'products');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          try {
+            const catalog = await loadProductSets();
+            const res = jsonRes(200, { data: catalog.products, series: catalog.series, meta: productFeedMeta(catalog) }, SHORT_CACHE);
+            if (!catalog.partial) writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          } catch (error) {
+            console.error('products failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
+        case 'cards': {
+          const requestedGame = (url.searchParams.get('game') || '').trim();
+          const allowedGames = db.catalogGameIds();
+          if (requestedGame && dbForGame(requestedGame) === 'ip2' && !db.secondDbConfigured()) return jsonRes(503, { error: '此遊戲資料暫時無法連線' });
+          if (requestedGame && !allowedGames.has(requestedGame)) return jsonRes(400, { error: '請選擇單一卡牌遊戲' });
+          const region = normalizeBrowseRegion(url.searchParams.get('region'));
+          const rarity = normalizeBrowseRarity(url.searchParams.get('rarity'));
+          const sort = normalizeBrowseSort(url.searchParams.get('sort'), requestedGame);
+          const seriesId = (url.searchParams.get('series') || '').trim() || null;
+          const limit = Math.min(Math.max(Number(url.searchParams.get('limit')) || 60, 1), BROWSE_PAGE_MAX);
+          const offset = Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset'))) || 0, 0), 200000);
+          if (region && !CATALOG_REGION_IDS.has(region)) return jsonRes(400, { error: '不支援的版本地區' });
+          if (seriesId && seriesId.length > 128) return jsonRes(400, { error: '系列代碼過長' });
+          if (rarity && !BROWSE_RARITY_FORMAT.test(rarity)) return jsonRes(400, { error: '稀有度格式不正確' });
+
+          const cacheReq = edgeKeyRequest(url, 'cards');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+
+          if (requestedGame && db.supabaseConfigured()) {
+            try {
+              const started = performance.now();
+              const page = await browseDatabaseCards(requestedGame, { region, rarity, seriesId, sort, limit, offset });
+              const priced = requestedGame === 'pokemon' ? await attachReferencePrices(page.data) : null;
+              const serverTiming = Object.entries(page.timings || {})
+                .map(([name, dur]) => `${name};dur=${dur}`)
+                .concat(`total;dur=${Math.round(performance.now() - started)}`)
+                .join(', ');
+              const res = jsonRes(
+                200,
+                {
+                  data: page.data,
+                  meta: {
+                    source: 'supabase-full-catalog',
+                    game: requestedGame,
+                    seriesId,
+                    region,
+                    rarity,
+                    sort,
+                    limit,
+                    offset,
+                    hasMore: page.hasMore,
+                    total: page.total,
+                    facets: page.facets,
+                    facetStatus: page.facetStatus,
+                    errors: page.errors,
+                    referencePriced: page.referencePriced ?? null
+                  }
+                },
+                { ...SHORT_CACHE, 'Server-Timing': serverTiming }
+              );
+              if (!priced?.referenceFailed) writeEdgeCache(ctx, cacheReq, res);
+              return res;
+            } catch (error) {
+              if (error?.code === 'BROWSE_BUSY') return jsonRes(503, { error: error.message }, { 'Retry-After': '5' });
+              if (error?.code === 'BROWSE_REFUSED') return jsonRes(502, { error: error.message });
+              console.error('browse failed', error?.message || error);
+              return jsonRes(502, { error: '資料暫時無法讀取' });
+            }
+          }
+
+          const catalog = await loadCatalogShared();
+          const gameCards = requestedGame ? catalog.cards.filter(card => card.game === requestedGame) : catalog.cards;
+          const printingByCard = buildPrintingIndex(gameCards.flatMap(card => (card.printings || []).map(printing => ({ ...printing, cardId: printing.cardId || card.id }))));
+          const page = buildBrowsePage(gameCards, { region, rarity, seriesId, sort, limit, offset, printingByCard });
+          const res = jsonRes(
+            200,
+            {
+              data: page.data,
+              meta: {
+                source: catalog.source,
+                game: requestedGame || null,
+                seriesId,
+                region,
+                rarity,
+                sort,
+                limit,
+                offset,
+                hasMore: page.hasMore,
+                total: page.total,
+                facets: page.facets,
+                facetStatus: page.facetStatus
+              }
+            },
+            catalog.fallbackReason ? {} : SHORT_CACHE
+          );
+          if (!catalog.fallbackReason) writeEdgeCache(ctx, cacheReq, res);
+          return res;
+        }
+
+        case 'search': {
+          const rawRegion = (url.searchParams.get('region') || '').trim().toUpperCase();
+          const regionParam = !rawRegion || rawRegion === 'ALL' ? 'ALL' : rawRegion;
+          if (regionParam !== 'ALL' && !CATALOG_REGION_IDS.has(regionParam)) return jsonRes(400, { error: '不支援的版本地區' });
+          const cacheReq = edgeKeyRequest(url, 'search');
+          const edgeHit = await matchEdgeCache(cacheReq);
+          if (edgeHit) return edgeHit;
+
+          const searchStarted = performance.now();
+          const rawQ = (url.searchParams.get('q') || '').trim().slice(0, 100);
+          const catalog = await loadCatalogShared();
+          const catalogDoneAt = performance.now();
+          const seriesIndex = getSeriesSearchIndex(catalog);
+          const parsedQuery = parseSearchQuery(rawQ, { seriesIndex, region: regionParam });
+          const region = regionParam !== 'ALL' ? regionParam : (parsedQuery.region || 'ALL');
+          const rarities = parsedQuery.rarities;
+          const rarityValues = rarityMatchValues(rarities);
+          const rawSeries = parsedQuery.series || null;
+          const hasSeriesFeature = Boolean(rawSeries && Array.isArray(rawSeries.allIds) && rawSeries.allIds.length > 0);
+          const searchName = rawSeries && !hasSeriesFeature ? (rarities.length || parsedQuery.region ? `${rawSeries.label} ${parsedQuery.name}` : rawQ) : parsedQuery.name;
+          let activeSeries = hasSeriesFeature ? { kind: rawSeries.kind, label: rawSeries.label, terms: rawSeries.terms } : null;
+          const seriesIds = hasSeriesFeature ? (rawSeries.ids || []).slice(0, SEARCH_SERIES_IDS_MAX) : [];
+          const allSeriesIds = hasSeriesFeature ? (rawSeries.allIds || []).slice(0, SEARCH_SERIES_IDS_MAX) : [];
+          const limit = Math.min(Math.max(Math.floor(Number(url.searchParams.get('limit'))) || SEARCH_RESULT_LIMIT, 1), SEARCH_PAGE_MAX);
+          const offset = Math.min(Math.max(Math.floor(Number(url.searchParams.get('offset'))) || 0, 0), 200000);
+          const buildParsed = (seriesMeta = activeSeries) => ({
+            q: rawQ,
+            name: searchName,
+            rarities,
+            region: regionParam !== 'ALL' ? null : parsedQuery.region,
+            ...(parsedQuery.rarityOnly ? { rarityOnly: true } : {}),
+            ...(seriesMeta ? { series: seriesMeta } : {})
+          });
+          let parsed = buildParsed();
+          const suggestOnly = url.searchParams.get('fields') === 'suggest';
+          const slimBody = body => (suggestOnly ? suggestBody(body, region) : body);
+          const seriesCacheKey = hasSeriesFeature ? `${rawSeries.label}:${seriesIds.join(',')}` : '';
+          const searchCacheKey = [regionParam, rawQ, searchName, rarities.join(','), parsed.region || '', seriesCacheKey, offset, limit].join('|');
+          const cachedSearch = recallSearch(searchCacheKey);
+          if (cachedSearch) {
+            return jsonRes(200, slimBody(cachedSearch), { ...SHORT_CACHE, 'Server-Timing': 'cache;desc="hit", total;dur=0' });
+          }
+
+          if (parsedQuery.rarityOnly) {
+            let example = rarityOnlyExample(rarities);
+            if (example) {
+              const check = parseSearchQuery(example);
+              try {
+                if (!db.supabaseConfigured() || !(await searchCatalogDatabase(check.name, 'ALL', 1, { rarities: check.rarities })).cards.length) example = null;
+              } catch {
+                example = null;
+              }
+            }
+            const body = {
+              data: [],
+              meta: {
+                source: 'rarity-only',
+                architecture: 'canonical-card-with-printings',
+                match: 'rarity-only',
+                resultLimit: limit,
+                mayHaveMore: false,
+                queryTerms: [],
+                total: 0,
+                offset,
+                limit,
+                hasMore: false,
+                parsed,
+                suggestion: example ? { q: example, reason: '稀有度請搭配卡名一起搜' } : null,
+                hint: { kind: 'rarity-only', message: '只輸入稀有度無法判斷是哪一張卡，請加上卡名' + (example ? `，例如「${example}」` : '') + '。' }
+              }
+            };
+            rememberSearch(searchCacheKey, body);
+            const res = jsonRes(200, body, SHORT_CACHE);
+            writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          }
+
+          if (!/[\p{L}\p{N}]/u.test(normalizeSearch(searchName))) {
+            return jsonRes(200, {
+              data: [],
+              meta: {
+                source: 'symbols-only',
+                architecture: 'canonical-card-with-printings',
+                match: 'symbols-only',
+                resultLimit: limit,
+                mayHaveMore: false,
+                queryTerms: [],
+                total: 0,
+                offset,
+                limit,
+                hasMore: false,
+                parsed,
+                suggestion: null,
+                hint: { kind: 'symbols-only', message: '請輸入卡名、卡號或系列名稱。' }
+              }
+            }, SHORT_CACHE);
+          }
+
+          const q = normalizeSearch(searchName);
+          const emptyScopedDb = { cards: [], candidateCount: 0, candidateLimit: SEARCH_CANDIDATE_LIMIT, resultLimit: limit, mayHaveMore: false, searched: true, matchedSeries: 0, timings: {}, total: 0, paged: true };
+          const databasePending = db.supabaseConfigured()
+            ? (hasSeriesFeature && !seriesIds.length
+                ? Promise.resolve({ value: emptyScopedDb, doneAt: performance.now() })
+                : searchCatalogDatabase(searchName, region, limit, { offset, rarities, seriesIds }).then(value => ({ value, doneAt: performance.now() }), error => ({ error })))
+            : null;
+
+          const seriesById = new Map(catalog.series.map(s => [s.id, s]));
+          const nameValues = c => [c.nameZh, c.nameJa, c.nameEn, c.nameKo, ...(c.aliases || []), ...(c.printings || []).flatMap(p => [p.nameZh, p.nameJa, p.nameEn, p.nameKo])];
+          const localNeedles = searchQueryTerms(searchName).map(normalizeSearch);
+          const localSeriesSet = hasSeriesFeature ? new Set(seriesIds) : null;
+          const found = catalog.cards.filter(c => {
+            if (region !== 'ALL' && c.region !== region && !c.printings?.some(p => p.region === region)) return false;
+            const series = [seriesById.get(c.seriesId) || {}, ...(c.printings || []).map(p => seriesById.get(p.seriesId) || {})];
+            if (localSeriesSet) {
+              const inSeries = localSeriesSet.has(c.seriesId) || Boolean(c.printings?.some(p => localSeriesSet.has(p.seriesId) && (region === 'ALL' || p.region === region)));
+              if (!inSeries) return false;
+              const cardVals = [...nameValues(c), c.officialCardNumber, ...(c.printings || []).filter(p => localSeriesSet.has(p.seriesId) && (region === 'ALL' || p.region === region)).map(p => p.localCardNumber)];
+              return !localNeedles.length || cardVals.some(v => { const nv = normalizeSearch(v); return nv && localNeedles.some(n => nv.includes(n)); });
+            }
+            const values = [...nameValues(c), c.officialCardNumber, ...(c.printings || []).flatMap(p => [p.localSetCode, p.localCardNumber]), ...series.flatMap(s => [s.officialCode, s.nameZh, s.nameJa, s.nameEn, s.nameKo, ...(s.aliases || [])])];
+            return !q || values.some(v => normalizeSearch(v).includes(q));
+          });
+          const exact = q ? found.filter(c => nameValues(c).some(v => { const nv = normalizeSearch(v); return nv === q || (localSeriesSet && localNeedles.includes(nv)); })) : [];
+          const narrowing = rarityValues.length > 0 || (regionParam === 'ALL' && Boolean(parsedQuery.region)) || Boolean(localSeriesSet);
+          const narrowLocal = list => narrowing ? list.map(c => ({ ...c, printings: (c.printings || []).filter(p => (region === 'ALL' || p.region === region) && printingMatchesRarity(p, rarityValues) && (!localSeriesSet || localSeriesSet.has(p.seriesId))) })).filter(c => c.printings.length) : list;
+          const withRank = list => list.map(c => (c.matchRank === undefined ? { ...c, matchRank: cardMatchRank(c, localNeedles) } : c));
+          const pageLocal = list => { const items = narrowLocal(list); return { data: withRank(items.slice(offset, offset + limit)), total: items.length }; };
+          const gameHint = gameHintFor(searchName);
+          const withPaging = (meta, data, total, suggestion = null) => {
+            const hasMore = offset + data.length < total;
+            const seriesTerms = activeSeries?.terms?.length ? activeSeries.terms : null;
+            return {
+              data,
+              meta: {
+                ...meta,
+                resultLimit: limit,
+                mayHaveMore: hasMore,
+                queryTerms: searchQueryTerms(searchName),
+                total,
+                offset,
+                limit,
+                hasMore,
+                parsed,
+                suggestion,
+                ...(seriesTerms ? { seriesTerms } : {}),
+                ...(gameHint ? { gameHint: gameHint.gameId, franchiseHint: gameHint.franchiseId } : {})
+              }
+            };
+          };
+          const settle = dbRes => {
+            if (dbRes.cards.length > 0 && dbRes.paged) return { data: dbRes.cards, total: dbRes.total };
+            if (dbRes.paged && dbRes.total > 0) return { data: [], total: dbRes.total };
+            if (dbRes.cards.length > 0) {
+              const merged = offset ? dbRes.cards : narrowLocal(canonicalizeCatalog({ ...catalog, cards: [...exact, ...dbRes.cards] }).cards);
+              return { data: withRank(merged.slice(0, limit)), total: Math.max(dbRes.total || 0, offset + merged.length) };
+            }
+            const page = pageLocal(exact.length ? exact : found);
+            return { data: page.data, total: page.total };
+          };
+
+          if (!db.supabaseConfigured()) {
+            const page = pageLocal(exact.length ? exact : found);
+            return jsonRes(200, slimBody(withPaging({ source: catalog.source, architecture: 'canonical-card-with-printings', match: exact.length ? 'exact-name' : 'substring' }, page.data, page.total)));
+          }
+
+          try {
+            const settled = await databasePending;
+            if (settled.error) throw settled.error;
+            let database = settled.value;
+            let hasDatabaseMatches = database.cards.length > 0;
+            let { data, total } = settle(database);
+            let matchedAs = null;
+            let retryMs = 0;
+
+            if (total === 0 && (!hasSeriesFeature || seriesIds.length > 0)) {
+              const retryStarted = performance.now();
+              const spans = await foldedNameSpans(searchName);
+              if (spans.length) {
+                try {
+                  const again = await searchCatalogDatabase(spans, region, limit, { offset, rarities, seriesIds });
+                  if (again.cards.length) { database = again; hasDatabaseMatches = true; ({ data, total } = settle(again)); matchedAs = spans; }
+                } catch (error) {
+                  console.error('search fold retry failed', error?.message || error);
+                }
+              }
+              retryMs = performance.now() - retryStarted;
+            }
+
+            if (total === 0 && hasSeriesFeature && rawQ && rawQ !== searchName) {
+              const retryStarted = performance.now();
+              try {
+                const rawAgain = await searchCatalogDatabase(rawQ, region, limit, { offset, rarities });
+                if (rawAgain.cards.length) { database = rawAgain; hasDatabaseMatches = true; activeSeries = null; parsed = buildParsed(null); ({ data, total } = settle(rawAgain)); }
+              } catch (error) {
+                console.error('search raw fallback failed', error?.message || error);
+              }
+              retryMs += performance.now() - retryStarted;
+            }
+
+            const timing = Object.entries({ catalog: catalogDoneAt - searchStarted, db: settled.doneAt - searchStarted, ...database.timings, ...(retryMs ? { retry: retryMs } : {}), total: performance.now() - searchStarted })
+              .map(([name, ms]) => `${name};dur=${Math.round(ms)}`).join(', ');
+            let suggestion = null;
+            let otherRegion = null;
+            if (total === 0 && regionParam !== 'ALL') {
+              try {
+                const all = await searchCatalogDatabase(searchName, 'ALL', 1, { rarities, seriesIds: hasSeriesFeature ? allSeriesIds : [] });
+                const hit = all.cards[0];
+                const other = hit && (hit.region !== region ? hit.region : hit.printings?.find(p => p.region && p.region !== region)?.region);
+                if (other) otherRegion = { region: other };
+              } catch (error) {
+                console.error('search region hint failed', error?.message || error);
+              }
+            }
+            if (total === 0 && (hasSeriesFeature || rarities.length || parsed.region)) {
+              try {
+                const nameOnly = await searchCatalogDatabase(searchName, regionParam, 1);
+                if (nameOnly.cards.length) suggestion = { q: searchName, reason: hasSeriesFeature ? 'name-only-series' : 'name-only' };
+              } catch (error) {
+                console.error('search suggestion failed', error?.message || error);
+              }
+            } else if (total === 0) {
+              const trimmed = searchName.replace(/\s+[A-Za-z]$/, '');
+              if (trimmed && trimmed !== searchName) {
+                try {
+                  const base = await searchCatalogDatabase(trimmed, regionParam, 1);
+                  if (base.cards.length) suggestion = { q: trimmed, reason: '去掉結尾的單一字母' };
+                } catch (error) {
+                  console.error('search suggestion failed', error?.message || error);
+                }
+              }
+            }
+            if (total === 0 && !suggestion && !gameHint && !otherRegion) suggestion = await suggestCardName(searchName, region);
+
+            const searchBody = withPaging({
+              ...(matchedAs ? { matchedAs } : {}),
+              ...(otherRegion ? { otherRegion } : {}),
+              source: hasDatabaseMatches ? 'supabase-search' : catalog.source,
+              architecture: 'canonical-card-with-printings',
+              match: hasDatabaseMatches
+                ? (database.matchedSeries ? 'database-series' : activeSeries ? 'database-series+name' : exact.length ? 'exact-name+database-substring' : 'database-substring')
+                : (exact.length ? 'exact-name' : 'substring'),
+              databaseSearch: database.searched ? 'available' : 'skipped',
+              searchScope: hasDatabaseMatches ? 'bounded-database-query' : 'loaded-catalog-only',
+              candidateCount: database.candidateCount,
+              candidateLimit: database.candidateLimit
+            }, data, total, suggestion);
+            rememberSearch(searchCacheKey, searchBody);
+            const res = jsonRes(200, slimBody(searchBody), { ...SHORT_CACHE, 'Server-Timing': timing });
+            writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          } catch (error) {
+            console.error('catalog search failed', error?.message || error);
+            const page = pageLocal(exact.length ? exact : found);
+            return jsonRes(200, slimBody(withPaging({
+              source: catalog.source,
+              architecture: 'canonical-card-with-printings',
+              match: exact.length ? 'exact-name' : 'substring',
+              databaseSearch: 'unavailable',
+              searchScope: 'loaded-catalog-only'
+            }, page.data, page.total)));
+          }
+        }
+
+        case 'card-market': {
+          const tail = decodeURIComponent(url.pathname.slice(11));
+          const id = tail.slice(0, -7);
+          if (!validCardId(id)) return jsonRes(400, { error: '卡片 ID 格式不正確' });
+          const cacheReq = edgeKeyRequest(url, 'market');
+          const cached = await matchEdgeCache(cacheReq, 'no-store');
+          if (cached) return cached;
+          const { card } = await getCard(id);
+          if (!card) return jsonRes(404, { error: '找不到這張卡' });
+          const market = await unifiedMarketCached(card);
+          const allOk = market.sources.every(source => source.status === 'ok');
+          const res = jsonRes(200, { data: market });
+          if (allOk) writeEdgeCache(ctx, cacheReq, res, 'public, max-age=300');
+          return res;
+        }
+
+        case 'card-detail': {
+          const tail = decodeURIComponent(url.pathname.slice(11));
+          if (!validCardId(tail)) return jsonRes(400, { error: '卡片 ID 格式不正確' });
+          // 不包含 ?open=1 在 edgeCache 鍵裡：?open=1 寫入統計移到第 2D 步 Durable Object。
+          const cacheUrl = new URL(url.href);
+          cacheUrl.searchParams.delete('open');
+          const cacheReq = edgeKeyRequest(cacheUrl, 'card-detail');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          const { catalog, card } = await getCard(tail);
+          if (!card) return jsonRes(404, { error: '找不到這張卡' });
+          const series = catalog.series.find(s => s.id === card.seriesId) || null;
+          const game = catalog.games.find(g => g.id === card.game) || null;
+          const data = { ...card, series, game };
+          const priced = card.game === 'pokemon' ? await attachReferencePrices([data]) : null;
+          if (priced?.referenceFailed) data.referencePriceFailed = true;
+          const cacheable = !catalog.fallbackReason && !priced?.referenceFailed;
+          const res = jsonRes(
+            200,
+            { data, meta: { source: catalog.source, imagePolicy: '優先使用已保存或來源允許的圖片；不長期 hotlink YGOPRODeck 圖片。' } },
+            cacheable ? SHORT_CACHE : {}
+          );
+          if (cacheable) writeEdgeCache(ctx, cacheReq, res);
+          return res;
+        }
+
+        case 'exchange-rates': {
+          const cacheReq = edgeKeyRequest(url, 'fx');
+          const cached = await matchEdgeCache(cacheReq, 'no-store');
+          if (cached) return cached;
+          const { data, cacheable } = await getTwdRates();
+          const res = jsonRes(200, { data });
+          if (cacheable) writeEdgeCache(ctx, cacheReq, res, 'public, max-age=3600');
+          return res;
+        }
+
+        case 'hot-cards': {
+          if (!db.supabaseConfigured()) return jsonRes(200, { data: [], meta: { unavailable: 'not-configured' } });
+          const cacheReq = edgeKeyRequest(url, 'hot');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          try {
+            const payload = await loadHotCards();
+            const res = jsonRes(200, payload, SHORT_CACHE);
+            writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          } catch (error) {
+            console.error('hot cards failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
+        case 'market-events': {
+          if (!db.supabaseConfigured()) return jsonRes(200, { data: [], meta: { unavailable: 'not-configured' } });
+          const cacheReq = edgeKeyRequest(url, 'events');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          const payload = await marketEventsResponse(url.searchParams.get('game') || null);
+          const res = jsonRes(200, payload, SHORT_CACHE);
+          writeEdgeCache(ctx, cacheReq, res);
+          return res;
+        }
+
+        case 'price-movers': {
+          if (!db.supabaseConfigured()) return jsonRes(200, { data: { up: [], down: [] }, meta: { unavailable: 'not-configured' } });
+          const cacheReq = edgeKeyRequest(url, 'movers');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          try {
+            const payload = await loadPriceMovers();
+            const res = jsonRes(200, payload, SHORT_CACHE);
+            writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          } catch (error) {
+            console.error('price movers failed', error?.message || error);
+            return jsonRes(502, { error: '資料暫時無法讀取' });
+          }
+        }
+
+        case 'prices-reference': {
+          let body;
+          try {
+            body = await readJsonBodyBounded(request, REFERENCE_BODY_MAX_BYTES);
+          } catch (error) {
+            return jsonRes(error.message === 'BODY_TOO_LARGE' ? 413 : 400, {
+              error: error.message === 'BODY_TOO_LARGE' ? '請求內容過大' : 'JSON 格式錯誤'
+            });
+          }
+          const v = validateReferenceRequest(body);
+          if (v.error) return jsonRes(400, { error: v.error });
+          if (!db.supabaseConfigured()) return jsonRes(503, { error: '尚未設定資料庫' });
+          try {
+            const [rows, fxResult] = await Promise.all([
+              db.fetchJson(`/price_snapshots?${new URLSearchParams(referenceQueryParams(v.ids))}`, { db: 'main' }),
+              getTwdRates()
+            ]);
+            return jsonRes(200, { data: buildReferencePrices(rows, v.ids, { fx: fxResult.data, amountToTwd, now: now() }) });
+          } catch {
+            return jsonRes(502, { error: '參考價查詢失敗' });
+          }
+        }
+
+        case 'reports-meta':
+          return jsonRes(200, { data: { platforms: ALLOWED_PLATFORMS, currencies: ALLOWED_CURRENCIES, maxPrice: MAX_PRICE } });
+
+        case 'reports': {
+          const cardId = (url.searchParams.get('cardId') || '').trim();
+          const cardName = (url.searchParams.get('cardName') || '').trim();
+          const game = (url.searchParams.get('game') || '').trim();
+          const limit = Math.min(100, Math.max(1, Math.floor(Number(url.searchParams.get('limit'))) || 20));
+          if (!cardId && !cardName) return jsonRes(400, { error: '請提供 cardId 或 cardName' });
+          if (cardId && (cardId.length > 128 || /[\u0000-\u001f\u007f]/.test(cardId))) return jsonRes(400, { error: 'cardId 格式不正確' });
+          if (cardName && (cardName.length > 100 || /[\u0000-\u001f\u007f]/.test(cardName))) return jsonRes(400, { error: 'cardName 長度或格式不正確' });
+          if (game && !db.catalogGameIds().has(game)) return jsonRes(400, { error: '不支援的卡牌遊戲' });
+          if (!db.supabaseConfigured()) {
+            return jsonRes(200, { data: { reports: [], stats: [], total: 0 }, meta: { status: 'unavailable', reason: '尚未設定使用者回報資料庫' } });
+          }
+          const base = new URLSearchParams();
+          if (cardId) base.set('card_id', `eq.${cardId}`);
+          else base.set('card_name', `ilike.*${cardName.replace(/[\\%_]/g, '\\$&').replace(/\*/g, '_')}*`);
+          if (game) base.set('game', `eq.${game}`);
+          try {
+            const statsParams = new URLSearchParams(base);
+            statsParams.set('select', 'currency,price');
+            statsParams.set('limit', '1000');
+            const recentParams = new URLSearchParams(base);
+            recentParams.set('select', PUBLIC_REPORT_SELECT);
+            recentParams.set('order', 'traded_at.desc');
+            recentParams.set('limit', String(limit));
+            const [all, recent] = await Promise.all([
+              db.fetchJson(`/reports?${statsParams}`, { db: 'main' }),
+              db.fetchJson(`/reports?${recentParams}`, { db: 'main' })
+            ]);
+            return jsonRes(200, { data: { reports: recent, stats: buildStats(all), total: all.length } });
+          } catch {
+            return jsonRes(502, { error: '資料庫查詢失敗' });
+          }
+        }
+
+        default:
+          return jsonRes(404, { error: 'Not found' });
+      }
+    } catch (error) {
+      console.error('worker api error', apiKey, error?.message || error);
+      return jsonRes(500, { error: '伺服器暫時發生錯誤' });
+    }
+  }
+
+  return { handle };
+}

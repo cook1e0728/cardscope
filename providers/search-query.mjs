@@ -2,7 +2,7 @@
 // 把「30th皮卡丘」「30周年皮卡丘 SAR 日版」「M6a皮卡丘」「151 夢幻ex」「桃歹郎ex SAR」「魯夫 台版」
 // 拆成「系列／周年特徵＋卡名／卡號＋稀有度＋版本」，不寫死單一卡片。
 // 稀有度只認 data/rarity-rankings.json 的代碼與別名，系列代碼／名稱由 catalog.series 動態索引驗證。
-import { readFileSync } from 'node:fs';
+import TAXONOMY from '../data/game-taxonomy.json' with { type: 'json' };
 import { RARITY_RANKINGS } from './normalize.mjs';
 
 const VERSION_WORDS = new Map([['日版', 'JP'], ['日文版', 'JP'], ['JP', 'JP'], ['台版', 'TW'], ['TW', 'TW'], ['美版', 'US'], ['US', 'US'], ['韓版', 'KR'], ['KR', 'KR']]);
@@ -477,7 +477,6 @@ export function foldedSpan(name, folded) {
 }
 
 // 搜尋詞等於某個 IP（作品）名稱或別名時回傳它所屬的遊戲，給前端導向該遊戲；只收 status=active 且有範圍的項目（planned 沒有資料）。
-const TAXONOMY = JSON.parse(readFileSync(new URL('../data/game-taxonomy.json', import.meta.url), 'utf8'));
 const hintIndex = new Map();
 for (const system of TAXONOMY.systems || []) {
   if (system.id === 'all' || system.status !== 'active') continue;

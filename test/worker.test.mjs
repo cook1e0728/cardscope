@@ -19,7 +19,15 @@ import {
   seoRequestTarget
 } from '../providers/http-security.mjs';
 import { prepareWorkerAssets } from '../scripts/prepare-worker-assets.mjs';
-import { DEFAULT_ORIGIN_URL, createWorkerHandler, resolveOriginUrl, shouldProxyToOrigin } from '../worker/index.mjs';
+import {
+  DEFAULT_MIGRATED_APIS,
+  DEFAULT_ORIGIN_URL,
+  createWorkerHandler,
+  matchMigratedApi,
+  resolveMigratedApis,
+  resolveOriginUrl,
+  shouldProxyToOrigin
+} from '../worker/index.mjs';
 
 const ROOT = new URL('..', import.meta.url);
 const FETCH_BAD_PORTS = new Set([
@@ -365,12 +373,21 @@ test('worker serves static SEO pages, ETag 304, HEAD, robots.txt, security.txt a
   }
 });
 
-test('worker proxies /api/*, /sitemap*, and DB-backed SEO pages to origin with x-client-ip and ORIGIN_VERIFY_SECRET', async () => {
+test('worker proxies remaining /api/*, /sitemap*, and DB-backed SEO pages to origin with x-client-ip and ORIGIN_VERIFY_SECRET', async () => {
   assert.equal(resolveOriginUrl(undefined), DEFAULT_ORIGIN_URL);
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'https://origin.example.test/ignored/path' }), 'https://origin.example.test');
   assert.equal(resolveOriginUrl({ ORIGIN_URL: 'javascript:alert(1)' }), DEFAULT_ORIGIN_URL);
 
-  assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET'), 'api');
+  assert.equal(DEFAULT_MIGRATED_APIS.length, 20);
+  assert.equal(matchMigratedApi(new URL('https://x/api/search?q=a'), 'GET'), 'search');
+  assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1/price-history'), 'GET'), null, 'price-history 留代理 Render');
+  assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1/market'), 'GET'), 'card-market');
+  assert.equal(matchMigratedApi(new URL('https://x/api/cards/c1'), 'GET'), 'card-detail');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET'), null, '第 2 步預設由 Worker 直接處理');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET', { MIGRATED_API: '-search' }), 'api', '單支切回代理');
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/search?q=a'), 'GET', { MIGRATED_API: 'none' }), 'api');
+  assert.equal(resolveMigratedApis({ MIGRATED_API: '-cards,-/api/search' }).has('cards'), false);
+  assert.equal(shouldProxyToOrigin(new URL('https://x/api/pack-prizes'), 'GET'), 'api');
   assert.equal(shouldProxyToOrigin(new URL('https://x/api/sync/push'), 'POST'), 'api');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemap.xml'), 'GET'), 'sitemap');
   assert.equal(shouldProxyToOrigin(new URL('https://x/sitemaps/cards-1.xml'), 'HEAD'), 'sitemap');
@@ -432,9 +449,20 @@ test('worker proxies /api/*, /sitemap*, and DB-backed SEO pages to origin with x
   assert.equal(seen[0].headers.get('authorization'), 'Bearer test-jwt');
   assert.equal(seen[0].bodyText, '{"items":[],"revision":0}');
 
-  const headHealth = await handler.fetch(new Request('https://cardseektcg.com/api/catalog/health', { method: 'HEAD' }), env);
-  assert.equal(headHealth.status, 201);
-  assert.equal(await headHealth.text(), '');
+  // 未開 rollback 時 HEAD /api/catalog/health 由 Worker 直接回答（不打原點）
+  const localHeadHealth = await handler.fetch(new Request('https://cardseektcg.com/api/catalog/health', { method: 'HEAD' }), env);
+  assert.equal(localHeadHealth.status, 200);
+  assert.equal(await localHeadHealth.text(), '');
+  assert.equal(seen.length, 1);
+
+  // 開啟回滾時切回代理原點
+  const rollbackHead = await handler.fetch(
+    new Request('https://cardseektcg.com/api/catalog/health', { method: 'HEAD' }),
+    { ...env, MIGRATED_API: '-catalog-health' }
+  );
+  assert.equal(rollbackHead.status, 201);
+  assert.equal(await rollbackHead.text(), '');
+  assert.equal(seen[1].target, 'https://render-origin.example.test/api/catalog/health');
 
   await handler.fetch(new Request('https://cardseektcg.com/sitemaps/pages.xml'), env);
   assert.equal(seen[2].target, 'https://render-origin.example.test/sitemaps/pages.xml');
@@ -459,13 +487,17 @@ test('worker degrades gracefully when origin is unreachable (502 API, 503 sitema
     }
   };
 
-  const apiFail = await handler.fetch(new Request('https://cardseektcg.com/api/search?q=pikachu'), env);
+  const apiFail = await handler.fetch(new Request('https://cardseektcg.com/api/pack-prizes'), env);
   assert.equal(apiFail.status, 502);
   assert.equal(apiFail.headers.get('cache-control'), 'no-store');
   assert.equal(apiFail.headers.get('content-security-policy'), API_CSP);
   const apiText = await apiFail.text();
   assert.deepEqual(JSON.parse(apiText), { error: '資料暫時無法讀取' });
   assert.equal(apiText.includes('SECRET_INTERNAL'), false);
+
+  const rolledBackFail = await handler.fetch(new Request('https://cardseektcg.com/api/search?q=pikachu'), { ...env, MIGRATED_API: 'none' });
+  assert.equal(rolledBackFail.status, 502);
+  assert.deepEqual(await rolledBackFail.json(), { error: '資料暫時無法讀取' });
 
   const sitemapFail = await handler.fetch(new Request('https://cardseektcg.com/sitemap.xml'), env);
   assert.equal(sitemapFail.status, 503);
@@ -491,5 +523,9 @@ test('wrangler.toml targets worker/index.mjs, worker/public, default origin, and
   assert.doesNotMatch(toml, /^directory\s*=\s*"\.\/?"/m, 'never serve repo root as static assets');
   assert.match(toml, /^ORIGIN_URL\s*=\s*"https:\/\/cardscope\.onrender\.com"/m);
   assert.match(toml, /^PUBLIC_BASE_URL\s*=\s*"https:\/\/cardseektcg\.com"/m);
-  assert.doesNotMatch(toml, /SERVICE_KEY|SCRAPE_SECRET|EBAY_CLIENT_SECRET|POKEMONPRICETRACKER/i);
+  const nonCommentLines = toml.replace(/#.*$/gm, '');
+  assert.doesNotMatch(nonCommentLines, /SERVICE_KEY|SCRAPE_SECRET|EBAY_CLIENT_SECRET|POKEMONPRICETRACKER|ORIGIN_VERIFY_SECRET/i);
+  for (const secretName of ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'SUPABASE2_URL', 'SUPABASE2_SERVICE_KEY']) {
+    assert.match(toml, new RegExp(`^#.*\\b${secretName}\\b`, 'm'), `應在註解列出 ${secretName} 名稱`);
+  }
 });

@@ -1,62 +1,71 @@
 const CACHE_MS = 24 * 60 * 60 * 1000;
-const cache = new Map();
-const nativeFetch = globalThis.fetch;
-const fetch = (url, options={}) => nativeFetch(url,{...options,signal:options.signal||AbortSignal.timeout(12000)});
 
 function numeric(value){
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-export async function searchYgoProDeck(query,{limit=10}={}){
-  const q=String(query||'').trim();
-  if(q.length<2) throw new Error('YGOPRODECK_QUERY_TOO_SHORT');
-  const key=`${q.toLowerCase()}:${limit}`;
-  const hit=cache.get(key);
-  if(hit&&hit.expiresAt>Date.now()) return hit.data;
+/** 建立獨立的 YGOPRODeck 查詢器，支援注入 fetchFn 與 now 以便 Worker 與測試隔離快取。 */
+export function createYgoProDeckClient({fetchFn=null,now=Date.now,cacheMs=CACHE_MS}={}){
+  const cache=new Map();
+  return async function searchYgoProDeckWithClient(query,{limit=10,fetchFn:callFetch=null}={}){
+    const q=String(query||'').trim();
+    if(q.length<2) throw new Error('YGOPRODECK_QUERY_TOO_SHORT');
+    const key=`${q.toLowerCase()}:${limit}`;
+    const hit=cache.get(key);
+    if(hit&&hit.expiresAt>now()) return hit.data;
 
-  const url=new URL('https://db.ygoprodeck.com/api/v7/cardinfo.php');
-  url.searchParams.set('fname',q);
-  url.searchParams.set('num',String(Math.min(Math.max(Number(limit)||10,1),20)));
-  url.searchParams.set('offset','0');
-  const response=await fetch(url,{headers:{Accept:'application/json','User-Agent':'CardScope/1.0'}});
-  if(!response.ok){
-    if(response.status===400) return [];
-    throw new Error(`YGOPRODECK_${response.status}`);
-  }
-  const body=await response.json();
-  const data=(body.data||[]).map(card=>({
-    provider:'ygoprodeck',
-    game:'yugioh',
-    providerCardId:String(card.id),
-    name:card.name,
-    type:card.type||null,
-    race:card.race||null,
-    attribute:card.attribute||null,
-    archetype:card.archetype||null,
-    description:card.desc||null,
-    imageUrl:card.card_images?.[0]?.image_url_small||null,
-    imageRehostRequired:true,
-    sets:(card.card_sets||[]).map(set=>({
-      setName:set.set_name||null,
-      setCode:set.set_code||null,
-      rarity:set.set_rarity||null,
-      rarityCode:set.set_rarity_code||null,
-      setPriceUsd:numeric(set.set_price)
-    })),
-    referencePrices:{
-      cardmarketEur:numeric(card.card_prices?.[0]?.cardmarket_price),
-      tcgplayerUsd:numeric(card.card_prices?.[0]?.tcgplayer_price),
-      ebayUsd:numeric(card.card_prices?.[0]?.ebay_price),
-      amazonUsd:numeric(card.card_prices?.[0]?.amazon_price),
-      coolstuffincUsd:numeric(card.card_prices?.[0]?.coolstuffinc_price)
-    },
-    priceType:'market',
-    priceNote:'referencePrices 是 YGOPRODeck 彙整各平台的跨版本最低價，不能當成某個版本的價格；單一版本只能用 sets[].setPriceUsd（來源平台未標示）。不是 CardSeek 驗證成交價。',
-    observedAt:new Date().toISOString()
-  }));
-  cache.set(key,{data,expiresAt:Date.now()+CACHE_MS});
-  return data;
+    const url=new URL('https://db.ygoprodeck.com/api/v7/cardinfo.php');
+    url.searchParams.set('fname',q);
+    url.searchParams.set('num',String(Math.min(Math.max(Number(limit)||10,1),20)));
+    url.searchParams.set('offset','0');
+    const impl=callFetch||fetchFn||globalThis.fetch;
+    const response=await impl(url,{headers:{Accept:'application/json','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(12000)});
+    if(!response.ok){
+      if(response.status===400) return [];
+      throw new Error(`YGOPRODECK_${response.status}`);
+    }
+    const body=await response.json();
+    const observedAt=new Date(now()).toISOString();
+    const data=(body.data||[]).map(card=>({
+      provider:'ygoprodeck',
+      game:'yugioh',
+      providerCardId:String(card.id),
+      name:card.name,
+      type:card.type||null,
+      race:card.race||null,
+      attribute:card.attribute||null,
+      archetype:card.archetype||null,
+      description:card.desc||null,
+      imageUrl:card.card_images?.[0]?.image_url_small||null,
+      imageRehostRequired:true,
+      sets:(card.card_sets||[]).map(set=>({
+        setName:set.set_name||null,
+        setCode:set.set_code||null,
+        rarity:set.set_rarity||null,
+        rarityCode:set.set_rarity_code||null,
+        setPriceUsd:numeric(set.set_price)
+      })),
+      referencePrices:{
+        cardmarketEur:numeric(card.card_prices?.[0]?.cardmarket_price),
+        tcgplayerUsd:numeric(card.card_prices?.[0]?.tcgplayer_price),
+        ebayUsd:numeric(card.card_prices?.[0]?.ebay_price),
+        amazonUsd:numeric(card.card_prices?.[0]?.amazon_price),
+        coolstuffincUsd:numeric(card.card_prices?.[0]?.coolstuffinc_price)
+      },
+      priceType:'market',
+      priceNote:'referencePrices 是 YGOPRODeck 彙整各平台的跨版本最低價，不能當成某個版本的價格；單一版本只能用 sets[].setPriceUsd（來源平台未標示）。不是 CardSeek 驗證成交價。',
+      observedAt
+    }));
+    cache.set(key,{data,expiresAt:now()+cacheMs});
+    return data;
+  };
+}
+
+const defaultSearchYgoProDeck=createYgoProDeckClient();
+
+export async function searchYgoProDeck(query,{limit=10,fetchFn=null}={}){
+  return defaultSearchYgoProDeck(query,{limit,fetchFn});
 }
 
 

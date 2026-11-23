@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import rarityRankingsData from '../data/rarity-rankings.json' with { type: 'json' };
 
 export const PRICE_TYPES = new Set(['listing','sale','buyback','retail','market','user_report']);
 
@@ -6,7 +6,7 @@ export const PRICE_TYPES = new Set(['listing','sale','buyback','retail','market'
 // API. The JSON file remains the reviewable source of truth; loading it once at
 // module initialization avoids a database round trip and keeps fallback mode
 // deterministic.
-export const RARITY_RANKINGS = JSON.parse(readFileSync(new URL('../data/rarity-rankings.json', import.meta.url), 'utf8'));
+export const RARITY_RANKINGS = rarityRankingsData;
 
 // Catalog enrichment is deliberately normalized separately from market data.
 // The database keeps source evidence and review state beside every name and

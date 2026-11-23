@@ -1,4 +1,5 @@
 import { normalizeCardNameRecord, normalizeRarityRecord, normalizeRarityValue } from './normalize.mjs';
+import { auditCatalogLinks } from './backend-reliability.mjs';
 import { syncDragonballFw, syncHaikyuu, syncWeissFrieren } from './official-ip-sync.mjs';
 import { syncYugiohJp, YGO_JP_SOURCE } from './yugioh-official-jp.mjs';
 import { readFileSync } from 'node:fs';
@@ -96,45 +97,7 @@ export function groupRowsByShape(rows=[]){
   return [...groups.values()];
 }
 
-const rowId=row=>clean(row?.id);
-const rowCardId=row=>clean(row?.cardId??row?.card_id);
-const rowGameId=row=>clean(row?.gameId??row?.game_id??row?.game);
-const rowProviderId=row=>clean(row?.providerId??row?.provider_id);
-const rowCardNumber=row=>clean(row?.officialCardNumber??row?.official_card_number??row?.localCardNumber??row?.local_card_number);
-const rowImageUrl=row=>clean(row?.imageUrl??row?.image_url);
-const rowChineseName=row=>clean(row?.nameZh??row?.name_zh);
-
-/**
- * Audit catalog relationships without guessing identity from names. The
- * returned shape is intentionally JSON-safe so it can be attached to public
- * coverage responses or written to a sync-run metadata object.
- */
-export function auditCatalogLinks({cards=[],printings=[],images=[],providerKeys=new Map()}={}){
-  const cardRows=(cards||[]).filter(row=>row&&typeof row==='object'),cardIds=new Set(cardRows.map(rowId).filter(Boolean)),cardById=new Map(cardRows.map(row=>[rowId(row),row])),printingRows=(printings||[]).filter(row=>row&&typeof row==='object'),imageRows=(images||[]).filter(row=>row&&typeof row==='object');
-  const printingsWithKnownCard=printingRows.filter(row=>cardIds.has(rowCardId(row))),imagesWithKnownCard=imageRows.filter(row=>cardIds.has(rowCardId(row))),cardsWithPrintings=new Set(printingsWithKnownCard.map(rowCardId)),cardsWithImages=new Set([...imagesWithKnownCard,...printingsWithKnownCard.filter(rowImageUrl).map(rowCardId)]),stableIdentityRows=cardRows.filter(row=>rowId(row)&&rowGameId(row)&&(rowProviderId(row)||rowCardNumber(row))),missingImages=cardRows.filter(row=>!cardsWithImages.has(rowId(row))&&!rowImageUrl(row)),missingChineseNames=cardRows.filter(row=>!rowChineseName(row)),orphanPrintings=printingRows.filter(row=>!cardIds.has(rowCardId(row))),orphanImages=imageRows.filter(row=>!cardIds.has(rowCardId(row))),crossGameReferences=printingRows.filter(row=>{const card=cardById.get(rowCardId(row)),printingGame=rowGameId(row);return Boolean(card&&printingGame&&rowGameId(card)&&printingGame!==rowGameId(card))});
-  for(const row of cardRows){const provider=rowProviderId(row),game=rowGameId(row);if(!provider||!game)continue;const key=`${game}\u001f${provider}`,list=providerKeys.get(key)||[];list.push(rowId(row));providerKeys.set(key,list)}
-  const duplicateProviderKeys=[...providerKeys.entries()].filter(([,ids])=>ids.length>1).map(([key,ids])=>({key:key.replace('\u001f',':'),cardIds:ids}));
-  const sample=rows=>rows.map(row=>rowId(row)||rowCardId(row)).filter(Boolean).slice(0,50);
-  return {
-    status:'observed',
-    cards:cardRows.length,
-    stableIdentityCards:stableIdentityRows.length,
-    unkeyedCards:cardRows.length-stableIdentityRows.length,
-    cardsWithPrintings:cardsWithPrintings.size,
-    cardsWithImages:cardsWithImages.size,
-    printingReferences:printingRows.length,
-    linkedPrintingReferences:printingsWithKnownCard.length,
-    imageReferences:imageRows.length,
-    linkedImageReferences:imagesWithKnownCard.length,
-    orphanPrintings:orphanPrintings.length,
-    orphanImages:orphanImages.length,
-    crossGameReferences:crossGameReferences.length,
-    duplicateProviderKeys,
-    missingImages:{count:missingImages.length,sampleIds:sample(missingImages)},
-    missingChineseNames:{count:missingChineseNames.length,sampleIds:sample(missingChineseNames)},
-    complete:cardRows.length>0&&stableIdentityRows.length===cardRows.length&&orphanPrintings.length===0&&orphanImages.length===0&&crossGameReferences.length===0
-  };
-}
+export { auditCatalogLinks };
 
 const SYNC_WRITE_TIMEOUT_MS=60000;
 const stableJson=value=>JSON.stringify(value,(key,inner)=>inner&&typeof inner==='object'&&!Array.isArray(inner)?Object.fromEntries(Object.keys(inner).sort().map(name=>[name,inner[name]])):inner)??'null';
