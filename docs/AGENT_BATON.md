@@ -171,3 +171,11 @@
 - KV 快照由 `.github/workflows/kv-snapshots.yml` 每小時產生。GitHub secrets 已設 SUPABASE_URL、SUPABASE2_URL、SUPABASE2_SERVICE_KEY、CF_ACCOUNT_ID、CF_KV_NAMESPACE_ID；**待使用者設 SUPABASE_SERVICE_KEY 與 CF_API_TOKEN（KV Edit 權限）**，之前首頁統計區塊為空。
 - 仍代理 Render：price-history、graded-prices、ebay-listings、image-status、admin、reports POST、sitemap、查庫 SEO 頁。
 - 未做：本批無非同家族第二意見（Gemini、Claude/GPT 週額度用盡），11/26 後補 GPT 審核；Google 登入未以真帳號實測。
+
+## 2026-11-24 Workers 搬遷收尾：網站完全不依賴 Render（Claude）
+- agy（Argon High）實作價格走勢（DecompressionStream）、sitemap 與 coverage 走 KV 預產、查庫 SEO 頁、鑑定價／eBay（無 secret 時回 not-configured）、Render 502/503 改 JSON 降級；Argon 週額度中途用盡，Claude 接手驗收、修 CRLF、提交、部署。1093 測試全過。
+- 正式站冒煙 26 項全過（腳本邏輯：每支使用者端點不得 5xx／HTML 錯誤頁、安全標頭、server.mjs／.env 404、回應不含金鑰）。瀏覽器實看單卡頁正常、無 console 錯誤。
+- KV 排程 run 45253820910 成功：pack-prizes、series-hits、catalog-coverage、sitemap（index／series／cards-1、2）全寫入。
+- 只剩 `/api/admin/*` 代理 Render。鑑定價、eBay 要在 Worker 設 POKEMONPRICETRACKER_API_KEY、EBAY_CLIENT_ID、EBAY_CLIENT_SECRET 才會有資料（值只在 Render）。
+- UptimeRobot 健康檢查逾時改 60 秒（Worker 冷查 /api/catalog/health 約 28–35 秒）。
+- 未做：本輪無外部第二意見（agy 三組週額度都用盡；Gemini 11/28、Claude/GPT 11/26、Argon 11/30 重置）；Google 登入未以真帳號實測。
