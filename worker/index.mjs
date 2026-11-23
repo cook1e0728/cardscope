@@ -1,4 +1,5 @@
 // 第 2 步第一批 Cloudflare Worker：送出靜態檔、無資料庫 SEO 頁與 20 支讀取類 /api/*；寫入／重算類端點與查庫 SEO／sitemap 續代理 Render 原點。
+import { createRateLimiter } from '../providers/backend-reliability.mjs';
 import {
   API_CSP,
   NOT_FOUND_HTML,
@@ -82,10 +83,11 @@ function normalizeApiToken(token) {
 
 /**
  * 解析 MIGRATED_API 環境變數：
- * - 未設定／all：啟用全部 DEFAULT_MIGRATED_APIS
+ * - 未設定／all／default：啟用全部 DEFAULT_MIGRATED_APIS
  * - none / off / false / 0：全部切回代理 Render
  * - "-cards,-search"：在預設清單中關閉指定端點以便單支回滾
- * - "cards,search"：僅開啟指定清單
+ * - "all,-cards,-search" / "default,-catalog"：全部啟用後再扣除指定端點
+ * - "cards,search"（或搭配 "-search"）：先加入正向白名單再扣除負向項目
  */
 export function resolveMigratedApis(env) {
   const raw = env?.MIGRATED_API;
@@ -96,19 +98,30 @@ export function resolveMigratedApis(env) {
 
   const tokens = text.split(',').map(part => part.trim()).filter(Boolean);
   if (!tokens.length) return new Set(DEFAULT_MIGRATED_APIS);
-  const negatives = tokens.every(token => token.startsWith('-'));
-  if (negatives) {
-    const enabled = new Set(DEFAULT_MIGRATED_APIS);
-    for (const token of tokens) enabled.delete(normalizeApiToken(token.slice(1)));
-    return enabled;
+
+  const allNegative = tokens.every(token => token.startsWith('-'));
+  let hasAll = false;
+  const positives = [];
+  const negatives = [];
+  for (const token of tokens) {
+    if (token.startsWith('-')) {
+      const key = normalizeApiToken(token.slice(1));
+      if (key) negatives.push(key);
+      continue;
+    }
+    const lower = token.toLowerCase();
+    if (lower === 'all' || lower === 'default') {
+      hasAll = true;
+      continue;
+    }
+    const key = normalizeApiToken(token);
+    if (DEFAULT_MIGRATED_SET.has(key)) positives.push(key);
   }
 
-  const enabled = new Set();
-  for (const token of tokens) {
-    if (token.startsWith('-')) continue;
-    const key = normalizeApiToken(token);
-    if (DEFAULT_MIGRATED_SET.has(key)) enabled.add(key);
-  }
+  const enabled = (allNegative || hasAll)
+    ? new Set(DEFAULT_MIGRATED_APIS)
+    : new Set(positives);
+  for (const key of negatives) enabled.delete(key);
   return enabled;
 }
 
@@ -195,9 +208,36 @@ export function shouldProxyToOrigin(url, method, env) {
   return null;
 }
 
+const TEXT_ENCODER = new TextEncoder();
+
 async function sha1Hex(text) {
-  const digest = await globalThis.crypto.subtle.digest('SHA-1', new TextEncoder().encode(text));
+  const digest = await globalThis.crypto.subtle.digest('SHA-1', TEXT_ENCODER.encode(text));
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function sha256Bytes(text) {
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', TEXT_ENCODER.encode(text));
+  return new Uint8Array(digest);
+}
+
+async function safeTokenEqual(actual, expected) {
+  if (typeof actual !== 'string' || typeof expected !== 'string' || !actual || !expected) return false;
+  const [a, b] = await Promise.all([sha256Bytes(actual), sha256Bytes(expected)]);
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+async function adminAuthorized(request, env) {
+  const expected = env?.SCRAPE_SECRET;
+  if (typeof expected !== 'string' || !expected) return false;
+  const xScrapeToken = request.headers.get('x-scrape-token');
+  const authorization = String(request.headers.get('authorization') || '');
+  const bearerMatch = authorization.match(/^Bearer\s+(.+)$/i);
+  const bearer = bearerMatch ? bearerMatch[1] : null;
+  const token = xScrapeToken || bearer;
+  return safeTokenEqual(token, expected);
 }
 
 function etagMatches(request, etag) {
@@ -239,6 +279,23 @@ function readApiSignature(env) {
 export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now, edgeCache = undefined } = {}) {
   let cachedIndex = null;
   const readApiInstances = new Map();
+  const rateLimiters = new Map();
+
+  function getRateLimiters(env) {
+    const apiLimit = Math.max(1, Math.floor(Number(env?.API_RATE_LIMIT_PER_MINUTE) || 240));
+    const imageLimit = Math.max(1, Math.floor(Number(env?.IMAGE_RATE_LIMIT_PER_MINUTE) || 1200));
+    const key = `${apiLimit}|${imageLimit}`;
+    let pair = rateLimiters.get(key);
+    if (!pair) {
+      pair = {
+        apiLimiter: createRateLimiter({ limit: apiLimit, windowMs: 60000, maxKeys: 2000, now }),
+        imageLimiter: createRateLimiter({ limit: imageLimit, windowMs: 60000, maxKeys: 2000, now })
+      };
+      rateLimiters.set(key, pair);
+      while (rateLimiters.size > 4) rateLimiters.delete(rateLimiters.keys().next().value);
+    }
+    return pair;
+  }
 
   function getReadApi(env) {
     const key = readApiSignature(env);
@@ -386,6 +443,14 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
 
       const apiKey = matchMigratedApi(url, request.method);
       if (apiKey && resolveMigratedApis(env).has(apiKey)) {
+        const cfIp = String(request.headers.get('cf-connecting-ip') || '').trim();
+        if (cfIp && !(await adminAuthorized(request, env))) {
+          const { apiLimiter, imageLimiter } = getRateLimiters(env);
+          const limiter = apiKey === 'images-onepiece' ? imageLimiter : apiLimiter;
+          if (!limiter(cfIp)) {
+            return respondJson(url.pathname, 429, { error: '請求太頻繁，請稍後再試' }, API_CSP, { 'Retry-After': '60' });
+          }
+        }
         const apiResponse = await getReadApi(env).handle(apiKey, request, url, ctx);
         const headers = new Headers(apiResponse.headers);
         applyHeaders(headers, url.pathname, API_CSP);

@@ -206,3 +206,37 @@
 - **第 2 步前要處理（中）**：Worker 打包上限（免費 3 MiB 壓縮後）與啟動時間；大型 `data/*.json` 不要 import 進 bundle，改放 Static Assets 或 KV。
 - **第 2 步前要處理（中）**：Cache API 在 `*.workers.dev` 預覽網域不生效，快取命中只能在正式網域驗證。
 - **第 2D 步前要處理（中）**：pageStats／cardHot 若每次瀏覽都打 Durable Object，會吃每日請求額度；要先在 Worker 端批次合併或抽樣，並設超額降級。
+
+## 第 2 步第一批（4f867db）審核與補強紀錄（2026-11-23）
+
+### 1. 一致性與執行期修補摘要
+- `MAIN_ONLY_PATH` 強制主庫路由修正：`resolveDb` 先比對主庫限定路徑，避免顯式 `db='ip2'` 繞過主庫強制路由。
+- `buildBrowsePage`／系列 `precomputedFacets` 與無效系列字元一致性修正，確保分頁結果與輸入驗證行為對齊原點。
+- `getCard` 冷熱 Isolate 一致性修補，統一單卡詳情在冷啟動與記憶體快取命中時的輸出結構。
+- `catalog-health`、`market-events`、`card-market`、`hot-cards`、`price-movers` 遇降級或過期回應時禁止寫入 Edge Cache。
+- 所有 SWR／TTL 背景更新（含快照刷新與 Edge Cache 寫入）改接 `ctx.waitUntil`，避免請求結束後背景任務遭中斷。
+- Edge Cache Key 正規化，防止無關查詢參數或參數排序差異穿透邊緣快取。
+- 整數 `limit` 解析邏輯統一，並修補 `buyback-prices` 原型鏈查表問題（避免特殊鍵名讀取內建屬性）。
+- `onePieceImageTarget` 加固：限制網址長度、阻擋 `%2e/%2f/%5c/%00` 與反斜線／控制字元路徑遍歷，並清除 URL fragment（`hash`）。
+
+### 2. 安全審核與 Worker 限流策略（雙層防護）
+- **公開邊界安全檢核**：
+  - 確認無 Supabase 金鑰外洩，PostgREST 錯誤細節與內部表名僅寫伺服器／Worker 日誌，不進公開 JSON 回應。
+  - Service Key 僅存於伺服器環境變數或 Worker `env` Secrets；`MIGRATED_API` 僅讀取環境設定，無法被訪客查詢參數或標頭覆寫。
+  - `/api/images/onepiece` 確認無 SSRF 風險：限定白名單主機與 `https:` 協定、禁止自訂埠與帳密、設定 `redirect: 'error'`、阻擋 `%2e/%2f/%5c/%00` 遍歷、檢查圖片 MIME 白名單並於串流超過 5 MB 時立即斷流。
+- **第一層（全域主防線）**：Cloudflare 免費方案 WAF Rate Limiting Rule（免費 1 條規則、10 秒視窗）。第 2 步第一批先守護 `/api/*` 突發流量；待第 2A 後期搬遷 `/api/sync/*` 與 `/api/auth/*` 時，優先將免費規則移給寫入與認證端點防暴力嘗試。
+- **第二層（已實作的 Isolate 防護）**：`worker/index.mjs` 內建 `createRateLimiter` 涵蓋 20 支已搬遷 API：
+  - 嚴格只讀 `cf-connecting-ip`（**絕不信任 `X-Forwarded-For`**；無 `cf-connecting-ip` 時略過以相容無 CF 標頭的單元測試環境）。
+  - 單 Isolate 限制 `maxKeys: 2000`、`windowMs: 60000`，預設門檻 `API_RATE_LIMIT_PER_MINUTE=240`、`/api/images/onepiece` 為 `IMAGE_RATE_LIMIT_PER_MINUTE=1200`。
+  - 請求夾帶有效 `SCRAPE_SECRET`（`x-scrape-token` 或 `Authorization: Bearer`，以 Web Crypto SHA-256 固定時間 XOR 比對）時豁免限流；超額立即回 `429` 並帶 `Retry-After: 60`、`API_CSP`、`SECURITY_HEADERS`、`Cache-Control: no-store` 與 `Vary: Accept-Encoding`。
+  - **跨節點說明**：此層為單 Isolate 記憶體計數，跨 PoP 或冷啟動後不共享；一般讀 API **不以 Workers KV**（免費每日 1,000 次寫入上限極易寫爆）或 **Durable Object**（免費每日 10 萬次請求配額應保留給高價值端點與統計聚合）作為全域計數器。
+
+### 3. CPU（10 ms）與 Subrequest（50 次）風險實測與預設留代理建議
+
+| 端點 | 實作優化摘要 | 冷啟動實測／風險評估 | 部署建議 |
+| --- | --- | --- | --- |
+| `/api/cards`（含 600 張卡大系列） | 移除 `browseCacheBytes` 重複 `JSON.stringify`、按 `region` 延遲快取 facets 與非價格排序切片、`rarityToken` 快取、`WORKER_SERIES_FALLBACK_MAX` 降為 `500`（確保備援 `< 50` subrequests） | 熱分頁 `< 1–2 ms`；冷啟動 600+ 張系列約 `6–9 ms`，仍貼近 10 ms 邊緣 | **可先開啟**；若線上觀測到 1102 CPU 超時再設 `MIGRATED_API="-cards"` 退回代理，長期改 SQL 分頁 RPC 或 KV |
+| `/api/search` | 純符號／空查詢早退免載目錄、快取 `seriesById` 與本地卡正規化、`ip2` 逾時中止、零結果降級 subrequest 預算上限 30 | 冷啟動仍須執行 `loadCatalogShared()` 與 `buildSeriesIndex(1,200+ 系列)`（桌機實測僅 `buildSeriesIndex(1200)` 即達 **~20 ms**），極易超過免費 10 ms CPU | **第 2C 批將精簡 `seriesIndex` 存入 Workers KV 前，預設留代理** |
+| `/api/catalog`、`/api/products` | 暖實例 `WeakMap` 預序列化 JSON、背景更新改接 `ctx.waitUntil` | 冷啟動須組裝 1,200+ 系列與 250 張卡，並執行 `canonicalizeCatalog` 與 ~1.5 MB JSON 序列化，逼近或超過 10 ms CPU | **第 2C 批 KV 預產快照到位前，預設留代理** |
+
+- **部署設定建議**：第 2C 批 KV 預產快照到位前，建議於 `wrangler.toml`（或 Cloudflare Dashboard）設定 `MIGRATED_API = "all,-catalog,-products,-search"`（或 `"-catalog,-products,-search"`）；待第 2C 批 KV 快照完成後再切回全開。
