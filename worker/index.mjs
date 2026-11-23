@@ -1,4 +1,4 @@
-// 第 2 步第一批 Cloudflare Worker：送出靜態檔、無資料庫 SEO 頁與 20 支讀取類 /api/*；寫入／重算類端點與查庫 SEO／sitemap 續代理 Render 原點。
+// 第 2 步第二批 Cloudflare Worker：送出靜態檔、無資料庫 SEO 頁、20 支讀取 API、7 支認證／收藏雲端同步寫入 API，以及 3 支讀 Workers KV 的首頁統計與覆蓋率端點。
 import { createRateLimiter } from '../providers/backend-reliability.mjs';
 import {
   API_CSP,
@@ -12,8 +12,11 @@ import {
   securityHeadersForPath,
   seoRequestTarget
 } from '../providers/http-security.mjs';
+import { KV_KEYS } from '../providers/kv-snapshots.mjs';
 import { createReadApi } from '../providers/read-api.mjs';
 import { applySeoToHtml, homeSeo, normalizeBaseUrl, renderRobotsTxt, viewSeo } from '../providers/seo.mjs';
+
+export { KV_KEYS };
 
 export const DEFAULT_ORIGIN_URL = 'https://cardscope.onrender.com';
 export const WORKER_GAME_IDS = Object.freeze([
@@ -46,7 +49,17 @@ export const DEFAULT_MIGRATED_APIS = Object.freeze([
   'price-movers',
   'prices-reference',
   'reports-meta',
-  'reports'
+  'reports',
+  'auth-config',
+  'auth-exchange',
+  'auth-refresh',
+  'auth-logout',
+  'sync-pull',
+  'sync-push',
+  'sync-delete',
+  'pack-prizes',
+  'series-hits',
+  'catalog-coverage'
 ]);
 
 const DEFAULT_MIGRATED_SET = new Set(DEFAULT_MIGRATED_APIS);
@@ -71,21 +84,46 @@ const MIGRATED_API_ALIASES = new Map([
   ['/api/price-movers', 'price-movers'],
   ['/api/prices/reference', 'prices-reference'],
   ['/api/reports/meta', 'reports-meta'],
-  ['/api/reports', 'reports']
+  ['/api/reports', 'reports'],
+  ['/api/auth/config', 'auth-config'],
+  ['/api/auth/exchange', 'auth-exchange'],
+  ['/api/auth/refresh', 'auth-refresh'],
+  ['/api/auth/logout', 'auth-logout'],
+  ['/api/sync/pull', 'sync-pull'],
+  ['/api/sync/push', 'sync-push'],
+  ['/api/sync/delete', 'sync-delete'],
+  ['/api/pack-prizes', 'pack-prizes'],
+  ['/api/series-hits', 'series-hits'],
+  ['/api/catalog/coverage', 'catalog-coverage'],
+  ['coverage', 'catalog-coverage']
 ]);
 
-function normalizeApiToken(token) {
+const MIGRATED_API_GROUPS = new Map([
+  ['auth', ['auth-config', 'auth-exchange', 'auth-refresh', 'auth-logout']],
+  ['/api/auth', ['auth-config', 'auth-exchange', 'auth-refresh', 'auth-logout']],
+  ['/api/auth/*', ['auth-config', 'auth-exchange', 'auth-refresh', 'auth-logout']],
+  ['sync', ['sync-pull', 'sync-push', 'sync-delete']],
+  ['/api/sync', ['sync-pull', 'sync-push', 'sync-delete']],
+  ['/api/sync/*', ['sync-pull', 'sync-push', 'sync-delete']]
+]);
+
+const AUTH_POST_APIS = new Set(['auth-exchange', 'auth-refresh', 'auth-logout']);
+const SYNC_POST_APIS = new Set(['sync-pull', 'sync-push', 'sync-delete']);
+
+function normalizeApiTokens(token) {
   const key = String(token || '').trim().toLowerCase();
-  if (!key) return '';
-  if (DEFAULT_MIGRATED_SET.has(key)) return key;
-  return MIGRATED_API_ALIASES.get(key) || key;
+  if (!key) return [];
+  const group = MIGRATED_API_GROUPS.get(key);
+  if (group) return group;
+  if (DEFAULT_MIGRATED_SET.has(key)) return [key];
+  return [MIGRATED_API_ALIASES.get(key) || key];
 }
 
 /**
  * 解析 MIGRATED_API 環境變數：
  * - 未設定／all／default：啟用全部 DEFAULT_MIGRATED_APIS
  * - none / off / false / 0：全部切回代理 Render
- * - "-cards,-search"：在預設清單中關閉指定端點以便單支回滾
+ * - "-cards,-search,-sync-push,-auth-exchange"（或群組 "-auth,-sync"）：在預設清單中關閉指定端點以便單支回滾
  * - "all,-cards,-search" / "default,-catalog"：全部啟用後再扣除指定端點
  * - "cards,search"（或搭配 "-search"）：先加入正向白名單再扣除負向項目
  */
@@ -105,8 +143,9 @@ export function resolveMigratedApis(env) {
   const negatives = [];
   for (const token of tokens) {
     if (token.startsWith('-')) {
-      const key = normalizeApiToken(token.slice(1));
-      if (key) negatives.push(key);
+      for (const key of normalizeApiTokens(token.slice(1))) {
+        if (key) negatives.push(key);
+      }
       continue;
     }
     const lower = token.toLowerCase();
@@ -114,8 +153,9 @@ export function resolveMigratedApis(env) {
       hasAll = true;
       continue;
     }
-    const key = normalizeApiToken(token);
-    if (DEFAULT_MIGRATED_SET.has(key)) positives.push(key);
+    for (const key of normalizeApiTokens(token)) {
+      if (DEFAULT_MIGRATED_SET.has(key)) positives.push(key);
+    }
   }
 
   const enabled = (allNegative || hasAll)
@@ -141,15 +181,29 @@ const EXACT_GET_API_MAP = new Map([
   ['/api/market-events', 'market-events'],
   ['/api/price-movers', 'price-movers'],
   ['/api/reports/meta', 'reports-meta'],
-  ['/api/reports', 'reports']
+  ['/api/reports', 'reports'],
+  ['/api/auth/config', 'auth-config'],
+  ['/api/pack-prizes', 'pack-prizes'],
+  ['/api/series-hits', 'series-hits'],
+  ['/api/catalog/coverage', 'catalog-coverage']
 ]);
 
-/** 判斷請求是否對應已搬遷的端點 key；未搬遷（寫入、認證、price-history、graded/ebay、pack-prizes 等）回 null。 */
+const EXACT_POST_API_MAP = new Map([
+  ['/api/prices/reference', 'prices-reference'],
+  ['/api/auth/exchange', 'auth-exchange'],
+  ['/api/auth/refresh', 'auth-refresh'],
+  ['/api/auth/logout', 'auth-logout'],
+  ['/api/sync/pull', 'sync-pull'],
+  ['/api/sync/push', 'sync-push'],
+  ['/api/sync/delete', 'sync-delete']
+]);
+
+/** 判斷請求是否對應已搬遷的端點 key；未搬遷（price-history、graded/ebay、admin 等）回 null。 */
 export function matchMigratedApi(url, method = 'GET') {
   const pathname = url.pathname;
   if (!pathname.startsWith('/api/')) return null;
   if (pathname === '/api/catalog/health' && (method === 'GET' || method === 'HEAD')) return 'catalog-health';
-  if (pathname === '/api/prices/reference' && method === 'POST') return 'prices-reference';
+  if (method === 'POST') return EXACT_POST_API_MAP.get(pathname) || null;
   if (method !== 'GET') return null;
 
   const exact = EXACT_GET_API_MAP.get(pathname);
@@ -265,7 +319,10 @@ function readApiSignature(env) {
     env?.SUPABASE_SERVICE_KEY || '',
     env?.SUPABASE2_URL || '',
     env?.SUPABASE2_SERVICE_KEY || '',
+    env?.SUPABASE2_ANON_KEY || '',
     env?.SUPABASE2_TIMEOUT_MS || '',
+    env?.AUTH_CACHE_MS || '',
+    env?.AUTH_CACHE_MAX || '',
     env?.SCRAPE_SECRET || '',
     env?.JPY_TO_TWD || '',
     env?.USD_TO_TWD || '',
@@ -284,17 +341,21 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
   function getRateLimiters(env) {
     const apiLimit = Math.max(1, Math.floor(Number(env?.API_RATE_LIMIT_PER_MINUTE) || 240));
     const imageLimit = Math.max(1, Math.floor(Number(env?.IMAGE_RATE_LIMIT_PER_MINUTE) || 1200));
-    const key = `${apiLimit}|${imageLimit}`;
-    let pair = rateLimiters.get(key);
-    if (!pair) {
-      pair = {
+    const authLimit = Math.max(1, Math.floor(Number(env?.AUTH_RATE_LIMIT_PER_MINUTE) || 10));
+    const syncLimit = Math.max(1, Math.floor(Number(env?.SYNC_RATE_LIMIT_PER_MINUTE) || 6));
+    const key = `${apiLimit}|${imageLimit}|${authLimit}|${syncLimit}`;
+    let group = rateLimiters.get(key);
+    if (!group) {
+      group = {
         apiLimiter: createRateLimiter({ limit: apiLimit, windowMs: 60000, maxKeys: 2000, now }),
-        imageLimiter: createRateLimiter({ limit: imageLimit, windowMs: 60000, maxKeys: 2000, now })
+        imageLimiter: createRateLimiter({ limit: imageLimit, windowMs: 60000, maxKeys: 2000, now }),
+        authLimiter: createRateLimiter({ limit: authLimit, windowMs: 60000, maxKeys: 2000, now }),
+        syncLimiter: createRateLimiter({ limit: syncLimit, windowMs: 60000, maxKeys: 2000, now })
       };
-      rateLimiters.set(key, pair);
+      rateLimiters.set(key, group);
       while (rateLimiters.size > 4) rateLimiters.delete(rateLimiters.keys().next().value);
     }
-    return pair;
+    return group;
   }
 
   function getReadApi(env) {
@@ -444,18 +505,28 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
       const apiKey = matchMigratedApi(url, request.method);
       if (apiKey && resolveMigratedApis(env).has(apiKey)) {
         const cfIp = String(request.headers.get('cf-connecting-ip') || '').trim();
+        const { apiLimiter, imageLimiter, authLimiter, syncLimiter } = getRateLimiters(env);
         if (cfIp && !(await adminAuthorized(request, env))) {
-          const { apiLimiter, imageLimiter } = getRateLimiters(env);
           const limiter = apiKey === 'images-onepiece' ? imageLimiter : apiLimiter;
           if (!limiter(cfIp)) {
             return respondJson(url.pathname, 429, { error: '請求太頻繁，請稍後再試' }, API_CSP, { 'Retry-After': '60' });
           }
         }
-        const apiResponse = await getReadApi(env).handle(apiKey, request, url, ctx);
+        if (AUTH_POST_APIS.has(apiKey)) {
+          if (!authLimiter(cfIp || 'unknown')) {
+            return respondJson(url.pathname, 429, { error: '登入太頻繁，請一分鐘後再試' }, API_CSP, { 'Retry-After': '60' });
+          }
+        } else if (SYNC_POST_APIS.has(apiKey)) {
+          if (!syncLimiter(cfIp || 'unknown')) {
+            return respondJson(url.pathname, 429, { error: '同步太頻繁，請一分鐘後再試' }, API_CSP, { 'Retry-After': '60' });
+          }
+        }
+        const apiResponse = await getReadApi(env).handle(apiKey, request, url, ctx, env);
         const headers = new Headers(apiResponse.headers);
         applyHeaders(headers, url.pathname, API_CSP);
         headers.set('Content-Security-Policy', API_CSP);
-        return new Response(request.method === 'HEAD' ? null : apiResponse.body, {
+        const noBody = request.method === 'HEAD' || apiResponse.status === 204 || apiResponse.status === 304;
+        return new Response(noBody ? null : apiResponse.body, {
           status: apiResponse.status,
           statusText: apiResponse.statusText,
           headers

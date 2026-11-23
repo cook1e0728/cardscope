@@ -1,0 +1,51 @@
+name: Build Workers KV snapshots
+
+# 每小時預先計算首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）並透過 Cloudflare API 寫入 Workers KV（SNAPSHOT_KV）。
+# 每日 24 次 × 3 個鍵 = 72 次 KV 寫入（僅占 Cloudflare Workers KV 免費方案每日 1,000 次寫入額度的 7.2%）。
+# 需於 GitHub Repository Settings → Secrets and variables → Actions 設定以下 Secrets（僅列名稱，嚴禁將值寫入此檔案）：
+# - SUPABASE_URL
+# - SUPABASE_SERVICE_KEY
+# - SUPABASE2_URL
+# - SUPABASE2_SERVICE_KEY
+# - CF_ACCOUNT_ID
+# - CF_KV_NAMESPACE_ID
+# - CF_API_TOKEN
+on:
+  schedule:
+    - cron: '15 * * * *'
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: '要產生的快照目標（逗號分隔：pack-prizes,series-hits,catalog-coverage）'
+        required: false
+        default: 'pack-prizes,series-hits,catalog-coverage'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push-kv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Compute and push KV snapshots
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE2_URL: ${{ secrets.SUPABASE2_URL }}
+          SUPABASE2_SERVICE_KEY: ${{ secrets.SUPABASE2_SERVICE_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          SNAPSHOT_TARGETS: ${{ github.event.inputs.targets || 'pack-prizes,series-hits,catalog-coverage' }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            node scripts/build-kv-snapshots.mjs --push --if-configured --targets "$SNAPSHOT_TARGETS"
+          else
+            node scripts/build-kv-snapshots.mjs --push --targets "$SNAPSHOT_TARGETS"
+          fi

@@ -26,6 +26,7 @@ import { catalogCollectionAllowed, filterAllowedCatalogProviders, imageCollectio
 import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
 import './collection-store.js'; // 瀏覽器與伺服器共用的收藏驗證與合併規則（掛在 globalThis.CollectionStore）
+import { createAuthSyncController } from './providers/auth-sync.mjs';
 import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo } from './providers/seo.mjs';
 import { API_CSP, NOT_FOUND_HTML, PUBLIC_STATIC, REVALIDATE_EXTENSIONS, SECURITY_HEADERS, buildPageCsp, inlineScripts, mergeVaryHeader, renderSecurityTxt, seoRequestTarget } from './providers/http-security.mjs';
 import { BASE_CATALOG_GAME_IDS, CATALOG_REGION_IDS, MAIN_ONLY_PATH, SECOND_DB_GAMES, dbForGame, dbForId } from './providers/supabase-client.mjs';
@@ -692,139 +693,25 @@ function rateLimited(req,url){
   if(pathname==='/api/ebay-listings')return !ebayLimiter(ip)||!apiLimiter(ip);
   return !(pathname.startsWith('/api/images/')?imageLimiter:apiLimiter)(ip);
 }
-// ---- 收藏雲端同步（docs/NEXT_PHASE_PLAN.md Y2）----
-// 同步碼等於密碼：只放在 request body；伺服器只拿它的 SHA-256 當副庫（ip2）的鍵。回應、錯誤訊息與紀錄都不放同步碼或雜湊，也不把副庫的錯誤文字轉給訪客。
-// 寫入整份取代，靠 revision 樂觀鎖（不符回 409，前端先拉再合併）；每筆收藏都過 CollectionStore 的同一套驗證，任何一筆不合格就整份拒絕（不默默丟資料）。
-const CollectionStore=globalThis.CollectionStore,syncLimiter=createRateLimiter({limit:Number(process.env.SYNC_RATE_LIMIT_PER_MINUTE||6)}),SYNC_REVISION_MAX=2147483646;
-const syncHash=code=>createHash('sha256').update(code).digest('hex');
+// ---- 收藏雲端同步（docs/NEXT_PHASE_PLAN.md Y2）與 Google 登入（docs/COLLECTION_SYNC_GOOGLE_PLAN.md）----
+// 與 Cloudflare Worker 共用 providers/auth-sync.mjs（Web Crypto SHA-256、PKCE 交換、/auth/v1/user 短暫快取、revision 樂觀鎖、輸入驗證與錯誤不外洩）。
+const syncLimiter=createRateLimiter({limit:Number(process.env.SYNC_RATE_LIMIT_PER_MINUTE||6)});
+const authLimiter=createRateLimiter({limit:Number(process.env.AUTH_RATE_LIMIT_PER_MINUTE||10)});
 const syncError=(res,status,error,extra={})=>json(res,status,{error},extra);
 const clientIp=req=>trustedCfIp(req)||req.socket?.remoteAddress||'unknown';
-// ---- Google 登入（docs/COLLECTION_SYNC_GOOGLE_PLAN.md）----
-// PKCE 交換、換新、登出都由伺服器代打副庫的 Supabase Auth（anon key 只在伺服器），所以 CSP 的 connect-src 維持 'self'，也不用 cookie。
-// 上游的錯誤內容一律不轉給訪客；token 只在 body 或 Authorization 標頭，不進紀錄。同步的鍵 = sha256('google:' + user.id)：
-// 同步碼只有 26–64 個 0-9A-Z，'google:' 前綴含小寫與冒號，兩邊雜湊前的字串不可能相同，所以兩個鍵空間互不相通（除非 SHA-256 碰撞）。
-const authLimiter=createRateLimiter({limit:Number(process.env.AUTH_RATE_LIMIT_PER_MINUTE||10)});
-const AUTH_CODE=/^[A-Za-z0-9._~-]{8,512}$/,PKCE_VERIFIER=/^[A-Za-z0-9._~-]{43,128}$/,AUTH_TOKEN=/^[A-Za-z0-9._~+/=-]{8,4096}$/;
-const AUTH_CACHE_MS=Math.min(300000,Math.max(60000,Number(process.env.AUTH_CACHE_MS||120000))),AUTH_CACHE_MAX=Number(process.env.AUTH_CACHE_MAX||2000),authCache=new Map();
-const authConfigured=()=>Boolean(process.env.SUPABASE2_URL&&process.env.SUPABASE2_ANON_KEY);
-// 前端導向 Google 登入用的副庫網址：只回 origin，不回任何金鑰；沒開登入時回 null。
-function authPublicUrl(){if(!authConfigured())return null;try{const url=new URL(process.env.SUPABASE2_URL);return url.protocol==='https:'||['127.0.0.1','localhost'].includes(url.hostname)?url.origin:null}catch{return null}}
-const bearerOf=req=>{const hit=/^Bearer (\S+)$/.exec(String(req.headers.authorization||''));return hit&&AUTH_TOKEN.test(hit[1])?hit[1]:''};
-const tokenId=token=>createHash('sha256').update(token).digest('hex');
-async function supabaseAuth(path,{method='POST',body,token}={}){
-  const response=await fetch(`${process.env.SUPABASE2_URL}/auth/v1${path}`,{method,redirect:'error',headers:{apikey:process.env.SUPABASE2_ANON_KEY,'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:body===undefined?undefined:JSON.stringify(body)});
-  return {status:response.status,ok:response.ok,data:await response.json().catch(()=>null)};
-}
-// Supabase 的 session → 前端要的四個欄位；欄位不齊就當上游壞掉。
-function authSession(data){
-  const expiresAt=Number.isFinite(data?.expires_at)?data.expires_at:Number.isFinite(data?.expires_in)?Math.floor(Date.now()/1000)+data.expires_in:NaN;
-  if(typeof data?.access_token!=='string'||!AUTH_TOKEN.test(data.access_token)||typeof data.refresh_token!=='string'||!AUTH_TOKEN.test(data.refresh_token)||!Number.isFinite(expiresAt))return null;
-  return {accessToken:data.access_token,refreshToken:data.refresh_token,expiresAt,email:typeof data.user?.email==='string'?data.user.email.slice(0,320):''};
-}
-// JWT 的 exp（秒）；讀不到就不限制。快取不會留到 token 過期之後。
-function tokenExpiry(token){try{const exp=JSON.parse(Buffer.from(token.split('.')[1],'base64url').toString('utf8')).exp;return Number.isFinite(exp)?exp*1000:Infinity}catch{return Infinity}}
-// Bearer → 這個 Google 帳號的同步鍵。'' = token 無效（401）；上游壞掉丟錯（502）。只快取成功的結果，以 token 的 SHA-256 為鍵、有上限筆數。
-async function googleSyncKey(token){
-  const id=tokenId(token),now=Date.now(),hit=authCache.get(id);
-  if(hit&&hit.until>now)return hit.key;
-  if(hit)authCache.delete(id);
-  const reply=await supabaseAuth('/user',{method:'GET',token});
-  if(reply.status>=400&&reply.status<500)return '';
-  if(!reply.ok)throw new Error(`AUTH_${reply.status}`);
-  const userId=reply.data?.id;if(typeof userId!=='string'||!userId)return '';
-  const key=syncHash(`google:${userId}`),until=Math.min(now+AUTH_CACHE_MS,tokenExpiry(token));
-  if(until<=now)return key;
-  if(authCache.size>=AUTH_CACHE_MAX){for(const [entry,value] of authCache)if(value.until<=now)authCache.delete(entry);while(authCache.size>=AUTH_CACHE_MAX)authCache.delete(authCache.keys().next().value)}
-  authCache.set(id,{key,until});
-  return key;
-}
+const authSync=createAuthSyncController({getEnv:()=>process.env,fetchFn:fetch,supabaseFetch,now:Date.now});
+const authPublicUrl=()=>authSync.configUrl();
 async function handleAuth(req,res,action){
   if(!authLimiter(clientIp(req)))return syncError(res,429,'登入太頻繁，請一分鐘後再試',{'Retry-After':'60'});
-  if(action==='logout'){
-    // 登出：盡量請 Supabase 撤銷這個 session；成不成功都回 204（本機的 token 前端已經清掉）。
-    const token=bearerOf(req);
-    if(token){authCache.delete(tokenId(token));if(authConfigured())await supabaseAuth('/logout?scope=local',{token}).catch(()=>null)}
-    res.writeHead(204,{'Cache-Control':'no-store'});return res.end();
-  }
-  let body;try{body=await readJsonBody(req,10000)}catch(error){return syncError(res,error.message==='BODY_TOO_LARGE'?413:400,error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤')}
-  const keys=Object.keys(body&&typeof body==='object'&&!Array.isArray(body)?body:{}).sort().join();
-  const valid=action==='exchange'?keys==='code,verifier'&&typeof body.code==='string'&&AUTH_CODE.test(body.code)&&typeof body.verifier==='string'&&PKCE_VERIFIER.test(body.verifier):keys==='refreshToken'&&typeof body.refreshToken==='string'&&AUTH_TOKEN.test(body.refreshToken);
-  if(!valid)return syncError(res,400,'登入請求格式不正確'); // 格式不對不打上游
-  if(!authConfigured())return syncError(res,503,'Google 登入尚未開放');
-  try{
-    const reply=action==='exchange'?await supabaseAuth('/token?grant_type=pkce',{body:{auth_code:body.code,code_verifier:body.verifier}}):await supabaseAuth('/token?grant_type=refresh_token',{body:{refresh_token:body.refreshToken}});
-    if(reply.status>=400&&reply.status<500)return syncError(res,401,'登入已失效，請重新用 Google 登入');
-    const session=reply.ok&&authSession(reply.data);
-    if(!session)return syncError(res,502,'登入服務暫時無法使用');
-    return json(res,200,{data:session});
-  }catch{return syncError(res,502,'登入服務暫時無法使用')}
+  const result=await authSync.handleAuth({action,authorizationHeader:req.headers.authorization,readBody:maxBytes=>readJsonBody(req,maxBytes)});
+  if(result.status===204){res.writeHead(204,{'Cache-Control':'no-store'});return res.end()}
+  return json(res,result.status,result.body,result.headers||{});
 }
 async function handleCollectionSync(req,res,action){
-  const {LIMITS}=CollectionStore;
   // 同一個 IP 每分鐘幾次（pull 與 push 合計）；先計數再讀內容，亂打的也算。
   if(!syncLimiter(clientIp(req)))return syncError(res,429,'同步太頻繁，請一分鐘後再試',{'Retry-After':'60'});
-  // 帶 Authorization 就是 Google 登入：body 不帶 code，鍵由 token 換到的帳號 ID 決定。標頭格式不對直接 401。
-  const google=req.headers.authorization!==undefined,token=google?bearerOf(req):'';
-  if(google&&!token)return syncError(res,401,'登入已失效，請重新用 Google 登入');
-  const maxBodyBytes=action==='push'?LIMITS.fileMaxChars:1024;
-  const declaredLength=Number(req.headers['content-length']);
-  const smallPushDeclared=action==='push'&&Number.isFinite(declaredLength)&&declaredLength>=0&&declaredLength<=4096;
-  let hash='';
-  // Google 登入的 push 若 body 較大或未知大小（chunked），先驗 token 再讀 2 MB body，避免未授權請求放大 CPU/記憶體負載。
-  if(google&&action==='push'&&!smallPushDeclared){
-    if(!secondDbConfigured()||!authConfigured())return syncError(res,503,'雲端同步尚未開啟');
-    try{hash=await googleSyncKey(token)}catch{return syncError(res,502,'同步服務暫時無法使用')}
-    if(!hash)return syncError(res,401,'登入已失效，請重新用 Google 登入');
-  }
-  let body;try{body=await readJsonBody(req,google&&action==='push'&&smallPushDeclared?4096:maxBodyBytes)}catch(error){return syncError(res,error.message==='BODY_TOO_LARGE'?413:400,error.message==='BODY_TOO_LARGE'?'請求內容過大':'JSON 格式錯誤')}
-  const keys=Object.keys(body&&typeof body==='object'&&!Array.isArray(body)?body:{}).sort().join(),code=google?'':CollectionStore.normalizeSyncCode(body?.code);
-  const expected=google?(action==='push'?'items,revision':''):(action==='push'?'code,items,revision':'code');
-  if(keys!==expected||(!google&&!code))return syncError(res,400,'同步碼或請求格式不正確'); // 格式不對不查庫
-  if(google&&!hash){
-    if(!secondDbConfigured()||!authConfigured())return syncError(res,503,'雲端同步尚未開啟');
-    try{hash=await googleSyncKey(token)}catch{return syncError(res,502,'同步服務暫時無法使用')}
-    if(!hash)return syncError(res,401,'登入已失效，請重新用 Google 登入');
-  }
-  let clean=null,revision=0;
-  if(action==='push'){
-    ({revision}=body);
-    if(!Number.isInteger(revision)||revision<0||revision>SYNC_REVISION_MAX||!Array.isArray(body.items)||body.items.length>LIMITS.itemsMax)return syncError(res,400,'同步碼或請求格式不正確');
-    const now=Date.now(),seen=new Set(),rows=[];
-    for(const [index,raw] of body.items.entries()){
-      const entry=CollectionStore.normalizeSyncEntry(raw);
-      if(!entry)return json(res,400,{error:'收藏資料格式不正確',index:index+1});
-      if(seen.has(entry.id))return json(res,400,{error:'收藏資料有重複的卡片',index:index+1});
-      seen.add(entry.id);
-      // 裝置時鐘太超前的時間會讓這筆永遠贏過其他裝置：超過一天就當成現在。
-      rows.push(Date.parse(entry.updatedAt)>now+CollectionStore.SYNC_FUTURE_MS?{...entry,updatedAt:new Date(now).toISOString()}:entry);
-    }
-    clean=CollectionStore.mergeSync([],rows,now); // 同時清掉過期的墓碑、排好順序
-    if(JSON.stringify(clean).length>LIMITS.fileMaxChars)return syncError(res,413,'收藏資料過大');
-  }
-  if(!secondDbConfigured()||(google&&!authConfigured()))return syncError(res,503,'雲端同步尚未開啟');
-  if(!google)hash=syncHash(code);
-  try{
-    if(action==='delete'){
-      // 刪掉這組碼在雲端的資料；沒有資料也算成功（結果一樣：雲端沒有它）。
-      await supabaseFetch(`/collection_sync?sync_key_hash=eq.${hash}`,{db:'ip2',method:'DELETE',headers:{Prefer:'return=minimal'}});
-      return json(res,200,{data:{deleted:true}});
-    }
-    if(action==='pull'){
-      const row=(await supabaseFetch(`/collection_sync?sync_key_hash=eq.${hash}&select=items,revision,updated_at&limit=1`,{db:'ip2'}))?.[0];
-      return json(res,200,{data:{items:Array.isArray(row?.items)?row.items:[],revision:row?.revision||0,updatedAt:row?.updated_at||null}});
-    }
-    const updatedAt=new Date().toISOString(),conflict=()=>syncError(res,409,'雲端資料已被另一台裝置更新，請先同步再試一次');
-    if(revision===0){
-      // 第一次寫入：主鍵衝突（別台剛建好）就是版本不符。
-      try{await supabaseFetch('/collection_sync',{db:'ip2',method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({sync_key_hash:hash,items:clean,revision:1,updated_at:updatedAt})})}
-      catch(error){if(String(error.message).startsWith('SUPABASE_409'))return conflict();throw error}
-    }else{
-      // UPDATE ... WHERE revision = 舊值 在資料庫裡是原子的；沒更新到任何一列（版本不符或這組碼沒有資料）就是 409。
-      const rows=await supabaseFetch(`/collection_sync?sync_key_hash=eq.${hash}&revision=eq.${revision}&select=revision`,{db:'ip2',method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({items:clean,revision:revision+1,updated_at:updatedAt})});
-      if(!Array.isArray(rows)||!rows.length)return conflict();
-    }
-    return json(res,200,{data:{revision:revision+1,updatedAt}});
-  }catch{return syncError(res,502,'同步服務暫時無法使用')}
+  const result=await authSync.handleSync({action,authorizationHeader:req.headers.authorization,contentLengthHeader:req.headers['content-length'],readBody:maxBytes=>readJsonBody(req,maxBytes)});
+  return json(res,result.status,result.body,result.headers||{});
 }
 async function loadAdminCatalogHealth(){
   const [summary,missingChinese,missingSeries,pendingPrintingImages,pendingCardImages,storage,secondStorage]=await Promise.all([

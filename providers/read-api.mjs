@@ -2,6 +2,15 @@
 import { marketEventsFor, catalogEventsFrom, mergeMarketEvents } from './market-events.mjs';
 import { normalizeMarketRecord, withTwd } from './normalize.mjs';
 import { REFERENCE_BODY_MAX_BYTES, buildReferencePrices, referenceQueryParams, validateReferenceRequest } from './collection-valuation.mjs';
+import { createAuthSyncController } from './auth-sync.mjs';
+import {
+  KV_KEYS,
+  buildFallbackPackPrizes,
+  buildFallbackSeriesHits,
+  normalizeKvCatalogCoverage,
+  normalizeKvPackPrizes,
+  normalizeKvSeriesHits
+} from './kv-snapshots.mjs';
 import { buildSeriesIndex, foldSearch, foldedSpan, gameHintFor, parseSearchQuery, printingMatchesRarity, rarityMatchValues, rarityOnlyExample } from './search-query.mjs';
 import { catalogCollectionAllowed, imageDisplayPolicies, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './source-policy.mjs';
 import { createTcgdexPricing } from './tcgdex-pricing.mjs';
@@ -186,7 +195,14 @@ async function readJsonBodyBounded(request, maxBytes) {
  * 建立 Worker 讀取 API 引擎，綁定 env、fetchFn、now 與選用的 Edge Cache，完全不使用 Node 專屬 API。
  */
 export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date.now, edgeCache = undefined } = {}) {
+  let currentEnv = env;
   const db = createSupabaseClient({ env, fetchFn });
+  const authSync = createAuthSyncController({
+    getEnv: () => currentEnv,
+    fetchFn,
+    supabaseFetch: (path, opts) => db.fetchJson(path, opts),
+    now
+  });
   const jpyToTwdFallback = Number(env?.JPY_TO_TWD || 0.22);
   const usdToTwdFallback = Number(env?.USD_TO_TWD || 32);
   const resolvedEdgeCache = edgeCache === undefined ? (globalThis.caches?.default || null) : edgeCache;
@@ -208,12 +224,14 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   const BROWSE_CACHE_BYTES_MAX = 12 * 1024 * 1024;
   const BROWSE_CACHE_KEYS_MAX = 200;
   const SNAPSHOT_TTL_MS = Math.max(1000, Number(env?.CATALOG_SNAPSHOT_CACHE_MS) || BROWSE_CACHE_MS);
+  const COVERAGE_TTL_MS = Math.max(1000, Number(env?.CATALOG_SNAPSHOT_CACHE_MS) || 60 * 60 * 1000);
   const SNAPSHOT_MAX_STALE_MS = Math.max(1000, Number(env?.CATALOG_SNAPSHOT_MAX_STALE_MS) || 24 * 60 * 60 * 1000);
   const CATALOG_CACHE_TTL_MS = Number(env?.CATALOG_CACHE_TTL_MS ?? 600000);
   const PRODUCT_CACHE_TTL_MS = Number(env?.PRODUCT_CACHE_TTL_MS ?? 600000);
 
   const fxCache = { data: null, expiresAt: 0 };
   const catalogHealthCache = createBoundedSnapshotCache({ ttlMs: SNAPSHOT_TTL_MS, maxStaleMs: SNAPSHOT_MAX_STALE_MS, now, serveStaleWhileRevalidate: true });
+  const catalogCoverageFallbackCache = createBoundedSnapshotCache({ ttlMs: COVERAGE_TTL_MS, maxStaleMs: SNAPSHOT_MAX_STALE_MS, now, serveStaleWhileRevalidate: true });
   const trendCache = { data: null, expiresAt: 0, promise: null };
   const TREND_CACHE_MS = 5 * 60 * 1000;
   const storageCaches = {
@@ -1886,8 +1904,20 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     return promise;
   }
 
+  async function readKvRaw(activeEnv, key) {
+    const kv = activeEnv?.SNAPSHOT_KV || activeEnv?.CARDSCOPE_KV || null;
+    if (!kv || typeof kv.get !== 'function') return null;
+    try {
+      return await kv.get(key);
+    } catch (error) {
+      console.error('kv snapshot read failed', key, error?.message || error);
+      return null;
+    }
+  }
+
   // ---- Endpoint Dispatch ----
-  async function handle(apiKey, request, url, ctx) {
+  async function handle(apiKey, request, url, ctx, runtimeEnv = env) {
+    currentEnv = runtimeEnv || env;
     try {
       switch (apiKey) {
         case 'catalog-health': {
@@ -2641,6 +2671,84 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           } catch {
             return jsonRes(502, { error: '資料庫查詢失敗' });
           }
+        }
+
+        case 'auth-config':
+          return jsonRes(200, { data: { url: authSync.configUrl() } });
+
+        case 'auth-exchange':
+        case 'auth-refresh':
+        case 'auth-logout': {
+          const action = apiKey.slice(5);
+          const result = await authSync.handleAuth({
+            action,
+            authorizationHeader: request.headers.get('authorization'),
+            readBody: maxBytes => readJsonBodyBounded(request, maxBytes)
+          });
+          if (result.status === 204) {
+            return new Response(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
+          }
+          return jsonRes(result.status, result.body, result.headers || {});
+        }
+
+        case 'sync-pull':
+        case 'sync-push':
+        case 'sync-delete': {
+          const action = apiKey.slice(5);
+          const result = await authSync.handleSync({
+            action,
+            authorizationHeader: request.headers.has('authorization') ? request.headers.get('authorization') : undefined,
+            contentLengthHeader: request.headers.get('content-length'),
+            readBody: maxBytes => readJsonBodyBounded(request, maxBytes)
+          });
+          return jsonRes(result.status, result.body, result.headers || {});
+        }
+
+        case 'pack-prizes': {
+          const cacheReq = canonicalEdgeKeyRequest('pack-prizes', '/api/pack-prizes');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          const kvValue = normalizeKvPackPrizes(await readKvRaw(currentEnv, KV_KEYS.packPrizes));
+          if (kvValue) {
+            const res = jsonRes(200, kvValue, SHORT_CACHE);
+            writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          }
+          return jsonRes(200, buildFallbackPackPrizes(now()), SHORT_CACHE);
+        }
+
+        case 'series-hits': {
+          const cacheReq = canonicalEdgeKeyRequest('series-hits', '/api/series-hits');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          const kvValue = normalizeKvSeriesHits(await readKvRaw(currentEnv, KV_KEYS.seriesHits));
+          if (kvValue) {
+            const res = jsonRes(200, kvValue, SHORT_CACHE);
+            writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          }
+          return jsonRes(200, await buildFallbackSeriesHits(now()), SHORT_CACHE);
+        }
+
+        case 'catalog-coverage': {
+          const cacheReq = canonicalEdgeKeyRequest('catalog-coverage', '/api/catalog/coverage');
+          const cached = await matchEdgeCache(cacheReq);
+          if (cached) return cached;
+          const kvValue = normalizeKvCatalogCoverage(await readKvRaw(currentEnv, KV_KEYS.catalogCoverage), {
+            nowMs: now(),
+            ttlMs: COVERAGE_TTL_MS,
+            maxStaleMs: SNAPSHOT_MAX_STALE_MS
+          });
+          if (kvValue) {
+            const res = jsonRes(200, kvValue, SHORT_CACHE);
+            if (!kvValue.data.cache?.stale) writeEdgeCache(ctx, cacheReq, res);
+            return res;
+          }
+          const fallback = await catalogCoverageFallbackCache.get(
+            async () => buildFallbackCatalogCoverage(getFallbackCatalogCopy(), {}, now()),
+            { waitUntil: p => ctx?.waitUntil?.(p) }
+          );
+          return jsonRes(200, { data: { ...fallback.data, cache: fallback.cache } }, SHORT_CACHE);
         }
 
         default:

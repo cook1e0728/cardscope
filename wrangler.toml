@@ -29,17 +29,27 @@ run_worker_first = [
 [vars]
 ORIGIN_URL = "https://cardscope.onrender.com"
 PUBLIC_BASE_URL = "https://cardseektcg.com"
-# 讀取端點開關（預設全部搬遷）：可用 "none" 全數退回 Render，或 "-cards,-search" 單支切回代理。
+# 端點開關（預設全部搬遷）：可用 "none" 全數退回 Render，或 "-cards,-search,-sync-push,-auth-exchange,-pack-prizes" 單支切回代理。
 # MIGRATED_API = "all"
 # 可選非機密調整：
 # SUPABASE2_TIMEOUT_MS = "4000"
+# AUTH_RATE_LIMIT_PER_MINUTE = "10"
+# SYNC_RATE_LIMIT_PER_MINUTE = "6"
+# AUTH_CACHE_MS = "120000"
 # JPY_TO_TWD = "0.22"
 # USD_TO_TWD = "32"
+
+# 首頁統計與收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）Workers KV 綁定（由使用者建立 namespace 後填入 id 並取消註解）：
+# 建立指令：npx wrangler kv namespace create SNAPSHOT_KV
+# [[kv_namespaces]]
+# binding = "SNAPSHOT_KV"
+# id = ""
 
 # 部署前需以 `wrangler secret put <NAME>` 設定的機密環境變數名稱（嚴禁寫入設定值）：
 # - SUPABASE_URL
 # - SUPABASE_SERVICE_KEY
 # - SUPABASE2_URL
 # - SUPABASE2_SERVICE_KEY
+# - SUPABASE2_ANON_KEY（Google 登入 PKCE 交換與 /auth/v1/user Bearer 驗證用）
 # - ORIGIN_VERIFY_SECRET
-# - SCRAPE_SECRET（選用：僅用於 /api/providers 顯示 yuyutei.enabled 旗標）
+# - SCRAPE_SECRET（選用：用於 /api/providers 顯示 yuyutei.enabled 旗標與管理端點限流豁免）
