@@ -24,13 +24,27 @@ const numberOrNull = value => {
 
 const objectOrEmpty = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 
+const RARITY_TOKEN_CACHE_MAX = 512;
+const rarityTokenCache = new Map();
+
 // ★ 留著：UNION ARENA 平行卡的 SR★、SR★★★ 是不同稀有度（其他遊戲沒有用到 ★）。
 export function rarityToken(value){
-  return String(value ?? '').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g,'').replace(/[^\p{L}\p{N}+★]/gu,'');
+  if(typeof value==='string'){
+    const cached=rarityTokenCache.get(value);
+    if(cached!==undefined)return cached;
+  }
+  const token=String(value ?? '').normalize('NFKC').toLocaleUpperCase().replace(/[\s・·._:：'’"\-]/g,'').replace(/[^\p{L}\p{N}+★]/gu,'');
+  if(typeof value==='string'){
+    if(rarityTokenCache.size>=RARITY_TOKEN_CACHE_MAX)rarityTokenCache.delete(rarityTokenCache.keys().next().value);
+    rarityTokenCache.set(value,token);
+  }
+  return token;
 }
 
 export function rarityDefinition(gameId){
-  return RARITY_RANKINGS.systems?.[String(gameId ?? '').trim()] || null;
+  const systems=RARITY_RANKINGS.systems || {};
+  const key=String(gameId ?? '').trim();
+  return Object.hasOwn(systems,key)?systems[key]:null;
 }
 
 function rarityEntries(definition){

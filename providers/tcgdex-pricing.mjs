@@ -79,8 +79,9 @@ export function dropStaleTcgdexPricing(records, { now = Date.now(), maxAgeMs = T
   });
 }
 
-export function createTcgdexPricing({ language = 'ja', fetch: fetchImpl = globalThis.fetch, now = Date.now, ttlMs = TCGDEX_PRICING_TTL_MS, maxAgeMs = TCGDEX_PRICING_MAX_AGE_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS } = {}) {
+export function createTcgdexPricing({ language = 'ja', fetch: fetchImpl = globalThis.fetch, now = Date.now, ttlMs = TCGDEX_PRICING_TTL_MS, maxAgeMs = TCGDEX_PRICING_MAX_AGE_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxEntries = 300 } = {}) {
   const cache = new Map(), pending = new Map();
+  const cap = Math.max(1, Math.floor(Number(maxEntries) || 300));
   async function load(id) {
     const response = await fetchImpl(tcgdexCardUrl(id, language), { headers: { Accept: 'application/json', 'User-Agent': 'CardScope/1.0' }, signal: AbortSignal.timeout(timeoutMs) });
     // A card TCGdex does not know is a stable answer (cached as empty); any other failure is not, so the next request retries.
@@ -96,9 +97,19 @@ export function createTcgdexPricing({ language = 'ja', fetch: fetchImpl = global
     const use = entry => expectedName != null && !sameTcgdexName(entry.name, expectedName, language) ? [] : dropStaleTcgdexPricing(entry.records, { now: now(), maxAgeMs });
     const hit = cache.get(id);
     if (hit && hit.expiresAt > now()) return use(hit);
+    if (hit) cache.delete(id);
     let promise = pending.get(id);
     if (!promise) {
-      promise = load(id).then(entry => { cache.set(id, { ...entry, expiresAt: now() + ttlMs }); return entry; }).finally(() => pending.delete(id));
+      promise = load(id).then(entry => {
+        cache.delete(id);
+        cache.set(id, { ...entry, expiresAt: now() + ttlMs });
+        if (cache.size > cap) {
+          const current = now();
+          for (const [entryKey, cached] of cache) if (cached.expiresAt <= current) cache.delete(entryKey);
+          while (cache.size > cap) cache.delete(cache.keys().next().value);
+        }
+        return entry;
+      }).finally(() => pending.delete(id));
       pending.set(id, promise);
     }
     return use(await promise);

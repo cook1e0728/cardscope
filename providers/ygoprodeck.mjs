@@ -6,14 +6,16 @@ function numeric(value){
 }
 
 /** 建立獨立的 YGOPRODeck 查詢器，支援注入 fetchFn 與 now 以便 Worker 與測試隔離快取。 */
-export function createYgoProDeckClient({fetchFn=null,now=Date.now,cacheMs=CACHE_MS}={}){
+export function createYgoProDeckClient({fetchFn=null,now=Date.now,cacheMs=CACHE_MS,maxEntries=300}={}){
   const cache=new Map();
+  const cap=Math.max(1,Math.floor(Number(maxEntries)||300));
   return async function searchYgoProDeckWithClient(query,{limit=10,fetchFn:callFetch=null}={}){
     const q=String(query||'').trim();
     if(q.length<2) throw new Error('YGOPRODECK_QUERY_TOO_SHORT');
     const key=`${q.toLowerCase()}:${limit}`;
     const hit=cache.get(key);
     if(hit&&hit.expiresAt>now()) return hit.data;
+    if(hit) cache.delete(key);
 
     const url=new URL('https://db.ygoprodeck.com/api/v7/cardinfo.php');
     url.searchParams.set('fname',q);
@@ -57,7 +59,13 @@ export function createYgoProDeckClient({fetchFn=null,now=Date.now,cacheMs=CACHE_
       priceNote:'referencePrices 是 YGOPRODeck 彙整各平台的跨版本最低價，不能當成某個版本的價格；單一版本只能用 sets[].setPriceUsd（來源平台未標示）。不是 CardSeek 驗證成交價。',
       observedAt
     }));
+    cache.delete(key);
     cache.set(key,{data,expiresAt:now()+cacheMs});
+    if(cache.size>cap){
+      const current=now();
+      for(const [entryKey,entry] of cache)if(entry.expiresAt<=current)cache.delete(entryKey);
+      while(cache.size>cap)cache.delete(cache.keys().next().value);
+    }
     return data;
   };
 }

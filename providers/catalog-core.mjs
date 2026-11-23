@@ -119,9 +119,15 @@ export const externalAliasIndex = new Map(Object.entries(EXTERNAL_QUERY_ALIASES)
 
 export function onePieceImageTarget(value) {
   try {
-    const target = new URL(String(value || ''));
+    const raw = String(value || '');
+    if (!raw || raw.length > 512 || /[\u0000-\u001f\u007f\\]/.test(raw)) return null;
+    const target = new URL(raw);
     if (target.protocol !== 'https:' || target.port || target.username || target.password || !ONEPIECE_IMAGE_HOSTS.has(target.hostname)) return null;
-    if (!target.pathname.startsWith('/images/cardlist/card/') || !/\.(?:png|jpe?g|webp)$/i.test(target.pathname)) return null;
+    if (/%2e|%2f|%5c|%00|\\/i.test(target.pathname)) return null;
+    const decoded = decodeURIComponent(target.pathname);
+    if (decoded.includes('..') || /[\u0000-\u001f\u007f\\]/.test(decoded)) return null;
+    if (!decoded.startsWith('/images/cardlist/card/') || !/\.(?:png|jpe?g|webp)$/i.test(decoded)) return null;
+    target.hash = '';
     return target;
   } catch {
     return null;
@@ -327,47 +333,33 @@ export function buildBrowseFacets(rows, printingByCard) {
   return { ...facets, rarityLabels };
 }
 
-/**
- * 系列／目錄瀏覽分頁（Schwartzian transform 預計算排序鍵＋僅 hydrate 分頁切片＋支援快取好的 facets），
- * 在大型系列下維持與原本完全一致的排序／計數結果並壓低單次請求 CPU 消耗。
- */
-export function buildBrowsePage(rows, {
-  region = null,
-  rarity = null,
-  seriesId = null,
-  sort = 'number-asc',
-  limit = 60,
-  offset = 0,
-  printingByCard = new Map(),
-  imageByCard = new Map(),
-  facetStatus = 'complete',
-  priceByCard = null,
-  precomputedFacets = null,
-  siblingUrls = null
-} = {}) {
+export function filterBrowseCards(rows, { region = null, seriesId = null, printingByCard = new Map() } = {}) {
   const regionToken = region ? String(region).toUpperCase() : null;
-  const baseMatching = rows.filter(card => {
+  return rows.filter(card => {
     const printings = printingByCard.get(card.id) || [];
     if (seriesId && card.seriesId !== seriesId && !printings.some(printing => printing.seriesId === seriesId)) return false;
     if (regionToken && !browseValues(card, printings, 'region').some(value => String(value).toUpperCase() === regionToken)) return false;
     return true;
   });
+}
 
+function filterBrowseByRarity(baseMatching, rarity, printingByCard) {
+  if (!rarity) return baseMatching;
   const rarityTokenByGame = new Map();
-  const filtered = rarity
-    ? baseMatching.filter(card => {
-        const game = card?.game;
-        let targetToken = rarityTokenByGame.get(game);
-        if (targetToken === undefined) {
-          targetToken = rarityCanonicalToken(game, rarity);
-          rarityTokenByGame.set(game, targetToken);
-        }
-        if (!targetToken) return true;
-        const printings = printingByCard.get(card.id) || [];
-        return browseValues(card, printings, 'rarity').some(value => rarityCanonicalToken(game, value) === targetToken);
-      })
-    : baseMatching;
+  return baseMatching.filter(card => {
+    const game = card?.game;
+    let targetToken = rarityTokenByGame.get(game);
+    if (targetToken === undefined) {
+      targetToken = rarityCanonicalToken(game, rarity);
+      rarityTokenByGame.set(game, targetToken);
+    }
+    if (!targetToken) return true;
+    const printings = printingByCard.get(card.id) || [];
+    return browseValues(card, printings, 'rarity').some(value => rarityCanonicalToken(game, value) === targetToken);
+  });
+}
 
+function sortBrowseCards(filtered, { sort = 'number-asc', printingByCard = new Map(), priceByCard = null } = {}) {
   const isRaritySort = sort === 'rarity-asc' || sort === 'rarity-desc';
   const isReleaseSort = sort === 'release-asc' || sort === 'release-desc';
   const isNameSort = sort === 'name-asc' || sort === 'name-desc';
@@ -427,9 +419,53 @@ export function buildBrowsePage(rows, {
     return cmpNumber(a, b);
   });
 
+  return keyed.map(({ card }) => card);
+}
+
+/** 預先過濾與排序系列卡片，供大型系列分頁快取安全重用已排序清單而免重複排序。 */
+export function prepareBrowseSeriesSorted(rows, {
+  region = null,
+  rarity = null,
+  seriesId = null,
+  sort = 'number-asc',
+  printingByCard = new Map(),
+  priceByCard = null
+} = {}) {
+  const baseMatching = filterBrowseCards(rows, { region, seriesId, printingByCard });
+  const filtered = filterBrowseByRarity(baseMatching, rarity, printingByCard);
+  return sortBrowseCards(filtered, { sort, printingByCard, priceByCard });
+}
+
+/**
+ * 系列／目錄瀏覽分頁（Schwartzian transform 預計算排序鍵＋僅 hydrate 分頁切片＋支援快取好的 facets 與排序清單），
+ * 在大型系列下維持與原本完全一致的排序／計數結果並壓低單次請求 CPU 消耗。
+ */
+export function buildBrowsePage(rows, {
+  region = null,
+  rarity = null,
+  seriesId = null,
+  sort = 'number-asc',
+  limit = 60,
+  offset = 0,
+  printingByCard = new Map(),
+  imageByCard = new Map(),
+  facetStatus = 'complete',
+  priceByCard = null,
+  precomputedFacets = null,
+  precomputedSorted = null,
+  siblingUrls = null
+} = {}) {
+  const hasSorted = Array.isArray(precomputedSorted);
+  const baseMatching = !precomputedFacets || !hasSorted
+    ? filterBrowseCards(rows, { region, seriesId, printingByCard })
+    : null;
+  const sortedCards = hasSorted
+    ? precomputedSorted
+    : sortBrowseCards(filterBrowseByRarity(baseMatching, rarity, printingByCard), { sort, printingByCard, priceByCard });
+
   const take = Math.min(Math.max(Number(limit) || 60, 1), BROWSE_PAGE_MAX);
   const skip = Math.max(Number(offset) || 0, 0);
-  const page = keyed.slice(skip, skip + take).map(({ card }) => {
+  const page = sortedCards.slice(skip, skip + take).map(card => {
     const hydrated = hydrateBrowseCard(card, printingByCard, imageByCard);
     if (siblingUrls) {
       const urls = siblingUrls.get(card.canonicalId || card.id);
@@ -449,8 +485,8 @@ export function buildBrowsePage(rows, {
 
   return {
     data: page,
-    total: keyed.length,
-    hasMore: skip + page.length < keyed.length,
+    total: sortedCards.length,
+    hasMore: skip + page.length < sortedCards.length,
     facets,
     facetStatus,
     limit: take,

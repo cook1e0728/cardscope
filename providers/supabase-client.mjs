@@ -19,6 +19,11 @@ export const dbForGame = game => (SECOND_DB_GAMES.has(String(game || '')) ? 'ip2
 
 export const dbForId = id => ([...SECOND_DB_GAMES].some(game => String(id || '').startsWith(`${game}-`)) ? 'ip2' : 'main');
 
+const responseByteSizes = new WeakMap();
+export function getResponseByteSize(value) {
+  return value && typeof value === 'object' ? (responseByteSizes.get(value) ?? null) : null;
+}
+
 /**
  * 建立綁定特定環境變數與 fetch 實作的 Supabase 客戶端。
  * Worker 與 Node 可共用相同呼叫介面，避免依賴全域 process.env 或 AsyncLocalStorage。
@@ -37,8 +42,8 @@ export function createSupabaseClient({ env = {}, fetchFn = globalThis.fetch, def
   }
 
   function resolveDb(pathAndQuery, db) {
-    if (db) return db;
-    return MAIN_ONLY_PATH.test(pathAndQuery) ? 'main' : 'main';
+    if (MAIN_ONLY_PATH.test(pathAndQuery)) return 'main';
+    return db === 'ip2' ? 'ip2' : 'main';
   }
 
   function target(pathAndQuery, db) {
@@ -72,7 +77,9 @@ export function createSupabaseClient({ env = {}, fetchFn = globalThis.fetch, def
     const text = await response.text();
     if (!text) return null;
     try {
-      return JSON.parse(text);
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') responseByteSizes.set(parsed, text.length);
+      return parsed;
     } catch {
       return null;
     }

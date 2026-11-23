@@ -59,12 +59,19 @@ export function createBoundedSnapshotCache({
     };
   };
 
-  const read = async loader => {
+  const read = async (loader, options = {}) => {
     if (typeof loader !== 'function') throw new TypeError('snapshot loader must be a function');
+    const waitUntil = options?.waitUntil;
     const nowMs = timestamp(now());
     if (lastSuccess && nowMs < lastSuccess.expiresAt) return result(lastSuccess.data, 'fresh', lastSuccess.observedAt);
     const staleUsable = serveStaleWhileRevalidate && lastSuccess && nowMs - lastSuccess.observedAt <= ttl + maxStale;
-    if (pending) return staleUsable ? result(lastSuccess.data, 'stale', lastSuccess.observedAt) : pending;
+    if (pending) {
+      if (staleUsable) {
+        if (typeof waitUntil === 'function') waitUntil(pending.catch(() => {}));
+        return result(lastSuccess.data, 'stale', lastSuccess.observedAt);
+      }
+      return pending;
+    }
 
     pending = Promise.resolve().then(loader).then(data => {
       if (data === undefined) throw new Error('snapshot loader returned undefined');
@@ -82,7 +89,8 @@ export function createBoundedSnapshotCache({
       pending = null;
     });
     if (staleUsable) {
-      pending.catch(() => {});
+      const background = pending.catch(() => {});
+      if (typeof waitUntil === 'function') waitUntil(background);
       return result(lastSuccess.data, 'stale', lastSuccess.observedAt);
     }
     return pending;
