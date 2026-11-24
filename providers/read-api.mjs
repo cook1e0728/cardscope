@@ -2882,11 +2882,15 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           let response;
           try {
             response = await fetchFn(target.href, {
-              redirect: 'error',
+              redirect: 'manual', // Workers fetch 不支援 'error'，會直接丟例外
               headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8', 'User-Agent': 'CardScope/1.0' },
               signal: AbortSignal.timeout(20000)
             });
           } catch {
+            return jsonRes(502, { error: '航海王官方圖片暫時無法讀取' });
+          }
+          if (response.status >= 300 && response.status < 400) {
+            response.body?.cancel?.().catch(() => {});
             return jsonRes(502, { error: '航海王官方圖片暫時無法讀取' });
           }
           const contentType = String(response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();

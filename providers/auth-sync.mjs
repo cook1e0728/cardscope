@@ -119,7 +119,7 @@ export function createAuthSyncController({
     const base = String(env?.SUPABASE2_URL || '').replace(/\/+$/, '');
     const response = await fetchFn(`${base}/auth/v1${path}`, {
       method,
-      redirect: 'error',
+      redirect: 'manual', // Workers fetch 不支援 'error'，會直接丟例外
       signal: AbortSignal.timeout(12000),
       headers: {
         apikey: String(env?.SUPABASE2_ANON_KEY || ''),

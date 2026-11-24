@@ -1569,11 +1569,11 @@ test('安全審核補測：金鑰／內部錯誤絕不外洩、One Piece SSRF �
     }
     assert.equal(state.extCalls.length, extCountBeforeSsrf, 'SSRF 攔截不可發起任何上游請求');
 
-    // redirect: 'error'、302 轉址失敗 502、SVG MIME 拒絕 502、>5MB 串流中止 502
+    // redirect: 'manual'（Workers 不支援 'error'）、302 轉址失敗 502、SVG MIME 拒絕 502、>5MB 串流中止 502
     const redirectUrl = encodeURIComponent('https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png?redirect=1');
     const redirectPair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, `/api/images/onepiece?url=${redirectUrl}`);
     assert.equal(redirectPair.workerRes.status, 502);
-    assert.ok(seenFetchInits.some(call => call.url.includes('redirect=1') && call.redirect === 'error'), 'fetchFn 必須收到 redirect: error');
+    assert.ok(seenFetchInits.some(call => call.url.includes('redirect=1') && call.redirect === 'manual'), 'fetchFn 必須收到 redirect: manual');
 
     const svgPair = await assertNodeWorkerParity(nodeServer.baseUrl, workerHandler, env, `/api/images/onepiece?url=${encodeURIComponent('https://asia-tc.onepiece-cardgame.com/images/cardlist/card/OP05-001.png?svg=1')}`);
     assert.equal(svgPair.workerRes.status, 502);
