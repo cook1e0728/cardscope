@@ -140,6 +140,7 @@
 - admin 端點仍回 e.message（需管理密鑰，保留診斷）。
 - 首頁 <title>／description 在 `providers/seo.mjs` 的 homeSeo 有一份，改 index.html 文案要同步；Chiron Hei HK 用 text= 子集化，改首頁大標或導覽小卡標題要同步 text=。
 - **使用者回報待辦（11-24）**：①點收藏的登入提示（建議：先存本機、收藏幾張或進收藏頁時柔性提示登入同步，不強制）；②Google 同意畫面顯示 kcqtmmurmggitbivonll.supabase.co 不可信（建議：Worker 當 OAuth callback 自換 id_token→Supabase grant_type=id_token，再做 Google 品牌驗證；需使用者在 Google Cloud 改 redirect URI、Worker 加 GOOGLE_CLIENT_SECRET）；③首頁「最多人開的卡」`home-rails.js` hotCard/prizeCard 是整顆 button、無收藏鈕，最新系列藏在分頁要自己切（建議改 article＋收藏鈕、首屏常駐最新系列列、取消 PICK_WAIT 分頁）。agy Hydrogen 第二意見同向。UI 改動需截圖給使用者同意。
+- **②已上線（11-24，a6b8f3a、3e0d0dc，Worker 28c8f74d）**：Google 登入改走 `/api/auth/google/callback`（Worker 在轉 Render 前自己處理），伺服器用 GOOGLE_CLIENT_ID／SECRET 換 id_token 再向 Supabase `grant_type=id_token` 換 session；前端帶 state 驗證，沒設密鑰時退回舊 Supabase 流程。待：使用者實測登入、Google 品牌送審（標誌用 pwa-icon-512 縮 120）。①③未做。
 
 ## 卡住的地方／需要規劃方決策
 - 搜尋再快一截要把 Render 服務搬到新加坡（離東京資料庫近）；Render 不能改區域，只能新建服務並換網址／環境變數，需使用者決定。
