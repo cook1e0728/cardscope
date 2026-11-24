@@ -957,8 +957,8 @@ html.look-clean body[data-view="landing"] .home-examples button:active{transform
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]{border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);transition:transform .14s var(--ease),box-shadow .14s var(--ease),border-color .14s var(--ease)}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]:active{transform:scale(.97)}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip].on{outline:none;border-color:transparent;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)}
-  /* 6 個連結排成 3 欄 2 列，欄寬對齊 */
-  html.look-clean .brand-footer .footer-links ul{display:grid;grid-template-columns:repeat(3,max-content);column-gap:var(--s6,40px);row-gap:0;margin:var(--s2) 0 0;justify-items:start}
+  /* 6 個連結排成 3 欄 2 列，等寬欄、文字置中 */
+  html.look-clean .brand-footer .footer-links ul{display:grid;width:max-content;grid-template-columns:repeat(3,1fr);column-gap:var(--s5);row-gap:0;margin:var(--s2) 0 0;justify-items:center}
 }
 @media (min-width:761px) and (max-width:899px){
   html.look-clean body[data-view="landing"]:not([data-side]) .hero{grid-template-columns:minmax(0,1fr) 196px;column-gap:20px}
