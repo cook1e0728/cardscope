@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+
+// 全站體檢第 2 批（docs/SITE_AUDIT_SPEC_20261124.md）的回歸檢查。
+const read=name=>readFile(new URL(`../${name}`,import.meta.url),'utf8');
+
+test('HCI-03：系列分頁列只有選中的在 Tab 順序裡，左右鍵／Home／End 切換，重畫後焦點回到新分頁',async()=>{
+  const [band,nav]=await Promise.all([read('series-band.js'),read('series-navigator.js')]);
+  // 取出 tabKey 單獨測按鍵對應
+  const src=band.slice(band.indexOf('const tabKey='),band.indexOf('};',band.indexOf('const tabKey='))+2);
+  const tabKey=vm.runInNewContext(`(()=>{${src};return tabKey})()`);
+  const tabs=[0,1,2].map(i=>({i,closest(){return this}}));
+  const ev=(key,i)=>({key,target:tabs[i],currentTarget:{querySelectorAll:()=>tabs},prevented:false,preventDefault(){this.prevented=true}});
+  assert.deepEqual(['ArrowRight','ArrowLeft','Home','End'].map(k=>tabKey(ev(k,0),'x').i),[1,2,0,2]);
+  assert.equal(tabKey(ev('ArrowRight',2),'x').i,0,'右鍵到底繞回第一個');
+  const enter=ev('Enter',1);assert.equal(tabKey(enter,'x'),null);assert.equal(enter.prevented,false,'其他鍵不攔');
+  assert.ok(band.includes('tabindex="${id===homeTab?0:-1}"'),'首頁最新系列用 roving tabindex');
+  assert.ok(band.includes('tabindex="${id===active?0:-1}"'),'遊戲頁系列分頁用 roving tabindex');
+  assert.match(band,/tabBar\.onkeydown=/);
+  assert.match(band,/band\.querySelector\('\.series-band-tabs'\)\.onkeydown=/);
+  assert.match(band,/if\(back\)tabBar\.querySelector\(`\[data-home-tab=/,'首頁最新系列重畫後焦點放回');
+  assert.match(band,/if\(back\)band\.querySelector\(`\[data-band-tab=/,'遊戲頁系列分頁重畫後焦點放回');
+  assert.match(nav,/tabindex="\$\{bucket\.label===selected\?0:-1\}"/);
+  assert.match(nav,/controls\.onkeydown=/);
+});

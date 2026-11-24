@@ -13,6 +13,12 @@
   // 航海王的台灣官方站賣的是日文印刷的卡（亞洲發行），不是繁中版
   const regionLabel={JP:'日版',TW:'台版',US:'美版',CN:'陸版',KR:'韓版',ASIA:'亞洲英文版'},regionText=(r,g=game)=>r==='TW'&&g==='onepiece'?'亞洲日文版':regionLabel[r];
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  // 分頁列的鍵盤（體檢 HCI-03）：左右鍵循環、Home／End 到頭尾，回傳要切過去的分頁；其他鍵回 null。只有選中的分頁在 Tab 順序裡（roving tabindex）。
+  const tabKey=(event,selector)=>{
+    const tabs=[...event.currentTarget.querySelectorAll(selector)],i=tabs.indexOf(event.target.closest?.(selector)),n=tabs.length,k=event.key;
+    const j=i<0?-1:k==='ArrowRight'?(i+1)%n:k==='ArrowLeft'?(i+n-1)%n:k==='Home'?0:k==='End'?n-1:-1;
+    if(j<0)return null;event.preventDefault();return tabs[j];
+  };
   // 發售日以台灣日期為準：UTC 在台灣 00:00–08:00 還是前一天，會把當天發售的系列標成即將發售。
   const taipeiDate=(daysAgo=0)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(Date.now()-daysAgo*864e5);window.taipeiDate=taipeiDate;
   const today=()=>taipeiDate();
@@ -195,8 +201,11 @@
     host.hidden=!allDated.length;
     let tabBar=host.querySelector('.series-band-tabs');
     if(!tabBar){tabBar=document.createElement('div');tabBar.className='series-band-tabs home-latest-tabs';tabBar.setAttribute('role','tablist');tabBar.setAttribute('aria-label','最新系列快速分類');rail.before(tabBar)}
-    tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
-    tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(!btn)return;homeTab=btn.dataset.homeTab;renderHome()};
+    tabBar.innerHTML=tabs.map(([id,text,count])=>`<button type="button" role="tab" aria-selected="${id===homeTab}" tabindex="${id===homeTab?0:-1}" class="${id===homeTab?'on':''}" data-home-tab="${esc(id)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('');
+    // 重畫會換掉按鈕：焦點原本在分頁列上，就放回新的選中分頁，不掉到 body
+    const pickHome=btn=>{const back=tabBar.contains(document.activeElement);homeTab=btn.dataset.homeTab;renderHome();if(back)tabBar.querySelector(`[data-home-tab="${CSS.escape(homeTab)}"]`)?.focus()};
+    tabBar.onclick=event=>{const btn=event.target.closest('[data-home-tab]');if(btn)pickHome(btn)};
+    tabBar.onkeydown=event=>{const btn=tabKey(event,'[data-home-tab]');if(btn){btn.focus();pickHome(btn)}};
     // 縮圖資料晚到時會重畫一次：保留橫列捲到的位置
     const left=rail.scrollLeft,paint=window.homeSeriesCard?homeCard:(item,extra)=>tile('series',item,extra);
     rail.innerHTML=list.map(item=>paint(item,[(window.CARD_GAMES||[]).find(choice=>choice.id===item.game)?.name||'',regionText(item.region,item.game)||item.region||''].filter(Boolean).join(' '))).join('');
@@ -253,7 +262,7 @@
     };
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionText(id)||id)}</button>`).join('')}</div>`
       +(tools?`<div class="series-band-tools"><input type="search" class="series-band-filter" placeholder="篩選系列：${esc({pokemon:'SV6a、151',onepiece:'OP05、雙璧',yugioh:'25週年、青眼','weiss-schwarz':'芙莉蓮、無職',haikyuu:'烏野、音駒','dragonball-fw':'FB01、悟空','union-arena':'UA、咒術'}[game]||'系列名稱或代號')}…" aria-label="篩選系列名稱或代號" enterkeyhint="search" value="${esc(bandFilter[game]||'')}"><button type="button" class="series-band-expand" data-band-expand aria-expanded="false">展開全部</button></div>`:'')+`</div>`
-      +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
+      +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" tabindex="${id===active?0:-1}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
       +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionText(id)||id)} ${count} 項</button>`).join('')}</div>`:'')
       +(tools?'<p class="series-band-scope" role="status" hidden>篩選中：在這個版本的全部系列裡找，不分上方分頁。</p>':'')
       +`<div class="series-band-rail" role="tabpanel"></div>`;
@@ -266,10 +275,12 @@
       filter.addEventListener('compositionend',apply);
       filter.onkeydown=event=>{if(event.key==='Escape'&&filter.value){event.preventDefault();filter.value='';apply()}};
     }
+    const pickBand=tab=>{const id=tab.dataset.bandTab,back=tab===document.activeElement;bandTab[game]=id;bandFilter[game]='';bandShown[game]=SHOW_STEP;render();if(back)band.querySelector(`[data-band-tab="${CSS.escape(id)}"]`)?.focus()};
+    band.querySelector('.series-band-tabs').onkeydown=event=>{const tab=tabKey(event,'[data-band-tab]');if(tab){tab.focus();pickBand(tab)}};
     band.onclick=event=>{
       const regionButton=event.target.closest('[data-region],[data-search-region]'),target=regionButton?.dataset.region||regionButton?.dataset.searchRegion;
       if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
-      const tab=event.target.closest('[data-band-tab]');if(tab){bandTab[game]=tab.dataset.bandTab;bandFilter[game]='';bandShown[game]=SHOW_STEP;render();return}
+      const tab=event.target.closest('[data-band-tab]');if(tab){pickBand(tab);return}
       if(event.target.closest('[data-band-expand]')){const open=band.classList.contains('is-grid');bandExpanded[game]=!open;if(open)bandFilter[game]='';bandShown[game]=SHOW_STEP;render();band.querySelector('[data-band-expand]')?.focus();return}
       if(event.target.closest('[data-band-more]')){const before=band.querySelectorAll('.band-tile').length;bandShown[game]=(bandShown[game]||SHOW_STEP)+SHOW_STEP;paint();band.querySelectorAll('.band-tile')[before]?.focus();return}
       const card=event.target.closest('.band-tile');if(!card)return;
