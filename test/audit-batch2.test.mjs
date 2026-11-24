@@ -70,3 +70,8 @@ test('UI-06：look-v2 不再用 15px／19px，字級收斂到 12／13／14／16�
   assert.match(v2,/--fs-14:14px;/);
   assert.doesNotMatch(show,/11\.5px/);
 });
+
+test('UI-07：所有停用的按鈕都有停用外觀（淡掉、不浮起、不縮放），不再只限少數幾顆',async()=>{
+  const v2=await read('look-v2.css');
+  assert.match(v2,/html\.look-clean body\[data-view\] button:disabled\{opacity:\.5;box-shadow:none;cursor:default;transform:none\}/);
+});

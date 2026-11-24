@@ -65,7 +65,8 @@ html.look-clean body[data-view] #detail .detail-actions :is(.source-link,.detail
 /* 選單是輸入：凹陷底、不描邊 */
 html.look-clean body[data-view] main select{border:1px solid var(--v2-field);background-color:var(--v2-well)}
 /* 停用的次要按鈕：淡掉、不浮起 */
-html.look-clean body[data-view] :is(#downloadWatchlist):disabled{opacity:.5;box-shadow:none;cursor:default}
+/* 所有停用的按鈕（載入更多、匯入確認、同步鈕…）：淡掉、不浮起、不縮放；原本只有少數按鈕有停用外觀（體檢 UI-07） */
+html.look-clean body[data-view] button:disabled{opacity:.5;box-shadow:none;cursor:default;transform:none}
 /* 4b 主要：實心，一頁最多一顆（載入更多、重試、篩選面板的套用） */
 html.look-clean body[data-view] :is(.load-more,.notice-retry,[data-coll-import-confirm]){
   display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--ip-ink,var(--v2-ink));color:var(--ip-on,#fff);font-size:14px;font-weight:700;line-height:1;text-align:center;box-shadow:0 1px 2px rgba(60,45,20,.24);
