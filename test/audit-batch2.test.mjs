@@ -62,3 +62,11 @@ test('UI-04：次要小字不靠 opacity 變淡；篩選時分頁只淡到 .85�
   const mix=[0x5A,0x53,0x48].map((c,i)=>Math.round(c*.85+[0xF8,0xF5,0xEE][i]*.15).toString(16).padStart(2,'0')).join('');
   assert.ok(ratio(mix,'F8F5EE')>=4.5,`#${mix}`);
 });
+
+test('UI-06：look-v2 不再用 15px／19px，字級收斂到 12／13／14／16／標題；頂欄展示小字至少 12px',async()=>{
+  const [v2,show]=await Promise.all([read('look-v2.css'),read('look-showcase.css')]);
+  const rules=v2.replace(/\/\*[\s\S]*?\*\//g,'');
+  assert.doesNotMatch(rules,/font(-size)?:[^;{}]*\b1[59]px/);
+  assert.match(v2,/--fs-14:14px;/);
+  assert.doesNotMatch(show,/11\.5px/);
+});
