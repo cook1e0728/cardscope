@@ -75,3 +75,11 @@ test('UI-07：所有停用的按鈕都有停用外觀（淡掉、不浮起、不
   const v2=await read('look-v2.css');
   assert.match(v2,/html\.look-clean body\[data-view\] button:disabled\{opacity:\.5;box-shadow:none;cursor:default;transform:none\}/);
 });
+
+test('UI-06：首頁右欄漲跌、時事與行情頁欄標題也不用 15px',async()=>{
+  const [show,layout]=await Promise.all([read('look-showcase.css'),read('catalog-layout.css')]);
+  assert.match(show,/\.mover-name b\{[^}]*font-size:16px/);
+  assert.match(show,/\.mover-chg\{font-size:16px/);
+  assert.match(show,/\.event-list li\{[^}]*font-size:14px/);
+  assert.match(layout,/#trendsSection \.movers-head\{[^}]*font-size:16px/);
+});
