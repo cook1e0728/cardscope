@@ -95,8 +95,8 @@ function fakeDom(){
   const mk=id=>({dataset:{railsTab:id},classList:{toggle(name,on){this.on=on}},attrs:{},tabIndex:0,focused:false,setAttribute(k,v){this.attrs[k]=v},focus(){this.focused=true},closest(){return this}});
   const tabs=['latest','trending','hot'].map(mk),panels=Object.fromEntries(['latest','trending','hot'].map(id=>[id,{hidden:id!=='latest',innerHTML:''}]));
   const handlers={},bar={addEventListener:(type,fn)=>handlers[type]=fn,querySelectorAll:()=>tabs};
-  const section={dataset:{},querySelector:()=>bar};
-  const doc={getElementById:id=>id==='homeRails'?section:id.startsWith('railsPanel-')?panels[id.slice(11)]:null};
+  const section={dataset:{},querySelector:()=>bar,addEventListener:(type,fn)=>handlers['section-'+type]=fn};
+  const doc={getElementById:id=>id==='homeRails'?section:id.startsWith('railsPanel-')?panels[id.slice(11)]:id.startsWith('railsTab-')?tabs.find(t=>t.dataset.railsTab===id.slice(9)):null};
   return {doc,tabs,panels,section,handlers,selected:()=>tabs.find(tab=>tab.attrs['aria-selected']==='true')?.dataset.railsTab,visible:()=>Object.keys(panels).filter(id=>!panels[id].hidden)};
 }
 
@@ -117,8 +117,8 @@ test('預設：最熱有資料就選最熱，兩個請求各打一次；首頁�
   assert.deepEqual(calls.filter(url=>url==='/api/hot-cards').length,1);
 });
 
-test('預設：/api/hot-cards 404、空陣列、連線失敗時留在最新，最熱面板是安靜的空白狀態',async()=>{
-  for(const response of [undefined,ok({data:[],meta:{windowDays:7,minOpens:3}}),ok({data:null}),new Error('offline'),{ok:true,json:async()=>{throw new Error('bad json')}}]){
+test('預設：/api/hot-cards 404、空陣列時留在最新，最熱面板是安靜的空白狀態',async()=>{
+  for(const response of [undefined,ok({data:[],meta:{windowDays:7,minOpens:3}}),ok({data:null})]){
     const dom=fakeDom();
     load({doc:dom.doc,responses:{'/api/hot-cards':response,'/api/pack-prizes':response}});
     await tick();await tick();await tick();
@@ -126,6 +126,28 @@ test('預設：/api/hot-cards 404、空陣列、連線失敗時留在最新，�
     assert.match(dom.panels.hot.innerHTML,/熱門排行統計中/);
     assert.match(dom.panels.trending.innerHTML,/近期沒有新彈的大獎資料/);
     assert.equal('pending' in dom.section.dataset,false,'失敗也要解除隱藏');
+  }
+});
+
+test('讀取失敗（連線中斷、5xx、壞 JSON）不能畫成「沒有資料」：寫「暫時讀不到」並給重試鈕，重試會重新請求（體檢 HCI-05）',async()=>{
+  for(const response of [new Error('offline'),{ok:false,status:502,json:async()=>({})},{ok:true,json:async()=>{throw new Error('bad json')}}]){
+    const dom=fakeDom();
+    const {calls}=load({doc:dom.doc,responses:{'/api/hot-cards':response,'/api/pack-prizes':response}});
+    await tick();await tick();await tick();
+    assert.equal(dom.selected(),undefined);
+    for(const id of ['hot','trending']){
+      assert.match(dom.panels[id].innerHTML,/暫時讀不到/);
+      assert.match(dom.panels[id].innerHTML,new RegExp(`data-rails-retry="${id}"`));
+    }
+    assert.doesNotMatch(dom.panels.hot.innerHTML,/熱門排行統計中/);
+    assert.doesNotMatch(dom.panels.trending.innerHTML,/近期沒有新彈的大獎資料/);
+    assert.equal(dom.tabs.find(t=>t.dataset.railsTab==='hot').hidden,false,'失敗的分頁不能被當成「不到一排」藏起來');
+    const before=calls.filter(url=>url==='/api/hot-cards').length;
+    dom.handlers['section-click']({target:{closest:()=>({dataset:{railsRetry:'hot'}})}});
+    assert.match(dom.panels.hot.innerHTML,/讀取中/,'按重試先回到讀取中');
+    assert.equal(dom.tabs.find(t=>t.dataset.railsTab==='hot').focused,true,'焦點回到分頁，不掉到頁首');
+    await tick();await tick();
+    assert.equal(calls.filter(url=>url==='/api/hot-cards').length,before+1);
   }
 });
 

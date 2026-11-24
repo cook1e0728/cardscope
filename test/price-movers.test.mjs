@@ -63,7 +63,7 @@ test('漲跌榜第一次讀取失敗（例如部署後 502）會再試一次；�
   calls = 0;
   const failing = {fetch: async () => { calls++; throw new Error('offline'); }};
   vm.runInNewContext(source, {window: failing, fetch: failing.fetch, setTimeout: fn => fn()});
-  assert.equal(await failing.priceMoversShared.request(), null);
+  assert.equal((await failing.priceMoversShared.request())?.failed, true, '兩次都失敗要標成讀取失敗，不能當成沒資料');
   assert.equal(calls, 2);
   await failing.priceMoversShared.request();
   assert.equal(calls, 4, '失敗後不留著壞掉的結果，下一次會重新請求');

@@ -47,7 +47,7 @@ html.look-clean body[data-view] header.top .nav button:focus-visible{outline:2px
    共同：高 44px、同一個圓角、按下縮到 97%、只轉場要變的屬性、滑過效果只給滑鼠。
    選中狀態＝粗體＋1.5px 墨色細框（與頂欄目前頁同一套語言），遊戲色只留在字與細線上。 */
 /* 4a 次要 */
-html.look-clean body[data-view] :is(.cards-mode,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.detail-collect button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]),
+html.look-clean body[data-view] :is(.cards-mode,.detail-collect-state,.source-link,.detail-price,.detail-price-retry,.rails-retry,.version-switch,.product-category,.series-group,.series-band-expand,.series-band-more,.suggest-chip,.applied-chip,.ptl-chip,.ptl-play,.ptl-event-day,.cs-motion-toggle,.series-sort button,.detail-collect button,.series-band-regions button,.close,.detail-nav,[data-coll-import-cancel]),
 html.look-clean body[data-view] :is(#downloadWatchlist,#copyReportTemplate),
 html.look-clean body[data-view] header.top .nav button{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);border:1px solid var(--v2-line);border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:14px;font-weight:600;line-height:1;text-align:center;box-shadow:var(--v2-shadow);
@@ -161,6 +161,11 @@ html.look-clean body[data-view] #homeRails #homeLatestTitle{position:absolute;wi
 .rails-head .meta{font-size:var(--fs-sub);color:var(--v2-ink-2)}
 .rails-rail{display:flex;gap:12px;overflow-x:auto;margin-inline:-4px;padding:8px 4px 14px;scroll-padding-inline:4px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
 .rails-note{margin:0;padding:24px 0;color:var(--v2-ink-2);font-size:15px}
+/* 讀取失敗：一句話＋重試鈕（體檢 HCI-05） */
+.rails-failed{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.rails-failed p{margin:0}
+.rails-retry{padding:0 16px}
+.trend-empty .rails-retry{margin-top:8px}
 /* 卡片：沿用漲跌榜的 trend-card 結構，統一白底紙片＋細框線 */
 html.look-clean body[data-view] #homeRails .trend-card{display:block;flex:0 0 190px;width:190px;min-width:0;padding:10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font:inherit;text-align:left;cursor:pointer;scroll-snap-align:start;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
 html.look-clean body[data-view] #homeRails .trend-card:active{transform:scale(.97)}
