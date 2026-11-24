@@ -1398,6 +1398,8 @@ async function enableGoogleSync(session){
 }
 // 從 Google 導回 ?view=collection&code=...（或 error=...）：立刻把網址上的參數清掉，拿 sessionStorage 的 verifier 向自家伺服器換 token（verifier 用過即刪）。
 async function completeGoogleRedirect(){
+  // 登入失敗的原因寫在同步對話框裡；對話框沒開使用者就看不到，所以失敗時直接打開它（體檢 SEC-05）
+  const fail=text=>{setSyncNotice(text);openSyncDialog();return false};
   if(typeof location==='undefined'||!location.search)return false;
   const params=new URLSearchParams(location.search),code=params.get('code'),state=params.get('state'),oauthError=params.get('error')||(params.get('login')==='failed'?'failed':''),oauthDesc=params.get('error_description');
   if(!code&&!oauthError)return false;
@@ -1407,21 +1409,21 @@ async function completeGoogleRedirect(){
   if(!code){
     try{sessionStorage.removeItem(PKCE_KEY)}catch{}
     try{sessionStorage.removeItem(OAUTH_STATE_KEY)}catch{}
-    setSyncNotice(oauthError==='access_denied'?'已取消 Google 登入，本機收藏不受影響。':oauthError==='failed'?'Google 登入沒有完成，本機收藏不受影響。':`${oauthDesc||oauthError||'Google 登入失敗'}，本機收藏不受影響。`);
-    return false;
+    return fail(oauthError==='access_denied'?'已取消 Google 登入，本機收藏不受影響。':oauthError==='failed'?'Google 登入沒有完成，本機收藏不受影響。':`${oauthDesc||oauthError||'Google 登入失敗'}，本機收藏不受影響。`);
   }
   let verifier='',savedState='';
   try{verifier=sessionStorage.getItem(PKCE_KEY)||'';savedState=sessionStorage.getItem(OAUTH_STATE_KEY)||'';sessionStorage.removeItem(PKCE_KEY);sessionStorage.removeItem(OAUTH_STATE_KEY)}catch{}
   // 帶 state 的是自家網域回呼：state 要和出發時存的一樣（防 CSRF 登入），交換時註明 provider。
-  if(state&&state!==savedState){setSyncNotice('登入驗證不符，請再按一次「用 Google 登入」。');return false}
-  if(!verifier){setSyncNotice('登入驗證已過期，請再按一次「用 Google 登入」。');return false}
+  if(state&&state!==savedState)return fail('登入驗證不符，請再按一次「用 Google 登入」。');
+  if(!verifier)return fail('登入驗證已過期，請再按一次「用 Google 登入」。');
   syncUi.authBusy=true;setSyncNotice('正在完成 Google 登入…');
   try{
     const response=await fetch('/api/auth/exchange',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state?{code,verifier,provider:'google'}:{code,verifier}),cache:'no-store'});
     const payload=await response.json().catch(()=>null);
-    if(!response.ok||!payload?.data?.accessToken){setSyncNotice((payload?.error||'Google 登入失敗')+'，本機收藏不受影響。');return false}
-    return await enableGoogleSync(payload.data);
-  }catch{setSyncNotice('連不上登入服務，請確認網路後再試。');return false}
+    if(!response.ok||!payload?.data?.accessToken)return fail((payload?.error||'Google 登入失敗')+'，本機收藏不受影響。');
+    const ok=await enableGoogleSync(payload.data);if(!ok)openSyncDialog(); // 合併失敗的原因同樣要看得到
+    return ok;
+  }catch{return fail('連不上登入服務，請確認網路後再試。')}
   finally{syncUi.authBusy=false}
 }
 async function logoutGoogle(notice='已登出 Google 帳號，這台裝置已停止同步；本機的收藏都還在。'){
@@ -1734,7 +1736,7 @@ document.addEventListener?.('click',onSyncClick);
 document.addEventListener?.('submit',onSyncSubmit);
 document.addEventListener?.('visibilitychange',()=>{if(document.visibilityState==='visible')syncIfStale()});
 window.addEventListener?.('online',()=>syncIfStale(true));
-if(typeof location!=='undefined'&&/[?&](?:code|error)=/.test(location.search||''))completeGoogleRedirect();
+if(typeof location!=='undefined'&&/[?&](?:code|error|login)=/.test(location.search||''))completeGoogleRedirect(); // login=failed 是 Worker 回呼驗證不過時帶的
 else if(syncState?.dirty)syncSoon();
 // ── 雲端同步結束 ──
 
