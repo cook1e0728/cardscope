@@ -1065,6 +1065,8 @@ html.look-clean body[data-view="market"] #trendsSection .trend-fall .trend-rise{
 html.look-clean body[data-view="market"] #trendsSection .trend-empty{padding:20px;border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);text-align:center}
 html.look-clean body[data-view="market"] #trendsSection .trend-empty p{margin:6px 0 0;text-wrap:balance}
 
+/* 頁首有 backdrop-filter，手機版又是 static，頭像選單會被後面的「管理」蓋住；選單打開時把頁首墊到上層 */
+@media (max-width:760px){html.look-clean header.top:has(.account-menu:not([hidden])){position:relative;z-index:50}}
 @media (max-width:760px){
   /* 手機首頁底色改用 --v2-page，確保頁尾與吉祥物圖庫對比 ≥4.5:1 */
   html.look-clean body[data-view="landing"]{background:var(--v2-page)}
@@ -1134,5 +1136,3 @@ html.look-clean header.top .account{position:relative;order:99;flex:none;display
   html.look-clean body[data-view]:not([data-view="collection"]) header.top .bar{flex-wrap:wrap;row-gap:var(--s2)}
   html.look-clean body[data-view]:not([data-view="collection"]) header.top .bar>.search{order:50;flex:1 0 100%;max-width:none}
 }
-/* 頁首有 backdrop-filter，手機版又是 static，頭像選單會被後面的「管理」蓋住；選單打開時把頁首墊到上層 */
-@media (max-width:760px){html.look-clean header.top:has(.account-menu:not([hidden])){position:relative;z-index:50}}

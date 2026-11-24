@@ -62,7 +62,8 @@ test('look-v2.css is the last stylesheet linked from index.html',async()=>{
 test('the phone header stays on one row: brand hidden and no wrap rule in look-v2.css; header tap targets are 44px',async()=>{
   const clean=await readFile(new URL('../look-clean.css',import.meta.url),'utf8');
   assert.match(clean,/html\.look-clean \.bar\{display:flex;flex-wrap:nowrap;align-items:center/);
-  assert.doesNotMatch(v2,/\.bar\{[^}]*flex-wrap:\s*wrap/);
+  // 例外：≤300px（小手機放大字體）搜尋框擠不下，才允許換到第二行；一般手機寬度仍維持一行。
+  assert.doesNotMatch(v2.replace(/@media \(max-width:300px\)\{[\s\S]*?\n\}/,''),/\.bar\{[^}]*flex-wrap:\s*wrap/);
   assert.match(v2,/header\.top #go\{[^}]*width:var\(--btn-h\)[^}]*height:var\(--btn-h\)/);
   assert.match(v2,/header\.top \.nav button\{min-height:var\(--btn-h\)/);
 });
