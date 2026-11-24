@@ -89,7 +89,7 @@ test('F1: 整頁只有一個 h1（.hero-intro），其餘兩個改成 h2 且樣�
   const h1s = [...html.matchAll(/<h1\b[^>]*>/g)];
   assert.equal(h1s.length, 1);
   assert.match(html, /<div class="hero-intro"><h1>跨版本卡牌圖鑑<\/h1>/, '伺服器用這段標記換 h1，不能動');
-  assert.match(html, /<h2 id="aboutTitle">資料收錄狀態<\/h2>/);
+  assert.match(html, /<h2 id="aboutTitle" role="heading" aria-level="1">資料收錄狀態<\/h2>/);
   assert.match(html, /<h2 id="brandShowcaseTitle">你的卡牌宇宙，一眼找到<\/h2>/);
   assert.doesNotMatch(theme, /about-intro h1/);
   assert.doesNotMatch(layout, /brand-showcase h1/);
@@ -107,7 +107,7 @@ test('D1: 搜尋結果（#cardsSection.has-results）不套用首頁版面的「
 test('G1/G3: ?view=privacy 有隱私說明與資料來源表，不含待辦字樣，頁尾連得到', () => {
   assert.match(html, /<section class="info-page" id="privacy" aria-labelledby="privacyTitle">/);
   assert.match(html, /<section class="info-page" id="sources" aria-labelledby="sourcesTitle">/);
-  assert.match(html, /<h2 id="privacyTitle">隱私說明<\/h2>/);
+  assert.match(html, /<h2 id="privacyTitle" role="heading" aria-level="1">隱私說明<\/h2>/);
   assert.match(html, /<h2 id="sourcesTitle">資料來源<\/h2>/);
   assert.doesNotMatch(html, /TODO|example\.invalid|〈/, '聯絡信箱未定，不上線待辦字樣');
   assert.match(html, /<h3>聯絡<\/h3><p>[^<]*<a href="mailto:contact@cardseektcg.com">/, '隱私頁有聯絡信箱');

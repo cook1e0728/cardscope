@@ -25,3 +25,9 @@ test('HCI-03：系列分頁列只有選中的在 Tab 順序裡，左右鍵／Hom
   assert.match(nav,/tabindex="\$\{bucket\.label===selected\?0:-1\}"/);
   assert.match(nav,/controls\.onkeydown=/);
 });
+
+test('HCI-08：內頁主標（卡牆／搜尋／收藏、行情、關於、隱私）在無障礙樹是第一層標題',async()=>{
+  const html=await read('index.html');
+  for(const id of ['cardsTitle','marketTitle','aboutTitle','privacyTitle'])
+    assert.match(html,new RegExp(`<h2 id="${id}" role="heading" aria-level="1"`),id);
+});

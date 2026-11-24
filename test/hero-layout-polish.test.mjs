@@ -12,7 +12,7 @@ test('hero intro splits its two sentences into clean punctuation-ending lines wi
 });
 
 test('site-wide intro paragraphs wrap complete clauses in .copy-seg for clean punctuation breaks', () => {
-  assert.match(html, /<h2 id="aboutTitle">資料收錄狀態<\/h2><p><span class="copy-seg">各 IP 的收錄量、欄位缺口與更新時間都分開呈現；<\/span><span class="copy-seg">缺資料會標示待補，不以推測內容填空。<\/span><\/p>/);
+  assert.match(html, /<h2 id="aboutTitle" role="heading" aria-level="1">資料收錄狀態<\/h2><p><span class="copy-seg">各 IP 的收錄量、欄位缺口與更新時間都分開呈現；<\/span><span class="copy-seg">缺資料會標示待補，不以推測內容填空。<\/span><\/p>/);
   assert.match(html, /<h2 id="brandShowcaseTitle">你的卡牌宇宙，一眼找到<\/h2><p><span class="copy-seg">從作品、版本、系列到稀有度，<\/span><span class="copy-seg">用熟悉的方式探索每一張卡。<\/span><\/p>/);
   assert.match(html, /<h2 id="betaGuidanceTitle">查得到，也看得懂資料狀態<\/h2><p><span class="copy-seg">CardSeek 仍在補齊各遊戲的卡號、卡圖、中文名與稀有度。<\/span><span class="copy-seg">資料不完整時會直接標記，不以推測內容填空。<\/span><\/p>/);
 });
