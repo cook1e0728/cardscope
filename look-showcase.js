@@ -168,7 +168,7 @@
   const stepDefs=()=>[
     {t:['#homeSearch','.top .search'],h:'先從這裡找卡',p:'輸入卡名、卡號或系列；也可以點旁邊的範例直接試試。'},
     mobile()?{t:['nav.bottom [data-nav="browse"]'],h:'點「圖鑑」挑一個遊戲',p:'從底部的「圖鑑」選一個作品，直接進入它的圖鑑。'}:{t:['#channels'],h:'挑一個遊戲開始翻閱',p:'選一個作品，直接進入它的圖鑑。'},
-    {t:['#homeRails .rails-switch'],h:'最新、最夯、最熱',p:'切換分頁看最新系列、參考價漲幅最大的卡，和本站最多人開的卡。'},
+    {t:['#homeRails'],h:'最新、最夯、最熱',p:'往下捲依序是最新系列、各遊戲新彈的大獎卡，和本站最多人開的卡；卡片右上角的 ☆ 可以直接收藏。'},
     {t:['nav.bottom [data-nav="collection"]','header.top .nav [data-nav="collection"]'],h:'我的收藏',p:'卡片上加入收藏的卡，都會集中在這裡。'}
   ].filter(s=>union(s.t));
 
