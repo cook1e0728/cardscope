@@ -142,6 +142,7 @@
 - **使用者回報待辦（11-24）**：①點收藏的登入提示（建議：先存本機、收藏幾張或進收藏頁時柔性提示登入同步，不強制）；②Google 同意畫面顯示 kcqtmmurmggitbivonll.supabase.co 不可信（建議：Worker 當 OAuth callback 自換 id_token→Supabase grant_type=id_token，再做 Google 品牌驗證；需使用者在 Google Cloud 改 redirect URI、Worker 加 GOOGLE_CLIENT_SECRET）；③首頁「最多人開的卡」`home-rails.js` hotCard/prizeCard 是整顆 button、無收藏鈕，最新系列藏在分頁要自己切（建議改 article＋收藏鈕、首屏常駐最新系列列、取消 PICK_WAIT 分頁）。agy Hydrogen 第二意見同向。UI 改動需截圖給使用者同意。
 - **②已上線（11-24，a6b8f3a、3e0d0dc，Worker 28c8f74d）**：Google 登入改走 `/api/auth/google/callback`（Worker 在轉 Render 前自己處理），伺服器用 GOOGLE_CLIENT_ID／SECRET 換 id_token 再向 Supabase `grant_type=id_token` 換 session；前端帶 state 驗證，沒設密鑰時退回舊 Supabase 流程。待：使用者實測登入、Google 品牌送審（標誌用 pwa-icon-512 縮 120）。①③未做。
 - **待辦④（11-24 使用者回報）**：雲端同步對話框文字斷行不乾淨，手機寬度下「請自行妥善／記下。」「本機的收藏都／還在。」各剩兩三字掉到下一行。要讓換行落在詞句邊界（可試 `text-wrap: pretty`，或調整文字長度），截圖給使用者確認。同時確認：Google 同意畫面已顯示 cardseektcg.com（②生效）。
+- **已上線（11-24，527ba8f～1bd8dfc，Worker c73a89ac）**：頁首右上角帳號頭像（未登入人形、Google 登入顯示信箱首字綠圈，點開看信箱／同步狀態／同步設定／登出；≤400px 收藏頁以外收起、≤300px 搜尋框換第二行）；收藏標題下「用 Google 登入同步」；同步視窗與空收藏中文只在標點換行（keep-all）；頁尾 6 連結 3 欄等寬置中。④已完成。照 mobile-agent-testers 人物設定寫了本機檢查腳本（6 裝置×5 頁，未進 repo）。仍待：①柔性登入提示、③首頁熱門卡收藏鈕與三排常駐。
 
 ## 卡住的地方／需要規劃方決策
 - 搜尋再快一截要把 Render 服務搬到新加坡（離東京資料庫近）；Render 不能改區域，只能新建服務並換網址／環境變數，需使用者決定。
