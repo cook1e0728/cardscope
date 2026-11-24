@@ -1127,3 +1127,5 @@ html.look-clean header.top .account{position:relative;order:99;flex:none;display
 .account-menu-state{margin:8px 0 0;font-size:13px;color:var(--v2-muted,#6b6255)}
 .account-menu-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .account-menu-actions .sync-btn{flex:1 1 auto;min-height:44px}
+/* 窄手機上，收藏頁以外的頁首還有遊戲與版本切換，放不下頭像；帳號從底部「我的收藏」進去 */
+@media (max-width:400px){html.look-clean body:not([data-view="collection"]) header.top .account{display:none}}
