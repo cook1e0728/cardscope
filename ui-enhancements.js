@@ -1243,7 +1243,7 @@ function renderCollectionPage(){
   cardDisplayState='ready';host.classList.remove('game-entry-grid');$('loadMore').style.display='none';
   if(typeof showApplied==='function')showApplied(null);
   if(typeof syncCardsMode==='function')syncCardsMode();
-  $('cardsTitle').textContent='我的收藏';$('cardsMeta').textContent=filtered?`${window.collectionFilterLabel()}：${rows.length} 款・${collectionSyncMeta()}`:collectionSyncMeta();
+  $('cardsTitle').textContent='我的收藏';$('cardsMeta').textContent=filtered?`${window.collectionFilterLabel()}：${rows.length} 款・${collectionSyncMeta()}`:collectionSyncMeta();renderCollAccount();
   $('cardsSection').classList.toggle('coll-is-empty',!all.length);$('cardTools').hidden=false;
   // shortcut: renders whole collection, add paging if collections exceed ~500 cards
   if(all.length)cards(rows);
@@ -1435,8 +1435,63 @@ function collectionSyncMeta(){
   const state=syncUi.status==='syncing'?'同步中…':syncUi.status==='offline'?'離線':syncUi.status==='error'?'同步暫時失敗':syncUi.status==='ok'?`已同步${time}`:syncState.dirty?'待同步':'已開啟同步';
   return syncState.google?`Google 雲端同步・${state}`:`同步碼同步・${state}`;
 }
+// 頁首右上角的帳號頭像：一眼看出有沒有登入、登入哪個帳號；點開可登入、登出或開同步設定。
+// 只要求 Google 的 email，沒有大頭照，所以用信箱第一個字當頭像。
+const ACCOUNT_PERSON_ICON='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
+function accountKind(){return !syncState?'none':syncState.google?'google':'code'}
+function renderAccountMenu(){
+  const menu=$('accountMenu');if(!menu||menu.hidden)return;
+  const kind=accountKind(),email=authState?.email||'';
+  const head=kind==='google'?`<p class="account-menu-who"><span class="account-menu-label">已用 Google 登入</span><b>${e(email||'Google 帳號')}</b></p>`:kind==='code'?'<p class="account-menu-who"><span class="account-menu-label">用同步碼同步中</span><b>沒有登入帳號</b></p>':'<p class="account-menu-who"><span class="account-menu-label">未登入</span><b>收藏只存在這台裝置</b></p>';
+  const state=kind==='none'?'':`<p class="account-menu-state">${e(collectionSyncMeta())}</p>`;
+  const actions=kind==='none'?`<button type="button" class="sync-btn sync-google-btn" data-account="login">${GOOGLE_G_ICON}<span>用 Google 登入同步</span></button>`:`<button type="button" class="sync-btn" data-account="settings">同步設定</button>${kind==='google'?'<button type="button" class="sync-btn" data-account="logout">登出</button>':''}`;
+  menu.innerHTML=`${head}${state}<div class="account-menu-actions">${actions}</div>`;
+}
+function closeAccountMenu(focus){
+  const menu=$('accountMenu'),btn=$('accountBtn');if(!menu||menu.hidden)return;
+  menu.hidden=true;btn?.setAttribute('aria-expanded','false');if(focus)btn?.focus();
+}
+function renderAccountAvatar(){
+  const bar=document.querySelector?.('header.top .bar');if(!bar)return;
+  let btn=$('accountBtn');
+  if(!btn){
+    const box=document.createElement('div');box.className='account';
+    box.innerHTML='<button type="button" id="accountBtn" class="account-btn" aria-haspopup="true" aria-expanded="false" aria-controls="accountMenu"></button><div class="account-menu" id="accountMenu" role="group" aria-label="帳號與雲端同步" hidden></div>';
+    bar.append(box);btn=$('accountBtn');
+    btn.addEventListener('click',()=>{const menu=$('accountMenu'),open=menu.hidden;menu.hidden=!open;btn.setAttribute('aria-expanded',String(open));if(open)renderAccountMenu()});
+    $('accountMenu').addEventListener('click',event=>{
+      const act=event.target.closest?.('[data-account]')?.dataset.account;if(!act)return;
+      closeAccountMenu(false);
+      if(act==='login')startGoogleLogin();else if(act==='logout')logoutGoogle();else openSyncDialog();
+    });
+    document.addEventListener('click',event=>{if(!box.contains(event.target))closeAccountMenu(false)});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeAccountMenu(true)});
+  }
+  const kind=accountKind(),email=authState?.email||'';
+  btn.dataset.kind=kind;
+  btn.innerHTML=kind==='google'?`<span aria-hidden="true">${e((email.trim()[0]||'G').toUpperCase())}</span>`:ACCOUNT_PERSON_ICON;
+  const label=kind==='google'?`帳號：已用 ${email||'Google'} 登入`:kind==='code'?'帳號：用同步碼同步中':'帳號：未登入';
+  btn.setAttribute('aria-label',label);btn.title=label.replace('帳號：','');
+  renderAccountMenu();
+}
+// 標題旁的帳號按鈕：未登入直接 Google 登入；Google 已登入直接登出；用同步碼的開同步設定。不必先點「管理」。
+function renderCollAccount(){
+  const meta=$('cardsMeta');if(!meta)return;
+  let btn=$('collAccountBtn');
+  if(!btn){
+    btn=document.createElement('button');btn.type='button';btn.id='collAccountBtn';btn.className='coll-account-btn';
+    btn.addEventListener('click',()=>{const kind=btn.dataset.kind;if(kind==='login')startGoogleLogin();else if(kind==='logout')logoutGoogle();else openSyncDialog()});
+    meta.after(btn);
+  }
+  const kind=!syncState?'login':syncState.google?'logout':'settings';
+  btn.dataset.kind=kind;btn.hidden=kind==='logout';
+  btn.innerHTML=kind==='login'?`${GOOGLE_G_ICON}<span>用 Google 登入同步</span>`:kind==='logout'?'登出':'同步設定';
+  btn.title=kind==='logout'&&authState?.email?`目前登入：${authState.email}（登出後本機收藏都還在）`:'';
+}
 function refreshSyncTitleMeta(){
+  renderAccountAvatar();
   if(!inCollectionView())return;
+  renderCollAccount();
   const meta=$('cardsMeta');if(!meta)return;
   const filter=collectionUi.filter,filtered=Boolean(filter.game||filter.series);
   if(filtered){const rows=collectionItems().map(collectionWallRow).filter(collectionRowMatches);meta.textContent=`${window.collectionFilterLabel()}：${rows.length} 款・${collectionSyncMeta()}`}
@@ -1840,3 +1895,4 @@ if(typeof render==='function'){
   };
   attach(document.getElementById('q'));attach(document.getElementById('heroQ'));
 })();
+renderAccountAvatar();

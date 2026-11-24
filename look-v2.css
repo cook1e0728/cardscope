@@ -957,8 +957,8 @@ html.look-clean body[data-view="landing"] .home-examples button:active{transform
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]{border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);transition:transform .14s var(--ease),box-shadow .14s var(--ease),border-color .14s var(--ease)}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip]:active{transform:scale(.97)}
   html.look-clean body[data-view="landing"]:not([data-side]) #channels .channel[data-ip].on{outline:none;border-color:transparent;box-shadow:var(--v2-shadow),inset 0 0 0 1.5px var(--v2-ink)}
-  html.look-clean .brand-footer .footer-links ul{display:grid;grid-template-columns:repeat(4,max-content);column-gap:var(--s5);row-gap:0;margin:var(--s2) 0 0;justify-items:start}
-  html.look-clean .brand-footer .footer-links li:nth-child(3){grid-column:1}
+  /* 6 個連結排成 3 欄 2 列，欄寬對齊 */
+  html.look-clean .brand-footer .footer-links ul{display:grid;grid-template-columns:repeat(3,max-content);column-gap:var(--s6,40px);row-gap:0;margin:var(--s2) 0 0;justify-items:start}
 }
 @media (min-width:761px) and (max-width:899px){
   html.look-clean body[data-view="landing"]:not([data-side]) .hero{grid-template-columns:minmax(0,1fr) 196px;column-gap:20px}
@@ -1103,3 +1103,27 @@ html.look-clean body[data-view="market"] #trendsSection .trend-empty p{margin:6p
 @media (max-width:480px){
   html.look-clean body[data-view="about"] #coverageStatusGrid{grid-template-columns:1fr}
 }
+
+/* 我的收藏標題旁的登入／登出 */
+.coll-account-btn{display:none}
+body[data-view="collection"] .coll-account-btn{display:flex;width:max-content;align-items:center;gap:6px;margin:10px 0 0;min-height:44px;padding:0 16px;border:1px solid var(--v2-line);border-radius:999px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-size:13px;font-weight:600;line-height:1;vertical-align:middle;cursor:pointer}
+body[data-view="collection"] .coll-account-btn[data-kind="login"]{border-color:var(--v2-ink);background:#fff}
+.coll-account-btn .sync-google-icon{width:16px;height:16px}
+.coll-account-btn:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+
+/* 同步對話框與空收藏：中文只在標點處換行，不把詞切開；太長才強制斷 */
+.sync-box :is(p,li,label,summary),.coll-empty p{word-break:keep-all;overflow-wrap:anywhere;text-wrap:pretty}
+
+/* 頁首帳號頭像（像 Google 右上角的圓形頭像） */
+html.look-clean header.top .account{position:relative;order:99;flex:none;display:flex;align-items:center}
+.account-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid var(--v2-line);border-radius:999px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-size:18px;font-weight:700;line-height:1;cursor:pointer}
+.account-btn[data-kind="google"]{border:2px solid #fff;background:#3D6B4F;color:#fff;box-shadow:0 0 0 2px #3D6B4F}
+.account-btn:focus-visible{outline:2px solid var(--v2-ink);outline-offset:3px}
+.account-menu{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:min(300px,calc(100vw - 32px));padding:16px;border:1px solid var(--v2-line);border-radius:16px;background:var(--v2-surface);box-shadow:0 12px 32px rgba(40,30,10,.18);text-align:left}
+.account-menu[hidden]{display:none}
+.account-menu-who{display:grid;gap:4px;margin:0;overflow-wrap:anywhere}
+.account-menu-label{font-size:13px;color:var(--v2-muted,#6b6255)}
+.account-menu-who b{font-size:15px}
+.account-menu-state{margin:8px 0 0;font-size:13px;color:var(--v2-muted,#6b6255)}
+.account-menu-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.account-menu-actions .sync-btn{flex:1 1 auto;min-height:44px}
