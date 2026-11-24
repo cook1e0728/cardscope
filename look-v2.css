@@ -1129,3 +1129,10 @@ html.look-clean header.top .account{position:relative;order:99;flex:none;display
 .account-menu-actions .sync-btn{flex:1 1 auto;min-height:44px}
 /* 窄手機上，收藏頁以外的頁首還有遊戲與版本切換，放不下頭像；帳號從底部「我的收藏」進去 */
 @media (max-width:400px){html.look-clean body:not([data-view="collection"]) header.top .account{display:none}}
+/* 很窄的畫面（小手機放大字體）：搜尋框換到第二行並佔滿寬度，不跟遊戲／版本切換擠同一行 */
+@media (max-width:300px){
+  html.look-clean body[data-view]:not([data-view="collection"]) header.top .bar{flex-wrap:wrap;row-gap:var(--s2)}
+  html.look-clean body[data-view]:not([data-view="collection"]) header.top .bar>.search{order:50;flex:1 0 100%;max-width:none}
+}
+/* 頁首有 backdrop-filter，手機版又是 static，頭像選單會被後面的「管理」蓋住；選單打開時把頁首墊到上層 */
+@media (max-width:760px){html.look-clean header.top:has(.account-menu:not([hidden])){position:relative;z-index:50}}
