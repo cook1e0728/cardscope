@@ -269,6 +269,21 @@ export function resolveOriginUrl(env) {
   return DEFAULT_ORIGIN_URL;
 }
 
+/**
+ * /api/* 裡 Worker 不認得的請求（不含仍代理給 Render 的 /api/admin/*）：路徑存在但方法不對回 405，路徑不存在回 404。
+ * 以前一律轉給 Render，源站停用時回 502，而且不經 Worker 限流（體檢 SEC-01）。回 null＝照原本流程。
+ */
+export function apiMisroute(url, method = 'GET') {
+  const pathname = url.pathname;
+  if (!pathname.startsWith('/api/') || pathname.startsWith('/api/admin/')) return null;
+  if (matchMigratedApi(url, method)) return null;
+  const allow = [];
+  if (EXACT_GET_API_MAP.has(pathname) || pathname.startsWith('/api/cards/') || pathname === '/api/auth/google/callback') allow.push('GET');
+  if (pathname === '/api/catalog/health') allow.push('GET', 'HEAD');
+  if (EXACT_POST_API_MAP.has(pathname)) allow.push('POST');
+  return allow.length ? { status: 405, allow: allow.join(', ') } : { status: 404 };
+}
+
 export function isSitemapPath(pathname) {
   return pathname === '/sitemap.xml' || /^\/sitemaps\/(?:pages|series|cards-\d+)\.xml$/.test(pathname);
 }
@@ -607,6 +622,13 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
       // Google 登入回呼：/api/* 其餘路徑會轉給 Render，這條要先攔下。
       if (request.method === 'GET' && url.pathname === '/api/auth/google/callback') {
         return new Response(null, { status: 302, headers: { Location: googleCallbackLocation(url.searchParams), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } });
+      }
+
+      const misroute = apiMisroute(url, request.method);
+      if (misroute) {
+        const extra = misroute.allow ? { Allow: misroute.allow } : {};
+        const res = respondJson(url.pathname, misroute.status, { error: misroute.status === 405 ? '不支援這個請求方法' : '找不到這個 API' }, API_CSP, extra);
+        return request.method === 'HEAD' ? new Response(null, { status: res.status, headers: res.headers }) : res;
       }
 
       const migrated = resolveMigratedApis(env);
