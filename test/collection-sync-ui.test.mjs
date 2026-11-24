@@ -471,6 +471,43 @@ test('OAuth ?error=access_denied strips URL params, clears PKCE verifier, and ke
   assert.equal(vm.runInContext('syncUi.notice', sandbox), '');
 });
 
+test('Worker 回呼帶 ?login=failed：一載入就處理，打開同步對話框顯示「登入沒有完成」（體檢 SEC-05）', () => {
+  const { cloud, clock } = world();
+  const nodes = new Map();
+  const storage = new Map(), sessionStore = new Map([['cardscope-pkce', 'pkce-verifier-123']]), watchlist = {}, watchlistMeta = {};
+  const loc = { origin: 'https://cardseektcg.com', pathname: '/', search: '?view=collection&login=failed', hash: '', href: 'https://cardseektcg.com/?view=collection&login=failed', assign(u) { this.href = u; } };
+  const hist = { state: null, replaceState(s, _t, u) { this.state = s; const parsed = new URL(u, loc.origin); loc.pathname = parsed.pathname; loc.search = parsed.search; loc.hash = parsed.hash; loc.href = parsed.href; } };
+  const makeDialog = tag => {
+    const listeners = new Map();
+    return {
+      tagName: tag.toUpperCase(), id: '', className: '', open: false, innerHTML: '',
+      setAttribute() {}, removeAttribute() {},
+      addEventListener(type, fn) { listeners.set(type, fn); },
+      showModal() { this.open = true; },
+      close() { this.open = false; listeners.get('close')?.(); },
+      querySelector() { return null; }
+    };
+  };
+  const sandbox = {
+    CS, watchlist, watchlistMeta, e: esc, $: id => nodes.get(id) || null, window: { crypto: globalThis.crypto }, crypto: globalThis.crypto, TextEncoder, Uint8Array, btoa: globalThis.btoa, URLSearchParams,
+    location: loc, history: hist, navigator: { onLine: true }, AbortController,
+    localStorage: { removeItem: key => storage.delete(key) },
+    sessionStorage: { getItem: key => sessionStore.get(key) || null, setItem: (key, val) => sessionStore.set(key, String(val)), removeItem: key => sessionStore.delete(key) },
+    document: { addEventListener() {}, visibilityState: 'visible', body: { append(el) { if (el.id) nodes.set(el.id, el); } }, createElement: makeDialog },
+    uiLocal: { get: (key, fallback) => storage.get(key) || fallback, set: (key, value) => { storage.set(key, value); return true; } },
+    setTimeout, clearTimeout, Date: class extends Date { static now() { return clock.t; } },
+    fetch: (...args) => cloud.fetch(...args),
+    refreshGrid() {}, inCollectionView: () => false, collectionStatus() {}, collectionUi: { pricesState: 'ready', filter: { game: '', series: '' } }, resolveCollection: async () => false, loadCollectionPrices: async () => {}, rerenderCollection() {},
+    collectionItems: () => []
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(`let syncState=null;\n${ENGINE}`, sandbox);
+  assert.equal(loc.search, '?view=collection');
+  assert.equal(sessionStore.has('cardscope-pkce'), false);
+  assert.equal(nodes.get('syncDialog')?.open, true, '失敗時要直接打開對話框，不能只把訊息存起來');
+  assert.match(nodes.get('syncDialog').innerHTML, /Google 登入沒有完成，本機收藏不受影響。/);
+});
+
 test('deleteCloud revokes the refreshed token after a 401 retry', async () => {
   const { cloud, clock } = world(), a = device(cloud, clock);
   a.qty('c1', 2);

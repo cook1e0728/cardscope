@@ -11,9 +11,13 @@
   const gameName=id=>(root.CARD_GAMES||[]).find(game=>game.id===id)?.name||'';
   const cleanHot=body=>(Array.isArray(body?.data)?body.data:[]).filter(row=>row&&typeof row==='object'&&row.cardId).slice(0,HOT_LIMIT);
   const cleanRows=list=>(Array.isArray(list)?list:[]).filter(row=>row&&typeof row==='object'&&row.cardId);
-  const cleanPrizes=body=>({pinned:cleanRows(body?.pinned),games:(Array.isArray(body?.games)?body.games:[]).map(g=>({...g,data:cleanRows(g?.data)})).filter(g=>g.data.length),meta:body?.meta||{}});
+  const cleanPrizes=body=>({failed:body===FAILED,pinned:cleanRows(body?.pinned),games:(Array.isArray(body?.games)?body.games:[]).map(g=>({...g,data:cleanRows(g?.data)})).filter(g=>g.data.length),meta:body?.meta||{}});
   const head=(title,note,info,tag='h3')=>`<div class="rails-head"><${tag}>${title}</${tag}><div class="title-note"><span class="meta">${note}</span>${info}</div></div>`;
   const quiet=text=>`<p class="rails-note" role="status">${text}</p>`;
+  // 讀取失敗（網路或 5xx）和「真的沒資料」分開：失敗時寫「暫時讀不到」並給重試鈕（體檢 HCI-05）。404＝沒有這支 API，仍當空的。
+  const FAILED={failed:true};
+  const load=url=>typeof fetch!=='function'?Promise.resolve(null):fetch(url).then(r=>r.ok?r.json():r.status===404?null:FAILED).catch(()=>FAILED);
+  const failed=(text,id)=>`<div class="rails-note rails-failed" role="status"><p>${text}</p><button type="button" class="rails-retry" data-rails-retry="${id}">重試</button></div>`;
 
   function hotCard(row){
     const name=row.name||row.nameJa||row.cardNumber||'未命名卡片';
@@ -22,11 +26,11 @@
       `<span class="trend-card-number">${esc([row.seriesCode,row.cardNumber].filter(Boolean).join(' · '))}</span>`+
       `<small>${esc([gameName(row.game),row.seriesName].filter(Boolean).join(' · '))}</small></button>`;
   }
-  // hot：undefined＝還在讀；{rows,meta}＝讀完（rows 可能是空的，API 失敗也一樣當空的）
+  // hot：undefined＝還在讀；{rows,meta,failed}＝讀完（failed＝讀取失敗，rows 是空的）
   function hotPanel(hot){
     const meta=hot?.meta||{},days=Number(meta.windowDays)||7,min=Number(meta.minOpens)||0;
     const info=root.infoTip('熱門排行的算法',`<p><b>來源</b>依本站近 ${days} 天卡片被開啟的次數排序，不記錄是誰開的。</p>${min?`<p><b>門檻</b>被開啟至少 ${min} 次才會上榜。</p>`:''}`);
-    const body=!hot?quiet('讀取中…'):hot.rows.length?`<div class="rails-rail">${hot.rows.map(hotCard).join('')}</div>`:
+    const body=!hot?quiet('讀取中…'):hot.failed?failed('暫時讀不到熱門排行，請稍後再試。','hot'):hot.rows.length?`<div class="rails-rail">${hot.rows.map(hotCard).join('')}</div>`:
       `<div class="rails-empty"><img src="/assets/brand/web/rabbit-offline.webp" alt="" width="128" height="85" loading="lazy"><p>熱門排行統計中，累積幾天後就會出現</p></div>`;
     return head(`近 ${days} 天最多人開的卡`,'本站被開啟次數',info)+body;
   }
@@ -39,12 +43,12 @@
       (twd>0?`<small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價約 NT$${Math.round(twd).toLocaleString('en-US')}`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>';
   }
   const prizeRail=(title,rows,mixed=false)=>`<h4 class="rails-sub">${esc(title)}</h4><div class="rails-rail">${rows.map(row=>prizeCard(row,mixed)).join('')}</div>`;
-  // prizes：undefined＝還在讀；{pinned,games}＝讀完（API 失敗也當空的）
+  // prizes：undefined＝還在讀；{pinned,games,failed}＝讀完（failed＝讀取失敗）
   function trendingPanel(prizes){
     const days=Number(prizes?.meta?.windowDays)||90;
     const info=root.infoTip('本彈大獎怎麼挑',`<p><b>系列</b>寶可夢、航海王、黑白雙翼各取近 ${days} 天最新的主流補充包（不含預組、禮盒、周邊、特典；航海王只看 OP／EB／PRB），優先台灣版；台版缺的卡用同一彈日版補上。</p><p><b>卡片</b>只列最高稀有度（寶可夢 SAR 以上、航海王 SEC／SP／TR、黑白雙翼 SP 以上），航海王異圖排在原版前；寶可夢有參考價時同稀有度價高的先；台版沒有參考價時借同卡號日版的價格並標「日版參考價」。參考價不是成交價。</p>`);
     const rows=prizes?[...(prizes.pinned.length?[prizeRail('精選',prizes.pinned,true)]:[]),...prizes.games.map(g=>prizeRail([gameName(g.game)||g.game,g.seriesName].filter(Boolean).join(' · '),g.data))]:[];
-    const body=!prizes?quiet('讀取中…'):rows.length?rows.join(''):quiet('近期沒有新彈的大獎資料');
+    const body=!prizes?quiet('讀取中…'):prizes.failed?failed('暫時讀不到本彈大獎，請稍後再試。','trending'):rows.length?rows.join(''):quiet('近期沒有新彈的大獎資料');
     return head('本彈大獎','各遊戲最新主流彈的最高稀有度卡',info)+body+'<p class="rails-more"><a href="/?view=market" data-spa>看參考價漲跌</a></p>';
   }
   // ---- 寬螢幕多欄的右側面板 ----
@@ -76,7 +80,7 @@
         const list=key=>cleanMovers(body?.data?.[key]),rise=list('up'),fall=list('down'),meta=body?.meta||{},info=rise.length||fall.length?shared().info(rise,fall,meta):'';
         fill(up,rise.length&&moversPanel(true,rise,meta,info));fill(down,fall.length&&moversPanel(false,fall,meta,info));settle();
       });
-      (typeof fetch==='function'?fetch('/api/market-events').then(response=>response.ok?response.json():null).catch(()=>null):Promise.resolve(null)).then(body=>{
+      load('/api/market-events').then(body=>{
         const today=new Date(Date.now()+8*3600000).toISOString().slice(0,10),all=(Array.isArray(body?.data)?body.data:[]).filter(e=>e&&typeof e.date==='string'&&e.title);
         const rows=root.MarketEvents?root.MarketEvents.arrange(all,today,EVENTS_N):all.slice(0,EVENTS_N);
         fill(events,rows.length&&eventsPanel(rows,today));settle();
@@ -115,10 +119,14 @@
       const tab=event.target.closest('[role="tab"]'),live=shown(),next=tab?nextTab(event.key,live.indexOf(tab),live.length):-1;
       if(next<0)return;event.preventDefault();picked=true;select(live[next].dataset.railsTab,true);
     });
-    const hotReq=(typeof fetch==='function'?fetch('/api/hot-cards').then(response=>response.ok?response.json():null).catch(()=>null):Promise.resolve(null))
-      .then(body=>{state.hot={rows:cleanHot(body),meta:body?.meta||{}};paint('hot');sync()});
-    (typeof fetch==='function'?fetch('/api/pack-prizes').then(response=>response.ok?response.json():null).catch(()=>null):Promise.resolve(null))
-      .then(body=>{state.prizes=cleanPrizes(body);paint('trending');sync()});
+    const fetchHot=()=>load('/api/hot-cards').then(body=>{state.hot={rows:cleanHot(body),meta:body?.meta||{},failed:body===FAILED};paint('hot');sync()});
+    const fetchPrizes=()=>load('/api/pack-prizes').then(body=>{state.prizes=cleanPrizes(body);paint('trending');sync()});
+    const hotReq=fetchHot();fetchPrizes();
+    section.addEventListener('click',event=>{
+      const id=event.target.closest?.('[data-rails-retry]')?.dataset.railsRetry;if(!id)return;
+      if(id==='hot'){state.hot=undefined;paint('hot');fetchHot()}else{state.prizes=undefined;paint('trending');fetchPrizes()}
+      doc.getElementById('railsTab-'+id)?.focus?.(); // 重試鈕被換掉，焦點回到該分頁，不掉到頁面最上方
+    });
     // 預設選「最熱」（有資料時），否則「最新」。等最熱回來再決定（最多 PICK_WAIT 毫秒），免得先亮最新再跳過去；使用者已經自己選了就不動。
     section.dataset.pending='';
     initAside(doc,section);

@@ -25,7 +25,7 @@
   let pending=null;
   // 部署後第一個請求常因冷快取逾時（502）：隔 3 秒再試一次；仍失敗就清掉，下次進頁再試
   const get=()=>fetch('/api/price-movers').then(r=>r.ok?r.json():Promise.reject(new Error(String(r.status))));
-  const request=()=>pending=pending||get().catch(()=>new Promise(done=>setTimeout(done,3000)).then(get)).catch(()=>{pending=null;return null});
+  const request=()=>pending=pending||get().catch(()=>new Promise(done=>setTimeout(done,3000)).then(get)).catch(()=>{pending=null;return {failed:true}});
   // 標題旁的 ⓘ：來源與連結、前後觀測時間、適用範圍（PRODUCT_PLAN 第 6 節）；漲跌榜與首頁的最夯用同一份。
   function info(up,down,meta){
     const rows=[...up,...down],from=rows.map(row=>row.from?.date).filter(Boolean).sort()[0],to=rows.map(row=>row.to?.date).filter(Boolean).sort().at(-1);
@@ -44,6 +44,13 @@
     }
     return request().then(body=>{
       const up=body?.data?.up||[],down=body?.data?.down||[],meta=body?.meta||{};
+      if(body?.failed&&onMarket){
+        // 讀取失敗不要畫成「沒有資料」（體檢 HCI-05）
+        section.hidden=false;section.classList.add('price-movers');
+        section.innerHTML='<div class="trend-empty" role="status"><b>暫時讀不到參考價漲跌資料</b><p class="meta">可能是網路或伺服器暫時有問題。</p><button type="button" class="rails-retry">重試</button></div>';
+        section.querySelector('.rails-retry').addEventListener('click',()=>{section.innerHTML='';root.renderPriceMovers(section).then(()=>section.querySelector('button,h2')?.focus?.())},{once:true});
+        return;
+      }
       if(!up.length&&!down.length){
         pending=null;
         if(onMarket){

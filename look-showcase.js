@@ -225,10 +225,13 @@
   function maybeAutoStart(){
     // 手機第一次進站不自動跳出導覽（會蓋住主視覺）；改由標題小卡內的「看導覽」鈕開始
     if(tourDone()||!landing()||mobile())return;
+    // 使用者在導覽跳出前已經開始打字或點擊，就不自動開，免得搶走焦點（體檢 HCI-04）；之後仍可按「看導覽」
+    let busy=false;const mark=()=>{busy=true};
+    for(const ev of ['keydown','pointerdown'])addEventListener(ev,mark,{capture:true,once:true});
     // 等四個導覽目標都出現（最多 3 秒）再開始，總步數一開始就定下來，不會從「1／3」跳成「1／4」
     const t0=Date.now();
     setTimeout(()=>{
-      const tick=()=>{if(mobile())return;/* 等待期間視窗縮成手機寬度：照手機規則不自動開 */
+      const tick=()=>{if(mobile()||busy||doc.activeElement?.matches?.('input,textarea,select,[contenteditable]'))return;/* 手機寬度照手機規則不自動開；使用者已在操作也不開 */
         if(tour||!landing()||$('#modal.open'))return;
         if((!firstVis('#channels .channel')||stepDefs().length<4)&&Date.now()-t0<3000)return setTimeout(tick,150);
         startTour();
