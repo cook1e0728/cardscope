@@ -29,7 +29,7 @@ test('market page entries: home 最夯 link (a[data-spa]), the collection page t
   assert.match(ui, /<a class="coll-market-link" href="\/\?view=market" data-spa>看卡牌行情<\/a>/);
   assert.match(html, /<a href="\/\?view=market" data-spa>行情<\/a>/);
   assert.equal((html.match(/<nav class="bottom"[\s\S]*?<\/nav>/)[0].match(/<button /g) || []).length, 3);
-  assert.match(html, /<h2 id="marketTitle" tabindex="-1">行情<\/h2>/);
+  assert.match(html, /<h2 id="marketTitle" role="heading" aria-level="1" tabindex="-1">行情<\/h2>/);
   assert.match(events, /if\(view\.view!=='market'\)\{section\.hidden=true;return\}/, 'events are fetched only on the market page');
 });
 

@@ -19,7 +19,7 @@ test('the expand button follows whether the grid is showing, filter included',()
 test('filtering dims the tabs and says what is searched',()=>{
   assert.match(band,/band\.classList\.toggle\('is-filtering',filtering\)/);
   assert.match(band,/class="series-band-scope" role="status" hidden>/);
-  assert.match(css,/\.series-band\.is-filtering \.series-band-tabs\{opacity:\.45\}/);
+  assert.match(css,/\.series-band\.is-filtering \.series-band-tabs\{opacity:\.85\}/);
 });
 
 test('typing in the filter is debounced, composition still applies at its end',()=>{

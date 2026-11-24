@@ -54,10 +54,7 @@ function installRarityOptionMemory(){
 function installDetailModalAccessibility(){
   const modal=document.getElementById('modal');
   if(!modal||modal.dataset.a11yReady)return;
-  modal.dataset.a11yReady='1';
-  modal.setAttribute('role','dialog');
-  modal.setAttribute('aria-modal','true');
-  modal.setAttribute('aria-label','卡片詳細資料');
+  modal.dataset.a11yReady='1'; // 對話框語意只放在裡面的 .dialog，外層不再重複一層同名 dialog（體檢 HCI-02）
   const sync=()=>modal.setAttribute('aria-hidden',String(!modal.classList.contains('open')));
   if(typeof MutationObserver==='undefined'){sync();return}
   new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['class']});
@@ -744,13 +741,15 @@ function renderDetailCollect(){
 }
 
 // ── 詳細資料（REDESIGN_PLAN 階段 4）：桌機 ≥1000px 是右側側板（卡牆仍可看、可捲、可點），其餘寬度是全螢幕一頁 ──
-const panelQuery=typeof matchMedia==='function'?matchMedia('(min-width:1000px)'):null;
+const panelQuery=typeof matchMedia==='function'?matchMedia('(min-width:1000px) and (min-height:501px)'):null; // 和 CSS 的側板條件一致：矮視窗（含 200% 縮放）用全螢幕（體檢 HCI-07）
 window.detailMode=()=>panelQuery?.matches?'panel':'page';
-// 側板不鎖整頁（沒有 aria-modal）；全螢幕才是真的對話框
+// 側板不鎖整頁，是旁邊的補充區塊（complementary）；全螢幕才是真的對話框（role=dialog＋aria-modal）
 function syncDetailMode(){
   const modal=$('modal');if(!modal)return;
   const panel=window.detailMode()==='panel';modal.dataset.mode=panel?'panel':'page';
-  for(const node of [modal,modal.querySelector('.dialog')])if(node){if(panel)node.removeAttribute('aria-modal');else node.setAttribute('aria-modal','true')}
+  const dialog=modal.querySelector('.dialog');if(!dialog)return;
+  dialog.setAttribute('role',panel?'complementary':'dialog');
+  if(panel)dialog.removeAttribute('aria-modal');else dialog.setAttribute('aria-modal','true');
 }
 panelQuery?.addEventListener?.('change',syncDetailMode);
 const detailTile=id=>{const hit=[...document.querySelectorAll('#cards .card-open-hit')].find(item=>item.dataset.cardOpen===String(id));return hit?.closest('.card')||hit||null};
@@ -991,7 +990,7 @@ document.addEventListener('keydown',event=>{if(event.defaultPrevented)return;if(
 const referencePriceStyle=document.createElement('style');
 referencePriceStyle.textContent=`
   .card-reference{position:relative;z-index:2;cursor:pointer;width:fit-content;max-width:100%}
-  .card-reference{display:flex;align-items:baseline;gap:4px;white-space:nowrap;font-variant-numeric:tabular-nums}.card-reference .cr-amount{white-space:nowrap}.card-reference .cr-src,.card-reference .cr-var,.card-reference .cr-original{font-size:.7em;font-weight:500;opacity:.75}.card-reference .cr-var{min-width:0;overflow:hidden;text-overflow:ellipsis}.card:not(.card-list) .card-reference .cr-original{display:none}
+  .card-reference{display:flex;align-items:baseline;gap:4px;white-space:nowrap;font-variant-numeric:tabular-nums}.card-reference .cr-amount{white-space:nowrap}.card-reference .cr-src,.card-reference .cr-var,.card-reference .cr-original{font-size:.7em;font-weight:500;color:var(--v2-ink-2,#5A5348)}.card-reference .cr-var{min-width:0;overflow:hidden;text-overflow:ellipsis}.card:not(.card-list) .card-reference .cr-original{display:none}
   .card-reference:focus-visible{outline:3px solid var(--y,#ffe500);outline-offset:2px}
   .card-reference .cr-chg{font-size:.78em;font-weight:700;min-width:0;overflow:hidden}.cr-up{color:#C4000F}.cr-down{color:#1F6F43}.cr-flat{color:#5A5348}
   .detail-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;width:100%;margin:0 0 10px;padding:8px 10px;border:1px solid var(--lc-hair,#d9d1c0);border-radius:8px;background:#fff;color:inherit;text-align:left;cursor:pointer}.detail-price:hover{border-color:var(--ink,#171717)}.detail-price:focus-visible{outline:3px solid var(--y,#ffe500);outline-offset:2px}

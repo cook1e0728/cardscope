@@ -64,7 +64,7 @@ test('loading shows grey card-shaped skeletons and results scroll below the stic
   assert.match(html,/class="sk-card"/);
   assert.match(html,/function scrollBelowHeader\(/);
   assert.doesNotMatch(html,/scrollIntoView/,'every scroll target clears the header');
-  assert.match(html,/id="cardsTitle" tabindex="-1"/,'the result heading can take focus');
+  assert.match(html,/id="cardsTitle"[^>]*tabindex="-1"/,'the result heading can take focus');
 });
 
 test('UI 收尾（ADR 0047）：分頁籤附數量、手機稀有度膠囊列、分享備援、原始頁面 44px',async()=>{

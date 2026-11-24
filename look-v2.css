@@ -7,7 +7,8 @@
   --v2-page:#F8F5EE;          /* 頁面 */
   --v2-surface:#FFFFFF;       /* 內容面（卡片、按鈕、輸入內層） */
   --v2-well:#EFEAE0;          /* 凹陷區（搜尋框外層、分段按鈕的底） */
-  --v2-line:#E7E1D4;          /* 框線：只給可點、可輸入的東西 */
+  --v2-line:#E7E1D4;          /* 分隔線、卡片與按鈕的淡框 */
+  --v2-field:#857D6E;         /* 輸入框與下拉選單的外框：對白底與頁面底都 ≥3:1，看得出欄位範圍（體檢 UI-02，WCAG 1.4.11） */
   --v2-ink:#1F1B16;--v2-ink-2:#5A5348;
   --v2-shadow:0 1px 2px rgba(60,45,20,.12),0 0 0 1px rgba(60,45,20,.06);                 /* 紙片 */
   --v2-shadow-up:0 3px 8px rgba(60,45,20,.18),0 0 0 1px rgba(60,45,20,.08);               /* 滑過 */
@@ -15,7 +16,7 @@
   --v2-shadow-pop:0 8px 24px rgba(60,45,20,.18),0 0 0 1px rgba(60,45,20,.06);             /* 浮起的說明面板 */
   --ease:cubic-bezier(.23,1,.32,1);
   /* 字四級 */
-  --fs-title:clamp(20px,1.2vw + 14px,28px);--fs-body:16px;--fs-sub:13px;--fs-note:12px;
+  --fs-title:clamp(20px,1.2vw + 14px,28px);--fs-body:16px;--fs-14:14px;--fs-sub:13px;--fs-note:12px; /* 五階：12／13／14／16／標題，不再用 15px（體檢 UI-06） */
   --btn-h:44px;--btn-r:999px;
 }
 html.look-clean{--lc-hair:var(--v2-line);--lc-line:var(--v2-line)}
@@ -31,7 +32,7 @@ html.look-clean body[data-view] header.top{border-bottom:1px solid var(--v2-line
 /* 搜尋：凹槽裡放一張白紙（雙層邊，內外圓角同心） */
 html.look-clean body[data-view] header.top .search{height:auto;min-height:48px;padding:2px;overflow:visible;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in)}
 html.look-clean body[data-view] header.top .search:focus-within{box-shadow:var(--v2-shadow-in),0 0 0 2px var(--v2-page),0 0 0 4px var(--v2-ink)}
-html.look-clean body[data-view] header.top .search input{height:44px;padding:0 16px;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:var(--fs-body);box-shadow:0 1px 1px rgba(60,45,20,.08)}
+html.look-clean body[data-view] header.top .search input{height:44px;padding:0 16px;border:1px solid var(--v2-field);border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:var(--fs-body);box-shadow:0 1px 1px rgba(60,45,20,.08)}
 /* 搜尋鈕：白底紙片，放大鏡用遊戲色（landing 沒有遊戲色時用墨色） */
 html.look-clean body[data-view] header.top #go{flex:none;align-self:center;width:var(--btn-h);min-width:var(--btn-h);height:var(--btn-h);min-height:var(--btn-h);margin:0 0 0 4px;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--ip-ink,var(--v2-ink));box-shadow:var(--v2-shadow)}
 html.look-clean body[data-view] header.top #go svg{width:20px;height:20px}
@@ -53,7 +54,7 @@ html.look-clean body[data-view] header.top .nav button{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);border:1px solid var(--v2-line);border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:14px;font-weight:600;line-height:1;text-align:center;box-shadow:var(--v2-shadow);
   transition:transform .14s var(--ease),background-color .14s var(--ease),box-shadow .14s var(--ease),color .14s var(--ease);
 }
-html.look-clean body[data-view] header.top .nav button{border:0;font-size:15px;color:var(--v2-ink-2)}
+html.look-clean body[data-view] header.top .nav button{border:0;font-size:var(--fs-14);color:var(--v2-ink-2)}
 html.look-clean body[data-view] header.top .nav button[aria-current="page"]{color:var(--v2-ink)}
 /* 選中：粗體＋細墨框（全站移除舊打勾） */
 html.look-clean body .view-switch button.on:before,html.look-clean .series-band-regions button.on:before{content:none;margin:0}
@@ -62,9 +63,10 @@ html.look-clean body[data-view] :is(.product-category.on,.series-group.on,.serie
 }
 html.look-clean body[data-view] #detail .detail-actions :is(.source-link,.detail-collect-state){padding:0 18px;border:1px solid var(--v2-line);border-radius:var(--btn-r);background:var(--v2-surface);font-size:14px;font-weight:600;box-shadow:var(--v2-shadow)}
 /* 選單是輸入：凹陷底、不描邊 */
-html.look-clean body[data-view] main select{border-color:transparent;background-color:var(--v2-well)}
+html.look-clean body[data-view] main select{border:1px solid var(--v2-field);background-color:var(--v2-well)}
 /* 停用的次要按鈕：淡掉、不浮起 */
-html.look-clean body[data-view] :is(#downloadWatchlist):disabled{opacity:.5;box-shadow:none;cursor:default}
+/* 所有停用的按鈕（載入更多、匯入確認、同步鈕…）：淡掉、不浮起、不縮放；原本只有少數按鈕有停用外觀（體檢 UI-07） */
+html.look-clean body[data-view] button:disabled{opacity:.5;box-shadow:none;cursor:default;transform:none}
 /* 4b 主要：實心，一頁最多一顆（載入更多、重試、篩選面板的套用） */
 html.look-clean body[data-view] :is(.load-more,.notice-retry,[data-coll-import-confirm]){
   display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--btn-h);border:0;border-radius:var(--btn-r);background:var(--ip-ink,var(--v2-ink));color:var(--ip-on,#fff);font-size:14px;font-weight:700;line-height:1;text-align:center;box-shadow:0 1px 2px rgba(60,45,20,.24);
@@ -151,16 +153,16 @@ body:not([data-view="landing"]) #homeRails{display:none}
 .home-rails .rails-panels{min-height:380px;margin-top:var(--s4,16px)}
 .home-rails[data-pending] .rails-panels{visibility:hidden}
 html.look-clean body[data-view] #homeRails .rails-switch{display:inline-flex;width:auto}
-html.look-clean body[data-view] #homeRails .rails-switch button{min-width:88px;padding:0 20px;font-size:15px}
+html.look-clean body[data-view] #homeRails .rails-switch button{min-width:88px;padding:0 20px;font-size:var(--fs-14)}
 /* 最新面板：原本的 #homeLatest 整塊搬進來，拿掉它自己的卡片底與標題（分頁已經叫「最新」，標題只留給報讀軟體） */
 html.look-clean body[data-view] #homeRails .home-latest{margin:0;padding:0;border:0;border-radius:0;background:none}
 html.look-clean body[data-view] #homeRails #homeLatestTitle{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .rails-head{display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--s3,12px)}
-.rails-sub{margin:12px 0 0;font-size:15px;line-height:1.4;font-weight:700;color:var(--v2-ink)}
+.rails-sub{margin:12px 0 0;font-size:16px;line-height:1.4;font-weight:700;color:var(--v2-ink)}
 .rails-head h3{margin:0;font-size:20px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
 .rails-head .meta{font-size:var(--fs-sub);color:var(--v2-ink-2)}
 .rails-rail{display:flex;gap:12px;overflow-x:auto;margin-inline:-4px;padding:8px 4px 14px;scroll-padding-inline:4px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
-.rails-note{margin:0;padding:24px 0;color:var(--v2-ink-2);font-size:15px}
+.rails-note{margin:0;padding:24px 0;color:var(--v2-ink-2);font-size:16px}
 /* 讀取失敗：一句話＋重試鈕（體檢 HCI-05） */
 .rails-failed{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
 .rails-failed p{margin:0}
@@ -172,7 +174,7 @@ html.look-clean body[data-view] #homeRails .trend-card:active{transform:scale(.9
 html.look-clean body[data-view] #homeRails .trend-card:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 html.look-clean body[data-view] #homeRails .trend-image{height:170px;border:0;border-radius:10px;background:var(--v2-page)}
 html.look-clean body[data-view] #homeRails .trend-card-head{align-items:flex-start;gap:6px;margin-top:8px}
-html.look-clean body[data-view] #homeRails .trend-card-head>b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:15px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
+html.look-clean body[data-view] #homeRails .trend-card-head>b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:16px;line-height:1.35;font-weight:700;color:var(--v2-ink)}
 /* 漲幅標籤：文字有 ↑ 與正號，不只靠顏色；台灣慣例紅漲 */
 html.look-clean body[data-view] #homeRails .trend-rise{flex:none;padding:2px 6px;border-radius:6px;background:#FBEDEB;color:#C4000F;clip-path:none;font-family:inherit;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 html.look-clean body[data-view] #homeRails .trend-card-number{color:var(--v2-ink-2);font-variant-numeric:tabular-nums}
@@ -182,7 +184,7 @@ html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margi
 /* 最熱還沒有資料：兔子＋一句話，安靜不搶眼 */
 .rails-empty{display:grid;justify-items:center;gap:8px;padding:28px 0 20px;text-align:center}
 .rails-empty img{display:block;width:128px;height:auto}
-.rails-empty p{margin:0;color:var(--v2-ink-2);font-size:15px}
+.rails-empty p{margin:0;color:var(--v2-ink-2);font-size:16px}
 @media (max-width:760px){
   html.look-clean body[data-view] #homeRails .rails-switch{display:flex;width:100%}
   html.look-clean body[data-view] #homeRails .rails-switch button{flex:1 1 0;min-width:0}
@@ -236,7 +238,7 @@ body[data-side="results"] #sideNav .side-sec-region{display:block}
 #sideNav .channel-art img,#sideNav .channel[data-ip]:not(.on) .channel-art img{display:block;width:auto;height:auto;max-width:56px;max-height:32px;padding:0;border-radius:0;background:none;box-sizing:border-box;object-fit:contain}
 #sideNav .channel[data-ip="all"] .channel-art img{max-height:24px;filter:brightness(0)}
 #sideNav .channel-tag{display:none}
-#sideNav .channel[data-ip] b{margin:0;font-size:15px;font-weight:500;line-height:1.3;color:inherit}
+#sideNav .channel[data-ip] b{margin:0;font-size:var(--fs-14);font-weight:500;line-height:1.3;color:inherit}
 #sideNav :is(.channel[data-ip].on,.channel[data-ip][aria-current="true"],.band-tile[aria-current]){background:var(--v2-well);box-shadow:inset 3px 0 0 var(--v2-ink)}
 #sideNav :is(.channel[data-ip].on,.channel[data-ip][aria-current="true"]) b{font-weight:700;color:var(--v2-ink)}
 /* 版本（全部遊戲搜尋結果用的選單）：只留選單，標題由「版本」小標負責 */
@@ -254,7 +256,7 @@ body[data-side="results"] #sideNav .side-sec-region{display:block}
 #sideNav :is(.series-band-regions button,.series-band-tabs button,.band-tile,.series-band-more):active{transform:scale(.97)}
 #sideNav .series-band-tools{display:block;flex:none;margin:0;padding:0 8px}
 #sideNav .series-band-expand{display:none}
-#sideNav .series-band-filter{width:100%;height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-well);color:var(--v2-ink);font-size:14px;box-shadow:var(--v2-shadow-in)}
+#sideNav .series-band-filter{width:100%;height:var(--btn-h);padding:0 16px;border:1px solid var(--v2-field);border-radius:var(--btn-r);background:var(--v2-well);color:var(--v2-ink);font-size:14px;box-shadow:var(--v2-shadow-in)}
 #sideNav .series-band-filter::placeholder{color:var(--v2-ink-2);opacity:1}
 #sideNav .series-band-filter:focus{box-shadow:var(--v2-shadow-in)}
 #sideNav .series-band-scope{margin:6px 8px 0;font-size:var(--fs-note)}
@@ -264,7 +266,7 @@ body[data-side="results"] #sideNav .side-sec-region{display:block}
 #sideNav .series-band-tabs button.starts-eras:before{content:none}
 #sideNav .series-band-tabs button.on{background:var(--v2-surface);color:var(--v2-ink);font-weight:700;box-shadow:inset 0 0 0 1.5px var(--v2-ink)}
 #sideNav .side-tab-label{flex-basis:100%;margin:10px 0 0 2px;font-size:var(--fs-note);font-weight:700;letter-spacing:.08em;color:var(--v2-ink-2)}
-#sideNav .series-band.is-filtering .series-band-tabs{opacity:.45}
+#sideNav .series-band.is-filtering .series-band-tabs{opacity:.85}
 /* 系列清單：名稱＋代號一列，NEW／即將發售標在右邊；圖片收起來（右側標題區會有大圖） */
 #sideNav .rail-wrap,#sideNav .rail-wrap.has-overflow{display:block;margin:0}
 #sideNav .rail-nav{display:none}
@@ -304,7 +306,7 @@ html.look-clean :is(body[data-view="game"],body[data-side="results"]) :is(#hero,
   /* 階段 1 把頂欄兩個選單縮到 2.5em／3em，窄於 44px 的觸控目標：補上最小寬度 */
   html.look-clean body[data-view] #mobileHeaderScope select{min-width:44px}
 }
-.side-sheet-btn{align-items:center;gap:8px;width:100%;min-height:var(--btn-h);margin:8px 0 4px;padding:0 14px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:15px;text-align:left;box-shadow:var(--v2-shadow);transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+.side-sheet-btn{align-items:center;gap:8px;width:100%;min-height:var(--btn-h);margin:8px 0 4px;padding:0 14px;border:0;border-radius:var(--btn-r);background:var(--v2-surface);color:var(--v2-ink);font-size:var(--fs-14);text-align:left;box-shadow:var(--v2-shadow);transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
 .side-sheet-btn:active{transform:scale(.97)}
 .side-sheet-btn:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 .side-sheet-label{flex:none;font-weight:700}
@@ -409,7 +411,8 @@ html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-acti
 html.look-clean body[data-view] .cards .card .watchlist-inline{display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:hidden}
 html.look-clean body[data-view] .cards .card .watchlist-inline button{flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
 html.look-clean body[data-view] .cards .card .watchlist-inline button:active{transform:scale(.97)}
-html.look-clean body[data-view] .cards .card .watchlist-inline .watch-quantity{flex:1 1 auto;text-align:center;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
+/* 數字欄可縮到 0：375px 三欄時兩顆 44px 鈕加原本 24px 數字欄放不下，「＋」被切掉（體檢 HCI-06） */
+html.look-clean body[data-view] .cards .card .watchlist-inline .watch-quantity{flex:1 1 auto;min-width:0;text-align:center;font-size:var(--fs-14);font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 html.look-clean body[data-view] .cards .card :is(.favorite-toggle,.watchlist-inline button):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
 /* 清單模式：收藏鈕在最右邊 */
 html.look-clean body[data-view] .cards .card.card-list{padding:8px 14px 8px 10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow)}
@@ -449,6 +452,10 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
   html.look-clean body[data-view] .cards .card.card-list .card-list-facts b{white-space:nowrap}
   html.look-clean body[data-view] .cards .card.card-list .card-actions{grid-column:3;grid-row:1/3;justify-self:end}
   html.look-clean body[data-view] .cards .card.card-list .watchlist-inline{width:116px}
+}
+/* 很窄的手機（<360px，如 320px）：一排 3 張時卡片內寬約 81px，放不下「− 數量 ＋」兩顆 44px 鈕，改一排 2 張（體檢 HCI-06） */
+@media (max-width:359px){
+  html.look-clean body[data-view] .cards:not(.list-view){grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 /* ===== 11. 詳細資料（階段 4，ui-enhancements.js openCard／navigation-state.js；docs/REDESIGN_PLAN.md 第 6 節「側板要解的五件事」） =====
    桌機 ≥1000px：#modal 是釘在頂欄下方右側的側板（不遮卡牆、不鎖 Tab），遊戲頁與搜尋結果的卡牆（#main）讓出同樣的寬度，欄數自動變少（6→4）。
@@ -511,15 +518,15 @@ html.look-clean .dsk.dsk-flow{grid-template-columns:minmax(0,1fr)}
 html.look-clean body[data-view] #cards .card:has(.card-open-hit[aria-current="true"]){outline:2px solid var(--v2-ink);outline-offset:3px}
 #cards .card{scroll-margin-block:calc(var(--side-top,66px) + 12px) 16px}
 
-/* ---- <1000px：全螢幕一頁 ---- */
-@media (max-width:999px){
+/* ---- <1000px 或矮視窗（≤500px 高，含 200% 縮放）：全螢幕一頁 ---- */
+@media (max-width:999px),(max-height:500px){
   html.look-clean #modal.open{padding:0;place-items:stretch;overflow:hidden;background:var(--v2-surface)}
   html.look-clean #modal .dialog{width:100%;max-width:none;height:100dvh;max-height:none;overflow:auto;overscroll-behavior:contain;border-radius:0}
 }
 @media (max-width:760px){html.look-clean #modal #detail{padding:var(--s3) var(--s4) var(--s7)}html.look-clean #modal .detail-bar{padding:6px var(--s4)}}
 
-/* ---- ≥1000px：右側側板 ---- */
-@media (min-width:1000px){
+/* ---- ≥1000px 且高 ≥501px：右側側板（條件和 ui-enhancements.js 的 panelQuery 一致） ---- */
+@media (min-width:1000px) and (min-height:501px){
   html.look-clean #modal.open{display:block;position:fixed;inset:var(--side-top,66px) var(--side-edge,0px) 0 auto;z-index:6;width:var(--panel-w);padding:0;overflow:visible;background:transparent;pointer-events:none}
   html.look-clean #modal.open .dialog{pointer-events:auto;width:100%;max-width:none;height:100%;max-height:none;overflow:auto;overscroll-behavior:contain;border-radius:0;box-shadow:-1px 0 0 var(--v2-line),-10px 0 28px rgba(60,45,20,.10)}
   html.look-clean #modal .detail{grid-template-columns:minmax(0,1fr);gap:var(--s5)}
@@ -588,7 +595,7 @@ body[data-side="collection"] #sideNav :is(.side-sec-games,.side-sec-region,.side
 @media (max-width:760px){body[data-view="collection"] .side-sheet-btn{display:flex}}
 .coll-side-list,.coll-side-sub{margin:0;padding:0;list-style:none}
 .coll-side-sub{margin:2px 0 6px 14px;padding-left:8px;border-left:1px solid var(--v2-line)}
-.coll-side-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:var(--btn-h);padding:4px 10px;border:0;border-radius:10px;background:transparent;color:var(--v2-ink);font:inherit;font-size:15px;line-height:1.3;text-align:left;cursor:pointer}
+.coll-side-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:var(--btn-h);padding:4px 10px;border:0;border-radius:10px;background:transparent;color:var(--v2-ink);font:inherit;font-size:var(--fs-14);line-height:1.3;text-align:left;cursor:pointer}
 .coll-side-name{min-width:0;overflow-wrap:anywhere}
 .coll-side-count{flex:none;color:var(--v2-ink-2);font-size:var(--fs-sub);font-variant-numeric:tabular-nums}
 .coll-side-btn.on{background:var(--v2-well);box-shadow:inset 3px 0 0 var(--v2-ink);font-weight:700}
@@ -622,7 +629,7 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .coll-status:empty{display:none}
 .coll-summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;font-size:var(--fs-sub);color:var(--v2-ink-2)}
 .coll-summary[hidden]{display:none}
-.coll-summary b{color:var(--v2-ink);font-size:15px}
+.coll-summary b{color:var(--v2-ink);font-size:16px}
 .coll-sum-value{overflow-wrap:anywhere}
 .coll-series{padding:12px 14px;border-radius:12px;background:var(--v2-surface);box-shadow:var(--v2-shadow)}
 .coll-series[hidden]{display:none}
@@ -641,7 +648,7 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-box{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;padding:24px}
 .sync-box :is(p,ul){margin:0;text-wrap:pretty}
 .sync-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.sync-top h2{margin:0;font-size:19px;font-weight:700;line-height:1.3;letter-spacing:-.01em}
+.sync-top h2{margin:0;font-size:20px;font-weight:700;line-height:1.3;letter-spacing:-.01em}
 .sync-top h2:focus,.sync-confirm h3:focus{outline:none}
 .sync-close{flex:none;display:inline-grid;place-items:center;width:var(--btn-h);height:var(--btn-h);margin-right:-8px;border:0;border-radius:var(--btn-r);background:transparent;color:var(--v2-ink-2);font:inherit;font-size:22px;line-height:1;cursor:pointer;transition:transform .14s var(--ease),background-color .14s var(--ease),color .14s var(--ease)}
 .sync-close:active{transform:scale(.95)}
@@ -653,7 +660,7 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-btn{flex:none;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:var(--btn-h);padding:0 16px;border:0;border-radius:var(--btn-r);background:var(--v2-page);color:var(--v2-ink);font:inherit;font-size:14px;font-weight:700;box-shadow:var(--v2-shadow);cursor:pointer;transition:transform .14s var(--ease),box-shadow .14s var(--ease),background-color .14s var(--ease)}
 .sync-btn:active{transform:scale(.97)}
 .sync-primary{background:var(--v2-ink);color:#fff;box-shadow:0 1px 2px rgba(60,45,20,.24)}
-.sync-google-btn{gap:10px;width:100%;min-height:48px;padding:0 20px;border:1.5px solid var(--v2-ink);background:#fff;color:var(--v2-ink);font-size:15px;box-shadow:0 2px 6px rgba(60,45,20,.1)}
+.sync-google-btn{gap:10px;width:100%;min-height:48px;padding:0 20px;border:1.5px solid var(--v2-ink);background:#fff;color:var(--v2-ink);font-size:16px;box-shadow:0 2px 6px rgba(60,45,20,.1)}
 .sync-google-icon{flex:none;width:20px;height:20px}
 .sync-danger{background:transparent;color:#A4262C;box-shadow:none;padding-inline:10px;font-weight:600}
 .sync-confirm .sync-danger{background:#A4262C;color:#fff;padding-inline:16px;font-weight:700}
@@ -664,7 +671,7 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-notice:empty{display:none}
 .sync-codebox{display:grid;justify-items:start;gap:10px;padding:14px 16px;border:1px solid var(--v2-line);border-radius:12px;background:var(--v2-page)}
 .sync-codebox b{font-size:13px;color:var(--v2-ink-2)}
-.sync-code{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);font:700 15px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.05em;overflow-wrap:anywhere;user-select:all}
+.sync-code{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);font:700 16px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.05em;overflow-wrap:anywhere;user-select:all}
 .sync-join{display:grid;gap:8px;width:100%;padding-top:12px;border-top:1px solid var(--v2-line)}
 .sync-join label{font-size:13px;font-weight:700;color:var(--v2-ink)}
 .sync-row{display:flex;align-items:center;gap:8px}
@@ -674,7 +681,7 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 .sync-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .sync-more{padding-top:12px;border-top:1px solid var(--v2-line)}
 .sync-confirm{display:grid;gap:12px;padding:16px;border-radius:12px;background:var(--v2-page);box-shadow:inset 0 0 0 1.5px var(--v2-ink)}
-.sync-confirm h3{margin:0;font-size:15px;line-height:1.35}
+.sync-confirm h3{margin:0;font-size:16px;line-height:1.35}
 .sync-confirm p{font-size:13px;line-height:1.6;color:var(--v2-ink-2)}
 .sync-alt{padding-top:12px;border-top:1px solid var(--v2-line)}
 .sync-alt summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:var(--btn-h);padding:0;border-radius:8px;font-size:13px;font-weight:600;color:var(--v2-ink-2);list-style:none;cursor:pointer}
@@ -698,7 +705,7 @@ body[data-view="collection"] .coll-extras{display:grid;gap:10px;margin:0 0 14px}
 /* ---- 側板裡的收藏資料：品況、閃卡版本、備註 ---- */
 .coll-edit{flex:1 1 100%;display:grid;gap:10px;margin-top:6px;padding:12px;border-radius:12px;background:var(--v2-page)}
 .coll-edit label{display:grid;gap:4px;font-size:var(--fs-sub);font-weight:700}
-.coll-edit :is(select,input){width:100%;min-height:var(--btn-h);padding:0 10px;border:1px solid var(--v2-line);border-radius:10px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-weight:400}
+.coll-edit :is(select,input){width:100%;min-height:var(--btn-h);padding:0 10px;border:1px solid var(--v2-field);border-radius:10px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-weight:400}
 .coll-edit :is(select,input):focus-visible{outline:2px solid var(--v2-ink);outline-offset:1px}
 .coll-price{display:grid;gap:2px;font-size:var(--fs-sub);font-weight:400}
 .coll-price:empty{display:none}
@@ -727,7 +734,7 @@ html.look-clean :is(.info-page,.about-intro,.beta-guidance-copy,.coverage-status
 @media (min-width:761px){
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions{position:absolute;z-index:1;top:calc(100% + var(--s6));right:calc(-1*var(--s7));height:52px;margin:0;padding:0;border:0;align-items:center;justify-content:flex-end;gap:var(--s2);background:none;box-shadow:none}
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions label{flex:none;font-size:14px;font-weight:600;line-height:1;color:var(--v2-ink-2)}
-  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions select{flex:0 0 140px;min-height:var(--btn-h);border:1px solid var(--v2-line);background-color:var(--v2-surface);box-shadow:var(--v2-shadow);font-size:14px;font-weight:600;color:var(--v2-ink)}
+  html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions select{flex:0 0 140px;min-height:var(--btn-h);border:1px solid var(--v2-field);background-color:var(--v2-surface);box-shadow:var(--v2-shadow);font-size:14px;font-weight:600;color:var(--v2-ink)}
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions .info-tip>summary>span{font-size:20px!important;font-weight:600;line-height:1;color:var(--v2-ink-2)}
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.browse-regions .cs1-replay{margin-left:var(--s2);padding:0 18px;border:1px solid var(--v2-line);background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font-size:14px;font-weight:600}
 }
@@ -768,7 +775,7 @@ html.look-clean .band-tile-code{white-space:normal;overflow:visible;text-overflo
 }
 
 /* ---- 二-5 收錄版本：和台版那列同一個圓角矩形與內距（原本吃到按鈕的全圓角） ---- */
-html.look-clean body[data-view] #detail .dpanel-versions .version-switch{display:block;width:100%;padding:var(--s3) var(--s7) var(--s3) var(--s4);border:1px solid var(--dframe);border-radius:var(--lc-r-sm);box-shadow:none;font-size:15px;line-height:1.5;text-align:left}
+html.look-clean body[data-view] #detail .dpanel-versions .version-switch{display:block;width:100%;padding:var(--s3) var(--s7) var(--s3) var(--s4);border:1px solid var(--dframe);border-radius:var(--lc-r-sm);box-shadow:none;font-size:var(--fs-14);line-height:1.5;text-align:left}
 html.look-clean .detail .dpanel-versions .version-switch .meta{display:inline-block;margin-top:2px}
 
 /* ---- 二-7 價格走勢數字格：窄欄改兩欄、可折行，不再被 … 截掉 ---- */
@@ -808,7 +815,7 @@ html.look-clean #homeRails .band-card-hit:empty{display:none}
 html.look-clean #homeRails .band-card-hit img{display:block;width:100%;height:100%;object-fit:cover}
 html.look-clean body[data-view="landing"] #homeRails .band-card :is(.band-tile-code,.band-card-orig,.band-card-facts){display:block;width:100%;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:400 var(--fs-note)/18px var(--lc-num);color:var(--v2-ink-2)}
 html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-code{margin-top:4px}
-html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:0;margin:0;font-size:15px;font-weight:700;line-height:21px;color:var(--v2-ink);overflow-wrap:anywhere}
+html.look-clean body[data-view="landing"] #homeRails .band-card .band-tile-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:0;margin:0;font-size:16px;font-weight:700;line-height:21px;color:var(--v2-ink);overflow-wrap:anywhere}
 html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-orig:empty{display:none}
 html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-facts{margin-top:auto;padding-top:8px;font-weight:700;line-height:20px;color:var(--v2-ink)}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view="landing"] #homeRails .band-tile.band-card:hover{border-color:var(--v2-ink-2);box-shadow:var(--v2-shadow-up)}}
@@ -826,7 +833,7 @@ html.look-clean body[data-view="landing"] #homeRails .band-card .band-card-facts
 html.look-clean{--card-pad:var(--s5);--keyline-off:calc(var(--card-pad) + 1px);--pill-bw:1px;--pill-gap:3px}
 @media (max-width:760px){html.look-clean{--card-pad:var(--s3)}}
 html.look-clean body[data-view="landing"] #homeRails .rails-switch{display:inline-flex;width:auto;margin-left:0}
-@media (min-width:761px){html.look-clean body[data-view="landing"] #homeRails .rails-switch button{flex:none;min-width:88px;padding-inline:20px;font-size:15px}}
+@media (min-width:761px){html.look-clean body[data-view="landing"] #homeRails .rails-switch button{flex:none;min-width:88px;padding-inline:20px;font-size:var(--fs-14)}}
 html.look-clean body[data-view="landing"] #homeRails .home-latest-tabs{padding-left:0}
 html.look-clean body[data-view="landing"] #homeRails .rails-rail{margin-inline:-4px;padding:8px 4px 14px;scroll-padding-inline:4px}
 @media (min-width:761px){
@@ -919,8 +926,8 @@ html.look-clean #detail .ptl-details{padding-inline:var(--card-pad)}
   html.look-clean .brand-footer .foot-legal[open] summary b:after{content:" ⌃"}
   html.look-clean .brand-footer .foot-legal p{margin:0 0 var(--s2);font-size:14px;line-height:1.55}
   html.look-clean .brand-footer .footer-links ul{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--s4);margin:0}
-  html.look-clean .brand-footer .footer-links a{font-size:15px}
-  html.look-clean .brand-footer summary{font-size:15px}
+  html.look-clean .brand-footer .footer-links a{font-size:var(--fs-14)}
+  html.look-clean .brand-footer summary{font-size:var(--fs-14)}
 }
 
 /* ===== 12. 全站體驗與 Antislop 體檢收尾（高對比放大檢視、無遮擋、無孤字、44px 點擊區、v2 統一） ===== */
@@ -980,7 +987,7 @@ html.look-clean body[data-view="landing"] .home-examples button:active{transform
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.hero-art{width:248px}
 }
 @media (min-width:1200px) and (max-width:1279px){
-  html.look-clean body[data-view="landing"] .hero>.home-search input{padding:0 14px;font-size:15px}
+  html.look-clean body[data-view="landing"] .hero>.home-search input{padding:0 14px;font-size:16px}
 }
 @media (min-width:1200px) and (max-width:1599px){
   html.look-clean body[data-view="landing"]:not([data-side]) .hero{grid-template-columns:minmax(0,1fr) 210px;column-gap:var(--s5)}
@@ -1051,10 +1058,10 @@ html.look-clean #detail .pov .pov-th-sub{display:block;white-space:nowrap}
 
 /* 頁尾與快速說明次要文字對比 ≥4.5:1；開啟詳細側板時將收藏提示移至右上角；明細折疊補上 44px 高與展開收合指標 */
 html.look-clean .brand-footer,html.look-clean .brand-footer summary,html.look-clean .brand-footer .foot-legal summary,html.look-clean .mascot-gallery figcaption,html.look-clean .feature-tour .help-summary-copy small{color:var(--v2-ink-2)}
-@media (min-width:1000px){
+@media (min-width:1000px) and (min-height:501px){
   html.look-clean body:has(#modal.open) .brand-collection-toast{top:calc(var(--side-top,66px) + 12px);bottom:auto;right:22px}
 }
-@media (max-width:999px){
+@media (max-width:999px),(max-height:500px){
   html.look-clean body:has(#modal.open) .brand-collection-toast{top:60px;bottom:auto;right:12px}
 }
 html.look-clean .ptl-details>summary,html.look-clean .coll-import details>summary{min-height:var(--btn-h);display:flex;align-items:center;justify-content:space-between;gap:var(--s2);list-style:none;cursor:pointer}
@@ -1132,7 +1139,7 @@ html.look-clean header.top .account{position:relative;order:99;flex:none;display
 .account-menu[hidden]{display:none}
 .account-menu-who{display:grid;gap:4px;margin:0;overflow-wrap:anywhere}
 .account-menu-label{font-size:13px;color:var(--v2-muted,#6b6255)}
-.account-menu-who b{font-size:15px}
+.account-menu-who b{font-size:16px}
 .account-menu-state{margin:8px 0 0;font-size:13px;color:var(--v2-muted,#6b6255)}
 .account-menu-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .account-menu-actions .sync-btn{flex:1 1 auto;min-height:44px}
