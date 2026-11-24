@@ -511,15 +511,15 @@ html.look-clean .dsk.dsk-flow{grid-template-columns:minmax(0,1fr)}
 html.look-clean body[data-view] #cards .card:has(.card-open-hit[aria-current="true"]){outline:2px solid var(--v2-ink);outline-offset:3px}
 #cards .card{scroll-margin-block:calc(var(--side-top,66px) + 12px) 16px}
 
-/* ---- <1000px：全螢幕一頁 ---- */
-@media (max-width:999px){
+/* ---- <1000px 或矮視窗（≤500px 高，含 200% 縮放）：全螢幕一頁 ---- */
+@media (max-width:999px),(max-height:500px){
   html.look-clean #modal.open{padding:0;place-items:stretch;overflow:hidden;background:var(--v2-surface)}
   html.look-clean #modal .dialog{width:100%;max-width:none;height:100dvh;max-height:none;overflow:auto;overscroll-behavior:contain;border-radius:0}
 }
 @media (max-width:760px){html.look-clean #modal #detail{padding:var(--s3) var(--s4) var(--s7)}html.look-clean #modal .detail-bar{padding:6px var(--s4)}}
 
-/* ---- ≥1000px：右側側板 ---- */
-@media (min-width:1000px){
+/* ---- ≥1000px 且高 ≥501px：右側側板（條件和 ui-enhancements.js 的 panelQuery 一致） ---- */
+@media (min-width:1000px) and (min-height:501px){
   html.look-clean #modal.open{display:block;position:fixed;inset:var(--side-top,66px) var(--side-edge,0px) 0 auto;z-index:6;width:var(--panel-w);padding:0;overflow:visible;background:transparent;pointer-events:none}
   html.look-clean #modal.open .dialog{pointer-events:auto;width:100%;max-width:none;height:100%;max-height:none;overflow:auto;overscroll-behavior:contain;border-radius:0;box-shadow:-1px 0 0 var(--v2-line),-10px 0 28px rgba(60,45,20,.10)}
   html.look-clean #modal .detail{grid-template-columns:minmax(0,1fr);gap:var(--s5)}
@@ -1051,10 +1051,10 @@ html.look-clean #detail .pov .pov-th-sub{display:block;white-space:nowrap}
 
 /* 頁尾與快速說明次要文字對比 ≥4.5:1；開啟詳細側板時將收藏提示移至右上角；明細折疊補上 44px 高與展開收合指標 */
 html.look-clean .brand-footer,html.look-clean .brand-footer summary,html.look-clean .brand-footer .foot-legal summary,html.look-clean .mascot-gallery figcaption,html.look-clean .feature-tour .help-summary-copy small{color:var(--v2-ink-2)}
-@media (min-width:1000px){
+@media (min-width:1000px) and (min-height:501px){
   html.look-clean body:has(#modal.open) .brand-collection-toast{top:calc(var(--side-top,66px) + 12px);bottom:auto;right:22px}
 }
-@media (max-width:999px){
+@media (max-width:999px),(max-height:500px){
   html.look-clean body:has(#modal.open) .brand-collection-toast{top:60px;bottom:auto;right:12px}
 }
 html.look-clean .ptl-details>summary,html.look-clean .coll-import details>summary{min-height:var(--btn-h);display:flex;align-items:center;justify-content:space-between;gap:var(--s2);list-style:none;cursor:pointer}

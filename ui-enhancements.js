@@ -54,10 +54,7 @@ function installRarityOptionMemory(){
 function installDetailModalAccessibility(){
   const modal=document.getElementById('modal');
   if(!modal||modal.dataset.a11yReady)return;
-  modal.dataset.a11yReady='1';
-  modal.setAttribute('role','dialog');
-  modal.setAttribute('aria-modal','true');
-  modal.setAttribute('aria-label','卡片詳細資料');
+  modal.dataset.a11yReady='1'; // 對話框語意只放在裡面的 .dialog，外層不再重複一層同名 dialog（體檢 HCI-02）
   const sync=()=>modal.setAttribute('aria-hidden',String(!modal.classList.contains('open')));
   if(typeof MutationObserver==='undefined'){sync();return}
   new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['class']});
@@ -744,13 +741,15 @@ function renderDetailCollect(){
 }
 
 // ── 詳細資料（REDESIGN_PLAN 階段 4）：桌機 ≥1000px 是右側側板（卡牆仍可看、可捲、可點），其餘寬度是全螢幕一頁 ──
-const panelQuery=typeof matchMedia==='function'?matchMedia('(min-width:1000px)'):null;
+const panelQuery=typeof matchMedia==='function'?matchMedia('(min-width:1000px) and (min-height:501px)'):null; // 和 CSS 的側板條件一致：矮視窗（含 200% 縮放）用全螢幕（體檢 HCI-07）
 window.detailMode=()=>panelQuery?.matches?'panel':'page';
-// 側板不鎖整頁（沒有 aria-modal）；全螢幕才是真的對話框
+// 側板不鎖整頁，是旁邊的補充區塊（complementary）；全螢幕才是真的對話框（role=dialog＋aria-modal）
 function syncDetailMode(){
   const modal=$('modal');if(!modal)return;
   const panel=window.detailMode()==='panel';modal.dataset.mode=panel?'panel':'page';
-  for(const node of [modal,modal.querySelector('.dialog')])if(node){if(panel)node.removeAttribute('aria-modal');else node.setAttribute('aria-modal','true')}
+  const dialog=modal.querySelector('.dialog');if(!dialog)return;
+  dialog.setAttribute('role',panel?'complementary':'dialog');
+  if(panel)dialog.removeAttribute('aria-modal');else dialog.setAttribute('aria-modal','true');
 }
 panelQuery?.addEventListener?.('change',syncDetailMode);
 const detailTile=id=>{const hit=[...document.querySelectorAll('#cards .card-open-hit')].find(item=>item.dataset.cardOpen===String(id));return hit?.closest('.card')||hit||null};

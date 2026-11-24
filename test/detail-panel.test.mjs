@@ -37,7 +37,7 @@ function harness({ fetch, mode = 'panel', tiles = () => [], scrollBy = () => {} 
   const dom = makeDom();
   dom.document.querySelectorAll = selector => (selector === '#cards .card-open-hit' ? tiles() : []);
   const context = vm.createContext({
-    document: dom.document, console, fetch, matchMedia: query => ({ matches: query === '(min-width:1000px)' ? mode === 'panel' : false, addEventListener() {} }), setTimeout: () => 1, clearTimeout() {}, Blob, URL, URLSearchParams,
+    document: dom.document, console, fetch, matchMedia: query => ({ matches: query === '(min-width:1000px) and (min-height:501px)' ? mode === 'panel' : false, addEventListener() {} }), setTimeout: () => 1, clearTimeout() {}, Blob, URL, URLSearchParams,
     localStorage: { getItem: () => null, setItem() {} }, addEventListener() {}, innerWidth: mode === 'panel' ? 1440 : 375, innerHeight: 900, scrollBy, requestAnimationFrame: () => 0, cancelAnimationFrame() {}, confirm: () => true, location: { origin: 'http://localhost', search: '' }
   });
   context.window = context;
@@ -200,9 +200,13 @@ test('桌機（≥1000px）是側板、其餘全螢幕：模式由寬度決定�
     const h = harness({ fetch: () => deferred().promise, mode });
     assert.equal(h.run('window.detailMode()'), expected);
     assert.equal(h.byId.get('modal').dataset.mode, expected);
+    const dialog = h.byId.get('modal').querySelector('.dialog');
+    assert.equal(dialog.getAttribute('role'), expected === 'panel' ? 'complementary' : 'dialog', '側板是補充區塊、全螢幕才是對話框（體檢 HCI-02）');
+    assert.equal(dialog.getAttribute('aria-modal'), expected === 'panel' ? null : 'true');
+    assert.equal(h.byId.get('modal').getAttribute('role'), null, '外層 #modal 不再重複一層 dialog');
   }
-  assert.match(css, /@media \(min-width:1000px\)\{\s*html\.look-clean #modal\.open\{display:block;position:fixed;/, '側板用 position:fixed 釘在頂欄下方右側');
-  assert.match(css, /@media \(max-width:999px\)\{\s*html\.look-clean #modal\.open\{padding:0;place-items:stretch/);
+  assert.match(css, /@media \(min-width:1000px\) and \(min-height:501px\)\{\s*html\.look-clean #modal\.open\{display:block;position:fixed;/, '側板用 position:fixed 釘在頂欄下方右側');
+  assert.match(css, /@media \(max-width:999px\),\(max-height:500px\)\{\s*html\.look-clean #modal\.open\{padding:0;place-items:stretch/, '矮視窗（≤500px 高，含 200% 縮放）和窄螢幕一樣用全螢幕，不讓側板蓋住卡牆（體檢 HCI-07）');
   assert.match(css, /body\[data-side\]:has\(#modal\.open\) #main\{max-width:calc\(var\(--shell-max\) - var\(--side-w\) - var\(--panel-w\)\);margin-right:var\(--panel-w\)\}/, '卡牆讓出側板的寬度');
   assert.match(css, /grid-template-columns:repeat\(auto-fill,minmax\(140px,1fr\)\)/, '欄數自動變少');
   assert.match(css, /--panel-w:clamp\(360px,34vw,440px\)/);
@@ -214,7 +218,7 @@ test('寬螢幕（L4、L5 修正）：≥1800px 側板加寬成「卡圖｜資�
   assert.ok(m, '有 ≥1800px 區段');
   assert.match(m[1], /:root\{--panel-w:760px\}/, '只在寬螢幕改側板寬度');
   assert.match(m[1], /#modal \.detail\{grid-template-columns:288px minmax\(0,1fr\)/, '左欄卡圖、右欄資料與價格');
-  assert.match(css, /@media \(min-width:1000px\)\{[^@]*#modal \.detail\{grid-template-columns:minmax\(0,1fr\)/, '1000–1799px 仍是單欄');
+  assert.match(css, /@media \(min-width:1000px\) and \(min-height:501px\)\{[^@]*#modal \.detail\{grid-template-columns:minmax\(0,1fr\)/, '1000–1799px 仍是單欄');
   assert.ok(css.indexOf('--panel-w:760px') > css.indexOf('--panel-w:clamp(360px,34vw,440px)'), '寬螢幕覆寫排在預設之後');
   const visual = ui.indexOf('class="detail-visual"', ui.indexOf('detail-flow" data-ip'));
   assert.ok(visual > 0 && visual < ui.indexOf('class="detail-flow-main"', visual), '卡圖欄先於資料欄：DOM 順序就是 Tab 順序，不用 order 重排');
