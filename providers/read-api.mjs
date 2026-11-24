@@ -3639,7 +3639,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
         }
 
         case 'auth-config':
-          return jsonRes(200, { data: { url: authSync.configUrl() } });
+          return jsonRes(200, { data: { url: authSync.configUrl(), googleClientId: authSync.googleClientId() } });
 
         case 'auth-exchange':
         case 'auth-refresh':

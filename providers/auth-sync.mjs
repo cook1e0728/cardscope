@@ -3,6 +3,9 @@ import '../collection-store.js';
 
 export const SYNC_REVISION_MAX = 2147483646;
 export const AUTH_CODE = /^[A-Za-z0-9._~-]{8,512}$/;
+// Google 的授權碼含 '/'（例如 4/0Ab…）。
+export const GOOGLE_CODE = /^[A-Za-z0-9._~/-]{8,512}$/;
+export const OAUTH_STATE = /^[A-Za-z0-9_-]{16,128}$/;
 export const PKCE_VERIFIER = /^[A-Za-z0-9._~-]{43,128}$/;
 export const AUTH_TOKEN = /^[A-Za-z0-9._~+/=-]{8,4096}$/;
 export const AUTH_BODY_MAX_BYTES = 10000;
@@ -37,6 +40,21 @@ export function tokenExpiry(token) {
 }
 
 export const authConfigured = env => Boolean(env?.SUPABASE2_URL && env?.SUPABASE2_ANON_KEY);
+// 自家網域接 Google 登入回呼（同意畫面顯示 cardseektcg.com，而不是 Supabase 網址）：需要 GOOGLE_CLIENT_ID／SECRET，再用 id_token 向 Supabase 換 session。
+export const googleConfigured = env => Boolean(authConfigured(env) && env?.GOOGLE_CLIENT_ID && env?.GOOGLE_CLIENT_SECRET);
+export const googleRedirectUri = env => `${String(env?.PUBLIC_BASE_URL || 'https://cardseektcg.com').replace(/\/+$/, '')}/api/auth/google/callback`;
+// Google 回呼只轉回收藏頁，讓前端拿 code 與 state 去 /api/auth/exchange；只轉格式正確的參數，其他一律丟掉。
+export function googleCallbackLocation(searchParams) {
+  const out = new URLSearchParams({ view: 'collection' });
+  const code = searchParams.get('code') || '', state = searchParams.get('state') || '';
+  if (GOOGLE_CODE.test(code) && OAUTH_STATE.test(state)) {
+    out.set('code', code);
+    out.set('state', state);
+  } else {
+    out.set('login', 'failed');
+  }
+  return `/?${out}`;
+}
 export const secondDbConfigured = env => Boolean(env?.SUPABASE2_URL && env?.SUPABASE2_SERVICE_KEY);
 
 // 前端導向 Google 登入用的副庫網址：只回 origin，不回任何金鑰；沒開登入時回 null。
@@ -81,6 +99,10 @@ export function authSession(data, nowMs = Date.now()) {
 
 export function validateAuthPayload(action, body) {
   const keys = Object.keys(body && typeof body === 'object' && !Array.isArray(body) ? body : {}).sort().join();
+  if (action === 'exchange' && keys === 'code,provider,verifier') {
+    return body.provider === 'google' && typeof body.code === 'string' && GOOGLE_CODE.test(body.code) &&
+      typeof body.verifier === 'string' && PKCE_VERIFIER.test(body.verifier);
+  }
   if (action === 'exchange') {
     return (
       keys === 'code,verifier' &&
@@ -170,6 +192,34 @@ export function createAuthSyncController({
     return authPublicUrl(getEnv());
   }
 
+  // 用戶端 ID 是公開值（會出現在 Google 登入網址上）；密鑰只在伺服器。
+  function googleClientId() {
+    const env = getEnv();
+    return googleConfigured(env) ? String(env.GOOGLE_CLIENT_ID) : null;
+  }
+
+  // 授權碼 → Google id_token；4xx（碼無效或過期）回 'invalid'，其他失敗丟錯。
+  async function googleIdToken(env, code, verifier) {
+    const response = await fetchFn('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      redirect: 'manual',
+      signal: AbortSignal.timeout(12000),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        code_verifier: verifier,
+        client_id: String(env.GOOGLE_CLIENT_ID),
+        client_secret: String(env.GOOGLE_CLIENT_SECRET),
+        redirect_uri: googleRedirectUri(env),
+        grant_type: 'authorization_code'
+      }).toString()
+    });
+    const data = await response.json().catch(() => null);
+    if (response.status >= 400 && response.status < 500) return 'invalid';
+    if (!response.ok || typeof data?.id_token !== 'string' || !AUTH_TOKEN.test(data.id_token)) throw new Error('GOOGLE_TOKEN');
+    return data.id_token;
+  }
+
   async function handleAuth({ action, authorizationHeader, readBody }) {
     const env = getEnv();
     if (action === 'logout') {
@@ -201,8 +251,19 @@ export function createAuthSyncController({
       return { status: 503, body: { error: 'Google 登入尚未開放' } };
     }
 
+    if (body.provider === 'google' && !googleConfigured(env)) {
+      return { status: 503, body: { error: 'Google 登入尚未開放' } };
+    }
+
     try {
-      const reply = action === 'exchange'
+      let idToken = '';
+      if (body.provider === 'google') {
+        idToken = await googleIdToken(env, body.code, body.verifier);
+        if (idToken === 'invalid') return { status: 401, body: { error: '登入已失效，請重新用 Google 登入' } };
+      }
+      const reply = idToken
+        ? await supabaseAuth(env, '/token?grant_type=id_token', { body: { provider: 'google', id_token: idToken } })
+        : action === 'exchange'
         ? await supabaseAuth(env, '/token?grant_type=pkce', { body: { auth_code: body.code, code_verifier: body.verifier } })
         : await supabaseAuth(env, '/token?grant_type=refresh_token', { body: { refresh_token: body.refreshToken } });
       if (reply.status >= 400 && reply.status < 500) {
@@ -379,6 +440,7 @@ export function createAuthSyncController({
 
   return {
     configUrl,
+    googleClientId,
     handleAuth,
     handleSync,
     googleSyncKey

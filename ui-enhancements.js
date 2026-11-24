@@ -1266,7 +1266,7 @@ function enterCollectionPage(){
 // 每張卡記一筆 [簽名, 最後改動時間, 是否已刪]：收藏每次寫入（persistCollection）就比對簽名，不同的卡把時間設成現在、不見的卡留墓碑。
 // 開啟同步當下已有的卡：自己新開的記成現在；加入別人的雲端時，雲端已有的卡記成 0（最舊），所以兩邊不一樣時雲端版本優先，這台舊資料不會蓋掉它。
 // 合併規則全在 CollectionStore.mergeSync（新的贏、墓碑保留 30 天）；網路或伺服器出錯只在這裡顯示狀態，本機收藏照常使用。
-const SYNC_KEY='cardscope-sync',AUTH_KEY='cardscope-auth',PKCE_KEY='cardscope-pkce',SYNC_DEBOUNCE_MS=3000,SYNC_GAP_MS=15000,SYNC_RETRY_MS=60000,SYNC_TOMBSTONE_MS=30*86400000;
+const SYNC_KEY='cardscope-sync',AUTH_KEY='cardscope-auth',PKCE_KEY='cardscope-pkce',OAUTH_STATE_KEY='cardscope-oauth-state',SYNC_DEBOUNCE_MS=3000,SYNC_GAP_MS=15000,SYNC_RETRY_MS=60000,SYNC_TOMBSTONE_MS=30*86400000;
 const syncUi={busy:false,again:false,joining:false,status:'idle',text:'',at:0,timer:0,retry:0,stamp:0,applying:false,confirm:'',notice:'',authBusy:false,authUrl:''};
 function readAuthState(){
   try{
@@ -1333,17 +1333,21 @@ async function startGoogleLogin(){
   if(syncUi.authBusy||syncUi.joining)return;
   syncUi.authBusy=true;setSyncNotice('正在前往 Google 登入…');
   try{
-    let base=syncUi.authUrl;
+    let base=syncUi.authUrl,clientId=syncUi.googleClientId;
     if(!base){
       const response=await fetch('/api/auth/config',{cache:'no-store'});
-      base=((await response.json().catch(()=>null))?.data?.url)||'';
-      if(base)syncUi.authUrl=base;
+      const data=(await response.json().catch(()=>null))?.data||{};
+      base=data.url||'';clientId=data.googleClientId||'';
+      if(base){syncUi.authUrl=base;syncUi.googleClientId=clientId}
     }
     if(!base)return setSyncNotice('Google 登入目前還沒有開放，請改用同步碼。');
-    const {verifier,challenge}=await makePkce();
-    try{sessionStorage.setItem(PKCE_KEY,verifier)}catch{return setSyncNotice('無法寫入瀏覽器儲存空間（可能是無痕模式），無法使用 Google 登入。')}
+    const {verifier,challenge}=await makePkce(),state=clientId?base64Url(window.crypto.getRandomValues(new Uint8Array(24))):'';
+    try{sessionStorage.setItem(PKCE_KEY,verifier);if(state)sessionStorage.setItem(OAUTH_STATE_KEY,state);else sessionStorage.removeItem(OAUTH_STATE_KEY)}catch{return setSyncNotice('無法寫入瀏覽器儲存空間（可能是無痕模式），無法使用 Google 登入。')}
     const origin=(typeof location!=='undefined'&&location.origin)||'https://cardseektcg.com';
-    const target=`${base}/auth/v1/authorize?${new URLSearchParams({provider:'google',redirect_to:`${origin}/?view=collection`,code_challenge:challenge,code_challenge_method:'s256'})}`;
+    // 有自家用戶端 ID 就直接找 Google、回到自家網域（同意畫面顯示 cardseektcg.com）；沒有就沿用 Supabase 轉址。
+    const target=clientId
+      ?`https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({client_id:clientId,redirect_uri:`${origin}/api/auth/google/callback`,response_type:'code',scope:'openid email',code_challenge:challenge,code_challenge_method:'S256',state,prompt:'select_account'})}`
+      :`${base}/auth/v1/authorize?${new URLSearchParams({provider:'google',redirect_to:`${origin}/?view=collection`,code_challenge:challenge,code_challenge_method:'s256'})}`;
     if(typeof location!=='undefined')location.assign?location.assign(target):(location.href=target);
   }catch{setSyncNotice('連不上登入服務，請確認網路後再試。')}
   finally{syncUi.authBusy=false}
@@ -1395,22 +1399,25 @@ async function enableGoogleSync(session){
 // 從 Google 導回 ?view=collection&code=...（或 error=...）：立刻把網址上的參數清掉，拿 sessionStorage 的 verifier 向自家伺服器換 token（verifier 用過即刪）。
 async function completeGoogleRedirect(){
   if(typeof location==='undefined'||!location.search)return false;
-  const params=new URLSearchParams(location.search),code=params.get('code'),oauthError=params.get('error'),oauthDesc=params.get('error_description');
+  const params=new URLSearchParams(location.search),code=params.get('code'),state=params.get('state'),oauthError=params.get('error')||(params.get('login')==='failed'?'failed':''),oauthDesc=params.get('error_description');
   if(!code&&!oauthError)return false;
-  params.delete('code');params.delete('error');params.delete('error_description');
+  params.delete('code');params.delete('state');params.delete('login');params.delete('error');params.delete('error_description');
   const qs=params.toString(),cleanUrl=`${location.pathname}${qs?`?${qs}`:''}${location.hash||''}`;
   try{history.replaceState(history.state,'',cleanUrl)}catch{}
   if(!code){
     try{sessionStorage.removeItem(PKCE_KEY)}catch{}
-    setSyncNotice(oauthError==='access_denied'?'已取消 Google 登入，本機收藏不受影響。':`${oauthDesc||oauthError||'Google 登入失敗'}，本機收藏不受影響。`);
+    try{sessionStorage.removeItem(OAUTH_STATE_KEY)}catch{}
+    setSyncNotice(oauthError==='access_denied'?'已取消 Google 登入，本機收藏不受影響。':oauthError==='failed'?'Google 登入沒有完成，本機收藏不受影響。':`${oauthDesc||oauthError||'Google 登入失敗'}，本機收藏不受影響。`);
     return false;
   }
-  let verifier='';
-  try{verifier=sessionStorage.getItem(PKCE_KEY)||'';sessionStorage.removeItem(PKCE_KEY)}catch{}
+  let verifier='',savedState='';
+  try{verifier=sessionStorage.getItem(PKCE_KEY)||'';savedState=sessionStorage.getItem(OAUTH_STATE_KEY)||'';sessionStorage.removeItem(PKCE_KEY);sessionStorage.removeItem(OAUTH_STATE_KEY)}catch{}
+  // 帶 state 的是自家網域回呼：state 要和出發時存的一樣（防 CSRF 登入），交換時註明 provider。
+  if(state&&state!==savedState){setSyncNotice('登入驗證不符，請再按一次「用 Google 登入」。');return false}
   if(!verifier){setSyncNotice('登入驗證已過期，請再按一次「用 Google 登入」。');return false}
   syncUi.authBusy=true;setSyncNotice('正在完成 Google 登入…');
   try{
-    const response=await fetch('/api/auth/exchange',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,verifier}),cache:'no-store'});
+    const response=await fetch('/api/auth/exchange',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state?{code,verifier,provider:'google'}:{code,verifier}),cache:'no-store'});
     const payload=await response.json().catch(()=>null);
     if(!response.ok||!payload?.data?.accessToken){setSyncNotice((payload?.error||'Google 登入失敗')+'，本機收藏不受影響。');return false}
     return await enableGoogleSync(payload.data);

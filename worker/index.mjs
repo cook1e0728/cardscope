@@ -13,6 +13,7 @@ import {
   seoRequestTarget
 } from '../providers/http-security.mjs';
 import { KV_KEYS } from '../providers/kv-snapshots.mjs';
+import { googleCallbackLocation } from '../providers/auth-sync.mjs';
 import { createReadApi, priceHistoryNote } from '../providers/read-api.mjs';
 import { applyNoindexToHtml, applySeoToHtml, homeSeo, normalizeBaseUrl, renderRobotsTxt, viewSeo } from '../providers/seo.mjs';
 
@@ -671,6 +672,10 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
           pageCsp,
           request.method
         );
+      }
+
+      if (request.method === 'GET' && url.pathname === '/api/auth/google/callback') {
+        return new Response(null, { status: 302, headers: { Location: googleCallbackLocation(url.searchParams), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } });
       }
 
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/robots.txt') {

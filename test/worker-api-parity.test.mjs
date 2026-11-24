@@ -1991,7 +1991,7 @@ test('第 2 步第二批 A：Worker ↔ Node 認證（/api/auth/*）與收藏雲
     assertNoAuthSyncLeak(JSON.stringify(cfgJson), cfgRes.headers, 'GET /api/auth/config');
 
     const unconfigRes = await workerHandler.fetch(new Request('https://cardseektcg.com/api/auth/config'), { ...workerEnv, SUPABASE2_ANON_KEY: '' });
-    assert.deepEqual(await unconfigRes.json(), { data: { url: null } });
+    assert.deepEqual(await unconfigRes.json(), { data: { url: null, googleClientId: null } });
 
     // 2. POST /api/auth/exchange 與 /api/auth/refresh 輸入驗證（400 不打上游）與錯誤處理（401 / 502 / 503）
     for (const bad of [
