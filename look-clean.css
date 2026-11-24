@@ -395,7 +395,7 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean .cards .card:not(.card-list) .card-reference{gap:0 3px;flex-wrap:wrap}
   html.look-clean .cards .card:not(.card-list) .card-reference .cr-var{display:none}
   /* 手機也要看得到價格來源（使用者回饋：不知道是買取、成交還是平台參考價）；放在漲跌下一行 */
-  html.look-clean .cards .card:not(.card-list) .card-reference .cr-src{order:3;flex-basis:100%;font-size:12px;line-height:1.2;opacity:.75}
+  html.look-clean .cards .card:not(.card-list) .card-reference .cr-src{order:3;flex-basis:100%;font-size:12px;line-height:1.2;color:var(--v2-ink-2,#5A5348)}
   html.look-clean .cards .card:not(.card-list) .card-reference .cr-chg{flex-basis:100%;font-size:11px;line-height:1.2}
   html.look-clean .cards .card:not(.card-list)>.badge:not(.ip-badge){font-size:12px;padding:0 4px}
   html.look-clean .cards .card:not(.card-list) .watchlist-inline{display:none}
@@ -458,7 +458,7 @@ html.look-clean #detail>.crumbs{padding-right:56px}
   html.look-clean body[data-view="landing"] .hero-intro p{color:#C9C1DA;font-size:18px}
   html.look-clean body[data-view="landing"] .hero-art{width:260px;padding:0;background:none;border-radius:14px;box-shadow:0 24px 40px -16px rgba(0,0,0,.6);outline:1px solid #3B3560}
   html.look-clean body[data-view="landing"] .hero-art img{border-radius:14px}
-  html.look-clean .home-search{height:62px;border:1px solid #4A4470;border-radius:14px;background:#24203F}
+  html.look-clean .home-search{height:62px;border:1px solid #8A83B0;border-radius:14px;background:#24203F}
   html.look-clean .home-search input{color:#F3EEE3}
   html.look-clean .home-search input::placeholder{color:#A49CBB}
   html.look-clean .home-search button{background:#E7BA4C;color:#1B1733;border-radius:0 13px 13px 0}
@@ -567,7 +567,7 @@ html.look-clean .top .search button.search-clear:hover,html.look-clean .top .sea
 /* 系列區工具：篩選框＋展開全部（series-band.js）；展開或篩選時系列改多排網格 */
 .series-band-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
 .series-band-tools{display:flex;align-items:center;gap:8px;flex:0 1 440px;margin-left:auto}
-.series-band-filter{flex:1;min-width:0;height:44px;padding:0 16px;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:14px}
+.series-band-filter{flex:1;min-width:0;height:44px;padding:0 16px;border:1px solid #857D6E;border-radius:999px;background:#fff;color:#211C17;font-size:14px}
 .series-band-filter:focus{outline:none;border-color:#211C17;box-shadow:0 0 0 3px rgba(33,28,23,.08)}
 .series-band-expand{flex:none;min-height:44px;padding:0 18px;border:1px solid #D8D0C2;border-radius:999px;background:#fff;color:#211C17;font-size:14px;font-weight:700;cursor:pointer}
 .series-band-expand:hover,.series-band-expand[aria-expanded="true"]{border-color:#211C17}
@@ -584,7 +584,7 @@ html.look-clean .series-band.is-grid .band-tile-art{width:100%;height:auto;aspec
 .selected-other-regions button:hover{border-color:#211C17}
 @media (max-width:760px){.series-band-tools{flex:1 1 100%;margin-left:0}}
 /* 篩選中：上方分頁不是這次的篩選範圍，變淡並由說明列講明 */
-.series-band.is-filtering .series-band-tabs{opacity:.45}
+.series-band.is-filtering .series-band-tabs{opacity:.85} /* 篩選時分頁不作用，只稍微淡化；.45 會讓字對比掉到 2.75:1（體檢 UI-04） */
 .series-band-scope{margin:8px 0 0;color:#5C5348;font-size:13px}
 
 /* 卡牌時事標題與上方首頁深色區塊拉開 10px */
