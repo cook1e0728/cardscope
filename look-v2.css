@@ -409,7 +409,8 @@ html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-acti
 html.look-clean body[data-view] .cards .card .watchlist-inline{display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:hidden}
 html.look-clean body[data-view] .cards .card .watchlist-inline button{flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
 html.look-clean body[data-view] .cards .card .watchlist-inline button:active{transform:scale(.97)}
-html.look-clean body[data-view] .cards .card .watchlist-inline .watch-quantity{flex:1 1 auto;text-align:center;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
+/* 數字欄可縮到 0：375px 三欄時兩顆 44px 鈕加原本 24px 數字欄放不下，「＋」被切掉（體檢 HCI-06） */
+html.look-clean body[data-view] .cards .card .watchlist-inline .watch-quantity{flex:1 1 auto;min-width:0;text-align:center;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 html.look-clean body[data-view] .cards .card :is(.favorite-toggle,.watchlist-inline button):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
 /* 清單模式：收藏鈕在最右邊 */
 html.look-clean body[data-view] .cards .card.card-list{padding:8px 14px 8px 10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow)}
@@ -449,6 +450,10 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
   html.look-clean body[data-view] .cards .card.card-list .card-list-facts b{white-space:nowrap}
   html.look-clean body[data-view] .cards .card.card-list .card-actions{grid-column:3;grid-row:1/3;justify-self:end}
   html.look-clean body[data-view] .cards .card.card-list .watchlist-inline{width:116px}
+}
+/* 很窄的手機（<360px，如 320px）：一排 3 張時卡片內寬約 81px，放不下「− 數量 ＋」兩顆 44px 鈕，改一排 2 張（體檢 HCI-06） */
+@media (max-width:359px){
+  html.look-clean body[data-view] .cards:not(.list-view){grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 /* ===== 11. 詳細資料（階段 4，ui-enhancements.js openCard／navigation-state.js；docs/REDESIGN_PLAN.md 第 6 節「側板要解的五件事」） =====
    桌機 ≥1000px：#modal 是釘在頂欄下方右側的側板（不遮卡牆、不鎖 Tab），遊戲頁與搜尋結果的卡牆（#main）讓出同樣的寬度，欄數自動變少（6→4）。

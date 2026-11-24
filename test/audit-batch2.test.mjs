@@ -31,3 +31,10 @@ test('HCI-08：內頁主標（卡牆／搜尋／收藏、行情、關於、隱�
   for(const id of ['cardsTitle','marketTitle','aboutTitle','privacyTitle'])
     assert.match(html,new RegExp(`<h2 id="${id}" role="heading" aria-level="1"`),id);
 });
+
+test('HCI-06：手機卡牆的「− 數量 ＋」不被切掉：數字欄可縮、<360px 改一排 2 張',async()=>{
+  const css=await read('look-v2.css');
+  assert.match(css,/\.watchlist-inline \.watch-quantity\{flex:1 1 auto;min-width:0;/);
+  assert.match(css,/@media \(max-width:359px\)\{\s*html\.look-clean body\[data-view\] \.cards:not\(\.list-view\)\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/);
+  assert.ok(css.indexOf('@media (max-width:359px)')>css.indexOf('grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px'),'要排在一排 3 張的規則之後才蓋得過');
+});
