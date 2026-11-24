@@ -67,3 +67,11 @@ test('google exchange: upstream failure is 502, missing secrets are 503 and neve
   assert.equal((await off.exchange({ code: CODE, verifier: VERIFIER, provider: 'google' })).status, 503);
   assert.equal(off.calls.length, 0);
 });
+
+test('worker answers the google callback itself instead of proxying /api/* to Render', async () => {
+  const { default: worker } = await import('../worker/index.mjs');
+  const res = await worker.fetch(new Request(`https://cardseektcg.com/api/auth/google/callback?code=${encodeURIComponent(CODE)}&state=${STATE}`), { PUBLIC_BASE_URL: 'https://cardseektcg.com' }, { waitUntil() {} });
+  assert.equal(res.status, 302);
+  assert.equal(res.headers.get('location'), `/?view=collection&code=${encodeURIComponent(CODE)}&state=${STATE}`);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+});

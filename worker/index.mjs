@@ -604,6 +604,11 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
         return new Response(null, { status: 301, headers });
       }
 
+      // Google 登入回呼：/api/* 其餘路徑會轉給 Render，這條要先攔下。
+      if (request.method === 'GET' && url.pathname === '/api/auth/google/callback') {
+        return new Response(null, { status: 302, headers: { Location: googleCallbackLocation(url.searchParams), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } });
+      }
+
       const migrated = resolveMigratedApis(env);
       const apiKey = matchMigratedApi(url, request.method);
       if (apiKey && migrated.has(apiKey)) {
@@ -674,9 +679,6 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
         );
       }
 
-      if (request.method === 'GET' && url.pathname === '/api/auth/google/callback') {
-        return new Response(null, { status: 302, headers: { Location: googleCallbackLocation(url.searchParams), 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' } });
-      }
 
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/robots.txt') {
         return respondText(
