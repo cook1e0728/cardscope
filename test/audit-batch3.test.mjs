@@ -24,3 +24,18 @@ test('DES-15：走勢大數字 32px（手機 28px），讀法說明收進摺疊�
   assert.match(timeline,/<details class="ptl-howto"><summary>ⓘ 圖表怎麼看<\/summary><p class="ptl-caption" data-r="caption"><\/p><\/details>/);
   assert.match(css,/@media \(min-width:1000px\)\{html\.look-clean body\[data-view\] #detail \.ptl-cells>div\{background:#F7F3EA/);
 });
+
+test('DES-08：世代分頁超過 4 個時收起第 4 個以後，「更多世代」可展開；選中的在收起區時不收；方向鍵略過隱藏分頁',async()=>{
+  const band=await read('series-band.js');
+  assert.match(band,/extraEras=eraIds\.length>4&&!eraIds\.slice\(3\)\.includes\(active\)\?eraIds\.slice\(3\):\[\]/);
+  assert.match(band,/\$\{erasHidden&&extraEras\.includes\(id\)\?' hidden':''\}/);
+  assert.match(band,/data-band-eras aria-expanded="\$\{!erasHidden\}">\$\{erasHidden\?`更多世代（\$\{extraEras\.length\}）`:'收合世代'\}/);
+  assert.match(band,/tabKey\(event,'\[data-band-tab\]:not\(\[hidden\]\)'\)/);
+  assert.match(band,/closest\('\[data-band-eras\]'\)\)\{bandEras\[game\]=!bandEras\[game\];render\(\)/);
+});
+
+test('DES-01／11：卡面文字包成側板白卡；隱私頁有本頁目錄',async()=>{
+  const [ui,html]=await Promise.all([read('ui-enhancements.js'),read('index.html')]);
+  assert.equal((ui.match(/<section class="dpanel dpanel-text"><h4 class="dpanel-title">卡片文字<\/h4>/g)||[]).length,2);
+  assert.match(html,/<nav class="info-toc" aria-label="本頁目錄"><b>本頁目錄<\/b><a href="#privacy">隱私說明<\/a><a href="#sources">資料來源<\/a><a href="#rights">/);
+});

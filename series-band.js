@@ -135,7 +135,7 @@
     loadGameCards=function(id,entry=window.cardscopeEntry,quiet=false){if(!entry&&pendingSame)entry={series:pendingSame};pendingSame=null;return previousLoad(id,entry,quiet)};
   }
   // 系列區的篩選字與展開狀態（各遊戲分開記）；展開或篩選時系列改成多排網格，一次先排 SHOW_STEP 個。
-  const bandFilter={},bandExpanded={},bandShown={},SHOW_STEP=120;
+  const bandFilter={},bandExpanded={},bandShown={},bandEras={},SHOW_STEP=120;
   // Released in the last 90 days: shown as a NEW badge on the series' own tile.
   const recentSince=()=>taipeiDate(90);
   // auto: the page opened this series as the game's default view, so it is not remembered as 最近瀏覽 and the page does not scroll.
@@ -233,6 +233,8 @@
     // [id, text, hint, count, unit]: the count comes from lists already in memory (no extra request); unit feeds the screen-reader label.
     const tabs=[...(found.length||elsewhere.length?[['search',`搜尋：${bandSearch.query}`,'',found.length,'項']]:[]),['latest','全部系列','',series.length,'個系列'],...(seen.length?[['recent','最近瀏覽','',seen.length,'個系列']]:[]),...buckets.map(bucket=>[`group:${bucket.label}`,bucket.label,'',bucket.items.length,'個系列']),...categories.map(item=>[`product:${item.id}`,label(item),item.description,item.rows.length,'項商品'])];
     let active=bandTab[game]||'latest';if(!tabs.some(([id])=>id===active))active='latest';bandTab[game]=active;
+    // 體檢 DES-08：世代分頁超過 4 個時先顯示前 3 個，其餘收進「更多世代」，讓系列清單早點出現；選中的在收起區時整排展開
+    const eraIds=tabs.map(([id])=>id).filter(id=>id.startsWith('group:')),extraEras=eraIds.length>4&&!eraIds.slice(3).includes(active)?eraIds.slice(3):[],erasHidden=extraEras.length>0&&!bandEras[game];
     const dated=byDate(series),firstEraTab=buckets.length?tabs.findIndex(([id])=>id.startsWith('product:')):-1;
     let kind='series',list;
     if(active==='search')list=found;
@@ -262,7 +264,9 @@
     };
     band.innerHTML=`<div class="series-band-head"><div class="series-band-regions" role="group" aria-label="地區版本">${regions.map(id=>`<button type="button" data-region="${id}" aria-pressed="${id===region}" class="${id===region?'on':''}">${esc(regionText(id)||id)}</button>`).join('')}</div>`
       +(tools?`<div class="series-band-tools"><input type="search" class="series-band-filter" placeholder="篩選系列：${esc({pokemon:'SV6a、151',onepiece:'OP05、雙璧',yugioh:'25週年、青眼','weiss-schwarz':'芙莉蓮、無職',haikyuu:'烏野、音駒','dragonball-fw':'FB01、悟空','union-arena':'UA、咒術'}[game]||'系列名稱或代號')}…" aria-label="篩選系列名稱或代號" enterkeyhint="search" value="${esc(bandFilter[game]||'')}"><button type="button" class="series-band-expand" data-band-expand aria-expanded="false">展開全部</button></div>`:'')+`</div>`
-      +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" tabindex="${id===active?0:-1}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
+      +(extraEras.length?'<div class="series-band-tabrow">':'')
+      +`<div class="series-band-tabs" role="tablist" aria-label="系列與商品分類">${tabs.map(([id,text,hint,count,unit],index)=>`<button type="button" role="tab" aria-selected="${id===active}" tabindex="${id===active?0:-1}" class="${id===active?'on':''}${index===firstEraTab?' starts-eras':''}" data-band-tab="${esc(id)}"${erasHidden&&extraEras.includes(id)?' hidden':''}${hint?` title="${esc(hint)}"`:''} aria-label="${esc(`${text}，${count} ${unit}`)}">${esc(text)} <span class="count" aria-hidden="true">${count}</span></button>`).join('')}</div>`
+      +(extraEras.length?`<button type="button" class="series-band-eras" data-band-eras aria-expanded="${!erasHidden}">${erasHidden?`更多世代（${extraEras.length}）`:'收合世代'}</button></div>`:'')
       +(active==='search'&&elsewhere.length?`<div class="series-band-regions series-band-elsewhere" role="group" aria-label="其他版本的搜尋結果"><span class="series-band-note">其他版本也有符合：</span>${elsewhere.map(([id,count])=>`<button type="button" data-search-region="${id}">${esc(regionText(id)||id)} ${count} 項</button>`).join('')}</div>`:'')
       +(tools?'<p class="series-band-scope" role="status" hidden>篩選中：在這個版本的全部系列裡找，不分上方分頁。</p>':'')
       +`<div class="series-band-rail" role="tabpanel"></div>`;
@@ -276,11 +280,12 @@
       filter.onkeydown=event=>{if(event.key==='Escape'&&filter.value){event.preventDefault();filter.value='';apply()}};
     }
     const pickBand=tab=>{const id=tab.dataset.bandTab,back=tab===document.activeElement;bandTab[game]=id;bandFilter[game]='';bandShown[game]=SHOW_STEP;render();if(back)band.querySelector(`[data-band-tab="${CSS.escape(id)}"]`)?.focus()};
-    band.querySelector('.series-band-tabs').onkeydown=event=>{const tab=tabKey(event,'[data-band-tab]');if(tab){tab.focus();pickBand(tab)}};
+    band.querySelector('.series-band-tabs').onkeydown=event=>{const tab=tabKey(event,'[data-band-tab]:not([hidden])');if(tab){tab.focus();pickBand(tab)}};
     band.onclick=event=>{
       const regionButton=event.target.closest('[data-region],[data-search-region]'),target=regionButton?.dataset.region||regionButton?.dataset.searchRegion;
       if(regionButton){const select=regionSelect();if(select&&select.value!==target){select.value=target;select.dispatchEvent(new Event('change',{bubbles:true}))}return}
       const tab=event.target.closest('[data-band-tab]');if(tab){pickBand(tab);return}
+      if(event.target.closest('[data-band-eras]')){bandEras[game]=!bandEras[game];render();band.querySelector('[data-band-eras]')?.focus();return}
       if(event.target.closest('[data-band-expand]')){const open=band.classList.contains('is-grid');bandExpanded[game]=!open;if(open)bandFilter[game]='';bandShown[game]=SHOW_STEP;render();band.querySelector('[data-band-expand]')?.focus();return}
       if(event.target.closest('[data-band-more]')){const before=band.querySelectorAll('.band-tile').length;bandShown[game]=(bandShown[game]||SHOW_STEP)+SHOW_STEP;paint();band.querySelectorAll('.band-tile')[before]?.focus();return}
       const card=event.target.closest('.band-tile');if(!card)return;
