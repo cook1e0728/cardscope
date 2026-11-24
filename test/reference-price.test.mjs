@@ -326,14 +326,14 @@ test('version table markup: columns, a plain "no reliable price" row, scrolls in
   ] };
   context.market = market;
   const out = vm.runInContext(`versionPriceTable(market,'pokemon','k-jp')`, context);
-  for (const heading of ['版本', '來源', '價格種類', '原幣', '新台幣', '更新日期']) assert.match(out, new RegExp(`<th scope="col">${heading}</th>`));
-  assert.match(out, /EUR 10\.00/);
-  assert.match(out, /NT\$ 360/);
-  assert.match(out, /JPY 800<\/td><td>—<\/td>/, '沒有台幣換算就寫破折號，不補數字');
-  assert.match(out, /<small>閃卡 Holo<\/small>/);
-  assert.match(out, /每日快照/);
+  // 體檢 DES-02：6 欄併成 3 欄，窄側板不必左右捲動；原幣與日期縮成新台幣下方小字
+  assert.equal((out.match(/<th scope="col"/g) || []).length, 3);
+  assert.match(out, /<th scope="col">來源・價格種類<\/th>/);
+  assert.match(out, /<td>Cardmarket<small>平台參考價 · 閃卡 Holo · 每日快照<\/small><\/td><td class="vp-price"><b>NT\$ 360<\/b><small>EUR 10\.00・/);
+  assert.match(out, /<b>—<\/b><small>JPY 800・/, '沒有台幣換算就寫破折號，不補數字');
   assert.match(out, /目前顯示/);
-  assert.match(out, /<td colspan="5" class="vp-none">目前沒有參考價<\/td>/);
+  assert.match(out, /<td colspan="2" class="vp-none">目前沒有參考價<\/td>/);
+  assert.doesNotMatch(ui, /min-width:560px/, '表格不再強制 560px 寬');
   assert.match(out, /class="version-prices" role="region"[^>]*tabindex="0"/);
   assert.doesNotMatch(out, /最便宜|最低|合計|總計/, '只並列，不比較也不加總');
   assert.equal(vm.runInContext(`versionPriceTable({versions:[${JSON.stringify(market.versions[0])}]},'pokemon','k-jp')`, context), '', '只有一個版本不畫表');

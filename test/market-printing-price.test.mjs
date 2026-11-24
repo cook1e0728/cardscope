@@ -49,10 +49,10 @@ test('market rows name the printing they belong to, and an empty list says there
     { ...base, provider: 'tcgdex', market: 'Cardmarket', language: 'en-US' },
     { ...base, provider: 'x', market: 'X' }
   ] });
-  assert.match(out, /來源：YGOPRODeck[^]*對應版本：美版（LOB-EN001 Ultra Rare）/);
+  assert.match(out, /YGOPRODeck 平台參考價<\/span>[^]*對應版本：美版（LOB-EN001 Ultra Rare）/);
   assert.match(out, /此版本（YGOPRODeck set price）/);
   assert.doesNotMatch(out, /跨版本最低/);
-  assert.match(out, /來源：Cardmarket[^]*對應版本：日版/);
+  assert.match(out, /Cardmarket 平台參考價<\/span>[^]*對應版本：日版（?[^<]*・閃卡/);
   assert.match(out, /對應版本：en-US/, 'no region: the language stands in');
   assert.match(out, /對應版本：未標示/, 'neither: said so, not guessed');
   assert.match(out, /YGOPRODeck 參考價為美元計價、來源平台未標示，不是成交價/);

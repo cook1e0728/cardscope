@@ -1150,3 +1150,11 @@ html.look-clean header.top .account{position:relative;order:99;flex:none;display
   html.look-clean body[data-view]:not([data-view="collection"]) header.top .bar{flex-wrap:wrap;row-gap:var(--s2)}
   html.look-clean body[data-view]:not([data-view="collection"]) header.top .bar>.search{order:50;flex:1 0 100%;max-width:none}
 }
+
+/* 體檢 DES-04：詳細側板價格區只留一層白卡，卡內小項目改細線分隔，不再盒中盒 */
+html.look-clean body[data-view] #detail :is(.price-overview>*,#graded-prices>*){background:#fff;border:1px solid #E7E1D4;border-radius:14px;padding:16px}
+html.look-clean body[data-view] #detail :is(.price-overview,.dpanel-trend) :is(.pov-row,.ebay-item,.ptl-now,.pov-list>*){background:transparent;border:0;border-top:1px solid #EFEAE0;border-radius:0;box-shadow:none;padding-left:0;padding-right:0}
+html.look-clean body[data-view] #detail .market-price b{font-size:20px}
+html.look-clean body[data-view] #detail .market-kind{font-size:13px;font-weight:600;color:#5A5348}
+/* 體檢 DES-15：走勢讀數在電腦版加淡底方格；手機太窄會折行，維持原樣 */
+@media (min-width:1000px){html.look-clean body[data-view] #detail .ptl-cells>div{background:#F7F3EA;border-radius:8px;padding:8px 10px}}

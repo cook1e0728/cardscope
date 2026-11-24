@@ -246,7 +246,7 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
 /* 左欄寬度兩個分頁一致（look-clean.css 300px），切分頁時卡圖不跳動 */
 .ptl-mini{display:none}
 .ptl-when{font-weight:700;color:#5A5348;font-size:15px;font-variant-numeric:tabular-nums}
-.ptl-big{font-size:48px;font-weight:900;line-height:1.1;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#211C17}
+.ptl-big{font-size:32px;font-weight:900;line-height:1.1;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#211C17}
 .ptl-say{min-height:26px;font-size:17px;font-weight:700}.ptl-say.down{color:#1F6F43}.ptl-say.up{color:#C4000F}.ptl-say.flat{color:#5A5348}
 .ptl-held{min-height:20px;font-size:13px;color:#5A5348}
 /* 讀數小格：固定四格、固定高度，拖動時不會跳 */
@@ -261,7 +261,7 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
 .ptl-band{fill:#C4000F;opacity:.1}.ptl-band.down{fill:#1F6F43}.ptl-pin{stroke:#211C17;stroke-width:1.5;stroke-dasharray:4 3}.ptl-ring{fill:none;stroke:#211C17;stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
 .ptl-play[hidden],.ptl-seg:empty,.ptl-seg[hidden],.ptl-avgs[hidden]{display:none}.ptl-ma{fill:none;stroke:#2F6FB0;stroke-opacity:.75;stroke-width:1.25;stroke-linejoin:round}.ptl-ma20{stroke:#6C9BCF;stroke-dasharray:5 4}.ptl-chip:disabled{background:none;color:#5A5348;box-shadow:inset 0 0 0 1px #E2DAC7;cursor:default}
 .ptl-wick{stroke-width:2}.ptl-wick.up{stroke:#C4000F}.ptl-wick.down{stroke:#1F6F43}.ptl-wick.flat{stroke:#5A5348}.ptl-body.up{fill:#C4000F}.ptl-body.down{fill:#1F6F43}.ptl-body.flat{fill:#5A5348}
-.ptl-caption{margin:6px 0 0;font-size:14px;line-height:1.5}.ptl-bar-detail{margin-top:4px;font-size:14px}.ptl-bar-detail>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}.ptl-bar-detail p{margin:0;font-variant-numeric:tabular-nums}
+.ptl-howto{margin-top:4px;font-size:14px}.ptl-howto>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;color:#5A5348}.ptl-caption{margin:0;font-size:14px;line-height:1.5}.ptl-bar-detail{margin-top:4px;font-size:14px}.ptl-bar-detail>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:700}.ptl-bar-detail p{margin:0;font-variant-numeric:tabular-nums}
 .ptl-table{overflow:auto;max-height:360px;margin-top:8px}.ptl-table table{width:100%;min-width:480px;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}.ptl-table th{text-align:left;font-weight:500;color:#5A5348;padding:6px 10px 6px 0;border-bottom:1px solid #E2DAC7}.ptl-table th,.ptl-table td{white-space:nowrap}.ptl-table td{padding:8px 10px 8px 0;border-bottom:1px solid #E2DAC7;vertical-align:top}.ptl-table a{display:inline-flex;align-items:center;min-height:44px}.ptl-stale{margin:0;padding-left:18px;font-size:14px;color:#5A5348}
 /* 圖下方一排：播放、拖桿、均線開關、從這天開始比較；窄螢幕換行 */
 .ptl-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:8px}.ptl-avgs{display:flex;gap:8px}.ptl-avg i{display:inline-block;width:8px;height:8px;margin-right:6px;border-radius:50%}.ptl-avg5 i{background:#2F6FB0}.ptl-avg20 i{background:#6C9BCF}
@@ -288,7 +288,7 @@ html:not(.cs-tools-ready):not(.cs-no-hold-tools) body[data-view="game"] #cardToo
   /* 手機：詳細頁的大卡會捲走，時間軸上方另放小卡和價格；不 sticky，免得蓋住詳細頁頂端的 .detail-bar（它在 .dialog 裡 sticky top:0） */
   .ptl-head{display:grid;grid-template-columns:34% 1fr;gap:12px;align-items:center;padding:6px 0}
   .ptl-mini{display:block;width:100%;height:auto;border-radius:4.5%/3.3%}
-  .ptl-big{font-size:34px}.ptl-say{font-size:14px}.ptl-when{font-size:13px}.ptl-held{font-size:12px}.ptl-chart svg{height:220px}.ptl-cells{grid-template-columns:repeat(2,minmax(0,1fr))}.ptl-cells>div{height:40px}.ptl-seg-btn{padding:0 10px}
+  .ptl-big{font-size:28px}.ptl-say{font-size:14px}.ptl-when{font-size:13px}.ptl-held{font-size:12px}.ptl-chart svg{height:220px}.ptl-cells{grid-template-columns:repeat(2,minmax(0,1fr))}.ptl-cells>div{height:40px}.ptl-seg-btn{padding:0 10px}
 }
 @media(prefers-reduced-motion:reduce){.ptl-play,.ptl-chip,.ptl-seg-btn{transition:none}}
 /* 借用英文版卡圖時的角標：卡面文字跟這個版本不同 */
