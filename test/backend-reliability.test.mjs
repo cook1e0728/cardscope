@@ -120,3 +120,30 @@ test('graded prices deduplicates concurrent in-flight lookups so quota is spent 
   releaseFail({ ok: true, json: async () => ({ data: [], metadata: { total: 0 } }) });
   assert.equal((await retry).status, 'no-match');
 });
+
+// 2026-11-25 正式站事故：Workers 裡建立單飛 promise 的請求先結束，之後每個請求都在等它，收到 cross-request 錯誤。
+const ORPHANED = 'This promise was created by a request that has since ended, so it can never settle.';
+
+test('joinInFlight: an orphaned shared promise is dropped and the current request queries again', async () => {
+  const { joinInFlight, isOrphanedPromiseError } = await import('../providers/backend-reliability.mjs');
+  assert.equal(isOrphanedPromiseError(new Error(ORPHANED)), true);
+  assert.equal(isOrphanedPromiseError(new Error('SUPABASE_TIMEOUT')), false);
+  let cleared = 0;
+  assert.equal(await joinInFlight(Promise.reject(new Error(ORPHANED)), () => { cleared += 1; }, async () => 'fresh'), 'fresh');
+  assert.equal(cleared, 1);
+  await assert.rejects(joinInFlight(Promise.reject(new Error('SUPABASE_TIMEOUT')), () => { cleared += 1; }, async () => 'fresh'), /SUPABASE_TIMEOUT/);
+  assert.equal(cleared, 1, 'ordinary errors still reach the caller and keep the shared state');
+});
+
+test('snapshot cache: a waiter on a load orphaned by another request reloads with its own loader', async () => {
+  const { createBoundedSnapshotCache } = await import('../providers/backend-reliability.mjs');
+  const cache = createBoundedSnapshotCache({ ttlMs: 60000, maxStaleMs: 0 });
+  let fail;
+  const first = cache.get(() => new Promise((_, reject) => { fail = reject; }));
+  first.catch(() => {});
+  const second = cache.get(async () => 'mine');
+  await new Promise(resolve => setTimeout(resolve, 0));
+  fail(new Error(ORPHANED)); // Node 沒有請求的概念：直接讓共用的載入丟出 Workers 會丟的那個錯
+  assert.equal((await second).data, 'mine');
+  assert.equal((await cache.get(async () => 'unused')).data, 'mine', 'the reload result is cached for later requests');
+});

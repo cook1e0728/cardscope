@@ -43,7 +43,8 @@ import { buildSeriesIndex, foldSearch, foldedSpan, gameHintFor, parseSearchQuery
 import { catalogCollectionAllowed, imageDisplayPolicies, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './source-policy.mjs';
 import { createTcgdexPricing } from './tcgdex-pricing.mjs';
 import { createYgoProDeckClient, crossVersionLowestPrices, matchYgoprodeckSet } from './ygoprodeck.mjs';
-import { chunkCardIds, createBoundedSnapshotCache } from './backend-reliability.mjs';
+import { chunkCardIds, createBoundedSnapshotCache, joinInFlight } from './backend-reliability.mjs';
+import { CARD_ID_PATTERN, isBot, pageKind, taipeiDay } from './page-stats.mjs';
 import { CATALOG_REGION_IDS, createSupabaseClient, dbForGame, dbForId, getResponseByteSize } from './supabase-client.mjs';
 import {
   ALLOWED_CURRENCIES,
@@ -427,7 +428,7 @@ function createWebArchiveReader({ getEnv, fetchFn, now }) {
 
   async function loadManifest(cfg) {
     if (manifestEntry && now() - manifestEntry.at < ARCHIVE_MANIFEST_TTL_MS) return manifestEntry.value;
-    if (manifestPending) return manifestPending;
+    if (manifestPending) { const shared = manifestPending; return joinInFlight(shared, () => { if (manifestPending === shared) manifestPending = null; }, () => loadManifest(cfg)); }
     manifestPending = storageGetBytes(cfg, `${ARCHIVE_PREFIX}/manifest.json`)
       .then(bytes => {
         const value = parseManifestBytes(bytes);
@@ -449,7 +450,7 @@ function createWebArchiveReader({ getEnv, fetchFn, now }) {
       return hit.byCard;
     }
     if (hit) drop(key);
-    if (pending.has(key)) return pending.get(key);
+    if (pending.has(key)) { const shared = pending.get(key); return joinInFlight(shared, () => { if (pending.get(key) === shared) pending.delete(key); }, () => loadShardRows(cfg, month, shard, expected)); }
     const task = (async () => {
       const path = `${ARCHIVE_PREFIX}/${month}/${archivePad(shard)}.json.gz`;
       let bytes = await storageGetBytes(cfg, path, { version: expected });
@@ -767,7 +768,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     const current = now();
     const cached = browseCache.get(key);
     if (cached?.data && cached.expiresAt > current) return cached.data;
-    if (cached?.promise) return cached.promise;
+    if (cached?.promise) return joinInFlight(cached.promise, () => { if (browseCache.get(key) === cached) browseCache.delete(key); }, () => cachedBrowseRows(key, loader, ttlMs));
     const promise = Promise.resolve().then(loader).then(data => {
       if (Array.isArray(data) && data.length > BROWSE_CACHE_ROWS_MAX) {
         browseCache.delete(key);
@@ -870,7 +871,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     const cache = storageCaches[targetDb];
     const current = now();
     if (cache.data && cache.expiresAt > current) return Promise.resolve(cache.data);
-    if (cache.promise) return cache.promise;
+    if (cache.promise) { const shared = cache.promise; return joinInFlight(shared, () => { if (cache.promise === shared) cache.promise = null; }, () => loadStorageReport(targetDb)); }
     if (current < cache.retryAt) return Promise.resolve(cache.data);
     return cache.promise = db.fetchJson('/rpc/db_size_report', {
       db: targetDb,
@@ -1008,8 +1009,10 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           catalogCache.pending = null;
           throw error;
         });
+        return catalogCache.pending;
       }
-      return catalogCache.pending;
+      const shared = catalogCache.pending;
+      return joinInFlight(shared, () => { if (catalogCache.pending === shared) catalogCache.pending = null; }, refresh);
     };
     if (catalogCache.value) {
       if (now() - catalogCache.at >= CATALOG_CACHE_TTL_MS) {
@@ -1066,8 +1069,10 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           productCache.pending = null;
           throw error;
         });
+        return productCache.pending;
       }
-      return productCache.pending;
+      const shared = productCache.pending;
+      return joinInFlight(shared, () => { if (productCache.pending === shared) productCache.pending = null; }, refresh);
     };
     if (productCache.value) {
       if (now() - productCache.at >= PRODUCT_CACHE_TTL_MS) {
@@ -2010,7 +2015,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   function loadCardCached(cardId) {
     const hit = cardCache.get(cardId);
-    if (hit && (hit.pending || now() - hit.at < CARD_CACHE_TTL_MS)) return hit.promise;
+    if (hit && (hit.pending || now() - hit.at < CARD_CACHE_TTL_MS)) return joinInFlight(hit.promise, () => { if (cardCache.get(cardId) === hit) cardCache.delete(cardId); }, () => loadCardCached(cardId));
     const entry = { pending: true, at: 0, promise: null };
     entry.promise = loadCardFromDatabase(cardId).then(value => {
       entry.pending = false;
@@ -2212,7 +2217,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   function unifiedMarketCached(card) {
     const hit = marketCache.get(card.id);
-    if (hit && (hit.pending || now() - hit.at < MARKET_CACHE_MS)) return hit.promise;
+    if (hit && (hit.pending || now() - hit.at < MARKET_CACHE_MS)) return joinInFlight(hit.promise, () => { if (marketCache.get(card.id) === hit) marketCache.delete(card.id); }, () => unifiedMarketCached(card));
     const entry = { pending: true, at: 0, promise: null };
     entry.promise = unifiedMarket(card).then(value => {
       entry.pending = false;
@@ -2230,7 +2235,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   // ---- Events / Movers / Hot Cards / Trends ----
   function loadCatalogEvents(current = now()) {
-    if (catalogEventsCache && current - catalogEventsCache.at < 3600000) return catalogEventsCache.promise;
+    if (catalogEventsCache && current - catalogEventsCache.at < 3600000) { const hit = catalogEventsCache; return joinInFlight(hit.promise, () => { if (catalogEventsCache === hit) catalogEventsCache = null; }, () => loadCatalogEvents(current)); }
     const day = offset => new Date(current + offset * 86400000).toISOString().slice(0, 10);
     const entry = { at: current, promise: null };
     const path = `/tcg_series?select=game_id,region,release_date,name_zh,name_ja,name_en,source_url&release_date=gte.${day(-PRICE_HISTORY_DAYS)}&release_date=lte.${day(60)}&order=release_date.asc&limit=500`;
@@ -2281,7 +2286,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   async function loadTrendSnapshot() {
     if (trendCache.data && trendCache.expiresAt > now()) return trendCache.data;
-    if (trendCache.promise) return trendCache.promise;
+    if (trendCache.promise) { const shared = trendCache.promise; return joinInFlight(shared, () => { if (trendCache.promise === shared) trendCache.promise = null; }, loadTrendSnapshot); }
     const promise = Promise.resolve().then(async () => {
       const params = new URLSearchParams({
         select: 'game,setCode:set_code,setName:set_name,cardCode:card_code,cardNumber:card_number,rarity,cardName:card_name,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,updatedAt:scraped_at,source',
@@ -2408,7 +2413,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   function priceHistoryCached(card, requestedId) {
     const current = now();
     const hit = priceHistoryCache.get(requestedId);
-    if (hit && (hit.pending || current - hit.at < PRICE_HISTORY_TTL_MS)) return hit.promise;
+    if (hit && (hit.pending || current - hit.at < PRICE_HISTORY_TTL_MS)) return joinInFlight(hit.promise, () => { if (priceHistoryCache.get(requestedId) === hit) priceHistoryCache.delete(requestedId); }, () => priceHistoryCached(card, requestedId));
     const entry = { pending: true, at: 0, promise: null };
     entry.promise = loadPriceHistory(card, requestedId).then(
       value => {
@@ -2487,7 +2492,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     const current = now();
     const memHit = gradedCache.get(query.key);
     if (memHit && memHit.expiresAt > current) return memHit.value;
-    if (gradedPending.has(query.key)) return gradedPending.get(query.key);
+    if (gradedPending.has(query.key)) { const shared = gradedPending.get(query.key); return joinInFlight(shared, () => { if (gradedPending.get(query.key) === shared) gradedPending.delete(query.key); }, () => lookupGradedPrices(input, ctx)); }
 
     const kvCacheKey = `${KV_KEYS.gradedCachePrefix}${query.key}`;
     const kvCached = parseKvJson(await readKvRaw(currentEnv, kvCacheKey));
@@ -2552,7 +2557,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   async function getEbayAccessToken(clientId, clientSecret, ctx) {
     const current = now();
     if (ebayToken && ebayToken.expiresAt - 60000 > current) return ebayToken.value;
-    if (ebayTokenPending) return ebayTokenPending;
+    if (ebayTokenPending) { const shared = ebayTokenPending; return joinInFlight(shared, () => { if (ebayTokenPending === shared) ebayTokenPending = null; }, () => getEbayAccessToken(clientId, clientSecret, ctx)); }
     ebayTokenPending = (async () => {
       const kvToken = parseKvJson(await readKvRaw(currentEnv, KV_KEYS.ebayToken));
       if (kvToken && typeof kvToken.value === 'string' && Number(kvToken.expiresAt) - 60000 > now()) {
@@ -3501,9 +3506,10 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           if (!validCardId(tail)) return jsonRes(400, { error: '卡片 ID 格式不正確' });
           const cacheReq = canonicalEdgeKeyRequest('card-detail', `/api/cards/${encodeURIComponent(tail)}`);
           const cached = await matchEdgeCache(cacheReq);
-          if (cached) return cached;
+          if (cached) { recordCardOpen(request, url, tail, ctx); return cached; } // 快取裡有就代表這張卡存在
           const { catalog, card } = await getCard(tail);
           if (!card) return jsonRes(404, { error: '找不到這張卡' });
+          recordCardOpen(request, url, card.id, ctx);
           const series = catalog.series.find(s => s.id === card.seriesId) || null;
           const game = catalog.games.find(g => g.id === card.game) || null;
           const data = { ...card, series, game };
@@ -3725,5 +3731,34 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     }
   }
 
-  return { handle, handleSitemap, loadSeo };
+  // ---- 頁面開啟數與最熱卡（page_stats_add／card_hot_add）----
+  // Render 時代在記憶體累積、每 10 分鐘寫一次；Worker 的 isolate 隨時會被回收，改成同一個 isolate 最多每 10 秒寫一次（中間的開啟數合併進下一筆）。
+  // 平常流量小，幾乎每次開啟都直接寫；被大量請求時寫入次數有上限。只送頁面種類或卡號與次數，不存 IP、UA、查詢字串（與 providers/page-stats.mjs 同規則）。
+  // shortcut: isolate 在兩次寫入之間被回收時，那 10 秒內合併的次數會遺失；統計本來就是概數。
+  const STATS_FLUSH_MS = 10_000;
+  const statsBuffers = { page_stats_add: { counts: {}, at: 0 }, card_hot_add: { counts: {}, at: 0 } };
+  function bumpStats(rpc, counts, ctx) {
+    if (!db.supabaseConfigured() || typeof ctx?.waitUntil !== 'function') return;
+    const buffer = statsBuffers[rpc], day = taipeiDay(now());
+    if (buffer.day && buffer.day !== day) buffer.counts = {}; // 換日：前一天沒寫出去的少量次數不跨日寫錯天
+    buffer.day = day;
+    for (const [key, n] of Object.entries(counts)) if (key in buffer.counts || Object.keys(buffer.counts).length < 200) buffer.counts[key] = (buffer.counts[key] || 0) + n;
+    if (now() - buffer.at < STATS_FLUSH_MS) return;
+    const sent = buffer.counts;
+    buffer.counts = {}; buffer.at = now();
+    ctx.waitUntil(db.fetchJson(`/rpc/${rpc}`, { db: 'main', method: 'POST', body: JSON.stringify({ p_day: day, p_counts: sent }), timeoutMs: 10000 })
+      .catch(error => console.warn('stats write failed', rpc, error?.message || error)));
+  }
+  // 瀏覽器開頁的 Sec-Fetch-Dest 是 document；service worker 預載與 fetch() 不算開頁。
+  function recordPageOpen(request, url, ctx) {
+    const dest = request.headers.get('sec-fetch-dest');
+    if (request.method !== 'GET' || (dest && dest !== 'document')) return;
+    bumpStats('page_stats_add', { [isBot(request.headers.get('user-agent')) ? 'bot' : pageKind(url.searchParams)]: 1 }, ctx);
+  }
+  function recordCardOpen(request, url, cardId, ctx) {
+    if (url.searchParams.get('open') !== '1' || isBot(request.headers.get('user-agent')) || !CARD_ID_PATTERN.test(String(cardId || ''))) return;
+    bumpStats('card_hot_add', { [cardId]: 1 }, ctx);
+  }
+
+  return { handle, handleSitemap, loadSeo, recordPageOpen };
 }

@@ -29,6 +29,22 @@ function iso(value) {
  * A failed refresh never replaces a successful value; once the stale window
  * expires the original error is propagated to the caller.
  */
+/**
+ * Cloudflare Workers：一個請求建立的 promise 只能在那個請求裡完成。建立它的請求若先結束（關頁、逾時），
+ * 共用中的單飛 promise 就永遠不會完成，別的請求 await 它會收到這個錯。這時丟掉它（clear 只清掉仍是同一個的），
+ * 改由目前的請求自己重查（retry）。2026-11-25 正式站搜尋、目錄、漲跌榜就是卡在這裡。
+ */
+export function isOrphanedPromiseError(error) {
+  return /created by a request that has since ended|can never settle/i.test(String(error?.message || error || ''));
+}
+export function joinInFlight(shared, clear, retry) {
+  return Promise.resolve(shared).catch(error => {
+    if (!isOrphanedPromiseError(error)) throw error;
+    clear();
+    return retry();
+  });
+}
+
 export function createBoundedSnapshotCache({
   ttlMs = DEFAULT_SNAPSHOT_TTL_MS,
   maxStaleMs = DEFAULT_SNAPSHOT_MAX_STALE_MS,
@@ -70,7 +86,8 @@ export function createBoundedSnapshotCache({
         if (typeof waitUntil === 'function') waitUntil(pending.catch(() => {}));
         return result(lastSuccess.data, 'stale', lastSuccess.observedAt);
       }
-      return pending;
+      const shared = pending;
+      return joinInFlight(shared, () => { if (pending === shared) pending = null; }, () => read(loader, options));
     }
 
     pending = Promise.resolve().then(loader).then(data => {
