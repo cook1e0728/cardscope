@@ -34,6 +34,12 @@
 
 /* ---- 2. 收藏迸發：固定在畫面上的小層（按鈕被重繪也不受影響），動畫由 JS 的 Web Animations 驅動 ---- */
 .fx-burst{position:fixed;z-index:2147483000;width:0;height:0;pointer-events:none}
+/* 收藏寶箱開蓋＋金色光芒：寶箱圖在 look-v2.css；座標都是偶數 px，對齊 32px 寶箱的 2px 像素格 */
+.fx-chest-base,.fx-chest-lid{position:absolute;left:-16px;top:-16px}
+.fx-chest-lid{clip-path:inset(0 0 50% 0)}
+.fx-chest-base{clip-path:inset(50% 0 0 0)}
+.fx-chest-glow{position:absolute;left:-12px;top:-4px;width:24px;height:4px;background:linear-gradient(90deg,#1B1733 0 2px,#F5C542 2px 6px,#FFF6C2 6px 18px,#F5C542 18px 22px,#1B1733 22px 24px)}
+.fx-chest-ray{position:absolute;width:2px;height:8px;background:#F2C95C}
 .fx-burst-star{position:absolute;left:-14px;top:-14px;width:28px;height:28px;display:grid;place-items:center;font-size:26px;line-height:1;color:#E8B400}
 .fx-burst-dot{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:#E8B400}
 .fx-burst-dot:nth-child(3n){background:#F26B5B}

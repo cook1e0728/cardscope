@@ -51,3 +51,13 @@ test('animates only compositor-friendly properties', () => {
   const animated = [...js.matchAll(/\.animate\(\[([^\]]*)\]/g)].map(match => match[1]).join(' ');
   for (const property of animated.matchAll(/(\w+):/g)) assert.match(property[1], /^(transform|opacity|strokeDasharray|strokeDashoffset)$/);
 });
+
+test('chest collect buttons: pixel chest icon, grey when not collected, chest-and-rays pop only for those buttons', () => {
+  const v2 = readFileSync(new URL('../look-v2.css', import.meta.url), 'utf8');
+  assert.ok(readFileSync(new URL('../assets/pixel/chest.png', import.meta.url)).length > 0);
+  assert.match(v2, /:is\(\.cards \.card \.favorite-toggle,#homeRails \.rail-collect\)::before,\.fx-chest-base,\.fx-chest-lid\{[^}]*url\(\/assets\/pixel\/chest\.png\)[^}]*image-rendering:pixelated/);
+  assert.match(v2, /\[aria-pressed="false"\]::before\{filter:grayscale\(1\)/);
+  assert.match(js, /const CHEST = '\[data-action="favorite"\],\[data-rail-collect\]'/);
+  assert.match(js, /if \(button\.matches\(CHEST\)\) return chestPop\(button\)/);
+  assert.match(js, /easing: 'steps\(1,end\)'/);
+});
