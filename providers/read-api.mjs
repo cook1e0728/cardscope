@@ -2892,23 +2892,23 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
               signal: AbortSignal.timeout(20000)
             });
           } catch {
-            return jsonRes(502, { error: '航海王官方圖片暫時無法讀取' });
+            return jsonRes(502, { error: '官方卡圖暫時無法讀取' });
           }
           if (response.status >= 300 && response.status < 400) {
             response.body?.cancel?.().catch(() => {});
-            return jsonRes(502, { error: '航海王官方圖片暫時無法讀取' });
+            return jsonRes(502, { error: '官方卡圖暫時無法讀取' });
           }
           const contentType = String(response.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
           const length = Number(response.headers.get('content-length') || 0);
           if (!response.ok || !ONEPIECE_IMAGE_MIMES.has(contentType) || (length && length > ONEPIECE_IMAGE_MAX_BYTES)) {
             response.body?.cancel?.().catch(() => {});
-            return jsonRes(502, { error: '航海王官方圖片回應無效' });
+            return jsonRes(502, { error: '官方卡圖回應無效' });
           }
           let body;
           try {
             body = await readBoundedBytes(response, ONEPIECE_IMAGE_MAX_BYTES);
           } catch (error) {
-            return jsonRes(502, { error: error?.code === 'IMAGE_TOO_LARGE' ? '航海王官方圖片超過大小限制' : '航海王官方圖片暫時無法讀取' });
+            return jsonRes(502, { error: error?.code === 'IMAGE_TOO_LARGE' ? '官方卡圖超過大小限制' : '官方卡圖暫時無法讀取' });
           }
           const res = new Response(body, {
             status: 200,

@@ -25,7 +25,14 @@ export const FX_JUMP_LIMIT = 0.05;
 export const FX_JUMP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 export const MARKET_CACHE_MS = 5 * 60 * 1000;
 
-export const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com', 'asia-en.onepiece-cardgame.com']);
+// 官網只讓自家網站載入（Cross-Origin-Resource-Policy: same-site）的 Bandai 官方卡圖：經 /api/images/onepiece 轉送、不轉存。
+// 主機 → 允許的路徑開頭；UNION ARENA 於 2026-11-25 加入（首頁大獎與卡牆的 UA 卡圖原本全部被瀏覽器擋下）。
+export const PROXIED_IMAGE_PATHS = new Map([
+  ['asia-tc.onepiece-cardgame.com', '/images/cardlist/card/'],
+  ['asia-en.onepiece-cardgame.com', '/images/cardlist/card/'],
+  ['www.unionarena-tcg.com', '/jp/images/cardlist/card/']
+]);
+export const ONEPIECE_IMAGE_HOSTS = new Set(PROXIED_IMAGE_PATHS.keys());
 export const ONEPIECE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 export const ONEPIECE_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/gif']);
 
@@ -126,7 +133,7 @@ export function onePieceImageTarget(value) {
     if (/%2e|%2f|%5c|%00|\\/i.test(target.pathname)) return null;
     const decoded = decodeURIComponent(target.pathname);
     if (decoded.includes('..') || /[\u0000-\u001f\u007f\\]/.test(decoded)) return null;
-    if (!decoded.startsWith('/images/cardlist/card/') || !/\.(?:png|jpe?g|webp)$/i.test(decoded)) return null;
+    if (!decoded.startsWith(PROXIED_IMAGE_PATHS.get(target.hostname)) || !/\.(?:png|jpe?g|webp)$/i.test(decoded)) return null;
     target.hash = '';
     return target;
   } catch {
