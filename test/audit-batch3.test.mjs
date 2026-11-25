@@ -39,3 +39,8 @@ test('DES-01／11：卡面文字包成側板白卡；隱私頁有本頁目錄',a
   assert.equal((ui.match(/<section class="dpanel dpanel-text"><h4 class="dpanel-title">卡片文字<\/h4>/g)||[]).length,2);
   assert.match(html,/<nav class="info-toc" aria-label="本頁目錄"><b>本頁目錄<\/b><a href="#privacy">隱私說明<\/a><a href="#sources">資料來源<\/a><a href="#rights">/);
 });
+
+test('頁首帳號選單用深色字：首頁深色頁首的淺色字不能繼承進白底選單（信箱會看不到）',async()=>{
+  const css=await read('look-v2.css');
+  assert.match(css,/\n\.account-menu\{[^}]*background:var\(--v2-surface\)[^}]*color:var\(--v2-ink\)/);
+});
