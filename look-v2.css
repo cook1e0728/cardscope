@@ -1158,3 +1158,62 @@ html.look-clean body[data-view] #detail .market-price b{font-size:20px}
 html.look-clean body[data-view] #detail .market-kind{font-size:13px;font-weight:600;color:#5A5348}
 /* 體檢 DES-15：走勢讀數在電腦版加淡底方格；手機太窄會折行，維持原樣 */
 @media (min-width:1000px){html.look-clean body[data-view] #detail .ptl-cells>div{background:#F7F3EA;border-radius:8px;padding:8px 10px}}
+
+/* 體檢 DES-01：卡面文字包成一張側板白卡；切換鈕改暖色分段、文字暖底加大行高並限制行寬 */
+html.look-clean body[data-view] #detail .text-switch{display:inline-flex;gap:4px;padding:4px;margin:0 0 10px;background:#EFEAE0;border-radius:12px}
+html.look-clean body[data-view] #detail .text-switch button{min-height:44px;padding:0 16px;border:0;border-radius:9px;background:transparent;color:#5A5348;font-weight:600;font-size:14px}
+html.look-clean body[data-view] #detail .text-switch button.on{background:#fff;color:#1F1B16;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+html.look-clean body[data-view] #detail .card-rules-text{background:#FBF9F4;color:#1F1B16;border:1px solid #EFEAE0;border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.75;max-width:52ch;white-space:pre-line}
+html.look-clean body[data-view] #detail .card-rules-text small{display:block;margin-top:10px;padding-top:8px;border-top:1px solid #E7E1D4;color:#5A5348;font-size:12px}
+/* 體檢 DES-08：側欄系列名最多兩行，NEW 移到代碼那一行；世代分頁收合按鈕 */
+html.look-clean #sideNav .band-tile:has(.band-tile-art img){grid-template-columns:40px minmax(0,1fr) auto}
+html.look-clean #sideNav .band-tile-art img{width:72px;height:72px}
+html.look-clean #sideNav .band-tile:has(.band-tile-art img) .band-tile-name{grid-column:2/4}
+html.look-clean #sideNav .band-tile:has(.band-tile-art img) .band-tile-code{grid-column:2}
+html.look-clean #sideNav .band-tile:has(.band-tile-art img) .band-tile-flag{grid-column:3;grid-row:2;justify-self:end}
+html.look-clean #sideNav .band-tile-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+/* 「更多世代」不能放進 tablist（只准放分頁），所以分頁列與按鈕包一層，tablist 用 display:contents 攤平後用 order 把按鈕排在世代之後、商品之前 */
+#sideNav .series-band-tabrow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px;padding:0 8px}
+#sideNav .series-band-tabrow>.series-band-tabs{display:contents}
+#sideNav .series-band-tabrow :is(.side-tab-label,.starts-eras,.starts-eras~*){order:2}
+#sideNav .series-band-tabrow>.series-band-eras{order:1}
+#sideNav .series-band-eras{min-height:var(--btn-h,44px);margin:0;padding:0 14px;border:1px dashed #CFC6B4;border-radius:22px;background:transparent;color:#5A5348;font-weight:600;font-size:14px;cursor:pointer}
+#sideNav .series-band-eras:after{content:" ▾"}#sideNav .series-band-eras[aria-expanded="true"]:after{content:" ▴"}
+#sideNav .series-band-eras:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
+/* 體檢 DES-09：清單模式卡號／稀有度／價格固定欄寬，上下對齊；價格靠右，新台幣下方一行小字 */
+@media (min-width:1000px){
+  html.look-clean .cards.list-view .card-list-facts{display:grid;grid-template-columns:72px 72px 300px;align-items:center;column-gap:16px}
+  html.look-clean .cards.list-view .card-list-facts>:is(b,span){margin:0;align-self:center}
+  html.look-clean .cards.list-view .card-list-facts .card-price{display:block;justify-self:end;margin:0;text-align:right;white-space:nowrap}
+  html.look-clean .cards.list-view .card-list-facts .card-price .cr-amount{font-size:16px}
+  html.look-clean .cards.list-view .card-list-facts .card-price :is(.cr-src,.cr-var,.cr-original){display:inline;font-size:12px;color:#5A5348}
+  html.look-clean .cards.list-view .card-list-facts .card-price .cr-src:before{content:"";display:block}
+  html.look-clean .cards.list-view .card-list-facts .card-price :is(.cr-var,.cr-original):before{content:"・"}
+}
+/* 體檢 DES-10：卡牌時事一張白卡、細線分隔；來源連結用站內字色並保留 44px 點擊區 */
+html.look-clean body[data-view] #eventsSection ul{background:#fff;border:1px solid #E7E1D4;border-radius:14px;padding:4px 16px;margin:12px 0 0;list-style:none}
+html.look-clean body[data-view] #eventsSection li{background:transparent;border:0;border-top:1px solid #EFEAE0;border-radius:0;padding:12px 0;margin:0;box-shadow:none}
+html.look-clean body[data-view] #eventsSection li:first-child{border-top:0}
+html.look-clean body[data-view] #eventsSection li a{display:inline-flex;align-items:center;min-height:44px;margin:-8px 0 -12px;color:#5A5348;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+/* 體檢 DES-11：隱私／資料來源頁目錄、長文行寬與行高、節間分隔；來源表固定欄寬與雙數列淡底 */
+html.look-clean body[data-view] .info-toc{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:center;margin:16px 0 0;padding:6px 16px;border:1px solid #E7E1D4;border-radius:12px;background:#fff;font-size:14px}
+html.look-clean body[data-view] .info-toc a{display:inline-flex;align-items:center;min-height:44px;color:#1F1B16}
+html.look-clean body[data-view] .info-page :is(p,li){max-width:42em;line-height:1.75}
+html.look-clean body[data-view] .info-page h3{margin-top:32px}
+html.look-clean body[data-view] .info-page+.info-page{border-top:1px solid #E7E1D4;margin-top:40px;padding-top:24px}
+html.look-clean body[data-view] #sources .source-table :is(th,td){padding:14px 16px}
+html.look-clean body[data-view] #sources .source-table tbody tr:nth-child(even){background:#FBF9F4}
+html.look-clean body[data-view] #sources .source-table-wrap:first-of-type .source-table{table-layout:fixed;width:100%}
+html.look-clean body[data-view] #sources .source-table-wrap:first-of-type .source-table thead th:nth-child(1){width:18%}
+html.look-clean body[data-view] #sources .source-table-wrap:first-of-type .source-table thead th:nth-child(2){width:26%}
+html.look-clean body[data-view] #sources .source-table-wrap:first-of-type .source-table thead th:nth-child(3){width:24%}
+html.look-clean body[data-view] #sources .source-table-wrap:first-of-type .source-table thead th:nth-child(4){width:32%}
+html.look-clean body[data-view] #sources .source-table-wrap:first-of-type .source-table :is(th,td){white-space:normal;overflow-wrap:anywhere}
+/* 體檢 DES-12：收藏頁匯入預覽與狀態提示改白底細框＋左側語意色條（匯入琥珀、狀態森綠） */
+html.look-clean .coll-import{background:#fff;border:1px solid #E7E1D4;border-left:3px solid #C98A1A;border-radius:10px}
+html.look-clean .coll-status:not(:empty){background:#fff;border:1px solid #E7E1D4;border-left:3px solid #2E6F4E;border-radius:10px}
+/* 體檢 DES-14：首頁大標副標行距加大、字色提亮；搜尋框提示提亮，熱門搜尋多留空間 */
+html.look-clean body[data-view="landing"] .hero-intro p{font-size:16px;line-height:1.65;color:#DDD6EA}
+html.look-clean body[data-view="landing"] .hero-intro .hero-line+.hero-line{margin-top:4px}
+html.look-clean body[data-view="landing"] #heroQ::placeholder{color:#BCB4D4;opacity:1}
+@media (min-width:768px){html.look-clean body[data-view="landing"] .hero>.home-examples{margin-top:14px}}
