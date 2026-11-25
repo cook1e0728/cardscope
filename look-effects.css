@@ -76,3 +76,35 @@ html[data-cs-paused] .fx-tilt-btn{display:none}
 
 /* 列印與強制色彩：不留任何動效殘影 */
 @media print{.fx-holo-layer,.fx-burst{display:none}.fx-pre{opacity:1;translate:none}}
+
+/* ---- 7. 卡牆懸停摘要（ui-enhancements.js 的 cardPeek）：浮在卡片旁、不擋點擊；動態關閉時直接出現、不做位移 ---- */
+.card-peek{
+  position:fixed;left:0;top:0;z-index:25;width:264px;max-width:calc(100vw - 32px);padding:14px 16px 12px;
+  border:1px solid #D9D1C0;border-radius:14px;background:#fff;color:#1F1B16;box-shadow:0 12px 32px rgba(31,27,22,.18);
+  font:400 13px/1.5 'Noto Sans TC',system-ui,sans-serif;pointer-events:none;visibility:hidden;opacity:0;
+}
+.card-peek.is-on{visibility:visible;opacity:1}
+.card-peek p{margin:0}
+.card-peek .cp-name{font-size:14px;font-weight:700;line-height:1.4}
+.card-peek .cp-tag{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid #D9D1C0;border-radius:999px;font-size:12px;font-weight:600;color:#5E574B;vertical-align:1px}
+.card-peek .cp-orig{font-size:12px;color:#5E574B}
+.card-peek .cp-facts{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid #EEE7D8}
+.card-peek .cp-facts div{display:contents}
+.card-peek dt{color:#5E574B;font-size:12px}
+.card-peek dd{margin:0;font-weight:600;min-width:0}
+.card-peek .cp-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;margin-top:10px;padding-top:10px;border-top:1px solid #EEE7D8}
+.card-peek .cp-price b{font-size:18px}
+.card-peek .cp-price small{flex-basis:100%;font-size:12px;color:#5E574B}
+.card-peek .cp-chg{font-size:12px;font-weight:700}
+.card-peek .cp-up{color:#B42318}
+.card-peek .cp-down{color:#1E7B4A}
+.card-peek .cp-foot{display:flex;justify-content:space-between;gap:8px;margin-top:10px;font-size:12px;color:#5E574B}
+.card-peek .cp-owned{color:#8A6A00;font-weight:700}
+.card-peek .cp-stale{margin-left:6px;padding:0 6px;border-radius:999px;background:#FFF1D6;color:#7A4B00;font-weight:700}
+@media (prefers-reduced-motion:no-preference){
+  html:not([data-cs-paused]) .card-peek{transform:translateX(-6px) scale(.97);transform-origin:left center;transition:opacity .18s var(--fx-ease),transform .18s var(--fx-ease),visibility 0s .18s}
+  html:not([data-cs-paused]) .card-peek[data-side="left"]{transform:translateX(6px) scale(.97);transform-origin:right center}
+  html:not([data-cs-paused]) .card-peek.is-on{transform:none;transition:opacity .18s var(--fx-ease),transform .18s var(--fx-ease),visibility 0s}
+}
+@media (hover:none),(pointer:coarse){.card-peek{display:none}}
+@media print{.card-peek{display:none}}
