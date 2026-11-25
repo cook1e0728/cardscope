@@ -44,10 +44,11 @@
   // 卡號那行可換行（手機上 EB05-006、SFN/S136-002SSP 會被截掉）；遊戲與系列已寫在每排標題，只有「精選」那排才在卡上寫。
   function prizeCard(row,mixed){
     const name=row.name||row.cardNumber||'未命名卡片',twd=row.game==='pokemon'?Number(row.referencePrice?.amountTwd):0;
-    return cell(row,name,`<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}</div>`+
+    return cell(row,name,`<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}${row.altArt?'<span class="tc-alt">異圖</span>':''}</div>`+
       `<div class="trend-card-head"><b>${esc(name)}</b></div>`+
-      // 稀有度與卡號各佔一行（不讓「·」掛在行尾、卡號被擠到下一行）；價格放大加粗，來源寫在下面的小字。
-      `<span class="trend-card-number is-wrap"><span class="tc-line">${esc([row.rarity,row.altArt?'異圖':''].filter(Boolean).join(' · '))}</span><span class="tc-line">${esc(row.cardNumber||'')}</span></span>`+
+      // 同卡牆：同一行左邊卡號、右邊稀有度膠囊（大獎都是該彈最高稀有度，一律金色）；放不下時膠囊整顆換行，不留「·」。
+      // 卡號去掉斜線前的系列前綴（UA「EX17BT/」、黑白雙翼「SFN/」，排標題已寫系列），完整卡號放 title；異圖改成卡圖角上的小標。
+      `<span class="trend-card-meta"><span class="tc-no" title="${esc(row.cardNumber||'')}">${esc(String(row.cardNumber||'').replace(/^[A-Za-z][A-Za-z0-9]*\//,''))}</span>${row.rarity?`<span class="card-rarity" data-tier="top">${esc(row.rarity)}</span>`:''}</span>`+
       (twd>0?`<strong class="trend-price">NT$${Math.round(twd).toLocaleString('en-US')}</strong><small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價（約）`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>');
   }
   const prizeRail=(title,rows,mixed=false)=>`<h4 class="rails-sub">${esc(title)}</h4><div class="rails-rail">${rows.map(row=>prizeCard(row,mixed)).join('')}</div>`;

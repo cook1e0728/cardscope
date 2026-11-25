@@ -63,8 +63,9 @@ test('最夯＝本彈大獎：每個遊戲一排、標題寫遊戲與系列；�
   assert.match(out,/本彈大獎/);
   assert.equal(out.match(/<button type="button" class="trend-card/g).length,4);
   assert.ok(out.indexOf('精選')<out.indexOf('世界最強的戰士')&&out.indexOf('置頂卡')<out.indexOf('大獎卡 1'),'置頂在自動挑選之前');
-  assert.match(out,/trend-card-number is-wrap"><span class="tc-line">SEC · 異圖<\/span><span class="tc-line">OP17-111<\/span>/,'稀有度與卡號各一行，「·」不掛在行尾');
-  assert.match(out,/置頂卡<\/b><\/div><span class="trend-card-number[^>]*>(?:<span class="tc-line">[^<]*<\/span>)+<\/span><small>OP-17<\/small>/,'精選那排卡上寫遊戲與系列');
+  assert.match(out,/<span class="trend-card-meta"><span class="tc-no" title="OP17-111">OP17-111<\/span><span class="card-rarity" data-tier="top">SEC<\/span><\/span>/,'同卡牆：卡號＋稀有度膠囊同一行');
+  assert.match(out,/<span class="tc-alt">異圖<\/span>/,'異圖標在卡圖角上');
+  assert.match(out,/置頂卡<\/b><\/div><span class="trend-card-meta">.*?<\/span><\/span><small>OP-17<\/small>/,'精選那排卡上寫遊戲與系列');
   assert.doesNotMatch(out.slice(out.indexOf('世界最強的戰士')),/<small>OP-17/,'各遊戲那排已有標題，卡上不重複');
   assert.match(out,/<strong class="trend-price">NT\$1,234<\/strong><small>參考價（約）<\/small>/,'寶可夢有參考價才顯示，金額獨立放大');
   assert.match(rails.trendingPanel(prizes([{game:'pokemon',seriesName:'x',data:[prizeRow(4,{game:'pokemon',referencePrice:{amountTwd:840},priceRegion:'JP'})]}])),/NT\$840<\/strong><small>日版參考價（約）/,'借日版價格要寫明');
