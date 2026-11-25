@@ -74,6 +74,13 @@ export function bearerOfHeader(authorizationHeader) {
 }
 
 // Supabase 的 session → 前端要的四個欄位；欄位不齊就當上游壞掉。
+// Google 頭像只收 Google 自家圖片主機的 https 網址（CSP img-src 也只開這台），其他一律丟掉。
+const GOOGLE_AVATAR = /^https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9/_=.%~-]{1,500}$/;
+export function googleAvatar(meta) {
+  const url = [meta?.avatar_url, meta?.picture].find(value => typeof value === 'string' && GOOGLE_AVATAR.test(value));
+  return url || '';
+}
+
 export function authSession(data, nowMs = Date.now()) {
   const expiresAt = Number.isFinite(data?.expires_at)
     ? data.expires_at
@@ -93,7 +100,8 @@ export function authSession(data, nowMs = Date.now()) {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
     expiresAt,
-    email: typeof data.user?.email === 'string' ? data.user.email.slice(0, 320) : ''
+    email: typeof data.user?.email === 'string' ? data.user.email.slice(0, 320) : '',
+    avatar: googleAvatar(data.user?.user_metadata)
   };
 }
 

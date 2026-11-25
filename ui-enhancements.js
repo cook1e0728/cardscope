@@ -1274,11 +1274,13 @@ function enterCollectionPage(){
 // 合併規則全在 CollectionStore.mergeSync（新的贏、墓碑保留 30 天）；網路或伺服器出錯只在這裡顯示狀態，本機收藏照常使用。
 const SYNC_KEY='cardscope-sync',AUTH_KEY='cardscope-auth',PKCE_KEY='cardscope-pkce',OAUTH_STATE_KEY='cardscope-oauth-state',SYNC_DEBOUNCE_MS=3000,SYNC_GAP_MS=15000,SYNC_RETRY_MS=60000,SYNC_TOMBSTONE_MS=30*86400000;
 const syncUi={busy:false,again:false,joining:false,status:'idle',text:'',at:0,timer:0,retry:0,stamp:0,applying:false,confirm:'',notice:'',authBusy:false,authUrl:''};
+// Google 頭像只收 Google 圖片主機的 https 網址（CSP img-src 也只開這台）。
+const safeAvatar=url=>typeof url==='string'&&/^https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9/_=.%~-]{1,500}$/.test(url)?url:'';
 function readAuthState(){
   try{
     const raw=JSON.parse(uiLocal.get(AUTH_KEY,'null'));
     if(!raw||typeof raw.accessToken!=='string'||!raw.accessToken||typeof raw.refreshToken!=='string'||!raw.refreshToken||!Number.isFinite(raw.expiresAt))return null;
-    return{accessToken:raw.accessToken,refreshToken:raw.refreshToken,expiresAt:Number(raw.expiresAt),email:typeof raw.email==='string'?raw.email.slice(0,320):''};
+    return{accessToken:raw.accessToken,refreshToken:raw.refreshToken,expiresAt:Number(raw.expiresAt),email:typeof raw.email==='string'?raw.email.slice(0,320):'',avatar:safeAvatar(raw.avatar)};
   }catch{return null}
 }
 let authState=readAuthState(),authPending=null;
@@ -1311,7 +1313,7 @@ async function authToken(force=false){
       if(response.status===401||response.status===400){if(authState===current)clearAuth();return''}
       const data=(await response.json().catch(()=>null))?.data;
       if(!response.ok||!data?.accessToken||!data?.refreshToken||!Number.isFinite(data?.expiresAt))return force?'':current.accessToken;
-      authState={accessToken:data.accessToken,refreshToken:data.refreshToken,expiresAt:Number(data.expiresAt),email:typeof data.email==='string'&&data.email?data.email:current.email};
+      authState={accessToken:data.accessToken,refreshToken:data.refreshToken,expiresAt:Number(data.expiresAt),email:typeof data.email==='string'&&data.email?data.email:current.email,avatar:safeAvatar(data.avatar)||current.avatar||''};
       saveAuth();return authState.accessToken;
     }catch{authToken.lastStatus=0;return force?'':current.accessToken}
     finally{authPending=null}
@@ -1370,7 +1372,7 @@ async function enableGoogleSync(session){
       if(Array.isArray(pulled.data?.items))remoteItems=pulled.data.items;
     }catch{setSyncNotice('連不上同步服務，尚未切換為 Google 登入，同步碼與本機收藏都還在。');return false}
   }
-  authState={accessToken:session.accessToken,refreshToken:session.refreshToken,expiresAt:Number(session.expiresAt),email:String(session.email||'')};
+  authState={accessToken:session.accessToken,refreshToken:session.refreshToken,expiresAt:Number(session.expiresAt),email:String(session.email||''),avatar:safeAvatar(session.avatar)};
   const googleKnown=new Set();
   try{
     const gPulled=await syncPost('pull',{},true);
@@ -1444,7 +1446,7 @@ function collectionSyncMeta(){
   return syncState.google?`Google 雲端同步・${state}`:`同步碼同步・${state}`;
 }
 // 頁首右上角的帳號頭像：一眼看出有沒有登入、登入哪個帳號；點開可登入、登出或開同步設定。
-// 只要求 Google 的 email，沒有大頭照，所以用信箱第一個字當頭像。
+// 有 Google 大頭照就顯示（直接從 Google 載入、不帶本站網址），沒有或載入失敗就用信箱第一個字。
 const ACCOUNT_PERSON_ICON='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
 function accountKind(){return !syncState?'none':syncState.google?'google':'code'}
 function renderAccountMenu(){
@@ -1477,7 +1479,9 @@ function renderAccountAvatar(){
   }
   const kind=accountKind(),email=authState?.email||'';
   btn.dataset.kind=kind;
-  btn.innerHTML=kind==='google'?`<span aria-hidden="true">${e((email.trim()[0]||'G').toUpperCase())}</span>`:ACCOUNT_PERSON_ICON;
+  const initial=`<span aria-hidden="true">${e((email.trim()[0]||'G').toUpperCase())}</span>`,avatar=kind==='google'?safeAvatar(authState?.avatar):'';
+  btn.innerHTML=kind!=='google'?ACCOUNT_PERSON_ICON:avatar?`<img class="account-avatar" src="${e(avatar)}" alt="" width="40" height="40" referrerpolicy="no-referrer" decoding="async">`:initial;
+  btn.querySelector('img')?.addEventListener('error',()=>{btn.innerHTML=initial},{once:true});
   const label=kind==='google'?`帳號：已用 ${email||'Google'} 登入`:kind==='code'?'帳號：用同步碼同步中':'帳號：未登入';
   btn.setAttribute('aria-label',label);btn.title=label.replace('帳號：','');
   renderAccountMenu();
