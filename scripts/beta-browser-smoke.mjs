@@ -713,7 +713,6 @@ async function runCollectionChecks(browser,viewport){
     assert.equal(await view(),'landing',`${label}: back returns to the home page`);
 
     // 行情頁：首頁最夯 → 看參考價漲跌 → 上一頁。
-    await page.locator('[data-rails-tab="trending"]').click();
     const more=page.locator('.rails-more a[data-spa]').first();
     await waitForVisible(more,`${label}: home 最夯 has no 看參考價漲跌 link`);
     await more.click();

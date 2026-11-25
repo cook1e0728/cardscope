@@ -219,10 +219,10 @@ html.look-clean .cs1-comet{position:absolute;left:0;top:0;width:9px;height:9px;b
 /* ===== 首頁電腦版多欄（NEXT_PHASE_PLAN L1；ADR 0056 紙感風格不變）=====
    ≥1200px：搜尋區（#hero）與「最新｜最夯｜最熱」在左；右欄 #homeAside 是單一欄，「漲最多」「跌最多」「卡牌時事」疊在裡面，欄內用同一個間距（面板由 home-rails.js 插入）。
    ≤1199px 維持單欄，這些面板不顯示（home-rails.js 也不去要資料）。某一塊沒資料時 home-rails.js 設 hidden；三塊都沒資料才把右欄藏起來，搜尋區與榜單佔滿整列。
-   榜上只有 1–5 張卡時 home-rails.js 把整個分頁藏起來。 */
+   榜上只有 1–5 張卡時 home-rails.js 把那一排藏起來。 */
 .home-panel,.home-aside{display:none}
 .home-panel[hidden],.home-aside[hidden]{display:none!important}
-html.look-clean #homeRails .rails-switch [hidden]{display:none!important}
+html.look-clean #homeRails .rails-block[hidden]{display:none!important}
 @media (min-width:1200px){
   html.look-clean body[data-view="landing"]{--home-aside:340px}
   /* 上限和即將放寬的卡牆一致；頂欄與內容同寬才對得齊 */
@@ -243,7 +243,7 @@ html.look-clean #homeRails .rails-switch [hidden]{display:none!important}
   html.look-clean body[data-view="landing"]:not([data-side]) .hero>.home-search,html.look-clean body[data-view="landing"]:not([data-side]) .hero>.home-examples{max-width:430px}
   /* 卡牆：大獎與最熱不再橫向捲動，排成格（最新的系列橫列照舊） */
   html.look-clean body[data-view="landing"]:not([data-side]) #main #homeRails :is(#railsPanel-trending,#railsPanel-hot) .rails-rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;overflow:visible;padding:8px 4px 14px}
-  html.look-clean body[data-view="landing"]:not([data-side]) #main #homeRails :is(#railsPanel-trending,#railsPanel-hot) .trend-card{flex:none;width:auto}
+  html.look-clean body[data-view="landing"]:not([data-side]) #main #homeRails :is(#railsPanel-trending,#railsPanel-hot) .trend-cell{flex:none;width:auto}
   html.look-clean body[data-view="landing"]:not([data-side]) #main #homeRails :is(#railsPanel-trending,#railsPanel-hot) .trend-image{height:auto;aspect-ratio:63/88}
   /* 跌／漲榜：一列一張卡（小圖、卡名與編號、漲跌幅與前後價），整列可點 */
   .mover-list,.event-list{list-style:none;margin:var(--s2) 0 0;padding:0}

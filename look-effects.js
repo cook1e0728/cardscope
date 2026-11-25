@@ -46,7 +46,7 @@
 
   // ---- 2. 收藏迸發 ----
   // 用 capture 聽 click：既有按鈕會 stopPropagation，冒泡階段到不了 document。此時狀態還沒變，所以 aria-pressed="true" 代表這下是移除，不放煙火。
-  const FAV = '[data-action="favorite"],[data-watch-increment],[data-collect-act="toggle"],[data-collect-act="inc"]';
+  const FAV = '[data-action="favorite"],[data-rail-collect],[data-watch-increment],[data-collect-act="toggle"],[data-collect-act="inc"]';
   function burst(button) {
     const rect = button.getBoundingClientRect(), wrap = make('div', 'fx-burst'), star = make('span', 'fx-burst-star');
     wrap.style.left = rect.left + rect.width / 2 + 'px'; wrap.style.top = rect.top + rect.height / 2 + 'px';

@@ -10,11 +10,10 @@ test('shared padding variables stay defined globally and in detail panel',()=>{
   assert.match(css,/#detail\{--card-pad:var\(--s4\)/,'the detail panel sets its own --card-pad');
 });
 
-test('latest/hottest pill sits on the left axis with centered spacious labels and no negative margin',()=>{
-  const sw=css.match(/#homeRails \.rails-switch\{[^}]*\}/g)||[];
-  assert.ok(sw.length,'rails-switch rule exists');
-  assert.ok(sw.every(rule=>!/margin-left:\s*calc\(-|margin-left:-/.test(rule)),'no negative margin on the pill');
-  assert.match(css,/\.rails-switch button\{[^}]*padding-inline:20px/,'landing segmented buttons keep spacious horizontal padding');
+test('home rails have no segmented tabs; the 最新系列 title row is 52px so the desktop version picker lines up with it',()=>{
+  assert.doesNotMatch(css,/rails-switch/,'the 最新／最夯／最熱 tabs are gone (2026-11-24)');
+  assert.match(css,/#homeRails \.home-latest>\.rails-head\{min-height:52px\}/);
+  assert.match(css,/body\[data-view="landing"\] #homeRails \.rails-panels\{margin-top:0\}/,'no gap above the first row, so the overlaid picker (hero + 32px) sits on the title row');
   assert.match(css,/\.view-switch button\)?\{[^}]*display:inline-flex;align-items:center;justify-content:center/,'segmented buttons center text horizontally and vertically');
 });
 

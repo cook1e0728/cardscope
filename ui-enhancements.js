@@ -405,7 +405,7 @@ function showCollectionToast(){
 function setWatchQuantity(id,quantity){
   const key=String(id),previous=watchQuantity(key),next=Math.max(0,Math.min(999,Number(quantity)||0));
   if(next)watchlist[key]=next;else delete watchlist[key];
-  touchMeta(key);persistCollection();repaintCollected(key,previous,next);if(previous===0&&next>0)showCollectionToast();
+  touchMeta(key);persistCollection();repaintCollected(key,previous,next);globalThis.homeRails?.refreshCollect?.();if(previous===0&&next>0)showCollectionToast();
 }
 
 function watchlistEntries(){
@@ -827,6 +827,13 @@ openCard=async function(id,options={}){
   }catch(error){if(stale())return;box.removeAttribute('aria-busy');box.innerHTML=`<div class="state">${e(failText('卡片資料載入失敗：',error))} <button type="button" class="notice-retry" data-detail-retry>重試</button></div>`;const retry=box.querySelector('[data-detail-retry]');if(retry){retry.onclick=()=>openCard(id,options);if(refocus)retry.focus()}detailPainted('error')}
 };
 window.openCard=openCard;
+// 首頁大獎／最熱（home-rails.js）的 ☆：列上只有 cardId（實體卡 ID，ADR 0045 的收藏鍵）與少數欄位，組成最小的卡片物件給收藏快照用，其餘照搜尋結果的 ☆。
+window.railCollectQuantity=id=>watchQuantity(id);
+window.collectRailCard=row=>{
+  const key=String(row.cardId);
+  renderedCards.set(key,{id:key,game:row.game||'',nameZh:row.name||'',nameJa:row.nameJa||'',officialCardNumber:row.cardNumber||'',rarity:row.rarity||'',imageUrl:row.imageUrl||''});
+  return toggleFavorite(key);
+};
 // 換版本載入中（#detail[aria-busy]）舊內容只是變淡：pointer-events 擋得了滑鼠，鍵盤的 Enter／Space／方向鍵還要在捕獲階段另外擋；Escape、Tab 照常。
 (()=>{const busy=event=>$('detail')?.getAttribute('aria-busy')==='true'&&event.target?.closest?.('#detail'),stop=event=>{event.preventDefault();event.stopPropagation()};document.addEventListener('click',event=>{if(busy(event))stop(event)},true);document.addEventListener('keydown',event=>{if(busy(event)&&['Enter',' ','ArrowLeft','ArrowRight','Home','End'].includes(event.key))stop(event)},true)})();
 
@@ -1119,7 +1126,7 @@ function importPreviewHtml(){
   const {parsed,replace}=pending,plan=CS.planImport(collectionItems(),parsed.items,replace),bad=parsed.problems,empty=!parsed.items.length,nothing=!plan.added&&!plan.updated&&!plan.removed;
   return `<section class="coll-import" id="collImport" aria-label="匯入預覽"><h3 id="collImportTitle" tabindex="-1">匯入預覽</h3><p class="meta">${e(pending.fileName)}（${parsed.format==='csv'?'CSV':'JSON 備份'}，共 ${parsed.rows} 筆資料）。按下確認前不會改動你的收藏；同一張卡取較大的數量，不會相加，重複匯入不會翻倍。</p><p class="coll-import-counts" role="status"><b>將新增 ${plan.added} 筆、更新 ${plan.updated} 筆、略過 ${bad.length} 筆格式錯誤</b>${replace?`；移除目前有、檔案裡沒有的 ${plan.removed} 筆`:''}${plan.unchanged?`（另有 ${plan.unchanged} 筆內容相同，不變）`:''}</p>${bad.length?`<details><summary>看略過的原因（${bad.length>20?'前 20 筆':`${bad.length} 筆`}）</summary><ul>${bad.slice(0,20).map(({index,reason})=>`<li>第 ${index} 筆：${e(reason)}</li>`).join('')}</ul></details>`:''}${empty?'<p class="coll-skip">檔案裡沒有可匯入的資料。</p>':''}<label class="coll-replace"><input type="checkbox" data-coll-replace${replace?' checked':''}${empty?' disabled':''}> 以匯入檔取代全部（目前的收藏會被刪除，會再問一次）</label><div class="coll-import-actions"><button type="button" data-coll-import-confirm${empty||nothing?' disabled':''}>${replace?'取代全部收藏':'確認匯入'}</button><button type="button" data-coll-import-cancel>取消</button></div></section>`;
 }
-function refreshGrid(){if(inCollectionView()){renderCollectionPage();renderDetailCollect();return}renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true);renderDetailCollect()}
+function refreshGrid(){window.homeRails?.refreshCollect?.();if(inCollectionView()){renderCollectionPage();renderDetailCollect();return}renderWatchlistSummary();if($('cards')&&typeof currentCardRows!=='undefined')cards(currentCardRows,true);renderDetailCollect()}
 
 // 把 items 寫回三個既有 localStorage 鍵；畫面快照（名稱、圖、地區）依 id 沿用。
 function applyItems(items){
