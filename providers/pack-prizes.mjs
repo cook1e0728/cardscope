@@ -57,7 +57,7 @@ export function prizeRow(card,series){
   const here=inSeries(card,series?.id);
   return {cardId:card.id,name:card.nameZh||card.nameJa||card.nameEn||card.officialCardNumber||card.id,cardNumber:card.officialCardNumber||here.localCardNumber||null,
     rarity:rarityIn(card,series?.id)||null,altArt:isAltArt(card),seriesCode:series?.officialCode||null,seriesName:series?.nameZh||series?.nameJa||series?.nameEn||null,
-    game:card.game||series?.game||null,imageUrl:card.imageUrl||null,referencePrice:card.referencePrice||null,...(card.referencePriceRegion?{priceRegion:card.referencePriceRegion}:{})};
+    game:card.game||series?.game||null,imageUrl:card.imageUrl||null,referencePrice:card.referencePrice||null};
 }
 
 // 同一彈各版本（台灣→日本→亞洲）挑出來的卡合成一排：同卡號（含異圖 -p 編號）只留第一個版本的；
@@ -73,6 +73,11 @@ export function mergePrizeRows(game,versions,limit=PACK_PRIZE_LIMIT){
     const key=rowKey(game,row),have=byKey.get(key);
     if(!have)byKey.set(key,{...row});
     else if(!rowPrice(have)&&rowPrice(row))Object.assign(have,{referencePrice:row.referencePrice,priceRegion:region});
+  }
+  // 別版本同一張卡在該版系列裡沒標稀有度（例如日版 M6a 的 FUR）就不會進上面的 rows，改從該版有價格的全部卡借。
+  for(const {region,priced} of versions||[])for(const row of priced||[]){
+    const have=row?.cardNumber&&byKey.get(rowKey(game,row));
+    if(have&&!rowPrice(have)&&rowPrice(row)&&have.cardId!==row.cardId)Object.assign(have,{referencePrice:row.referencePrice,priceRegion:region});
   }
   const rank=row=>rarityRank(game,row.rarity);
   return [...byKey.values()].sort((a,b)=>rank(a)-rank(b)||b.altArt-a.altArt||rowPrice(b)-rowPrice(a)||String(a.cardNumber).localeCompare(String(b.cardNumber),'en',{numeric:true})).slice(0,limit);
