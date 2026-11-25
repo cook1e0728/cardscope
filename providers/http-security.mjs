@@ -22,6 +22,7 @@ const PAGE_IMG_SOURCES = [
   'https://asia.pokemon-card.com',
   'https://images.pokemontcg.io',
   'https://*.supabase.co',
+  'https://lh3.googleusercontent.com',
   'https://*.onepiece-cardgame.com',
   'https://assets.tcgdex.net',
   'https://images.ygoprodeck.com',
