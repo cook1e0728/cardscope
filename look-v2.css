@@ -182,7 +182,10 @@ html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margi
 /* 大獎與最熱的 ☆：卡片和 ☆ 是並排的兩顆按鈕（不巢狀），包在 .trend-cell 裡；☆ 疊在圖片右上角，44×44 */
 html.look-clean body[data-view] #homeRails .trend-cell{position:relative;display:flex;flex:0 0 190px;width:190px;min-width:0;scroll-snap-align:start}
 html.look-clean body[data-view] #homeRails .trend-cell>.trend-card{flex:1 1 auto;width:auto}
-html.look-clean body[data-view] #homeRails .rail-collect{position:absolute;top:14px;right:14px;z-index:1;display:grid;place-items:center;width:var(--btn-h);height:var(--btn-h);padding:0;border:1px solid var(--v2-line);border-radius:50%;background:rgba(255,255,255,.94);box-shadow:var(--v2-shadow);color:var(--v2-ink-2);font-size:22px;line-height:1;transition:transform .14s var(--ease)}
+/* 寶箱放在卡片右下角（和卡牆一樣在文字旁），不蓋卡圖；文字右邊留出寶箱的位置 */
+html.look-clean body[data-view] #homeRails .rail-collect{position:absolute;right:2px;bottom:2px;z-index:1;display:grid;place-items:center;width:var(--btn-h);height:var(--btn-h);padding:0;border:0;border-radius:10px;background:none;color:var(--v2-ink-2);font-size:22px;line-height:1;transition:transform .14s var(--ease)}
+html.look-clean body[data-view] #homeRails .trend-cell>.trend-card>:is(.trend-card-head,.trend-card-number,small){padding-right:34px}
+@media (hover:hover) and (pointer:fine){html.look-clean body[data-view] #homeRails .rail-collect:hover{background:var(--v2-well)}}
 html.look-clean body[data-view] #homeRails .rail-collect[aria-pressed="true"]{color:var(--v2-ink)}
 html.look-clean body[data-view] #homeRails .rail-collect:active{transform:scale(.97)}
 html.look-clean body[data-view] #homeRails .rail-collect:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
@@ -408,6 +411,11 @@ html.look-clean body[data-view] .cards .card .card-ctx .region-chip{padding:0 6p
 html.look-clean body[data-view] .cards .card .card-actions{position:relative;top:auto;right:auto;z-index:2;grid-area:act;justify-self:end;align-self:center;display:flex;width:auto;margin:0}
 html.look-clean body[data-view] .cards .card .favorite-toggle{width:44px;height:44px;min-width:44px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none;color:var(--v2-ink-2);font-size:22px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
 html.look-clean body[data-view] .cards .card .favorite-toggle:active{transform:scale(.97)}
+/* 收藏鈕畫成像素寶箱（素材與授權見 assets/pixel/README.md）：☆★ 字元留在按鈕裡但不顯示（名稱靠 aria-label），沒收藏是灰寶箱；收藏瞬間的開蓋動畫在 look-effects.js */
+html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect){display:grid;place-items:center;font-size:0;color:transparent}
+html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect)::before,.fx-chest-base,.fx-chest-lid{content:"";width:32px;height:32px;background:url(/assets/pixel/chest.png) 0 0/32px 32px no-repeat;image-rendering:pixelated}
+html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect)[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
+html.look-clean body[data-view] #homeRails .rail-collect.fx-chest-src::before{visibility:hidden}
 html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act";grid-template-rows:repeat(6,auto) 1fr}
 html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{justify-self:stretch;align-self:end;margin-top:6px}
 html.look-clean body[data-view] .cards .card .watchlist-inline{display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:hidden}
@@ -427,6 +435,7 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
 @media (hover:hover) and (pointer:fine){
   html.look-clean body[data-view] .cards .card:not(.card-list):hover{box-shadow:var(--v2-shadow-up)}
   html.look-clean body[data-view] .cards .card .favorite-toggle:hover{background:var(--v2-well);color:var(--v2-ink)}
+  html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect)[aria-pressed="false"]:hover::before{opacity:.8}
   html.look-clean body[data-view] .cards .card .watchlist-inline button:hover{background:rgba(60,45,20,.08)}
 }
 

@@ -47,7 +47,32 @@
   // ---- 2. 收藏迸發 ----
   // 用 capture 聽 click：既有按鈕會 stopPropagation，冒泡階段到不了 document。此時狀態還沒變，所以 aria-pressed="true" 代表這下是移除，不放煙火。
   const FAV = '[data-action="favorite"],[data-rail-collect],[data-watch-increment],[data-collect-act="toggle"],[data-collect-act="inc"]';
+  // 卡片與首頁的收藏鈕是像素寶箱：寶箱跳一下、開蓋透出金光、五道金色光芒閃兩下（約 0.5 秒）。逐格 steps(1,end)，只動 transform／opacity。
+  // 放在 body 上：卡牆收藏後按鈕會換成「− 1 ＋」，動畫不能掛在會被重畫的按鈕裡。
+  const CHEST = '[data-action="favorite"],[data-rail-collect]';
+  const RAYS = [[-1, -20, 0], [-13, -16, -45], [11, -16, 45], [-19, -8, -75], [17, -8, 75]];
+  const pix = (node, frames, duration, delay = 0) => node.animate(frames.map(([offset, keyframe]) => ({ offset, easing: 'steps(1,end)', ...keyframe })), { duration, delay, fill: 'both' });
+  function chestPop(button) {
+    const rect = button.getBoundingClientRect(), wrap = make('div', 'fx-burst');
+    wrap.style.left = Math.round(rect.left + rect.width / 2) + 'px'; wrap.style.top = Math.round(rect.top + rect.height / 2) + 'px';
+    const glow = make('span', 'fx-chest-glow'), base = make('span', 'fx-chest-base'), lid = make('span', 'fx-chest-lid');
+    wrap.append(glow, base, lid);
+    const y = px => ({ transform: `translateY(${px}px)` });
+    pix(base, [[0, y(2)], [.16, y(-2)], [.54, y(0)], [1, y(0)]], 460);
+    pix(lid, [[0, y(2)], [.16, y(-6)], [.54, y(-2)], [.74, y(0)], [1, y(0)]], 460);
+    pix(glow, [[0, { opacity: 0 }], [.16, { opacity: 1, transform: 'translateY(-2px)' }], [.54, { opacity: 0 }], [1, { opacity: 0 }]], 460);
+    for (const [x, top, deg] of RAYS) {
+      const ray = make('span', 'fx-chest-ray');
+      ray.style.left = x + 'px'; ray.style.top = top + 'px'; ray.style.transform = `rotate(${deg}deg)`;
+      wrap.append(ray);
+      pix(ray, [[0, { opacity: 0 }], [.01, { opacity: 1 }], [.35, { opacity: 0 }], [.5, { opacity: 1 }], [.85, { opacity: 1 }], [1, { opacity: 0 }]], 440, 60);
+    }
+    doc.body.append(wrap);
+    button.classList.add('fx-chest-src'); // 首頁的按鈕不會重畫：動畫期間先藏起它自己的寶箱，免得疊成兩個
+    setTimeout(() => { wrap.remove(); button.classList.remove('fx-chest-src'); }, 520);
+  }
   function burst(button) {
+    if (button.matches(CHEST)) return chestPop(button);
     const rect = button.getBoundingClientRect(), wrap = make('div', 'fx-burst'), star = make('span', 'fx-burst-star');
     wrap.style.left = rect.left + rect.width / 2 + 'px'; wrap.style.top = rect.top + rect.height / 2 + 'px';
     star.textContent = '★'; wrap.append(star);
