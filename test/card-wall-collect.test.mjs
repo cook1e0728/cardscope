@@ -57,7 +57,9 @@ test('every mixed-wall card has the same fixed structure, even without a series 
   assert.match(bare, /<div class="card-ctx"><div class="card-game"[^>]*>.*<\/div><div class="card-series" aria-hidden="true"><\/div><\/div><h3>/s, 'no series: the series line is still there, empty');
   assert.match(bare, /<span class="card-rarity" data-tier="base" title="稀有度待補">待補<\/span>/, 'the compact chip says 待補 and keeps the full words in title');
   const full = h.run(`cardMarkup(${JSON.stringify(pikachu)})`);
-  assert.match(full, /<span class="card-rarity" data-tier="[a-z]+"><abbr class="rarity-code">SAR<\/abbr><\/span>/, 'a known rarity is shown as is');
+  assert.match(full, /<span class="card-rarity" data-tier="top"><abbr class="rarity-code">SAR<\/abbr><\/span>/, 'a known rarity is shown as is, SAR is the gold tier');
+  const tier = (label, game) => h.run(`rarityTier(${JSON.stringify(label)},${JSON.stringify(game)})`);
+  assert.deepEqual([tier('FUR','pokemon'), tier('TR','onepiece'), tier('TR','pokemon'), tier('SR★★★','union-arena'), tier('SP卡','onepiece'), tier('SRR','x'), tier('C','pokemon')], ['top','top','high','high','top','base','base'], 'FUR／航海王 TR 是金，寶可夢 TR 是銀，邊界比對不吃 SRR');
   const blocks = html => [...html.matchAll(/<(div class="card-ctx"|h3|div class="meta"|div class="card-actions")/g)].map(m => m[1]).join();
   assert.equal(blocks(bare), blocks(full), 'same blocks in the same order');
   const multi = h.run(`cardMarkup(${JSON.stringify({ ...pikachu, region: 'TW', printings: [{ region: 'TW', seriesId: 's1' }, { region: 'JP', seriesId: 's1' }] })})`);
