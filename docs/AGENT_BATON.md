@@ -8,7 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-26：**首頁大獎卡排版與稀有度金屬箔上線**（PR #39 合併 41ab5f3，Worker 8dd12c0f）。卡名預留兩行、價格放大；卡號＋稀有度同一行（去掉 UA／黑白雙翼前綴，完整卡號在 title），異圖改卡圖角標；稀有度依同一排高低分金／銀／銅（`home-rails.js` prizeRail，依 rarity-rankings 排序，精選排一律金）。已知：卡牆 `rarityTier`（ui-enhancements.js）把 FUR、TR 判成 base，未處理。11-25 價格快照 run 45565156104 寫 5046 筆，狀態 failed（39 次 503），沒查原因。
+- 2026-11-26：**首頁大獎卡排版與稀有度金屬箔上線**（PR #39 合併 41ab5f3，Worker 8dd12c0f）。卡名預留兩行、價格放大；卡號＋稀有度同一行（去掉 UA／黑白雙翼前綴，完整卡號在 title），異圖改卡圖角標；稀有度依同一排高低分金／銀／銅（`home-rails.js` prizeRail，依 rarity-rankings 排序，精選排一律金）。卡牆 `rarityTier` 的 `` 曾被存成退格字元（所有稀有度都落到 base），PR #40 修正並補 FUR、BWR、TR 依遊戲（合併 5f2b037，Worker 79958a04）。11-25 價格快照 run 45565156104 寫 5046 筆，狀態 failed（39 次 503），沒查原因。
 - 2026-11-25：**首頁本彈大獎補圖補價已上線**（PR #35 Worker 52e96c33、PR #36 f7d0a4d＋kv-snapshots 重算）。UNION ARENA 官網回 CORP same-site，瀏覽器擋下全部 UA 卡圖（首頁與卡牆都是）；`/api/images/onepiece` 白名單加 `www.unionarena-tcg.com/jp/images/cardlist/card/`，前端 displayImageUrl、look-showcase、seo 同步。寶可夢台版大獎沒價時改借同彈日版同卡號價格（整彈讀完最多 4 頁，日版沒標稀有度的 FUR 排在 100 張後），正式站寶可夢 10/10 有價。航海王、黑白雙翼、UA 沒有價格來源，大獎照舊不顯示價格。
   - 等使用者看預覽：`claude/google-avatar`（e41a162，頁首 Google 頭像，隱私說明還沒補那句）、`claude/card-hover-preview`（8d0858c，卡牆懸停摘要：編號＝系列代號＋卡號、發售日、價格日期與來源＋超過 7 天標「較舊」、非官方譯名；只做卡牆，首頁三排沒做）。
 - 2026-11-25：**收藏鈕像素寶箱＋金色光芒已上線**（PR #34 合併 452c051，Worker 7cf37872），正式站首頁 40 個寶箱鈕、44px、圖 200。使用者加了 `TCGAPI_KEY`，手動跑 tcgapi-pricing 寫入 1641 筆（51 系列，用完當日額度停）。GitHub 資安檢查：secret scanning 0 警示、push protection 開、全歷史 regex 與本機 .env.local 值比對 0 命中、無 pull_request_target、fork PR 拿不到 secrets、Dependabot 0 未處理。清掉 3 筆 Render 時代卡在 running 的 price-snapshot 紀錄（263、297、332 → failed INTERRUPTED）。
