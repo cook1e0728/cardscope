@@ -44,6 +44,7 @@ import { catalogCollectionAllowed, imageDisplayPolicies, publicSourcePolicies, s
 import { createTcgdexPricing } from './tcgdex-pricing.mjs';
 import { createYgoProDeckClient, crossVersionLowestPrices, matchYgoprodeckSet } from './ygoprodeck.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, joinInFlight } from './backend-reliability.mjs';
+import { CARD_ID_PATTERN, isBot, pageKind, taipeiDay } from './page-stats.mjs';
 import { CATALOG_REGION_IDS, createSupabaseClient, dbForGame, dbForId, getResponseByteSize } from './supabase-client.mjs';
 import {
   ALLOWED_CURRENCIES,
@@ -3505,9 +3506,10 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           if (!validCardId(tail)) return jsonRes(400, { error: '卡片 ID 格式不正確' });
           const cacheReq = canonicalEdgeKeyRequest('card-detail', `/api/cards/${encodeURIComponent(tail)}`);
           const cached = await matchEdgeCache(cacheReq);
-          if (cached) return cached;
+          if (cached) { recordCardOpen(request, url, tail, ctx); return cached; } // 快取裡有就代表這張卡存在
           const { catalog, card } = await getCard(tail);
           if (!card) return jsonRes(404, { error: '找不到這張卡' });
+          recordCardOpen(request, url, card.id, ctx);
           const series = catalog.series.find(s => s.id === card.seriesId) || null;
           const game = catalog.games.find(g => g.id === card.game) || null;
           const data = { ...card, series, game };
@@ -3729,5 +3731,24 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     }
   }
 
-  return { handle, handleSitemap, loadSeo };
+  // ---- 頁面開啟數與最熱卡（page_stats_add／card_hot_add）----
+  // Render 時代在記憶體累積、每 10 分鐘寫一次；Worker 沒有長駐記憶體，改成每次開啟直接加 1（流量小，一次一筆 RPC）。
+  // 只送頁面種類或卡號與次數，不存 IP、UA、查詢字串（與 providers/page-stats.mjs 同規則）。
+  function bumpStats(rpc, counts, ctx) {
+    if (!db.supabaseConfigured() || typeof ctx?.waitUntil !== 'function') return;
+    ctx.waitUntil(db.fetchJson(`/rpc/${rpc}`, { db: 'main', method: 'POST', body: JSON.stringify({ p_day: taipeiDay(now()), p_counts: counts }), timeoutMs: 10000 })
+      .catch(error => console.warn('stats write failed', rpc, error?.message || error)));
+  }
+  // 瀏覽器開頁的 Sec-Fetch-Dest 是 document；service worker 預載與 fetch() 不算開頁。
+  function recordPageOpen(request, url, ctx) {
+    const dest = request.headers.get('sec-fetch-dest');
+    if (request.method !== 'GET' || (dest && dest !== 'document')) return;
+    bumpStats('page_stats_add', { [isBot(request.headers.get('user-agent')) ? 'bot' : pageKind(url.searchParams)]: 1 }, ctx);
+  }
+  function recordCardOpen(request, url, cardId, ctx) {
+    if (url.searchParams.get('open') !== '1' || isBot(request.headers.get('user-agent')) || !CARD_ID_PATTERN.test(String(cardId || ''))) return;
+    bumpStats('card_hot_add', { [cardId]: 1 }, ctx);
+  }
+
+  return { handle, handleSitemap, loadSeo, recordPageOpen };
 }

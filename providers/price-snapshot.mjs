@@ -136,7 +136,7 @@ async function loadPrevious(db, cardIds, since) {
 // One run: list candidates, price each card (throttled), compare with the last stored value, insert the changed ones. Never throws for a failed run; check stats.status.
 export async function runPriceSnapshot(options = {}) {
   const { db, env = process.env, collectionAllowed = catalogCollectionAllowed, fetch: fetchImpl = (...args) => globalThis.fetch(...args), now = Date.now, sleep = defaultSleep, signal,
-    cursor: resumeCursor = null, resumedFrom = null, intervalMs = SNAPSHOT_REQUEST_INTERVAL_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxConsecutiveFailures = SNAPSHOT_MAX_CONSECUTIVE_FAILURES, backoffMs = 60 * 1000, maxConsecutiveBackoffs = 30,
+    cursor: resumeCursor = null, resumedFrom = null, deadline = null, intervalMs = SNAPSHOT_REQUEST_INTERVAL_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxConsecutiveFailures = SNAPSHOT_MAX_CONSECUTIVE_FAILURES, backoffMs = 60 * 1000, maxConsecutiveBackoffs = 30,
     pageSize = SNAPSHOT_PAGE_SIZE, chunkSize = SNAPSHOT_CHUNK_SIZE, writeBatchSize = SNAPSHOT_WRITE_BATCH_SIZE, onProgress, log = console, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES, dbBrakeBytes = SNAPSHOT_DB_BRAKE_BYTES, brakeCheckChunks = SNAPSHOT_BRAKE_CHECK_CHUNKS } = options;
   const today = new Date(now()).toISOString().slice(0, 10), startedAt = now();
   const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, dbSizeBytes: null, droppedBelow: 0, belowThreshold: 0, skipped: emptySkipped(), errorCodes: {}, errorSamples: [], cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
@@ -184,6 +184,8 @@ export async function runPriceSnapshot(options = {}) {
     if (!stopReason) for await (const page of listSnapshotCandidates(db, { enSetMap, officialJpSeries, pageSize, cursor: resumeCursor, signal })) {
       stats.rowsScanned += page.rowsScanned;
       for (let i = 0; i < page.items.length && !stopReason; i += chunkSize) {
+        // GitHub Actions 單一工作最多 6 小時：時間到就在兩批之間停，留下 cursor，下一輪排程從這裡接著跑（planNextSnapshotRun 會續跑非 ABORTED 的失敗）。
+        if (deadline && now() >= deadline) { stopReason = 'TIME_BUDGET'; break; }
         const chunk = page.items.slice(i, i + chunkSize);
         const pricing = { ja: createTcgdexPricing({ language: 'ja', fetch: throttledFetch, now, timeoutMs }), en: createTcgdexPricing({ language: 'en', fetch: throttledFetch, now, timeoutMs }) };
         const found = [], foundBelow = [], productLinks = new Map();

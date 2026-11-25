@@ -1,6 +1,8 @@
 # Cloudflare Workers 搬遷計畫書（好卡在 CardSeek）
 
 > 文件建立日期：2026-11-23｜狀態：第 2 步全數公開端點、Sitemap 與需 DB SEO 頁已完成搬遷（網站公開功能 100% 不依賴 Render）
+>
+> **2026-11-25 更新：第 2E 批與第 3 步完成（Render 已不需要）。** Render `cardscope` 11-22 因帳務停用後，背景工作改由 `.github/workflows/background-jobs.yml` 呼叫 `scripts/background-job.mjs`：目錄同步（每小時）、價格快照（每 6 小時看一次，一輪最多 5.5 小時，用 cursor 接續）、價格封存（每日）、TCGAPI 價格（每日，需 `TCGAPI_KEY` Secret）。頁面開啟數與最熱卡改由 Worker 每次開啟直接寫 `page_stats_add`／`card_hot_add`。`keep-warm.yml` 已刪除。仍會轉給 Render 的只剩 `/api/admin/*`（改用 Actions 的手動執行取代）。
 > 依據：`docs/PRODUCT_PLAN.md`、`AGENTS.md` 與 `server.mjs` / `providers/*.mjs` 原始碼實況盤點。
 
 ## 1. 背景、目標與平台限制

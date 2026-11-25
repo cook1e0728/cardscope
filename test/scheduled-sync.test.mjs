@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 
 const [server,workflow]=await Promise.all([
   readFile(new URL('../server.mjs',import.meta.url),'utf8'),
-  readFile(new URL('../.github/workflows/keep-warm.yml',import.meta.url),'utf8')
+  readFile(new URL('../.github/workflows/background-jobs.yml',import.meta.url),'utf8')
 ]);
 
 test('the catalog freshness check repeats while the instance stays up',()=>{
@@ -17,10 +17,16 @@ test('the catalog freshness check repeats while the instance stays up',()=>{
   assert.match(server,/\(startup&&cacheSetting==='true'\)/,'a forced image cache only runs at start-up');
 });
 
-test('production is pinged often enough to stay inside the 15-minute sleep window',()=>{
-  assert.match(workflow,/cron: '\*\/10 \* \* \* \*'/);
-  assert.match(workflow,/https:\/\/cardseektcg\.com\/robots\.txt\)/);
-  assert.doesNotMatch(workflow.match(/^.*curl .*$/m)[0],/\/api\//,'the ping must not trigger database work');
+test('background jobs left Render: one GitHub Actions workflow schedules every job the server used to run on timers',()=>{
+  for(const [cron,job] of [['40 * * * *','catalog-sync'],['5 */6 * * *','price-snapshot'],['20 19 * * *','price-archive'],['50 18 * * *','tcgapi-pricing']]){
+    assert.ok(workflow.includes(`- cron: '${cron}'`),cron);
+    assert.ok(workflow.includes(`'${cron}') job=${job} ;;`),job);
+  }
+  assert.match(workflow,/group: background-\$\{\{ startsWith\(needs\.pick\.outputs\.job, 'price-'\) && 'price'/,'snapshot and archive never run together');
+  assert.match(workflow,/cancel-in-progress: false/);
+  assert.match(workflow,/timeout-minutes: 350/);
+  assert.match(workflow,/--budget-minutes=330/,'the snapshot stops well before the 6-hour job limit');
+  assert.doesNotMatch(workflow,/onrender\.com/);
 });
 
 test('One Piece writes each shared card once, Traditional Chinese row first',async()=>{
