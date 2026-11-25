@@ -178,13 +178,25 @@ html.look-clean body[data-view] #homeRails .trend-rise{flex:none;padding:2px 6px
 html.look-clean body[data-view] #homeRails .trend-card-number{color:var(--v2-ink-2);font-variant-numeric:tabular-nums}
 html.look-clean body[data-view] #homeRails .trend-card>strong{display:block;margin-top:6px;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margin-top:2px;font-size:var(--fs-note);line-height:1.5;color:var(--v2-ink-2);overflow-wrap:anywhere}
+/* 卡名一律預留兩行（同卡牆 min-height 2.7em），一行名字的卡不會比兩行的矮；稀有度、卡號各一行；價格是卡上最醒目的數字 */
+html.look-clean body[data-view] #homeRails .trend-card-head>b{min-height:2.7em}
+html.look-clean body[data-view] #homeRails .trend-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin-top:2px}
+html.look-clean body[data-view] #homeRails .trend-card-meta .tc-no{min-width:0;overflow-wrap:anywhere;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
+html.look-clean body[data-view] #homeRails .trend-image{position:relative}
+/* 大獎稀有度：金屬箔膠囊，金／銀／銅依同一排的高低（home-rails.js prizeRail） */
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity{border:1px solid;border-radius:4px;padding:0 7px;text-shadow:0 1px 0 rgba(255,255,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity[data-tier="top"]{background:linear-gradient(135deg,#9C7A1A,#E9C45A 42%,#FFF1B8 52%,#D9AE3A 64%,#8A6A12);color:#241A05;border-color:#8A6A12}
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity[data-tier="high"]{background:linear-gradient(135deg,#8E949C,#D9DDE2 42%,#F7F9FB 52%,#C3C8CE 64%,#7D838B);color:#1E2226;border-color:#7D838B}
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity[data-tier="mid"]{background:linear-gradient(135deg,#8A5A32,#D29A66 42%,#F2C9A0 52%,#C08455 64%,#7A4E2A);color:#2A1608;border-color:#7A4E2A}
+html.look-clean body[data-view] #homeRails .tc-alt{position:absolute;left:6px;top:6px;padding:1px 8px;border-radius:999px;background:rgba(31,27,22,.82);color:#fff;font-size:12px;font-weight:700;line-height:1.5}
+html.look-clean body[data-view] #homeRails .trend-card>strong.trend-price{margin-top:6px;font-size:18px;font-weight:800;line-height:1.2;color:var(--v2-ink)}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view] #homeRails .trend-card:hover{box-shadow:var(--v2-shadow-up)}}
 /* 大獎與最熱的 ☆：卡片和 ☆ 是並排的兩顆按鈕（不巢狀），包在 .trend-cell 裡；☆ 疊在圖片右上角，44×44 */
 html.look-clean body[data-view] #homeRails .trend-cell{position:relative;display:flex;flex:0 0 190px;width:190px;min-width:0;scroll-snap-align:start}
 html.look-clean body[data-view] #homeRails .trend-cell>.trend-card{flex:1 1 auto;width:auto}
 /* 寶箱放在卡片右下角（和卡牆一樣在文字旁），不蓋卡圖；文字右邊留出寶箱的位置 */
 html.look-clean body[data-view] #homeRails .rail-collect{position:absolute;right:2px;bottom:2px;z-index:1;display:grid;place-items:center;width:var(--btn-h);height:var(--btn-h);padding:0;border:0;border-radius:10px;background:none;color:var(--v2-ink-2);font-size:22px;line-height:1;transition:transform .14s var(--ease)}
-html.look-clean body[data-view] #homeRails .trend-cell>.trend-card>:is(.trend-card-head,.trend-card-number,small){padding-right:34px}
+html.look-clean body[data-view] #homeRails .trend-cell>.trend-card>:is(.trend-card-head,.trend-card-number,.trend-card-meta,small,strong){padding-right:34px}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view] #homeRails .rail-collect:hover{background:var(--v2-well)}}
 html.look-clean body[data-view] #homeRails .rail-collect[aria-pressed="true"]{color:var(--v2-ink)}
 html.look-clean body[data-view] #homeRails .rail-collect:active{transform:scale(.97)}
