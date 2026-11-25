@@ -46,8 +46,9 @@
     const name=row.name||row.cardNumber||'未命名卡片',twd=row.game==='pokemon'?Number(row.referencePrice?.amountTwd):0;
     return cell(row,name,`<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}</div>`+
       `<div class="trend-card-head"><b>${esc(name)}</b></div>`+
-      `<span class="trend-card-number is-wrap">${esc([row.rarity,row.altArt?'異圖':'',row.cardNumber].filter(Boolean).join(' · '))}</span>`+
-      (twd>0?`<small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價約 NT$${Math.round(twd).toLocaleString('en-US')}`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>');
+      // 稀有度與卡號各佔一行（不讓「·」掛在行尾、卡號被擠到下一行）；價格放大加粗，來源寫在下面的小字。
+      `<span class="trend-card-number is-wrap"><span class="tc-line">${esc([row.rarity,row.altArt?'異圖':''].filter(Boolean).join(' · '))}</span><span class="tc-line">${esc(row.cardNumber||'')}</span></span>`+
+      (twd>0?`<strong class="trend-price">NT$${Math.round(twd).toLocaleString('en-US')}</strong><small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價（約）`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>');
   }
   const prizeRail=(title,rows,mixed=false)=>`<h4 class="rails-sub">${esc(title)}</h4><div class="rails-rail">${rows.map(row=>prizeCard(row,mixed)).join('')}</div>`;
   // prizes：undefined＝還在讀；{pinned,games,failed}＝讀完（failed＝讀取失敗）

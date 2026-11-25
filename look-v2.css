@@ -178,13 +178,17 @@ html.look-clean body[data-view] #homeRails .trend-rise{flex:none;padding:2px 6px
 html.look-clean body[data-view] #homeRails .trend-card-number{color:var(--v2-ink-2);font-variant-numeric:tabular-nums}
 html.look-clean body[data-view] #homeRails .trend-card>strong{display:block;margin-top:6px;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margin-top:2px;font-size:var(--fs-note);line-height:1.5;color:var(--v2-ink-2);overflow-wrap:anywhere}
+/* 卡名一律預留兩行（同卡牆 min-height 2.7em），一行名字的卡不會比兩行的矮；稀有度、卡號各一行；價格是卡上最醒目的數字 */
+html.look-clean body[data-view] #homeRails .trend-card-head>b{min-height:2.7em}
+html.look-clean body[data-view] #homeRails .trend-card-number .tc-line{display:block;overflow-wrap:anywhere}
+html.look-clean body[data-view] #homeRails .trend-card>strong.trend-price{margin-top:6px;font-size:18px;font-weight:800;line-height:1.2;color:var(--v2-ink)}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view] #homeRails .trend-card:hover{box-shadow:var(--v2-shadow-up)}}
 /* 大獎與最熱的 ☆：卡片和 ☆ 是並排的兩顆按鈕（不巢狀），包在 .trend-cell 裡；☆ 疊在圖片右上角，44×44 */
 html.look-clean body[data-view] #homeRails .trend-cell{position:relative;display:flex;flex:0 0 190px;width:190px;min-width:0;scroll-snap-align:start}
 html.look-clean body[data-view] #homeRails .trend-cell>.trend-card{flex:1 1 auto;width:auto}
 /* 寶箱放在卡片右下角（和卡牆一樣在文字旁），不蓋卡圖；文字右邊留出寶箱的位置 */
 html.look-clean body[data-view] #homeRails .rail-collect{position:absolute;right:2px;bottom:2px;z-index:1;display:grid;place-items:center;width:var(--btn-h);height:var(--btn-h);padding:0;border:0;border-radius:10px;background:none;color:var(--v2-ink-2);font-size:22px;line-height:1;transition:transform .14s var(--ease)}
-html.look-clean body[data-view] #homeRails .trend-cell>.trend-card>:is(.trend-card-head,.trend-card-number,small){padding-right:34px}
+html.look-clean body[data-view] #homeRails .trend-cell>.trend-card>:is(.trend-card-head,.trend-card-number,small,strong){padding-right:34px}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view] #homeRails .rail-collect:hover{background:var(--v2-well)}}
 html.look-clean body[data-view] #homeRails .rail-collect[aria-pressed="true"]{color:var(--v2-ink)}
 html.look-clean body[data-view] #homeRails .rail-collect:active{transform:scale(.97)}
