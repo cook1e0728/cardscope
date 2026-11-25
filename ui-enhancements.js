@@ -1904,3 +1904,39 @@ if(typeof render==='function'){
   attach(document.getElementById('q'));attach(document.getElementById('heroQ'));
 })();
 renderAccountAvatar();
+// 卡牆懸停摘要（只在桌面滑鼠）：停 350ms 在卡片旁浮出一張資訊卡，只用畫面上已有的卡片資料、不發請求。
+// 浮層 aria-hidden＋pointer-events:none，不擋點擊；同樣的資訊鍵盤與報讀已能從卡片本身與詳細頁取得。捲動、按鍵、點擊、卡牆重畫都會收起。
+(function cardPeek(){
+  const fine=window.matchMedia?.('(hover:hover) and (pointer:fine)');if(!fine||typeof window.addEventListener!=='function'||typeof document.addEventListener!=='function')return;
+  const DELAY=350,GAP=12,EDGE=16;let peek=null,timer=0,current=null;
+  const hide=()=>{clearTimeout(timer);timer=0;current=null;peek?.classList.remove('is-on')};
+  function peekMarkup(card,key){
+    const ref=usableReference(card),chg=ref&&referenceChangeInfo(ref),twd=Number(ref?.amountTwd),qty=watchQuantity(key);
+    const money=ref?(twd>0?`NT$ ${twd.toLocaleString('en-US')}`:referenceAmountText(ref.amount,ref.currency)):'';
+    const orig=original(card),series=cardSeriesLabel(card).replace(/<[^>]+>/g,'');
+    const facts=[['卡號',e(cardNumberLabel(card))],['稀有度',cardRarityMarkup(card)],['版本',cardVersionBadges(card)]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    return `<p class="cp-ctx">${e(cardGameLabel(card))}${series?` · ${series}`:''}</p><p class="cp-name">${e(name(card))}</p>${orig&&orig!==name(card)?`<p class="cp-orig">${e(orig)}</p>`:''}<dl class="cp-facts">${facts}</dl>${money?`<p class="cp-price"><b>${e(money)}</b>${chg?`<span class="cp-chg cp-${chg.dir}">${e(chg.label)}</span>`:''}<small>${e((REFERENCE_SOURCE_NAMES[ref.source]||'平台')+' 參考價，非成交價')}</small></p>`:''}<p class="cp-foot">${qty?`<span class="cp-owned">已收藏 ${qty} 張</span>`:'<span>尚未收藏</span>'}<span>點一下看詳細</span></p>`;
+  }
+  function show(el){
+    const key=el.querySelector('.card-actions')?.dataset.cardKey,card=key&&renderedCards.get(key);
+    if(!card||!el.isConnected||!fine.matches)return;
+    if(!peek){peek=document.createElement('div');peek.className='card-peek';peek.setAttribute('aria-hidden','true');document.body.append(peek)}
+    peek.innerHTML=peekMarkup(card,key);
+    const r=el.getBoundingClientRect(),w=peek.offsetWidth,h=peek.offsetHeight,right=r.right+GAP+w<=innerWidth-EDGE;
+    peek.dataset.side=right?'right':'left';
+    peek.style.left=`${right?r.right+GAP:Math.max(EDGE,r.left-GAP-w)}px`;
+    peek.style.top=`${Math.min(Math.max(r.top,EDGE),Math.max(EDGE,innerHeight-h-EDGE))}px`;
+    peek.classList.add('is-on');current=el;
+  }
+  document.addEventListener('pointerover',event=>{
+    if(event.pointerType&&event.pointerType!=='mouse')return;
+    const el=event.target.closest?.('.cards .card:not(.card-list)');
+    if(!el){if(current||timer)hide();return}
+    if(el===current||el.dataset.peekWait)return;
+    hide();el.dataset.peekWait='1';
+    timer=setTimeout(()=>{delete el.dataset.peekWait;timer=0;if(el.matches(':hover'))show(el)},DELAY);
+    el.addEventListener('pointerleave',()=>{delete el.dataset.peekWait;if(current===el||!current)hide()},{once:true});
+  });
+  for(const type of ['pointerdown','keydown','wheel'])document.addEventListener(type,hide,{passive:true,capture:true});
+  window.addEventListener('scroll',hide,{passive:true,capture:true});window.addEventListener('blur',hide);
+})();
