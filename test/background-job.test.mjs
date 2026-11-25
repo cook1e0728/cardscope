@@ -40,3 +40,9 @@ test('runPriceSnapshot: the deadline is checked between chunks and ends the run 
   assert.ok(source.indexOf("stopReason = 'TIME_BUDGET'") < source.indexOf('const chunk = page.items.slice(i, i + chunkSize);'), 'checked before a chunk starts, so the cursor stays on a finished chunk');
   assert.equal((await import('../providers/price-snapshot.mjs')).planNextSnapshotRun.length, 1);
 });
+
+test('tcgapi images only on Mondays (UTC); other days the whole budget goes to prices', async () => {
+  const { tcgapiImagesDue } = await import('../scripts/background-job.mjs');
+  assert.equal(tcgapiImagesDue(new Date('2026-11-23T03:00:00Z')), true);
+  assert.equal(tcgapiImagesDue(new Date('2026-11-25T03:00:00Z')), false);
+});

@@ -10,18 +10,23 @@ test('Worker counts page opens (bots apart, fetch() and HEAD not counted) withou
     if (url.pathname.startsWith('/rest/v1/rpc/')) { rpcs.push({ rpc: url.pathname.slice(13), body: JSON.parse(init.body), raw: init.body }); return new Response('null'); }
     throw new Error('origin down');
   };
-  const handler = createWorkerHandler({ fetchFn, edgeCache: null });
+  let clock = Date.parse('2026-11-25T04:00:00Z');
+  const handler = createWorkerHandler({ fetchFn, edgeCache: null, now: () => clock });
   const env = { SUPABASE_URL: 'https://db.example', SUPABASE_SERVICE_KEY: 'k' };
   const waits = [];
   const ctx = { waitUntil: p => waits.push(p) };
   const open = (path, headers = {}, method = 'GET') => handler.fetch(new Request(`https://cardseektcg.com${path}`, { method, headers: { 'cf-connecting-ip': '203.0.113.9', ...headers } }), env, ctx);
   await open('/?game=pokemon', { 'sec-fetch-dest': 'document', 'user-agent': 'Mozilla/5.0' });
   await open('/?card=pokemon-x-1', { 'user-agent': 'Googlebot/2.1' });
+  await open('/?q=pikachu', { 'user-agent': 'Mozilla/5.0' });
   await open('/', { 'sec-fetch-dest': 'empty' });
   await open('/', {}, 'HEAD');
+  clock += 10_000;
+  await open('/', { 'user-agent': 'Mozilla/5.0' });
   await Promise.all(waits);
-  assert.deepEqual(rpcs.map(r => [r.rpc, r.body.p_counts]), [['page_stats_add', { game: 1 }], ['page_stats_add', { bot: 1 }]]);
-  assert.match(rpcs[0].body.p_day, /^\d{4}-\d{2}-\d{2}$/);
+  // 第一次立刻寫；10 秒內的開啟合併成下一筆，fetch() 與 HEAD 不算
+  assert.deepEqual(rpcs.map(r => [r.rpc, r.body.p_counts]), [['page_stats_add', { game: 1 }], ['page_stats_add', { bot: 1, search: 1, home: 1 }]]);
+  assert.equal(rpcs[0].body.p_day, '2026-11-25');
   for (const r of rpcs) assert.doesNotMatch(r.raw, /203\.0\.113\.9|Mozilla|Googlebot/);
 });
 

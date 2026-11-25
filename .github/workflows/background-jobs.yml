@@ -2,8 +2,8 @@ name: Background jobs
 
 # 原本在 Render 長駐伺服器裡用計時器跑的背景工作，2026-11-25 Render 因帳務停用後搬到這裡（scripts/background-job.mjs）。
 # - catalog-sync：每小時看一次，只有超過 72 小時沒同步的來源才真的同步，其餘只重建瀏覽排序鍵（約 1 分鐘）。
-# - price-snapshot：每 6 小時看一次；當天已完成就立刻結束，沒完成就最多跑 5.5 小時，下一輪從 cursor 接著跑。
-# - price-archive：每天一次，把 30 天前的快照封存到 Storage。
+# - price-snapshot：每 6 小時看一次；當天已完成就立刻結束，沒完成就最多跑 5 小時（上游退避最長 30 分鐘，仍在 Actions 350 分鐘上限內），下一輪從 cursor 接著跑。
+# - price-archive：每 6 小時看一次，把 30 天前的快照封存到 Storage（Render 時期碰上忙碌會 30 分鐘後重試，這裡改成下一輪再試）。
 # - tcgapi-pricing：每天一次（沒設定 TCGAPI_KEY 時略過）。
 # 價格快照與封存共用一個 concurrency 群組，不會同時跑（原本在 Render 也是互相避開）。
 # 需要的 Secrets（只列名稱）：SUPABASE_URL、SUPABASE_SERVICE_KEY、SUPABASE2_URL、SUPABASE2_SERVICE_KEY；選用 TCGAPI_KEY。
@@ -11,7 +11,7 @@ on:
   schedule:
     - cron: '40 * * * *'      # catalog-sync
     - cron: '5 */6 * * *'     # price-snapshot
-    - cron: '20 19 * * *'     # price-archive（台灣時間 03:20）
+    - cron: '20 1,7,13,19 * * *'  # price-archive（每 6 小時看一次；沒有可封存的日子就立刻結束，碰上目錄同步或快照時下一輪再試）
     - cron: '50 18 * * *'     # tcgapi-pricing（台灣時間 02:50）
   workflow_dispatch:
     inputs:
@@ -19,7 +19,7 @@ on:
         description: '要跑的工作'
         required: true
         type: choice
-        options: [catalog-sync, price-snapshot, price-archive, tcgapi-pricing]
+        options: [catalog-sync, price-snapshot, price-archive, tcgapi-pricing, yugioh-images]
 
 permissions:
   contents: read
@@ -38,7 +38,7 @@ jobs:
           case "$SCHEDULE" in
             '40 * * * *') job=catalog-sync ;;
             '5 */6 * * *') job=price-snapshot ;;
-            '20 19 * * *') job=price-archive ;;
+            '20 1,7,13,19 * * *') job=price-archive ;;
             '50 18 * * *') job=tcgapi-pricing ;;
             *) job="$INPUT_JOB" ;;
           esac
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 350
     concurrency:
-      group: background-${{ startsWith(needs.pick.outputs.job, 'price-') && 'price' || needs.pick.outputs.job }}
+      group: background-${{ startsWith(needs.pick.outputs.job, 'price-') && 'price' || (needs.pick.outputs.job == 'yugioh-images' && 'catalog-sync' || needs.pick.outputs.job) }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -63,5 +63,13 @@ jobs:
           SUPABASE2_URL: ${{ secrets.SUPABASE2_URL }}
           SUPABASE2_SERVICE_KEY: ${{ secrets.SUPABASE2_SERVICE_KEY }}
           TCGAPI_KEY: ${{ secrets.TCGAPI_KEY }}
+          # 開關與調校改用 Repository variables（Settings → Secrets and variables → Actions → Variables），沒設就用預設值
+          PRICE_SNAPSHOT_ENABLED: ${{ vars.PRICE_SNAPSHOT_ENABLED }}
+          PRICE_ARCHIVE_ENABLED: ${{ vars.PRICE_ARCHIVE_ENABLED }}
+          TCGDEX_TW_SYNC: ${{ vars.TCGDEX_TW_SYNC }}
+          CATALOG_SYNC_MAX_AGE_HOURS: ${{ vars.CATALOG_SYNC_MAX_AGE_HOURS }}
+          CARD_IMAGE_CACHE_ON_START: ${{ vars.CARD_IMAGE_CACHE_ON_START }}
+          CARD_IMAGE_CACHE_LIMIT: ${{ vars.CARD_IMAGE_CACHE_LIMIT }}
+          CARD_IMAGE_CACHE_CONCURRENCY: ${{ vars.CARD_IMAGE_CACHE_CONCURRENCY }}
           JOB: ${{ needs.pick.outputs.job }}
-        run: node scripts/background-job.mjs "$JOB" --budget-minutes=330
+        run: node scripts/background-job.mjs "$JOB" --budget-minutes=300

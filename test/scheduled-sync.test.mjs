@@ -18,14 +18,14 @@ test('the catalog freshness check repeats while the instance stays up',()=>{
 });
 
 test('background jobs left Render: one GitHub Actions workflow schedules every job the server used to run on timers',()=>{
-  for(const [cron,job] of [['40 * * * *','catalog-sync'],['5 */6 * * *','price-snapshot'],['20 19 * * *','price-archive'],['50 18 * * *','tcgapi-pricing']]){
+  for(const [cron,job] of [['40 * * * *','catalog-sync'],['5 */6 * * *','price-snapshot'],['20 1,7,13,19 * * *','price-archive'],['50 18 * * *','tcgapi-pricing']]){
     assert.ok(workflow.includes(`- cron: '${cron}'`),cron);
     assert.ok(workflow.includes(`'${cron}') job=${job} ;;`),job);
   }
   assert.match(workflow,/group: background-\$\{\{ startsWith\(needs\.pick\.outputs\.job, 'price-'\) && 'price'/,'snapshot and archive never run together');
   assert.match(workflow,/cancel-in-progress: false/);
   assert.match(workflow,/timeout-minutes: 350/);
-  assert.match(workflow,/--budget-minutes=330/,'the snapshot stops well before the 6-hour job limit');
+  assert.match(workflow,/--budget-minutes=300/,'the snapshot stops well before the 6-hour job limit');
   assert.doesNotMatch(workflow,/onrender\.com/);
 });
 

@@ -3732,11 +3732,21 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   }
 
   // ---- 頁面開啟數與最熱卡（page_stats_add／card_hot_add）----
-  // Render 時代在記憶體累積、每 10 分鐘寫一次；Worker 沒有長駐記憶體，改成每次開啟直接加 1（流量小，一次一筆 RPC）。
-  // 只送頁面種類或卡號與次數，不存 IP、UA、查詢字串（與 providers/page-stats.mjs 同規則）。
+  // Render 時代在記憶體累積、每 10 分鐘寫一次；Worker 的 isolate 隨時會被回收，改成同一個 isolate 最多每 10 秒寫一次（中間的開啟數合併進下一筆）。
+  // 平常流量小，幾乎每次開啟都直接寫；被大量請求時寫入次數有上限。只送頁面種類或卡號與次數，不存 IP、UA、查詢字串（與 providers/page-stats.mjs 同規則）。
+  // shortcut: isolate 在兩次寫入之間被回收時，那 10 秒內合併的次數會遺失；統計本來就是概數。
+  const STATS_FLUSH_MS = 10_000;
+  const statsBuffers = { page_stats_add: { counts: {}, at: 0 }, card_hot_add: { counts: {}, at: 0 } };
   function bumpStats(rpc, counts, ctx) {
     if (!db.supabaseConfigured() || typeof ctx?.waitUntil !== 'function') return;
-    ctx.waitUntil(db.fetchJson(`/rpc/${rpc}`, { db: 'main', method: 'POST', body: JSON.stringify({ p_day: taipeiDay(now()), p_counts: counts }), timeoutMs: 10000 })
+    const buffer = statsBuffers[rpc], day = taipeiDay(now());
+    if (buffer.day && buffer.day !== day) buffer.counts = {}; // 換日：前一天沒寫出去的少量次數不跨日寫錯天
+    buffer.day = day;
+    for (const [key, n] of Object.entries(counts)) if (key in buffer.counts || Object.keys(buffer.counts).length < 200) buffer.counts[key] = (buffer.counts[key] || 0) + n;
+    if (now() - buffer.at < STATS_FLUSH_MS) return;
+    const sent = buffer.counts;
+    buffer.counts = {}; buffer.at = now();
+    ctx.waitUntil(db.fetchJson(`/rpc/${rpc}`, { db: 'main', method: 'POST', body: JSON.stringify({ p_day: day, p_counts: sent }), timeoutMs: 10000 })
       .catch(error => console.warn('stats write failed', rpc, error?.message || error)));
   }
   // 瀏覽器開頁的 Sec-Fetch-Dest 是 document；service worker 預載與 fetch() 不算開頁。
