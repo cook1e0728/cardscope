@@ -34,7 +34,7 @@ test('稀有度：長名稱換成代碼、全名放 title，NONE 顯示無標記
 test('格子、清單、分組標題與收錄版本都經由稀有度代碼顯示', () => {
   assert.match(ui, /rarityHtml=cardRarityMarkup\(card\)/);
   assert.match(ui, /<span>\$\{rarityHtml\}<\/span>\$\{versionMarkup\}/);
-  assert.match(ui, /data-tier="\$\{rarityTier\(rarity\)\}"[^>]*>\$\{rarityHtml===RARITY_PENDING\?'待補':rarityHtml\}<\/span>/, '卡牆的稀有度標籤：已知的走稀有度代碼；沒有稀有度時顯示「待補」，全文放 title');
+  assert.match(ui, /data-tier="\$\{rarityTier\(rarity,card\.game\)\}"[^>]*>\$\{rarityHtml===RARITY_PENDING\?'待補':rarityHtml\}<\/span>/, '卡牆的稀有度標籤：已知的走稀有度代碼；沒有稀有度時顯示「待補」，全文放 title');
   assert.match(ui, /rarityMarkup\(rarity,gameId\)\|\|e\(rarity\)/);
   assert.match(ui, /<dt>稀有度<\/dt><dd>\$\{rarities\}/);
   assert.doesNotMatch(ui, /\$\{e\(rarity\)\}<\/span>/, '不再直接輸出原文稀有度');

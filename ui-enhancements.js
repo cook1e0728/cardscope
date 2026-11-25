@@ -235,7 +235,8 @@ function cardActionsMarkup(card){
 }
 
 // Three sticker tiers for the binder theme: top (SAR/UR/SEC…), high (SR/AR/RRR…), and everything else.
-function rarityTier(label){const code=String(label||'').trim().toUpperCase();if(/^(SAR|UR|SEC|HR|SSR|MA|CSR|SP|SSP|OFR|BSR|MUR|ACE)/.test(code))return 'top';if(/^(SR|AR|RRR|CHR|K|L|PR|S)/.test(code))return 'high';return 'base'}
+// TR 依遊戲：航海王的 TR 是最高稀有度；寶可夢的 TR 排在 RRR 後面（data/rarity-rankings.json）。
+function rarityTier(label,game){const code=String(label||'').trim().toUpperCase();if(/^TR\b/.test(code))return game==='onepiece'?'top':'high';if(/^(SAR|UR|FUR|BWR|SEC|HR|SSR|MA|CSR|SP|SSP|OFR|BSR|MUR|ACE)\b/.test(code))return 'top';if(/^(SR|AR|RRR|CHR|K|L|PR|S)\b/.test(code))return 'high';return 'base'}
 // Cards kept although the Japanese official card search does not list them (M6a 104–135, B/G/R: listed by the Taiwanese official search or TCGdex only).
 const hasListing=(card,value)=>card?.metadata?.officialListing===value||(card?.printings||[]).some(p=>p.metadata?.officialListing===value);
 const notOfficiallyListed=card=>hasListing(card,'jp-not-listed');
@@ -277,7 +278,7 @@ function cardMarkup(card){
   if(cardViewMode==='list')return `<article class="card card-list${owned}">${openControl}<div class="art">${picture}</div><div class="card-list-main">${mixed?`<span class="badge ip-badge">${e(gameLabel)}</span>`:''}<h3>${e(name(card))}</h3>${seriesMarkup}${original(card)?(original(card)!==name(card)?`<div class="meta">${e(original(card))}</div>`:''):'<div class="meta">原名待補</div>'}</div><div class="card-list-facts"><b>${e(number)}</b><span>${rarityHtml}</span>${versionMarkup}${flags}${priceMarkup?`<strong>${priceMarkup}</strong>`:''}${referenceMarkup||(priceMarkup?'':'<span class="meta">參考價待補</span>')}</div>${cardActionsMarkup(card)}</article>`;
   // 卡片三行：卡名（旁邊是收藏）、卡號＋稀有度、價格（有才顯示）。遊戲、系列、版本只在混合牆出現。
   const pricing=priceMarkup||referenceMarkup?`<div class="card-pricing">${priceMarkup?`<div class="card-price">${priceMarkup}</div>`:''}${referenceMarkup}</div>`:'';
-  return `<article class="card${mixed?' card-mixed':''}${owned}">${openControl}<div class="art">${picture}</div>${mixed?`<div class="card-ctx">${cardGameLine(card,gameLabel,versionMarkup)}${seriesMarkup}</div>`:''}<h3>${e(name(card))}</h3><div class="meta"><span class="card-no">${e(number)}</span><span class="card-sep"> · </span><span class="card-rarity" data-tier="${rarityTier(rarity)}"${rarityHtml===RARITY_PENDING?` title="${RARITY_PENDING}"`:''}>${rarityHtml===RARITY_PENDING?'待補':rarityHtml}</span></div>${pricing}${flags?`<div class="card-flags">${flags}</div>`:''}${cardActionsMarkup(card)}</article>`;
+  return `<article class="card${mixed?' card-mixed':''}${owned}">${openControl}<div class="art">${picture}</div>${mixed?`<div class="card-ctx">${cardGameLine(card,gameLabel,versionMarkup)}${seriesMarkup}</div>`:''}<h3>${e(name(card))}</h3><div class="meta"><span class="card-no">${e(number)}</span><span class="card-sep"> · </span><span class="card-rarity" data-tier="${rarityTier(rarity,card.game)}"${rarityHtml===RARITY_PENDING?` title="${RARITY_PENDING}"`:''}>${rarityHtml===RARITY_PENDING?'待補':rarityHtml}</span></div>${pricing}${flags?`<div class="card-flags">${flags}</div>`:''}${cardActionsMarkup(card)}</article>`;
 }
 
 function activateCardActions(root=$('cards')){
