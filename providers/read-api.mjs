@@ -43,7 +43,7 @@ import { buildSeriesIndex, foldSearch, foldedSpan, gameHintFor, parseSearchQuery
 import { catalogCollectionAllowed, imageDisplayPolicies, publicSourcePolicies, sourceDisplayDenied, sourcePolicySummary } from './source-policy.mjs';
 import { createTcgdexPricing } from './tcgdex-pricing.mjs';
 import { createYgoProDeckClient, crossVersionLowestPrices, matchYgoprodeckSet } from './ygoprodeck.mjs';
-import { chunkCardIds, createBoundedSnapshotCache } from './backend-reliability.mjs';
+import { chunkCardIds, createBoundedSnapshotCache, joinInFlight } from './backend-reliability.mjs';
 import { CATALOG_REGION_IDS, createSupabaseClient, dbForGame, dbForId, getResponseByteSize } from './supabase-client.mjs';
 import {
   ALLOWED_CURRENCIES,
@@ -427,7 +427,7 @@ function createWebArchiveReader({ getEnv, fetchFn, now }) {
 
   async function loadManifest(cfg) {
     if (manifestEntry && now() - manifestEntry.at < ARCHIVE_MANIFEST_TTL_MS) return manifestEntry.value;
-    if (manifestPending) return manifestPending;
+    if (manifestPending) { const shared = manifestPending; return joinInFlight(shared, () => { if (manifestPending === shared) manifestPending = null; }, () => loadManifest(cfg)); }
     manifestPending = storageGetBytes(cfg, `${ARCHIVE_PREFIX}/manifest.json`)
       .then(bytes => {
         const value = parseManifestBytes(bytes);
@@ -449,7 +449,7 @@ function createWebArchiveReader({ getEnv, fetchFn, now }) {
       return hit.byCard;
     }
     if (hit) drop(key);
-    if (pending.has(key)) return pending.get(key);
+    if (pending.has(key)) { const shared = pending.get(key); return joinInFlight(shared, () => { if (pending.get(key) === shared) pending.delete(key); }, () => loadShardRows(cfg, month, shard, expected)); }
     const task = (async () => {
       const path = `${ARCHIVE_PREFIX}/${month}/${archivePad(shard)}.json.gz`;
       let bytes = await storageGetBytes(cfg, path, { version: expected });
@@ -767,7 +767,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     const current = now();
     const cached = browseCache.get(key);
     if (cached?.data && cached.expiresAt > current) return cached.data;
-    if (cached?.promise) return cached.promise;
+    if (cached?.promise) return joinInFlight(cached.promise, () => { if (browseCache.get(key) === cached) browseCache.delete(key); }, () => cachedBrowseRows(key, loader, ttlMs));
     const promise = Promise.resolve().then(loader).then(data => {
       if (Array.isArray(data) && data.length > BROWSE_CACHE_ROWS_MAX) {
         browseCache.delete(key);
@@ -870,7 +870,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     const cache = storageCaches[targetDb];
     const current = now();
     if (cache.data && cache.expiresAt > current) return Promise.resolve(cache.data);
-    if (cache.promise) return cache.promise;
+    if (cache.promise) { const shared = cache.promise; return joinInFlight(shared, () => { if (cache.promise === shared) cache.promise = null; }, () => loadStorageReport(targetDb)); }
     if (current < cache.retryAt) return Promise.resolve(cache.data);
     return cache.promise = db.fetchJson('/rpc/db_size_report', {
       db: targetDb,
@@ -1008,8 +1008,10 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           catalogCache.pending = null;
           throw error;
         });
+        return catalogCache.pending;
       }
-      return catalogCache.pending;
+      const shared = catalogCache.pending;
+      return joinInFlight(shared, () => { if (catalogCache.pending === shared) catalogCache.pending = null; }, refresh);
     };
     if (catalogCache.value) {
       if (now() - catalogCache.at >= CATALOG_CACHE_TTL_MS) {
@@ -1066,8 +1068,10 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
           productCache.pending = null;
           throw error;
         });
+        return productCache.pending;
       }
-      return productCache.pending;
+      const shared = productCache.pending;
+      return joinInFlight(shared, () => { if (productCache.pending === shared) productCache.pending = null; }, refresh);
     };
     if (productCache.value) {
       if (now() - productCache.at >= PRODUCT_CACHE_TTL_MS) {
@@ -2010,7 +2014,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   function loadCardCached(cardId) {
     const hit = cardCache.get(cardId);
-    if (hit && (hit.pending || now() - hit.at < CARD_CACHE_TTL_MS)) return hit.promise;
+    if (hit && (hit.pending || now() - hit.at < CARD_CACHE_TTL_MS)) return joinInFlight(hit.promise, () => { if (cardCache.get(cardId) === hit) cardCache.delete(cardId); }, () => loadCardCached(cardId));
     const entry = { pending: true, at: 0, promise: null };
     entry.promise = loadCardFromDatabase(cardId).then(value => {
       entry.pending = false;
@@ -2212,7 +2216,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   function unifiedMarketCached(card) {
     const hit = marketCache.get(card.id);
-    if (hit && (hit.pending || now() - hit.at < MARKET_CACHE_MS)) return hit.promise;
+    if (hit && (hit.pending || now() - hit.at < MARKET_CACHE_MS)) return joinInFlight(hit.promise, () => { if (marketCache.get(card.id) === hit) marketCache.delete(card.id); }, () => unifiedMarketCached(card));
     const entry = { pending: true, at: 0, promise: null };
     entry.promise = unifiedMarket(card).then(value => {
       entry.pending = false;
@@ -2230,7 +2234,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   // ---- Events / Movers / Hot Cards / Trends ----
   function loadCatalogEvents(current = now()) {
-    if (catalogEventsCache && current - catalogEventsCache.at < 3600000) return catalogEventsCache.promise;
+    if (catalogEventsCache && current - catalogEventsCache.at < 3600000) { const hit = catalogEventsCache; return joinInFlight(hit.promise, () => { if (catalogEventsCache === hit) catalogEventsCache = null; }, () => loadCatalogEvents(current)); }
     const day = offset => new Date(current + offset * 86400000).toISOString().slice(0, 10);
     const entry = { at: current, promise: null };
     const path = `/tcg_series?select=game_id,region,release_date,name_zh,name_ja,name_en,source_url&release_date=gte.${day(-PRICE_HISTORY_DAYS)}&release_date=lte.${day(60)}&order=release_date.asc&limit=500`;
@@ -2281,7 +2285,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
 
   async function loadTrendSnapshot() {
     if (trendCache.data && trendCache.expiresAt > now()) return trendCache.data;
-    if (trendCache.promise) return trendCache.promise;
+    if (trendCache.promise) { const shared = trendCache.promise; return joinInFlight(shared, () => { if (trendCache.promise === shared) trendCache.promise = null; }, loadTrendSnapshot); }
     const promise = Promise.resolve().then(async () => {
       const params = new URLSearchParams({
         select: 'game,setCode:set_code,setName:set_name,cardCode:card_code,cardNumber:card_number,rarity,cardName:card_name,price,previousPrice:previous_price,currency,cardUrl:card_url,imageUrl:image_url,updatedAt:scraped_at,source',
@@ -2408,7 +2412,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   function priceHistoryCached(card, requestedId) {
     const current = now();
     const hit = priceHistoryCache.get(requestedId);
-    if (hit && (hit.pending || current - hit.at < PRICE_HISTORY_TTL_MS)) return hit.promise;
+    if (hit && (hit.pending || current - hit.at < PRICE_HISTORY_TTL_MS)) return joinInFlight(hit.promise, () => { if (priceHistoryCache.get(requestedId) === hit) priceHistoryCache.delete(requestedId); }, () => priceHistoryCached(card, requestedId));
     const entry = { pending: true, at: 0, promise: null };
     entry.promise = loadPriceHistory(card, requestedId).then(
       value => {
@@ -2487,7 +2491,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     const current = now();
     const memHit = gradedCache.get(query.key);
     if (memHit && memHit.expiresAt > current) return memHit.value;
-    if (gradedPending.has(query.key)) return gradedPending.get(query.key);
+    if (gradedPending.has(query.key)) { const shared = gradedPending.get(query.key); return joinInFlight(shared, () => { if (gradedPending.get(query.key) === shared) gradedPending.delete(query.key); }, () => lookupGradedPrices(input, ctx)); }
 
     const kvCacheKey = `${KV_KEYS.gradedCachePrefix}${query.key}`;
     const kvCached = parseKvJson(await readKvRaw(currentEnv, kvCacheKey));
@@ -2552,7 +2556,7 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   async function getEbayAccessToken(clientId, clientSecret, ctx) {
     const current = now();
     if (ebayToken && ebayToken.expiresAt - 60000 > current) return ebayToken.value;
-    if (ebayTokenPending) return ebayTokenPending;
+    if (ebayTokenPending) { const shared = ebayTokenPending; return joinInFlight(shared, () => { if (ebayTokenPending === shared) ebayTokenPending = null; }, () => getEbayAccessToken(clientId, clientSecret, ctx)); }
     ebayTokenPending = (async () => {
       const kvToken = parseKvJson(await readKvRaw(currentEnv, KV_KEYS.ebayToken));
       if (kvToken && typeof kvToken.value === 'string' && Number(kvToken.expiresAt) - 60000 > now()) {
