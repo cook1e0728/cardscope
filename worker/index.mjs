@@ -715,6 +715,7 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
       }
 
       if ((request.method === 'GET' || request.method === 'HEAD') && url.pathname === '/') {
+        getReadApi(env).recordPageOpen(request, url, ctx);
         const seoTarget = seoRequestTarget(url);
         if (seoTarget) {
           const cfIp = String(request.headers.get('cf-connecting-ip') || '').trim();

@@ -65,8 +65,8 @@ export function matchSetImages(cards, rows) {
   return out;
 }
 
-export function createTcgapiPricing({ apiKey, db, fetchFn = fetch, now = () => new Date(), dailyRequests = TCGAPI_DAILY_REQUESTS, gapMs = REQUEST_GAP_MS, log = console } = {}) {
-  let timer = null, running = false, last = null, lastImageRun = 0;
+export function createTcgapiPricing({ apiKey, db, fetchFn = fetch, now = () => new Date(), dailyRequests = TCGAPI_DAILY_REQUESTS, gapMs = REQUEST_GAP_MS, log = console, lastImageRun: initialImageRun = 0 } = {}) {
+  let timer = null, running = false, last = null, lastImageRun = initialImageRun;
   async function get(path, budget) {
     if (budget.used >= dailyRequests) throw Object.assign(new Error('TCGAPI_BUDGET'), { code: 'TCGAPI_BUDGET' });
     if (budget.used) await sleep(gapMs);
