@@ -408,11 +408,8 @@ export function createSnapshotGenerator({
     }
   }
 
-  // borrowLinked：自己沒有價格時借同一張卡別版本（printings 裡已連好的 cardId，日版優先）的價格，標 referencePriceRegion。
-  // 本彈大獎用：台版新彈常沒有 Cardmarket 價，日版那張在日版系列裡又沒有稀有度，原本的同卡號合併借不到。
-  async function attachReferencePrices(cards, { borrowLinked = false } = {}) {
-    const linked = card => borrowLinked ? [...(card?.printings || [])].filter(p => p?.cardId && String(p.cardId) !== String(card.id)).sort((a, b) => (a.region === 'JP' ? 0 : 1) - (b.region === 'JP' ? 0 : 1)) : [];
-    const unique = [...new Set((cards || []).flatMap(c => [c?.id, ...linked(c).map(p => p.cardId)]).filter(Boolean))].sort();
+  async function attachReferencePrices(cards) {
+    const unique = [...new Set((cards || []).map(c => c?.id).filter(Boolean))].sort();
     if (!unique.length || !db.supabaseConfigured()) return cards;
     try {
       const [rows, priorRows, rates] = await Promise.all([
@@ -427,11 +424,9 @@ export function createSnapshotGenerator({
         if (price) prices.set(row.card_id, { ...price, ...referenceChange(price, priorByKey.get(`${row.card_id}|${price.source}|${price.variant || ''}`)) });
       }
       for (const card of cards || []) {
-        const borrowed = prices.has(card.id) ? null : linked(card).find(p => prices.has(p.cardId));
-        const price = prices.get(card.id) || prices.get(borrowed?.cardId);
+        const price = prices.get(card.id);
         const rate = Number(rates[price?.currency]);
         if (price) card.referencePrice = rate > 0 ? { ...price, amountTwd: Math.round(price.amount * rate) } : price;
-        if (price && borrowed) card.referencePriceRegion = borrowed.region;
       }
     } catch (error) {
       console.error('snapshot reference price lookup failed', error?.message || error);
@@ -581,10 +576,12 @@ export function createSnapshotGenerator({
               limit: BROWSE_PAGE_MAX,
               offset: 0
             });
-            if (rule.game === 'pokemon') await attachReferencePrices(cards, { borrowLinked: true });
+            if (rule.game === 'pokemon') await attachReferencePrices(cards);
             versions.push({
               region: series.region,
-              rows: prizeCards(rule.game, rule.top, cards, { seriesId: series.id, limit: BROWSE_PAGE_MAX }).map(card => prizeRow(card, series))
+              rows: prizeCards(rule.game, rule.top, cards, { seriesId: series.id, limit: BROWSE_PAGE_MAX }).map(card => prizeRow(card, series)),
+              // 有價格的全部卡（不論稀有度）：別版本的大獎卡沒價時，從這裡借同卡號的價格
+              priced: cards.filter(card => card?.referencePrice).map(card => prizeRow(card, series))
             });
           }
           const data = mergePrizeRows(rule.game, versions);
