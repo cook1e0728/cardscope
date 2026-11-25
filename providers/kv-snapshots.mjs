@@ -569,17 +569,16 @@ export function createSnapshotGenerator({
         try {
           const versions = [];
           for (const series of release) {
-            const cards = await browseSeriesCards(rule.game, {
-              region: series.region,
-              seriesId: series.id,
-              sort: 'rarity-desc',
-              limit: BROWSE_PAGE_MAX,
-              offset: 0
-            });
+            const page = offset => browseSeriesCards(rule.game, { region: series.region, seriesId: series.id, sort: 'rarity-desc', limit: BROWSE_PAGE_MAX, offset });
+            let cards = await page(0);
+            // 寶可夢要跨版本借價：沒標稀有度的卡排在最後，一頁 100 張讀不到（例如日版 M6a 的 134、135），整彈讀完（最多 4 頁）。
+            for (let n = 1; rule.game === 'pokemon' && n < 4 && cards.length === BROWSE_PAGE_MAX * n; n++) cards = cards.concat(await page(BROWSE_PAGE_MAX * n));
             if (rule.game === 'pokemon') await attachReferencePrices(cards);
             versions.push({
               region: series.region,
-              rows: prizeCards(rule.game, rule.top, cards, { seriesId: series.id, limit: BROWSE_PAGE_MAX }).map(card => prizeRow(card, series))
+              rows: prizeCards(rule.game, rule.top, cards, { seriesId: series.id, limit: BROWSE_PAGE_MAX }).map(card => prizeRow(card, series)),
+              // 有價格的全部卡（不論稀有度）：別版本的大獎卡沒價時，從這裡借同卡號的價格
+              priced: cards.filter(card => card?.referencePrice).map(card => prizeRow(card, series))
             });
           }
           const data = mergePrizeRows(rule.game, versions);

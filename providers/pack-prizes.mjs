@@ -74,6 +74,11 @@ export function mergePrizeRows(game,versions,limit=PACK_PRIZE_LIMIT){
     if(!have)byKey.set(key,{...row});
     else if(!rowPrice(have)&&rowPrice(row))Object.assign(have,{referencePrice:row.referencePrice,priceRegion:region});
   }
+  // 別版本同一張卡在該版系列裡沒標稀有度（例如日版 M6a 的 FUR）就不會進上面的 rows，改從該版有價格的全部卡借。
+  for(const {region,priced} of versions||[])for(const row of priced||[]){
+    const have=row?.cardNumber&&byKey.get(rowKey(game,row));
+    if(have&&!rowPrice(have)&&rowPrice(row)&&have.cardId!==row.cardId)Object.assign(have,{referencePrice:row.referencePrice,priceRegion:region});
+  }
   const rank=row=>rarityRank(game,row.rarity);
   return [...byKey.values()].sort((a,b)=>rank(a)-rank(b)||b.altArt-a.altArt||rowPrice(b)-rowPrice(a)||String(a.cardNumber).localeCompare(String(b.cardNumber),'en',{numeric:true})).slice(0,limit);
 }

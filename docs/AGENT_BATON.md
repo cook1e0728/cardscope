@@ -8,6 +8,8 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-25：**首頁本彈大獎補圖補價已上線**（PR #35 Worker 52e96c33、PR #36 f7d0a4d＋kv-snapshots 重算）。UNION ARENA 官網回 CORP same-site，瀏覽器擋下全部 UA 卡圖（首頁與卡牆都是）；`/api/images/onepiece` 白名單加 `www.unionarena-tcg.com/jp/images/cardlist/card/`，前端 displayImageUrl、look-showcase、seo 同步。寶可夢台版大獎沒價時改借同彈日版同卡號價格（整彈讀完最多 4 頁，日版沒標稀有度的 FUR 排在 100 張後），正式站寶可夢 10/10 有價。航海王、黑白雙翼、UA 沒有價格來源，大獎照舊不顯示價格。
+  - 等使用者看預覽：`claude/google-avatar`（e41a162，頁首 Google 頭像，隱私說明還沒補那句）、`claude/card-hover-preview`（8d0858c，卡牆懸停摘要：編號＝系列代號＋卡號、發售日、價格日期與來源＋超過 7 天標「較舊」、非官方譯名；只做卡牆，首頁三排沒做）。
 - 2026-11-25：**收藏鈕像素寶箱＋金色光芒已上線**（PR #34 合併 452c051，Worker 7cf37872），正式站首頁 40 個寶箱鈕、44px、圖 200。使用者加了 `TCGAPI_KEY`，手動跑 tcgapi-pricing 寫入 1641 筆（51 系列，用完當日額度停）。GitHub 資安檢查：secret scanning 0 警示、push protection 開、全歷史 regex 與本機 .env.local 值比對 0 命中、無 pull_request_target、fork PR 拿不到 secrets、Dependabot 0 未處理。清掉 3 筆 Render 時代卡在 running 的 price-snapshot 紀錄（263、297、332 → failed INTERRUPTED）。
 - 2026-11-25：**背景工作已全部搬離 Render**（PR #33 合併 c72bc35，Worker 版本 8c232f49）。Render 從 11-22 因帳務停用，網站本來就全走 Worker；剩下的背景工作改由 GitHub Actions `.github/workflows/background-jobs.yml` 排程跑 `scripts/background-job.mjs`：目錄同步每小時、價格快照每 6 小時（每次最多 5 小時，沒跑完下一輪從 cursor 接著）、封存每 6 小時、TCGAPI 每天（週一才補圖）。頁面統計與「最熱」計數改由 Worker 寫（每 isolate 最多 10 秒寫一次）。keep-warm 工作流已刪。
   - 上線後手動觸發四個工作：目錄同步正在逐一同步來源（11-22 後過期）、快照在跑、封存回 busy（碰上同步，下一輪再試）、TCGAPI 回 not-configured。page_stats_daily、card_hot_daily 今天都有寫入（card_hot 那 1 筆是部署驗證時開的皮卡丘）。
