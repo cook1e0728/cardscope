@@ -252,12 +252,12 @@ async function proxyOnePieceImage(res,value){
   if(!target)return json(res,400,{error:'不支援的圖片來源'});
   let response;
   try{response=await nativeFetch(target,{redirect:'error',headers:{Accept:'image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8','User-Agent':'CardScope/1.0'},signal:AbortSignal.timeout(20000)})}
-  catch{return json(res,502,{error:'航海王官方圖片暫時無法讀取'})}
+  catch{return json(res,502,{error:'官方卡圖暫時無法讀取'})}
   const contentType=String(response.headers.get('content-type')||'').split(';')[0].trim().toLowerCase(),length=Number(response.headers.get('content-length')||0);
-  if(!response.ok||!ONEPIECE_IMAGE_MIMES.has(contentType)||(length&&length>ONEPIECE_IMAGE_MAX_BYTES)){response.body?.cancel?.().catch(()=>{});return json(res,502,{error:'航海王官方圖片回應無效'})}
+  if(!response.ok||!ONEPIECE_IMAGE_MIMES.has(contentType)||(length&&length>ONEPIECE_IMAGE_MAX_BYTES)){response.body?.cancel?.().catch(()=>{});return json(res,502,{error:'官方卡圖回應無效'})}
   let body;
   try{body=await readBoundedBytes(response,ONEPIECE_IMAGE_MAX_BYTES)}
-  catch(error){return json(res,502,{error:error?.code==='IMAGE_TOO_LARGE'?'航海王官方圖片超過大小限制':'航海王官方圖片暫時無法讀取'})}
+  catch(error){return json(res,502,{error:error?.code==='IMAGE_TOO_LARGE'?'官方卡圖超過大小限制':'官方卡圖暫時無法讀取'})}
   res.writeHead(200,{'Content-Type':contentType,'Content-Length':String(body.byteLength),'Cache-Control':'public, max-age=86400, stale-while-revalidate=604800','X-Content-Type-Options':'nosniff'});
   res.end(body);
 }

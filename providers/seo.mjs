@@ -9,7 +9,7 @@ export const SITEMAP_MAX_URLS = 40000;
 
 const GAME_NAMES = { pokemon: '寶可夢', onepiece: '航海王', yugioh: '遊戲王', haikyuu: '排球少年', 'weiss-schwarz': '黑白雙翼 Weiß Schwarz', 'dragonball-fw': '七龍珠超 Fusion World' };
 const REGION_LABELS = { JP: '日版', TW: '台版', US: '美版', CN: '陸版', KR: '韓版', ASIA: '亞洲版' };
-const ONEPIECE_IMAGE_HOSTS = new Set(['asia-tc.onepiece-cardgame.com', 'asia-en.onepiece-cardgame.com']);
+const PROXIED_IMAGE_PATHS = new Map([['asia-tc.onepiece-cardgame.com', '/images/cardlist/card/'], ['asia-en.onepiece-cardgame.com', '/images/cardlist/card/'], ['www.unionarena-tcg.com', '/jp/images/cardlist/card/']]);
 const DESCRIPTION_TAIL = 'CardSeek 提供卡圖與版本對照，可用中、日、英文名稱查詢。';
 const DESCRIPTION_MAX = 150;
 
@@ -67,7 +67,7 @@ function absoluteImage(baseUrl, imageUrl) {
     const url = new URL(raw, `${base}/`);
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
     // One Piece art is only served through the same-origin proxy (the browser does the same).
-    if (ONEPIECE_IMAGE_HOSTS.has(url.hostname) && url.pathname.startsWith('/images/cardlist/card/')) return `${base}/api/images/onepiece?url=${encodeURIComponent(url.href)}`;
+    if (PROXIED_IMAGE_PATHS.has(url.hostname) && url.pathname.startsWith(PROXIED_IMAGE_PATHS.get(url.hostname))) return `${base}/api/images/onepiece?url=${encodeURIComponent(url.href)}`;
     return url.href;
   } catch { return null; }
 }

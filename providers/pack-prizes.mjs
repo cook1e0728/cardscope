@@ -57,7 +57,7 @@ export function prizeRow(card,series){
   const here=inSeries(card,series?.id);
   return {cardId:card.id,name:card.nameZh||card.nameJa||card.nameEn||card.officialCardNumber||card.id,cardNumber:card.officialCardNumber||here.localCardNumber||null,
     rarity:rarityIn(card,series?.id)||null,altArt:isAltArt(card),seriesCode:series?.officialCode||null,seriesName:series?.nameZh||series?.nameJa||series?.nameEn||null,
-    game:card.game||series?.game||null,imageUrl:card.imageUrl||null,referencePrice:card.referencePrice||null};
+    game:card.game||series?.game||null,imageUrl:card.imageUrl||null,referencePrice:card.referencePrice||null,...(card.referencePriceRegion?{priceRegion:card.referencePriceRegion}:{})};
 }
 
 // 同一彈各版本（台灣→日本→亞洲）挑出來的卡合成一排：同卡號（含異圖 -p 編號）只留第一個版本的；

@@ -31,7 +31,7 @@
   const GAME_NAME={pokemon:'寶可夢',onepiece:'航海王',yugioh:'遊戲王','weiss-schwarz':'黑白雙翼',haikyuu:'排球少年','dragonball-fw':'七龍珠超','union-arena':'UNION ARENA'};
   const imgOf=c=>{
     const u=c.imageUrl||c.printings?.find(p=>p.imageUrl&&!p.imageRehostRequired)?.imageUrl;if(!u)return'';
-    try{const x=new URL(u,location.origin);if(['asia-tc.onepiece-cardgame.com','asia-en.onepiece-cardgame.com'].includes(x.hostname)&&x.pathname.startsWith('/images/cardlist/card/'))return'/api/images/onepiece?url='+encodeURIComponent(x.href)}catch{}
+    try{const x=new URL(u,location.origin);const prefix={'asia-tc.onepiece-cardgame.com':'/images/cardlist/card/','asia-en.onepiece-cardgame.com':'/images/cardlist/card/','www.unionarena-tcg.com':'/jp/images/cardlist/card/'}[x.hostname];if(prefix&&x.pathname.startsWith(prefix))return'/api/images/onepiece?url='+encodeURIComponent(x.href)}catch{}
     return u;
   };
   // 航海王、Weiß Schwarz 官方圖本身印著 SAMPLE 浮水印，放在展示位不好看 → 不選
