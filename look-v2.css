@@ -183,6 +183,11 @@ html.look-clean body[data-view] #homeRails .trend-card-head>b{min-height:2.7em}
 html.look-clean body[data-view] #homeRails .trend-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin-top:2px}
 html.look-clean body[data-view] #homeRails .trend-card-meta .tc-no{min-width:0;overflow-wrap:anywhere;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink-2)}
 html.look-clean body[data-view] #homeRails .trend-image{position:relative}
+/* 大獎稀有度：金屬箔膠囊，金／銀／銅依同一排的高低（home-rails.js prizeRail） */
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity{border:1px solid;border-radius:4px;padding:0 7px;text-shadow:0 1px 0 rgba(255,255,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity[data-tier="top"]{background:linear-gradient(135deg,#9C7A1A,#E9C45A 42%,#FFF1B8 52%,#D9AE3A 64%,#8A6A12);color:#241A05;border-color:#8A6A12}
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity[data-tier="high"]{background:linear-gradient(135deg,#8E949C,#D9DDE2 42%,#F7F9FB 52%,#C3C8CE 64%,#7D838B);color:#1E2226;border-color:#7D838B}
+html.look-clean body[data-view] #homeRails .trend-card .card-rarity[data-tier="mid"]{background:linear-gradient(135deg,#8A5A32,#D29A66 42%,#F2C9A0 52%,#C08455 64%,#7A4E2A);color:#2A1608;border-color:#7A4E2A}
 html.look-clean body[data-view] #homeRails .tc-alt{position:absolute;left:6px;top:6px;padding:1px 8px;border-radius:999px;background:rgba(31,27,22,.82);color:#fff;font-size:12px;font-weight:700;line-height:1.5}
 html.look-clean body[data-view] #homeRails .trend-card>strong.trend-price{margin-top:6px;font-size:18px;font-weight:800;line-height:1.2;color:var(--v2-ink)}
 @media (hover:hover) and (pointer:fine){html.look-clean body[data-view] #homeRails .trend-card:hover{box-shadow:var(--v2-shadow-up)}}
