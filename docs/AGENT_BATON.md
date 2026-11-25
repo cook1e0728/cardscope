@@ -1,13 +1,16 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-24（台灣）｜更新者：Claude Code
+> 上次更新：2026-11-25（台灣）｜更新者：Claude Code
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-25：**背景工作已全部搬離 Render**（PR #33 合併 c72bc35，Worker 版本 8c232f49）。Render 從 11-22 因帳務停用，網站本來就全走 Worker；剩下的背景工作改由 GitHub Actions `.github/workflows/background-jobs.yml` 排程跑 `scripts/background-job.mjs`：目錄同步每小時、價格快照每 6 小時（每次最多 5 小時，沒跑完下一輪從 cursor 接著）、封存每 6 小時、TCGAPI 每天（週一才補圖）。頁面統計與「最熱」計數改由 Worker 寫（每 isolate 最多 10 秒寫一次）。keep-warm 工作流已刪。
+  - 上線後手動觸發四個工作：目錄同步正在逐一同步來源（11-22 後過期）、快照在跑、封存回 busy（碰上同步，下一輪再試）、TCGAPI 回 not-configured。page_stats_daily、card_hot_daily 今天都有寫入（card_hot 那 1 筆是部署驗證時開的皮卡丘）。
+  - **要使用者做的**：想要 TCGAPI 日版價就在 GitHub repo Secrets 加 `TCGAPI_KEY`；Render 已不需要，要刪服務或放著由使用者決定。`/api/admin/*` 沒搬（改用 workflow_dispatch 手動觸發）。
 - 2026-11-25：**正式站搜尋／目錄／漲跌榜 500 已修好上線**（PR #32 合併 6ea2692，Worker 版本 b9e21e27）。原因是 Workers 的 cross-request promise：單飛快取共用的 in-flight promise，建立它的請求先結束就永遠不會完成，之後的請求全卡住。`joinInFlight`（backend-reliability.mjs）讓等待者碰到這個錯時自己重查，套在 read-api 全部 13 處共用快取。部署後刻意中斷請求再重查，2 分鐘 320 次全 200，wrangler tail 0 筆錯誤。
   - **Render `cardscope` 從 11-22 起因帳務（billing）被停用**：留在 Render 的 API 會壞，要使用者到 Render 後台處理。
   - 收藏鈕像素寶箱＋金色光芒在分支 `claude/collect-chest-rays`（9ca6a72，首頁寶箱已移到卡片右下角不蓋卡圖），等使用者同意才合併。
