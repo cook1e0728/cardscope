@@ -1910,12 +1910,19 @@ renderAccountAvatar();
   const fine=window.matchMedia?.('(hover:hover) and (pointer:fine)');if(!fine||typeof window.addEventListener!=='function'||typeof document.addEventListener!=='function')return;
   const DELAY=350,GAP=12,EDGE=16;let peek=null,timer=0,current=null;
   const hide=()=>{clearTimeout(timer);timer=0;current=null;peek?.classList.remove('is-on')};
+  // 卡片上已有的遊戲、系列、卡號、稀有度只當錨點縮小；補卡片上沒有的：系列代號＋卡號、發售日、價格日期與來源、非官方譯名。
+  const PEEK_STALE_DAYS=7;
   function peekMarkup(card,key){
     const ref=usableReference(card),chg=ref&&referenceChangeInfo(ref),twd=Number(ref?.amountTwd),qty=watchQuantity(key);
     const money=ref?(twd>0?`NT$ ${twd.toLocaleString('en-US')}`:referenceAmountText(ref.amount,ref.currency)):'';
-    const orig=original(card),series=cardSeriesLabel(card).replace(/<[^>]+>/g,'');
-    const facts=[['卡號',e(cardNumberLabel(card))],['稀有度',cardRarityMarkup(card)],['版本',cardVersionBadges(card)]].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
-    return `<p class="cp-ctx">${e(cardGameLabel(card))}${series?` · ${series}`:''}</p><p class="cp-name">${e(name(card))}</p>${orig&&orig!==name(card)?`<p class="cp-orig">${e(orig)}</p>`:''}<dl class="cp-facts">${facts}</dl>${money?`<p class="cp-price"><b>${e(money)}</b>${chg?`<span class="cp-chg cp-${chg.dir}">${e(chg.label)}</span>`:''}<small>${e((REFERENCE_SOURCE_NAMES[ref.source]||'平台')+' 參考價，非成交價')}</small></p>`:''}<p class="cp-foot">${qty?`<span class="cp-owned">已收藏 ${qty} 張</span>`:'<span>尚未收藏</span>'}<span>點一下看詳細</span></p>`;
+    const openId=String(cardOpenId(card)),printing=(card.printings||[]).find(p=>String(p.cardId)===openId)||card.printings?.[0]||{};
+    const seriesRow=seriesIndex?.get(printing.seriesId||card.seriesId),code=seriesRow?.officialCode||setCodeText(printing.localSetCode)||'';
+    const number=cardNumberLabel(card),release=String(printing.releaseDate||'').slice(0,10);
+    const orig=original(card),basis=String(card.metadata?.nameZhBasis||''),unofficial=basis.startsWith('derived');
+    const date=String(ref?.snapshotDate||''),age=date?(Date.now()-Date.parse(date+'T00:00:00+08:00'))/86400000:0,stale=age>PEEK_STALE_DAYS;
+    const facts=[['編號',e([code,number].filter(Boolean).join(' '))],['稀有度',cardRarityMarkup(card)],['版本',cardVersionBadges(card)],['發售',/^\d{4}-\d{2}-\d{2}$/.test(release)?e(release.replace(/-/g,'/')):'']].filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    const priceNote=`${REFERENCE_SOURCE_NAMES[ref?.source]||'平台'} 參考價${date?`・${date.slice(5).replace('-','/')}`:''}，非成交價`;
+    return `<p class="cp-name">${e(name(card))}${unofficial?'<span class="cp-tag" title="中文名是比對推得，不是官方譯名">非官方譯名</span>':''}</p>${orig&&orig!==name(card)?`<p class="cp-orig">${e(orig)}</p>`:''}<dl class="cp-facts">${facts}</dl>${money?`<p class="cp-price"><b>${e(money)}</b>${chg?`<span class="cp-chg cp-${chg.dir}">${e(chg.label)}</span>`:''}<small>${e(priceNote)}${stale?'<span class="cp-stale">較舊</span>':''}</small></p>`:''}<p class="cp-foot">${qty?`<span class="cp-owned">已收藏 ${qty} 張</span>`:'<span>尚未收藏</span>'}</p>`;
   }
   function show(el){
     const key=el.querySelector('.card-actions')?.dataset.cardKey,card=key&&renderedCards.get(key);
