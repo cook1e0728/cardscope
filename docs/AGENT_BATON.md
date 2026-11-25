@@ -8,12 +8,12 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-25：**收藏鈕像素寶箱＋金色光芒已上線**（PR #34 合併 452c051，Worker 7cf37872），正式站首頁 40 個寶箱鈕、44px、圖 200。使用者加了 `TCGAPI_KEY`，手動跑 tcgapi-pricing 寫入 1641 筆（51 系列，用完當日額度停）。GitHub 資安檢查：secret scanning 0 警示、push protection 開、全歷史 regex 與本機 .env.local 值比對 0 命中、無 pull_request_target、fork PR 拿不到 secrets、Dependabot 0 未處理。清掉 3 筆 Render 時代卡在 running 的 price-snapshot 紀錄（263、297、332 → failed INTERRUPTED）。
 - 2026-11-25：**背景工作已全部搬離 Render**（PR #33 合併 c72bc35，Worker 版本 8c232f49）。Render 從 11-22 因帳務停用，網站本來就全走 Worker；剩下的背景工作改由 GitHub Actions `.github/workflows/background-jobs.yml` 排程跑 `scripts/background-job.mjs`：目錄同步每小時、價格快照每 6 小時（每次最多 5 小時，沒跑完下一輪從 cursor 接著）、封存每 6 小時、TCGAPI 每天（週一才補圖）。頁面統計與「最熱」計數改由 Worker 寫（每 isolate 最多 10 秒寫一次）。keep-warm 工作流已刪。
   - 上線後手動觸發四個工作：目錄同步正在逐一同步來源（11-22 後過期）、快照在跑、封存回 busy（碰上同步，下一輪再試）、TCGAPI 回 not-configured。page_stats_daily、card_hot_daily 今天都有寫入（card_hot 那 1 筆是部署驗證時開的皮卡丘）。
   - **要使用者做的**：想要 TCGAPI 日版價就在 GitHub repo Secrets 加 `TCGAPI_KEY`；Render 已不需要，要刪服務或放著由使用者決定。`/api/admin/*` 沒搬（改用 workflow_dispatch 手動觸發）。
 - 2026-11-25：**正式站搜尋／目錄／漲跌榜 500 已修好上線**（PR #32 合併 6ea2692，Worker 版本 b9e21e27）。原因是 Workers 的 cross-request promise：單飛快取共用的 in-flight promise，建立它的請求先結束就永遠不會完成，之後的請求全卡住。`joinInFlight`（backend-reliability.mjs）讓等待者碰到這個錯時自己重查，套在 read-api 全部 13 處共用快取。部署後刻意中斷請求再重查，2 分鐘 320 次全 200，wrangler tail 0 筆錯誤。
   - **Render `cardscope` 從 11-22 起因帳務（billing）被停用**：留在 Render 的 API 會壞，要使用者到 Render 後台處理。
-  - 收藏鈕像素寶箱＋金色光芒在分支 `claude/collect-chest-rays`（9ca6a72，首頁寶箱已移到卡片右下角不蓋卡圖），等使用者同意才合併。
 - 2026-11-25：**體檢第 3 批（DES 設計精修）第一部分已上線**（PR #28 合併 d4163dd，Worker 版本 7c0069c3）：DES-04 價格區一層白卡、卡內細線；DES-02 跨版本表 6 欄併 3 欄（不再 min-width 560）、每筆價格「新台幣＋來源性質」加兩行小字；DES-03 版本列去掉重複提示（改 sr-only）；DES-15 走勢大數字 32px（手機 28）、讀數淡底只在 ≥1000px、圖表讀法收進「ⓘ 圖表怎麼看」。正式站 1440／390 實測通過、無橫向溢出。DES-05／06／07 正式站已符合不必改。DES-01、08、09、10、11、12、14 也已上線。
 - 2026-11-25：**體檢第 3 批其餘項目已上線**（PR #29 合併 b3b8c66，Worker 版本 e9091999）。
   - DES-08：側欄世代分頁超過 4 個時收進「更多世代」。
