@@ -5,7 +5,7 @@
   "systems": {
     "pokemon": {
       "sourceUrl": "https://www.pokemon-card.com/card-search/index.php?mode=statuslist",
-      "canonicalCodes": ["MUR", "FUR", "BWR", "UR", "HR", "SAR", "MA", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "TR", "Rare Prism Star", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "PR", "NONE"],
+      "canonicalCodes": ["MUR", "RGB", "FUR", "BWR", "UR", "HR", "SAR", "MA", "SSR", "SR", "CSR", "S", "AR", "CHR", "Amazing Rare", "K", "RRR", "TR", "Rare Prism Star", "RR", "ACE", "Rare Holo", "Rare ACE", "Rare BREAK", "Rare Prime", "Rare Holo VMAX", "Rare Holo VSTAR", "Rare Holo V", "Rare Holo GX", "Rare Holo EX", "R", "U", "C", "PR", "NONE"],
       "canonicalLabels": {"Rare Holo": "Rare Holo", "Rare Prism Star": "Prism Star", "NONE": "無標記"},
       "aliases": {
         "UR": ["Ultra Rare"],
@@ -21,6 +21,7 @@
         "RRR": ["Triple Rare"],
         "RR": ["Double Rare"],
         "MA": ["Mega Attack Rare", "MEGA_ATTACK_RARE"],
+        "RGB": ["RGB Rare"],
         "ACE": ["ACE SPEC Rare"],
         "R": ["Rare"],
         "U": ["Uncommon"],
@@ -28,6 +29,7 @@
       },
       "highToLow": [
         ["MUR"],
+        ["RGB", "RGB Rare"],
         ["FUR"],
         ["BWR"],
         ["UR", "Ultra Rare"],
@@ -96,6 +98,7 @@
         ["UR", "Ultra Rare"],
         ["BWR"],
         ["FUR"],
+        ["RGB", "RGB Rare"],
         ["MUR"]
       ]
     },

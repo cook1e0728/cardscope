@@ -236,7 +236,7 @@ function cardActionsMarkup(card){
 
 // Three sticker tiers for the binder theme: top (SAR/UR/SEC…), high (SR/AR/RRR…), and everything else.
 // TR 依遊戲：航海王的 TR 是最高稀有度；寶可夢的 TR 排在 RRR 後面（data/rarity-rankings.json）。
-function rarityTier(label,game){const code=String(label||'').trim().toUpperCase();if(/^TR\b/.test(code))return game==='onepiece'?'top':'high';if(/^(SAR|UR|FUR|BWR|SEC|HR|SSR|MA|CSR|SP|SSP|OFR|BSR|MUR|ACE)\b/.test(code))return 'top';if(/^(SR|AR|RRR|CHR|K|L|PR|S)\b/.test(code))return 'high';return 'base'}
+function rarityTier(label,game){const code=String(label||'').trim().toUpperCase();if(/^TR\b/.test(code))return game==='onepiece'?'top':'high';if(/^(SAR|UR|FUR|BWR|SEC|HR|SSR|MA|CSR|SP|SSP|OFR|BSR|MUR|RGB|ACE)\b/.test(code))return 'top';if(/^(SR|AR|RRR|CHR|K|L|PR|S)\b/.test(code))return 'high';return 'base'}
 // Cards kept although the Japanese official card search does not list them (M6a 104–135, B/G/R: listed by the Taiwanese official search or TCGdex only).
 const hasListing=(card,value)=>card?.metadata?.officialListing===value||(card?.printings||[]).some(p=>p.metadata?.officialListing===value);
 const notOfficiallyListed=card=>hasListing(card,'jp-not-listed');
