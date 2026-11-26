@@ -8,7 +8,8 @@
 - 執行：Antigravity
 
 ## 目前狀態
-- 2026-11-26：**價格快照資料庫超時自動重試**（PR #41）。11-25 的 failed 是 5 小時預算到了（TIME_BUDGET，正常分段，cursor 有留）；12:05 排程沒觸發；手動續跑時一次 57014 statement timeout 讓整輪 27 秒就失敗。現在 `runPriceSnapshot` 的資料庫呼叫碰到 57014 會等 30／60／90 秒重試，第 4 次才失敗。待查：M6a 134 超夢ex 日版（tcgdex-ja）沒有卡圖，切到日版仍顯示台版圖，版本切換也在卡圖下方很遠。
+- 2026-11-26：**詳細頁卡圖下方版本切換上線**（PR #42 合併 af14317，Worker e462d3fb）。沿用 `.view-switch`＋滑動底塊（`mountVersionThumb`）；只在 2–4 版、各屬一個地區、名稱不重複時顯示（航海王異圖多、台美亞洲共用卡片 ID 時不放）。沒有自己卡圖的版本按鈕標「無圖」、卡圖下說明暫用哪一版（`noOwnImage`、`standInFrom`、`sameLang` 視 zh-TW＝zh-Hant-TW）。切換版本改為 replaceState 換網址裡的 card。agy 第二意見見 PR。仍缺：M6a 日版官方卡表未匯入；航海王「收錄版本」多地區共用卡片 ID 時點了分不出地區；首頁 h1 變成「エミリア」使用者回報但重現不出。
+- 2026-11-26：**價格快照資料庫超時自動重試**（PR #41）。11-25 的 failed 是 5 小時預算到了（TIME_BUDGET，正常分段，cursor 有留）；12:05 排程沒觸發；手動續跑時一次 57014 statement timeout 讓整輪 27 秒就失敗。現在 `runPriceSnapshot` 的資料庫呼叫碰到 57014 會等 30／60／90 秒重試，第 4 次才失敗。
 - 2026-11-26：**首頁大獎卡排版與稀有度金屬箔上線**（PR #39 合併 41ab5f3，Worker 8dd12c0f）。卡名預留兩行、價格放大；卡號＋稀有度同一行（去掉 UA／黑白雙翼前綴，完整卡號在 title），異圖改卡圖角標；稀有度依同一排高低分金／銀／銅（`home-rails.js` prizeRail，依 rarity-rankings 排序，精選排一律金）。卡牆 `rarityTier` 的 `` 曾被存成退格字元（所有稀有度都落到 base），PR #40 修正並補 FUR、BWR、TR 依遊戲（合併 5f2b037，Worker 79958a04）。11-25 價格快照 run 45565156104 寫 5046 筆，狀態 failed（39 次 503），沒查原因。
 - 2026-11-25：**首頁本彈大獎補圖補價已上線**（PR #35 Worker 52e96c33、PR #36 f7d0a4d＋kv-snapshots 重算）。UNION ARENA 官網回 CORP same-site，瀏覽器擋下全部 UA 卡圖（首頁與卡牆都是）；`/api/images/onepiece` 白名單加 `www.unionarena-tcg.com/jp/images/cardlist/card/`，前端 displayImageUrl、look-showcase、seo 同步。寶可夢台版大獎沒價時改借同彈日版同卡號價格（整彈讀完最多 4 頁，日版沒標稀有度的 FUR 排在 100 張後），正式站寶可夢 10/10 有價。航海王、黑白雙翼、UA 沒有價格來源，大獎照舊不顯示價格。
   - 等使用者看預覽：`claude/google-avatar`（e41a162，頁首 Google 頭像，隱私說明還沒補那句）、`claude/card-hover-preview`（8d0858c，卡牆懸停摘要：編號＝系列代號＋卡號、發售日、價格日期與來源＋超過 7 天標「較舊」、非官方譯名；只做卡牆，首頁三排沒做）。
