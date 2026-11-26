@@ -22,7 +22,7 @@
 
   // ☆ 的狀態向 ui-enhancements.js 問（還沒載入就當沒收藏）；點下去交給它的 toggleFavorite，收藏變動後它再呼叫 refreshCollect。
   const quantity=id=>Number(root.railCollectQuantity?.(id))||0;
-  const collectState=(id,name)=>{const q=quantity(id);return {pressed:String(q>0),label:q?`已收藏：${name}（${q} 張），按一下移除`:`加入我的收藏：${name}`,text:q?'★':'☆',title:q?'已收藏':'加入我的收藏'}};
+  const collectState=(id,name)=>{const q=quantity(id);return {pressed:String(q>0),label:q?`已收藏：${name}，按一下取消`:`加入我的收藏：${name}`,text:q?'★':'☆',title:q?'已收藏':'加入我的收藏'}};
   const collectBtn=(row,name)=>{const s=collectState(row.cardId,name);return `<button type="button" class="favorite-toggle rail-collect" data-rail-collect="${esc(row.cardId)}" data-rail-name="${esc(name)}" aria-pressed="${s.pressed}" aria-label="${esc(s.label)}" title="${s.title}">${s.text}</button>`};
   const rowsById=new Map();
   const cell=(row,name,inner)=>{rowsById.set(String(row.cardId),row);return `<div class="trend-cell">${inner}${collectBtn(row,name)}</div>`};

@@ -82,43 +82,35 @@ test('mixed wall: search results, or loaded cards from different games, series o
   assert.equal(h.run(`wallIsMixed(${rows([pikachu, { ...pikachu, id: 'c4', game: 'onepiece' }])})`), false, 'inside a series the page already names it');
 });
 
-test('collect is one action: ☆ adds one, "− N ＋" steps, the last − cancels, the label names the card and the count', () => {
+test('collect is a toggle: ☆ adds, ★ removes, no count or ± on the card; the label names the card', () => {
   const h = harness(); setup(h);
   const bare = h.run(`cardActionsMarkup(${JSON.stringify(pikachu)})`);
-  assert.match(bare, /^<div class="card-actions" data-action="card-actions" data-card-key="c1"><button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="c1" aria-pressed="false" aria-label="加入我的收藏：皮卡丘（目前 0 張）"/);
-  assert.doesNotMatch(bare, /data-watch-/, 'not collected: only the star');
+  assert.match(bare, /^<div class="card-actions" data-action="card-actions" data-card-key="c1"><button type="button" class="favorite-toggle" data-action="favorite" data-favorite-id="c1" aria-pressed="false" aria-label="加入我的收藏：皮卡丘"[^>]*>☆<\/button><\/div>$/);
   h.run("setWatchQuantity('c1',2)");
   const owned = h.run(`cardActionsMarkup(${JSON.stringify(pikachu)})`);
-  assert.match(owned, /<div class="watchlist-inline" data-action="watchlist" role="group" aria-label="皮卡丘，已收藏 2 張">/);
-  assert.match(owned, /data-watch-decrement="c1" aria-label="減少一張：皮卡丘（目前 2 張）">−<\/button><span class="watch-quantity" data-watch-quantity="c1">2<\/span><button type="button" data-watch-increment="c1" aria-label="增加一張：皮卡丘（目前 2 張）">＋<\/button>/);
-  assert.doesNotMatch(owned, /favorite-toggle/, 'collected: the star is replaced by the stepper');
-  h.run("setWatchQuantity('c1',1)");
-  assert.match(h.run(`cardActionsMarkup(${JSON.stringify(pikachu)})`), /aria-label="取消收藏：皮卡丘（目前 1 張）">−</, 'at 1 the − says it cancels');
-  // behaviour through the real handlers
+  assert.match(owned, /data-favorite-id="c1" aria-pressed="true" aria-label="已收藏：皮卡丘，按一下取消"[^>]*>★<\/button>/);
+  assert.doesNotMatch(owned, /data-watch-|watchlist-inline|張/, 'the count is never shown');
   h.run("setWatchQuantity('c1',0)");
-  h.run("toggleFavorite('c1')"); assert.equal(h.run("watchQuantity('c1')"), 1, 'one press adds one copy');
-  h.run("stepWatchQuantity('c1',1)"); h.run("stepWatchQuantity('c1',1)"); assert.equal(h.run("watchQuantity('c1')"), 3);
-  h.run("stepWatchQuantity('c1',-1)"); assert.equal(h.run("watchQuantity('c1')"), 2);
-  h.run("confirm=()=>true;stepWatchQuantity('c1',-1);stepWatchQuantity('c1',-1)");
-  assert.equal(h.run("watchQuantity('c1')"), 0, 'going to 0 cancels');
+  h.run("toggleFavorite('c1')"); assert.equal(h.run("watchQuantity('c1')"), 1, 'one press collects');
+  h.run("toggleFavorite('c1')"); assert.equal(h.run("watchQuantity('c1')"), 0, 'a second press cancels');
   assert.equal(h.run("'c1' in watchlist"), false);
 });
 
-test('cancelling asks only when something would be lost: a condition, version or note, or more than one copy', () => {
+test('cancelling asks only when something would be lost: a condition, version or note', () => {
   const h = harness(); setup(h);
   h.run("asked=[];confirm=message=>{asked.push(message);return false}");
   h.run("setWatchQuantity('plain',1);toggleFavorite('plain')");
-  assert.equal(h.run("watchQuantity('plain')"), 0, 'a bare single copy is cancelled in one press');
+  assert.equal(h.run("watchQuantity('plain')"), 0, 'a bare card is cancelled in one press');
+  h.run("setWatchQuantity('multi',2);toggleFavorite('multi')");
+  assert.equal(h.run("watchQuantity('multi')"), 0, 'an older multi-copy entry also cancels in one press');
   assert.equal(h.run('asked.length'), 0);
   for (const field of ['condition', 'finish', 'note']) {
     h.run(`setWatchQuantity('k-${field}',1);watchlistMeta['k-${field}']={...watchlistMeta['k-${field}'],${field}:'x'}`);
-    h.run(`stepWatchQuantity('k-${field}',-1)`);
+    h.run(`toggleFavorite('k-${field}')`);
     assert.equal(h.run(`watchQuantity('k-${field}')`), 1, `${field}: declined, so the card stays`);
   }
-  h.run("setWatchQuantity('multi',2);toggleFavorite('multi')");
-  assert.equal(h.run('asked.length'), 4, 'three saved fields and one multi-copy card each asked once');
-  assert.equal(h.run("watchQuantity('multi')"), 2);
-  h.run("confirm=()=>true;stepWatchQuantity('k-note',-1)");
+  assert.equal(h.run('asked.length'), 3);
+  h.run("confirm=()=>true;toggleFavorite('k-note')");
   assert.equal(h.run("watchQuantity('k-note')"), 0, 'confirmed: cancelled');
   assert.equal(h.run("'k-note' in watchlistMeta"), false, 'and the saved note goes with it');
 });
@@ -154,9 +146,9 @@ test('a quantity change repaints only that card\'s collect area; the whole wall 
   assert.match(ui, /function repaintCollected\(key,previous,next\)\{[\s\S]*?\n  if\(\(favoritesOnly\|\|missingOnlyActive\(\)\)&&\(previous===0\|\|next===0\)\)\{cards\(currentCardRows,true\)/);
 });
 
-test('the collect area is replaced in place and focus returns to the same kind of button; the change is announced', () => {
-  assert.match(ui, /const active=box\.contains\(document\.activeElement\)\?document\.activeElement:null/);
-  assert.match(ui, /if\(active\)\(next>0\?fresh\.querySelector\(role\):fresh\.querySelector\('\[data-favorite-id\]'\)\)\?\.focus\(\{preventScroll:true\}\)/, 'after the last − the star takes the focus');
+test('the collect area is replaced in place and focus returns to the star; the change is announced', () => {
+  assert.match(ui, /const active=box\.contains\(document\.activeElement\)\?document\.activeElement:null;/);
+  assert.match(ui, /if\(active\)fresh\.querySelector\('\[data-favorite-id\]'\)\?\.focus\(\{preventScroll:true\}\)/, 'the new star takes the focus back');
   assert.match(ui, /live\.setAttribute\('role','status'\);live\.setAttribute\('aria-live','polite'\)/);
 });
 
