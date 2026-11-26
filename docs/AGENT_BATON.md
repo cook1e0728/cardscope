@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-26：**寶可夢日版缺圖卡每週自動補日本官方卡圖**（PR #44、#45）。新 RPC `image_official_jp_targets`（migration 20261126090000 已套用正式庫；本卡沒有自己的圖就算缺，台版有圖也算）、`providers/pokemon-jp-official-images.mjs`（清單依日文名找候選→詳細頁核對卡號，唯一相符才寫 `card_images`，ADR 0031 只存外連網址；冷資料庫 57014 會重試）、background-jobs `official-jp-images` 每週二 UTC 20:30（台灣週三 04:30），可手動觸發。首次手動跑補 M6a 28 張（101 次請求），正式站超夢 M6a 134 日版已顯示日文卡圖。剩 20 張對不到：M6a 無卡號 B/G/R ミュウ、M6 071/073/075 伝説の○○、SM1p/SM2p/SM5p/SM12 隱藏 SR／HR、S8b モルペコV-UNION（官方站沒收或名稱不同），每週會再查一次（約 70 次請求）。
 - 2026-11-26：**首頁大標題被換成卡名已修好**（PR #43 合併 c391958，Worker 1f996d16）。原因：用 `?card=`／`?series=` 連結進站時，`providers/seo.mjs` 為了 SEO 把首頁 h1 換成卡名（使用者回報的「エミリア」「超夢ex」都是這樣）。現在伺服器把原標題存進 h1 的 `data-home`，`look-showcase.js` 拆字時換回原標題；伺服器 HTML、title、OG 不變。另查卡圖缺漏：寶可夢日版沒圖 48 張（M6a 31 張，日本官網卡圖是手動匯入、沒排程）、遊戲王美版 97 張、台版 4 張。
 - 2026-11-26：**詳細頁卡圖下方版本切換上線**（PR #42 合併 af14317，Worker e462d3fb）。沿用 `.view-switch`＋滑動底塊（`mountVersionThumb`）；只在 2–4 版、各屬一個地區、名稱不重複時顯示（航海王異圖多、台美亞洲共用卡片 ID 時不放）。沒有自己卡圖的版本按鈕標「無圖」、卡圖下說明暫用哪一版（`noOwnImage`、`standInFrom`、`sameLang` 視 zh-TW＝zh-Hant-TW）。切換版本改為 replaceState 換網址裡的 card。agy 第二意見見 PR。仍缺：M6a 日版官方卡表未匯入；航海王「收錄版本」多地區共用卡片 ID 時點了分不出地區；首頁 h1 變成「エミリア」使用者回報但重現不出。
 - 2026-11-26：**價格快照資料庫超時自動重試**（PR #41）。11-25 的 failed 是 5 小時預算到了（TIME_BUDGET，正常分段，cursor 有留）；12:05 排程沒觸發；手動續跑時一次 57014 statement timeout 讓整輪 27 秒就失敗。現在 `runPriceSnapshot` 的資料庫呼叫碰到 57014 會等 30／60／90 秒重試，第 4 次才失敗。
