@@ -1,4 +1,4 @@
-// ADR 0046: price_snapshots keeps only the last 30 days. Older rows are written to the private Storage bucket `price-archive`, read back and verified, and only then deleted from the database.
+// ADR 0046: price_snapshots keeps only the last 16 days in the database (30 until 2026-11-26). Older rows are written to the private Storage bucket `price-archive`, read back and verified, and only then deleted from the database.
 // Layout: v1/manifest.json plus v1/<YYYY-MM>/<shard>.json.gz, shard = a stable hash of card_id modulo 32. A price-history request touches at most (months in the window) x (distinct shards of the card's ids) small files.
 import { createHash } from 'node:crypto';
 import { gunzip, gzip } from 'node:zlib';
@@ -11,7 +11,7 @@ export const ARCHIVE_BUCKET = 'price-archive';
 export const ARCHIVE_PREFIX = 'v1';
 export const ARCHIVE_SHARDS = 32;
 export const ARCHIVE_FORMAT_VERSION = 1;
-export const ARCHIVE_KEEP_DAYS = 30;              // enforced again inside the SQL functions
+export const ARCHIVE_KEEP_DAYS = 16;              // enforced again inside the SQL functions
 export const ARCHIVE_MAX_DAYS_PER_RUN = 40;
 export const ARCHIVE_INTERVAL_MS = 24 * 60 * 60 * 1000;
 export const ARCHIVE_INITIAL_DELAY_MS = 20 * 60 * 1000;
@@ -191,7 +191,7 @@ export async function storeRowsInArchive(storage, rows) {
   return result;
 }
 
-// Archive one calendar day: the database says which rows are archivable (older than 30 days and not the newest of their line), they are stored and verified, and only then deleted.
+// Archive one calendar day: the database says which rows are archivable (older than 16 days and not the newest of their line), they are stored and verified, and only then deleted.
 export async function archiveDay({ db, storage, date, onStored, log = console }) {
   const rows = (await db('/rpc/price_snapshots_archivable', { method: 'POST', body: JSON.stringify({ p_date: date }) })) || [];
   if (!Array.isArray(rows)) throw archiveError('ARCHIVE_RPC_SHAPE', 'archivable');
