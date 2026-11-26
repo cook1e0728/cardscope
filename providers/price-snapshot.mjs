@@ -20,6 +20,7 @@ export const SNAPSHOT_DB_BRAKE_BYTES = 440 * 1024 * 1024;
 export const SNAPSHOT_BRAKE_CHECK_CHUNKS = 10;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const DB_STATEMENT_TIMEOUT = /57014|statement timeout/i;
 const PRINTING_SELECT = 'id,card_id,source,provider_id,region,local_set_code,local_card_number,card:tcg_cards(game_id,name_ja,name_en)';
 const PRIMARY_KEY = 'card_id,provider,variant,snapshot_date';
 const quoteList = values => `in.(${[...values].map(value => `"${String(value).replaceAll('"', '')}"`).join(',')})`;
@@ -135,15 +136,25 @@ async function loadPrevious(db, cardIds, since) {
 
 // One run: list candidates, price each card (throttled), compare with the last stored value, insert the changed ones. Never throws for a failed run; check stats.status.
 export async function runPriceSnapshot(options = {}) {
-  const { db, env = process.env, collectionAllowed = catalogCollectionAllowed, fetch: fetchImpl = (...args) => globalThis.fetch(...args), now = Date.now, sleep = defaultSleep, signal,
+  const { db: rawDb, env = process.env, collectionAllowed = catalogCollectionAllowed, fetch: fetchImpl = (...args) => globalThis.fetch(...args), now = Date.now, sleep = defaultSleep, signal,
     cursor: resumeCursor = null, resumedFrom = null, deadline = null, intervalMs = SNAPSHOT_REQUEST_INTERVAL_MS, timeoutMs = TCGDEX_REQUEST_TIMEOUT_MS, maxConsecutiveFailures = SNAPSHOT_MAX_CONSECUTIVE_FAILURES, backoffMs = 60 * 1000, maxConsecutiveBackoffs = 30,
-    pageSize = SNAPSHOT_PAGE_SIZE, chunkSize = SNAPSHOT_CHUNK_SIZE, writeBatchSize = SNAPSHOT_WRITE_BATCH_SIZE, onProgress, log = console, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES, dbBrakeBytes = SNAPSHOT_DB_BRAKE_BYTES, brakeCheckChunks = SNAPSHOT_BRAKE_CHECK_CHUNKS } = options;
+    pageSize = SNAPSHOT_PAGE_SIZE, chunkSize = SNAPSHOT_CHUNK_SIZE, writeBatchSize = SNAPSHOT_WRITE_BATCH_SIZE, onProgress, log = console, officialJpSeries = TCGDEX_OFFICIAL_JP_SERIES, dbBrakeBytes = SNAPSHOT_DB_BRAKE_BYTES, brakeCheckChunks = SNAPSHOT_BRAKE_CHECK_CHUNKS, dbRetries = 3, dbRetryMs = 30 * 1000 } = options;
   const today = new Date(now()).toISOString().slice(0, 10), startedAt = now();
   const stats = { status: 'running', date: today, candidates: 0, rowsScanned: 0, requests: 0, written: 0, dbSizeBytes: null, droppedBelow: 0, belowThreshold: 0, skipped: emptySkipped(), errorCodes: {}, errorSamples: [], cursor: resumeCursor, resumedFrom, error: null, startedAt: new Date(startedAt).toISOString(), finishedAt: null, durationMs: 0 };
   const skippedTotal = () => Object.values(stats.skipped).reduce((sum, n) => sum + n, 0);
   const snapshot = () => ({ ...stats, skipped: { ...stats.skipped }, skippedTotal: skippedTotal() });
   if (!priceSnapshotEnabled({ env, collectionAllowed })) return { ...snapshot(), status: 'disabled' };
-  if (!db) throw new Error('PRICE_SNAPSHOT_DB_REQUIRED');
+  if (!rawDb) throw new Error('PRICE_SNAPSHOT_DB_REQUIRED');
+  // 資料庫偶爾回 57014 statement timeout（例如剛好撞上目錄同步大量寫入）：被取消的語句沒有生效，等一下再試，連續 dbRetries 次才讓整輪失敗。
+  const db = async (...args) => {
+    for (let attempt = 1; ; attempt++) {
+      try { return await rawDb(...args); } catch (error) {
+        if (attempt > dbRetries || signal?.aborted || !DB_STATEMENT_TIMEOUT.test(String(error?.message || error))) throw error;
+        log.warn?.('price snapshot db statement timeout, retrying', attempt);
+        await sleep(dbRetryMs * attempt, signal);
+      }
+    }
+  };
 
   const enSetMap = options.enSetMap ?? await loadEnSetMap();
   let runId = null, lastStatus = null, nextRequestAt = 0, consecutiveFailures = 0, consecutiveBackoffs = 0, stopReason = null;

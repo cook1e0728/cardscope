@@ -489,3 +489,29 @@ test('each priced card records its Cardmarket product id, and a failed write doe
   assert.equal(link.product_id, 1);
   assert.ok(link.card_id);
 });
+
+test('a database statement timeout (57014) waits and retries instead of failing the run; other errors and repeated timeouts still fail', async () => {
+  const timeoutsFor = failures => {
+    const clock = makeClock(), state = fakeDb({ printings: [printing(1)], clock }), inner = state.db;
+    let left = failures;
+    state.db = async (path, options) => {
+      if (path.startsWith('/tcg_printings') && left-- > 0) throw new Error('SUPABASE_500 {"code":"57014","message":"canceling statement due to statement timeout"}');
+      return inner(path, options);
+    };
+    return { clock, state, tcgdex: fakeTcgdex(clock, { 'SV6a-001': { name: '名前1', trend: 4 } }) };
+  };
+  const ok = timeoutsFor(2), start = ok.clock.now();
+  const result = await runPriceSnapshot(baseOptions(ok.clock, ok.state, ok.tcgdex));
+  assert.equal(result.status, 'completed');
+  assert.equal(result.written, 1);
+  assert.ok(ok.clock.now() - start >= 90 * 1000, 'waits 30 s, then 60 s');
+  const bad = timeoutsFor(4);
+  const failed = await runPriceSnapshot(baseOptions(bad.clock, bad.state, bad.tcgdex));
+  assert.equal(failed.status, 'failed');
+  assert.match(failed.error, /57014/);
+  const clock = makeClock(), state = fakeDb({ printings: [printing(1)], clock }), inner = state.db;
+  let reads = 0;
+  state.db = async (path, options) => { if (path.startsWith('/tcg_printings')) { reads++; throw new Error('SUPABASE_400 bad'); } return inner(path, options); };
+  assert.equal((await runPriceSnapshot(baseOptions(clock, state, fakeTcgdex(clock, {})))).status, 'failed');
+  assert.equal(reads, 1, 'no retry for other errors');
+});
