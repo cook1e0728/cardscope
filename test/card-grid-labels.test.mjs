@@ -47,6 +47,7 @@ test('日版／台版寶可夢卡借用英文版圖時標「英文版卡圖」�
   const en = 'https://images.pokemontcg.io/sm35/78_hires.png';
   assert.equal(run({ game: 'pokemon', region: 'JP' }, en), true);
   assert.equal(run({ game: 'pokemon', printings: [{ region: 'TW' }] }, en), true);
+  assert.equal(run({ game: 'pokemon', region: 'JP' }, 'https://images.scrydex.com/pokemon/me55-R/large'), true, 'new pokemontcg sets serve images from scrydex');
   assert.equal(run({ game: 'pokemon', region: 'US' }, en), false);
   assert.equal(run({ game: 'pokemon', region: 'JP' }, 'https://www.pokemon-card.com/assets/x.jpg'), false);
   assert.equal(run({ game: 'onepiece', region: 'JP' }, en), false);

@@ -44,7 +44,7 @@
   // 卡號那行可換行（手機上 EB05-006、SFN/S136-002SSP 會被截掉）；遊戲與系列已寫在每排標題，只有「精選」那排才在卡上寫。
   function prizeCard(row,mixed,tier='top'){
     const name=row.name||row.cardNumber||'未命名卡片',twd=row.game==='pokemon'?Number(row.referencePrice?.amountTwd):0;
-    return cell(row,name,`<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}${row.altArt?'<span class="tc-alt">異圖</span>':''}</div>`+
+    return cell(row,name,`<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name,{rgb:shared().rgbLetter?.(row.rarity,row.cardNumber)})}${row.altArt?'<span class="tc-alt">異圖</span>':''}</div>`+
       `<div class="trend-card-head"><b>${esc(name)}</b></div>`+
       // 同卡牆：同一行左邊卡號、右邊稀有度膠囊（顏色依這一排的稀有度高低，見 prizeRail）；放不下時膠囊整顆換行，不留「·」。
       // 卡號去掉斜線前的系列前綴（UA「EX17BT/」、黑白雙翼「SFN/」，排標題已寫系列），完整卡號放 title；異圖改成卡圖角上的小標。

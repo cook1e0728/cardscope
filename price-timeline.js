@@ -306,8 +306,10 @@
   }
   // 英文名＋卡號；沒有英文名、或字元不合伺服器的白名單就不查（省一次 400）。
   function ebayQueryString(card){
-    const name=String(card?.nameEn||'').trim(),number=String(card?.officialCardNumber||(card?.printings||[]).find(printing=>printing?.localCardNumber)?.localCardNumber||'').trim();
-    return /^[\p{L}\p{N} '.:&,!-]{1,60}$/u.test(name)&&/^[A-Za-z]{0,3}\d{1,4}(?:\/[A-Za-z0-9]{1,5})?$/.test(number)?`name=${encodeURIComponent(name)}&number=${encodeURIComponent(number)}`:null;
+    const name=String(card?.nameEn||'').trim(),printed=String(card?.officialCardNumber||(card?.printings||[]).find(printing=>printing?.localCardNumber)?.localCardNumber||'').trim();
+    // 全字母卡號（30th 夢幻 R／G／B）卡面印「R/RGB」：補上稀有度才查得準
+    const rarity=String(card?.rarity||'').trim(),number=/^[A-Za-z]{1,3}$/.test(printed)&&/^[A-Za-z]{2,5}$/.test(rarity)?`${printed}/${rarity}`:printed;
+    return /^[\p{L}\p{N} '.:&,!-]{1,60}$/u.test(name)&&/^(?:[A-Za-z]{0,3}\d{1,4}(?:\/[A-Za-z0-9]{1,5})?|[A-Za-z]{1,3}\/[A-Za-z]{2,5})$/.test(number)?`name=${encodeURIComponent(name)}&number=${encodeURIComponent(number)}`:null;
   }
   async function loadEbay(slot,{card,fetchFn=root.fetch.bind(root),onState}={}){
     const query=ebayQueryString(card);

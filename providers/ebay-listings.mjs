@@ -9,7 +9,7 @@ export const EBAY_TTL_MS = 60 * 60 * 1000;
 export const EBAY_DAILY_LOOKUPS = 1000;
 export const EBAY_MAX_ITEMS = 10;
 
-const NAME_PATTERN = /^[\p{L}\p{N} '.:&,!-]{1,60}$/u, SET_PATTERN = /^[A-Za-z0-9-]{1,12}$/, NUMBER_PATTERN = /^[A-Za-z]{0,3}\d{1,4}(?:\/[A-Za-z0-9]{1,5})?$/;
+const NAME_PATTERN = /^[\p{L}\p{N} '.:&,!-]{1,60}$/u, SET_PATTERN = /^[A-Za-z0-9-]{1,12}$/, NUMBER_PATTERN = /^(?:[A-Za-z]{0,3}\d{1,4}(?:\/[A-Za-z0-9]{1,5})?|[A-Za-z]{1,3}\/[A-Za-z]{2,5})$/;
 
 // 商品連結只收 ebay.com 與其子網域；圖片只收 ebayimg.com 與其子網域（例 i.ebayimg.com）。
 const hostIn = (host, root) => host === root || host.endsWith(`.${root}`);
@@ -27,7 +27,15 @@ const GRADE = /(?<![A-Za-z0-9])(?:PSA|BGS|CGC|SGC|TAG|ACE|CSG|ARS)\s*\d+(?:\.\d)
 const isGraded = title => new RegExp(GRADE.source, 'i').test(String(title ?? ''));
 const normalizeToken = (prefix, digits, total) => `${prefix.toLowerCase()}${Number(digits)}${total ? `/${Number(total)}` : ''}`;
 export const normalizeCardNumber = value => { const m = /^([A-Za-z]{0,3})(\d{1,4})(?:\/(\d{1,4}))?$/.exec(String(value ?? '').trim()); return m ? normalizeToken(m[1], m[2], m[3]) : null; };
+// 全字母卡號（30th 夢幻「R/RGB」）：標題要有「R/RGB」，或同時有「#R」與「RGB」字樣（例「Mew RGB Rare #B」）。
+const LETTER_NUMBER = /^([A-Za-z]{1,3})\/([A-Za-z]{2,5})$/;
+const word = text => new RegExp(`(?<![A-Za-z0-9])${text}(?![A-Za-z0-9])`, 'i');
 export function titleHasNumber(title, number) {
+  const letters = LETTER_NUMBER.exec(String(number ?? '').trim());
+  if (letters) {
+    const t = String(title ?? ''), [, mark, suffix] = letters;
+    return word(`${mark}\\s*/\\s*${suffix}`).test(t) || (word(`#${mark}`).test(t) && word(suffix).test(t));
+  }
   const want = normalizeCardNumber(number);
   if (!want) return false;
   for (const m of String(title ?? '').replace(GRADE, ' ').matchAll(TOKEN)) {
