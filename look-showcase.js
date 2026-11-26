@@ -11,7 +11,8 @@
   function splitTitle(){
     const h=$('.hero-intro h1');
     if(h&&!h.dataset.cs1){
-      const text=h.textContent.trim(),vis=el('span');
+      // 用 ?card= 連結進站時伺服器把 h1 換成卡名（給搜尋引擎），這裡換回原標題。
+      const text=(h.dataset.home||h.textContent).trim(),vis=el('span');
       h.dataset.cs1='1';h.setAttribute('aria-label',text);vis.setAttribute('aria-hidden','true');
       [...text].forEach((c,i)=>{if(c===' ')return vis.append(' ');const s=el('span','cs1-ch',c);s.style.setProperty('--i',i);vis.append(s)});
       h.textContent='';h.append(vis);
