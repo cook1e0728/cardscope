@@ -115,3 +115,10 @@ test('同一彈各版本合併：台版優先、缺的卡用日版補、缺的�
   const ua=mergePrizeRows('union-arena',[{region:'JP',rows:[R('union-arena-ua57bt-stg-1-001','UA57BT/STG-1-001','SR'),R('union-arena-ua57bt-stg-1-001-p1','UA57BT/STG-1-001','SR★'),R('union-arena-ua57bt-stg-1-002-p1','UA57BT/STG-1-002','SR★★★')]}]);
   assert.deepEqual(ua.map(r=>r.cardId),['union-arena-ua57bt-stg-1-002-p1','union-arena-ua57bt-stg-1-001-p1','union-arena-ua57bt-stg-1-001']);
 });
+
+test('寶可夢 RGB（M6a 赤／綠／藍夢幻）排在 FUR 前面，TCGdex 的「RGB Rare」也認得',async()=>{
+  const {rarityRank,rarityCanonicalCode}=await import('../providers/normalize.mjs');
+  assert.ok(rarityRank('pokemon','RGB')<rarityRank('pokemon','FUR'));
+  assert.ok(rarityRank('pokemon','MUR')<rarityRank('pokemon','RGB'));
+  assert.equal(rarityCanonicalCode('pokemon','RGB Rare'),'RGB');
+});
