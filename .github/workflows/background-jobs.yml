@@ -5,6 +5,7 @@ name: Background jobs
 # - price-snapshot：每 6 小時看一次；當天已完成就立刻結束，沒完成就最多跑 5 小時（上游退避最長 30 分鐘，仍在 Actions 350 分鐘上限內），下一輪從 cursor 接著跑。
 # - price-archive：每 6 小時看一次，把 30 天前的快照封存到 Storage（Render 時期碰上忙碌會 30 分鐘後重試，這裡改成下一輪再試）。
 # - tcgapi-pricing：每天一次（沒設定 TCGAPI_KEY 時略過）。
+# - official-jp-images：每週三一次，寶可夢日版缺圖卡補日本官方外連卡圖（新彈由目錄同步先進來，圖在這裡補）。
 # 價格快照與封存共用一個 concurrency 群組，不會同時跑（原本在 Render 也是互相避開）。
 # 需要的 Secrets（只列名稱）：SUPABASE_URL、SUPABASE_SERVICE_KEY、SUPABASE2_URL、SUPABASE2_SERVICE_KEY；選用 TCGAPI_KEY。
 on:
@@ -13,13 +14,14 @@ on:
     - cron: '5 */6 * * *'     # price-snapshot
     - cron: '20 1,7,13,19 * * *'  # price-archive（每 6 小時看一次；沒有可封存的日子就立刻結束，碰上目錄同步或快照時下一輪再試）
     - cron: '50 18 * * *'     # tcgapi-pricing（台灣時間 02:50）
+    - cron: '30 20 * * 2'     # official-jp-images（台灣時間週三 04:30）
   workflow_dispatch:
     inputs:
       job:
         description: '要跑的工作'
         required: true
         type: choice
-        options: [catalog-sync, price-snapshot, price-archive, tcgapi-pricing, yugioh-images]
+        options: [catalog-sync, price-snapshot, price-archive, tcgapi-pricing, yugioh-images, official-jp-images]
 
 permissions:
   contents: read
@@ -40,6 +42,7 @@ jobs:
             '5 */6 * * *') job=price-snapshot ;;
             '20 1,7,13,19 * * *') job=price-archive ;;
             '50 18 * * *') job=tcgapi-pricing ;;
+            '30 20 * * 2') job=official-jp-images ;;
             *) job="$INPUT_JOB" ;;
           esac
           echo "job=$job" >> "$GITHUB_OUTPUT"

@@ -5,6 +5,7 @@
 //   node scripts/background-job.mjs price-archive    把 30 天前的價格快照封存到 Storage
 //   node scripts/background-job.mjs tcgapi-pricing   TCGAPI 日版價格與卡圖（需要 TCGAPI_KEY）
 //   node scripts/background-job.mjs yugioh-images    只跑遊戲王卡圖快取（取代 /api/admin/catalog/cache-images）
+//   node scripts/background-job.mjs official-jp-images 寶可夢日版缺圖卡補日本官方外連卡圖（每週）
 // 需要的環境變數：SUPABASE_URL、SUPABASE_SERVICE_KEY（tcgapi-pricing 另需 TCGAPI_KEY）。工作本身失敗時結束碼為 1。
 import { pathToFileURL } from 'node:url';
 import { MAIN_ONLY_PATH } from '../providers/supabase-client.mjs';
@@ -13,6 +14,7 @@ import { cacheYugiohImages } from '../providers/image-cache.mjs';
 import { createArchiveStorage, runPriceArchive } from '../providers/price-archive.mjs';
 import { planNextSnapshotRun, runPriceSnapshot } from '../providers/price-snapshot.mjs';
 import { createTcgapiPricing } from '../providers/tcgapi-pricing.mjs';
+import { runOfficialJpImages } from '../providers/pokemon-jp-official-images.mjs';
 import { filterAllowedCatalogProviders, imageCollectionAllowed } from '../providers/source-policy.mjs';
 
 // 與 server.mjs 的 supabaseFetch 相同：預設主庫，options.db === 'ip2' 才打第二庫；價格、統計、同步紀錄只在主庫。
@@ -69,7 +71,8 @@ async function main(argv = process.argv.slice(2), env = process.env) {
   else if (job === 'price-archive') result = env.PRICE_ARCHIVE_ENABLED === 'false' ? { status: 'disabled' } : await runPriceArchive({ db, storage: createArchiveStorage({ baseUrl: env.SUPABASE_URL, key: env.SUPABASE_SERVICE_KEY }) });
   else if (job === 'tcgapi-pricing') result = env.TCGAPI_KEY ? await createTcgapiPricing({ apiKey: env.TCGAPI_KEY, db, lastImageRun: tcgapiImagesDue() ? 0 : Date.now() }).runOnce() : { status: 'not-configured', note: '沒有設定 TCGAPI_KEY，略過' };
   else if (job === 'yugioh-images') result = await runYugiohImages({ db, env });
-  else throw new Error(`未知的工作：${job || '(空白)'}；可用 catalog-sync、price-snapshot、price-archive、tcgapi-pricing、yugioh-images`);
+  else if (job === 'official-jp-images') result = await runOfficialJpImages({ db });
+  else throw new Error(`未知的工作：${job || '(空白)'}；可用 catalog-sync、price-snapshot、price-archive、tcgapi-pricing、yugioh-images、official-jp-images`);
   console.log(job, JSON.stringify(result));
   // 快照時間到（TIME_BUDGET）是正常的分段，不算失敗；其他 failed 讓 Actions 顯示紅燈。
   if (FAILED.has(result?.status) && result?.error !== 'TIME_BUDGET') process.exitCode = 1;
