@@ -1072,6 +1072,7 @@ html.look-clean #detail .detail-position{justify-content:center;padding-left:0;m
 html.look-clean .detail-visual .detail-ver-switch{order:1;display:flex;justify-content:center;margin:12px 0 4px}
 html.look-clean #detail .detail-ver-switch .view-switch{flex-wrap:wrap;justify-content:center}
 html.look-clean #detail .detail-ver-switch small{font-weight:500}
+html.look-clean #detail .detail-visual>p.detail-standin{order:1;margin:4px 0 8px;font-size:var(--fs-note);color:var(--v2-ink-2);text-align:center}
 html.look-clean #detail .detail-ver-switch .view-switch{position:relative}
 html.look-clean #detail .detail-ver-switch .vs-thumb{position:absolute;left:0;top:0;width:var(--w,0);height:var(--h,0);transform:translate(var(--x,0),var(--y,0));border-radius:11px;background:var(--v2-surface);box-shadow:0 1px 3px rgba(31,27,22,.14),inset 0 0 0 1.5px var(--v2-ink);pointer-events:none;transition:transform .32s cubic-bezier(.22,1,.36,1),width .32s cubic-bezier(.22,1,.36,1)}
 html.look-clean body[data-view] #detail .detail-ver-switch.has-thumb .view-switch button{position:relative;z-index:1;background:transparent!important;box-shadow:none!important;transition:color .2s}

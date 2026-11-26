@@ -160,7 +160,7 @@ test('a series deep link without region takes the series own region from the cat
   assert.equal(unknown.nodes.get('browseRegion').value,'all','a series the catalog does not know leaves the region alone');
 });
 
-test('opening a card from the list pushes one history entry; next/previous replace it, switching version leaves the URL, and closing steps back once',async()=>{
+test('opening a card from the list pushes one history entry; next/previous replace it, switching version replaces the card in the URL, and closing steps back once',async()=>{
   const h=navigationHarness('?game=pokemon&region=JP&series=s1');
   await h.flush();
   const pushes=()=>h.historyCalls.filter(call=>call.method==='push').length,card=()=>new URL(h.context.location.href).searchParams.get('card');
@@ -169,7 +169,7 @@ test('opening a card from the list pushes one history entry; next/previous repla
   await h.run("openCard('b')");
   assert.equal(pushes(),1,'stepping to another card does not add history');assert.equal(card(),'b');
   await h.run("openCard('t',{keepPosition:true})");
-  assert.equal(card(),'b','the version switch keeps the list position in the URL');
+  assert.equal(card(),'t','the version switch puts the shown version in the URL (share, reload)');assert.equal(pushes(),1,'without adding history');
   h.nodes.get('close').dispatchEvent({type:'click'});
   assert.equal(h.historyCalls.filter(call=>call.method==='back').length,1,'one Back returns to the list');
   const shared=navigationHarness('?game=pokemon&region=JP&card=x');
