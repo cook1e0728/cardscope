@@ -233,7 +233,7 @@ test('HTTP: a card URL gets its own title, description, canonical, Open Graph, J
   assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=pokemon&amp;card=pokemon-tcgdex-ja-sv6a-090">/);
   assert.match(head(page.body), /<meta property="og:image" content="https:\/\/img\.example\.test\/sv6a-090\.jpg">/);
   assert.match(head(page.body), /<meta property="og:title" content="桃歹郎ex（モモワロウex） 090 SAR｜黑夜漫遊者｜好卡在 CardSeek">/);
-  assert.match(page.body, /<div class="hero-intro"><h1>桃歹郎ex<\/h1>/, 'the hero h1 carries the card name');
+  assert.match(page.body, /<div class="hero-intro"><h1 data-home="跨版本卡牌圖鑑">桃歹郎ex<\/h1>/, 'the hero h1 carries the card name');
   assert.equal(page.body.includes('<h1>跨版本卡牌圖鑑</h1>'), false);
   assert.match(head(page.body), /<meta name="description" content="桃歹郎ex（モモワロウex）是寶可夢卡牌，收錄於日版「黑夜漫遊者」SV6a 系列/);
   assert.match(head(page.body), /<script type="application\/ld\+json">\{"@context":"https:\/\/schema\.org","@type":"BreadcrumbList"/);
@@ -257,7 +257,7 @@ test('HTTP: card names cannot break out of the head', async () => {
   assert.equal(page.status, 200);
   assert.equal(head(page.body).includes('<script>alert(1)</script>'), false);
   assert.match(head(page.body), /<title>&lt;\/title&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt; 090 SAR｜/);
-  assert.match(page.body, /<div class="hero-intro"><h1>&lt;\/title&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h1>/, 'the hero h1 is escaped too');
+  assert.match(page.body, /<div class="hero-intro"><h1 data-home="跨版本卡牌圖鑑">&lt;\/title&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/h1>/, 'the hero h1 is escaped too');
   assert.equal(page.body.includes('<noscript><section aria-label="卡片摘要"><h2></title>'), false);
 });
 
@@ -265,7 +265,7 @@ test('HTTP: a series URL gets a series title and canonical', async () => {
   const page = await get('/?game=pokemon&series=pokemon-tcgdex-ja-sv6a&region=JP');
   assert.equal(page.status, 200);
   assert.match(head(page.body), /<title>黑夜漫遊者 卡表｜日版寶可夢・共 106 張｜好卡在 CardSeek<\/title>/);
-  assert.match(page.body, /<div class="hero-intro"><h1>黑夜漫遊者<\/h1>/, 'the hero h1 carries the series name');
+  assert.match(page.body, /<div class="hero-intro"><h1 data-home="跨版本卡牌圖鑑">黑夜漫遊者<\/h1>/, 'the hero h1 carries the series name');
   assert.match(head(page.body), /<link rel="canonical" href="https:\/\/seo\.example\.test\/\?game=pokemon&amp;series=pokemon-tcgdex-ja-sv6a&amp;region=JP">/);
   assert.match(head(page.body), /共收錄 106 個卡片版本/);
   assert.match(page.body, /<noscript><section aria-label="系列摘要">/);

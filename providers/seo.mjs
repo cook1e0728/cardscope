@@ -184,7 +184,8 @@ export function seoNoscript(seo) {
 }
 
 // The page's single hero <h1> (inside .hero-intro) carries the card or series name; the other headings are not touched.
-const HERO_H1 = /(<div\b[^>]*\bclass\s*=\s*["'][^"']*\bhero-intro\b[^"']*["'][^>]*>\s*<h1\b[^>]*>)[\s\S]*?(<\/h1>)/i;
+// 原標題存進 data-home：前端載入後換回原標題給人看，卡名只留在伺服器送出的 HTML 給搜尋引擎。
+const HERO_H1 = /(<div\b[^>]*\bclass\s*=\s*["'][^"']*\bhero-intro\b[^"']*["'][^>]*>\s*<h1)(\b[^>]*>)([\s\S]*?)(<\/h1>)/i;
 const SEO_HEAD_META =/<meta\b[^>]*\b(?:name|property)\s*=\s*["'](?:description|og:title|og:description|og:url|og:image[^"']*|twitter:[^"']*)["'][^>]*>/gi;
 const CANONICAL_LINK = /<link\b[^>]*\brel\s*=\s*["']canonical["'][^>]*>/gi;
 
@@ -197,7 +198,7 @@ export function applySeoToHtml(html, seo) {
   out = out.replace(/<\/head>/i, () => `${seoHeadTags(seo)}</head>`);
   out = out.replace(/<body\b[^>]*>/i, match => `${match}${seoNoscript(seo)}`);
   if (seo.noindex) out = applyNoindexToHtml(out);
-  if (seo.summary?.heading) out = out.replace(HERO_H1, (_, open, close) => `${open}${escapeHtml(seo.summary.heading)}${close}`);
+  if (seo.summary?.heading) out = out.replace(HERO_H1, (_, open, attrs, home, close) => `${open} data-home="${escapeHtml(home.trim())}"${attrs}${escapeHtml(seo.summary.heading)}${close}`);
   return out;
 }
 
