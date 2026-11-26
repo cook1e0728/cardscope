@@ -132,9 +132,9 @@
   };
 
   const originalOpenCard=window.openCard;
-  // 只有「從列表第一次打開」才新增歷史；已開著時換上一張／下一張只改網址，關閉時才能一步退回列表。切換版本（keepPosition）不動網址，網址仍指向列表中的那張卡。
+  // 只有「從列表第一次打開」才新增歷史；已開著時換上一張／下一張只改網址，關閉時才能一步退回列表。切換版本（keepPosition）只換網址裡的卡（replace，不新增歷史），分享與重新整理看到的就是切到的那一版；上一張／下一張仍依列表裡的那張卡（activeDetailCardId 不變）。
   if(typeof originalOpenCard==='function')window.openCard=async(id,options)=>{
-    saveScroll();if(!restoring&&!options?.keepPosition){const open=node('modal')?.classList.contains('open');writeUrl(open?'replace':'push',{card:id,cardEntry:!open})}const result=await originalOpenCard(id,options);installDetailShare();return result;
+    saveScroll();if(!restoring&&options?.keepPosition)writeUrl('replace',{card:id});else if(!restoring){const open=node('modal')?.classList.contains('open');writeUrl(open?'replace':'push',{card:id,cardEntry:!open})}const result=await originalOpenCard(id,options);installDetailShare();return result;
   };
   // openCard 每畫一次（先畫卡牆已有的資料、再畫完整內容）分享鈕都會被換掉，畫完就補回去
   document.addEventListener('cardscope:detail',installDetailShare);
