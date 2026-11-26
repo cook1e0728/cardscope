@@ -8,6 +8,7 @@
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-26：**首頁大標題被換成卡名已修好**（PR #43 合併 c391958，Worker 1f996d16）。原因：用 `?card=`／`?series=` 連結進站時，`providers/seo.mjs` 為了 SEO 把首頁 h1 換成卡名（使用者回報的「エミリア」「超夢ex」都是這樣）。現在伺服器把原標題存進 h1 的 `data-home`，`look-showcase.js` 拆字時換回原標題；伺服器 HTML、title、OG 不變。另查卡圖缺漏：寶可夢日版沒圖 48 張（M6a 31 張，日本官網卡圖是手動匯入、沒排程）、遊戲王美版 97 張、台版 4 張。
 - 2026-11-26：**詳細頁卡圖下方版本切換上線**（PR #42 合併 af14317，Worker e462d3fb）。沿用 `.view-switch`＋滑動底塊（`mountVersionThumb`）；只在 2–4 版、各屬一個地區、名稱不重複時顯示（航海王異圖多、台美亞洲共用卡片 ID 時不放）。沒有自己卡圖的版本按鈕標「無圖」、卡圖下說明暫用哪一版（`noOwnImage`、`standInFrom`、`sameLang` 視 zh-TW＝zh-Hant-TW）。切換版本改為 replaceState 換網址裡的 card。agy 第二意見見 PR。仍缺：M6a 日版官方卡表未匯入；航海王「收錄版本」多地區共用卡片 ID 時點了分不出地區；首頁 h1 變成「エミリア」使用者回報但重現不出。
 - 2026-11-26：**價格快照資料庫超時自動重試**（PR #41）。11-25 的 failed 是 5 小時預算到了（TIME_BUDGET，正常分段，cursor 有留）；12:05 排程沒觸發；手動續跑時一次 57014 statement timeout 讓整輪 27 秒就失敗。現在 `runPriceSnapshot` 的資料庫呼叫碰到 57014 會等 30／60／90 秒重試，第 4 次才失敗。
 - 2026-11-26：**首頁大獎卡排版與稀有度金屬箔上線**（PR #39 合併 41ab5f3，Worker 8dd12c0f）。卡名預留兩行、價格放大；卡號＋稀有度同一行（去掉 UA／黑白雙翼前綴，完整卡號在 title），異圖改卡圖角標；稀有度依同一排高低分金／銀／銅（`home-rails.js` prizeRail，依 rarity-rankings 排序，精選排一律金）。卡牆 `rarityTier` 的 `` 曾被存成退格字元（所有稀有度都落到 base），PR #40 修正並補 FUR、BWR、TR 依遊戲（合併 5f2b037，Worker 79958a04）。11-25 價格快照 run 45565156104 寫 5046 筆，狀態 failed（39 次 503），沒查原因。
