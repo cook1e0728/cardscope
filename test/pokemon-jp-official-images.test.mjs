@@ -59,3 +59,17 @@ test('official JP images: stops at the request budget without failing', async ()
   assert.equal(result.stoppedBy, 'request-budget');
   assert.equal(result.status, undefined);
 });
+
+test('official JP images: a cold-database statement timeout on the target query is retried', async () => {
+  let calls = 0;
+  const db = async () => { calls++; if (calls < 3) throw new Error('SUPABASE_500:{"code":"57014"}'); return []; };
+  const quiet = { log() {}, warn() {}, error() {} };
+  const result = await runOfficialJpImages({ db, gapMs: 0, dbRetryMs: 0, log: quiet });
+  assert.equal(calls, 3);
+  assert.equal(result.status, undefined);
+  calls = -10;
+  const failed = await runOfficialJpImages({ db, gapMs: 0, dbRetryMs: 0, log: quiet });
+  assert.equal(failed.status, 'failed', '重試 3 次仍逾時就算失敗');
+  const other = await runOfficialJpImages({ db: async () => { throw new Error('SUPABASE_400:bad'); }, gapMs: 0, dbRetryMs: 0, log: quiet });
+  assert.equal(other.status, 'failed');
+});

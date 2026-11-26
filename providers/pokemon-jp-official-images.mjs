@@ -30,7 +30,10 @@ export function matchOfficialJpImages(cards, list, details) {
   }));
 }
 
-export async function runOfficialJpImages({ db, fetchFn = fetch, gapMs = 1500, maxRequests = 400, log = console } = {}) {
+// 資料庫冷的時候（久沒人查）找缺圖卡會撞 statement timeout（57014）；第一次已把資料讀進快取，等一下重試通常 1 秒內就回來。
+const DB_STATEMENT_TIMEOUT = /57014|statement timeout/i;
+
+export async function runOfficialJpImages({ db, fetchFn = fetch, gapMs = 1500, maxRequests = 400, dbRetries = 3, dbRetryMs = 30 * 1000, log = console } = {}) {
   const result = { series: 0, images: 0, requests: 0, stoppedBy: null };
   let last = 0;
   const get = async url => {
@@ -42,7 +45,15 @@ export async function runOfficialJpImages({ db, fetchFn = fetch, gapMs = 1500, m
     return response.text();
   };
   try {
-    const targets = await db('/rpc/image_official_jp_targets', { method: 'POST', body: JSON.stringify({ p_limit: 300 }) });
+    let targets;
+    for (let attempt = 1; ; attempt++) {
+      try { targets = await db('/rpc/image_official_jp_targets', { method: 'POST', body: JSON.stringify({ p_limit: 300 }) }); break; }
+      catch (error) {
+        if (attempt > dbRetries || !DB_STATEMENT_TIMEOUT.test(String(error?.message || error))) throw error;
+        log.warn?.('official jp image targets timed out, retrying', attempt);
+        await sleep(dbRetryMs * attempt);
+      }
+    }
     for (const target of targets || []) {
       const list = [];
       for (let page = 1; page <= MAX_LIST_PAGES; page++) {
