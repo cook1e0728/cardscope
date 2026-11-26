@@ -1069,6 +1069,11 @@ html.look-clean body[data-view] .cards .card.card-list .unified-image-fallback b
 html.look-clean body[data-view] .cards .card.card-list .unified-image-fallback small{display:none}
 html.look-clean body[data-view] #cardsTitle{text-wrap:balance}
 html.look-clean #detail .detail-position{justify-content:center;padding-left:0;margin-top:8px}
+html.look-clean .detail-visual .detail-ver-switch{order:1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:12px 0 4px}
+html.look-clean #detail .ver-chip{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 16px;border:1px solid var(--v2-hair,#D9D2C5);border-radius:999px;background:#fff;color:var(--v2-ink,#16132A);font:inherit;font-size:var(--fs-sub,14px);font-weight:700;cursor:pointer}
+@media (hover:hover) and (pointer:fine){html.look-clean #detail button.ver-chip:hover{border-color:var(--v2-ink,#16132A)}}
+html.look-clean #detail .ver-chip.is-current{background:var(--v2-ink,#16132A);border-color:var(--v2-ink,#16132A);color:#fff;cursor:default}
+html.look-clean #detail .ver-chip small{font-weight:500;opacity:.8}
 html.look-clean #detail .detail-position .detail-zoom-hint{display:block;font-size:var(--fs-note);color:var(--v2-ink-2);text-align:center}
 html.look-clean #detail .detail-visual>p.detail-ip{display:none}
 html.look-clean #detail .dpanel-versions :is(.state,.version-switch){text-wrap:pretty}
