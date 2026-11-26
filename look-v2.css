@@ -1250,3 +1250,10 @@ html.look-clean body[data-view="landing"] .hero-intro p{font-size:16px;line-heig
 html.look-clean body[data-view="landing"] .hero-intro .hero-line+.hero-line{margin-top:4px}
 html.look-clean body[data-view="landing"] #heroQ::placeholder{color:#BCB4D4;opacity:1}
 @media (min-width:768px){html.look-clean body[data-view="landing"] .hero>.home-examples{margin-top:14px}}
+
+/* RGB 稀有度（30th 赤／綠／藍夢幻）官方還沒公開卡圖：自家配色佔位，不用任何卡圖。字母顏色依 R／G／B，深色卡面配同色光暈。 */
+html.look-clean body[data-view] .unified-image-fallback.rgb-fallback{--rgb:#E0303A;background:radial-gradient(120% 80% at 50% 38%,color-mix(in srgb,var(--rgb) 38%,transparent),transparent 70%),linear-gradient(160deg,#2A241D,#14110D)!important;color:#F3EEE4!important;box-shadow:none!important;gap:6px}
+html.look-clean body[data-view] .unified-image-fallback.rgb-fallback[data-rgb="g"]{--rgb:#2FA36A}
+html.look-clean body[data-view] .unified-image-fallback.rgb-fallback[data-rgb="b"]{--rgb:#3D7BFF}
+html.look-clean body[data-view] .unified-image-fallback.rgb-fallback b{font-size:clamp(40px,9cqw,72px);line-height:1;font-weight:800;color:var(--rgb)!important;text-shadow:0 0 18px color-mix(in srgb,var(--rgb) 60%,transparent)}
+html.look-clean body[data-view] .unified-image-fallback.rgb-fallback small{display:block!important;color:#D9D1C3!important;font-size:12px}

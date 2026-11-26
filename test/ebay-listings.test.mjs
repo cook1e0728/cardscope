@@ -134,3 +134,14 @@ test('graded listings (PSA/BGS/CGC/SGC/ARS + grade) are excluded and eBay order 
   const out = pickListings({ itemSummaries: titles.map((t, i) => item(String(i), t)) }, '125/197');
   assert.deepEqual(out.map(x => x.title), ['Charizard 125/197 NM', 'Charizard 125/197 LP']);
 });
+
+test('全字母卡號（30th 夢幻 R/RGB）：標題要有 R/RGB，或同時有 #R 與 RGB；其他卡號規則不變', () => {
+  assert.ok(ebayQuery({ name: 'Mew', number: 'R/RGB' }));
+  assert.equal(ebayQuery({ name: 'Mew', number: 'R' }), null, '只有字母沒有稀有度不查');
+  assert.equal(titleHasNumber('Mew R/RGB Expansion Pack 30th Celebration M6a', 'R/RGB'), true);
+  assert.equal(titleHasNumber('Mew R / RGB 30th', 'R/RGB'), true);
+  assert.equal(titleHasNumber('Mew 2026 Pokemon 30th Celebration RGB RARE #G/RGB', 'G/RGB'), true);
+  assert.equal(titleHasNumber('Mew 30th Celebration RGB Rare #B', 'B/RGB'), true);
+  assert.equal(titleHasNumber('Mew G/RGB Expansion Pack 30th Celebration', 'R/RGB'), false);
+  assert.equal(titleHasNumber('Mew ex 151 R', 'R/RGB'), false);
+});

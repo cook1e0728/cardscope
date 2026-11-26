@@ -7,10 +7,14 @@
   const md=date=>String(date||'').slice(5).replace('-','/');
   const fallback='<span class="image-fallback unified-image-fallback"%H><b>圖片待補</b><small>圖片來源尚未收錄</small></span>';
   // 卡圖標記（含載入失敗時的退回）；首頁的最夯／最熱（home-rails.js）共用。
-  function image(url,alt){
+  // 官方還沒公開卡圖的 RGB 稀有度（30th 赤／綠／藍夢幻，卡號 R／G／B）：不用任何卡圖，畫自家的配色佔位。
+  const rgbLetter=(rarity,number)=>String(rarity||'').toUpperCase()==='RGB'&&/^[RGB]$/i.test(String(number||'').trim())?String(number).trim().toUpperCase():'';
+  const rgbFallback=letter=>`<span class="image-fallback unified-image-fallback rgb-fallback" data-rgb="${letter.toLowerCase()}"><b aria-hidden="true">${letter}</b><small>官方尚未公開卡圖</small></span>`;
+  function image(url,alt,{rgb=''}={}){
     // displayImageUrl 是 index.html 頂層的 const（不在 window 上），要直接用名字取；航海王卡圖靠它改走 /api/images/onepiece。
     const show=typeof root.displayImageUrl==='function'?root.displayImageUrl:typeof displayImageUrl==='function'?displayImageUrl:null;
     const src=url&&(show?show(url):url);
+    if(!src&&rgb)return rgbFallback(rgb);
     return src?`<img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" data-img-error="swap-hidden">${fallback.replace('%H',' hidden')}`:fallback.replace('%H','');
   }
   function card(row,up){
@@ -35,7 +39,7 @@
       `<p><b>適用範圍</b>只含寶可夢；共 ${rows.length} 張上榜（漲 ${up.length}、跌 ${down.length}）；已排除 €${esc(meta.minAmount||5)} 以下的低價卡與單日異常跳動。${rows.some(row=>Math.abs(Number(row.changePercent))>=BIG)?'漲跌超過 200% 的卡，多半是成交稀少、少數高價刊登拉動，請先點進去看走勢。':''}</p>`+
       `<p>${esc(meta.note||'')}</p>`);
   }
-  root.priceMoversShared={request,card,image,info};
+  root.priceMoversShared={request,card,image,info,rgbLetter};
   root.renderPriceMovers=section=>{
     const onMarket=typeof document!=='undefined'&&document.body?.dataset?.view==='market';
     if(onMarket&&!section.innerHTML){

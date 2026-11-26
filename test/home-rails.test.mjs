@@ -199,7 +199,7 @@ test('載入順序與 CSP：home-rails.js 在 ui-actions（infoTip）與 price-m
   const at=name=>html.indexOf(`<script src="/${name}"></script>`);
   assert.ok(at('ui-actions.js')>0&&at('price-movers.js')>at('ui-actions.js')&&at('home-rails.js')>at('price-movers.js'));
   assert.doesNotMatch(railsSrc,/\son[a-z]+=/);
-  assert.match(moversSrc,/root\.priceMoversShared=\{request,card,image,info\}/);
+  assert.match(moversSrc,/root\.priceMoversShared=\{request,card,image,info,rgbLetter\}/);
   assert.match(moversSrc,/歐洲平台參考價，不是成交價/,'完整漲跌榜標題旁的警語還在');
 });
 
