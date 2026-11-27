@@ -67,9 +67,9 @@
     // 官方站（pokemon-card.com、onepiece-cardgame.com）偶爾單次載入失敗：先隔 1.5 秒重試一次，仍失敗才改成代碼磚。
     const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" data-img-error="retry-type">`:'';
     const sub=(extra?extra+' · ':'')+(code||(kind==='product'?item.productSubtype||item.productType||item.releaseDate||'':'代碼待補'));
-    return`<button type="button" class="band-tile" data-kind="${kind}" data-id="${esc(item.id)}" data-game="${esc(item.game)}" title="${esc([name,code,item.releaseDate].filter(Boolean).join('・'))}">`
+    return`<${kind==='series'?`a href="${esc(window.seriesHref?.(item.game,item.id,item.region))}"`:'button type="button"'} class="band-tile" data-kind="${kind}" data-id="${esc(item.id)}" data-game="${esc(item.game)}" title="${esc([name,code,item.releaseDate].filter(Boolean).join('・'))}">`
       +`<span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||name)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>`
-      +`<b class="band-tile-name">${esc(name)}</b><span class="band-tile-code">${esc(sub)}</span></button>`;
+      +`<b class="band-tile-name">${esc(name)}</b><span class="band-tile-code">${esc(sub)}</span></${kind==='series'?'a':'button'}>`;
   }
   // 首頁最新系列卡片：系列圖＋最多 3 張大獎縮圖，下面固定四列文字（類別與代號／標題兩行／原名／小資訊），同一排的文字列等高對齊。
   // 名稱與小資訊的規則在 series-card.js；縮圖來自 /api/series-hits（只有寶可夢、航海王、黑白雙翼、UNION ARENA 有大獎規則），沒有資料就只放系列圖。
@@ -84,9 +84,9 @@
       show=typeof displayImageUrl==='function'?displayImageUrl:String;
     const art=imageUrl?`<img src="${esc(imageUrl)}" alt="" loading="lazy" data-img-error="retry-type">`:'';
     const thumbs=hits.length?`<span class="band-card-hits" aria-hidden="true">${hits.map(hit=>`<span class="band-card-hit"><img src="${esc(show(hit.imageUrl))}" alt="" loading="lazy" data-img-error="remove"></span>`).join('')}</span>`:'';
-    return`<button type="button" class="band-tile band-card" data-kind="series" data-id="${esc(item.id)}" data-game="${esc(item.game)}" title="${esc([title,original,code,item.releaseDate].filter(Boolean).join('・'))}">`
+    return`<a href="${esc(window.seriesHref?.(item.game,item.id,item.region))}" class="band-tile band-card" data-kind="series" data-id="${esc(item.id)}" data-game="${esc(item.game)}" title="${esc([title,original,code,item.releaseDate].filter(Boolean).join('・'))}">`
       +`<span class="band-card-visual"><span class="band-tile-art${art?'':code?' is-type':' is-type is-text'}" data-code="${esc(code||title)}">${art}${upcoming?'<span class="band-tile-flag">即將發售</span>':fresh?'<span class="band-tile-flag is-new">NEW</span>':''}</span>${thumbs}</span>`
-      +`<span class="band-tile-code">${esc([extra,code].filter(Boolean).join(' · '))}</span><b class="band-tile-name">${esc(title)}</b><span class="band-card-orig">${esc(original)}</span><span class="band-card-facts">${esc(facts.join(' · '))}</span></button>`;
+      +`<span class="band-tile-code">${esc([extra,code].filter(Boolean).join(' · '))}</span><b class="band-tile-name">${esc(title)}</b><span class="band-card-orig">${esc(original)}</span><span class="band-card-facts">${esc(facts.join(' · '))}</span></a>`;
   }
   // 橫列左右的翻頁鈕：一次捲約八成寬，捲到頭的那側停用；沒有溢出時兩顆都隱藏（觸控裝置用 CSS 隱藏，照常手滑）。
   function railNav(rail){
@@ -213,6 +213,7 @@
     railNav(rail);if(window.homeSeriesCard)loadHits();
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
+      if(button.tagName==='A'){if(!window.plainClick(event))return;event.preventDefault()}
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
     };
   }
@@ -289,6 +290,7 @@
       if(event.target.closest('[data-band-expand]')){const open=band.classList.contains('is-grid');bandExpanded[game]=!open;if(open)bandFilter[game]='';bandShown[game]=SHOW_STEP;render();band.querySelector('[data-band-expand]')?.focus();return}
       if(event.target.closest('[data-band-more]')){const before=band.querySelectorAll('.band-tile').length;bandShown[game]=(bandShown[game]||SHOW_STEP)+SHOW_STEP;paint();band.querySelectorAll('.band-tile')[before]?.focus();return}
       const card=event.target.closest('.band-tile');if(!card)return;
+      if(card.tagName==='A'){if(!window.plainClick(event))return;event.preventDefault()}
       // 從展開或篩選的網格選了系列：收回單排，讓下方卡表回到眼前
       // 要先收合重繪再開系列／商品，捲動位置才是收合後的版面（否則停在頁尾）
       if(band.classList.contains('is-grid')){bandExpanded[game]=false;bandFilter[game]='';bandShown[game]=SHOW_STEP;render()}

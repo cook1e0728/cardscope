@@ -120,7 +120,7 @@ body{background:#EFEAE0}
 #trendsSection .trend-card small{display:block;line-height:1.5}
 /* 台灣慣例：紅漲綠跌，和詳細頁、手機版一致 */
 #trendsSection .trend-rise{background:#C4000F!important}
-#trendsSection button.trend-card{display:block;text-align:left;font:inherit;color:inherit;cursor:pointer}
+#trendsSection .trend-card{display:block;text-decoration:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
 #trendsSection .trend-fall .trend-rise{background:#1F6F43!important}
 #trendsSection .movers-head{margin:14px 0 0;font-size:16px;color:#2B2722}
 body[data-view="game"]:not([data-game="pokemon"]) #trendsSection.price-movers{display:none}

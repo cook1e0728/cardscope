@@ -1259,3 +1259,6 @@ html.look-clean body[data-view] #detail .detail-collect-state{display:inline-fle
 html.look-clean body[data-view] #detail .detail-collect-state::before{content:"";width:24px;height:24px;flex:none;background:url(/assets/pixel/chest.png) 0 0/24px 24px no-repeat;image-rendering:pixelated}
 html.look-clean body[data-view] #detail .detail-collect-state[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
 html.look-clean body .top .nav button[data-nav="collection"]::before{width:16px;height:16px;background:url(/assets/pixel/chest.png) 0 0/16px 16px no-repeat;-webkit-mask:none;mask:none;image-rendering:pixelated}
+/* 卡片與系列改成真連結（SEO 2026-11-27）：外觀維持原本按鈕的樣子，不出現連結底線與藍字 */
+:is(a.card-open-hit,a.trend-card,a.mover-row,a.band-tile){color:inherit;text-decoration:none}
+a.card-open-hit{display:block}
