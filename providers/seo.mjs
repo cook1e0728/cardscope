@@ -160,6 +160,13 @@ export function seriesSeo({ series, game = null, baseUrl = DEFAULT_BASE_URL, pri
   };
 }
 
+// 系列頁的「載入更多」連到 ?pages=N（前 N×48 張）；每一頁用自己的 canonical 與標題，搜尋引擎才會沿著它找到後面的卡。
+export function withSeriesPages(seo, pages) {
+  const n = Math.min(20, Math.floor(Number(pages)));
+  if (seo?.kind !== 'series' || !(n > 1)) return seo;
+  return { ...seo, canonical: `${seo.canonical}&pages=${n}`, title: seo.title.replace(/｜([^｜]+)$/, (_, site) => `｜第 ${n} 頁｜${site}`) };
+}
+
 const metaTag = (attr, key, content) => `<meta ${attr}="${key}" content="${escapeHtml(content)}">`;
 
 export function seoHeadTags(seo) {

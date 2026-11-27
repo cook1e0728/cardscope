@@ -1262,3 +1262,6 @@ html.look-clean body .top .nav button[data-nav="collection"]::before{width:16px;
 /* 卡片與系列改成真連結（SEO 2026-11-27）：外觀維持原本按鈕的樣子，不出現連結底線與藍字 */
 :is(a.card-open-hit,a.trend-card,a.mover-row,a.band-tile){color:inherit;text-decoration:none}
 a.card-open-hit{display:block}
+/* 「載入更多」是連結：按鈕會自動垂直置中，連結要靠行高 */
+a.load-more{width:fit-content;line-height:42px;text-align:center;text-decoration:none}
+html.look-clean body[data-view] a.load-more{line-height:var(--btn-h,44px)}

@@ -5,7 +5,8 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import {
   DEFAULT_BASE_URL, SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, canonicalUrl, cardSeo, cardSitemapEntries, chunkEntries, dateOnly, escapeHtml,
-  jsonLdScript, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo
+  jsonLdScript, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo,
+  withSeriesPages
 } from '../providers/seo.mjs';
 
 const BASE = 'https://cardseektcg.com';
@@ -73,6 +74,17 @@ test('JSON-LD is a BreadcrumbList home > game > series > card, with no Product o
   const script = jsonLdScript({ name: '</script><script>alert(1)</script> & \u2028' });
   assert.equal(script.slice('<script type="application/ld+json">'.length, -'</script>'.length).includes('<'), false);
   assert.equal(JSON.parse(script.replace(/^<script[^>]*>|<\/script>$/g, '')).name, '</script><script>alert(1)</script> & \u2028', 'the escaping round-trips');
+});
+
+test('series page N (load more) has its own canonical and title; other pages are untouched', () => {
+  const base = seriesSeo({ series, baseUrl: BASE, printingCount: 106 });
+  const page2 = withSeriesPages(base, '2');
+  assert.equal(page2.canonical, `${base.canonical}&pages=2`);
+  assert.equal(page2.title, '黑夜漫遊者 卡表｜日版寶可夢・共 106 張｜第 2 頁｜好卡在 CardSeek');
+  assert.equal(withSeriesPages(base, '99').canonical, `${base.canonical}&pages=20`, 'capped like the front end');
+  for (const pages of [null, '1', 'x', '0']) assert.equal(withSeriesPages(base, pages), base);
+  const card = { kind: 'card', canonical: 'c', title: 't' };
+  assert.equal(withSeriesPages(card, '3'), card);
 });
 
 test('series pages get a title, description, canonical and breadcrumb of their own', () => {
