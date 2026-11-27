@@ -161,8 +161,8 @@
   // and several variants mean "choose a version" (never picked for the user). Slabs and cards without snapshots are not counted. Sources are never added together.
   function valuate(entries,pricesById){
     const byProvider={},perEntry={},uncounted=[],dates=[];
-    for(const {id,quantity,condition,finish} of entries){
-      const qty=quantity||1,prices=pricesById[id]||[],counted=[];let needsFinish=false,reason='';
+    for(const {id,condition,finish} of entries){
+      const qty=1/* 收藏不計張數（2026-11-27）：舊資料的多張也只算一張 */,prices=pricesById[id]||[],counted=[];let needsFinish=false,reason='';
       if(condition==='SLAB')reason='slab';
       else if(!prices.length)reason='none';
       else for(const provider of Object.keys(PROVIDER_LABELS)){

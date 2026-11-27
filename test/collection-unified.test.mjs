@@ -78,7 +78,7 @@ test('收藏是開關：☆ 收藏（數量 1），再按一下直接取消；�
 test('one count everywhere: 款數 and 張數 come from quantity only, so the filter button and the collection window agree', () => {
   const c = collection({ legacy: [], watchlist: { a: 2, b: 1, c: 'x', d: 0 } });
   assert.deepEqual(JSON.parse(c.run('JSON.stringify(collectionIds())')), ['a', 'b']);
-  assert.equal(c.run('collectionTotal()'), 3);
+  assert.equal(c.run('collectionTotal()'), 2, 'one card counts once, even an older entry with 2 copies');
   assert.doesNotMatch(ui, /favoriteIds/, 'no second star list is kept');
   // the 全部／已收藏／還缺 group reuses the stored cardscope-favorites-only switch; the count lives in the summary line, not on the button
   assert.match(ui, /const current=missingOnlyActive\(\)\?'missing':favoritesOnly\?'owned':'all'/);

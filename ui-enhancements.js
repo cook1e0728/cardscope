@@ -411,7 +411,7 @@ function watchlistEntries(){
 }
 
 function watchlistTotals(){
-  const totals=new Map();watchlistEntries().forEach(({card,quantity})=>{if(!card||card.__watchlistSnapshot)return;const price=priceFor(card),amount=price&&Number(price.price),currency=price&&String(price.currency||'').trim();if(!Number.isFinite(amount)||!currency)return;totals.set(currency,(totals.get(currency)||0)+amount*quantity)});return totals;
+  const totals=new Map();watchlistEntries().forEach(({card})=>{if(!card||card.__watchlistSnapshot)return;const price=priceFor(card),amount=price&&Number(price.price),currency=price&&String(price.currency||'').trim();if(!Number.isFinite(amount)||!currency)return;totals.set(currency,(totals.get(currency)||0)+amount)});return totals;
 }
 // 收藏數量變動後只重畫動到的那張卡的收藏區（B7：整片重繪會讓圖片閃一下、鍵盤焦點掉光）。
 // 只有開著「已收藏／還缺」篩選、而且這張卡進出了牆面時，才整片重繪。
@@ -447,7 +447,8 @@ function announceCollect(text){
 
 // 「我的收藏」= 數量 > 0 的卡；款數與總張數在網格、摘要與收藏視窗用同一組函式。
 function collectionIds(){return Object.keys(watchlist).filter(id=>watchQuantity(id)>0)}
-function collectionTotal(){return collectionIds().reduce((sum,id)=>sum+watchQuantity(id),0)}
+// 收藏不計張數：一張卡算一張，舊資料記了多張也一樣
+function collectionTotal(){return collectionIds().length}
 // 系列集卡進度（圖鑑系列頁）。已收藏 = 這台裝置收藏中屬於該系列的卡（同一張的多張複本只算一張）；共 = 伺服器回報的系列卡數（browse.total，沒有稀有度篩選時才記下）。
 // 舊收藏沒存 seriesId 時改用目前卡牆上的卡 id 比對（只比得到已載入的頁），並順手補存 seriesId；開過該系列就不再有這個限制。
 let missingOnly=false,missingOnlySeries='';
@@ -1066,7 +1067,7 @@ function rowPriceHtml(item,valuation){
   if(watchlistMeta[item.id]?.ambiguous)return '<span class="coll-skip">未計入：請先選擇卡片版本</span>';
   if(state==='loading'||state==='idle')return '<span class="meta">查詢參考價中…</span>';
   if(state==='error'||!entry)return '';
-  const priceLine=(provider,price,qty,stale)=>`<span class="${stale?'coll-skip':'coll-price-line'}">${e(CS.PROVIDER_LABELS[provider])} 參考價 ${e(price.currency)} ${Number(price.amount).toLocaleString()}${Number.isFinite(price.amountTwd)?`（約 NT$ ${price.amountTwd.toLocaleString()}${qty>1&&!stale?` × ${qty}`:''}）`:''} · ${e(price.snapshotDate)}${stale?' · <b>已過期</b>，不計入':''}</span>`,counted=new Set(entry.counted.map(x=>x.provider)),seen=new Set(),
+  const priceLine=(provider,price,qty,stale)=>`<span class="${stale?'coll-skip':'coll-price-line'}">${e(CS.PROVIDER_LABELS[provider])} 參考價 ${e(price.currency)} ${Number(price.amount).toLocaleString()}${Number.isFinite(price.amountTwd)?`（約 NT$ ${price.amountTwd.toLocaleString()}）`:''} · ${e(price.snapshotDate)}${stale?' · <b>已過期</b>，不計入':''}</span>`,counted=new Set(entry.counted.map(x=>x.provider)),seen=new Set(),
     stale=(collectionUi.prices[item.id]||[]).filter(price=>price.stale&&!counted.has(price.provider)&&(!item.finish||CS.finishKey(price.variant)===CS.finishKey(item.finish))&&!seen.has(price.provider)&&seen.add(price.provider)).map(price=>priceLine(price.provider,price,1,true)).join('');
   if(!entry.counted.length)return `<span class="coll-skip">未計入：${e(stale?'參考價已過期（超過 7 天）':reasonText(item.id,entry.reason))}</span>${stale}`;
   return entry.counted.map(({provider,price,qty})=>priceLine(provider,price,qty,false)).join('')+stale+(entry.needsFinish?'<span class="coll-skip">另一來源有多個版本：選擇版本後才計入</span>':'');
@@ -1091,7 +1092,7 @@ function collectionValueLine(valuation){
 function panelPriceHtml(key){const item=collectionItems().find(row=>row.id===key);return item&&collectionUi.pricesState==='ready'&&collectionUi.prices[key]?rowPriceHtml(item,collectionValuation()):''}
 function refreshCollectionValue(){
   const valuation=collectionValuation(),count=$('collSumCount');
-  if(count)count.textContent=`共 ${collectionIds().length} 款、${collectionTotal()} 張`;
+  if(count)count.textContent=`共 ${collectionTotal()} 張`;
   const line=$('collValue');if(line)line.textContent=collectionValueLine(valuation);
   const detail=$('collValueDetail');if(detail)detail.innerHTML=valueHtml(valuation);
   const price=document.querySelector('#detail [data-detail-collect] .coll-price');if(price)price.innerHTML=panelPriceHtml(price.closest('[data-detail-collect]').dataset.detailCollect);
@@ -1780,7 +1781,7 @@ function setManageMenu(open,focusFirst){
 }
 function exportCollection(){
   const items=collectionItems(),filename=`cardscope-collection-${window.taipeiDate()}.json`;downloadFile(filename,'application/json;charset=utf-8',JSON.stringify(CS.exportBackup(items)));
-  collectionStatus(`已匯出 ${items.length} 款、${collectionTotal()} 張，備份檔 ${filename}（在瀏覽器的下載資料夾）。`);
+  collectionStatus(`已匯出 ${items.length} 張，備份檔 ${filename}（在瀏覽器的下載資料夾）。`);
 }
 function onManageItem(item){
   setManageMenu(false);
