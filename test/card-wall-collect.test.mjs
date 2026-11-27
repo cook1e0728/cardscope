@@ -16,7 +16,7 @@ function harness(initialStore = {}) {
   const classList = { toggle() {}, add() {}, remove() {}, contains() { return false } };
   const node = (id = '') => {
     const value = { id, value: 'all', innerHTML: '', textContent: '', style: {}, classList, children: [], dataset: {}, disabled: false, hidden: false,
-      append(...items) { this.children.push(...items) }, prepend() {}, before() {}, after() {}, insertAdjacentElement() {}, setAttribute() {}, querySelectorAll() { return [] }, querySelector() { return null }, scrollIntoView() {}, closest() { return null }, click() {}, remove() {} };
+      append(...items) { this.children.push(...items) }, prepend() {}, before() {}, after() {}, insertAdjacentElement() {}, addEventListener() {}, contains() { return false }, setAttribute() {}, querySelectorAll() { return [] }, querySelector() { return null }, scrollIntoView() {}, closest() { return null }, click() {}, remove() {} };
     created.push(value); if (id) nodes.set(id, value); return value;
   };
   for (const id of ['browseRegion', 'channels', 'productCategories', 'series', 'selectedProduct', 'cardsTitle', 'cardsMeta', 'cardTools', 'cards', 'loadMore', 'filterSummary', 'rarityFilter', 'priceFilter', 'cardSort', 'notice', 'modal', 'detail', 'status']) node(id);

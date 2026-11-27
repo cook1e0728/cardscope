@@ -393,7 +393,27 @@ function toggleFavorite(id){
   setWatchQuantity(key,0);return true;
 }
 
+// 柔性登入提示：沒登入、沒開同步碼的人，第 3 次收藏成功時提醒一次「收藏只在這台裝置」。不擋操作；按任一鈕、自己收起都不再出現（localStorage，讀寫失敗就不顯示）。
+const SYNC_HINT_ADDS='cardscope-collect-adds',SYNC_HINT_SEEN='cardscope-sync-hint-seen';
+function syncHintDue(){
+  if(syncState||uiLocal.get(SYNC_HINT_SEEN,''))return false;
+  const count=(Number(uiLocal.get(SYNC_HINT_ADDS,'0'))||0)+1;
+  return uiLocal.set(SYNC_HINT_ADDS,String(count))&&count===3;
+}
+function showSyncHint(){
+  uiLocal.set(SYNC_HINT_SEEN,'1');
+  let hint=$('syncHint');
+  if(!hint){
+    hint=document.createElement('div');hint.id='syncHint';hint.className='sync-hint';hint.setAttribute('role','status');hint.hidden=true;
+    hint.innerHTML='<p>收藏只存在這台裝置的瀏覽器。登入 Google 可以在其他裝置同步。</p><div><button type="button" data-sync-hint="login">登入同步</button><button type="button" data-sync-hint="dismiss">不用了</button></div>';
+    hint.addEventListener('click',event=>{const act=event.target.closest?.('[data-sync-hint]')?.dataset.syncHint;if(!act)return;hint.hidden=true;if(act==='login')openSyncDialog()});
+    document.body.append(hint);
+  }
+  hint.hidden=false;clearTimeout(showSyncHint.timer);
+  showSyncHint.timer=setTimeout(()=>{if(!hint.contains(document.activeElement))hint.hidden=true},15000);
+}
 function showCollectionToast(){
+  if(syncHintDue())return showSyncHint();
   let toast=$('brandCollectionToast');
   if(!toast){toast=document.createElement('div');toast.id='brandCollectionToast';toast.className='brand-collection-toast';toast.setAttribute('role','status');document.body.append(toast)}
   toast.innerHTML='<img src="/assets/brand/web/rabbit-success-160.webp" alt=""><div><b>已加入我的收藏</b><span>彩虹寶箱兔幫你收好了</span></div>';
