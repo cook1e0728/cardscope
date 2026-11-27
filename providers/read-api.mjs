@@ -2783,7 +2783,85 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   }
 
   // ---- Endpoint Dispatch ----
+  // 資料庫失敗時退回 KV 裡上一份成功的回應：只限首頁與行情頁會用到、沒有篩選的固定請求。
+  const LAST_GOOD_REFRESH_MS = 6 * 3600 * 1000; // 最多每 6 小時寫一次 KV，免費方案一天 1000 次寫入
+  const LAST_GOOD_COOLDOWN_MS = 5 * 60 * 1000; // 失敗後 5 分鐘內直接回 KV，不再讓使用者等資料庫逾時
+  const lastGoodSavedAt = new Map();
+  const lastGoodFailedUntil = new Map();
+
+  function lastGoodKey(apiKey, request, url) {
+    if (request.method !== 'GET') return null;
+    const params = [...url.searchParams.keys()];
+    if ((apiKey === 'price-movers' || apiKey === 'hot-cards') && params.length === 0) return `lastgood:v1:${apiKey}`;
+    const game = url.searchParams.get('game');
+    if (apiKey === 'cards' && params.length === 3 && url.searchParams.get('sort') === 'rarity-desc' && url.searchParams.get('limit') === '40' && db.catalogGameIds().has(game)) {
+      return `lastgood:v1:cards:${game}:rarity-desc:40`;
+    }
+    return null;
+  }
+
+  function lastGoodUseful(text) {
+    const body = parseKvJson(text);
+    if (!body || body.meta?.unavailable) return false;
+    const data = body.data;
+    if (Array.isArray(data)) return data.length > 0;
+    if (data && Array.isArray(data.up)) return data.up.length + (data.down?.length || 0) > 0;
+    return Boolean(data);
+  }
+
+  const lastGoodDue = key => now() - (lastGoodSavedAt.get(key) || 0) >= LAST_GOOD_REFRESH_MS;
+
+  async function saveLastGood(activeEnv, key, body) {
+    const at = now();
+    lastGoodSavedAt.set(key, at); // 先佔位，同一個 isolate 不重複寫
+    const stored = parseKvJson(await readKvRaw(activeEnv, key));
+    const storedAt = Date.parse(stored?.savedAt || '');
+    if (at - storedAt < LAST_GOOD_REFRESH_MS) { lastGoodSavedAt.set(key, storedAt); return; }
+    const text = await body;
+    if (!lastGoodUseful(text) || !(await writeKvRaw(activeEnv, key, { savedAt: new Date(at).toISOString(), body: text }, 30 * 86400))) {
+      lastGoodSavedAt.delete(key);
+    }
+  }
+
+  async function readLastGood(activeEnv, key) {
+    const stored = parseKvJson(await readKvRaw(activeEnv, key));
+    if (typeof stored?.body !== 'string') return null;
+    return new Response(stored.body, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60', 'X-CardSeek-Stale': stored.savedAt || '1' }
+    });
+  }
+
   async function handle(apiKey, request, url, ctx, runtimeEnv = env) {
+    const activeEnv = runtimeEnv || env;
+    currentEnv = activeEnv;
+    const kv = activeEnv?.SNAPSHOT_KV || activeEnv?.CARDSCOPE_KV;
+    const key = kv ? lastGoodKey(apiKey, request, url) : null;
+    if (!key) return handleRoute(apiKey, request, url, ctx, runtimeEnv);
+    if ((lastGoodFailedUntil.get(key) || 0) > now()) {
+      const saved = await readLastGood(activeEnv, key);
+      if (saved) return saved;
+    }
+    const res = await handleRoute(apiKey, request, url, ctx, runtimeEnv);
+    if (res.status === 200 && db.supabaseConfigured()) {
+      lastGoodFailedUntil.delete(key);
+      if (!lastGoodDue(key)) return res;
+      const save = saveLastGood(activeEnv, key, res.clone().text()).catch(error => console.error('last-good save failed', key, error?.message || error));
+      if (typeof ctx?.waitUntil === 'function') ctx.waitUntil(save); else await save;
+      return res;
+    }
+    if (res.status >= 500) {
+      const saved = await readLastGood(activeEnv, key);
+      if (saved) {
+        lastGoodFailedUntil.set(key, now() + LAST_GOOD_COOLDOWN_MS);
+        console.error('serving last-good snapshot', key);
+        return saved;
+      }
+    }
+    return res;
+  }
+
+  async function handleRoute(apiKey, request, url, ctx, runtimeEnv = env) {
     currentEnv = runtimeEnv || env;
     try {
       switch (apiKey) {
