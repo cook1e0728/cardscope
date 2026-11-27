@@ -746,7 +746,7 @@ function detailNumber(c,selected){const passcode=String(c.officialCardNumber||''
 function renderDetailCollect(){
   const slot=document.querySelector('#detail [data-detail-collect]');if(!slot)return;
   const key=slot.dataset.detailCollect,quantity=watchQuantity(key),focused=slot.contains(document.activeElement)?document.activeElement.dataset.collectAct:'';
-  slot.innerHTML=quantity?'<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="true" title="已收藏，按一下取消">★ 已收藏</button>':'<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</button>';
+  slot.innerHTML=quantity?'<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="true" title="已收藏，按一下取消">已收藏</button>':'<button type="button" class="detail-collect-state" data-collect-act="toggle" aria-pressed="false">加入收藏</button>';
   if(quantity)slot.innerHTML+=collectionEditorHtml(key);
   slot.oninput=event=>{if(event.target.dataset?.collField)onCollectionField(event.target,key)};
   slot.onchange=event=>{const pick=event.target.dataset?.collPick;if(pick&&event.target.value)chooseCollectionVersion(pick,event.target.value)};

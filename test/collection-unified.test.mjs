@@ -170,21 +170,21 @@ test('收錄版本: Yu-Gi-Oh! shows the printed number first with the passcode a
 });
 
 // --- detail page: 收藏按鈕
-test('詳細頁收藏按鈕: ☆ 加入收藏 / ★ 已收藏 一鍵切換，不顯示張數，44px targets', () => {
+test('詳細頁收藏按鈕: 寶箱＋「加入收藏／已收藏」一鍵切換，不顯示張數，44px targets', () => {
   const c = collection({ watchlist: {} });
   const slot = { dataset: { detailCollect: 'k1' }, innerHTML: '', contains: () => false, querySelector: () => null };
   Object.assign(c.sandbox, { document: { querySelector: () => slot, activeElement: null }, collectionEditorHtml: () => '', onCollectionField() {}, chooseCollectionVersion() {} });
   vm.runInContext(between('function renderDetailCollect', '// ── 詳細資料（REDESIGN_PLAN'), c.sandbox);
   c.run('renderDetailCollect()');
-  assert.match(slot.innerHTML, /data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</);
+  assert.match(slot.innerHTML, /data-collect-act="toggle" aria-pressed="false">加入收藏</);
   const click = act => slot.onclick({ target: { closest: () => ({ dataset: { collectAct: act } }) } });
   click('toggle');
   assert.equal(c.run('watchQuantity("k1")'), 1);
-  assert.match(slot.innerHTML, /aria-pressed="true"[^>]*>★ 已收藏</);
+  assert.match(slot.innerHTML, /aria-pressed="true"[^>]*>已收藏</);
   assert.doesNotMatch(slot.innerHTML, /×|data-collect-act="(?:inc|dec)"/, 'no count, no ±');
   click('toggle');
   assert.equal(c.run('watchQuantity("k1")'), 0);
-  assert.match(slot.innerHTML, /☆ 加入收藏/);
+  assert.match(slot.innerHTML, />加入收藏</);
   assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>(?:\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\})(?:\$\{priceSlot\})?<div class="detail-actions"><div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name (the reference price row may sit between)');
   assert.match(ui, /\.detail-collect button\{min-width:44px;min-height:44px/);
 });

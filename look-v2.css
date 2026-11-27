@@ -1254,3 +1254,8 @@ html.look-clean body[data-view] .unified-image-fallback.rgb-fallback[data-rgb="g
 html.look-clean body[data-view] .unified-image-fallback.rgb-fallback[data-rgb="b"]{--rgb:#3D7BFF}
 html.look-clean body[data-view] .unified-image-fallback.rgb-fallback b{font-size:clamp(40px,9cqw,72px);line-height:1;font-weight:800;color:var(--rgb)!important;text-shadow:0 0 18px color-mix(in srgb,var(--rgb) 60%,transparent)}
 html.look-clean body[data-view] .unified-image-fallback.rgb-fallback small{display:block!important;color:#D9D1C3!important;font-size:12px}
+/* 收藏圖示全站統一成像素寶箱（使用者 2026-11-27）：詳細頁按鈕前放寶箱，沒收藏是灰的；頁首「我的收藏」也改用寶箱（32px 素材縮一半保持像素清楚） */
+html.look-clean body[data-view] #detail .detail-collect-state{display:inline-flex;align-items:center;gap:8px}
+html.look-clean body[data-view] #detail .detail-collect-state::before{content:"";width:24px;height:24px;flex:none;background:url(/assets/pixel/chest.png) 0 0/24px 24px no-repeat;image-rendering:pixelated}
+html.look-clean body[data-view] #detail .detail-collect-state[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
+html.look-clean body .top .nav button[data-nav="collection"]::before{width:16px;height:16px;background:url(/assets/pixel/chest.png) 0 0/16px 16px no-repeat;-webkit-mask:none;mask:none;image-rendering:pixelated}
