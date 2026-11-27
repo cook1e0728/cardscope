@@ -1259,9 +1259,3 @@ html.look-clean body[data-view] #detail .detail-collect-state{display:inline-fle
 html.look-clean body[data-view] #detail .detail-collect-state::before{content:"";width:24px;height:24px;flex:none;background:url(/assets/pixel/chest.png) 0 0/24px 24px no-repeat;image-rendering:pixelated}
 html.look-clean body[data-view] #detail .detail-collect-state[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
 html.look-clean body .top .nav button[data-nav="collection"]::before{width:16px;height:16px;background:url(/assets/pixel/chest.png) 0 0/16px 16px no-repeat;-webkit-mask:none;mask:none;image-rendering:pixelated}
-/* 我的收藏・光學對齊（使用者 2026-11-27 預覽中）：膠囊按鈕往左凸出，讓按鈕裡的圖示／字對齊標題的文字線。
-   凸出量＝按鈕左內距＋框線（Google 鈕 16+1；圖鑑／清單 凹槽 2＋膠囊內距）。手機左右邊距只有 16px，維持外框對齊。 */
-@media (min-width:761px){
-  html.look-clean body[data-view="collection"] .coll-account-btn{margin-left:-17px}
-  html.look-clean body[data-view="collection"] #cardControls>.view-switch:first-child{margin-left:-21px}
-}
