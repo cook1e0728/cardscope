@@ -115,7 +115,7 @@ export function seoRequestTarget(url) {
   const card = clean(url.searchParams.get('card'));
   if (card) return { kind: 'card', id: card };
   const series = clean(url.searchParams.get('series'));
-  return series ? { kind: 'series', id: series } : null;
+  return series ? { kind: 'series', id: series, pages: url.searchParams.get('pages') } : null;
 }
 
 export function isPublicStaticPath(pathname) {

@@ -15,7 +15,7 @@ import {
 import { KV_KEYS } from '../providers/kv-snapshots.mjs';
 import { googleCallbackLocation } from '../providers/auth-sync.mjs';
 import { createReadApi, priceHistoryNote } from '../providers/read-api.mjs';
-import { applyNoindexToHtml, applySeoToHtml, homeSeo, normalizeBaseUrl, renderRobotsTxt, viewSeo } from '../providers/seo.mjs';
+import { applyNoindexToHtml, applySeoToHtml, homeSeo, normalizeBaseUrl, renderRobotsTxt, viewSeo, withSeriesPages } from '../providers/seo.mjs';
 
 export { KV_KEYS };
 
@@ -738,7 +738,7 @@ export function createWorkerHandler({ fetchFn = globalThis.fetch, now = Date.now
               request.method
             );
           }
-          const body = entry?.seo ? applySeoToHtml(indexHtml, entry.seo) : indexHtml;
+          const body = entry?.seo ? applySeoToHtml(indexHtml, withSeriesPages(entry.seo, seoTarget.pages)) : indexHtml;
           const etag = `"${await sha1Hex(body)}"`;
           if (etagMatches(request, etag)) {
             const headers = new Headers({ 'Cache-Control': 'no-cache', ETag: etag });

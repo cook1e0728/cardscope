@@ -282,3 +282,13 @@ test('ⓘ 說明先處理 Esc（已 preventDefault）：這時詳細頁不關', 
   h.dispatchEscape({ closest: () => null }, true);
   assert.equal(h.nodes.get('modal').classList.contains('open'), true);
 });
+
+test('「載入更多」的下一頁網址照目前狀態組：不帶卡、頁數跟已載入張數走、最多 20 頁、搜尋連回同一個搜尋',()=>{
+  const h=navigationHarness('?game=pokemon&region=JP');
+  h.run("browse.seriesId='s-new';browse.offset=48");
+  assert.equal(h.run('nextPageHref()'),'/?game=pokemon&region=JP&series=s-new&pages=2','切換系列後網址還沒更新，也要指向新系列');
+  h.run('browse.offset=144');assert.match(h.run('nextPageHref()'),/&pages=4$/);
+  h.run('browse.offset=48*30');assert.match(h.run('nextPageHref()'),/&pages=20$/,'和 pages 解析上限一致');
+  h.run("var activeSearch={hasMore:true};document.getElementById('q').value='皮卡丘'");
+  assert.doesNotMatch(h.run('nextPageHref()'),/pages=/,'搜尋不還原分頁');
+});

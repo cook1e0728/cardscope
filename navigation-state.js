@@ -89,6 +89,9 @@
     const search=params.toString();return `${location.pathname}${search?`?${search}`:''}${location.hash||''}`;
   }
 
+  // 「載入更多」連到下一頁：照目前狀態組，不讀 location（切換系列時網址要等載完才更新）。搜尋不還原分頁，就連回同一個搜尋。
+  window.nextPageHref=()=>urlFor({card:'',pages:typeof activeSearch!=='undefined'&&activeSearch?1:Math.min(20,Math.ceil(number(browse?.offset,0)/PAGE_SIZE)+1)});
+
   function saveScroll(){
     if(!history.replaceState)return;
     history.replaceState({...history.state,scrollY:Math.max(0,Math.round(window.scrollY||0))},'',location.href);

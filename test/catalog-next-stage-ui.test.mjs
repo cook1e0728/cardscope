@@ -62,3 +62,9 @@ test('primary navigation is real buttons and the logo tiles are the only game ch
   assert.match(switcher,/scope\.openCollection/);
   assert.match(switcher,/navigate\[button\.dataset\.nav\]/);
 });
+
+test('「載入更多」是連到下一頁（?pages=N）的真連結，一般點擊仍在原頁載入',()=>{
+  assert.match(html,/<a class="load-more" id="loadMore" href="\/">載入更多卡片<\/a>/);
+  assert.equal(html.match(/button\.href=window\.nextPageHref\?\.\(\)\|\|'\/'/g)?.length,2,'系列與搜尋載完都更新下一頁網址');
+  assert.match(html,/\$\('loadMore'\)\.onclick=event=>\{if\(event&&window\.plainClick&&!window\.plainClick\(event\)\)return;event\?\.preventDefault\(\);if\(\$\('loadMore'\)\.disabled\)return;/,'Ctrl／中鍵交給瀏覽器開新分頁；載入中不重複觸發');
+});

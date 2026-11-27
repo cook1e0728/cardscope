@@ -27,7 +27,7 @@ import { aggregateCatalogBaselines } from './providers/catalog-baseline.mjs';
 import { chunkCardIds, createBoundedSnapshotCache, createRateLimiter, imageSourceOf, summarizeImageHealth } from './providers/backend-reliability.mjs';
 import './collection-store.js'; // 瀏覽器與伺服器共用的收藏驗證與合併規則（掛在 globalThis.CollectionStore）
 import { createAuthSyncController, googleCallbackLocation } from './providers/auth-sync.mjs';
-import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo } from './providers/seo.mjs';
+import { SITEMAP_MAX_URLS, applyNoindexToHtml, applySeoToHtml, cardSeo, cardSitemapEntries, chunkEntries, homeSeo, mergeCardSitemapRows, normalizeBaseUrl, pageSitemapEntries, renderRobotsTxt, renderSitemapIndex, renderUrlSet, seriesSeo, seriesSitemapEntries, viewSeo, withSeriesPages } from './providers/seo.mjs';
 import { API_CSP, NOT_FOUND_HTML, PUBLIC_STATIC, REVALIDATE_EXTENSIONS, SECURITY_HEADERS, buildPageCsp, inlineScripts, mergeVaryHeader, renderSecurityTxt, seoRequestTarget } from './providers/http-security.mjs';
 import { BASE_CATALOG_GAME_IDS, CATALOG_REGION_IDS, MAIN_ONLY_PATH, SECOND_DB_GAMES, dbForGame, dbForId } from './providers/supabase-client.mjs';
 import {
@@ -1172,7 +1172,7 @@ async function serveSeoIndex(req,res,target){
   // 和首頁靜態檔一致：no-cache＋內容 ETag，換版或卡片資料變了立刻生效，沒變就 304。404 頁不帶 ETag。
   const send=(status,body)=>sendResponse(res,status,body,{'Content-Type':types['.html'],'Cache-Control':'no-cache'},{etag:status===200}),key=`${target.kind}:${target.id}`;let entry=seoCacheGet(key);
   if(entry===undefined){try{const seo=await withTimeout(target.kind==='card'?loadSeoForCard(target.id):loadSeoForSeries(target.id),SEO_LOAD_TIMEOUT_MS);entry=seo?{seo}:{missing:true};seoCacheSet(key,entry,seo?SEO_CACHE_TTL_MS:SEO_NEGATIVE_TTL_MS)}catch(error){console.error('seo lookup failed',error.message);return send(200,html)}}
-  return entry.missing?send(404,applyNoindexToHtml(html)):send(200,applySeoToHtml(html,entry.seo));
+  return entry.missing?send(404,applyNoindexToHtml(html)):send(200,applySeoToHtml(html,withSeriesPages(entry.seo,target.pages)));
 }
 // Keyset paging (id > last) keeps every page cheap however deep the table is.
 async function forEachKeysetPage(table,select,onRows){let last=null;for(let pages=0;pages<1000;pages++){const params=new URLSearchParams({select,order:'id.asc',limit:String(SITEMAP_PAGE_SIZE)});if(last!==null)params.set('id',`gt.${last}`);const rows=await supabaseFetch(`/${table}?${params}`);if(!Array.isArray(rows))throw new Error('SITEMAP_BAD_RESPONSE');onRows(rows);if(rows.length<SITEMAP_PAGE_SIZE)return;const next=rows.at(-1)?.id;if(!next||next===last)throw new Error('SITEMAP_PAGING_STALLED');last=next}throw new Error('SITEMAP_TOO_MANY_PAGES')}
