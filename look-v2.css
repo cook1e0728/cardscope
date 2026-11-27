@@ -432,13 +432,7 @@ html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .ra
 html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect)::before,.fx-chest-base,.fx-chest-lid{content:"";width:32px;height:32px;background:url(/assets/pixel/chest.png) 0 0/32px 32px no-repeat;image-rendering:pixelated}
 html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect)[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
 html.look-clean body[data-view] #homeRails .rail-collect.fx-chest-src::before{visibility:hidden}
-html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act";grid-template-rows:repeat(6,auto) 1fr}
-html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{justify-self:stretch;align-self:end;margin-top:6px}
-html.look-clean body[data-view] .cards .card .watchlist-inline{display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:hidden}
-html.look-clean body[data-view] .cards .card .watchlist-inline button{flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
-html.look-clean body[data-view] .cards .card .watchlist-inline button:active{transform:scale(.97)}
 /* 數字欄可縮到 0：375px 三欄時兩顆 44px 鈕加原本 24px 數字欄放不下，「＋」被切掉（體檢 HCI-06） */
-html.look-clean body[data-view] .cards .card .watchlist-inline .watch-quantity{flex:1 1 auto;min-width:0;text-align:center;font-size:var(--fs-14);font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 html.look-clean body[data-view] .cards .card :is(.favorite-toggle,.watchlist-inline button):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
 /* 清單模式：收藏鈕在最右邊 */
 html.look-clean body[data-view] .cards .card.card-list{padding:8px 14px 8px 10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow)}
@@ -468,7 +462,6 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
   html.look-clean body[data-view] .cards .card:not(.card-list) .card-sep{display:none}
   html.look-clean body[data-view] .cards .card:not(.card-list) .card-price{font-size:var(--fs-sub)}
   html.look-clean body[data-view] .cards .card .favorite-toggle{margin:0 -4px 0 0}
-  html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{margin:4px -6px -2px}
   html.look-clean body[data-view] #cardControls{flex-wrap:nowrap;overflow-x:auto;padding:2px 32px 2px 0;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
   html.look-clean body[data-view] #cardControls::-webkit-scrollbar{display:none}
   html.look-clean body[data-view] #cardControls>*{scroll-snap-align:start}

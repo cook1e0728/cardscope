@@ -30,6 +30,6 @@ test('wall cards: name is always two lines tall, number and rarity never wrap, c
   assert.match(css,/\.card:not\(\.card-list\) h3\{min-height:2\.6em;/,'phone name: 2-line slot');
   assert.match(css,/\.card:not\(\.card-list\) \.meta\{[^}]*flex-wrap:nowrap/,'number + rarity on one row');
   assert.match(css,/\.card-ctx :is\(\.card-game,\.card-series\)\{display:block;height:16px;/,'game line and series line are fixed 16px rows');
-  assert.match(css,/\.is-owned:not\(\.card-list\)\{[^}]*"act act";grid-template-rows:repeat\(6,auto\) 1fr\}/,'owned: the stepper row takes the slack');
+  assert.doesNotMatch(css,/\.card\.is-owned:not\(\.card-list\)/,'owned cards keep the same layout: the collect toggle stays put when pressed');
   assert.match(css,/@media \(max-width:760px\)\{[\s\S]*"flags flags" "act act";grid-template-rows:repeat\(6,auto\) 1fr\}/,'phone: every card ends with the collect row');
 });
