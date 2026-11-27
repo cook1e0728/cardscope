@@ -1,7 +1,7 @@
 name: Build Workers KV snapshots
 
 # 預先計算首頁統計、收錄覆蓋率（pack-prizes、series-hits、catalog/coverage）與 Sitemaps（sitemap.xml、series.xml、cards-N.xml）並透過 Cloudflare API 寫入 Workers KV（SNAPSHOT_KV）。
-# 快照會整個讀過資料庫，會吃 Supabase 免費方案的 Disk IO 額度（2026-11-27 曾被用光）：首頁的 pack-prizes、series-hits 每 6 小時一次；
+# 快照會整個讀過資料庫，會吃 Supabase 免費方案的 Disk IO 額度（2026-11-27 曾被用光）：首頁的 pack-prizes、series-hits 每 6 小時一次（03:45 那次跑全部，所以只排三次）；
 # 全部目標（含最重的 catalog-coverage、sitemaps）每天一次，在台灣清晨 03:45。
 # 需於 GitHub Repository Settings → Secrets and variables → Actions 設定以下 Secrets（僅列名稱，嚴禁將值寫入此檔案）：
 # - SUPABASE_URL
@@ -13,7 +13,7 @@ name: Build Workers KV snapshots
 # - CF_API_TOKEN
 on:
   schedule:
-    - cron: '15 */6 * * *'
+    - cron: '15 1,7,13 * * *'
     - cron: '45 19 * * *'
   workflow_dispatch:
     inputs:
@@ -43,7 +43,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          SNAPSHOT_TARGETS: ${{ github.event.inputs.targets || (github.event.schedule == '15 */6 * * *' && 'pack-prizes,series-hits') || 'pack-prizes,series-hits,catalog-coverage,sitemaps' }}
+          SNAPSHOT_TARGETS: ${{ github.event.inputs.targets || (github.event.schedule == '15 1,7,13 * * *' && 'pack-prizes,series-hits') || 'pack-prizes,series-hits,catalog-coverage,sitemaps' }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ "$EVENT_NAME" = "schedule" ]; then

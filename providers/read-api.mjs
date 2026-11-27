@@ -2809,20 +2809,22 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
     return Boolean(data);
   }
 
-  async function saveLastGood(key, response) {
+  const lastGoodDue = key => now() - (lastGoodSavedAt.get(key) || 0) >= LAST_GOOD_REFRESH_MS;
+
+  async function saveLastGood(activeEnv, key, body) {
     const at = now();
-    if (at - (lastGoodSavedAt.get(key) || 0) < LAST_GOOD_REFRESH_MS) return;
-    lastGoodSavedAt.set(key, at);
-    const stored = parseKvJson(await readKvRaw(currentEnv, key));
+    lastGoodSavedAt.set(key, at); // 先佔位，同一個 isolate 不重複寫
+    const stored = parseKvJson(await readKvRaw(activeEnv, key));
     const storedAt = Date.parse(stored?.savedAt || '');
     if (at - storedAt < LAST_GOOD_REFRESH_MS) { lastGoodSavedAt.set(key, storedAt); return; }
-    const body = await response.text();
-    if (!lastGoodUseful(body)) return;
-    await writeKvRaw(currentEnv, key, { savedAt: new Date(at).toISOString(), body }, 30 * 86400);
+    const text = await body;
+    if (!lastGoodUseful(text) || !(await writeKvRaw(activeEnv, key, { savedAt: new Date(at).toISOString(), body: text }, 30 * 86400))) {
+      lastGoodSavedAt.delete(key);
+    }
   }
 
-  async function readLastGood(key) {
-    const stored = parseKvJson(await readKvRaw(currentEnv, key));
+  async function readLastGood(activeEnv, key) {
+    const stored = parseKvJson(await readKvRaw(activeEnv, key));
     if (typeof stored?.body !== 'string') return null;
     return new Response(stored.body, {
       status: 200,
@@ -2831,23 +2833,25 @@ export function createReadApi({ env = {}, fetchFn = globalThis.fetch, now = Date
   }
 
   async function handle(apiKey, request, url, ctx, runtimeEnv = env) {
-    currentEnv = runtimeEnv || env;
-    const kv = currentEnv?.SNAPSHOT_KV || currentEnv?.CARDSCOPE_KV;
+    const activeEnv = runtimeEnv || env;
+    currentEnv = activeEnv;
+    const kv = activeEnv?.SNAPSHOT_KV || activeEnv?.CARDSCOPE_KV;
     const key = kv ? lastGoodKey(apiKey, request, url) : null;
     if (!key) return handleRoute(apiKey, request, url, ctx, runtimeEnv);
     if ((lastGoodFailedUntil.get(key) || 0) > now()) {
-      const saved = await readLastGood(key);
+      const saved = await readLastGood(activeEnv, key);
       if (saved) return saved;
     }
     const res = await handleRoute(apiKey, request, url, ctx, runtimeEnv);
     if (res.status === 200 && db.supabaseConfigured()) {
       lastGoodFailedUntil.delete(key);
-      const save = saveLastGood(key, res.clone()).catch(error => console.error('last-good save failed', key, error?.message || error));
+      if (!lastGoodDue(key)) return res;
+      const save = saveLastGood(activeEnv, key, res.clone().text()).catch(error => console.error('last-good save failed', key, error?.message || error));
       if (typeof ctx?.waitUntil === 'function') ctx.waitUntil(save); else await save;
       return res;
     }
     if (res.status >= 500) {
-      const saved = await readLastGood(key);
+      const saved = await readLastGood(activeEnv, key);
       if (saved) {
         lastGoodFailedUntil.set(key, now() + LAST_GOOD_COOLDOWN_MS);
         console.error('serving last-good snapshot', key);
