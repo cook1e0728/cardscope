@@ -28,10 +28,10 @@
   const cell=(row,name,inner)=>{rowsById.set(String(row.cardId),row);return `<div class="trend-cell">${inner}${collectBtn(row,name)}</div>`};
   function hotCard(row){
     const name=row.name||row.nameJa||row.cardNumber||'未命名卡片';
-    return cell(row,name,`<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}</div>`+
+    return cell(row,name,`<a class="trend-card" href="${esc(window.cardHref?.(row.game,row.cardId))}" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name)}</div>`+
       `<div class="trend-card-head"><b>${esc(name)}</b></div>`+
       `<span class="trend-card-number">${esc([row.seriesCode,row.cardNumber].filter(Boolean).join(' · '))}</span>`+
-      `<small>${esc([gameName(row.game),row.seriesName].filter(Boolean).join(' · '))}</small></button>`);
+      `<small>${esc([gameName(row.game),row.seriesName].filter(Boolean).join(' · '))}</small></a>`);
   }
   // hot：undefined＝還在讀；{rows,meta,failed}＝讀完（failed＝讀取失敗，rows 是空的）
   function hotPanel(hot){
@@ -44,12 +44,12 @@
   // 卡號那行可換行（手機上 EB05-006、SFN/S136-002SSP 會被截掉）；遊戲與系列已寫在每排標題，只有「精選」那排才在卡上寫。
   function prizeCard(row,mixed,tier='top'){
     const name=row.name||row.cardNumber||'未命名卡片',twd=row.game==='pokemon'?Number(row.referencePrice?.amountTwd):0;
-    return cell(row,name,`<button type="button" class="trend-card" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name,{rgb:shared().rgbLetter?.(row.rarity,row.cardNumber)})}${row.altArt?'<span class="tc-alt">異圖</span>':''}</div>`+
+    return cell(row,name,`<a class="trend-card" href="${esc(window.cardHref?.(row.game,row.cardId))}" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${shared().image(row.imageUrl,name,{rgb:shared().rgbLetter?.(row.rarity,row.cardNumber)})}${row.altArt?'<span class="tc-alt">異圖</span>':''}</div>`+
       `<div class="trend-card-head"><b>${esc(name)}</b></div>`+
       // 同卡牆：同一行左邊卡號、右邊稀有度膠囊（顏色依這一排的稀有度高低，見 prizeRail）；放不下時膠囊整顆換行，不留「·」。
       // 卡號去掉斜線前的系列前綴（UA「EX17BT/」、黑白雙翼「SFN/」，排標題已寫系列），完整卡號放 title；異圖改成卡圖角上的小標。
       `<span class="trend-card-meta"><span class="tc-no" title="${esc(row.cardNumber||'')}">${esc(String(row.cardNumber||'').replace(/^[A-Za-z][A-Za-z0-9]*\//,''))}</span>${row.rarity?`<span class="card-rarity" data-tier="${tier}">${esc(row.rarity)}</span>`:''}</span>`+
-      (twd>0?`<strong class="trend-price">NT$${Math.round(twd).toLocaleString('en-US')}</strong><small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價（約）`)}</small>`:row.game==='pokemon'&&!mixed?'<strong class="trend-price is-none">—</strong><small>目前沒有參考價</small>':mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>');
+      (twd>0?`<strong class="trend-price">NT$${Math.round(twd).toLocaleString('en-US')}</strong><small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價（約）`)}</small>`:row.game==='pokemon'&&!mixed?'<strong class="trend-price is-none">—</strong><small>目前沒有參考價</small>':mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</a>');
   }
   // 伺服器已依 data/rarity-rankings.json 由高到低排好：這一排出現的第一種稀有度金、第二種銀、其餘銅；跨遊戲的「精選」排無從比較，一律金。
   const prizeRail=(title,rows,mixed=false)=>{const order=[...new Set(rows.map(row=>row?.rarity).filter(Boolean))];
@@ -68,9 +68,9 @@
   // 緊湊一列：小圖、卡名與編號、漲跌幅（文字有 ↑／↓ 與正負號，不只靠顏色）、前後參考價。
   function moverRow(row,up){
     const pct=Math.abs(Number(row.changePercent)).toLocaleString('en-US',{maximumFractionDigits:1}),name=row.name||row.cardNumber||'未命名卡片';
-    return `<li><button type="button" class="mover-row" data-do="openCard" data-arg="${esc(row.cardId)}"><span class="mover-img">${shared().image(row.imageUrl,'')}</span>`+
+    return `<li><a class="mover-row" href="${esc(window.cardHref?.(row.game,row.cardId))}" data-do="openCard" data-arg="${esc(row.cardId)}"><span class="mover-img">${shared().image(row.imageUrl,'')}</span>`+
       `<span class="mover-name"><b>${esc(name)}</b><small>${esc([row.seriesCode,row.cardNumber].filter(Boolean).join(' · '))}</small><small>${esc(twd(row.from.amountTwd))} → ${esc(twd(row.to.amountTwd))}</small></span>`+
-      `<span class="mover-chg ${up?'is-up':'is-down'}">${up?'↑ +':'↓ -'}${pct}%</span></button></li>`;
+      `<span class="mover-chg ${up?'is-up':'is-down'}">${up?'↑ +':'↓ -'}${pct}%</span></a></li>`;
   }
   function moversPanel(up,rows,meta,info){
     return head(`近 ${Number(meta.windowDays)||14} 天參考價${up?'漲':'跌'}最多`,'寶可夢，歐洲平台參考價，不是成交價',info,'h2')+`<ul class="mover-list">${rows.slice(0,MOVERS_N).map(row=>moverRow(row,up)).join('')}</ul>`+(up?'':'<p class="panel-more"><a href="/?view=market" data-spa>看完整漲跌榜與時事</a></p>');

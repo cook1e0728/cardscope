@@ -4,9 +4,16 @@
 (function(){
   // Whitelist, looked up on window at click time so navigation-state.js wrappers of choose/openCard are the ones that run.
   const ACTIONS=['choose','openCard','openProduct','chooseProductCategory'];
+  // 卡片與系列是真連結（<a href>，搜尋引擎才找得到頁面）：一般點擊留在頁內開，Ctrl／Cmd／中鍵照瀏覽器預設開新分頁。
+  window.plainClick=event=>event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey;
+  const query=params=>'/?'+Object.entries(params).filter(([,value])=>value).map(([key,value])=>`${key}=${encodeURIComponent(value)}`).join('&');
+  window.cardHref=(game,card)=>query({game,card});
+  window.seriesHref=(game,series,region)=>query({game,series,region});
   document.addEventListener('click',event=>{
     const el=event.target.closest?.('[data-do]');
-    if(el&&ACTIONS.includes(el.dataset.do)&&typeof window[el.dataset.do]==='function')window[el.dataset.do](el.dataset.arg);
+    if(!el||!ACTIONS.includes(el.dataset.do)||typeof window[el.dataset.do]!=='function')return;
+    if(el.tagName==='A'){if(!window.plainClick(event))return;event.preventDefault()}
+    window[el.dataset.do](el.dataset.arg);
   });
   // ⓘ：解釋規則的句子收在這裡，點開才看。用 <details>，Enter／Space 開關；Esc、點外面或再按一次都能關。
   // label 與 body 由呼叫端跳脫（body 是 HTML）。內容用絕對定位浮在原處，不推動版面；太靠邊時往內推，不超出視窗。

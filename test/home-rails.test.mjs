@@ -61,7 +61,7 @@ test('最夯＝本彈大獎：每個遊戲一排、標題寫遊戲與系列；�
   const {rails}=load();
   const out=rails.trendingPanel(prizes([{game:'onepiece',seriesName:'世界最強的戰士',data:[prizeRow(1,{altArt:true}),prizeRow(2)]},{game:'pokemon',seriesName:'30th CELEBRATION',data:[prizeRow(3,{game:'pokemon',rarity:'SAR',referencePrice:{amountTwd:1234.4}})]}],[prizeRow(9,{name:'置頂卡'})]));
   assert.match(out,/本彈大獎/);
-  assert.equal(out.match(/<button type="button" class="trend-card/g).length,4);
+  assert.equal(out.match(/<a class="trend-card"/g).length,4);
   assert.ok(out.indexOf('精選')<out.indexOf('世界最強的戰士')&&out.indexOf('置頂卡')<out.indexOf('大獎卡 1'),'置頂在自動挑選之前');
   assert.match(out,/<span class="trend-card-meta"><span class="tc-no" title="OP17-111">OP17-111<\/span><span class="card-rarity" data-tier="top">SEC<\/span><\/span>/,'同卡牆：卡號＋稀有度膠囊同一行');
   assert.match(out,/<span class="tc-alt">異圖<\/span>/,'異圖標在卡圖角上');
@@ -145,7 +145,7 @@ test('最夯：不收壞資料列，整排都壞就不畫那一排',async()=>{
   const dom=fakeDom();
   load({doc:dom.doc,responses:{'/api/pack-prizes':ok({pinned:[null,{name:'沒有 id'}],games:[{game:'pokemon',data:[{cardId:'x'},null,'bad']},{game:'weiss-schwarz',data:[null]},null],meta:{}})}});
   await tick();await tick();await tick();
-  assert.equal(dom.panels.trending.innerHTML.match(/<button type="button" class="trend-card/g).length,1);
+  assert.equal(dom.panels.trending.innerHTML.match(/<a class="trend-card"/g).length,1);
   assert.doesNotMatch(dom.panels.trending.innerHTML,/rails-sub">(?:精選|weiss)/);
 });
 
@@ -170,8 +170,8 @@ test('☆：卡片與 ☆ 是同一格裡並排的兩顆按鈕（不巢狀）；
   ctx.railCollectQuantity=id=>owned[id]||0;ctx.collectRailCard=row=>got.push(row);
   await tick();await tick();await tick();
   const out=dom.panels.hot.innerHTML;
-  assert.equal(out.match(/<div class="trend-cell"><button type="button" class="trend-card"[^]*?<\/button><button type="button" class="favorite-toggle rail-collect"/g).length,6);
-  assert.doesNotMatch(out.replace(/<button[^>]*>/g,'B').replace(/<\/button>/g,'E'),/B[^E]*B/,'沒有按鈕包按鈕');
+  assert.equal(out.match(/<div class="trend-cell"><a class="trend-card"[^]*?<\/a><button type="button" class="favorite-toggle rail-collect"/g).length,6);
+  assert.doesNotMatch(out.replace(/<(?:button|a)[^>]*>/g,'B').replace(/<\/(?:button|a)>/g,'E'),/B[^E]*B/,'沒有按鈕或連結互相包住');
   assert.match(out,/data-rail-collect="pokemon-hot-1" data-rail-name="&lt;b&gt;壞&lt;\/b&gt;" aria-pressed="false" aria-label="加入我的收藏：&lt;b&gt;壞&lt;\/b&gt;"[^>]*>☆</);
   assert.match(out,/data-rail-collect="pokemon-hot-2"[^>]*aria-pressed="true" aria-label="已收藏：熱門卡 2，按一下取消"[^>]*>★</);
   const target={dataset:{railCollect:'pokemon-hot-3'}};
@@ -277,4 +277,16 @@ test('樣式：≥1200px 首頁多欄（搜尋左／漲幅右、榜單左／跌�
   assert.match(block,/#homeRails \.rails-block\[hidden\]\{display:none!important\}/,'不足一排而藏起來的那排');
   assert.doesNotMatch(block,/font-size:\s*(?:[0-9]|1[01])(?:\.\d+)?px|transition:\s*all/);
   assert.doesNotMatch(block.replace(/@media \(hover:hover\) and \(pointer:fine\)\{[^}]*\}/g,''),/:hover/,':hover 只放在 (hover:hover) 裡');
+});
+
+test('SEO：卡片與系列是真連結；一般點擊留在頁內，Ctrl／Cmd／中鍵開新分頁', async () => {
+  const src = await readFile(new URL('../ui-actions.js', import.meta.url), 'utf8');
+  const sandbox = { window: {}, document: { addEventListener() {} } };
+  vm.runInNewContext(src, sandbox);
+  const { cardHref, seriesHref, plainClick } = sandbox.window;
+  assert.equal(cardHref('pokemon', 'pokemon-tcgdex-ja-m6a-r'), '/?game=pokemon&card=pokemon-tcgdex-ja-m6a-r');
+  assert.equal(cardHref('', 'a b&c'), '/?card=a%20b%26c', '沒有遊戲就不帶 game；卡片 ID 會編碼');
+  assert.equal(seriesHref('pokemon', 'pokemon-tcgdex-ja-m6a', 'JP'), '/?game=pokemon&series=pokemon-tcgdex-ja-m6a&region=JP');
+  assert.equal(plainClick({ button: 0 }), true);
+  for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) assert.equal(plainClick({ button: 0, ...modifier }), false);
 });
