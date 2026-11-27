@@ -307,24 +307,19 @@ async function runViewport(browser,viewport){
     await chooseRarity('all');
     await waitForGame(page,'pokemon');
 
-    // 收藏是一個動作：☆ 加 1 張、「− 數量 ＋」調整、減到 0 取消；只重畫那一張卡，其他卡的節點留著（B7）。
+    // 收藏是一鍵開關：☆ 按一下收藏、再按取消，不計張數；只重畫那一張卡，其他卡的節點留著（B7）。
     const wallCards=page.locator('#cards .card');
     assert.ok(await wallCards.count()>=2,`${viewport.name} need two cards to check single-card repaint`);
     await page.evaluate(()=>{document.querySelectorAll('#cards .card').forEach((card,index)=>{card.dataset.smokeNode=String(index)})});
-    const first=wallCards.nth(0),firstStar=first.locator('.favorite-toggle');
+    const first=wallCards.nth(0),firstStar=()=>first.locator('.favorite-toggle');
     assert.equal(await first.locator('.card-ctx').count(),0,`${viewport.name} a single series page keeps game, series and version labels off the cards`);
-    const starBox=await firstStar.boundingBox();assert.ok(starBox.width>=44&&starBox.height>=44,`${viewport.name} the collect star is a 44px target`);
-    await firstStar.click();
-    await waitForVisible(first.locator('.watchlist-inline'),`${viewport.name} one press on ☆ should add the card`);
-    assert.equal(await first.locator('.watch-quantity').innerText(),'1');
-    assert.match(await first.locator('.watchlist-inline').getAttribute('aria-label'),/已收藏 1 張/);
-    await first.locator('[data-watch-increment]').click();
-    assert.equal(await first.locator('.watch-quantity').innerText(),'2');
+    const starBox=await firstStar().boundingBox();assert.ok(starBox.width>=44&&starBox.height>=44,`${viewport.name} the collect star is a 44px target`);
+    await firstStar().click();
+    await waitForVisible(first.locator('.favorite-toggle[aria-pressed="true"]'),`${viewport.name} one press on ☆ should add the card`);
+    assert.equal(await first.locator('.watch-quantity,[data-watch-increment]').count(),0,`${viewport.name} no quantity stepper`);
     assert.equal(await page.evaluate(()=>[...document.querySelectorAll('#cards .card')].map(card=>card.dataset.smokeNode).join()),await wallCards.evaluateAll(cards=>cards.map((_,index)=>String(index)).join()),`${viewport.name} collecting must not rebuild the wall`);
-    await first.locator('[data-watch-decrement]').click();
-    await first.locator('[data-watch-decrement]').click();
-    await waitForVisible(first.locator('.favorite-toggle'),`${viewport.name} going to 0 should cancel the collection`);
-    assert.equal(await first.locator('.watchlist-inline').count(),0);
+    await firstStar().click();
+    await waitForVisible(first.locator('.favorite-toggle[aria-pressed="false"]'),`${viewport.name} a second press should cancel the collection`);
 
     // Open the deliberately broken-image card. Market and reports are both
     // unavailable, but the detail surface must remain usable and disclose the
@@ -616,7 +611,7 @@ async function runCollectionChecks(browser,viewport){
       await Promise.race([page.locator('#cards .card').first().waitFor({timeout:8000}),retry.waitFor({timeout:8000})]).catch(()=>{});
       if(await retry.count()&&await retry.isVisible())await retry.click();
       await waitForVisible(page.locator('#cards .card').first(),`${label}: ${game} wall did not load`);
-      for(let index=0;index<count;index+=1){const card=page.locator('#cards .card').nth(index);await card.locator('.favorite-toggle').click();await waitForVisible(card.locator('.watchlist-inline'),`${label}: ☆ should collect ${game} card ${index}`)}
+      for(let index=0;index<count;index+=1){const card=page.locator('#cards .card').nth(index);await card.locator('.favorite-toggle').click();await waitForVisible(card.locator('.favorite-toggle[aria-pressed="true"]'),`${label}: ☆ should collect ${game} card ${index}`)}
     };
     const stored=()=>page.evaluate(()=>localStorage.getItem('cardscope-watchlist')+'|'+localStorage.getItem('cardscope-watchlist-meta'));
 
