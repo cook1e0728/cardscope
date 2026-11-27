@@ -1088,9 +1088,11 @@ html.look-clean #detail .pov .pov-th-sub{display:block;white-space:nowrap}
 html.look-clean .brand-footer,html.look-clean .brand-footer summary,html.look-clean .brand-footer .foot-legal summary,html.look-clean .mascot-gallery figcaption,html.look-clean .feature-tour .help-summary-copy small{color:var(--v2-ink-2)}
 @media (min-width:1000px) and (min-height:501px){
   html.look-clean body:has(#modal.open) .brand-collection-toast{top:calc(var(--side-top,66px) + 12px);bottom:auto;right:22px}
+  html.look-clean body:has(#modal.open) .sync-hint{top:calc(var(--side-top,66px) + 12px);bottom:auto;right:22px}
 }
 @media (max-width:999px),(max-height:500px){
   html.look-clean body:has(#modal.open) .brand-collection-toast{top:60px;bottom:auto;right:12px}
+  html.look-clean body:has(#modal.open) .sync-hint{top:60px;bottom:auto;right:12px}
 }
 html.look-clean .ptl-details>summary,html.look-clean .coll-import details>summary{min-height:var(--btn-h);display:flex;align-items:center;justify-content:space-between;gap:var(--s2);list-style:none;cursor:pointer}
 html.look-clean .ptl-details>summary::-webkit-details-marker,html.look-clean .coll-import details>summary::-webkit-details-marker{display:none}
