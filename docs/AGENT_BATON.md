@@ -1,13 +1,15 @@
 # Agent 接力棒（Claude Code ↔ Antigravity）
 
 > 這是「目前正在做的事」的短版狀態，隨時覆寫，不累積歷史。長期決策看 `PRODUCT_PLAN.md`，歷史紀錄看 `HANDOFF.md`。
-> 上次更新：2026-11-26（台灣）｜更新者：Claude Code
+> 上次更新：2026-11-27（台灣）｜更新者：Claude Code
 
 ## 角色
 - 規劃／驗收：Claude Code（Opus 帶領，Sonnet worker 分頭執行）
 - 執行：Antigravity
 
 ## 目前狀態
+- 2026-11-27：**收藏改成一鍵開關、不計張數，全站上線**（PR #49 合併 dd927f2，Worker 283c6b3a）。☆／寶箱按一下收藏、再按取消；只有填過品況／版本／備註才先確認（會一併刪掉）。卡牆、詳細頁、收藏頁都不顯示張數也沒有「− 數量 ＋」；`collectionTotal()` 改成卡數，參考總值不乘舊資料的張數（`collection-store.js` valuate qty=1）。儲存的 quantity 與備份／CSV 的數量欄保留（還原相容）。收藏圖示全站統一像素寶箱（頁首「我的收藏」、詳細頁按鈕）。刪掉舊 stepper 的 `.card.is-owned` 排版（收藏後寶箱會換行）。首頁本彈大獎：卡片按鈕改 flex column 靠上（按鈕被拉高時瀏覽器會把內容垂直置中），寶可夢沒參考價寫「— 目前沒有參考價」，「參考價（約）」字樣主文字色加粗。收藏頁標題區試過光學對齊與文字連結，使用者都不要，維持原外框按鈕。agy（gemini-4-hydrogen-medium）審核另提：收藏提示框會擋到卡片與返回鍵（未改）。
+- 2026-11-26：**RGB 夢幻英文版代用圖**（PR #48，migration 20261126150000 套用）：card_images 加 pokemontcg me55-R/G/B（images.scrydex.com，標「英文版卡圖」）；name_en 補 Mew（migration 20261126140000）讓 eBay 區可查；eBay 支援字母卡號 R/RGB。RGB 佔位圖深底三色。**Worker 沒有 EBAY_CLIENT_ID／EBAY_CLIENT_SECRET**（只在已停用的 Render），eBay 區回 not-configured，要使用者自己 `wrangler secret put`。11-26 下午主庫磁碟 IO 額度疑似用完，查詢全面逾時數小時，晚上自行恢復；20:09 UTC 排程快照成功，首頁大獎已有英文版圖。
 - 2026-11-26：**寶可夢稀有度 RGB 上線**（PR #47，Worker 42cba87b，migration 20261126130000 已套用）。M6a R／G／B 夢幻（TCGdex「RGB Rare」）排在 MUR 之後、FUR 之前，首頁 30th 大獎前三張就是它們。卡圖：日本官方卡片搜尋（172 張只有 056 一般版夢幻）、30 週年商品頁、TCGdex 都沒有，暫顯示「圖片待補」，沒有參考價；官方收錄後每週日版補圖會自動補（卡號比對 B/G/R 不分大小寫）。Bulbapedia、卡店有圖但不是核准來源，沒用。
 - 2026-11-26：**資料庫瘦身第 0 步**（PR #46）。主庫 440 MB 已碰價格快照煞車線（`SNAPSHOT_DB_BRAKE_BYTES` 440 MB，免費方案 500 MB）。price_snapshots 在資料庫改留 16 天（migration 20261126120000 已套用；漲跌榜看 14 天＋2 天緩衝，價格歷史本來就合併讀封存），手動跑 price-archive 封存 13 天 118,312 筆後 `VACUUM FULL price_snapshots` → 主庫 410 MB。`REINDEX tcg_cards` 只省 1 MB；沒用到的索引只有約 1 MB；`search_text` 索引搜尋卡號時還在用，不能刪。長期計畫（使用者不付 Pro）：目錄搜尋與瀏覽搬 Cloudflare D1、價格封存搬 R2，見對話紀錄；尚未開始。另：M6a 的 B/G/R 夢幻 TCGdex 稀有度是「RGB Rare」，我們沒對應（rarity_code 空）而且官方與 TCGdex 都沒圖，所以首頁大獎看不到。
 - 2026-11-26：**寶可夢日版缺圖卡每週自動補日本官方卡圖**（PR #44、#45）。新 RPC `image_official_jp_targets`（migration 20261126090000 已套用正式庫；本卡沒有自己的圖就算缺，台版有圖也算）、`providers/pokemon-jp-official-images.mjs`（清單依日文名找候選→詳細頁核對卡號，唯一相符才寫 `card_images`，ADR 0031 只存外連網址；冷資料庫 57014 會重試）、background-jobs `official-jp-images` 每週二 UTC 20:30（台灣週三 04:30），可手動觸發。首次手動跑補 M6a 28 張（101 次請求），正式站超夢 M6a 134 日版已顯示日文卡圖。剩 20 張對不到：M6a 無卡號 B/G/R ミュウ、M6 071/073/075 伝説の○○、SM1p/SM2p/SM5p/SM12 隱藏 SR／HR、S8b モルペコV-UNION（官方站沒收或名稱不同），每週會再查一次（約 70 次請求）。
