@@ -22,7 +22,7 @@
 
   // ☆ 的狀態向 ui-enhancements.js 問（還沒載入就當沒收藏）；點下去交給它的 toggleFavorite，收藏變動後它再呼叫 refreshCollect。
   const quantity=id=>Number(root.railCollectQuantity?.(id))||0;
-  const collectState=(id,name)=>{const q=quantity(id);return {pressed:String(q>0),label:q?`已收藏：${name}（${q} 張），按一下移除`:`加入我的收藏：${name}`,text:q?'★':'☆',title:q?'已收藏':'加入我的收藏'}};
+  const collectState=(id,name)=>{const q=quantity(id);return {pressed:String(q>0),label:q?`已收藏：${name}，按一下取消`:`加入我的收藏：${name}`,text:q?'★':'☆',title:q?'已收藏':'加入我的收藏'}};
   const collectBtn=(row,name)=>{const s=collectState(row.cardId,name);return `<button type="button" class="favorite-toggle rail-collect" data-rail-collect="${esc(row.cardId)}" data-rail-name="${esc(name)}" aria-pressed="${s.pressed}" aria-label="${esc(s.label)}" title="${s.title}">${s.text}</button>`};
   const rowsById=new Map();
   const cell=(row,name,inner)=>{rowsById.set(String(row.cardId),row);return `<div class="trend-cell">${inner}${collectBtn(row,name)}</div>`};
@@ -49,7 +49,7 @@
       // 同卡牆：同一行左邊卡號、右邊稀有度膠囊（顏色依這一排的稀有度高低，見 prizeRail）；放不下時膠囊整顆換行，不留「·」。
       // 卡號去掉斜線前的系列前綴（UA「EX17BT/」、黑白雙翼「SFN/」，排標題已寫系列），完整卡號放 title；異圖改成卡圖角上的小標。
       `<span class="trend-card-meta"><span class="tc-no" title="${esc(row.cardNumber||'')}">${esc(String(row.cardNumber||'').replace(/^[A-Za-z][A-Za-z0-9]*\//,''))}</span>${row.rarity?`<span class="card-rarity" data-tier="${tier}">${esc(row.rarity)}</span>`:''}</span>`+
-      (twd>0?`<strong class="trend-price">NT$${Math.round(twd).toLocaleString('en-US')}</strong><small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價（約）`)}</small>`:mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>');
+      (twd>0?`<strong class="trend-price">NT$${Math.round(twd).toLocaleString('en-US')}</strong><small>${esc(`${({JP:'日版',TW:'台版',ASIA:'亞洲版'})[row.priceRegion]||''}參考價（約）`)}</small>`:row.game==='pokemon'&&!mixed?'<strong class="trend-price is-none">—</strong><small>目前沒有參考價</small>':mixed?`<small>${esc([gameName(row.game),row.seriesCode].filter(Boolean).join(' · '))}</small>`:'')+'</button>');
   }
   // 伺服器已依 data/rarity-rankings.json 由高到低排好：這一排出現的第一種稀有度金、第二種銀、其餘銅；跨遊戲的「精選」排無從比較，一律金。
   const prizeRail=(title,rows,mixed=false)=>{const order=[...new Set(rows.map(row=>row?.rarity).filter(Boolean))];

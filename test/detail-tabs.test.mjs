@@ -120,9 +120,9 @@ test('SAMPLE 浮水印只有一套：角落預覽已移除，卡圖自帶 SAMPLE
 test('我的收藏：用語統一為「我的收藏」與「張」，並提供 window.openCollection', () => {
   assert.doesNotMatch(ui, /追蹤清單|\$\{totalQuantity\} 件| 件<|件數/);
   assert.match(ui, /<span class="wl-count"><b>我的收藏<\/b> 共 \$\{collectionTotal\(\)\} 張<\/span>/);
-  assert.match(ui, /function collectionTotal\(\)\{return collectionIds\(\)\.reduce\(\(sum,id\)=>sum\+watchQuantity\(id\),0\)\}/, '頂部摘要與清單視窗用同一個張數（數量就是收藏）');
+  assert.match(ui, /function collectionTotal\(\)\{return collectionIds\(\)\.length\}/, '頂部摘要與清單視窗用同一個張數（一張卡算一張，不計張數）');
   assert.match(ui, /<b>已加入我的收藏<\/b>/);
-  assert.match(ui, /class="watchlist-inline" data-action="watchlist" role="group" aria-label="\$\{title\}，已收藏 \$\{quantity\} 張"/, '卡片上的「− 數量 ＋」是一組，朗讀出卡名與目前張數');
+  assert.doesNotMatch(ui, /watchlist-inline/, '卡片上只有收藏開關，不顯示張數');
   assert.match(ui, /window\.openCollection=openCollection;/);
   assert.match(ui, /function openCollection\(\)\{return window\.openView\?\.\('collection'\)\}/, '頂欄與底部導覽走 pushState 的收藏頁，不再開對話框');
   assert.doesNotMatch(ui, /collectionDialog/); // 雲端同步有自己的原生 <dialog>（syncDialog），所以不再禁 showModal

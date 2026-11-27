@@ -92,7 +92,7 @@ test('reference total: per source, finish must match, several variants need a ch
     { id: 'wrong', quantity: 1, condition: '', finish: 'reverse' },
     { id: 'alias', quantity: 1, condition: '', finish: 'holo' }
   ], { ...prices, multi2: prices.multi, picked: prices.multi, wrong: prices.one, alias: prices.both });
-  assert.deepEqual(v.byProvider.cardmarket, { twd: 200 * 2 + 200 + 80 * 3 + 200, entries: 4, missingFx: 0 });
+  assert.deepEqual(v.byProvider.cardmarket, { twd: 200 + 200 + 80 + 200, entries: 4, missingFx: 0 });
   assert.deepEqual(v.byProvider.tcgplayer, { twd: 320 + 320, entries: 2, missingFx: 0 }, 'finish holo also matches TCGplayer holofoil (same finish, different source vocabulary)');
   assert.deepEqual(Object.fromEntries(v.uncounted.map(x => [x.id, x.reason])), { multi: 'choose', multi2: 'choose', slab: 'slab', none: 'none', wrong: 'no-match' });
   assert.equal(v.counted, 4);
@@ -100,7 +100,7 @@ test('reference total: per source, finish must match, several variants need a ch
   assert.equal(v.dateFrom, '2026-10-10');
   assert.equal(v.dateTo, '2026-10-18');
   assert.equal(v.perEntry.both.counted.length, 2, 'both sources counted separately, never merged into one number');
-  assert.equal(v.perEntry.one.counted[0].qty, 2);
+  assert.equal(v.perEntry.one.counted[0].qty, 1, 'the count is not used: older entries with several copies still count once');
   assert.deepEqual(['holofoil', 'reverse-holofoil', 'reverseHolofoil', 'Holo', 'normal', ''].map(CS.finishKey), ['holo', 'reverse', 'reverse', 'holo', 'normal', '']);
   const noFx = CS.valuate([{ id: 'x', quantity: 1, condition: '', finish: '' }], { x: [price('cardmarket', '', 5, null)] });
   assert.deepEqual(noFx.byProvider.cardmarket, { twd: 0, entries: 1, missingFx: 1 }, 'a price without a TWD rate is flagged, not counted as 0 silently');
@@ -154,7 +154,7 @@ test('collection page: the 管理 menu holds backup, import, CSV and series prog
   assert.match(ui, /role="menu" aria-label="管理我的收藏" hidden>/);
   for (const attr of ['data-coll-export', 'data-coll-import', 'id="collectionCsv"', 'data-coll-series-toggle']) assert.ok(ui.includes(attr), attr);
   assert.ok(ui.indexOf('id="collStatus"') < ui.indexOf('id="collImportHost"'), 'the status line comes before the import preview');
-  assert.match(ui, /collectionStatus\(`已匯出 \$\{items\.length\} 款、\$\{collectionTotal\(\)\} 張，備份檔 \$\{filename\}/);
+  assert.match(ui, /collectionStatus\(`已匯出 \$\{items\.length\} 張，備份檔 \$\{filename\}/);
   assert.match(ui, /<label>品況<select data-coll-field="condition">/, 'condition, finish and note are edited in the side panel');
   assert.doesNotMatch(ui, /collectionDialog|collectionUi\.editOpen/, 'the old dialog is gone (cloud sync has its own native dialog)');
 });

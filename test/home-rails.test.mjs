@@ -71,6 +71,7 @@ test('最夯＝本彈大獎：每個遊戲一排、標題寫遊戲與系列；�
   const tiers=rails.trendingPanel(prizes([{game:'union-arena',seriesName:'x',data:[prizeRow(1,{rarity:'SR★★★'}),prizeRow(2,{rarity:'SR★★★'}),prizeRow(3,{rarity:'SR★★'}),prizeRow(4,{rarity:'SR★'}),prizeRow(5,{rarity:'UR'})]}]));
   assert.deepEqual([...tiers.matchAll(/data-tier="(\w+)"/g)].map(m=>m[1]),['top','top','high','mid','mid'],'每排第一種稀有度金、第二種銀、其餘銅');
   assert.match(rails.trendingPanel(prizes([{game:'pokemon',seriesName:'x',data:[prizeRow(4,{game:'pokemon',referencePrice:{amountTwd:840},priceRegion:'JP'})]}])),/NT\$840<\/strong><small>日版參考價（約）/,'借日版價格要寫明');
+  assert.match(rails.trendingPanel(prizes([{game:'pokemon',seriesName:'x',data:[prizeRow(4,{game:'pokemon'})]}])),/<strong class="trend-price is-none">—<\/strong><small>目前沒有參考價<\/small>/,'寶可夢沒有參考價也佔同一個位置，卡片排版一致');
   assert.doesNotMatch(out.slice(0,out.indexOf('30th')),/trend-price/,'其他遊戲不放價格');
   assert.match(out,/\[ⓘ 本彈大獎怎麼挑\|[^\]]*近 90 天[^\]]*參考價不是成交價/);
   assert.match(out,/<a href="\/\?view=market" data-spa>看參考價漲跌<\/a>/);
@@ -172,14 +173,14 @@ test('☆：卡片與 ☆ 是同一格裡並排的兩顆按鈕（不巢狀）；
   assert.equal(out.match(/<div class="trend-cell"><button type="button" class="trend-card"[^]*?<\/button><button type="button" class="favorite-toggle rail-collect"/g).length,6);
   assert.doesNotMatch(out.replace(/<button[^>]*>/g,'B').replace(/<\/button>/g,'E'),/B[^E]*B/,'沒有按鈕包按鈕');
   assert.match(out,/data-rail-collect="pokemon-hot-1" data-rail-name="&lt;b&gt;壞&lt;\/b&gt;" aria-pressed="false" aria-label="加入我的收藏：&lt;b&gt;壞&lt;\/b&gt;"[^>]*>☆</);
-  assert.match(out,/data-rail-collect="pokemon-hot-2"[^>]*aria-pressed="true" aria-label="已收藏：熱門卡 2（3 張），按一下移除"[^>]*>★</);
+  assert.match(out,/data-rail-collect="pokemon-hot-2"[^>]*aria-pressed="true" aria-label="已收藏：熱門卡 2，按一下取消"[^>]*>★</);
   const target={dataset:{railCollect:'pokemon-hot-3'}};
   dom.handlers.click({target:{closest:()=>target}});
   assert.equal(got.length,1);assert.equal(got[0].cardId,'pokemon-hot-3');assert.equal(got[0].game,'pokemon');
   dom.handlers.click({target:{closest:()=>null}});assert.equal(got.length,1,'點卡片本身不收藏（交給 data-do="openCard"）');
   const attrs={},button={dataset:{railCollect:'pokemon-hot-3',railName:'熱門卡 3'},setAttribute(k,v){attrs[k]=v},title:'',textContent:'☆'};
   dom.buttons.push(button);owned['pokemon-hot-3']=1;rails.refreshCollect(dom.doc);
-  assert.deepEqual([attrs['aria-pressed'],attrs['aria-label'],button.textContent,button.title],['true','已收藏：熱門卡 3（1 張），按一下移除','★','已收藏']);
+  assert.deepEqual([attrs['aria-pressed'],attrs['aria-label'],button.textContent,button.title],['true','已收藏：熱門卡 3，按一下取消','★','已收藏']);
 });
 
 test('index.html：沒有分頁，最新、最夯、最熱三排依序疊著，最新那排包著原本的 #homeLatest 與看得到的標題',()=>{

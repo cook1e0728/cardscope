@@ -43,58 +43,42 @@ test('migration: old stars become quantity 1 once, counts stay, the old keys are
   assert.equal(failing.storage.has('cardscope-collection-unified'), false, 'not marked done, so the next load tries again');
 });
 
-test('star and ± share one number: add -> 1, removing a bare card is one press, notes or several copies ask first, ± never goes below the confirm', () => {
+test('收藏是開關：☆ 收藏（數量 1），再按一下直接取消；只有填過品況、版本或備註才先問', () => {
   const c = collection({ legacy: [], watchlist: {} });
   c.sandbox.renderedCards.set('a', { nameZh: '皮卡丘' });
   assert.equal(c.run('isFavorite("a")'), false);
   c.run('toggleFavorite("a")');
   assert.equal(c.run('watchQuantity("a")'), 1, 'an empty star sets the quantity to 1');
   assert.equal(c.run('isFavorite("a")'), true);
-  c.run('stepWatchQuantity("a",1)');
-  assert.equal(c.run('watchQuantity("a")'), 2);
-  c.run('stepWatchQuantity("a",-1)');
-  assert.equal(c.run('watchQuantity("a")'), 1);
-  assert.equal(c.sandbox.asked.length, 0, 'no question while the card stays in the collection');
-  // decision 10: one copy and nothing filled in (no condition, version or note) cancels at once, without a question
-  c.run('stepWatchQuantity("a",-1)');
+  c.run('toggleFavorite("a")');
   assert.equal(c.run('watchQuantity("a")'), 0);
-  assert.equal(c.sandbox.asked.length, 0, 'a bare single copy is cancelled without asking');
+  assert.equal(c.sandbox.asked.length, 0, 'a bare card is cancelled without asking');
   assert.deepEqual(c.sandbox.repaints.at(-1), ['a', 1, 0], 'one single-card repaint per change');
-  // a saved condition, version or note is lost on cancel, so that asks
-  c.run('toggleFavorite("a")');
-  c.run('watchlistMeta.a={...watchlistMeta.a,condition:"NM"}');
-  c.sandbox.confirm = () => { c.sandbox.asked.push('declined'); return false; };
-  c.run('toggleFavorite("a")');
-  c.run('stepWatchQuantity("a",-1)');
-  assert.equal(c.run('watchQuantity("a")'), 1, 'declining keeps the card');
-  assert.equal(c.sandbox.asked.length, 2);
-  c.sandbox.confirm = message => { c.sandbox.asked.push(message); return true; };
-  c.run('stepWatchQuantity("a",-1)');
-  assert.equal(c.run('watchQuantity("a")'), 0, '1 -> 0 is a removal and was confirmed');
-  assert.match(c.sandbox.asked.at(-1), /皮卡丘/);
-  assert.equal(c.run('"a" in watchlistMeta'), false, 'removing also drops the saved condition and note');
-  assert.equal(c.run('stepWatchQuantity("never",-1)'), undefined, 'a card that is not collected stays that way');
-  assert.equal(c.run('watchQuantity("never")'), 0);
-  // several copies are also a loss worth one question, even with nothing filled in
+  // older collections may hold several copies; with the count hidden, cancelling is still one press
   c.run('setWatchQuantity("multi",3)');
-  c.sandbox.asked.length = 0;
-  c.sandbox.confirm = () => { c.sandbox.asked.push('multi'); return false; };
   c.run('toggleFavorite("multi")');
-  assert.equal(c.sandbox.asked.length, 1);
-  assert.equal(c.run('watchQuantity("multi")'), 3);
-  for (const field of ['finish', 'note']) {
-    c.run('setWatchQuantity("n-' + field + '",1)');
-    c.run('watchlistMeta["n-' + field + '"]={...watchlistMeta["n-' + field + '"],' + field + ':"x"}');
-    c.run('toggleFavorite("n-' + field + '")');
-    assert.equal(c.sandbox.asked.length, 2 + (field === 'note' ? 1 : 0), field + ' also asks');
-    assert.equal(c.run('watchQuantity("n-' + field + '")'), 1);
+  assert.equal(c.run('watchQuantity("multi")'), 0);
+  assert.equal(c.sandbox.asked.length, 0);
+  // a saved condition, version or note is lost on cancel, so that asks
+  for (const field of ['condition', 'finish', 'note']) {
+    const key = 'n-' + field;
+    c.run('setWatchQuantity("' + key + '",1)');
+    c.run('watchlistMeta["' + key + '"]={...watchlistMeta["' + key + '"],' + field + ':"x"}');
+    c.sandbox.confirm = () => { c.sandbox.asked.push(field); return false; };
+    c.run('toggleFavorite("' + key + '")');
+    assert.equal(c.run('watchQuantity("' + key + '")'), 1, field + ': declining keeps the card');
   }
+  assert.equal(c.sandbox.asked.length, 3);
+  c.sandbox.confirm = message => { c.sandbox.asked.push(message); return true; };
+  c.run('toggleFavorite("n-note")');
+  assert.equal(c.run('watchQuantity("n-note")'), 0, 'confirmed: cancelled');
+  assert.equal(c.run('"n-note" in watchlistMeta'), false, 'removing also drops the saved note');
 });
 
 test('one count everywhere: 款數 and 張數 come from quantity only, so the filter button and the collection window agree', () => {
   const c = collection({ legacy: [], watchlist: { a: 2, b: 1, c: 'x', d: 0 } });
   assert.deepEqual(JSON.parse(c.run('JSON.stringify(collectionIds())')), ['a', 'b']);
-  assert.equal(c.run('collectionTotal()'), 3);
+  assert.equal(c.run('collectionTotal()'), 2, 'one card counts once, even an older entry with 2 copies');
   assert.doesNotMatch(ui, /favoriteIds/, 'no second star list is kept');
   // the 全部／已收藏／還缺 group reuses the stored cardscope-favorites-only switch; the count lives in the summary line, not on the button
   assert.match(ui, /const current=missingOnlyActive\(\)\?'missing':favoritesOnly\?'owned':'all'/);
@@ -186,24 +170,21 @@ test('收錄版本: Yu-Gi-Oh! shows the printed number first with the passcode a
 });
 
 // --- detail page: 收藏按鈕
-test('詳細頁收藏按鈕: 加入收藏 / 已收藏 ×N with ± , sharing the grid quantity, 44px targets', () => {
+test('詳細頁收藏按鈕: 寶箱＋「加入收藏／已收藏」一鍵切換，不顯示張數，44px targets', () => {
   const c = collection({ watchlist: {} });
   const slot = { dataset: { detailCollect: 'k1' }, innerHTML: '', contains: () => false, querySelector: () => null };
   Object.assign(c.sandbox, { document: { querySelector: () => slot, activeElement: null }, collectionEditorHtml: () => '', onCollectionField() {}, chooseCollectionVersion() {} });
   vm.runInContext(between('function renderDetailCollect', '// ── 詳細資料（REDESIGN_PLAN'), c.sandbox);
   c.run('renderDetailCollect()');
-  assert.match(slot.innerHTML, /data-collect-act="toggle" aria-pressed="false">☆ 加入收藏</);
-  assert.doesNotMatch(slot.innerHTML, /data-collect-act="inc"/);
+  assert.match(slot.innerHTML, /data-collect-act="toggle" aria-pressed="false">加入收藏</);
   const click = act => slot.onclick({ target: { closest: () => ({ dataset: { collectAct: act } }) } });
   click('toggle');
   assert.equal(c.run('watchQuantity("k1")'), 1);
-  assert.match(slot.innerHTML, /aria-pressed="true"[^>]*>★ 已收藏 ×1</);
-  click('inc');
-  assert.match(slot.innerHTML, /已收藏 ×2/);
-  click('dec');
-  click('dec');
-  assert.equal(c.run('watchQuantity("k1")'), 0, 'the last − removes after the same confirm as the star');
-  assert.match(slot.innerHTML, /☆ 加入收藏/);
+  assert.match(slot.innerHTML, /aria-pressed="true"[^>]*>已收藏</);
+  assert.doesNotMatch(slot.innerHTML, /×|data-collect-act="(?:inc|dec)"/, 'no count, no ±');
+  click('toggle');
+  assert.equal(c.run('watchQuantity("k1")'), 0);
+  assert.match(slot.innerHTML, />加入收藏</);
   assert.match(ui, /<h2>\$\{e\(name\(c\)\)\}<\/h2>(?:\$\{zhPart\.name&&original\(c\)\?`<div class="detail-subname">\$\{e\(original\(c\)\)\}<\/div>`:""\})(?:\$\{priceSlot\})?<div class="detail-actions"><div class="detail-collect" data-detail-collect="\$\{e\(collectKey\)\}"/, 'right under the card name (the reference price row may sit between)');
   assert.match(ui, /\.detail-collect button\{min-width:44px;min-height:44px/);
 });

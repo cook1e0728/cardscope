@@ -167,7 +167,7 @@ html.look-clean body[data-view] #homeRails .home-latest>.rails-head{min-height:5
 .rails-retry{padding:0 16px}
 .trend-empty .rails-retry{margin-top:8px}
 /* 卡片：沿用漲跌榜的 trend-card 結構，統一白底紙片＋細框線 */
-html.look-clean body[data-view] #homeRails .trend-card{display:block;flex:0 0 190px;width:190px;min-width:0;padding:10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font:inherit;text-align:left;cursor:pointer;scroll-snap-align:start;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
+html.look-clean body[data-view] #homeRails .trend-card{display:flex;flex-direction:column;justify-content:flex-start;flex:0 0 190px;width:190px;min-width:0;padding:10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow);color:var(--v2-ink);font:inherit;text-align:left;cursor:pointer;scroll-snap-align:start;transition:transform .14s var(--ease),box-shadow .14s var(--ease)}
 html.look-clean body[data-view] #homeRails .trend-card:active{transform:scale(.97)}
 html.look-clean body[data-view] #homeRails .trend-card:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 html.look-clean body[data-view] #homeRails .trend-image{height:170px;border:0;border-radius:10px;background:var(--v2-page)}
@@ -178,6 +178,10 @@ html.look-clean body[data-view] #homeRails .trend-rise{flex:none;padding:2px 6px
 html.look-clean body[data-view] #homeRails .trend-card-number{color:var(--v2-ink-2);font-variant-numeric:tabular-nums}
 html.look-clean body[data-view] #homeRails .trend-card>strong{display:block;margin-top:6px;font-size:var(--fs-sub);font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margin-top:2px;font-size:var(--fs-note);line-height:1.5;color:var(--v2-ink-2);overflow-wrap:anywhere}
+/* 沒有參考價的卡保留同一個位置寫「—」，卡片高度與排版跟有價的一致 */
+html.look-clean body[data-view] #homeRails .trend-price.is-none{color:var(--v2-ink-2)}
+/* 價格下方「參考價（約）」字樣要看得清楚（使用者 2026-11-27）：用主文字色、加粗 */
+html.look-clean body[data-view] #homeRails .trend-price+small{color:var(--v2-ink);font-weight:600}
 /* 卡名一律預留兩行（同卡牆 min-height 2.7em），一行名字的卡不會比兩行的矮；稀有度、卡號各一行；價格是卡上最醒目的數字 */
 html.look-clean body[data-view] #homeRails .trend-card-head>b{min-height:2.7em}
 html.look-clean body[data-view] #homeRails .trend-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin-top:2px}
@@ -428,13 +432,7 @@ html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .ra
 html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect)::before,.fx-chest-base,.fx-chest-lid{content:"";width:32px;height:32px;background:url(/assets/pixel/chest.png) 0 0/32px 32px no-repeat;image-rendering:pixelated}
 html.look-clean body[data-view] :is(.cards .card .favorite-toggle,#homeRails .rail-collect)[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
 html.look-clean body[data-view] #homeRails .rail-collect.fx-chest-src::before{visibility:hidden}
-html.look-clean body[data-view] .cards .card.is-owned:not(.card-list){grid-template-areas:"art art" "ctx ctx" "name name" "meta meta" "price price" "flags flags" "act act";grid-template-rows:repeat(6,auto) 1fr}
-html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{justify-self:stretch;align-self:end;margin-top:6px}
-html.look-clean body[data-view] .cards .card .watchlist-inline{display:flex;align-items:center;justify-content:space-between;gap:0;width:100%;border:0;border-radius:var(--btn-r);background:var(--v2-well);box-shadow:var(--v2-shadow-in);overflow:hidden}
-html.look-clean body[data-view] .cards .card .watchlist-inline button{flex:none;width:44px;min-width:44px;height:44px;padding:0;border:0;border-radius:0;background:transparent;color:var(--v2-ink);font-size:20px;line-height:1;transition:transform .14s var(--ease),background-color .14s var(--ease)}
-html.look-clean body[data-view] .cards .card .watchlist-inline button:active{transform:scale(.97)}
 /* 數字欄可縮到 0：375px 三欄時兩顆 44px 鈕加原本 24px 數字欄放不下，「＋」被切掉（體檢 HCI-06） */
-html.look-clean body[data-view] .cards .card .watchlist-inline .watch-quantity{flex:1 1 auto;min-width:0;text-align:center;font-size:var(--fs-14);font-weight:700;font-variant-numeric:tabular-nums;color:var(--v2-ink)}
 html.look-clean body[data-view] .cards .card :is(.favorite-toggle,.watchlist-inline button):focus-visible{outline:2px solid var(--v2-ink);outline-offset:-2px}
 /* 清單模式：收藏鈕在最右邊 */
 html.look-clean body[data-view] .cards .card.card-list{padding:8px 14px 8px 10px;border:1px solid var(--v2-line);border-radius:14px;background:var(--v2-surface);box-shadow:var(--v2-shadow)}
@@ -464,7 +462,6 @@ html.look-clean body[data-view] .cards .card.card-list .card-list-facts strong{c
   html.look-clean body[data-view] .cards .card:not(.card-list) .card-sep{display:none}
   html.look-clean body[data-view] .cards .card:not(.card-list) .card-price{font-size:var(--fs-sub)}
   html.look-clean body[data-view] .cards .card .favorite-toggle{margin:0 -4px 0 0}
-  html.look-clean body[data-view] .cards .card.is-owned:not(.card-list) .card-actions{margin:4px -6px -2px}
   html.look-clean body[data-view] #cardControls{flex-wrap:nowrap;overflow-x:auto;padding:2px 32px 2px 0;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 32px),transparent)}
   html.look-clean body[data-view] #cardControls::-webkit-scrollbar{display:none}
   html.look-clean body[data-view] #cardControls>*{scroll-snap-align:start}
@@ -1257,3 +1254,8 @@ html.look-clean body[data-view] .unified-image-fallback.rgb-fallback[data-rgb="g
 html.look-clean body[data-view] .unified-image-fallback.rgb-fallback[data-rgb="b"]{--rgb:#3D7BFF}
 html.look-clean body[data-view] .unified-image-fallback.rgb-fallback b{font-size:clamp(40px,9cqw,72px);line-height:1;font-weight:800;color:var(--rgb)!important;text-shadow:0 0 18px color-mix(in srgb,var(--rgb) 60%,transparent)}
 html.look-clean body[data-view] .unified-image-fallback.rgb-fallback small{display:block!important;color:#D9D1C3!important;font-size:12px}
+/* 收藏圖示全站統一成像素寶箱（使用者 2026-11-27）：詳細頁按鈕前放寶箱，沒收藏是灰的；頁首「我的收藏」也改用寶箱（32px 素材縮一半保持像素清楚） */
+html.look-clean body[data-view] #detail .detail-collect-state{display:inline-flex;align-items:center;gap:8px}
+html.look-clean body[data-view] #detail .detail-collect-state::before{content:"";width:24px;height:24px;flex:none;background:url(/assets/pixel/chest.png) 0 0/24px 24px no-repeat;image-rendering:pixelated}
+html.look-clean body[data-view] #detail .detail-collect-state[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
+html.look-clean body .top .nav button[data-nav="collection"]::before{width:16px;height:16px;background:url(/assets/pixel/chest.png) 0 0/16px 16px no-repeat;-webkit-mask:none;mask:none;image-rendering:pixelated}

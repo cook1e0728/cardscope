@@ -71,7 +71,7 @@ test('collection rows: a price older than 7 days is shown as 已過期 and left 
     COLLECTION_REASONS: { none: '尚無參考價快照' } });
   vm.runInContext(slice(ui, 'function collectionValuation', 'function valueHtml'), sandbox);
   const valuation = sandbox.collectionValuation();
-  assert.equal(valuation.byProvider.cardmarket.twd, 100 * 2 + 50, 'stale rows are not summed');
+  assert.equal(valuation.byProvider.cardmarket.twd, 100 + 50, 'stale rows are not summed; copies are not counted');
   assert.equal(valuation.byProvider.tcgplayer, undefined);
   assert.equal(valuation.counted, 2);
   assert.deepEqual([...valuation.uncounted.map(x => x.id)], ['old']);
