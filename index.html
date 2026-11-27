@@ -168,7 +168,7 @@ async function loadCardsPage(reset=false){
     setFilterSummary(`完整圖鑑符合 ${state.total.toLocaleString()} 張，目前顯示 ${state.rows.length.toLocaleString()} 張${rarityGap}`);
     $('cardsTitle').textContent=cardsHeading(state);
     $('cardsMeta').textContent=`共 ${state.total.toLocaleString()} 張，已顯示 ${state.rows.length.toLocaleString()} 張${rarityGap}`;syncCardsMode();
-    if(state.hasMore){const next=new URL(location.href);next.searchParams.delete('card');next.searchParams.set('pages',String(Math.ceil(state.offset/CARDS_PAGE_SIZE)+1));button.href=next.pathname+next.search}button.style.display=state.hasMore?'block':'none';setNoticeState(state.rows.length?'ready':'empty',state.rows.length?'':'目前沒有符合條件的卡片；若是尚未發售商品，代表官方尚未公開卡表。');
+    button.href=window.nextPageHref?.()||'/';button.style.display=state.hasMore?'block':'none';setNoticeState(state.rows.length?'ready':'empty',state.rows.length?'':'目前沒有符合條件的卡片；若是尚未發售商品，代表官方尚未公開卡表。');
   }catch(error){
     if(browseRequestIsCurrent(state,requestVersion,selectedGame,selectedRegion,selectedRarity,selectedPrice,selectedSort)){
       const message=failText('載入失敗：',error);setCardDisplayState('error',message);setNoticeState('error',message,()=>loadCardsPage(true));if(reset)$('cardsMeta').textContent='載入失敗';
@@ -244,7 +244,7 @@ async function openProduct(id){let p=P.find(x=>x.id===id);if(!p)return;if(game!=
       Object.assign(activeSearch,{offset:(Number.isFinite(Number(meta.offset))?Number(meta.offset):offset)+step,total,hasMore});if(!more)activeSearch.parsed=meta.parsed||null;
       cardDisplayState='ready';cards(rows);markCardImageScope('search',searchState);
       $('cardsTitle').textContent=`「${q}」的搜尋結果（${total.toLocaleString()}）`;$('cardsMeta').textContent=rows.length<total?`共 ${total.toLocaleString()} 筆，已顯示 ${rows.length.toLocaleString()} 筆`:`共 ${total.toLocaleString()} 筆`;
-      button.disabled=false;button.textContent='載入更多結果';button.style.display=hasMore?'block':'none';
+      button.disabled=false;button.textContent='載入更多結果';button.href=window.nextPageHref?.()||'/';button.style.display=hasMore?'block':'none';
       if(more)return;
       showApplied(activeSearch);
       const near=window.setBandSearch?.(q,meta.seriesTerms?.length?meta.seriesTerms:meta.queryTerms)||{here:0,others:[]},related=near.here,empty=!rows.length;
