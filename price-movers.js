@@ -20,7 +20,7 @@
   function card(row,up){
     const pct=Number(row.changePercent),label=`${up?'↑ +':'↓ '}${pct.toLocaleString('en-US',{maximumFractionDigits:1})}%`;
     const price=`${twd(row.from.amountTwd)} → ${twd(row.to.amountTwd)}`;
-    return `<a class="trend-card${up?'':' trend-fall'}" href="${esc(window.cardHref?.(row.game,row.cardId))}" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${image(row.imageUrl,row.name)}</div>`+
+    return `<a class="trend-card${up?'':' trend-fall'}" href="${esc(window.cardHref?.(row.game||'pokemon',row.cardId))}" data-do="openCard" data-arg="${esc(row.cardId)}"><div class="trend-image">${image(row.imageUrl,row.name)}</div>`+
       `<div class="trend-card-head"><b>${esc(row.name)}</b><span class="trend-rise">${esc(label)}</span></div>`+
       `<span class="trend-card-number">${esc([row.seriesCode,row.cardNumber].filter(Boolean).join(' · '))}</span><strong>${esc(price)}</strong>`+
       `<small>${esc(eur(row.from.amount))} → ${esc(eur(row.to.amount))}<br>${esc(md(row.from.date))} → ${esc(md(row.to.date))}</small></a>`;

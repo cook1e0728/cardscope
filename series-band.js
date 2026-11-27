@@ -213,6 +213,7 @@
     railNav(rail);if(window.homeSeriesCard)loadHits();
     rail.onclick=event=>{
       const button=event.target.closest('.band-tile'),item=button&&(C.series||[]).find(row=>row.id===button.dataset.id);if(!item)return;
+      if(button.tagName==='A'){if(!window.plainClick(event))return;event.preventDefault()}
       const select=regionSelect();if(select)select.value=item.region;window.cardscopeEntry={series:item.id};window.choose(item.game);
     };
   }

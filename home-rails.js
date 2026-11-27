@@ -68,7 +68,7 @@
   // 緊湊一列：小圖、卡名與編號、漲跌幅（文字有 ↑／↓ 與正負號，不只靠顏色）、前後參考價。
   function moverRow(row,up){
     const pct=Math.abs(Number(row.changePercent)).toLocaleString('en-US',{maximumFractionDigits:1}),name=row.name||row.cardNumber||'未命名卡片';
-    return `<li><a class="mover-row" href="${esc(window.cardHref?.(row.game,row.cardId))}" data-do="openCard" data-arg="${esc(row.cardId)}"><span class="mover-img">${shared().image(row.imageUrl,'')}</span>`+
+    return `<li><a class="mover-row" href="${esc(window.cardHref?.(row.game||'pokemon',row.cardId))}" data-do="openCard" data-arg="${esc(row.cardId)}"><span class="mover-img">${shared().image(row.imageUrl,'')}</span>`+
       `<span class="mover-name"><b>${esc(name)}</b><small>${esc([row.seriesCode,row.cardNumber].filter(Boolean).join(' · '))}</small><small>${esc(twd(row.from.amountTwd))} → ${esc(twd(row.to.amountTwd))}</small></span>`+
       `<span class="mover-chg ${up?'is-up':'is-down'}">${up?'↑ +':'↓ -'}${pct}%</span></a></li>`;
   }
