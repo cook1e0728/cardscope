@@ -73,3 +73,11 @@ test('遊戲選單是真連結（/?game=X，全部遊戲連首頁），點擊仍
   assert.match(html,/return`<a class="channel \$\{game===d\.id\?'on':''\}" href="\$\{d\.id==='all'\?'\/':'\/\?game='\+encodeURIComponent\(d\.id\)\}"[^`]*data-do="choose" data-arg="\$\{e\(d\.id\)\}">/);
   assert.match(html,/<b>\$\{e\(d\.name\)\}<\/b><\/a>`\}\)\.join\(''\)/);
 });
+
+test('retryCatalog 不依賴 init() 裡的區域 get（資料庫降級時重試目錄不會 ReferenceError）', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const body = html.slice(html.indexOf('function retryCatalog('), html.indexOf('function retryCatalog(') + 200);
+  assert.doesNotMatch(body, /[^.\w]get\(/);
+  assert.match(body, /fetch\('\/api\/catalog'\)/);
+});
