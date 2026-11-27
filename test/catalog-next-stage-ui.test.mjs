@@ -42,7 +42,7 @@ test('card detail and zoom controls reserve a complete viewport',()=>{
 });
 
 test('card opening control stays separate from nested card actions',()=>{
-  assert.match(ui,/<a class="card-open-hit" href="\$\{e\(window\.cardHref\?\.\(cardGameId\(card\),cardOpenId\(card\)\)\)\}" data-card-open=/,'卡片是真連結，搜尋引擎找得到單卡頁');
+  assert.match(ui,/<a class="card-open-hit" href="\$\{e\(window\.cardHref\?\.\(cardGameId\(card\),cardOpenId\(card\)\)\)\}" data-card-open=[^>]*><span class="sr-only">\$\{e\(\[name\(card\),number\]/,'卡片是真連結，錨點文字是卡名與卡號，搜尋引擎找得到單卡頁');
   assert.doesNotMatch(ui,/data-card-open="\$\{id\}" role="button"/);
   assert.match(ui,/\.card-actions\{position:relative;z-index:2\}/);
 });
