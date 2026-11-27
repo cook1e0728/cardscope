@@ -1150,6 +1150,9 @@ html.look-clean body[data-view="market"] #trendsSection .trend-empty p{margin:6p
 .coll-account-btn{display:none}
 body[data-view="collection"] .coll-account-btn{display:flex;width:max-content;align-items:center;gap:6px;margin:10px 0 0;min-height:44px;padding:0 16px;border:1px solid var(--v2-line);border-radius:999px;background:var(--v2-surface);color:var(--v2-ink);font:inherit;font-size:13px;font-weight:600;line-height:1;vertical-align:middle;cursor:pointer}
 body[data-view="collection"] .coll-account-btn[data-kind="login"]{border-color:var(--v2-ink);background:#fff}
+/* 標題下的登入／同步設定改成文字連結樣式（使用者 2026-11-27：膠囊外框和標題看起來沒對齊）：沒有外框，圖示貼齊標題左緣；點擊區仍高 44px */
+html.look-clean body[data-view="collection"] .coll-account-btn{padding:0;border:0;border-radius:0;background:none;box-shadow:none;font-size:14px}
+html.look-clean body[data-view="collection"] .coll-account-btn span{text-decoration:underline;text-underline-offset:3px}
 .coll-account-btn .sync-google-icon{width:16px;height:16px}
 .coll-account-btn:focus-visible{outline:2px solid var(--v2-ink);outline-offset:2px}
 
