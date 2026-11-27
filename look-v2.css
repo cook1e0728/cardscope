@@ -1260,7 +1260,8 @@ html.look-clean body[data-view] #detail .detail-collect-state::before{content:""
 html.look-clean body[data-view] #detail .detail-collect-state[aria-pressed="false"]::before{filter:grayscale(1) brightness(1.12);opacity:.55}
 html.look-clean body .top .nav button[data-nav="collection"]::before{width:16px;height:16px;background:url(/assets/pixel/chest.png) 0 0/16px 16px no-repeat;-webkit-mask:none;mask:none;image-rendering:pixelated}
 /* 卡片與系列改成真連結（SEO 2026-11-27）：外觀維持原本按鈕的樣子，不出現連結底線與藍字 */
-:is(a.card-open-hit,a.trend-card,a.mover-row,a.band-tile){color:inherit;text-decoration:none}
+:is(a.card-open-hit,a.trend-card,a.mover-row,a.band-tile,a.channel){color:inherit;text-decoration:none}
+a.channel{text-align:center}
 a.card-open-hit{display:block}
 /* 「載入更多」是連結：按鈕會自動垂直置中，連結要靠行高 */
 a.load-more{width:fit-content;line-height:42px;text-align:center;text-decoration:none}

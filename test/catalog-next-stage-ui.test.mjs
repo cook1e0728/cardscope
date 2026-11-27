@@ -68,3 +68,8 @@ test('「載入更多」是連到下一頁（?pages=N）的真連結，一般點
   assert.equal(html.match(/button\.href=window\.nextPageHref\?\.\(\)\|\|'\/'/g)?.length,2,'系列與搜尋載完都更新下一頁網址');
   assert.match(html,/\$\('loadMore'\)\.onclick=event=>\{if\(event&&window\.plainClick&&!window\.plainClick\(event\)\)return;event\?\.preventDefault\(\);if\(\$\('loadMore'\)\.disabled\)return;/,'Ctrl／中鍵交給瀏覽器開新分頁；載入中不重複觸發');
 });
+
+test('遊戲選單是真連結（/?game=X，全部遊戲連首頁），點擊仍走 data-do="choose"',()=>{
+  assert.match(html,/return`<a class="channel \$\{game===d\.id\?'on':''\}" href="\$\{d\.id==='all'\?'\/':'\/\?game='\+encodeURIComponent\(d\.id\)\}"[^`]*data-do="choose" data-arg="\$\{e\(d\.id\)\}">/);
+  assert.match(html,/<b>\$\{e\(d\.name\)\}<\/b><\/a>`\}\)\.join\(''\)/);
+});
