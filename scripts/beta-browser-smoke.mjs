@@ -675,7 +675,7 @@ async function runCollectionChecks(browser,viewport){
     const {readFile}=await import('node:fs/promises');
     const backupText=await readFile(await backup.path(),'utf8');
     assert.equal(JSON.parse(backupText).items.length,3);
-    assert.match(await page.locator('#collStatus').innerText(),/已匯出 3 款、3 張/);
+    assert.match(await page.locator('#collStatus').innerText(),/已匯出 3 張，備份檔/);
     await page.locator('#collManageBtn').click();
     const [csv]=await Promise.all([page.waitForEvent('download'),page.locator('#collectionCsv').click()]);
     assert.equal(csv.suggestedFilename(),'cardscope-watchlist.csv');
