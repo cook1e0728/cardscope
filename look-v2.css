@@ -180,6 +180,8 @@ html.look-clean body[data-view] #homeRails .trend-card>strong{display:block;marg
 html.look-clean body[data-view] #homeRails .trend-card>small{display:block;margin-top:2px;font-size:var(--fs-note);line-height:1.5;color:var(--v2-ink-2);overflow-wrap:anywhere}
 /* 沒有參考價的卡保留同一個位置寫「—」，卡片高度與排版跟有價的一致 */
 html.look-clean body[data-view] #homeRails .trend-price.is-none{color:var(--v2-ink-2)}
+/* 價格下方「參考價（約）」字樣要看得清楚（使用者 2026-11-27）：用主文字色、加粗 */
+html.look-clean body[data-view] #homeRails .trend-price+small{color:var(--v2-ink);font-weight:600}
 /* 卡名一律預留兩行（同卡牆 min-height 2.7em），一行名字的卡不會比兩行的矮；稀有度、卡號各一行；價格是卡上最醒目的數字 */
 html.look-clean body[data-view] #homeRails .trend-card-head>b{min-height:2.7em}
 html.look-clean body[data-view] #homeRails .trend-card-meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 6px;margin-top:2px}
